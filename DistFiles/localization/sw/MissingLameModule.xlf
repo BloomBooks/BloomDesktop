@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
-  <file original="MissingLameModule-fr.html" datatype="html" source-language="en" target-language="fr">
+  <file original="MissingLameModule-sw.html" datatype="html" source-language="en" target-language="sw">
     <body>
       <trans-unit id="missing.lame.please.install">
         <source xml:lang="en">Please Install LAME</source>
-        <target xml:lang="fr">Veuillez installer LAME</target>
+        <target xml:lang="sw">Tafadhali weka LAME</target>
         <note>ID: missing.lame.please.install</note>
       </trans-unit>
       <trans-unit id="missing.lame.bloom.needs.lame">
         <source xml:lang="en">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
       </source>
-        <target xml:lang="fr">Ce livre a des enregistrements audio. Bloom peut utiliser ces pour faire un "livre audio" e-book. Toutefois, Bloom a besoin d'un programme appelé "LAME pour Audacity" afin de créer les fichiers MP3 que le livre utilisera. La mise en place est facile. Premier téléchargement et exécution <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Ensuite, redémarrez Bloom.
+        <target xml:lang="sw">Kitabu hiki kina sauti zilizorekodiwa. Bloom inaweza kutumia hizi kutengeneza e-book ya "Kitabu kilicho na sauti". Hata hivyo, Bloom huhitaji programu iitwayo "LAME for Audacity" ili kutengeneza faili za MP3 zitakazotumiwa na kitabu. Ni rahisi kuiweka. Kwanza ipakue kisha uifungue <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Kisha, fungua upya Bloom.
       </target>
         <note>ID: missing.lame.bloom.needs.lame</note>
       </trans-unit>
       <trans-unit id="missing.lame.audio.optional">
         <source xml:lang="en">If you prefer to go ahead and publish your book without audio, click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">here</g>.
       </source>
-        <target xml:lang="fr">Si vous préférez aller de l'avant et publier votre livre sans audio, cliquez sur <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">ici</g>.
+        <target xml:lang="sw">Iwapo unapendelea kuendelea na kuchapisha kitabu chako bila sauti, bofya <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">hapa</g>.
       </target>
         <note>ID: missing.lame.audio.optional</note>
       </trans-unit>

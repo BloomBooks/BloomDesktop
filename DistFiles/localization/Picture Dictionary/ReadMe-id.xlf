@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="ReadMe-id.htm" datatype="html" source-language="en" target-language="id">
+    <body>
+      <trans-unit id="picture.dictionary">
+        <source xml:lang="en">About the Picture Dictionary Template</source>
+        <target xml:lang="id">Tentang Template Kamus Bergambar</target>
+        <note>ID: picture.dictionary</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.use">
+        <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
+        <target xml:lang="id">Gunakan template ini untuk membuat kamus bergambar yang monolingual, bilingual, atau trilingual.</target>
+        <note>ID: picture.dictionary.use</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.limits">
+        <source xml:lang="en">Limitations of this version</source>
+        <target xml:lang="id">Keterbatasan Versi ini</target>
+        <note>ID: picture.dictionary.limits</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.stillexperimental">
+        <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
+        <target xml:lang="id">Buku ini baru saja ditandai "eksperimental" karena kita tahu ada beberapa masalah dalam tata letak dan kemudahannya.</target>
+        <note>ID: picture.dictionary.stillexperimental</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.feedback">
+        <source xml:lang="en">Feedback</source>
+        <target xml:lang="id">Umpan balik</target>
+        <note>ID: picture.dictionary.feedback</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.feedbackvoting">
+        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
+        <target xml:lang="id">Silakan berikan dan masukan pendapat pada <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">saran</g>.</target>
+        <note>ID: picture.dictionary.feedbackvoting</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.reportbugs">
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
+        <target xml:lang="id">Silakan laporkan masalah ke <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <note>ID: picture.dictionary.reportbugs</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
