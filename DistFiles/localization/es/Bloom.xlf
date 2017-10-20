@@ -5259,12 +5259,18 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.AllowedWordsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allowed Words File</source>
         <note>ID: ReaderSetup.AllowedWordsFile</note>
-        <target xml:lang="es-ES">Archivo de palabras permitidas</target>
+        <target xml:lang="es-ES">Archivo de Palabras Permitidas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Archivo de palabras permitidas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWordsFileHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allowed Words File</source>
         <note>ID: ReaderSetup.AllowedWordsFileHeader</note>
-        <target xml:lang="es-ES">Archivo de palabras permitidas</target>
+        <target xml:lang="es-ES">Archivo de Palabras Permitidas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Archivo de palabras permitidas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Avg</source>
