@@ -4,12 +4,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Bloom.Properties;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
-using SIL.Windows.Forms.ClearShare;
 using SIL.Reporting;
 
 namespace Bloom.Publish.BloomLibrary
@@ -19,88 +17,88 @@ namespace Bloom.Publish.BloomLibrary
 	/// </summary>
 	public partial class BloomLibraryPublishControl : UserControl
 	{
-		private PublishView _parentView;
-		private BookTransfer _bookTransferrer;
-		private LoginDialog _loginDialog;
-		private Book.Book _book;
-		private string _originalLoginText;
-		private bool _okToUpload = true;
-		private bool _okToUploadDependsOnLangsChecked;
-		private bool _usingNotesLabel = true;
-		private bool _usingNotesSuggestion = true;
-		private bool _usingCcControls = true;
+		private readonly PublishView _parentView;
+		private readonly LoginDialog _loginDialog;
+		private readonly string _originalLoginText;
+		private bool _okToUpload;
+		private readonly bool _okToUploadDependsOnLangsChecked;
+		private readonly bool _usingNotesLabel = true;
+		private readonly bool _usingNotesSuggestion = true;
+		private readonly bool _usingCcControls = true;
 		private BackgroundWorker _uploadWorker;
 		private string _originalUploadText;
+		private readonly BloomLibraryPublishModel _model;
 
-		private string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
+		private readonly string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
-		public BloomLibraryPublishControl(PublishView parentView, BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
+		public BloomLibraryPublishControl(PublishView parentView, BloomLibraryPublishModel model, LoginDialog dialog)
 		{
+			_model = model;
 			_parentView = parentView;
-			_bookTransferrer = bookTransferrer;
-			_loginDialog = login;
-			_book = book;
+			_loginDialog = dialog;
 			InitializeComponent();
 			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
-			_titleLabel.Text = book.BookInfo.Title;
+			_titleLabel.Text = _model.Title;
 
 			_progressBox.ShowDetailsMenuItem = true;
 			_progressBox.ShowCopyToClipboardMenuItem = true;
 			_progressBox.LinkClicked += _progressBox_LinkClicked;
 
-			var metadata = book.GetLicenseMetadata();
-			// This is usually redundant, but might not be on old books where the license was set before the new
-			// editing code was written.
-			book.SetMetadata(metadata);
-			var license = metadata.License;
-			if (license == null || (license is NullLicense && string.IsNullOrWhiteSpace(metadata.CopyrightNotice)))
-			{
-				// A null license and no copyright indicates they never even opened the ClearShare dialog to choose a license.
-				_usingCcControls = false;
-				_usingNotesLabel = false;
-				_licenseSuggestion.Text = _pleaseSetThis;
-				_okToUpload = false;
-			}
-			else if (license is CreativeCommonsLicense)
-			{
-				_creativeCommonsLink.Text = license.Token.ToUpperInvariant();
-				_usingNotesSuggestion = false;
-				if (string.IsNullOrWhiteSpace(license.RightsStatement))
-				{
-					_licenseNotesLabel.Hide();
-				}
-				else
-				{
-					_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AdditionalRequests", "Additional Requests: ") + license.RightsStatement;
-				}
-			}
-			else if (license is NullLicense)
-			{
-				_usingCcControls = false;
-				_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions.)");
-				if (!string.IsNullOrWhiteSpace(license.RightsStatement))
-				{
-					_licenseNotesLabel.Text += Environment.NewLine + license.RightsStatement;
-				}
-				_licenseSuggestion.Text = LocalizationManager.GetString("PublishTab.Upload.SuggestAssignCC", "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.");
+			_okToUpload = _model.MetadataIsReadyToPublish;
 
-			}
-			else
+			// See if saved credentials work.
+			try
 			{
-				// So far, this means it must be custom license (with non-blank rights...actually, currently, the palaso dialog will not allow a custom license with no rights statement).
-				_usingCcControls = false;
-				_licenseNotesLabel.Text = license.RightsStatement;
-				_licenseSuggestion.Text = LocalizationManager.GetString("PublishTab.Upload.SuggestChangeCC", "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.");
+				_model.LogIn();
+			}
+			catch (Exception e)
+			{
+				LogAndInformButDontReportFailureToConnectToServer(e);
 			}
 
-			_copyrightLabel.Text = book.BookInfo.Copyright;
+			switch (_model.LicenseType)
+			{
+				case LicenseState.CreativeCommons:
+					_creativeCommonsLink.Text = _model.LicenseToken;
+					_usingNotesSuggestion = false;
+					if (string.IsNullOrWhiteSpace(_model.LicenseRights))
+					{
+						_licenseNotesLabel.Hide();
+					}
+					else
+					{
+						_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AdditionalRequests", "Additional Requests: ") + _model.LicenseRights;
+					}
+					break;
+				case LicenseState.Null:
+					_usingCcControls = false;
+					_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions.)");
+					if (!string.IsNullOrWhiteSpace(_model.LicenseRights))
+					{
+						_licenseNotesLabel.Text += Environment.NewLine + _model.LicenseRights;
+					}
+					_licenseSuggestion.Text = LocalizationManager.GetString("PublishTab.Upload.SuggestAssignCC", "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.");
+					break;
+				case LicenseState.Custom:
+					// This must be custom a license (with non-blank rights...actually,
+					// currently, the palaso dialog will not allow a custom license with no rights statement).
+					_usingCcControls = false;
+					_licenseNotesLabel.Text = _model.LicenseRights;
+					_licenseSuggestion.Text = LocalizationManager.GetString("PublishTab.Upload.SuggestChangeCC", "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.");
+					break;
+				default:
+					throw new ApplicationException("Unknown License state.");
+			}
 
-			var allLanguages = book.AllLanguages;
-			var okToUploadWithNoLanguages = book.BookInfo.IsSuitableForMakingShells;
+			_copyrightLabel.Text = _model.Copyright;
+			_creditsLabel.Text = _model.Credits;
+			_summaryBox.Text = _model.Summary;
+
+			var allLanguages = _model.AllLanguages;
 			foreach (var lang in allLanguages.Keys)
 			{
 				var checkBox = new CheckBox();
-				checkBox.Text = _book.PrettyPrintLanguage(lang);
+				checkBox.Text = _model.PrettyLanguageName(lang);
 				if (allLanguages[lang])
 					checkBox.Checked = true;
 				else
@@ -113,31 +111,18 @@ namespace Bloom.Publish.BloomLibrary
 				checkBox.Tag = lang;
 				checkBox.CheckStateChanged += delegate(object sender, EventArgs args)
 				{
-					bool someLangChecked = _languagesFlow.Controls.Cast<CheckBox>().Any(b => b.Checked);
-					_langsLabel.ForeColor = someLangChecked || okToUploadWithNoLanguages ? Color.Black : Color.Red;
+					_langsLabel.ForeColor = LanguagesOkToUpload ? Color.Black : Color.Red;
 					if (_okToUploadDependsOnLangsChecked)
 					{
-						_okToUpload = someLangChecked || okToUploadWithNoLanguages;
+						_okToUpload = LanguagesOkToUpload;
 						UpdateDisplay();
 					}
 				};
 				_languagesFlow.Controls.Add(checkBox);
 			}
-
-			_creditsLabel.Text = book.BookInfo.Credits;
-			_summaryBox.Text = book.BookInfo.Summary;
-
-			try
-			{
-				_loginDialog.LogIn(); // See if saved credentials work.
-			}
-			catch (Exception e)
-			{
-				LogAndInformButDontReportFailureToConnectToServer(e);
-			}
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			// Copyright info is not required if the book has been put in the public domain
-			if (!license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/"))
+			if (!_model.IsBookPublicDomain)
 				RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 
@@ -152,16 +137,20 @@ namespace Bloom.Publish.BloomLibrary
 			// if we can upload at this point, whether we can from here on depends on whether one is checked.
 			// This test needs to come after evaluating everything else uploading depends on (except login)
 			_okToUploadDependsOnLangsChecked = _okToUpload;
-			if (!allLanguages.Keys.Any())
+			if (allLanguages.Keys.Any())
+				return;
+			// No languages in the book have complete data
+			const string space = " ";
+			_langsLabel.Text += space + LocalizationManager.GetString("PublishTab.Upload.NoLangsFound", "(None found)");
+			if (!_model.OkToUploadWithNoLanguages)
 			{
-				_langsLabel.Text += " " + LocalizationManager.GetString("PublishTab.Upload.NoLangsFound", "(None found)");
-				if (!okToUploadWithNoLanguages)
-				{
-					_langsLabel.ForeColor = Color.Red;
-					_okToUpload = false;
-				}
+				_langsLabel.ForeColor = Color.Red;
+				_okToUpload = false;
 			}
 		}
+
+		private bool LanguagesOkToUpload =>
+			_model.OkToUploadWithNoLanguages || _languagesFlow.Controls.Cast<CheckBox>().Any(b => b.Checked);
 
 		private void LogAndInformButDontReportFailureToConnectToServer(Exception exc)
 		{
@@ -207,47 +196,44 @@ namespace Bloom.Publish.BloomLibrary
 		}
 
 		// Make the label's size appropriate for showing its full contents (in the width currently assigned to the progress box).
-		void AdjustLabelSize(Label label)
+		private void AdjustLabelSize(Label label)
 		{
 			label.Size = TextRenderer.MeasureText(label.Text, label.Font,
 				new Size(_progressBox.Width, int.MaxValue), TextFormatFlags.WordBreak);
 			label.Height += 2; // Just a slight gap between paragraphs.
 		}
 
-		void RequireValue(Label item)
+		private void RequireValue(Label item)
 		{
 			if (string.IsNullOrWhiteSpace(item.Text))
 			{
 				item.Text = _pleaseSetThis;
 				item.ForeColor = Color.Red;
-				_okToUpload = false;
 			}
-
 		}
 
 		private void UpdateDisplay()
 		{
-			bool okToUpload = _okToUpload;
-			_uploadButton.Enabled = _bookTransferrer.LoggedIn && okToUpload;
+			_uploadButton.Enabled = _model.MetadataIsReadyToPublish && _model.LoggedIn && _okToUpload;
 			_progressBox.Clear();
 			if (!_uploadButton.Enabled)
 			{
-				if (!okToUpload)
+				if (!_okToUpload)
 				{
 					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.FieldsNeedAttention",
 						"One or more fields above need your attention before uploading."));
 				}
-				if (!_bookTransferrer.LoggedIn)
+				if (!_model.LoggedIn)
 				{
 					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.PleaseLogIn",
 						"Please log in to BloomLibrary.org (or sign up) before uploading"));
 				}
 			}
-			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("PublishTab.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
-			_signUpLink.Visible = !_bookTransferrer.LoggedIn;
-			if (_bookTransferrer.LoggedIn)
+			_loginLink.Text = _model.LoggedIn ? LocalizationManager.GetString("PublishTab.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
+			_signUpLink.Visible = !_model.LoggedIn;
+			if (_model.LoggedIn)
 			{
-				_userId.Text = Settings.Default.WebUserId;
+				_userId.Text = _model.WebUserId;
 				_userId.Visible = true;
 			}
 			else
@@ -258,10 +244,10 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void _loginLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			if (_bookTransferrer.LoggedIn)
+			if (_model.LoggedIn)
 			{
 				// This becomes a logout button
-				_bookTransferrer.Logout();
+				_model.Logout();
 			}
 			else
 			{
@@ -283,7 +269,7 @@ namespace Bloom.Publish.BloomLibrary
 			UpdateDisplay();
 		}
 
-		void SetStateOfNonUploadControls(bool enable)
+		private void SetStateOfNonUploadControls(bool enable)
 		{
 			if (enable)
 			{
@@ -294,17 +280,21 @@ namespace Bloom.Publish.BloomLibrary
 				_originalUploadText = _uploadButton.Text;
 				_uploadButton.Text = LocalizationManager.GetString("Common.Cancel", "Cancel");
 			}
+			SetParentControlsState(enable);
+		}
+
+		private void SetParentControlsState(bool enable)
+		{
 			var parent = this.Parent;
 			while (parent != null && !(parent is PublishView))
 				parent = parent.Parent;
 			if (parent == null)
 				return;
-			((PublishView)parent).SetStateOfNonUploadRadios(enable);
+			((PublishView) parent).SetStateOfNonUploadRadios(enable);
+
 			while (parent != null && !(parent is WorkspaceView))
 				parent = parent.Parent;
-			if (parent == null)
-				return;
-			((WorkspaceView)parent).SetStateOfNonPublishTabs(enable);
+			((WorkspaceView) parent)?.SetStateOfNonPublishTabs(enable);
 		}
 
 		private void _uploadButton_Click(object sender, EventArgs e)
@@ -318,14 +308,8 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.CancelRequested = false;
 			ScrollControlIntoView(_progressBox);
 			_progressBox.Clear();
-			var info = _book.BookInfo;
-			if (string.IsNullOrEmpty(info.Id))
-			{
-				info.Id = Guid.NewGuid().ToString();
-			}
-			info.Uploader = _bookTransferrer.UserId;
 
-			if (_book.BookInfo.IsSuitableForMakingShells)
+			if (_model.IsTemplate)
 			{
 				var msg = LocalizationManager.GetString("PublishTab.Upload.Template",
 					"This book seems to be a template, that is, it contains blank pages for authoring a new book "
@@ -342,7 +326,7 @@ namespace Bloom.Publish.BloomLibrary
 			try
 			{
 				_progressBox.WriteMessage("Checking bloom version eligibility...");
-				if (!_bookTransferrer.IsThisVersionAllowedToUpload())
+				if (!_model.IsThisVersionAllowedToUpload)
 				{
 					MessageBox.Show(this,
 						LocalizationManager.GetString("PublishTab.Upload.OldVersion",
@@ -356,7 +340,7 @@ namespace Bloom.Publish.BloomLibrary
 				// Todo: try to make sure it has a thumbnail.
 
 				_progressBox.WriteMessage("Checking for existing copy on server...");
-				if (_bookTransferrer.IsBookOnServer(_book.FolderPath))
+				if (_model.BookIsAlreadyOnServer)
 				{
 					using (var dlg = new OverwriteWarningDialog())
 					{
@@ -394,7 +378,7 @@ namespace Bloom.Publish.BloomLibrary
 					{
 						string errorMessage = LocalizationManager.GetString("PublishTab.Upload.ErrorUploading",
 							"Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
-						_progressBox.WriteError(errorMessage, _book.Title);
+						_progressBox.WriteError(errorMessage, _model.Title);
 						_progressBox.WriteException(completedEvent.Error);
 					}
 					else if (string.IsNullOrEmpty((string) completedEvent.Result))
@@ -407,21 +391,20 @@ namespace Bloom.Publish.BloomLibrary
 						var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
 						string congratsMessage = LocalizationManager.GetString("PublishTab.Upload.UploadCompleteNotice",
 							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
-						_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
+						_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _model.Title, url);
 					}
 				}
 				_uploadWorker = null;
 			};
 			SetStateOfNonUploadControls(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
-			_uploadWorker.RunWorkerAsync(_book);
-			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
+			_uploadWorker.RunWorkerAsync(_model.Book);
 		}
 
 		private void ReportTryAgainDuringUpload()
 		{
 			string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice",
 				"Sorry, \"{0}\" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.");
-			_progressBox.WriteError(sorryMessage, _book.Title);
+			_progressBox.WriteError(sorryMessage, _model.Title);
 		}
 
 		public static string BloomLibraryUrlPrefix
@@ -435,20 +418,20 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var book = (Book.Book) e.Argument;
 			var languages = _languagesFlow.Controls.Cast<CheckBox>().Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToArray();
-			var result = _bookTransferrer.FullUpload(book, _progressBox, _parentView, languages, out _parseId);
+			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages, out _parseId);
 			e.Result = result;
 		}
 
 		private void _summaryBox_TextChanged(object sender, EventArgs e)
 		{
-			_book.BookInfo.Summary = _summaryBox.Text;
-			_book.BookInfo.Save(); // Review: is this too often?
-
+			_model.Summary = _summaryBox.Text;
 		}
 
 		private void _creativeCommonsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var url = ((CreativeCommonsLicense) _book.GetLicenseMetadata().License).Url;
+			var url = _model.CCLicenseUrl;
+			if (url == null)
+				return;
 			try
 			{
 				Process.Start(new ProcessStartInfo(url));
