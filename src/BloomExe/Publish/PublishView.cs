@@ -546,8 +546,8 @@ namespace Bloom.Publish
 				Controls.Remove(_publishControl); ;
 			}
 
-			_publishControl = new BloomLibraryPublishControl(this, _bookTransferrer, _loginDialog,
-				_model.BookSelection.CurrentSelection);
+			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection);
+			_publishControl = new BloomLibraryPublishControl(this, libaryPublishModel, _loginDialog);
 			_publishControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 				_pdfViewer.Width, _pdfViewer.Height);
 			_publishControl.Dock = _pdfViewer.Dock;

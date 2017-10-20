@@ -14,6 +14,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
+using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.PDF;
 using DesktopAnalytics;
 using L10NSharp;
@@ -35,6 +36,8 @@ namespace Bloom.WebLibraryIntegration
 		private BloomS3Client _s3Client;
 		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
+
+		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 
 		// The full path of the log text file used to restart failed bulk uploads.
 		private string _uploadLogPath;
@@ -326,6 +329,9 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		/// <summary>
+		/// The Parse.com object ID of the person who is uploading the book.
+		/// </summary>
 		public string UserId
 		{
 			get { return _parseClient.UserId; }
@@ -564,6 +570,8 @@ namespace Bloom.WebLibraryIntegration
 		/// The parent folder of a bloom book is searched for a .bloomContainer file and, if one is found,
 		/// the book is treated as part of that collection (e.g., for determining vernacular language).
 		/// If no collection is found there it uses whatever collection was last open, or the current default.
+		/// N.B. The bulk upload process will go ahead and upload templates and books that are already on the server
+		/// (over-writing the existing book) without informing the user.
 		/// </summary>
 		/// <param name="folder"></param>
 		/// <param name="container"></param>
@@ -571,10 +579,17 @@ namespace Bloom.WebLibraryIntegration
 		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
 		public void UploadFolder(string folder, ApplicationContainer container, bool excludeAudio = false)
 		{
+			if (!IsThisVersionAllowedToUpload())
+			{
+				var oldVersionMsg = LocalizationManager.GetString("PublishTab.Upload.OldVersion",
+					"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.");
+				Console.WriteLine(oldVersionMsg);
+			}
 			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
 					"For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
+				Console.WriteLine("\nFailed to login.");
 				return;
 			}
 			using (var dlg = new BulkUploadProgressDlg())
@@ -592,8 +607,6 @@ namespace Bloom.WebLibraryIntegration
 				dlg.ShowDialog(); // waits until worker completed closes it.
 			}
 		}
-
-		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 
 		/// <summary>
 		/// Worker function for a background thread task. See first lines for required args passed to RunWorkerAsync, which triggers this.
@@ -629,8 +642,9 @@ namespace Bloom.WebLibraryIntegration
 
 		private void AppendBookToUploadLogFile(string newBook)
 		{
-			Debug.Assert(GetUploadFilePath().Length > 0);
-			File.AppendAllLines(GetUploadFilePath(), new []{ newBook });
+			var path = GetUploadFilePath();
+			Debug.Assert(path.Length > 0);
+			File.AppendAllLines(path, new []{ newBook });
 		}
 
 		private string[] GetUploadLogIfPresent(string folder)
@@ -721,12 +735,18 @@ namespace Bloom.WebLibraryIntegration
 				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer, null);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null);
+				var blPublishModel = new BloomLibraryPublishModel(this, book);
 				string dummy;
+
 				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
 				var langDict = book.AllLanguages;
 				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
-				if (languagesToUpload.Any())
+				if (blPublishModel.MetadataIsReadyToPublish && (languagesToUpload.Any() || blPublishModel.OkToUploadWithNoLanguages))
 				{
+					if (blPublishModel.BookIsAlreadyOnServer)
+					{
+						dlg.Progress.WriteMessage("\n  Apparently {0} is already on the server. Overwriting... ", folder);
+					}
 					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, excludeAudio);
 					AppendBookToUploadLogFile(folder);
 				}
