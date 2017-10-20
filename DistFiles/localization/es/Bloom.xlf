@@ -6305,7 +6305,13 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: TemplateBooks.PageLabel.Custom</note>
-        <target xml:lang="es-ES">Personalizado</target>
+        <target xml:lang="es-ES">Personalizar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Personalizada</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Personalizado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 1</source>
