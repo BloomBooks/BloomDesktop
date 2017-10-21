@@ -5333,7 +5333,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Stages</source>
         <note>ID: ReaderSetup.DecodableStages</note>
-        <target xml:lang="es-ES">Etapas descifrables</target>
+        <target xml:lang="es-ES">Etapas Descifrables</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Etapas descifrables</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Etapas decodificables</target>
         </alt-trans>
