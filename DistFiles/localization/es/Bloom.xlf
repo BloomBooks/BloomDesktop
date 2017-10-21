@@ -561,7 +561,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
-        <target xml:lang="es-ES">Configuración de Alfabeto Especial</target>
+        <target xml:lang="es-ES">Configuración de los Caracteres Especiales</target>
         <alt-trans>
           <target xml:lang="es-ES">Configuración de alfabeto especial</target>
         </alt-trans>
