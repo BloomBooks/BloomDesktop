@@ -73,7 +73,7 @@
       <trans-unit id="epubpreview.usingdropbox" approved="yes">
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
       </source>
-        <target xml:lang="es-ES">Una manera práctica descargar libros en su celular es utilizando un servicio como Dropbox en su computadora y celular/tablet. Haga clic en "Guardar como ePub". Seleccione su carpeta de Dropbox. En su celular, abra Dropbox y seleccione su libro. Si está usando una computadora portátil, también puede probar el programa gratuito <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> para enviar archivos de su computadora a su celular o tablet.      
+        <target xml:lang="es-ES">Una manera práctica descargar libros en su celular es utilizando un servicio como Dropbox en su computadora y celular/tablet. Haga clic en "Guardar como ePub". Seleccione su carpeta de Dropbox. En su celular, abra Dropbox y seleccione su libro. Si está usando una computadora portátil, también puede probar el programa gratuito <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> para enviar archivos de su computadora portátil a su celular o tablet.      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
         <alt-trans>
