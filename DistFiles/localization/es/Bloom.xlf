@@ -5362,7 +5362,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
         <note>ID: ReaderSetup.HowToExport</note>
-        <target xml:lang="es-ES">Ayuda en la exportación y conversión de archivos que serán usados como muestras de texto</target>
+        <target xml:lang="es-ES">Ayuda en la exportación y conversión de archivos que serán usados como textos de muestra</target>
         <alt-trans>
           <target xml:lang="es-ES">Ayuda para la exportación y conversión de archivos que serán usadas como muestras de texto</target>
         </alt-trans>
