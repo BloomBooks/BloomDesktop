@@ -5407,7 +5407,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters and Letter Combinations</source>
         <note>ID: ReaderSetup.Letters.Header</note>
-        <target xml:lang="es-ES">Letras y combinaciones de letras</target>
+        <target xml:lang="es-ES">Letras y Combinaciones de Letras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Letras y combinaciones de letras</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
@@ -6075,7 +6078,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="es-ES">Libro descifrable</target>
+        <target xml:lang="es-ES">Libro Descifrable</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Libro descifrable</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Libro decodificable</target>
         </alt-trans>
