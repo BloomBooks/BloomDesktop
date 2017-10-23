@@ -238,10 +238,18 @@ namespace Bloom
 			var pathInDesiredLanguage = GetLocalizedFilePath(pathToEnglishFile);
 			if (RobustFile.Exists(pathInDesiredLanguage))
 				return pathInDesiredLanguage;
-			Debug.Assert(pathToEnglishFile.ToLowerInvariant().EndsWith(".htm") || pathToEnglishFile.ToLowerInvariant().EndsWith(".html"));
-			if (!pathToEnglishFile.ToLowerInvariant().EndsWith(".htm") && !pathToEnglishFile.ToLowerInvariant().EndsWith(".html"))
-				return pathToEnglishFile;
-			CreateLocalizedHtmlFile(pathToEnglishFile, pathInDesiredLanguage);
+			if (pathToEnglishFile.ToLowerInvariant().EndsWith("-en.txt"))
+			{
+				// The xliff based translation process does not (yet?) handle plain .txt files.
+				pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
+			}
+			else
+			{
+				Debug.Assert(pathToEnglishFile.ToLowerInvariant().EndsWith(".htm") || pathToEnglishFile.ToLowerInvariant().EndsWith(".html"));
+				if (!pathToEnglishFile.ToLowerInvariant().EndsWith(".htm") && !pathToEnglishFile.ToLowerInvariant().EndsWith(".html"))
+					return pathToEnglishFile;
+				CreateLocalizedHtmlFile(pathToEnglishFile, pathInDesiredLanguage);
+			}
 			return RobustFile.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
 		}
 
