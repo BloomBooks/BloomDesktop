@@ -206,6 +206,7 @@ namespace BloomTests.web
 		[Test]
 		public void CanRetrieveContentOfFakeTempFile_WhenFolderContainsAmpersand_ViaJavaScript()
 		{
+			// In Debug builds, an assertion will fire in Bloom.UrlPathString.UrlPathString(string notEncodedString)
 			var dom = SetupDomWithAmpersandInTitle();
 			// the 'true' parameter simulates calling EnhancedImageServer via JavaScript
 			var transaction = CreateServerMakeSimPageMakeReply(dom, true);

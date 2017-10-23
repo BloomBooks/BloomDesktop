@@ -30,7 +30,10 @@ pull request to avoid overwhelming the git log with possibly 99% translation cha
   a "100% match" displaying.
 
 - Adding or removing leading or trailing spaces in the *source* element content automatically
-  does the same in the *target* element content (translation).
+  does the same in the *target* element content (translation) without changing the approved
+  status of the *trans-unit* element.  Except if the content contains internal html markup, then
+  the *target* element is not changed and the *approved* status of the *trans-unit* element is
+  cleared.  (This appears to be a corner case in crowdin's code that may or not be intentional.)
 
 - Adding, removing, or reordering *trans-unit* elements in the English xliff file without
   changing them merely causes the corresponding addition, removal, or reordering in the
@@ -96,6 +99,9 @@ pull request to avoid overwhelming the git log with possibly 99% translation cha
   by uploading to crowdin, remove any *approved* attribute from the *trans-unit* element* unless
   you are absolutely sure of the translation as an expert speaker and translator.
 
+- If you change the leading or trailing spaces in a translation, check to ensure that the same
+  is done on crowdin after uploading the file, and restore any approved status that was cleared
+  by a failure to update the translated string automatically.
 
 ## Merging crowdin pull requests
 
