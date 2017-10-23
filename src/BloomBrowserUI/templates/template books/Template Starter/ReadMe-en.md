@@ -10,7 +10,7 @@ Making templates is just like making any other custom book; all the same control
 ## Label Your Pages {i18n="template.starter.labelpages"}
 When you add pages to your template, make sure to give each one useful label<sup>[3](#note2),[4](@note3)</sup>: {i18n="template.starter.labeleachpage"}
 
-![custom label]{i18n="template.starter.labelexample"}(ReadMeImages/customLabel.png)
+![custom label](ReadMeImages/customLabel.png) {i18n="template.starter.labelexample"}
 
 ## Check Your Thumbnails {i18n="template.starter.thumbnails"}
 To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template: {i18n="template.starter.thumbnails.onlyonce"}
@@ -21,7 +21,7 @@ To speed things up, Bloom only makes this thumbnail once, and stores it in the "
 
 ## Document Your Template {i18n="template.starter.document"}
 
-Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named ReadMe-en.md in your template's folder. This file should follow the <a href="http://spec.commonmark.org/dingus/">markdown standard</a>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example ReadMe-fr.md would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this: {i18n="template.starter.describeyours"}
+Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named ReadMe-en.md in your template's folder. This file should follow the [markdown standard](http://spec.commonmark.org/dingus/). To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example ReadMe-fr.md would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this: {i18n="template.starter.describeyours"}
 
 `![](ReadMeImages/someExample.png)`
 
