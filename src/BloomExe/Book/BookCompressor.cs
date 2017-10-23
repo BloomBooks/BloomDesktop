@@ -28,7 +28,7 @@ namespace Bloom.Book
 
 		public static void CompressBookForDevice(string outputPath, Book book)
 		{
-			CompressDirectory(outputPath, book.FolderPath, "", reduceImages:true, omitMetaJson: true, wrapWithFolder:false);
+			CompressDirectory(outputPath, book.FolderPath, "", reduceImages:true, omitMetaJson: false, wrapWithFolder:false);
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
