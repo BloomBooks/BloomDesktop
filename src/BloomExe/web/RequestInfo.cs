@@ -88,13 +88,18 @@ namespace Bloom.Api
 			}
 			catch (HttpListenerException e)
 			{
-				// We may well be unable to write if, while we were gathering the data, the user switched
-				// pages or something similar so that the page that requested the data is gone. This seems
-				// to produce this particular exception type.
-				Logger.WriteEvent("Could not write requested data to JavaScript: " + e.Message + e.StackTrace);
-				Debug.WriteLine(e.Message);
+				ReportHttpListenerProblem(e);
 			}
 			HaveOutput = true;
+		}
+
+		private static void ReportHttpListenerProblem(HttpListenerException e)
+		{
+			// We may well be unable to write if, while we were gathering the data, the user switched
+			// pages or something similar so that the page that requested the data is gone. This seems
+			// to produce this particular exception type.
+			Logger.WriteEvent("Could not write requested data to JavaScript: " + e.Message + e.StackTrace);
+			Debug.WriteLine(e.Message);
 		}
 
 		public bool HaveOutput { get; private set; }
@@ -164,11 +169,19 @@ namespace Bloom.Api
 				else
 				{
 					// For really big (typically image) files, use the old buffered approach
-					var buffer = new byte[1024*512]; //512KB
-					int read;
-					while((read = fs.Read(buffer, 0, buffer.Length)) > 0)
-						_actualContext.Response.OutputStream.Write(buffer, 0, read);
-					_actualContext.Response.OutputStream.Close();
+					try
+					{
+						var buffer = new byte[1024 * 512]; //512KB
+						int read;
+						while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+							_actualContext.Response.OutputStream.Write(buffer, 0, read);
+						_actualContext.Response.OutputStream.Close();
+					}
+					catch (HttpListenerException e)
+					{
+						// If the page is gone and no longer able to accept the data, just log it.
+						ReportHttpListenerProblem(e);
+					}
 				}
 
 			}
