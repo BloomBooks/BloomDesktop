@@ -192,6 +192,12 @@ namespace Bloom.Book
 			set { MetaData.FormatVersion = value; }
 		}
 
+		public string BrandingProjectName
+		{
+			get { return MetaData.BrandingProjectName; }
+			set { MetaData.BrandingProjectName = value; }
+		}
+
 		// When license is 'custom' this contains the license information. For other types in may contain additional permissions
 		// (or possibly restrictions).
 		// Review: do we need this, or just a field indicating whether there ARE additional notes, or just some modifier in license indicating that?
@@ -642,6 +648,9 @@ namespace Bloom.Book
 		//SeeAlso: commeted IsExperimental on Book
 		[JsonProperty("experimental")]
 		public bool IsExperimental { get; set; }
+
+		[JsonProperty("brandingProjectName")]
+		public String BrandingProjectName { get; set; }
 
 		/// <summary>
 		/// A "Folio" document is one that acts as a wrapper for a number of other books
