@@ -288,11 +288,25 @@ namespace Bloom
 			Debug.Assert(xliffBareFile.EndsWith("-en"));
 			if (xliffBareFile.EndsWith("-en"))
 				xliffBareFile = xliffBareFile.Substring(0, xliffBareFile.Length - 3);
-			var xliffPath = Path.Combine(xliffDir, LocalizationManager.UILanguageId, xliffBareFile + ".xlf");
+			var langId = LocalizationManager.UILanguageId;
+			var xliffPath = Path.Combine(xliffDir, langId, xliffBareFile + ".xlf");
 			if (RobustFile.Exists(xliffPath))
 				return xliffPath;
 			var folder = Path.GetFileName(Path.GetDirectoryName(pathToEnglishFile));
-			return Path.Combine(xliffDir, folder, xliffBareFile + "-" + LocalizationManager.UILanguageId + ".xlf");
+			xliffPath = Path.Combine(xliffDir, folder, xliffBareFile + "-" + langId + ".xlf");
+			if (RobustFile.Exists(xliffPath))
+				return xliffPath;
+			// We may have an xliff file identified by only language when langId includes country, for example "es" vs "es-ES".
+			// If that happens, try finding the file with only the language code without the country code.
+			if (langId.Contains('-'))
+			{
+				langId = langId.Substring(0, langId.IndexOf('-'));
+				xliffPath = Path.Combine(xliffDir, langId, xliffBareFile + ".xlf");
+				if (RobustFile.Exists(xliffPath))
+					return xliffPath;
+				xliffPath = Path.Combine(xliffDir, folder, xliffBareFile + "-" + langId + ".xlf");
+			}
+			return xliffPath;
 		}
 
 		/// <summary>
