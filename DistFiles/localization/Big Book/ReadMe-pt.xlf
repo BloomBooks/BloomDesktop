@@ -1,59 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pt-PT">
     <body>
       <trans-unit id="bigbook.title">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="pt-PT">Sobre Livros Grandes</target>
+        <target xml:lang="pt-PT" state="translated">Sobre Livros Grandes</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="pt-PT">Os livros grandes são desenhado para que os professores possam exibi-los e lê-los na frente de uma classe. Para obter mais informações, consulte este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF da Scholastic</g>.</target>
+        <target xml:lang="pt-PT" state="translated">Os livros grandes são desenhado para que os professores possam exibi-los e lê-los na frente de uma classe. Para obter mais informações, consulte este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF da Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="pt-PT">Imprimir um Livro Grande</target>
+        <target xml:lang="pt-PT" state="translated">Imprimir um Livro Grande</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="pt-PT">Para tornar as coisas mais simples, este modelo é definido em A4 horizontal, com fontes grandes. Você pode facilmente produzir livros que são A3 (duas vezes mais grande). Só leve seu PDF A4 para uma impressora e pedir-lhes para ampliá-lo para A3.</target>
+        <target xml:lang="pt-PT" state="translated">Para tornar as coisas mais simples, este modelo é definido em A4 horizontal, com fontes grandes. Você pode facilmente produzir livros que são A3 (duas vezes mais grande). Só leve seu PDF A4 para uma impressora e pedir-lhes para ampliá-lo para A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="pt-PT">Limitações desta versão</target>
+        <target xml:lang="pt-PT" state="translated">Limitações desta versão</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="pt-PT">Se você estiver usando uma tela pequena, pode ser difícil ler a página de créditos. Tente usar CTRL+roda da rato/mouse para ampliar a página para que você possa editá-lo.</target>
+        <target xml:lang="pt-PT" state="translated">Se você estiver usando uma tela pequena, pode ser difícil ler a página de créditos. Tente usar CTRL+roda da rato/mouse para ampliar a página para que você possa editá-lo.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="pt-PT">Esta versão inclui uma página de "Instruções para professores" que já está preenchida, em inglês. Se você gostaria de ter instruções em um idioma diferente, você pode excluir esse texto e digite seu próprio. Se você nos enviar esse texto, nós pode incluí-lo em uma versão futura do modelo.</target>
+        <target xml:lang="pt-PT" state="translated">Esta versão inclui uma página de "Instruções para professores" que já está preenchida, em inglês. Se você gostaria de ter instruções em um idioma diferente, você pode excluir esse texto e digite seu próprio. Se você nos enviar esse texto, nós pode incluí-lo em uma versão futura do modelo.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
       <trans-unit id="bigbook.feedback">
         <source xml:lang="en">Feedback</source>
-        <target xml:lang="pt-PT">Sugestões</target>
+        <target xml:lang="pt-PT" state="translated">Sugestões</target>
         <note>ID: bigbook.feedback</note>
       </trans-unit>
       <trans-unit id="bigbook.feedbackvoting">
         <source xml:lang="en">Please give and vote on <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="pt-PT">Por favor dê e votar em <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">sugestões</g></target>
+        <target xml:lang="pt-PT" state="translated">Por favor dê e votar em <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">sugestões</g></target>
         <note>ID: bigbook.feedbackvoting</note>
       </trans-unit>
       <trans-unit id="bigbook.reportsbugs">
         <source xml:lang="en">Please report problems to <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="pt-PT">Por favor reportar problemas para <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <target xml:lang="pt-PT" state="translated">Por favor reportar problemas para <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         <note>ID: bigbook.reportsbugs</note>
       </trans-unit>
     </body>
