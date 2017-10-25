@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
-  <file original="ReadMe-ar.htm" datatype="html" source-language="en" target-language="ar">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="ar">
     <body>
       <trans-unit id="picture.dictionary">
         <source xml:lang="en">About the Picture Dictionary Template</source>

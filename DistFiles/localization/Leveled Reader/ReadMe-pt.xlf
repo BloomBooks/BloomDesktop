@@ -1,60 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
-  <file original="ReadMe-pt.htm" datatype="html" source-language="en" target-language="pt">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pt-PT">
     <body>
       <trans-unit id="leveled.definition">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="pt">Um <g id="genid-1" ctype="x-html-strong">Leitor nivelado</g> é um livro que é escrito especificamente para um aluno que está em um determinado nível de desenvolvimento de leitura. Os níveis definem limites de comprimentos de palavras, comprimento de frases, etc. Eles também determinam a formatação apropriada, vocabulário, suporte de ilustração, e tópico.</target>
+        <target xml:lang="pt-PT">Um <g id="genid-1" ctype="x-html-strong">Leitor nivelado</g> é um livro que é escrito especificamente para um aluno que está em um determinado nível de desenvolvimento de leitura. Os níveis definem limites de comprimentos de palavras, comprimento de frases, etc. Eles também determinam a formatação apropriada, vocabulário, suporte de ilustração, e tópico.</target>
         <note>ID: leveled.definition</note>
       </trans-unit>
       <trans-unit id="leveled.levels">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="pt">Depois de definir uma sequência de <g id="genid-2" ctype="x-html-em">níveis</g>, você pode atribuir um nível ao livros que você criar com este modelo ou o "Modelo de Leitor Decodificável". Conforme você digita no livro, Bloom irá ajudá-lo a manter em mente o nível e apontar quando você excede os limites do nível.</target>
+        <target xml:lang="pt-PT">Depois de definir uma sequência de <g id="genid-2" ctype="x-html-em">níveis</g>, você pode atribuir um nível ao livros que você criar com este modelo ou o "Modelo de Leitor Decodificável". Conforme você digita no livro, Bloom irá ajudá-lo a manter em mente o nível e apontar quando você excede os limites do nível.</target>
         <note>ID: leveled.levels</note>
       </trans-unit>
       <trans-unit id="leveled.templates">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="pt">Você também pode fazer um Bloom Pack de <g id="genid-3" ctype="x-html-em">modelos</g> que outras pessoas podem usar para criar rapidamente livros baseados nos níveis e etapas que foram preparados por uma especialista em alfabetização.</target>
+        <target xml:lang="pt-PT">Você também pode fazer um Bloom Pack de <g id="genid-3" ctype="x-html-em">modelos</g> que outras pessoas podem usar para criar rapidamente livros baseados nos níveis e etapas que foram preparados por uma especialista em alfabetização.</target>
         <note>ID: leveled.templates</note>
       </trans-unit>
       <trans-unit id="leveled.learn">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="pt">Para aprender mais sobre o uso de Leitores Nivelados em Bloom, você pode:</target>
+        <target xml:lang="pt-PT">Para aprender mais sobre o uso de Leitores Nivelados em Bloom, você pode:</target>
         <note>ID: leveled.learn</note>
       </trans-unit>
       <trans-unit id="leveled.learn.videos">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="pt">Ver <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">vídeos instrutivos</g>.</target>
+        <target xml:lang="pt-PT">Ver <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">vídeos instrutivos</g>.</target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex">
         <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</source>
-        <target xml:lang="pt">Consulte o menu de Ajuda, escolha 'Ajuda' e veja debaixo do índice "Leitores Nivelados".</target>
+        <target xml:lang="pt-PT">Consulte o menu de Ajuda, escolha 'Ajuda' e veja debaixo do índice "Leitores Nivelados".</target>
         <note>ID: leveled.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="pt">Consulte o menu de Ajuda e escolha: "Construção de Modelos de Leitor".</target>
+        <target xml:lang="pt-PT">Consulte o menu de Ajuda e escolha: "Construção de Modelos de Leitor".</target>
         <note>ID: leveled.learn.helpmenu</note>
       </trans-unit>
       <trans-unit id="leveled.vs.decodable">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="pt">Relação aos Leitores Decodificáveis</target>
+        <target xml:lang="pt-PT">Relação aos Leitores Decodificáveis</target>
         <note>ID: leveled.vs.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.and.decodable">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="pt">Então, como corresponden os <g id="genid-5" ctype="x-html-em">níveis</g> de os Leitores Nivelados as <g id="genid-6" ctype="x-html-em">etapas</g> dos Leitores Decodificáveis? Os dois conceitos são complementares. Bloom permite que você defina uma <g id="genid-7" ctype="x-html-em">etapa decodificável</g> e um <g id="genid-8" ctype="x-html-em">nível de leitor nivelado</g> para o livro que está escrevendo. Normalmente livros no nível 1 e possivelmente no nível 2 também precisarán ser escritos com <g id="genid-9" ctype="x-html-em">Etapas Decodificáveis</g> em mente. Os livros para o primeiro y talvez segundo nível deveriam ser <g id="genid-10" ctype="x-html-em">decodificáveis</g> (ou seja, utilizando letras que o leitor ya aprendeu). Então, uma sequência de livros pode parecer com isso:</target>
+        <target xml:lang="pt-PT">Então, como corresponden os <g id="genid-5" ctype="x-html-em">níveis</g> de os Leitores Nivelados as <g id="genid-6" ctype="x-html-em">etapas</g> dos Leitores Decodificáveis? Os dois conceitos são complementares. Bloom permite que você defina uma <g id="genid-7" ctype="x-html-em">etapa decodificável</g> e um <g id="genid-8" ctype="x-html-em">nível de leitor nivelado</g> para o livro que está escrevendo. Normalmente livros no nível 1 e possivelmente no nível 2 também precisarán ser escritos com <g id="genid-9" ctype="x-html-em">Etapas Decodificáveis</g> em mente. Os livros para o primeiro y talvez segundo nível deveriam ser <g id="genid-10" ctype="x-html-em">decodificáveis</g> (ou seja, utilizando letras que o leitor ya aprendeu). Então, uma sequência de livros pode parecer com isso:</target>
         <note>ID: leveled.and.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.reader.level">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="pt">Nível de Leitor Nivelado</target>
+        <target xml:lang="pt-PT">Nível de Leitor Nivelado</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="pt">Etapa Decodificável</target>
+        <target xml:lang="pt-PT">Etapa Decodificável</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>
