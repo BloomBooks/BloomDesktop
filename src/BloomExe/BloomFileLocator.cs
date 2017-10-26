@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
+using XliffForHtml;
 using SIL.IO;
 
 namespace Bloom
@@ -232,8 +235,92 @@ namespace Bloom
 		/// </summary>
 		public static string GetBestLocalizedFile(string pathToEnglishFile)
 		{
-			var pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
+			var pathInDesiredLanguage = GetLocalizedFilePath(pathToEnglishFile);
+			if (RobustFile.Exists(pathInDesiredLanguage))
+				return pathInDesiredLanguage;
+			if (pathToEnglishFile.ToLowerInvariant().EndsWith("-en.txt"))
+			{
+				// The xliff based translation process does not (yet?) handle plain .txt files.
+				pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
+			}
+			else
+			{
+				Debug.Assert(pathToEnglishFile.ToLowerInvariant().EndsWith(".htm") || pathToEnglishFile.ToLowerInvariant().EndsWith(".html"));
+				if (!pathToEnglishFile.ToLowerInvariant().EndsWith(".htm") && !pathToEnglishFile.ToLowerInvariant().EndsWith(".html"))
+					return pathToEnglishFile;
+				CreateLocalizedHtmlFile(pathToEnglishFile, pathInDesiredLanguage);
+			}
 			return RobustFile.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
+		}
+
+		/// <summary>
+		/// Localized files are created and stored in the localizations folder of the Bloom application
+		/// data folder.  The filenames are tagged with the target language code.  The template book
+		/// ReadMe files are stored in subfolders with the same name as the template folder to keep them
+		/// unambiguous.
+		/// </summary>
+		private static string GetLocalizedFilePath(string pathToEnglishFile)
+		{
+			var cacheDir = Path.Combine(ProjectContext.GetBloomAppDataFolder(), "localizations");
+			var bareFilename = Path.GetFileNameWithoutExtension(pathToEnglishFile);
+			if (bareFilename == "ReadMe-en")
+			{
+				var folder = Path.GetFileName(Path.GetDirectoryName(pathToEnglishFile));
+				cacheDir = Path.Combine(cacheDir, folder);
+			}
+			// Ensure the cache directory exists in case we need to create the file.
+			Directory.CreateDirectory(cacheDir);
+			return Path.Combine(cacheDir, Path.GetFileName(pathToEnglishFile).Replace("-en.", "-" + LocalizationManager.UILanguageId + "."));
+		}
+
+		/// <summary>
+		/// The localized xliff files are stored under DistFiles/localization in two different ways.  The general
+		/// location is in a subfolder with the language code as its name, and the .xlf file named without any
+		/// embedded language code.  For the template books which all have ReadMe files of the same name, the
+		/// xliff file is stored in a subfolder with the same name as the template book's folder, and the language
+		/// code is embedded in the file name as expected (ReadMe-en.xlf, ReadMe-fr.xlf, etc.).
+		/// </summary>
+		private static string GetLocalizedXliffPath(string pathToEnglishFile)
+		{
+			var baseDir = SIL.IO.FileLocator.DirectoryOfApplicationOrSolution;
+			var xliffDir = Path.Combine(baseDir, "DistFiles", "localization");
+			var xliffBareFile = Path.GetFileNameWithoutExtension(pathToEnglishFile);
+			Debug.Assert(xliffBareFile.EndsWith("-en"));
+			if (xliffBareFile.EndsWith("-en"))
+				xliffBareFile = xliffBareFile.Substring(0, xliffBareFile.Length - 3);
+			var langId = LocalizationManager.UILanguageId;
+			var xliffPath = Path.Combine(xliffDir, langId, xliffBareFile + ".xlf");
+			if (RobustFile.Exists(xliffPath))
+				return xliffPath;
+			var folder = Path.GetFileName(Path.GetDirectoryName(pathToEnglishFile));
+			xliffPath = Path.Combine(xliffDir, folder, xliffBareFile + "-" + langId + ".xlf");
+			if (RobustFile.Exists(xliffPath))
+				return xliffPath;
+			// We may have an xliff file identified by only language when langId includes country, for example "es" vs "es-ES".
+			// If that happens, try finding the file with only the language code without the country code.
+			if (langId.Contains('-'))
+			{
+				langId = langId.Substring(0, langId.IndexOf('-'));
+				xliffPath = Path.Combine(xliffDir, langId, xliffBareFile + ".xlf");
+				if (RobustFile.Exists(xliffPath))
+					return xliffPath;
+				xliffPath = Path.Combine(xliffDir, folder, xliffBareFile + "-" + langId + ".xlf");
+			}
+			return xliffPath;
+		}
+
+		/// <summary>
+		/// Use HtmlXliff to translate the English HTML file into another language using the translated xliff file
+		/// corresponding to this HTML file.
+		/// </summary>
+		private static void CreateLocalizedHtmlFile(string pathToEnglishFile, string pathInDesiredLanguage)
+		{
+			var xliffPath = GetLocalizedXliffPath(pathToEnglishFile);
+			if (!RobustFile.Exists(xliffPath))
+				return;
+			HtmlXliff injector = HtmlXliff.Load(pathToEnglishFile);
+			var hdoc = injector.InjectTranslations(xliffPath, true);
+			hdoc.Save(pathInDesiredLanguage);
 		}
 
 		/// <summary>

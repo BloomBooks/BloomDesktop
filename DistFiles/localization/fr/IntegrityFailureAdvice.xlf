@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="IntegrityFailureAdvice-en.md" datatype="html" source-language="en" target-language="fr">
+    <body>
+      <trans-unit id="integrity.title">
+        <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
+        <target xml:lang="fr">Impossible de continuer, Bloom ne parvenant pas à trouver certains de ses fichiers</target>
+        <note>ID: integrity.title</note>
+      </trans-unit>
+      <trans-unit id="integrity.causes">
+        <source xml:lang="en">Possible Causes</source>
+        <target xml:lang="fr">Causes possibles</target>
+        <note>ID: integrity.causes</note>
+      </trans-unit>
+      <trans-unit id="integrity.causes.1">
+        <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
+        <target xml:lang="fr">Il se peut que votre antivirus ait mis en quarantaine un ou plusieurs fichiers Bloom.</target>
+        <note>ID: integrity.causes.1</note>
+      </trans-unit>
+      <trans-unit id="integrity.causes.2">
+        <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
+        <target xml:lang="fr">Il se peut que votre administrateur ait « verrouillé » votre ordinateur pour le protéger, et que cette protection empêche Bloom de ranger ces fichiers à leur place</target>
+        <note>ID: integrity.causes.2</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo">
+        <source xml:lang="en">What To Do</source>
+        <target xml:lang="fr">Que faire</target>
+        <note>ID: integrity.todo</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas">
+        <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
+        <target xml:lang="fr">Une fois que vous aurez rempli ce signalement, nous vous contacterons et vous aiderons à résoudre le problème. D'ici là, vous pouvez essayer les actions suivantes :</target>
+        <note>ID: integrity.todo.ideas</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas.Reinstall">
+        <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
+        <target xml:lang="fr">Lancez à nouveau l'installateur Bloom et vérifiez si cette fois, il démarre correctement.</target>
+        <note>ID: integrity.todo.ideas.Reinstall</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas.Antivirus">
+        <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
+        <target xml:lang="fr">Si cela ne règle pas le problème, il va vous falloir intervenir au niveau de votre programme antivirus. Si un ou plusieurs fichiers avec l'extension .exe figure dans la section "fichiers manquants", pensez à ajouter à la "liste blanche" le dossier contenant le programme Bloom, dont l'emplacement est <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <note>ID: integrity.todo.ideas.Antivirus</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas.AVAST">
+        <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
+        <target xml:lang="fr">AVAST : <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</target>
+        <note>ID: integrity.todo.ideas.AVAST</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas.Norton">
+        <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
+        <target xml:lang="fr" state="needs-translation">Norton Antivirus:  <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</target>
+        <note>ID: integrity.todo.ideas.Norton</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas.AVG">
+        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
+        <target xml:lang="fr" state="needs-translation">AVG : <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</target>
+        <note>ID: integrity.todo.ideas.AVG</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas.Others">
+        <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
+        <target xml:lang="fr">Autres : résultats Google pour la "liste blanche" (en anglais) : "whitelist directory name-of-your-antivirus"</target>
+        <note>ID: integrity.todo.ideas.Others</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas.Restart">
+        <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
+        <target xml:lang="fr">Lancez à nouveau l'installateur Bloom et vérifiez si cette fois, il démarre correctement.</target>
+        <note>ID: integrity.todo.ideas.Restart</note>
+      </trans-unit>
+      <trans-unit id="integrity.todo.ideas.Retrieve">
+        <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
+        <target xml:lang="fr">Vous pouvez aussi essayer de récupérer les éléments de Bloom retirés par votre programme anti-virus Pour l'anti-virus AVG, trouvez le menu "options" de ce logiciel, cliquez sur "Quarantaine", cliquez sur le fichier Bloom en quarantaine, puis sur "restaurer". Guide en image : <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">cette image</g>.</target>
+        <note>ID: integrity.todo.ideas.Retrieve</note>
+      </trans-unit>
+      <trans-unit id="integrity.missing">
+        <source xml:lang="en">Missing Files</source>
+        <target xml:lang="fr">Fichiers manquants</target>
+        <note>ID: integrity.missing</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

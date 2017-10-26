@@ -118,12 +118,12 @@
 	</PropertyGroup>
 
 	<Target Name="ExtractXliffFromHtml">
-		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Decodable Reader/ReadMe.xlf" "$(RootDir)/output/browser/templates/template books/Decodable Reader/ReadMe-en.htm"'/>
-		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Picture Dictionary/ReadMe.xlf" "$(RootDir)/output/browser/templates/template books/Picture Dictionary/ReadMe-en.htm"'/>
-		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Wall Calendar/ReadMe.xlf" "$(RootDir)/output/browser/templates/template books/Wall Calendar/ReadMe-en.htm"'/>
-		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Leveled Reader/Readme.xlf" "$(RootDir)/output/browser/templates/template books/Leveled Reader/ReadMe-en.htm"'/>
-		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Big Book/ReadMe.xlf" "$(RootDir)/output/browser/templates/template books/Big Book/ReadMe-en.htm"'/>
-		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Template Starter/ReadMe.xlf" "$(RootDir)/output/browser/templates/template books/Template Starter/ReadMe-en.htm"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/Decodable Reader/ReadMe-en.xlf" "$(RootDir)/output/browser/templates/template books/Decodable Reader/ReadMe-en.htm"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/Picture Dictionary/ReadMe-en.xlf" "$(RootDir)/output/browser/templates/template books/Picture Dictionary/ReadMe-en.htm"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/Wall Calendar/ReadMe-en.xlf" "$(RootDir)/output/browser/templates/template books/Wall Calendar/ReadMe-en.htm"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/Leveled Reader/ReadMe-en.xlf" "$(RootDir)/output/browser/templates/template books/Leveled Reader/ReadMe-en.htm"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/Big Book/ReadMe-en.xlf" "$(RootDir)/output/browser/templates/template books/Big Book/ReadMe-en.htm"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/Template Starter/ReadMe-en.xlf" "$(RootDir)/output/browser/templates/template books/Template Starter/ReadMe-en.htm"'/>
 		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/bloomEpubPreview.xlf" "$(RootDir)/output/browser/ePUB/bloomEpubPreview-en.html"'/>
 		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/MissingLameModule.xlf" "$(RootDir)/output/browser/ePUB/MissingLameModule-en.html"'/>
 		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Publish-Android-Troubleshooting.xlf" "$(RootDir)/output/browser/help/Publish-Android-Troubleshooting-en.htm"'/>

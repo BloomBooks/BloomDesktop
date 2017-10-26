@@ -82,6 +82,7 @@ namespace BloomTests
 			var t = new UpdateVersionTable {URLOfTable = "http://notthere7blah/foo.txt"};
 			//the jenkins server gets a ProtocolError, while my desktop gets a NameResolutionFailure
 			var e = t.LookupURLOfUpdate().Error.Status;
+			//This test can fail if the ISP "helpfully" returns a custom advertising filled access failure page.
 			Assert.IsTrue(e  == WebExceptionStatus.NameResolutionFailure || e == WebExceptionStatus.ProtocolError );
 		}
 		[Test]

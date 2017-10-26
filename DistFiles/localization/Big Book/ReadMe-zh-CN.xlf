@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="zh-CN">
+    <body>
+      <trans-unit id="bigbook.title">
+        <source xml:lang="en">About Big Books</source>
+        <target xml:lang="zh-CN">关于大书</target>
+        <note>ID: bigbook.title</note>
+      </trans-unit>
+      <trans-unit id="bigbook.use">
+        <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
+        <target xml:lang="zh-CN">大书是让老师拿着在全班同学面前读的。 想了解更多信息，请参阅<g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">Scholastic上的PDF</g></target>
+        <note>ID: bigbook.use</note>
+      </trans-unit>
+      <trans-unit id="bigbook.printing">
+        <source xml:lang="en">Printing a Big Book</source>
+        <target xml:lang="zh-CN">打印大书</target>
+        <note>ID: bigbook.printing</note>
+      </trans-unit>
+      <trans-unit id="bigbook.printing.enlargeA4">
+        <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+You can easily produce books that are A3 (twice as large).
+Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
+        <target xml:lang="zh-CN">为了便于操作，此模板设置为A4横向且用大的字体。
+可以很容易地把书做成A3（两倍大）尺寸。
+只需把A4尺寸的 PDF带到打印店，让他们放大到A3尺寸。</target>
+        <note>ID: bigbook.printing.enlargeA4</note>
+      </trans-unit>
+      <trans-unit id="bigbook.limits">
+        <source xml:lang="en">Limitations of this version</source>
+        <target xml:lang="zh-CN">本版本的局限性</target>
+        <note>ID: bigbook.limits</note>
+      </trans-unit>
+      <trans-unit id="bigbook.limits.smallscreen">
+        <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
+        <target xml:lang="zh-CN">如果您使用的屏幕较小，版权页可能很难阅读。 使用CTRL +鼠标滚轮放大页面，以便对其进行编辑。</target>
+        <note>ID: bigbook.limits.smallscreen</note>
+      </trans-unit>
+      <trans-unit id="bigbook.limits.Englishtemplate">
+        <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
+If you would like to have instructions in a different language, you can delete that text and type in your own.
+If you send us that text, we can include it in a future version of the template.</source>
+        <target xml:lang="zh-CN">此版本中包括用英语填写好的“教师说明”页面。
+如果您需要其他语言的说明，可以删除原文本然后用自己的语言输入。
+如果您可以把用自己语言写成的文本发给我们，我们将会把它收入该模板未来的版本中。</target>
+        <note>ID: bigbook.limits.Englishtemplate</note>
+      </trans-unit>
+      <trans-unit id="bigbook.feedback">
+        <source xml:lang="en">Feedback</source>
+        <target xml:lang="zh-CN">反馈</target>
+        <note>ID: bigbook.feedback</note>
+      </trans-unit>
+      <trans-unit id="bigbook.feedbackvoting">
+        <source xml:lang="en">Please give and vote on <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
+        <target xml:lang="zh-CN">请提<g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">建议</g>并参与投票</target>
+        <note>ID: bigbook.feedbackvoting</note>
+      </trans-unit>
+      <trans-unit id="bigbook.reportsbugs">
+        <source xml:lang="en">Please report problems to <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
+        <target xml:lang="zh-CN">请报告问题<g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>。</target>
+        <note>ID: bigbook.reportsbugs</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

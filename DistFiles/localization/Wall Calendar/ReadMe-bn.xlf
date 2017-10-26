@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="bn">
+    <body>
+      <trans-unit id="wall.calendar">
+        <source xml:lang="en">About the Wall Calendar Template</source>
+        <target xml:lang="bn">দেয়াল পঞ্জিকা টেমপ্লেট বিষয়ক</target>
+        <note>ID: wall.calendar</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.use">
+        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
+        <target xml:lang="bn">এই টেমপ্লেটটি ব্যবহার করে, আপনি ছবি এবং পাতার উপরের অংশে উদ্ধৃতি এবং নীচের অংশে দিন/ বারের নাম সম্বলিত একটি A5 আকারের 12 মাসিক পঞ্জিকা তৈরি করতে পারেন। এই পঞ্জিকায় আপনার ভাষায় মাস এবং দিনের নাম ব্যবহার করা হবে।</target>
+        <note>ID: wall.calendar.use</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.limits">
+        <source xml:lang="en">Limitations of this version</source>
+        <target xml:lang="bn">এই সংস্করণের সীমাবদ্ধতা</target>
+        <note>ID: wall.calendar.limits</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.noshells">
+        <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
+        <target xml:lang="bn">বর্তমানে, আপনি অন্য ভাষায় ব্যবহার করার জন্য 'শেল' তৈরি করতে পারবেন না।</target>
+        <note>ID: wall.calendar.noshells</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.credits">
+        <source xml:lang="en">Credits</source>
+        <target xml:lang="bn">ক্রেডিট</target>
+        <note>ID: wall.calendar.credits</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.thanks">
+        <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
+        <target xml:lang="bn">এই টেমপ্লেটটি শুরু করার জন্য Bruce Cox (SIL Cameroon) কে ধন্যবাদ।</target>
+        <note>ID: wall.calendar.thanks</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.feedback">
+        <source xml:lang="en">Feedback</source>
+        <target xml:lang="bn">প্রতিক্রিয়া</target>
+        <note>ID: wall.calendar.feedback</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.feedbackvoting">
+        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
+        <target xml:lang="bn">দয়া করে ভোট করুন  <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">পরামর্শ </g></target>
+        <note>ID: wall.calendar.feedbackvoting</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.reportbugs">
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
+        <target xml:lang="bn">সমস্যা রিপোর্ট করুন <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g></target>
+        <note>ID: wall.calendar.reportbugs</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

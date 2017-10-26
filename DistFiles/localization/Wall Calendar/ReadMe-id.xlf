@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="id">
+    <body>
+      <trans-unit id="wall.calendar">
+        <source xml:lang="en">About the Wall Calendar Template</source>
+        <target xml:lang="id">Tentang Template Kalender Dinding</target>
+        <note>ID: wall.calendar</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.use">
+        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
+        <target xml:lang="id">Menggunakan template ini, Anda dapat membuat kalender 12 bulan ukuran A5, dengan gambar dan kutipan pada bagian atas halaman, dan nama hari di bagian bawahnya. Kalender akan menggunakan nama-nama bulan dan hari dalam bahasa Anda.</target>
+        <note>ID: wall.calendar.use</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.limits">
+        <source xml:lang="en">Limitations of this version</source>
+        <target xml:lang="id">Keterbatasan Versi ini</target>
+        <note>ID: wall.calendar.limits</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.noshells">
+        <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
+        <target xml:lang="id">Saat ini, Anda tidak dapat membuat "kerangka" untuk bahasa lain untuk digunakan.</target>
+        <note>ID: wall.calendar.noshells</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.credits">
+        <source xml:lang="en">Credits</source>
+        <target xml:lang="id">Pengakuan</target>
+        <note>ID: wall.calendar.credits</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.thanks">
+        <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
+        <target xml:lang="id">Ucapan terima kasih untuk Bruce Cox (SIL Kamerun) yang telah membuat template ini dapat dimulai.</target>
+        <note>ID: wall.calendar.thanks</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.feedback">
+        <source xml:lang="en">Feedback</source>
+        <target xml:lang="id">Umpan balik</target>
+        <note>ID: wall.calendar.feedback</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.feedbackvoting">
+        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
+        <target xml:lang="id">Silakan berikan dan masukan saran Anda pada <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">saran</g>.</target>
+        <note>ID: wall.calendar.feedbackvoting</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.reportbugs">
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
+        <target xml:lang="id">Silakan laporkan masalah ke <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <note>ID: wall.calendar.reportbugs</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="MissingLameModule-en.html" datatype="html" source-language="en" target-language="id">
+    <body>
+      <trans-unit id="missing.lame.please.install">
+        <source xml:lang="en">Please Install LAME</source>
+        <target xml:lang="id">Silakan pasang LAME</target>
+        <note>ID: missing.lame.please.install</note>
+      </trans-unit>
+      <trans-unit id="missing.lame.bloom.needs.lame">
+        <source xml:lang="en">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
+      </source>
+        <target xml:lang="id">Buku ini memiliki rekaman-rekaman audio. Bloom dapat menggunakan rekaman tersebut untuk membuat buku elektronik "Buku Berbicara" Namun, Bloom memerlukan suatu program yang disebut "LAME untuk Keberanian" supaya bisa membuat berkas MP3 yang akan dipakai buku tersebut. Pemasangannya mudah. Pertama unduh dan jalankan <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Berikutnya, mulai ulang Bloom.
+      </target>
+        <note>ID: missing.lame.bloom.needs.lame</note>
+      </trans-unit>
+      <trans-unit id="missing.lame.audio.optional">
+        <source xml:lang="en">If you prefer to go ahead and publish your book without audio, click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">here</g>.
+      </source>
+        <target xml:lang="id">Jika Anda ingin melanjutkan dan menerbitkan buku Anda tanpa audio, klik <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">sini</g>.
+      </target>
+        <note>ID: missing.lame.audio.optional</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
