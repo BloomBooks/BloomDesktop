@@ -175,7 +175,7 @@ namespace Bloom.Publish.Epub
 			ApplicationException thumbNailException = null;
 			try
 			{
-				_thumbNailer.MakeThumbnailOfCover(Book, 256, Form.ActiveForm);
+				_thumbNailer.MakeThumbnailOfCover(Book, 256);
 			}
 			catch(ApplicationException e)
 			{

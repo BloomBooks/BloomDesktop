@@ -328,6 +328,7 @@
     <Compile Include="Publish\Android\wifi\WiFiAdvertiser.cs" />
     <Compile Include="Publish\Android\wifi\WiFiPublisher.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
+    <Compile Include="Publish\BloomLibrary\BloomLibraryPublishModel.cs" />
     <Compile Include="Publish\Epub\ElectronicPublishView.cs" />
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Android\AndroidView.cs">
