@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -10,7 +10,10 @@ using System;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Xml;
+using Bloom.Collection;
 using Bloom.ImageProcessing;
+using BloomTemp;
+using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 
@@ -26,9 +29,19 @@ namespace Bloom.Book
 		// these files (if encountered) won't be included in the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder" };
 
-		public static void CompressBookForDevice(string outputPath, Book book)
+		public static void CompressBookForDevice(string outputPath, Book book, BookServer bookServer)
 		{
-			CompressDirectory(outputPath, book.FolderPath, "", reduceImages:true, omitMetaJson: false, wrapWithFolder:false);
+			using(var temp = new TemporaryFolder())
+			{
+				BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
+				var bookInfo = new BookInfo(temp.FolderPath, true);
+				bookInfo.XMatterNameOverride = "Device";
+				var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+				modifiedBook.BringBookUpToDate(new NullProgress());
+				modifiedBook.Save();
+				modifiedBook.Storage.UpdateSupportFiles();
+				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false);
+			}
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,

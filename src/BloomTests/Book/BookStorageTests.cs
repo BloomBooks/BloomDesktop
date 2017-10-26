@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -359,11 +359,11 @@ namespace BloomTests.Book
 
 			Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
 			// BL-2163, we are no longer migrating suitableForMakingShells
-			Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.False);
-			Assert.That(storage.MetaData.IsFolio, Is.True);
-			Assert.That(storage.MetaData.IsExperimental, Is.True);
-			Assert.That(storage.MetaData.BookletMakingIsAppropriate, Is.True);
-			Assert.That(storage.MetaData.AllowUploading, Is.True);
+			Assert.That(storage.BookInfo.IsSuitableForMakingShells, Is.False);
+			Assert.That(storage.BookInfo.IsFolio, Is.True);
+			Assert.That(storage.BookInfo.IsExperimental, Is.True);
+			Assert.That(storage.BookInfo.BookletMakingIsAppropriate, Is.True);
+			Assert.That(storage.BookInfo.AllowUploading, Is.True);
 		}
 
 
@@ -421,7 +421,7 @@ namespace BloomTests.Book
 		public void Save_SetsJsonFormatVersion()
 		{
 			var storage = GetInitialStorage();
-			Assert.That(storage.MetaData.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
+			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
 		}
 
 		[Test]

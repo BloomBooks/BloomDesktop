@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -16,13 +16,15 @@ namespace Bloom.Publish.Android.wifi
 	/// </summary>
 	public class WiFiPublisher
 	{
+		private readonly BookServer _bookServer;
 		private readonly WebSocketProgress _progress;
 		private WiFiAdvertiser _wifiAdvertiser;
 		private BloomReaderUDPListener _wifiListener;
 		public const string ProtocolVersion = "1.0";
 
-		public WiFiPublisher(WebSocketProgress progress)
+		public WiFiPublisher(WebSocketProgress progress, BookServer bookServer)
 		{
+			_bookServer = bookServer;
 			_progress = progress.WithL10NPrefix("PublishTab.Android.Wifi.Progress.");
 		}
 
@@ -127,11 +129,11 @@ namespace Bloom.Publish.Android.wifi
 			var publishedFileName = safeName + BookCompressor.ExtensionForDeviceBloomBook;
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, _bookServer);
 				using (WebClient myClient = new WebClient())
 				{
 					myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(safeName) +
-										BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdTempFile.Path));
+					                    BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdTempFile.Path));
 					myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] { 0 });
 				}
 				PublishToAndroidApi.ReportAnalytics("wifi", book);

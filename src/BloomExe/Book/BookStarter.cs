@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -116,8 +116,8 @@ namespace Bloom.Book
 		private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
 		{
 			var storage = _bookStorageFactory(initialPath);
-			bool usingTemplate = storage.MetaData.IsSuitableForMakingShells;
-			bool makingTemplate = storage.MetaData.IsSuitableForMakingTemplates;
+			bool usingTemplate = storage.BookInfo.IsSuitableForMakingShells;
+			bool makingTemplate = storage.BookInfo.IsSuitableForMakingTemplates;
 
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
@@ -235,9 +235,9 @@ namespace Bloom.Book
 				lineage += ",";
 			if (!string.IsNullOrEmpty(parentId))
 			{
-				storage.MetaData.BookLineage = lineage + parentId;
+				storage.BookInfo.BookLineage = lineage + parentId;
 			}
-			storage.MetaData.Id = Guid.NewGuid().ToString();
+			storage.BookInfo.Id = Guid.NewGuid().ToString();
 			storage.Dom.RemoveMetaElement("bloomBookLineage"); //old metadata
 			storage.Dom.RemoveMetaElement("bookLineage"); // even older name
 		}
@@ -338,7 +338,7 @@ namespace Bloom.Book
 			storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
 
 			// Clear these out let other code set again when there is a real title.
-			storage.MetaData.Title = "";
+			storage.BookInfo.Title = "";
 			storage.Dom.Title = "";
 
 			//If we're making a book from a template, remove all the titles in all languages
@@ -348,9 +348,9 @@ namespace Bloom.Book
 			}
 			// If we're making a Template, we really want its title to include Template
 			// (in hopes the user will keep it at the end so the pages can be used in Add Page)
-			if (storage.MetaData.IsSuitableForMakingShells)
+			if (storage.BookInfo.IsSuitableForMakingShells)
 			{
-				storage.MetaData.Title = "My Template";
+				storage.BookInfo.Title = "My Template";
 				storage.Dom.Title = "My Template";
 				storage.Dom.SetBookSetting("bookTitle", "en", "My Template");
 				// Yes, we want the English word Template in the vernacular Title. Ugly, but that's
@@ -414,14 +414,14 @@ namespace Bloom.Book
 			// and also needs to NOT be RecordedAsLockedDown, because that suppresses options
 			// we want in the options tab.
 			// If we change this see also Book.SwitchSuitableForMakingShells().
-			if (_isSourceCollection && !storage.MetaData.IsSuitableForMakingTemplates)
+			if (_isSourceCollection && !storage.BookInfo.IsSuitableForMakingTemplates)
 			{
 				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
 			}
 
-			storage.MetaData.IsSuitableForMakingShells = storage.MetaData.IsSuitableForMakingTemplates;
+			storage.BookInfo.IsSuitableForMakingShells = storage.BookInfo.IsSuitableForMakingTemplates;
 			// a newly created book is never suitable for making templates, even if its source was.
-			storage.MetaData.IsSuitableForMakingTemplates = false;
+			storage.BookInfo.IsSuitableForMakingTemplates = false;
 		}
 
 

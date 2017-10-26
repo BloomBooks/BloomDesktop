@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -56,7 +56,7 @@ namespace BloomTests.Book
 			MakeSamplePngImageWithMetadata(Path.Combine(_tempFolder.Path, "original.png"));
 			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
 			_metadata = new BookInfo(_tempFolder.Path, true);
-			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
+			_storage.SetupGet(x => x.BookInfo).Returns(_metadata);
 			_storage.Setup(x => x.HandleRetiredXMatterPacks(It.IsAny<HtmlDom>(), It.IsAny<string>()))
 				.Returns((HtmlDom dom, string y) => { return y == "BigBook" ? "Factory" : y; });
 
@@ -124,6 +124,30 @@ namespace BloomTests.Book
 				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}
 
+		protected Bloom.Book.Book CreateBookWithPhysicalFile(string bookHtml, CollectionSettings collectionSettings)
+		{
+			_collectionSettings = collectionSettings;
+			var fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[] { }), ProjectContext.GetFactoryFileLocations(),
+				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
+
+			File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), bookHtml);
+
+			var storage = new BookStorage(this._tempFolder.Path, fileLocator, new BookRenamedEvent(), _collectionSettings);
+
+			var b = new Bloom.Book.Book(_metadata, storage, _templateFinder.Object,
+				_collectionSettings,
+				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+			return b;
+		}
+
+		protected virtual Bloom.Book.Book CreateBookWithPhysicalFile(string bookHtml, bool bringBookUpToDate = false)
+		{
+			var book = CreateBookWithPhysicalFile(bookHtml, CreateDefaultCollectionsSettings());
+			if(bringBookUpToDate)
+				book.BringBookUpToDate(new NullProgress());
+			return book;
+		}
+
 		protected virtual Bloom.Book.Book CreateBook(bool bringBookUpToDate = false)
 		{
 			var book = CreateBook(CreateDefaultCollectionsSettings());
@@ -134,7 +158,13 @@ namespace BloomTests.Book
 
 		protected CollectionSettings CreateDefaultCollectionsSettings()
 		{
-			return new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+			return new CollectionSettings(new NewCollectionSettings()
+			{
+				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
+				Language1Iso639Code = "xyz",
+				Language2Iso639Code = "en",
+				Language3Iso639Code = "fr"
+			});
 		}
 
 		protected void MakeSamplePngImageWithMetadata(string path)
@@ -192,5 +222,37 @@ namespace BloomTests.Book
 		{
 			return new HtmlDom(@"<html ><head>" + headContents + "</head><body>" + bodyContents + "</body></html>");
 		}
+
+		public BookServer CreateBookServer()
+		{
+			var collectionSettings = CreateDefaultCollectionsSettings();
+			var xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });
+			var fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
+			var starter = new BookStarter(fileLocator, (dir, forSelectedBook) => new BookStorage(dir, fileLocator, new BookRenamedEvent(), collectionSettings), collectionSettings);
+
+			return new BookServer(
+				//book factory
+				(bookInfo, storage) =>
+				{
+					return new Bloom.Book.Book(bookInfo, storage, null, collectionSettings,
+						new PageSelection(),
+						new PageListChangedEvent(), new BookRefreshEvent());
+				},
+
+				// storage factory
+				(path, forSelectedBook) =>
+				{
+					var storage = new BookStorage(path, fileLocator, null, collectionSettings);
+					storage.BookInfo = new BookInfo(path, true);
+					return storage;
+				},
+
+				// book starter factory
+				() => starter,
+
+				// configurator factory
+				null);
+		}
 	}
 }
+

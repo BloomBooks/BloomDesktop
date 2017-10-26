@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
 using SIL.Windows.Forms.Miscellaneous;
@@ -28,14 +29,16 @@ namespace Bloom.Publish.Android
 		private readonly UsbPublisher _usbPublisher;
 #endif
 		private readonly BloomWebSocketServer _webSocketServer;
+		private readonly BookServer _bookServer;
 
-		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer)
+		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer)
 		{
 			_webSocketServer = bloomWebSocketServer;
+			_bookServer = bookServer;
 			var progress = new WebSocketProgress(_webSocketServer);
-			_wifiPublisher = new WiFiPublisher(progress);
+			_wifiPublisher = new WiFiPublisher(progress, _bookServer);
 #if !__MonoCS__
-			_usbPublisher = new UsbPublisher(progress)
+			_usbPublisher = new UsbPublisher(progress, _bookServer)
 			{
 				Stopped = () => SetState("stopped")
 			};
@@ -96,7 +99,7 @@ namespace Bloom.Publish.Android
 
 			server.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
-				FilePublisher.Save(request.CurrentBook);
+				FilePublisher.Save(request.CurrentBook, _bookServer);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
+using Bloom.Collection;
 using Bloom.Edit;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -208,6 +209,16 @@ namespace Bloom.Book
 		}
 
 		public bool IsEditable { get; private set; }
+
+
+		/// <summary>
+		/// Normally, we get the xmatter from our collection. But this can be overridden here
+		/// </summary>
+		public string XMatterNameOverride
+		{
+			get { return MetaData.XMatterNameOverride; }
+			set { MetaData.XMatterNameOverride = value; }
+		}
 
 		/// <summary>
 		/// This one knows nothing of what language the user speaks... currently using that requires actually reading in the html, which is beyond what this class can do
@@ -753,6 +764,12 @@ namespace Bloom.Book
 				return 0;
 			}
 		}
+
+		/// <summary>
+		/// Normally, we get the xmatter from our collection. But this can be overridden here
+		/// </summary>
+		[JsonProperty("xmatterName")]
+		public string XMatterNameOverride { get; set; }
 
 		public void SetUploader(string id)
 		{
