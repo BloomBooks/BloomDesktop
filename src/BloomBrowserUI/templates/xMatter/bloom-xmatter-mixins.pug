@@ -54,26 +54,6 @@ mixin field-acknowledgments-originalVersion
 		+editable(kLanguageForPrototypeOnly).bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
 			| {Original Acknowledgments}
 
-
-//use Bloom's "branding" api (see BrandingApi.cs) to get an image if it exists in the current Branding folder, selected in Settings
-mixin optional-branding-image(key)
-	img(src="/bloom/api/branding/image?id="+key+".svg" type='image/svg' onerror="this.style.display='none'")&attributes(attributes)
-
-mixin field-bottom-left-branding
-	+optional-branding-image('cover-bottom-left').branding
-
-mixin field-credits-branding
-	+optional-branding-image('credits-page').branding
-
-mixin field-title-page-branding
-	.bottomImageWrapper
-		+optional-branding-image('title-page').branding
-
-mixin field-back-cover-branding
-	//- only one of these should succeed. That is, the pack should only supply one or the other
-	+optional-branding-image('back-cover-outside-wide').branding.branding-wide
-	+optional-branding-image('back-cover-outside').branding
-
 //- -------------------------------------------------------------------------------
 //-	Unless every page of your xmatter pack needs to be different than the "factory"
 //-	one that comes with Bloom, use the following mixins to reuse the pages that
@@ -103,7 +83,6 @@ mixin standard-cover-contents
 
 	// 2 columns: first for an optional logo, then text content
 	.bottomBlock
-		+field-bottom-left-branding.bottom-left-branding
 
 		// 2 rows
 		.bottomTextContent
@@ -151,7 +130,6 @@ mixin credits-contents(includeIsbn = true)
 
 	if(includeIsbn)
 		+field-ISBN
-	+field-credits-branding
 
 mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
@@ -186,7 +164,6 @@ mixin title-page-contents
 	//- review: can we get rid of these "langName" classes?
 	.langName('data-library'='dialect')
 	.langName(data-library='languageLocation').bloom-writeOnly
-	+field-title-page-branding
 
 mixin standard-blankInsideFrontCover
 	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
@@ -205,7 +182,6 @@ mixin factoryStandard-outsideBackCover
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
-		+field-back-cover-branding
 
 mixin standard-ISOLanguageCode
 	.iso693Code
