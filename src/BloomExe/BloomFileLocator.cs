@@ -281,11 +281,38 @@ namespace Bloom
 		/// xliff file is stored in a subfolder with the same name as the template book's folder, and the language
 		/// code is embedded in the file name as expected (ReadMe-en.xlf, ReadMe-fr.xlf, etc.).
 		/// </summary>
+		/// <remarks>
+		/// This is complicated by two factors.  First, the Windows installer omits the DistFiles level of the
+		/// directory tree while the Linux package includes it.  Second, books created from templates with description
+		/// files carry copies of those description files.  Finding the corresponding translated xliff file in that
+		/// scenario requires peeking inside the actual book's HTML to find it's original template name.
+		/// </remarks>
 		private static string GetLocalizedXliffPath(string pathToEnglishFile)
 		{
 			var baseDir = SIL.IO.FileLocator.DirectoryOfApplicationOrSolution;
-			var xliffDir = Path.Combine(baseDir, "DistFiles", "localization");
 			var xliffBareFile = Path.GetFileNameWithoutExtension(pathToEnglishFile);
+			var folder = Path.GetFileName(Path.GetDirectoryName(pathToEnglishFile));
+			var xliffDir = Path.Combine(baseDir, "DistFiles", "localization");	// Linux runtime, developers
+			var path = GetLocalizedXliffPath(xliffDir, folder, xliffBareFile);
+			if (RobustFile.Exists(path))
+				return path;
+			var xliffDir1 = Path.Combine(baseDir, "localization");	// Windows runtime
+			path = GetLocalizedXliffPath(xliffDir1, folder, xliffBareFile);
+			if (RobustFile.Exists(path) || BookStorage.IsStaticContent(pathToEnglishFile) || xliffBareFile != "ReadMe-en")
+				return path;
+			// We must have a ReadMe-en.htm file copied from a template to a real book.  Look inside the book
+			// to find out the original template if possible.
+			var folder1 = GetPageTemplateSourceFromHtml(pathToEnglishFile);
+			if (String.IsNullOrEmpty(folder1))
+				return path;
+			path = GetLocalizedXliffPath(xliffDir, folder1, xliffBareFile);
+			if (RobustFile.Exists(path))
+				return path;
+			return GetLocalizedXliffPath(xliffDir1, folder1, xliffBareFile);
+		}
+
+		private static string GetLocalizedXliffPath(string xliffDir, string subDir, string xliffBareFile)
+		{
 			Debug.Assert(xliffBareFile.EndsWith("-en"));
 			if (xliffBareFile.EndsWith("-en"))
 				xliffBareFile = xliffBareFile.Substring(0, xliffBareFile.Length - 3);
@@ -293,8 +320,7 @@ namespace Bloom
 			var xliffPath = Path.Combine(xliffDir, langId, xliffBareFile + ".xlf");
 			if (RobustFile.Exists(xliffPath))
 				return xliffPath;
-			var folder = Path.GetFileName(Path.GetDirectoryName(pathToEnglishFile));
-			xliffPath = Path.Combine(xliffDir, folder, xliffBareFile + "-" + langId + ".xlf");
+			xliffPath = Path.Combine(xliffDir, subDir, xliffBareFile + "-" + langId + ".xlf");
 			if (RobustFile.Exists(xliffPath))
 				return xliffPath;
 			// We may have an xliff file identified by only language when langId includes country, for example "es" vs "es-ES".
@@ -305,9 +331,28 @@ namespace Bloom
 				xliffPath = Path.Combine(xliffDir, langId, xliffBareFile + ".xlf");
 				if (RobustFile.Exists(xliffPath))
 					return xliffPath;
-				xliffPath = Path.Combine(xliffDir, folder, xliffBareFile + "-" + langId + ".xlf");
+				xliffPath = Path.Combine(xliffDir, subDir, xliffBareFile + "-" + langId + ".xlf");
 			}
 			return xliffPath;
+		}
+
+		/// <summary>
+		/// Peek inside an actual book's HTML to find out its original template's name.  This is needed
+		/// in order to locate translated xliff files for the accompanying description (ReadMe) file.
+		/// </summary>
+		private static string GetPageTemplateSourceFromHtml(string pathToEnglishFile)
+		{
+			var directory = Path.GetDirectoryName(pathToEnglishFile);
+			var bookName = Path.GetFileName(directory);
+			var bookPath = Path.Combine(directory, bookName + ".htm");
+			if (!RobustFile.Exists(bookPath))
+				bookPath = bookPath + "l";
+			if (!RobustFile.Exists(bookPath))
+				return null;
+			var hdoc = new HtmlAgilityPack.HtmlDocument();
+			hdoc.LoadHtml(RobustFile.ReadAllText(bookPath));
+			var x = hdoc.DocumentNode.SelectSingleNode("/html/head/meta[@name='pageTemplateSource']");
+			return x.GetAttributeValue("content", "");
 		}
 
 		/// <summary>
