@@ -29,6 +29,7 @@ namespace Bloom.CLI
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 					var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 						applicationContainer.BookThumbNailer, new BookDownloadStartingEvent());
+
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					Console.WriteLine("\nstarting upload");

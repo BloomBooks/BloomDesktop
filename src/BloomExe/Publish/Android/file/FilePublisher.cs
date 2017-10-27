@@ -1,4 +1,4 @@
-﻿// // Copyright (c) 2017 SIL International
+// // Copyright (c) 2017 SIL International
 // // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System.IO;
@@ -14,7 +14,7 @@ namespace Bloom.Publish.Android.file
 	/// </summary>
 	public class FilePublisher
 	{
-		public static void Save(Book.Book book)
+		public static void Save(Book.Book book, BookServer bookServer)
 		{
 			using(var dlg = new SaveFileDialog())
 			{
@@ -31,7 +31,7 @@ namespace Bloom.Publish.Android.file
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(dlg.FileName);
-					BookCompressor.CompressBookForDevice(dlg.FileName, book);
+					BookCompressor.CompressBookForDevice(dlg.FileName, book, bookServer);
 					PublishToAndroidApi.ReportAnalytics("file", book);
 				}
 			}

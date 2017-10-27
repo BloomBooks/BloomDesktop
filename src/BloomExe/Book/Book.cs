@@ -73,7 +73,7 @@ namespace Bloom.Book
 			Guard.AgainstNull(storage,"storage");
 
 			// This allows the _storage to
-			storage.MetaData = info;
+			storage.BookInfo = info;
 
 			// We always validate the book during the process of loading the storage,
 			// so we don't need to do it again until something changes...just note the result.
@@ -990,7 +990,7 @@ namespace Bloom.Book
 
 		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
 		{
-			var helper = new XMatterHelper(bookDOM, CollectionSettings.XMatterPackName, _storage.GetFileLocator());
+			var helper = new XMatterHelper(bookDOM, BookInfo.XMatterNameOverride ?? CollectionSettings.XMatterPackName, _storage.GetFileLocator());
 
 			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
 			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
@@ -1063,7 +1063,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// THe bloomBookId meta value
 		/// </summary>
-		public string ID { get { return _storage.MetaData.Id; } }
+		public string ID { get { return _storage.BookInfo.Id; } }
 
 		private void UpdateImageMetadataAttributes(XmlElement imgNode)
 		{

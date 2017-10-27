@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
@@ -30,7 +29,7 @@ namespace Bloom
 
 		public HtmlThumbNailer HtmlThumbNailer { get { return _thumbnailProvider;} }
 
-		public void GetThumbNailOfBookCover(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback, bool async)
+		private void GetThumbNailOfBookCover(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback, bool async)
 		{
 			if (book is ErrorBook)
 			{
@@ -69,12 +68,12 @@ namespace Bloom
 			}
 		}
 
-		public void MakeThumbnailOfCover(Book.Book book, Control invokeTarget)
-		{
-			MakeThumbnailOfCover(book, -1, invokeTarget);
-		}
-
-		public void MakeThumbnailOfCover(Book.Book book, int height, Control invokeTarget)
+		/// <summary>
+		/// Make a thumbnail image of a book's front cover.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="height">Optional parameter. If unspecified, use defaults</param>
+		public void MakeThumbnailOfCover(Book.Book book, int height = -1)
 		{
 			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions
 			{
@@ -159,7 +158,7 @@ namespace Bloom
 		/// </summary>
 		/// <param name="book"></param>
 		/// <param name="thumbnailOptions"></param>
-		public void RebuildThumbNailNow(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions)
+		private void RebuildThumbNailNow(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions)
 		{
 			RebuildThumbNail(book, thumbnailOptions, (info, image) => { },
 				(info, ex) =>
@@ -167,7 +166,6 @@ namespace Bloom
 					throw ex;
 				}, false);
 		}
-
 
 		/// <summary>
 		/// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.

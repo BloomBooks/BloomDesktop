@@ -14,12 +14,14 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
+using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.PDF;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
 
 namespace Bloom.WebLibraryIntegration
@@ -35,6 +37,8 @@ namespace Bloom.WebLibraryIntegration
 		private BloomS3Client _s3Client;
 		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
+
+		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 
 		// The full path of the log text file used to restart failed bulk uploads.
 		private string _uploadLogPath;
@@ -326,6 +330,9 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		/// <summary>
+		/// The Parse.com object ID of the person who is uploading the book.
+		/// </summary>
 		public string UserId
 		{
 			get { return _parseClient.UserId; }
@@ -337,7 +344,7 @@ namespace Bloom.WebLibraryIntegration
 			return UploadBook(bookFolder, progress, out parseId);
 		}
 
-		public string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeAudio = false)
+		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeAudio = false)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -564,6 +571,8 @@ namespace Bloom.WebLibraryIntegration
 		/// The parent folder of a bloom book is searched for a .bloomContainer file and, if one is found,
 		/// the book is treated as part of that collection (e.g., for determining vernacular language).
 		/// If no collection is found there it uses whatever collection was last open, or the current default.
+		/// N.B. The bulk upload process will go ahead and upload templates and books that are already on the server
+		/// (over-writing the existing book) without informing the user.
 		/// </summary>
 		/// <param name="folder"></param>
 		/// <param name="container"></param>
@@ -571,10 +580,17 @@ namespace Bloom.WebLibraryIntegration
 		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
 		public void UploadFolder(string folder, ApplicationContainer container, bool excludeAudio = false)
 		{
+			if (!IsThisVersionAllowedToUpload())
+			{
+				var oldVersionMsg = LocalizationManager.GetString("PublishTab.Upload.OldVersion",
+					"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.");
+				Console.WriteLine(oldVersionMsg);
+			}
 			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
 					"For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
+				Console.WriteLine("\nFailed to login.");
 				return;
 			}
 			using (var dlg = new BulkUploadProgressDlg())
@@ -592,8 +608,6 @@ namespace Bloom.WebLibraryIntegration
 				dlg.ShowDialog(); // waits until worker completed closes it.
 			}
 		}
-
-		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 
 		/// <summary>
 		/// Worker function for a background thread task. See first lines for required args passed to RunWorkerAsync, which triggers this.
@@ -629,8 +643,9 @@ namespace Bloom.WebLibraryIntegration
 
 		private void AppendBookToUploadLogFile(string newBook)
 		{
-			Debug.Assert(GetUploadFilePath().Length > 0);
-			File.AppendAllLines(GetUploadFilePath(), new []{ newBook });
+			var path = GetUploadFilePath();
+			Debug.Assert(path.Length > 0);
+			File.AppendAllLines(path, new []{ newBook });
 		}
 
 		private string[] GetUploadLogIfPresent(string folder)
@@ -721,14 +736,26 @@ namespace Bloom.WebLibraryIntegration
 				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer, null);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null);
+				var blPublishModel = new BloomLibraryPublishModel(this, book);
 				string dummy;
+
 				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
 				var langDict = book.AllLanguages;
 				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
-				if (languagesToUpload.Any())
+				if (blPublishModel.MetadataIsReadyToPublish && (languagesToUpload.Any() || blPublishModel.OkToUploadWithNoLanguages))
 				{
-					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg, excludeAudio);
+					if (blPublishModel.BookIsAlreadyOnServer)
+					{
+						var msg = "Apparently this book is already on the server. Overwriting...";
+						ReportToLogBoxAndLogger(dlg.Progress, folder, msg);
+					}
+					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, excludeAudio);
 					AppendBookToUploadLogFile(folder);
+				}
+				else
+				{
+					// report to the user why we are not uploading their book
+					ReportToLogBoxAndLogger(dlg.Progress, folder, blPublishModel.GetReasonForNotUploadingBook());
 				}
 				return;
 			}
@@ -738,18 +765,25 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		private void ReportToLogBoxAndLogger(LogBox logBox, string bookFolder, string msg)
+		{
+			// We've just told the user we are uploading book 'x'. Now tell them why we aren't.
+			const string seeLogFile = "\n  See log file for details.";
+			logBox.WriteMessage($"\n  {msg}{seeLogFile}");
+			Logger.WriteEvent($"***{bookFolder}: {msg}");
+		}
+
 		/// <summary>
 		/// Common routine used in normal upload and bulk upload.
 		/// </summary>
 		/// <param name="book"></param>
 		/// <param name="progressBox"></param>
 		/// <param name="publishView"></param>
-		/// <param name="parseId"></param>
 		/// <param name="languages"></param>
-		/// <param name="invokeTarget"></param>
+		/// <param name="parseId"></param>
+		/// <param name="excludeAudio"></param>
 		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null,
-			bool excludeAudio = false)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, bool excludeAudio = false)
 		{
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
@@ -761,17 +795,17 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
-			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
+			_thumbnailer.MakeThumbnailOfCover(book, 70);
 			if (progressBox.CancelRequested)
 				return "";
-			_thumbnailer.MakeThumbnailOfCover(book, 256, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 256);
 			if (progressBox.CancelRequested)
 				return "";
 
 			// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
 			// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
-			_thumbnailer.MakeThumbnailOfCover(book, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book);
 			if (progressBox.CancelRequested)
 				return "";
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1324,7 +1324,7 @@ namespace Bloom.CollectionTab
 			Directory.CreateDirectory(newBookDir);
 
 			// copy files
-			CopyDirectory(SelectedBook.FolderPath, newBookDir);
+			BookStorage.CopyDirectory(SelectedBook.FolderPath, newBookDir);
 
 			// rename the book htm file
 			var oldName = Path.Combine(newBookDir, Path.GetFileName(SelectedBook.GetPathHtmlFile()));
@@ -1366,17 +1366,6 @@ namespace Bloom.CollectionTab
 			}
 
 			return newName;
-		}
-
-		private static void CopyDirectory(string sourceDir, string targetDir)
-		{
-			Directory.CreateDirectory(targetDir);
-
-			foreach (var file in Directory.GetFiles(sourceDir))
-				RobustFile.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
-
-			foreach (var directory in Directory.GetDirectories(sourceDir))
-				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
 		}
 	}
 

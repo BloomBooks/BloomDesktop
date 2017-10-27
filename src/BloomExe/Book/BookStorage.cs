@@ -55,9 +55,10 @@ namespace Bloom.Book
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles();
-        BookInfo MetaData { get; set; }
+        BookInfo BookInfo { get; set; }
 		string NormalBaseForRelativepaths { get; }
 		string InitialLoadErrors { get; }
+		void UpdateSupportFiles();
 	}
 
 	public class BookStorage : IBookStorage
@@ -86,12 +87,13 @@ namespace Bloom.Book
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 		private BookInfo _metaData;
 		private bool _errorAlreadyContainsInstructions;
+
 		public event EventHandler FolderPathChanged;
 
 		// Returns any errors reported while loading the book (during 'expensive initialization').
 		public string InitialLoadErrors { get; private set; }
 
-		public BookInfo MetaData
+		public BookInfo BookInfo
 		{
 			get
 			{
@@ -229,7 +231,7 @@ namespace Bloom.Book
 				var ver = Assembly.GetEntryAssembly().GetName().Version;
 				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
 			}
-			MetaData.FormatVersion = kBloomFormatVersion;
+			BookInfo.FormatVersion = kBloomFormatVersion;
 			var watch = Stopwatch.StartNew();
 			string tempPath = SaveHtml(Dom);
 			watch.Stop();
@@ -262,7 +264,7 @@ namespace Bloom.Book
 					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath());
 			}
 
-			MetaData.Save();
+			BookInfo.Save();
 		}
 
 		private string GetBackupFilePath()
@@ -687,7 +689,7 @@ namespace Bloom.Book
 		{
 			Debug.WriteLine(string.Format("ValidateBook({0})", path));
 			var msg= GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(dom,path);
-			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path, !MetaData.IsSuitableForMakingTemplates);
+			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path, !BookInfo.IsSuitableForMakingTemplates);
 		}
 
 
@@ -880,7 +882,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// we update these so that the file continues to look the same when you just open it in firefox
 		/// </summary>
-		private void UpdateSupportFiles()
+		public void UpdateSupportFiles()
 		{
 			if (IsPathReadonly(_folderPath))
 			{
@@ -902,20 +904,28 @@ namespace Bloom.Book
 				}
 			}
 
-			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
-			var nameOfCollectionXMatterPack = _collectionSettings.XMatterPackName;
-			nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
-
 			try
 			{
-				//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
-				//specifies a different one, it will come back with that (if it can be found).
-				var helper = new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator);
-				Update(Path.GetFileName(helper.PathToXMatterStylesheet), helper.PathToXMatterStylesheet);
+				var path = PathToXMatterStylesheet;
+				Update(Path.GetFileName(path), path);
 			}
 			catch (Exception error)
 			{
 				ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
+			}
+		}
+
+		private string PathToXMatterStylesheet
+		{
+			get
+			{
+				var nameOfCollectionXMatterPack = BookInfo.XMatterNameOverride ?? _collectionSettings.XMatterPackName;
+
+				nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
+
+				//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
+				//specifies a different one, it will come back with that (if it can be found).
+				return new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator).PathToXMatterStylesheet;
 			}
 		}
 
@@ -926,7 +936,7 @@ namespace Bloom.Book
 
 		private void Update(string fileName, string factoryPath = "")
 		{
-			if (!IsUserFolder)
+			if (!IsUserOrTempFolder)
 			{
 				if (fileName.ToLowerInvariant().Contains("xmatter") && !fileName.ToLower().StartsWith("factory-xmatter"))
 				{
@@ -977,6 +987,11 @@ namespace Bloom.Book
 				if(!RobustFile.Exists(documentPath))
 				{
 					Logger.WriteMinorEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
+
+					// get rid of previous xmatter stylesheets
+					if (fileName.ToLowerInvariant().Contains("xmatter"))
+						RemoveExistingFilesBySuffix("XMatter.css");
+
 					RobustFile.Copy(factoryPath, documentPath);
 					return;
 				}
@@ -1014,13 +1029,33 @@ namespace Bloom.Book
 			}
 		}
 
+		private void RemoveExistingFilesBySuffix(string suffix)
+		{
+			foreach(var file in Directory.GetFiles(_folderPath, "*"+suffix))
+			{
+				try
+				{
+					RobustFile.Delete(file);
+				}
+				catch(Exception e)
+				{
+					// not worth bothering the user about, but we can log it in case it needs investigation
+					Debug.Fail(e.Message);
+					Logger.WriteError("Could not remove "+file, e);
+				}
+			}
+		}
+
 		/// <summary>
-		/// user folder as opposed to our program installation folder or some template
+		/// user folder (or a temp folder, typically one where we've copied a user book to update for publishing)
+		/// as opposed to our program installation folder or some template
 		/// </summary>
-		private bool IsUserFolder
+		private bool IsUserOrTempFolder
 		{
 			get
 			{
+				if(_folderPath.Contains(Path.GetTempPath()))
+					return true;
 				if(string.IsNullOrEmpty(_collectionSettings.FolderPath))
 				{
 					//this happens when we are just hydrating the book via a command-line command
@@ -1036,9 +1071,7 @@ namespace Bloom.Book
 			//clear out any old ones
 			Dom.RemoveXMatterStyleSheets();
 
-			var helper = new XMatterHelper(Dom, this._collectionSettings.XMatterPackName, _fileLocator);
-
-			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToXMatterStylesheet));
+			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
 			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
 			// where it should definitely be forward slash. And it works fine in a Windows path too.
@@ -1239,6 +1272,18 @@ namespace Bloom.Book
 					"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
 				       + "</p>";
 			}
+		}
+
+		//enchance: move to SIL.IO.RobustIO
+		public static void CopyDirectory(string sourceDir, string targetDir)
+		{
+			Directory.CreateDirectory(targetDir);
+
+			foreach (var file in Directory.GetFiles(sourceDir))
+				RobustFile.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
+
+			foreach (var directory in Directory.GetDirectories(sourceDir))
+				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
 		}
 	}
 }
