@@ -281,11 +281,25 @@ namespace Bloom
 		/// xliff file is stored in a subfolder with the same name as the template book's folder, and the language
 		/// code is embedded in the file name as expected (ReadMe-en.xlf, ReadMe-fr.xlf, etc.).
 		/// </summary>
+		/// <remarks>
+		/// The Windows installer omits the DistFiles level of the directory tree while the Linux package includes
+		/// it.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5190.
+		/// </remarks>
 		private static string GetLocalizedXliffPath(string pathToEnglishFile)
 		{
 			var baseDir = SIL.IO.FileLocator.DirectoryOfApplicationOrSolution;
-			var xliffDir = Path.Combine(baseDir, "DistFiles", "localization");
 			var xliffBareFile = Path.GetFileNameWithoutExtension(pathToEnglishFile);
+			var folder = Path.GetFileName(Path.GetDirectoryName(pathToEnglishFile));
+			var xliffDir = Path.Combine(baseDir, "DistFiles", "localization");	// Linux runtime, developers
+			var path = GetLocalizedXliffPath(xliffDir, folder, xliffBareFile);
+			if (RobustFile.Exists(path))
+				return path;
+			var xliffDir1 = Path.Combine(baseDir, "localization");	// Windows runtime
+			return GetLocalizedXliffPath(xliffDir1, folder, xliffBareFile);
+		}
+
+		private static string GetLocalizedXliffPath(string xliffDir, string subDir, string xliffBareFile)
+		{
 			Debug.Assert(xliffBareFile.EndsWith("-en"));
 			if (xliffBareFile.EndsWith("-en"))
 				xliffBareFile = xliffBareFile.Substring(0, xliffBareFile.Length - 3);
@@ -293,8 +307,7 @@ namespace Bloom
 			var xliffPath = Path.Combine(xliffDir, langId, xliffBareFile + ".xlf");
 			if (RobustFile.Exists(xliffPath))
 				return xliffPath;
-			var folder = Path.GetFileName(Path.GetDirectoryName(pathToEnglishFile));
-			xliffPath = Path.Combine(xliffDir, folder, xliffBareFile + "-" + langId + ".xlf");
+			xliffPath = Path.Combine(xliffDir, subDir, xliffBareFile + "-" + langId + ".xlf");
 			if (RobustFile.Exists(xliffPath))
 				return xliffPath;
 			// We may have an xliff file identified by only language when langId includes country, for example "es" vs "es-ES".
@@ -305,7 +318,7 @@ namespace Bloom
 				xliffPath = Path.Combine(xliffDir, langId, xliffBareFile + ".xlf");
 				if (RobustFile.Exists(xliffPath))
 					return xliffPath;
-				xliffPath = Path.Combine(xliffDir, folder, xliffBareFile + "-" + langId + ".xlf");
+				xliffPath = Path.Combine(xliffDir, subDir, xliffBareFile + "-" + langId + ".xlf");
 			}
 			return xliffPath;
 		}
