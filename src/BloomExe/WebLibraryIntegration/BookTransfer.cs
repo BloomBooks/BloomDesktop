@@ -21,6 +21,7 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
 
 namespace Bloom.WebLibraryIntegration
@@ -745,10 +746,16 @@ namespace Bloom.WebLibraryIntegration
 				{
 					if (blPublishModel.BookIsAlreadyOnServer)
 					{
-						dlg.Progress.WriteMessage("\n  Apparently {0} is already on the server. Overwriting... ", folder);
+						var msg = "Apparently this book is already on the server. Overwriting...";
+						ReportToLogBoxAndLogger(dlg.Progress, folder, msg);
 					}
 					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, excludeAudio);
 					AppendBookToUploadLogFile(folder);
+				}
+				else
+				{
+					// report to the user why we are not uploading their book
+					ReportToLogBoxAndLogger(dlg.Progress, folder, blPublishModel.GetReasonForNotUploadingBook());
 				}
 				return;
 			}
@@ -756,6 +763,14 @@ namespace Bloom.WebLibraryIntegration
 			{
 				UploadInternal(sub, dlg, container, excludeAudio, alreadyUploaded, ref context);
 			}
+		}
+
+		private void ReportToLogBoxAndLogger(LogBox logBox, string bookFolder, string msg)
+		{
+			// We've just told the user we are uploading book 'x'. Now tell them why we aren't.
+			const string seeLogFile = "\n  See log file for details.";
+			logBox.WriteMessage($"\n  {msg}{seeLogFile}");
+			Logger.WriteEvent($"***{bookFolder}: {msg}");
 		}
 
 		/// <summary>

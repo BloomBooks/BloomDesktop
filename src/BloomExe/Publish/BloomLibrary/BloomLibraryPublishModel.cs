@@ -161,6 +161,30 @@ namespace Bloom.Publish.BloomLibrary
 				return LicenseState.Custom;
 			}
 		}
+
+		/// <summary>
+		/// Used by bulk uploader to tell the user why we aren't uploading their book.
+		/// </summary>
+		/// <returns></returns>
+		public string GetReasonForNotUploadingBook()
+		{
+			const string couldNotUpload = "Could not upload book. ";
+			// It might be because we're missing required metadata.
+			if (!MetadataIsReadyToPublish)
+			{
+				if (string.IsNullOrWhiteSpace(Title))
+				{
+					return couldNotUpload + "Required book Title is empty.";
+				}
+				if (string.IsNullOrWhiteSpace(Copyright))
+				{
+					return couldNotUpload + "Required book Copyright is empty.";
+				}
+			}
+			// Or it might be because a non-template book doesn't have any 'complete' languages.
+			// every non-x - matter field which contains text in any language contains text in this
+			return couldNotUpload + "A non-template book needs at least one language where every non-xmatter field contains text in that language.";
+		}
 	}
 
 	internal enum LicenseState
