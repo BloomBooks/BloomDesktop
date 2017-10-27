@@ -33,7 +33,15 @@ namespace Bloom.Api
 		{
 			server.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
 			{
-				Debug.Fail("Books should no longer have branding api urls");
+#if DEBUG
+				// The book templates are allowed to use the branding api.  All real books
+				// should not use this facility.
+				if (request.CurrentBook == null || request.CurrentBook.FolderPath == null ||
+					!Book.BookStorage.IsStaticContent(request.CurrentBook.FolderPath))
+				{
+					Debug.Fail("Books should no longer have branding api urls");
+				}
+#endif
 				var fileName = request.RequiredFileNameOrPath("id");
 				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectName, fileName.NotEncoded);
 
