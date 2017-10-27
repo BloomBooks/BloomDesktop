@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -320,7 +321,7 @@ namespace Bloom
 				return;
 			HtmlXliff injector = HtmlXliff.Load(pathToEnglishFile);
 			var hdoc = injector.InjectTranslations(xliffPath, true);
-			hdoc.Save(pathInDesiredLanguage);
+			hdoc.Save(pathInDesiredLanguage, Encoding.UTF8);
 		}
 
 		/// <summary>
