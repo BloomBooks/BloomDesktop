@@ -1,6 +1,6 @@
 # Bloom localization workflow
 
-Starting with Version 4.0, Bloom uses Crowdin (https://crowdin.com/project/sil-bloom) to create
+Starting with Version 4.0, Bloom uses [Crowdin](https://crowdin.com/project/sil-bloom) to create
 and maintain the localization of its many UI strings and texts.  The Crowdin translations are
 automatically integrated with the master BloomDesktop repository on github
 (github.com/BloomBooks/BloomDesktop.git).  This imposes certain restrictions on how we can
@@ -11,6 +11,18 @@ Crowdin automatically creates a pull request (from an automatically created l10n
 against the master branch, updating it every 10 minutes with a new commit whenever translation
 work is actively happening.  This imposes certain requirements on how we merge such a monster
 pull request to avoid overwhelming the git log with possibly 99% translation changes.
+
+Note that the Crowdin integration with github has a one-way flow from source Xliff files to
+translated Xliff files.  It pulls changes made to the source Xliff files (or new source Xliff
+files) on the github master branch automatically, and it creates a pull request to reflect
+changes to translated files made on Crowdin.  Changes to translated Xliff files made outside of
+Crowdin (or entirely new translated Xliff files created outside of Crowdin) must be uploaded
+manually to Crowdin for translators to see those translations.  If this is needed, it should be
+done using the SILCrowdinBot account to avoid having a developer's name attached to the
+translations.  (Of course, if a programmer doesn't mind being called a lousy translator ...)
+Once the translation process is started on Crowdin for a given language, translation changes
+made outside of Crowdin are discouraged because it complicates merging changes made on Crowdin
+and it negates most of the value of using Crowdin to begin with.
 
 ## Effects of English xliff file changes
 
@@ -33,7 +45,7 @@ pull request to avoid overwhelming the git log with possibly 99% translation cha
   does the same in the *target* element content (translation) without changing the approved
   status of the *trans-unit* element.  Except if the content contains internal html markup, then
   the *target* element is not changed and the *approved* status of the *trans-unit* element is
-  cleared.  (This appears to be a corner case in crowdin's code that may or not be intentional.)
+  cleared.  (This appears to be a corner case in Crowdin's code that may or not be intentional.)
 
 - Adding, removing, or reordering *trans-unit* elements in the English xliff file without
   changing them merely causes the corresponding addition, removal, or reordering in the
@@ -47,39 +59,42 @@ pull request to avoid overwhelming the git log with possibly 99% translation cha
   file.
 
 - Adding, deleting, or editing *note* elements has no effect on the translation content.  It
-  does change what is displayed as context for the translation in crowdin.
+  does change what is displayed as context for the translation in Crowdin.
+
+- Adding a new English xliff file to the master branch on github after the initial setup adds
+  that file to Crowdin on the next sync.
 
 ## Effects of translated xliff file changes
 
 - Modifying a translated xliff file and committing/merging it to the master BloomDesktop
-  repository on github has no effect on what is seen on the crowdin site.  A translated xliff
-  file must be explicitly uploaded to the SIL-Bloom crowdin project to have any effect there.
+  repository on github has no effect on what is seen on the Crowdin site.  A translated xliff
+  file must be explicitly uploaded to the SIL-Bloom Crowdin project to have any effect there.
   (Editing and committing/merging a translated xliff file may complicate merging in changes from
-  crowdin, however.)
+  Crowdin, however.)
 
-- Uploading to crowdin a translated xliff file with the new *trans-unit* element added the
-  translation to crowdin without approving it.  (The upload dialog had a checkbox for approving
+- Uploading to Crowdin a translated xliff file with the new *trans-unit* element added the
+  translation to Crowdin without approving it.  (The upload dialog had a checkbox for approving
   uploaded translations which I left unchecked.)  A previously deleted *trans-unit* element did
-  not get added to crowdin.  An unedited English source that had been edited separately in the
+  not get added to Crowdin.  An unedited English source that had been edited separately in the
   English xliff file and committed/merged retained the change that had been made in English
   rather than reverting to what is in the edit translated xliff file.
 
-- Uploading to crowdin a translated xliff file with an edited translation which is marked as
-  approved replaced any translation on the crowdin site (even one that had been approved), and
-  left the approved flag set on crowdin.
+- Uploading to Crowdin a translated xliff file with an edited translation which is marked as
+  approved replaced any translation on the Crowdin site (even one that had been approved), and
+  left the approved flag set on Crowdin.
 
-- Uploading to crowdin a translated xliff file with an edited translation which not marked as
-  approved did not change an approved translation on crowdin, or change the approval status on
-  crowdin.  It did add the modified translation as a suggestion.
+- Uploading to Crowdin a translated xliff file with an edited translation which not marked as
+  approved did not change an approved translation on Crowdin, or change the approval status on
+  Crowdin.  It did add the modified translation as a suggestion.
 
 - Changing the *original* attribute of the *file* element in a translated xliff file and then
-  uploading it to crowdin has no effect on what you see on crowdin.
+  uploading it to Crowdin has no effect on what you see on Crowdin.
 
 - Changing the *product-version* attribute of the *file* element in a translated xliff file and
-  then uploading it to crowdin has no effect on what you see on crowdin.
+  then uploading it to Crowdin has no effect on what you see on Crowdin.
 
 - Changing the *datatype* attribute of the *file* element in a translated xliff file and then
-  uploading it to crowdin has no effect on what you see on crowdin.
+  uploading it to Crowdin has no effect on what you see on Crowdin.
 
 
 ## Restrictions on xliff file changes
@@ -93,31 +108,33 @@ pull request to avoid overwhelming the git log with possibly 99% translation cha
   necessary.
 
 - Changes to translated xliff files that are committed to github must be independently uploaded
-  to crowdin to have any effect on the translations there.
+  to Crowdin to have any effect on the translations there.  The SILCrowdinBot account should be
+  used to upload such files to Crowdin.
 
-- If you edit a translation apart from crowdin and then commit/merge it to github and follow up
-  by uploading to crowdin, remove any *approved* attribute from the *trans-unit* element* unless
+- If you edit a translation apart from Crowdin and then commit/merge it to github and follow up
+  by uploading to Crowdin, remove any *approved* attribute from the *trans-unit* element* unless
   you are absolutely sure of the translation as an expert speaker and translator.
 
 - If you change the leading or trailing spaces in a translation, check to ensure that the same
-  is done on crowdin after uploading the file, and restore any approved status that was cleared
+  is done on Crowdin after uploading the file, and restore any approved status that was cleared
   by a failure to update the translated string automatically.
 
-## Merging crowdin pull requests
+## Merging Crowdin pull requests
 
-The crowdin pull request is structured as a series of commits, possibly one every 10 minutes
+The Crowdin pull request is structured as a series of commits, possibly one every 10 minutes
 while translation work is going on.  This is good because the PR reflects translation progress
 almost as soon as it is made, but bad in that each commit adds an entry to the history log.  On
 the master branch, it is much better to squash down all the commits in the PR to a single commit
-with a comment along the lines of "merge recent translations from crowdin".  A simple merge
+with a comment along the lines of "merge recent translations from Crowdin".  A simple merge
 would bring over all the history for all the commits, which would effectively hide the log
 entries for real programming work.  This means that a manual process is needed to properly merge
-in translations from crowdin.  (If there were a separate repository just for localizations, then
+in translations from Crowdin.  (If there were a separate repository just for localizations, then
 a normal merge with all that history would probably be okay.)
 
-1. Before anything else, go to https://crowdin.com/project/SIL-Bloom/settings#integration and
-   click on the "Pause Sync" button.  This prevents a flood of translation work continuing to be
-   added to the pull request branch while you are trying to merge the pull request.
+1. Before anything else, go to [Crowdin Integration
+   Settings](https://crowdin.com/project/SIL-Bloom/settings#integration) for github and click on
+   the "Pause Sync" button.  This prevents a flood of translation work continuing to be added to
+   the pull request branch while you are trying to merge the pull request.
 
 2. Create a temporary clone of the master BloomDesktop repository on your local machine and
    checkout the l10n_master branch.
@@ -174,7 +191,8 @@ a normal merge with all that history would probably be okay.)
         rm -rf BloomDesktop
     </pre>
 
-7. Go back to https://crowdin.com/project/SIL-Bloom/settings#integration and click on the
-   "Resume" button to allow translation changes to be committed to the l10n_master branch once
-   again.  The l10n_master branch (and a new pull request) will be automatically created by
-   crowdin when it is first needed.
+7. Go back to [Crowdin Integration
+   Settings](https://crowdin.com/project/SIL-Bloom/settings#integration) for github and click on
+   the "Resume" button to allow translation changes to be committed to the l10n_master branch
+   once again.  The l10n_master branch (and a new pull request) will be automatically created by
+   Crowdin when it is first needed.
