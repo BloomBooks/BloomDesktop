@@ -114,6 +114,7 @@ namespace Bloom.Publish.Epub
 		private BookThumbNailer _thumbNailer;
 		public bool PublishWithoutAudio { get; set; }
 		Browser _browser = new Browser();
+		private BookServer _bookServer;
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -124,10 +125,11 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
-		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator)
+		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator, BookServer bookServer)
 		{
 			_thumbNailer = thumbNailer;
 			_browser.Isolator = _isolator;
+			_bookServer = bookServer;
 		}
 
 		/// <summary>
@@ -145,6 +147,15 @@ namespace Bloom.Publish.Epub
 			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
 
 			_outerStagingFolder = new TemporaryFolder(kEPUBExportFolder);
+			var tempBookPath = Path.Combine(_outerStagingFolder.FolderPath, Path.GetFileName(Book.FolderPath));
+			if (_bookServer != null)
+			{
+				// It should only be null while running unit tests.
+				// Eventually, we want a unit test that checks this device xmatter behavior.
+				// But don't have time for now.
+				_book = BookCompressor.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
+			}
+
 			// The readium control remembers the current page for each book.
 			// So it is useful to have a unique name for each one.
 			// However, it needs to be something we can put in a URL without complications,
