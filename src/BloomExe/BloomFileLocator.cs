@@ -206,6 +206,18 @@ namespace Bloom
 		}
 
 		/// <summary>
+		/// Map from human readable filenames to random filenames to discourage having someone
+		/// open and inadvertantly lock a translated HTML file.  We save the names during each
+		/// run of Bloom to minimize file storage and computation time while ensuring that each
+		/// update to Bloom will always cause translated HTML files to be regenerated using the
+		/// very latest xliff and English HTML files.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-5189.
+		/// </remarks>
+		private static Dictionary<string, string> _mapLocalizedFileToTempFilename = new Dictionary<string, string>();
+
+		/// <summary>
 		/// This can be used to find the best localized file when there is only one file with the given name,
 		/// and the file is part of the files distributed with Bloom (i.e., not something in a downloaded template).
 		/// </summary>
@@ -231,53 +243,82 @@ namespace Bloom
 
 
 		/// <summary>
-		/// If there is a file sitting next to the english one with the desired language, get that path.
+		/// If there is an existing file in the desired language, return its path.
+		/// Otherwise, try to create it if possible and return the path of the newly created file.
 		/// Otherwise, returns the English path.
 		/// </summary>
 		public static string GetBestLocalizedFile(string pathToEnglishFile)
 		{
-			var pathInDesiredLanguage = GetLocalizedFilePath(pathToEnglishFile);
-			if (RobustFile.Exists(pathInDesiredLanguage))
+			var keyPathInDesiredLanguage = GetLocalizedFilePathKey(pathToEnglishFile);
+			if (keyPathInDesiredLanguage == pathToEnglishFile)
+				return pathToEnglishFile;
+
+			string pathInDesiredLanguage;
+			if (_mapLocalizedFileToTempFilename.TryGetValue(keyPathInDesiredLanguage, out pathInDesiredLanguage) &&
+				RobustFile.Exists(pathInDesiredLanguage))
+			{
 				return pathInDesiredLanguage;
+			}
 			if (pathToEnglishFile.ToLowerInvariant().EndsWith("-en.txt"))
 			{
 				// The xliff based translation process does not (yet?) handle plain .txt files.
+				// Those have been translated and distributed with the program.
 				pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
+				return RobustFile.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
 			}
 			else
 			{
 				Debug.Assert(pathToEnglishFile.ToLowerInvariant().EndsWith(".htm") || pathToEnglishFile.ToLowerInvariant().EndsWith(".html"));
 				if (!pathToEnglishFile.ToLowerInvariant().EndsWith(".htm") && !pathToEnglishFile.ToLowerInvariant().EndsWith(".html"))
 					return pathToEnglishFile;
-				CreateLocalizedHtmlFile(pathToEnglishFile, pathInDesiredLanguage);
+				return CreateLocalizedHtmlFile(pathToEnglishFile, keyPathInDesiredLanguage);
 			}
-			return RobustFile.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
 		}
 
 		/// <summary>
-		/// Localized files are created and stored in the localizations folder of the Bloom application
-		/// data folder.  The filenames are tagged with the target language code.  The template book
-		/// ReadMe files are stored in subfolders with the same name as the template folder to keep them
-		/// unambiguous.
+		/// Localized files are created and stored in the Bloom/localizations folder of the temp folder.
+		/// The filename keys are tagged with the target language code.  The template book ReadMe-xx files are
+		/// stored in subfolders with the same name as the template folder to keep them unambiguous.  The
+		/// names generated here are used as keys into a map.  The directory structure of the key is retained,
+		/// but the filename proper is replaced by a random name for storage on the disk.
 		/// </summary>
-		private static string GetLocalizedFilePath(string pathToEnglishFile)
+		/// <remarks>
+		/// Storing the generated localized files in the temp directory area, and deleting them each time the
+		/// program starts, ensures that new translations or changes to the English HTML are not lost due to
+		/// an existing translated file.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-5189.
+		/// </remarks>
+		private static string GetLocalizedFilePathKey(string pathToEnglishFile)
 		{
-			var cacheDir = Path.Combine(ProjectContext.GetBloomAppDataFolder(), "localizations");
+			if (LocalizationManager.UILanguageId == "en" ||
+				LocalizationManager.UILanguageId.StartsWith("en-"))
+			{
+				return pathToEnglishFile;	// don't create a copy of the original English file
+			}
+			var cacheDir = GetLocalizedFileCacheDirectory();
 			var bareFilename = Path.GetFileNameWithoutExtension(pathToEnglishFile);
 			if (bareFilename == "ReadMe-en")
 			{
+				// Every book template ReadMe file has the same name, so we use the directory structure
+				// to disambiguate the generated files.
 				var folder = Path.GetFileName(Path.GetDirectoryName(pathToEnglishFile));
 				cacheDir = Path.Combine(cacheDir, folder);
 			}
-			// Ensure the cache directory exists in case we need to create the file.
-			Directory.CreateDirectory(cacheDir);
 			return Path.Combine(cacheDir, Path.GetFileName(pathToEnglishFile).Replace("-en.", "-" + LocalizationManager.UILanguageId + "."));
+		}
+
+		/// <summary>
+		/// Get the directory path where localized HTML files are created.
+		/// </summary>
+		public static string GetLocalizedFileCacheDirectory()
+		{
+			return Path.Combine(Path.GetTempPath(), "Bloom", "localizations");
 		}
 
 		/// <summary>
 		/// The localized xliff files are stored under DistFiles/localization in two different ways.  The general
 		/// location is in a subfolder with the language code as its name, and the .xlf file named without any
-		/// embedded language code.  For the template books which all have ReadMe files of the same name, the
+		/// embedded language code.  For the template books which all have ReadMe-xx files of the same name, the
 		/// xliff file is stored in a subfolder with the same name as the template book's folder, and the language
 		/// code is embedded in the file name as expected (ReadMe-en.xlf, ReadMe-fr.xlf, etc.).
 		/// </summary>
@@ -325,16 +366,23 @@ namespace Bloom
 
 		/// <summary>
 		/// Use HtmlXliff to translate the English HTML file into another language using the translated xliff file
-		/// corresponding to this HTML file.
+		/// corresponding to this HTML file.  If the translation occurs, a random filename is used in the given
+		/// directory under the standard temp directory.
 		/// </summary>
-		private static void CreateLocalizedHtmlFile(string pathToEnglishFile, string pathInDesiredLanguage)
+		private static string CreateLocalizedHtmlFile(string pathToEnglishFile, string keyPathInDesiredLanguage)
 		{
 			var xliffPath = GetLocalizedXliffPath(pathToEnglishFile);
 			if (!RobustFile.Exists(xliffPath))
-				return;
+				return pathToEnglishFile;
 			HtmlXliff injector = HtmlXliff.Load(pathToEnglishFile);
 			var hdoc = injector.InjectTranslations(xliffPath, true);
+			// Ensure the directory exists.
+			var cacheDir = GetLocalizedFileCacheDirectory();
+			Directory.CreateDirectory(cacheDir);	// just in case it hasn't yet been created
+			string pathInDesiredLanguage = Path.Combine(cacheDir, Path.GetRandomFileName() + ".htm");
 			hdoc.Save(pathInDesiredLanguage, Encoding.UTF8);
+			_mapLocalizedFileToTempFilename[keyPathInDesiredLanguage] = pathInDesiredLanguage;
+			return pathInDesiredLanguage;
 		}
 
 		/// <summary>

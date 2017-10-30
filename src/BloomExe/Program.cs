@@ -258,8 +258,8 @@ namespace Bloom
 						InstallerSupport.MakeBloomRegistryEntries(args);
 						BookDownloadSupport.EnsureDownloadFolderExists();
 
+						RemoveAnyStaleLocalizedFiles();
 						SetUpLocalization();
-
 
 						if (args.Length == 1 && !IsInstallerLaunch(args))
 						{
@@ -999,6 +999,24 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 			_errorHandlingHasBeenSetUp = true;
+		}
+
+		/// <summary>
+		/// Removes any localized files created by an earlier run of Bloom.  This helps to ensure that
+		/// localized files are always up to date with the current release of Bloom.
+		/// </summary>
+		/// <remarks>
+		/// Localized files are created with random filenames, so they shouldn't entice anything else
+		/// from reading and holding on to them.  They're stored in a Bloom specific location as well.
+		/// </remarks>
+		private static void RemoveAnyStaleLocalizedFiles()
+		{
+			var cacheDir = BloomFileLocator.GetLocalizedFileCacheDirectory();
+			if (Directory.Exists(cacheDir))
+			{
+				foreach (var file in Directory.EnumerateFiles(cacheDir).ToArray())
+					RobustFile.Delete(file);
+			}
 		}
 
 		public static void OldVersionCheck()
