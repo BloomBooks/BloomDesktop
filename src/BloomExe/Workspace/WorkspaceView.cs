@@ -353,18 +353,49 @@ namespace Bloom.Workspace
 		public static string MenuItemName(CultureInfo lang)
 		{
 			string englishName = string.Empty;
-			var languageNamesRecognizableByOtherLatinScriptReaders = new List<string> { "en", "fr", "es", "it", "tpi", "id" };
-			if ((lang.EnglishName != lang.NativeName) && !(languageNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
+			var nativeName = lang.NativeName;
+			var testChar = nativeName[0];
+			if (lang.EnglishName != lang.NativeName && !IsLatinChar(testChar))
 			{
 				englishName = " (" + lang.EnglishName + ")";
 			}
-			var menuItemName = lang.NativeName + englishName;
+			// Remove any country (or script?) names apart from Chinese (Simplified)
+			if (lang.Name != "zh-CN")
+			{
+				var idxCountry = lang.EnglishName.IndexOf(" (");
+				if (englishName.Length > 0 && idxCountry > 0)
+				{
+					englishName = " (" + lang.EnglishName.Substring(0, idxCountry) + ")";
+				}
+				idxCountry = nativeName.IndexOf(" (");
+				if (idxCountry > 0)
+				{
+					nativeName = nativeName.Substring(0, idxCountry);
+				}
+			}
+			var menuItemName = nativeName + englishName;
 			return menuItemName;
+		}
+
+		/// <summary>
+		/// Return true for ASCII, Latin-1, Latin Ext. A, Latin Ext. B, IPA Extensions, and Spacing Modifier Letters.
+		/// </summary>
+		public static bool IsLatinChar(char test)
+		{
+			return ((int)test <= 0x02FF);
 		}
 
 		public static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, CultureInfo language)
 		{
-			toolStripButton.Text = language.NativeName;
+			var nativeName = language.NativeName;
+			// Don't display any country name.  Chinese is an exception, it's not a country name.
+			if (language.Name != "zh-CN")
+			{
+				var idx = nativeName.IndexOf(" (");
+				if (idx > 0)
+					nativeName = nativeName.Substring(0, idx);
+			}
+			toolStripButton.Text = nativeName;
 		}
 
 		private void OnEditBook(Book.Book book)
