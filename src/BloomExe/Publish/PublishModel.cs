@@ -600,7 +600,7 @@ namespace Bloom.Publish
 				EpubMaker.Dispose();
 				EpubMaker = null;
 			}
-			EpubMaker = new EpubMaker(_thumbNailer, _isoloator);
+			EpubMaker = new EpubMaker(_thumbNailer, _isoloator, _bookServer);
 			EpubMaker.Book = BookSelection.CurrentSelection;
 			EpubMaker.Unpaginated = true; // Enhance: UI?
 		}

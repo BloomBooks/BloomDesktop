@@ -33,15 +33,22 @@ namespace Bloom.Book
 		{
 			using(var temp = new TemporaryFolder())
 			{
-				BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
-				var bookInfo = new BookInfo(temp.FolderPath, true);
-				bookInfo.XMatterNameOverride = "Device";
-				var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-				modifiedBook.BringBookUpToDate(new NullProgress());
-				modifiedBook.Save();
-				modifiedBook.Storage.UpdateSupportFiles();
+				var tempFolderPath = temp.FolderPath;
+				var modifiedBook = MakeDeviceXmatterTempBook(book, bookServer, tempFolderPath);
 				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false);
 			}
+		}
+
+		public static Book MakeDeviceXmatterTempBook(Book book, BookServer bookServer, string tempFolderPath)
+		{
+			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
+			var bookInfo = new BookInfo(tempFolderPath, true);
+			bookInfo.XMatterNameOverride = "Device";
+			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+			modifiedBook.BringBookUpToDate(new NullProgress());
+			modifiedBook.Save();
+			modifiedBook.Storage.UpdateSupportFiles();
+			return modifiedBook;
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,

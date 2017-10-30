@@ -33,6 +33,7 @@ namespace BloomTests.Publish
 		private XmlNamespaceManager _ns; // Set up with all the namespaces we use (See GetNamespaceManager())
 		private static EnhancedImageServer s_testServer;
 		private static BookSelection s_bookSelection;
+		private BookServer _bookServer;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
@@ -50,6 +51,7 @@ namespace BloomTests.Publish
 		{
 			base.Setup();
 			GetNamespaceManager();
+			_bookServer = CreateBookServer();
 		}
 
 		[Test]
@@ -308,7 +310,7 @@ namespace BloomTests.Publish
 
 		private EpubMakerAdjusted CreateEpubMaker(Bloom.Book.Book book)
 		{
-			return new EpubMakerAdjusted(book, new BookThumbNailer(_thumbnailer.Object));
+			return new EpubMakerAdjusted(book, new BookThumbNailer(_thumbnailer.Object), _bookServer);
 		}
 
 		[Test]
@@ -1058,7 +1060,14 @@ namespace BloomTests.Publish
 
 	class EpubMakerAdjusted : EpubMaker
 	{
-		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer) : base(thumbNailer, new NavigationIsolator())
+		// Todo: at least some test involving a real BookServer which validates the device xmatter behavior.
+		// The minimal bookServer created by CreateBookServer fails to copy mock books because
+		// GetPathHtmlFile() return an empty string, I think because we don't make a real book file with mocked books.
+		// So I think all the tests are currently passing null for the bookserver, which disables the
+		// device xmatter code.
+		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer, BookServer bookServer) :
+			base(thumbNailer, new NavigationIsolator(),
+				string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
 		{
 			this.Book = book;
 			AudioProcessor._compressorMethod = EpubMakerAdjusted.PretendMakeCompressedAudio;
