@@ -1475,7 +1475,18 @@ namespace Bloom.Book
 			}
 		}
 
-		public bool HasAboutBookInformationToShow { get { return _storage!=null && RobustFile.Exists(AboutBookHtmlPath); } }
+		public bool HasAboutBookInformationToShow
+		{
+			get
+			{
+				// Book Information should show only for templates, not for created books.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5190.
+				return _storage != null &&
+					_storage.FolderPath != null &&
+					_storage.FolderPath.Replace("\\", "/").Contains("/browser/templates/") &&
+					RobustFile.Exists(AboutBookHtmlPath);
+			}
+		}
 		public string AboutBookHtmlPath  {
 			get
 			{
