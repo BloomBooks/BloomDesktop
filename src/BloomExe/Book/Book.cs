@@ -890,6 +890,7 @@ namespace Bloom.Book
 					ConvertTagsToMetaData(oldTagsPath, BookInfo);
 					RobustFile.Delete(oldTagsPath);
 				}
+				BookInfo.BrandingProjectName = _collectionSettings.BrandingProjectName;
 			}
 			else //used for making a preview dom
 			{
