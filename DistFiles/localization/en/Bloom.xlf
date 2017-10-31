@@ -146,6 +146,10 @@
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.Default">
+        <source xml:lang="en">Default</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.Default</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
@@ -155,15 +159,35 @@
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true">
+        <source xml:lang="en">Device</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
+        <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true">
+        <source xml:lang="en">SIL-PNG</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
+        <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
+        <source xml:lang="en">Super Paper Saver</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
+        <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true">
+        <source xml:lang="en">Video</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
+        <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
         <source xml:lang="en">Arabic-Indic</source>
@@ -2216,6 +2240,10 @@
       <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Publish to an Android device.</source>
+        <note>ID: PublishTab.AndroidButton-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio">
         <source xml:lang="en">Booklet Insides</source>
