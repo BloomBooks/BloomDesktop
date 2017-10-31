@@ -282,7 +282,7 @@ namespace Bloom.Collection
 				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
 					continue;
 
-				var labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+pack.Key, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
+				var labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+pack.EnglishLabel, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
 				var item = _xmatterList.Items.Add(labelToShow);
 				item.Tag = pack;
 				if(pack.Key == _collectionSettings.XMatterPackName)
@@ -339,10 +339,13 @@ namespace Bloom.Collection
 		private void LoadBrandingCombo()
 		{
 			var brandingDirectory = BloomFileLocator.GetDirectoryDistributedWithApplication("branding");
-			foreach(var brandDirectory in Directory.GetDirectories(brandingDirectory))
+			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
 			{
 				var brand = Path.GetFileName(brandDirectory);
-				_brandingCombo.Items.Add(brand);
+				// Only brandings that NEED translation should be added to the English xliff file,
+				// the others will just get the English label. At this point, only 'Default' is localized.
+				var brandLabel = LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.Branding." + brand, brand);
+				_brandingCombo.Items.Add(brandLabel);
 				if (brand == _collectionSettings.BrandingProjectName)
 					_brandingCombo.SelectedIndex = _brandingCombo.Items.Count - 1;
 			}
