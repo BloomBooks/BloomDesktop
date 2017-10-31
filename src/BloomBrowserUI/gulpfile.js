@@ -28,6 +28,8 @@ var del = require('del');
 var runSequence = require('run-sequence');
 var gulpCopy = require('gulp-copy');
 var gulpFlatten = require('gulp-flatten');
+var globule = require('globule');
+var myProcess = require('child_process');
 
 // Ensure the version of node we are running is the one we require
 const version = engines.node;
@@ -53,7 +55,18 @@ var paths = {
 
     //files we are *not* running through some compiler that need to make it into the outputDir directory.
     filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts', '!./**/*.pug', '!./**/*.md', '!./**/*.less', '!./**/*.bat', '!./**/node_modules/**/*.*'],
+    // List all the HTML files created by markdown or pug earlier in this gulp process.
+    htmDist: ['../../DistFiles/**/*-en.htm*', '../../output/browser/**/*-en.htm*'],
+    // List all the available translated Xliff files. (omitting original English Xliff files)
+    xliff: ['../../DistFiles/localization/**/*.xlf', '!../../DistFiles/localization/en/*.xlf',
+                '!../../DistFiles/localization/**/*-en.xlf'],
 };
+
+// Expand the wildcards to get actual file list for translated Xliff.
+var allXliffFiles = globule.find(paths.xliff);
+// Check for the existence of the SIL mono, which flags we're on Linux
+// and need to use it to execute HtmlXliff.exe
+var pathsToMono = globule.find(['/opt/mono4-sil/**/mono']);
 
 gulp.task('less', function () {
     var less = require('gulp-less');
@@ -210,10 +223,77 @@ gulp.task('markdownDistInfo', function () {
         .pipe(debug({ title: ' md --> ' }));
 });
 
+gulp.task('translateDist', function() {
+    return gulp.src(paths.htmDist)
+        .pipe(debug({ title: 'translateDist:' }))
+        .pipe(tap(function (file) {
+            var xliffFiles = getXliffFiles(file.path);
+            for (i = 0; i < xliffFiles.length; ++i) {
+                var outfile = getOutputFilename(file.path, xliffFiles[i]);
+                var cmd = "";
+                if (pathsToMono.length > 0)
+                   cmd = "/opt/mono4-sil/bin/mono ";
+                cmd = cmd + "../../lib/dotnet/HtmlXliff.exe --inject";
+                cmd = cmd + " -x \"" + xliffFiles[i] + "\"";
+                cmd = cmd + " -o \"" + outfile + "\"";
+                cmd = cmd + " \"" + file.path + "\"";
+                myProcess.exec(cmd, function(err, stdout, stderr) {
+                    if (err) {
+                        console.err("\n" + stderr);
+                    } else {
+                        console.log("Created " + outfile);
+                    }
+                });
+            }
+            return;
+        }))
+});
+
 gulp.task('default',
     function (callback) {
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-        runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp', 'markdownTemplateReadme', 'markdownDistInfo'], 'webpack', callback)
+        runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp', 'markdownTemplateReadme', 'markdownDistInfo'], ['webpack', 'translateDist'], callback)
     });
 
+// Find which of the translated xliff files match up with the given html file.
+var getXliffFiles = function (htmFile) {
+    var pathPieces = htmFile.split("/");
+    var basename = pathPieces[pathPieces.length - 1];
+    if (basename == "ReadMe-en.htm")
+    {
+        basename = "/" + pathPieces[pathPieces.length - 2] + "/ReadMe-";
+    }
+    else
+    {
+        var pos = basename.search("-en.htm");
+        if (pos > 0)
+           basename = "/" + basename.substring(0, pos);
+    }
+    var retval = [];
+    for (i = 0 ; i < allXliffFiles.length; i++) {
+        var pos = allXliffFiles[i].search(basename);
+        if (pos > 0)
+           retval.push(allXliffFiles[i]);
+    }
+    return retval;
+}
+
+// Get the language code from the xlfFile path and put it into the htmFile path
+// (replacing the English language code) for an output file pathname.
+var getOutputFilename = function(htmFile, xlfFile) {
+    var langCode = "";
+    var pos = xlfFile.search("/ReadMe-");
+    if (pos >= 0) {
+        pos = pos + 8;
+        var endPos = xlfFile.search(".xlf");
+        langCode = xlfFile.substring(pos, endPos);
+    }
+    else {
+        pos = xlfFile.lastIndexOf("/");
+        langCode = xlfFile.substring(0, pos);
+        pos = langCode.lastIndexOf("/");
+        langCode = langCode.substring(pos + 1, langCode.length);
+    }
+    return htmFile.replace("-en.htm", "-" + langCode + ".htm");
+}
