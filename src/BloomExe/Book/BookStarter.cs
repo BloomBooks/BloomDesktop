@@ -86,7 +86,7 @@ namespace Bloom.Book
 			// For both, "*.htm?" should work, but it doesn't return *.htm on Linux [Mono4 bug?].
 			var candidates = from x in Directory.GetFiles(folder, "*.htm")
 							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm") ||
-									 Regex.IsMatch(Path.GetFileName(x), "^ReadMe-[a-z]{2,3}(-[A-Z]{2})?\\.htm$"))
+									 Regex.IsMatch(Path.GetFileName(x), "^ReadMe-[a-z]{2,3}(-[A-Z]{2})?(\\.xlf)?\\.htm$"))
 							 select x;
 			if (!candidates.Any())
 				candidates = from x in Directory.GetFiles(folder, "*.html")
