@@ -31,10 +31,10 @@ where_curl=$(type -P curl)
 where_wget=$(type -P wget)
 if [ "$where_curl" != "" ]
 then
-copy_curl $1 $2
+copy_curl "$1" "$2"
 elif [ "$where_wget" != "" ]
 then
-copy_wget $1 $2
+copy_wget "$1" "$2"
 else
 echo "Missing curl or wget"
 exit 1
@@ -46,9 +46,9 @@ copy_curl() {
 echo "curl: $2 <= $1"
 if [ -e "$2" ] && [ "$force" != "1" ]
 then
-curl -# -L -z $2 -o $2 $1
+curl -# -L -z "$2" -o "$2" "$1"
 else
-curl -# -L -o $2 $1
+curl -# -L -o "$2" "$1"
 fi
 }
 
@@ -57,7 +57,7 @@ echo "wget: $2 <= $1"
 f1=$(basename $1)
 f2=$(basename $2)
 cd $(dirname $2)
-wget -q -L -N $1
+wget -q -L -N "$1"
 # wget has no true equivalent of curl's -o option.
 # Different versions of wget handle (or not) % escaping differently.
 # A URL query is the only reason why $f1 and $f2 should differ.
@@ -159,7 +159,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=XliffForHtml_WindowsMasterContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"HtmlXliff.*"=>"lib/dotnet"}
+#     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
 # [13] build: palaso-win32-master-nostrongname Continuous (Libpalaso_PalasoWin32masterNostrongnameContinuous)
 #     project: libpalaso
@@ -236,6 +236,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/libtidy.dll ../lib/dotnet/libtidy.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.pdb ../lib/dotnet/HtmlXliff.pdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.BuildTasks.dll ../build/SIL.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.BuildTasks.AWS.dll ../build/SIL.BuildTasks.AWS.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/AWSSDK.Core.dll ../build/AWSSDK.Core.dll
@@ -253,6 +254,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_Palaso
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.WritingSystems.dll ../lib/dotnet/SIL.WritingSystems.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 # extract downloaded zip files
-unzip -uqo ../Downloads/ghostscript-win32.zip -d ../DistFiles/ghostscript
-unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
+unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
+unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script
