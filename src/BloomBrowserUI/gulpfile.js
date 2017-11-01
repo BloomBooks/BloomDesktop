@@ -292,7 +292,7 @@ var getXliffFiles = function (htmFile) {
 var getOutputFilename = function(htmFile, xlfFile) {
     var langCode = "";
     if ( xlfFile.search("/ReadMe-") > 0)  // as in "blah/foo/ReadMe-fr.htm"
-        langCode = xlfFile.replace(/.*\/ReadMe-/, "").replace(".htm","");
+        langCode = xlfFile.replace(/.*\/ReadMe-/, "").replace(".xlf","");
     else  // as in "blah/foo/fr/something.htm"
         langCode = xlfFile.split("/").slice(-2, -1)[0]; // penultimate item has the language code
     return htmFile.replace("-en.htm", "-" + langCode + ".htm");
