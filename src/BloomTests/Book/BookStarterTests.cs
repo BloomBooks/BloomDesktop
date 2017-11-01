@@ -394,6 +394,9 @@ namespace BloomTests.Book
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "book.userPrefs"), @"some nonsense");
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "book.userPrefs.bak"), @"some nonsense");
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "ReadMe-en.md"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "ReadMe-en.htm"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "ReadMe-zh-CN.htm"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "ReadMe-tpi.htm"), @"some nonsense");
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "something.jade"), @"some nonsense");
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "something.less"), @"some nonsense");
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "readme.txt"), @"some nonsense");
@@ -402,6 +405,9 @@ namespace BloomTests.Book
 			Assert.That(File.Exists(Path.Combine(folderPath, "book.userPrefs")), Is.False);
 			Assert.That(File.Exists(Path.Combine(folderPath, "book.userPrefs.bak")), Is.False);
 			Assert.That(File.Exists(Path.Combine(folderPath, "ReadMe-en.md")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "ReadMe-en.htm")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "ReadMe-zh-CN.htm")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "ReadMe-tpi.htm")), Is.False);
 			Assert.That(File.Exists(Path.Combine(folderPath, "something.jade")), Is.False);
 			Assert.That(File.Exists(Path.Combine(folderPath, "something.less")), Is.False);
 			// And just to be sure, we're not skipping EVERYTHING!
