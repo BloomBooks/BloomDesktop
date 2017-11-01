@@ -96,8 +96,11 @@ namespace Bloom.Book
 				return candidates.First();
 			else
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-					"There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html or ReadMe-*.htm]", folder);
+				var msg = new System.Text.StringBuilder();
+				msg.AppendLineFormat("There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html or ReadMe-*.htm]:", folder);
+				foreach (var f in candidates)
+					msg.AppendLineFormat("    {0}", f);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(msg.ToString());
 				throw new ApplicationException();
 			}
 
@@ -105,7 +108,7 @@ namespace Bloom.Book
 
 		private static bool IsPathToReadMeHtm(string path)
 		{
-			return Regex.IsMatch(Path.GetFileName(path), "^ReadMe-[a-z]{2,3}(-[A-Z]{2})?(\\.xlf)?\\.htm$");
+			return Regex.IsMatch(Path.GetFileName(path), "^ReadMe-[a-z]{2,3}(-[A-Z]{2})?\\.htm$");
 		}
 
 		private string GetMetaValue(XmlDocument Dom, string name, string defaultValue)
