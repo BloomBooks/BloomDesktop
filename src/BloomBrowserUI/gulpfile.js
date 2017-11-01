@@ -66,11 +66,7 @@ var paths = {
 var allXliffFiles = globule.find(paths.xliff);
 // Check for the existence of the SIL mono, which flags we're on Linux
 // and need to use it to execute HtmlXliff.exe
-var pathsToMono = globule.find(['/opt/mono4-sil/**/mono']);
-var IsLinux = function() {
-    return pathsToMono.length > 0;
-}
-
+var IsLinux = globule.find(['/opt/mono4-sil/**/mono']).length > 0;
 
 gulp.task('less', function () {
     var less = require('gulp-less');
@@ -235,7 +231,7 @@ gulp.task('translateHtmlFiles', function() {
             for (i = 0; i < xliffFiles.length; ++i) {
                 var outfile = getOutputFilename(file.path, xliffFiles[i]);
                 var cmd = "";
-                if (IsLinux())
+                if (IsLinux)
                     cmd = "/opt/mono4-sil/bin/mono ../../lib/dotnet/HtmlXliff.exe --inject";
                 else
                     cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --inject";
@@ -253,11 +249,34 @@ gulp.task('translateHtmlFiles', function() {
         }))
 });
 
+gulp.task('createXliffFiles', function() {
+    return gulp.src(paths.htmlFiles)
+        .pipe(debug({ title: 'createXliffFiles:' }))
+        .pipe(tap(function (file) {
+            var xliffFile = getXliffFilename(file.path);
+            var cmd = "";
+            if (IsLinux)
+                cmd = "/opt/mono4-sil/bin/mono ../../lib/dotnet/HtmlXliff.exe --extract";
+            else
+                cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract";
+            cmd = cmd + " -o \"" + xliffFile + "\"";
+            cmd = cmd + " \"" + file.path + "\"";
+            console.log("Extracting " + xliffFile + " from " + file.path);
+            myProcess.exec(cmd, function(err, stdout, stderr) {
+                if (err) {
+                    console.error("\n" + stderr);
+                }
+            });
+            return;
+        }))
+
+});
+
 gulp.task('default',
     function (callback) {
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-        runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp', 'markdownTemplateReadme', 'markdownDistInfo'], ['webpack', 'translateHtmlFiles'], callback)
+        runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp', 'markdownTemplateReadme', 'markdownDistInfo'], ['webpack', 'translateHtmlFiles', 'createXliffFiles'], callback)
     });
 
 // Find which of the translated xliff files match up with the given html file.
@@ -268,12 +287,9 @@ var getXliffFiles = function (htmFile) {
     if (htmFile.includes("\\"))
         pathPieces = htmFile.split("\\");
     var basename = pathPieces[pathPieces.length - 1];
-    if (basename == "ReadMe-en.htm")
-    {
+    if (basename == "ReadMe-en.htm") {
         basename = "/" + pathPieces[pathPieces.length - 2] + "/ReadMe-";
-    }
-    else
-    {
+    } else {
         var pos = basename.search("-en.htm");
         if (pos > 0)
            basename = "/" + basename.substring(0, pos);
@@ -291,9 +307,22 @@ var getXliffFiles = function (htmFile) {
 // (replacing the English language code) for an output file pathname.
 var getOutputFilename = function(htmFile, xlfFile) {
     var langCode = "";
-    if ( xlfFile.search("/ReadMe-") > 0)  // as in "blah/foo/ReadMe-fr.htm"
+    if ( xlfFile.search("/ReadMe-") > 0)  // as in "blah/foo/ReadMe-en.htm"
         langCode = xlfFile.replace(/.*\/ReadMe-/, "").replace(".xlf","");
     else  // as in "blah/foo/fr/something.htm"
         langCode = xlfFile.split("/").slice(-2, -1)[0]; // penultimate item has the language code
     return htmFile.replace("-en.htm", "-" + langCode + ".htm");
+}
+
+// Get the name of the English Xliff file corresponding to the English HTML file.
+var getXliffFilename = function(htmFile) {
+    var htmPieces = htmFile.split("/");
+    if (htmFile.includes("\\"))
+        htmPieces = htmFile.split("\\");
+    var basename = htmPieces[htmPieces.length - 1];
+    if (basename == "ReadMe-en.htm") {
+        return "../../DistFiles/localization/" + htmPieces[htmPieces.length - 2] + "/" + basename.replace(".htm", ".xlf");
+    } else {
+        return "../../DistFiles/localization/en/" + basename.replace(/-en\.html?$/, ".xlf");
+    }
 }
