@@ -8,6 +8,10 @@
         <target xml:lang="pt-PT">Esta é uma versão &lt;a href="https://en.wikipedia.org/wiki/ePUB"&gt;ePUB&lt;/a&gt; (e-livro) de seu livro. &lt;span class="showForTalkingBooks"&gt;Contém áudio, para que novos leitores podem ouvir enquanto eles leem.&lt;/span&gt;
       </target>
         <note>ID: epubpreview.describe</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Esta é uma versão &lt;a href="https://en.wikipedia.org/wiki/ePUB"&gt;ePUB&lt;/a&gt; (e-livro) de seu livro. &lt;span class="showForTalkingBooks"&gt;Contém áudio, para que novos leitores podem ouvir enquanto eles leem.&lt;/span&gt;
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.recording.butnotalk" approved="yes">
         <source xml:lang="en">This book has some recordings, but this audio is not included in the ePUB.</source>
@@ -30,6 +34,10 @@
         <target xml:lang="pt-PT">Esta página usa o leitor (e Reader) de ePUB &lt;a href="http://readium.org/"&gt;Readium&lt;/a&gt;. Os livros provavelmente vão parecer diferentes em diferentes leitores.
       </target>
         <note>ID: epubpreview.readium</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Esta página usa o leitor (e Reader) de ePUB &lt;a href="http://readium.org/"&gt;Readium&lt;/a&gt;. Os livros provavelmente vão parecer diferentes em diferentes leitores.
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.talkingbookpreview" approved="yes">
         <source xml:lang="en">The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> e-book reader.
@@ -37,6 +45,10 @@
         <target xml:lang="pt-PT">Esta visualização ainda não pode reproduzir áudio dos livros. Você pode ouvi-lo usando o leitor (eReader) gratuito da Adobe chamado &lt;a href="http://www.adobe.com/solutions/ebook/digital-editions.html"&gt;Digital Editions&lt;/a&gt;.
       </target>
         <note>ID: epubpreview.talkingbookpreview</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Esta visualização ainda não pode reproduzir áudio dos livros. Você pode ouvi-lo usando o leitor (eReader) gratuito da Adobe chamado &lt;a href="http://www.adobe.com/solutions/ebook/digital-editions.html"&gt;Digital Editions&lt;/a&gt;.
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.ontodevice" approved="yes">
         <source xml:lang="en">Getting this book onto your Device</source>
@@ -47,8 +59,13 @@
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
       </source>
         <target xml:lang="pt-PT">Uma maneira prática de obter livros para o seu telefone é configurar o Dropbox ou serviço similar no seu computador e seu celular/tablet. Apenas clique em salvar ePUB e escolha sua pasta Dropbox. Em seu telefone, abra o app Dropbox e selecione o seu livro. Se você estiver usando um laptop, você também pode tentar o programa gratuito de <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/"> ShareIt</g> para enviar arquivos de seu laptop para um telefone ou tablet.       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Uma maneira prática de obter livros para o seu telefone é configurar o Dropbox ou serviço similar no seu computador e seu celular/tablet. Apenas clique em salvar ePUB e escolha sua pasta Dropbox. Em seu telefone, abra o app Dropbox e selecione o seu livro. Se você estiver usando um laptop, você também pode tentar o programa gratuito de <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/"> ShareIt</g> para enviar arquivos de seu laptop para um telefone ou tablet.       
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.recommended.reader" approved="yes">
         <source xml:lang="en">Recommended Reader</source>
@@ -59,8 +76,13 @@
         <source xml:lang="en">Our testing has shown <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
       </source>
         <target xml:lang="pt-PT">Nossos testes mostram que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm"> Gitden leitor</g> deve ser uma boa escolha para Android e IOS (IPhone &amp; IPad) dispositivos.       
+      
       </target>
         <note>ID: epubpreview.gitden.okay</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Nossos testes mostram que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm"> Gitden leitor</g> deve ser uma boa escolha para Android e IOS (IPhone &amp; IPad) dispositivos.       
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.gitden.limits">
         <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</source>
@@ -76,8 +98,13 @@
         <source xml:lang="en">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
       </source>
         <target xml:lang="pt-PT" state="translated">Se você quiser criar um " Áudio Livro" que os leitores possam ouvir durante a leitura, use <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Ferramenta de Áudio Livro</g> para adicionar gravações.      
+      
       </target>
         <note>ID: epubpreview.talking.book.tool</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Se você quiser criar um " Áudio Livro" que os leitores possam ouvir durante a leitura, use <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Ferramenta de Áudio Livro</g> para adicionar gravações.      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pt-PT">Se você quiser criar um " Áudio Livro" que os leitores possam ouvir durante a leitura, use <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> para adicionar gravações.      
       </target>
