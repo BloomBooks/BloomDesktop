@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
@@ -236,10 +237,59 @@ namespace BloomTests.Book
 				);
 		}
 
-		private string GetEntryContents(ZipFile zip, string name, bool exact = false)
+		[Test]
+		public void CompressBookForDevice_MakesThumbnailFromCoverPicture()
 		{
-			var buffer = new byte[4096];
+			// This requires a real book file (which a mocked book usually doesn't have).
+			var bookHtml = @"<html>
+								<head>
+									<meta charset='UTF-8'></meta>
+									<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
+									<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+								</head>
+								<body>
+									<div id='bloomDataDiv'>
+										<div data-book='coverImage' lang='*'>
+											Listen to My Body_Cover.png
+										</div>
+									</div>
+									<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+										<div class='marginBox'>"
+											+ "<div class=\"bloom-imageContainer bloom-backgroundImage\" data-book=\"coverImage\" style=\"background-image:url('Listen%20to%20My%20Body_Cover.png')\"></div>"
+										+ @"</div>
+									</div>
+								</body>
+							</html>";
 
+			TestHtmlAfterCompression(bookHtml,
+				actionsOnFolderBeforeCompressing:
+				bookFolderPath =>
+				{
+					File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"),
+						Path.Combine(bookFolderPath, "Listen to My Body_Cover.png"));
+				},
+
+				assertionsOnZipArchive: zip =>
+				{
+					using (var thumbStream = GetEntryContentsStream(zip, "thumbnail.png"))
+					{
+						using (var thumbImage = Image.FromStream(thumbStream))
+						{
+							// I don't know how to verify that it's made from shirt.png, but this at least verifies
+							// that some shrinking was done and that it considers height as well as width, since
+							// the shirt.png image happens to be higher than it is wide.
+							// It would make sense to test that it works for jpg images, too, but it's rather a slow
+							// test and jpg doesn't involve a different path through the new code.
+							Assert.That(thumbImage.Width, Is.LessThanOrEqualTo(70));
+							Assert.That(thumbImage.Height, Is.LessThanOrEqualTo(70));
+						}
+					}
+				}
+			);
+		}
+
+		private Stream GetEntryContentsStream(ZipFile zip, string name, bool exact = false)
+		{
 			Func<ZipEntry, bool> predicate;
 			if (exact)
 				predicate = n => n.Name.Equals(name);
@@ -249,7 +299,14 @@ namespace BloomTests.Book
 			var ze = (from ZipEntry entry in zip select entry).FirstOrDefault(predicate);
 			Assert.That(ze, Is.Not.Null);
 
-			using (var instream = zip.GetInputStream(ze))
+			return zip.GetInputStream(ze);
+		}
+
+		private string GetEntryContents(ZipFile zip, string name, bool exact = false)
+		{
+			var buffer = new byte[4096];
+
+			using (var instream = GetEntryContentsStream(zip, name, exact))
 			using (var writer = new MemoryStream())
 			{
 				ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);

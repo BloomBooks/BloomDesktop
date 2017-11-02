@@ -156,7 +156,9 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
-		private static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
+		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not be larger than orignally,
+		// but if necessary will be shrunk to fit within the indicated rectangle.
+		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth, int newHeight = Int32.MaxValue)
 		{
 			using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
 			{
@@ -166,6 +168,12 @@ namespace Bloom.ImageProcessing
 				// calculate dimensions
 				var newW = (originalImage.Image.Width > newWidth) ? newWidth : originalImage.Image.Width;
 				var newH = newW * originalImage.Image.Height / originalImage.Image.Width;
+
+				if (newH > newHeight)
+				{
+					newH = newHeight;
+					newW = newH * originalImage.Image.Width / originalImage.Image.Height;
+				}
 
 				using (var newImg = originalImage.Image.GetThumbnailImage(newW, newH, () => false, IntPtr.Zero))
 				{

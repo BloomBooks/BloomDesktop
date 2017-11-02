@@ -2397,5 +2397,20 @@ namespace Bloom.Book
 			sha.TransformFinalBlock(new byte[0], 0, 0);
 			return Convert.ToBase64String(sha.Hash);
 		}
+
+		public void MakeThumbnailFromCoverPicture()
+		{
+			var coverImgElt = _storage.Dom.SafeSelectNodes("//div[@data-book='coverImage' and @style]").Cast<XmlElement>().FirstOrDefault();
+			if (coverImgElt == null || !coverImgElt.HasAttribute("style") || !coverImgElt.Attributes["style"].Value.StartsWith("background-image:url("))
+				return; // no image on cover?? Just use default thumbnail.
+			// This should get us something like 'AOR_1YY.png')
+			var coverImageFileNameWithPunct = coverImgElt.Attributes["style"].Value.Substring("background-image:url(".Length);
+			var coverImageFileName = UrlPathString.CreateFromUrlEncodedString(coverImageFileNameWithPunct.Split(coverImageFileNameWithPunct[0])[1]).NotEncoded;
+			var coverImagePath = Path.Combine(StoragePageFolder, coverImageFileName);
+			if (!File.Exists(coverImagePath))
+				return;
+			var thumbPath = Path.Combine(StoragePageFolder, "thumbnail.png");
+			RuntimeImageProcessor.GenerateThumbnail(coverImagePath, thumbPath, 70, 70);
+		}
 	}
 }
