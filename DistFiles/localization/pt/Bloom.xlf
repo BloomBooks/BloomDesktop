@@ -2846,12 +2846,6 @@
         <note>Link to find Bloom Reader on Google Play Store</note>
         <target xml:lang="pt-PT" state="translated">Obter o aplicativo BloomReader</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.GetBloomReader">
-        <source xml:lang="en">Get Bloom Reader App</source>
-        <note>ID: PublishTab.Android.GetBloomReader</note>
-        <note>Link to find Bloom Reader on Google Play Store</note>
-        <target xml:lang="pt-PT" state="needs-translation">Get Bloom Reader App</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method</source>
         <note>ID: PublishTab.Android.Method</note>

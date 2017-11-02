@@ -86,7 +86,7 @@ namespace Bloom.Book
 			// For both, "*.htm?" should work, but it doesn't return *.htm on Linux [Mono4 bug?].
 			var candidates = from x in Directory.GetFiles(folder, "*.htm")
 							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm") ||
-									 Regex.IsMatch(Path.GetFileName(x), "^ReadMe-[a-z]{2,3}(-[A-Z]{2})?\\.htm$"))
+									 IsPathToReadMeHtm(x))
 							 select x;
 			if (!candidates.Any())
 				candidates = from x in Directory.GetFiles(folder, "*.html")
@@ -96,11 +96,19 @@ namespace Bloom.Book
 				return candidates.First();
 			else
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-					"There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html or ReadMe-*.htm]", folder);
+				var msg = new System.Text.StringBuilder();
+				msg.AppendLineFormat("There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html or ReadMe-*.htm]:", folder);
+				foreach (var f in candidates)
+					msg.AppendLineFormat("    {0}", f);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(msg.ToString());
 				throw new ApplicationException();
 			}
 
+		}
+
+		private static bool IsPathToReadMeHtm(string path)
+		{
+			return Regex.IsMatch(Path.GetFileName(path), "^ReadMe-[a-z]{2,3}(-[A-Z]{2})?\\.htm$");
 		}
 
 		private string GetMetaValue(XmlDocument Dom, string name, string defaultValue)
@@ -521,6 +529,9 @@ namespace Bloom.Book
 				// We don't need to copy any backups, and we don't want userPrefs because they are likely
 				// to include a page number and we want the new book to open at the cover.
 				if (new String[] {".jade", ".less", ".md", ".bak", ".userprefs"}.Any(ex => ex == ext))
+					continue;
+				// We don't want the ReadMe's that describe templates copied to the new books.
+				if (IsPathToReadMeHtm(filePath))
 					continue;
 				RobustFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
