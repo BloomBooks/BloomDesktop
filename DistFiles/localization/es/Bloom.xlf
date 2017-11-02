@@ -304,10 +304,10 @@
           <target xml:lang="es-ES">Branding/Marcacíon</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.Default">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.Default" approved="yes">
         <source xml:lang="en">Default</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.Default</note>
-        <target xml:lang="es-ES" state="translated">Predeterminado</target>
+        <target xml:lang="es-ES">Predeterminado</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
@@ -335,11 +335,11 @@
           <target xml:lang="es-ES">Paquete de materia frontal/posterior</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
-        <target xml:lang="es-ES" state="translated">Dispositivo</target>
+        <target xml:lang="es-ES">Dispositivo</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
@@ -347,17 +347,17 @@
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
         <target xml:lang="es-ES">Economizador de Papel</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-PNG</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
-        <target xml:lang="es-ES" state="translated">SIL-PNG</target>
+        <target xml:lang="es-ES">SIL-PNG</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
-        <target xml:lang="es-ES" state="translated">Súper Economizador de Papel</target>
+        <target xml:lang="es-ES">Súper Economizador de Papel</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
@@ -365,11 +365,11 @@
         <note>Name of the default Front/Back Matter Pack</note>
         <target xml:lang="es-ES">Tradicional</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Video</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
         <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
-        <target xml:lang="es-ES" state="translated">Vídeo</target>
+        <target xml:lang="es-ES">Vídeo</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" approved="yes">
         <source xml:lang="en">Arabic-Indic</source>
@@ -735,7 +735,10 @@
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
-        <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantillas de Libro...</target>
+        <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantillas de Libros...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantillas de Libro...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantilla de Libro...</target>
         </alt-trans>
@@ -4058,7 +4061,7 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method" approved="yes">
-        <source xml:lang="en">Method</source>
+        <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
         <target xml:lang="es-ES">Método</target>
@@ -4366,10 +4369,10 @@
           <target xml:lang="es-ES">Noticia triste. Bloom no fue capaz de abrir Adobe Reader aquí, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva a instalar a 'Adobe Reader'.\nHasta que llegue ese fijo, puede guardar el libro PDF y abrirlo en otro programa.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
+      <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Publish to an Android device.</source>
         <note>ID: PublishTab.AndroidButton-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Publicar a un dispositivo Android.</target>
+        <target xml:lang="es-ES">Publicar a un dispositivo Android.</target>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Insides</source>
@@ -5908,7 +5911,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
-        <target xml:lang="es-ES">Crear un Paquete de Bloom de plantilla de libros</target>
+        <target xml:lang="es-ES">Paquete de Bloom de Plantillas de Libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un Paquete de Bloom de plantilla de libros</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un BloomPack de plantilla de libros</target>
         </alt-trans>
@@ -6554,6 +6560,12 @@ Desea seguir?</target>
         <alt-trans>
           <target xml:lang="es-ES">Imagen de fondo</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Quiz</note>
+        <note>Used in page preview for Comprehension Question pages. Should be short.</note>
+        <target xml:lang="es-ES">Prueba</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-Cameroon</source>

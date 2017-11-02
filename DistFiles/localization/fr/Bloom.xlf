@@ -2406,7 +2406,7 @@
         <source xml:lang="en">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</source>
         <note>ID: NewCollectionWizard.FinishPageContent</note>
         <note>{0} is the name of the new collection</note>
-        <target xml:lang="fr" state="needs-translation">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</target>
+        <target xml:lang="fr" state="translated">Voilà ! C'est tout ce qu'il nous faut pour vous lancer avec votre nouvelle collection de « {0} ».\nCliquer sur le bouton « Terminer ».</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FontAndScriptPage" approved="yes">
         <source xml:lang="en">Font and Script</source>
@@ -2615,10 +2615,10 @@
         <target xml:lang="fr" state="needs-translation">Get Bloom Reader App</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
-        <source xml:lang="en">Method</source>
+        <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-        <target xml:lang="fr" state="needs-translation">Method</target>
+        <target xml:lang="fr" state="needs-translation">Method Choices</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Save">
         <source xml:lang="en">Save...</source>
@@ -4207,6 +4207,12 @@ Do you want to go ahead?</target>
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
         <target xml:lang="fr">Illustration en bas</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true">
+        <source xml:lang="en">Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Quiz</note>
+        <note>Used in page preview for Comprehension Question pages. Should be short.</note>
+        <target xml:lang="fr" state="needs-translation">Quiz</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
