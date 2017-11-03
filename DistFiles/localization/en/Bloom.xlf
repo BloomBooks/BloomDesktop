@@ -3390,6 +3390,11 @@ Do you want to go ahead?</source>
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true">
+        <source xml:lang="en">Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Quiz</note>
+        <note>Used in page preview for Comprehension Question pages. Should be short.</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
         <note>ID: TemplateBooks.PageLabel.SIL-Cameroon</note>

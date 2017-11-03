@@ -415,6 +415,28 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
 		}
 
+		[Test]
+		public void OmitsNonPrintingPages()
+		{
+			var book = SetupBookLong("This is some text",
+				"en", extraPages: @"<div class='bloom-page nonprinting'>
+						<div id='anotherId' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
+									Page two text
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+						</div>
+					</div>");
+			MakeEpub("output", "OmitsNonPrintingPages", book);
+			CheckBasicsInManifest();
+			CheckBasicsInPage();
+
+			var page2entry = _epub.GetEntry(Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
+			Assert.That(page2entry, Is.Null, "nonprinting page should be omitted");
+		}
+
 		/// <summary>
 		/// Motivated by "Look in the sky. What do you see?" from bloom library, if we can't find an image,
 		/// remove the element. Also exercises some other edge cases of missing or empty src attrs for images.

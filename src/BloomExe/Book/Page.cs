@@ -152,6 +152,12 @@ namespace Bloom.Book
 				captionI18nId = pageNumber.ToString();
 				return pageNumber.ToString();
 			}
+			// This phrase is too long to use as a page label.
+			// We can generalize this if we get others.
+			if (Caption == "Comprehension Questions")
+			{
+				Caption = "Quiz";
+			}
 			if (CaptionI18nId == null)
 			{
 				if (string.IsNullOrEmpty(Caption))

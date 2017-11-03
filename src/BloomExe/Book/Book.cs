@@ -2036,6 +2036,8 @@ namespace Bloom.Book
 			var pathSafeForWkHtml2Pdf = FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
 			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
 
+			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("nonprinting"));
+
 			switch (bookletPortion)
 			{
 				case PublishModel.BookletPortions.AllPagesNoBooklet:
