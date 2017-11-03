@@ -33,13 +33,7 @@ namespace Bloom.Book
 		{
 			using(var temp = new TemporaryFolder())
 			{
-				BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
-				var bookInfo = new BookInfo(temp.FolderPath, true);
-				bookInfo.XMatterNameOverride = "Device";
-				var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-				modifiedBook.BringBookUpToDate(new NullProgress());
-				modifiedBook.Save();
-				modifiedBook.Storage.UpdateSupportFiles();
+				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp);
 				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false);
 			}
 		}

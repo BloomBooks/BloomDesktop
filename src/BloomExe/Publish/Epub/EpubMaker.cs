@@ -450,6 +450,11 @@ namespace Bloom.Publish.Epub
 		/// </remarks>
 		private HtmlDom MakePageFile(XmlElement pageElement)
 		{
+			// nonprinting pages (e.g., comprehension questions) are omitted for now
+			if (pageElement.Attributes["class"]?.Value?.Contains("nonprinting") ?? false)
+			{
+				return null;
+			}
 			var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
 
 			// Note, the following stylsheet stuff can be quite bewildering...

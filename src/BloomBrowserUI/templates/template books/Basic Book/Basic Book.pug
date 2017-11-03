@@ -12,9 +12,55 @@ html
 		title 'Basic Book'
 		+stylesheets('Basic Book.css')
 		+standardStyles
+			| .quiz-style { font-size: 11pt !important;}
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Basic Book')
 			+bookVariable('styleNumberSequence', '*', '0')
 
 		+include-standard-pages
+		//- note that these pages are NOT numbered. This is unusual for insertable pages, but we don't
+		//- want them in the printed output so the numbering of other pages should not be affected.
+		//- Enhance: we need to figure out a way to handle localization.
+		//- One option is to localize by adding resular xlf ids (i18n="EditTab.AddPageDialog.CC.EnterQuestions")) to each block.
+		//- But then we have to mess with injecting it, and end up with multiple Basic Book-xx.htm files, and have to pick the
+		//- right one to show, and the book created from the template will only have the instructions in one language
+		//- which could be a nuisance later.
+		//- A more desirable outcome would be that the one Basic Book.htm contains all the localizations in a (non-editable)
+		//- translation group, and all of them get copied into any shell that is made with CQs, and the right one(s) are displayed
+		//- in the usual way. It's not obvious how that fits into our crowdin approach to getting the localizations, though.
+		//- Then again, we may end up with a special affordance for creating CQ pages and localizing a page of Basic Book will
+		//- not be a problem after all.
+		//- Yet another option is to have one or more placeholders for the instructions here and have the
+		//- Add Page dialog code insert localizations.
+		+page('Comprehension Questions').customPage.questions.nonprinting#4140d100-e4c3-49c4-af05-dda5789e019b(data-page='extra')
+			.split-pane.vertical-percent
+				.split-pane-component.position-left
+					.split-pane-component-inner
+						div.quizLabel
+							p Enter your comprehension questions for this book.
+								| When the book is read using the Bloom Reader Android app, the reader will see a quiz at the end.
+								| This will happen
+								b only if the book is branded.
+								| For more info, see
+								a(href='https://docs.google.com/document/d/1LV0_OtjH1BTJl7wqdth0bZXQxduTqD7WenX4AsksVGs/edit#heading=h.lxe9k6qcvzwb') Bloom Enterprise Service
+							p
+							p You may have to create more "Comprehension Question" pages if there is not enough room
+							p
+							p
+								b Example
+								span(style='color:grey') * marks correct answer
+							p
+							p Why did the boy lose his cap?
+							p The bully took it
+							p *The wind blew it away
+							p He left it on the bus
+							p
+							p What did the moon do?
+							p Sent him a lollipop
+							p Hid behind clouds
+							p *Appeared to wear the cap							
+				.split-pane-divider.vertical-divider
+				.split-pane-component.position-right
+					.split-pane-component-inner.adding
+						+field("auto").bloom-trailingElement.quiz-style
