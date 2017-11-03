@@ -710,12 +710,12 @@
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
+	  <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">(no template file found)</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
         <note>Seen when the book's main template page file is missing.</note>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
+	  <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
       </trans-unit>
@@ -3389,6 +3389,11 @@ Do you want to go ahead?</source>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true">
+        <source xml:lang="en">Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Quiz</note>
+        <note>Used in page preview for Comprehension Question pages. Should be short.</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
