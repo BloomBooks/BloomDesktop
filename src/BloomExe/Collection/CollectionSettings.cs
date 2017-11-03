@@ -652,6 +652,9 @@ namespace Bloom.Collection
 
 		public string BrandingProjectName { get; set; }
 
+		// Currently we allow enterprise-only features if branding is configured.
+		public bool EnterpriseFeaturesAllowed => !string.IsNullOrEmpty(BrandingProjectName) && BrandingProjectName != "Default";
+
 		public int OneTimeCheckVersionNumber { get; set; }
 
 		public bool AllowNewBooks { get; set; }

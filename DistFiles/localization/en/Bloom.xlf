@@ -710,12 +710,27 @@
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.EnterpriseCustomers" sil:dynamic="true">
+        <source xml:lang="en">Bloom Enterprise customers</source>
+        <note>ID: EditTab.AddPageDialog.EnterpriseCustomers</note>
+		<note>inserted as {0} in OnlyEnterpriseFrame</note>
+	  </trans-unit>
+	  <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">(no template file found)</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
         <note>Seen when the book's main template page file is missing.</note>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.OnlyEnterpriseFrame" sil:dynamic="true">
+        <source xml:lang="en">That feature is only available for {0}</source>
+        <note>ID: EditTab.AddPageDialog.OnlyEnterpriseFrame</note>
+		<note>Used in an error dialog for enterprise special pages</note>
+	  </trans-unit>
+	  <trans-unit id="EditTab.AddPageDialog.Sorry" sil:dynamic="true">
+        <source xml:lang="en">Sorry</source>
+        <note>ID: EditTab.AddPageDialog.Sorry</note>
+		<note>used as heading for apology dialog</note>
+	  </trans-unit>
+	  <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
       </trans-unit>
@@ -3284,6 +3299,10 @@ Do you want to go ahead?</source>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Comprehension Questions" sil:dynamic="true">
+        <source xml:lang="en">Comprehension Questions</source>
+        <note>ID: TemplateBooks.PageLabel.Comprehension Questions</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>

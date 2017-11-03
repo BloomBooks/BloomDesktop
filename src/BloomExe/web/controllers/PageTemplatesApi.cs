@@ -71,6 +71,7 @@ namespace Bloom.web.controllers
 			// both at once. Pushing this information into the settings that the dialog loads removes the
 			// need for cross-domain communication between the dialog and the page that launches it.
 			addPageSettings.forChooseLayout = ForPageLayout;
+			addPageSettings.enterpriseAllowed = _bookSelection.CurrentSelection.CollectionSettings.EnterpriseFeaturesAllowed;
 
 			request.ReplyWithJson(JsonConvert.SerializeObject(addPageSettings));
 		}

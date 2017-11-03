@@ -38,6 +38,7 @@ class PageChooser {
     private _scrollTopOfTheScrollingDiv: number;
     private _forChooseLayout: boolean;
     private _currentPageLayout: string;
+    private _enterpriseAllowed: boolean;
 
     constructor(initializationJsonString: string) {
         var initializationObject;
@@ -53,6 +54,7 @@ class PageChooser {
             this._orientation = initializationObject["orientation"];
             this._currentPageLayout = initializationObject['currentLayout'];
             this._forChooseLayout = initializationObject['forChooseLayout'];
+            this._enterpriseAllowed = initializationObject['enterpriseAllowed'];
         } else {
             alert("Expected url in PageChooser ctor!");
         }
@@ -182,6 +184,12 @@ class PageChooser {
         if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) return;
         if (this._forChooseLayout && !$('#convertAnywayCheckbox').is(':checked')) return;
 
+        const classes = this._selectedGridItem.attr("data-pageClass");
+        if (classes.indexOf("enterprise") >= 0 && !this._enterpriseAllowed) {
+            this.showEnterpriseDialog();
+            return;
+        }
+
         const id = this._selectedGridItem.attr("data-pageId");
         const templateBookPath = this._selectedGridItem.closest(".group").attr("data-template-book-path");
         if (this._forChooseLayout) {
@@ -195,6 +203,32 @@ class PageChooser {
             }).then(() => this.closeup());
         }
     }
+
+    showEnterpriseDialog() {
+        const key = "EditTab.AddPageDialog.OnlyEnterpriseFrame";
+        const english = "That feature is only available for {0}";
+        theOneLocalizationManager.asyncGetText(key, english, "Used in an error dialog for enterprise special pages").done(frame => {
+            theOneLocalizationManager.asyncGetText("EditTab.AddPageDialog.EnterpriseCustomers", "Bloom Enterprise customers", "inserted as {0} in OnlyEnterpriseFrame").done(linkBody => {
+                const link: string = "<a style='color: #0000EE' href='https://docs.google.com/document/d/1LV0_OtjH1BTJl7wqdth0bZXQxduTqD7WenX4AsksVGs/edit#heading=h.lxe9k6qcvzwb'>" + linkBody + "</a>";
+                const messageBody = frame.replace("{0}", link);
+                theOneLocalizationManager.asyncGetText("EditTab.AddPageDialog.Sorry", "Sorry", "used as heading for apology dialog").done(sorry => {
+                    var dialogContents = $("<div style='color:black; padding: 20px'>" + messageBody + "</div>")
+                        .appendTo($(window.parent.document.body));
+                    const dlg = dialogContents.dialog({
+                        autoOpen: false,
+                        resizable: false,
+                        modal: true,
+                        width: 300,
+                        height: 150,
+                        title: sorry,
+                        close: function () { $(this).remove(); }
+                    });
+                    dlg.dialog("open");
+                });
+            });
+        });
+    }
+
     closeup(): void {
         // End the disabling of other panes for the modal dialog. The final argument is because in this
         // method the current window is the dialog, and it's the parent window's document that is being
@@ -303,7 +337,9 @@ class PageChooser {
 
             if (this._forChooseLayout) {
                 // This filters out the (empty) custom page, which is currently never a useful layout change, since all data would be lost.
-                pages = pages.not('.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]');
+                // It also doesn't make sense to turn another page into the comprehension questions layout.
+                pages = pages.not('.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]')
+                    .not('.bloom-page[id="4140d100-e4c3-49c4-af05-dda5789e019b"]');
             }
             //console.log("loadPageFromGroup("+order.templateBookFolderUrl+")");
             this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, order.templateBookFolderUrl, defaultPageToSelect, previousPagesCount);
@@ -355,6 +391,7 @@ class PageChooser {
             $(currentGridItemHtml).attr("data-pageId", currentId);
             $(currentGridItemHtml).attr("data-textDivCount", $(div).find(".bloom-translationGroup:not(.box-header-off)").length);
             $(currentGridItemHtml).attr("data-pictureCount", $(div).find(".bloom-imageContainer").length);
+            $(currentGridItemHtml).attr("data-pageClass", $(div).attr("class"));
 
             // The check for _indexOfPageToSelect here keeps the selection on the *first* matching page. In BL-4500, we found
             // that different templates could reuse the same guid for custom page. That's a problem probably should be
