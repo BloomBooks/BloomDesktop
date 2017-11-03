@@ -242,9 +242,7 @@ namespace BloomTests.Book
 
 			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
 
-			//note: our code currently only knows how to display French *in French*; the other come out in English.
-			//That's not part of this test, and will have to be changed as we improve that aspect of things.
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français, Spanish']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français, espagnol']", 1);
 
 			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, null);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français']", 1);

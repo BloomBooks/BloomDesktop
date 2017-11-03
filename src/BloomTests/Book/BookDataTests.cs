@@ -633,10 +633,11 @@ namespace BloomTests.Book
 			var htmlDom = new HtmlDom();
 			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged", Language2Iso639Code = "de", Language3Iso639Code = "fr"};
 			var data = new BookData(htmlDom, settingsettings, null);
-			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("German"));
-			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("French"));
-			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
-			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("Spanish"));
+			// The language names should come out in German, since that's the specified national language.
+			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("Deutsch"));
+			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("Französisch"));
+			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("Englisch"));
+			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("Spanisch"));
 		}
 
 		[Test]
