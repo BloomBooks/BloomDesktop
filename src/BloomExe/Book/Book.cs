@@ -2400,12 +2400,17 @@ namespace Bloom.Book
 
 		public void MakeThumbnailFromCoverPicture()
 		{
+			// It's unfortunate that we have to check for @style here, because it partly exposes how we do images
+			// with background-image. But if we don't check something beyond the data-book attribute, this xpath
+			// typically finds the data-div element, and that doesn't have the data in the form that GetImageElementUrl
+			// can handle.
 			var coverImgElt = _storage.Dom.SafeSelectNodes("//div[@data-book='coverImage' and @style]").Cast<XmlElement>().FirstOrDefault();
-			if (coverImgElt == null || !coverImgElt.HasAttribute("style") || !coverImgElt.Attributes["style"].Value.StartsWith("background-image:url("))
+			if (coverImgElt == null)
 				return; // no image on cover?? Just use default thumbnail.
-			// This should get us something like 'AOR_1YY.png')
-			var coverImageFileNameWithPunct = coverImgElt.Attributes["style"].Value.Substring("background-image:url(".Length);
-			var coverImageFileName = UrlPathString.CreateFromUrlEncodedString(coverImageFileNameWithPunct.Split(coverImageFileNameWithPunct[0])[1]).NotEncoded;
+			var coverImageUrl = HtmlDom.GetImageElementUrl(coverImgElt);
+			var coverImageFileName = coverImageUrl.NotEncoded;
+			if (string.IsNullOrEmpty(coverImageFileName))
+				return; // I think this is redundant but it makes things clearly valid.
 			var coverImagePath = Path.Combine(StoragePageFolder, coverImageFileName);
 			if (!File.Exists(coverImagePath))
 				return;
