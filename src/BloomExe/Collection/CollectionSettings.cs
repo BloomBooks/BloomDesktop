@@ -35,7 +35,8 @@ namespace Bloom.Collection
 		public const string kDefaultXmatterName = "Traditional";
 		private string _language1Iso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
-		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
+		private Dictionary<string, Icu.Locale> _mapCodeToIcuLocale = new Dictionary<string, Icu.Locale>();
+		private Dictionary<Tuple<string, string>, string> _mapIsoCodesToLanguageName = new Dictionary<Tuple<string, string>, string>();
 
 		public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
 			new Dictionary<string, string>()
@@ -298,20 +299,29 @@ namespace Bloom.Collection
 		/// Get the name of the language whose code is the first argument, if possible in the language specified by the second.
 		/// If the language code is unknown, return it unchanged.
 		/// </summary>
-		/// <param name="code"></param>
-		/// <param name="inLanguage"></param>
-		/// <returns></returns>
 		public string GetLanguageName(string code, string inLanguage)
 		{
-			//profiling showed we were spending a lot of time looking this up, hence the cache
-			if (!_isoToLangNameDictionary.ContainsKey(code))
+			string name;
+			var keyToName = new Tuple<string, string>(code, inLanguage);
+			if (_mapIsoCodesToLanguageName.TryGetValue(keyToName, out name))
+				return name;
+			string icuCode = code.Replace("-", "_");
+			string icuDisplayCode = inLanguage.Replace("-", "_");
+			Icu.Locale locale;
+			if (!_mapCodeToIcuLocale.TryGetValue(icuCode, out locale))
 			{
-				string name;
-				_lookupIsoCode.GetBestLanguageName(code, out name);
-				_isoToLangNameDictionary[code] = name;
+				locale = new Icu.Locale(icuCode);
+				_mapCodeToIcuLocale.Add(icuCode, locale);
 			}
-
-			return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[code], inLanguage);
+			Icu.Locale displayLocale;
+			if (!_mapCodeToIcuLocale.TryGetValue(icuDisplayCode, out displayLocale))
+			{
+				displayLocale = new Icu.Locale(icuDisplayCode);
+				_mapCodeToIcuLocale.Add(icuDisplayCode, displayLocale);
+			}
+			name = locale.GetDisplayName(displayLocale);
+			_mapIsoCodesToLanguageName.Add(keyToName, name);
+			return name;
 		}
 
 		private string GetLanguageNameInUILangIfPossible(string name, string codeOfDesiredLanguage)
