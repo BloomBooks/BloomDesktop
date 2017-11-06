@@ -365,7 +365,7 @@ namespace Bloom.Publish
 					var rgb = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfWithRGB",
 						"PDF with RGB color",
 						@"displayed as file type for Save File dialog. 'RGB' may not be translatable, it is a standard.");
-					var swopv2 = L10NSharp.LocalizationManager.GetString("@PublishTab.PdfMaker.PdfWithCmykSwopV2",
+					var swopv2 = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfWithCmykSwopV2",
 						"PDF with CMYK color (U.S. Web Coated (SWOP) v2)",
 						@"displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.");
 
