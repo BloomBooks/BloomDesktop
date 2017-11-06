@@ -628,10 +628,22 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void PrettyPrintLanguage_AdjustsKnownLanguages()
+		public void PrettyPrintLanguage_AdjustsKnownLanguages_German()
 		{
 			var htmlDom = new HtmlDom();
 			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged", Language2Iso639Code = "de", Language3Iso639Code = "fr"};
+			var data = new BookData(htmlDom, settingsettings, null);
+			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("Deutsch"));
+			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("français"));
+			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
+			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("español"));
+		}
+
+		[Test]
+		public void PrettyPrintLanguage_AdjustsKnownLanguages_English()
+		{
+			var htmlDom = new HtmlDom();
+			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged", Language2Iso639Code = "en", Language3Iso639Code = "fr"};
 			var data = new BookData(htmlDom, settingsettings, null);
 			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("German"));
 			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("French"));
