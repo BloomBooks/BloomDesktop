@@ -28,7 +28,7 @@ namespace Bloom
 		{
 			server.RegisterEndpointHandler("help/.*", (request) =>
 			{
-				var topic = request.LocalPath().ToLowerInvariant().Replace("api/help","");
+				var topic = request.LocalPath().Replace("api/help","");
 				Show(Application.OpenForms.Cast<Form>().Last(), topic);
 				//if this is called from a simple html anchor, we don't want the browser to do anything
 				request.ExternalLinkSucceeded();
