@@ -356,22 +356,23 @@ namespace Bloom.Workspace
 			var nativeName = lang.NativeName;
 			var testChar = nativeName[0];
 			if (lang.EnglishName != lang.NativeName && !IsLatinChar(testChar))
-			{
 				englishName = " (" + lang.EnglishName + ")";
-			}
 			// Remove any country (or script?) names apart from Chinese (Simplified)
 			if (lang.Name != "zh-CN")
 			{
-				var idxCountry = lang.EnglishName.IndexOf(" (");
+				var idxCountry = englishName.IndexOf(" (");
 				if (englishName.Length > 0 && idxCountry > 0)
-				{
-					englishName = " (" + lang.EnglishName.Substring(0, idxCountry) + ")";
-				}
+					englishName = englishName.Substring(0, idxCountry) + ")";
 				idxCountry = nativeName.IndexOf(" (");
 				if (idxCountry > 0)
-				{
 					nativeName = nativeName.Substring(0, idxCountry);
-				}
+			}
+			else
+			{
+				// some people have seen more cruft after the country name, so remove that as well.
+				var idxCountry = englishName.IndexOf(", China");
+				if (englishName.Length > 0 && idxCountry > 0)
+					englishName = englishName.Substring(0, idxCountry) + "))";
 			}
 			var menuItemName = nativeName + englishName;
 			return menuItemName;
