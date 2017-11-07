@@ -194,13 +194,14 @@ namespace Bloom.CollectionCreating
 				_collectionInfo.Language2Iso639Code = "en";
 				_collectionInfo.Language3Iso639Code = "tpi";
 			}
+			_collectionInfo.SetAnalyticsProperties();
 
 			Logger.WriteEvent("Finshed New Collection Wizard");
 			if (_collectionInfo.IsSourceCollection)
 				Analytics.Track("Created New Source Collection");
 			else
-				Analytics.Track("Create New Vernacular Collection",new Dictionary<string, string>() { { "Country", _collectionInfo.Country } });
-
+				Analytics.Track("Create New Vernacular Collection");
+			
 			Close();
 		}
 
