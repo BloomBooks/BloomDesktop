@@ -264,11 +264,15 @@ namespace Bloom.Collection.BloomPack
 
 		private void _backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
+			// Note: per BL-5055, one user encountered an error in this method where a BetterLabel was used
+			// after being disposed. The only thing I can think of is that she managed to close the dialog
+			// before some of the messages we wanted to show here were added. So just don't try to show
+			// the messages if the relevant control has been disposed.
 			_okButton.Enabled = true;
 			if(e.Error!=null)
 			{
 				_message.Text =  L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.ErrorInstallingBloomPack","Bloom was not able to install that Bloom Pack");
-				if (e.Error is ArgumentException && e.Error.StackTrace.Contains("CheckIllegalCharacters"))
+				if (e.Error is ArgumentException && e.Error.StackTrace.Contains("CheckIllegalCharacters") && !_message.IsDisposed)
 				{
 					_message.Text += Environment.NewLine + Environment.NewLine
 						+ L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BadCharsInFileName",
@@ -282,12 +286,18 @@ namespace Bloom.Collection.BloomPack
 			}
 			var allDone = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstalled",
 				"The {0} Collection is now ready to use on this computer.");
-			_message.Text = string.Format(allDone, _folderName);
+			if (!_message.IsDisposed)
+			{
+				_message.Text = string.Format(allDone, _folderName);
+			}
 			if (Program.GetRunningBloomProcessCount() > 1)
 			{
-				_message.Text += Environment.NewLine + Environment.NewLine +
-					L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
-					"Bloom is already running, but the contents will not show up until the next time you run Bloom");
+				if (!_message.IsDisposed)
+				{
+					_message.Text += Environment.NewLine + Environment.NewLine +
+					                 L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
+						                 "Bloom is already running, but the contents will not show up until the next time you run Bloom");
+				}
 				ExitWithoutRunningBloom = true;
 			}
 			//Analytics.Track("Install Bloom Pack");
