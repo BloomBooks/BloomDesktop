@@ -40,6 +40,7 @@ namespace Bloom.Book
 				modifiedBook.BringBookUpToDate(new NullProgress());
 				modifiedBook.Save();
 				modifiedBook.Storage.UpdateSupportFiles();
+				modifiedBook.MakeThumbnailFromCoverPicture();
 				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false);
 			}
 		}

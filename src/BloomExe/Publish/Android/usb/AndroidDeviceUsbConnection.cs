@@ -156,6 +156,8 @@ namespace Bloom.Publish.Android.usb
 			if (applicableDevices.Count == 1)
 			{
 				_device = applicableDevices[0];
+				// Without this, we're depending on the LAST device we tried being the applicable one.
+				_bloomFolderPath = GetBloomFolderPath(_device);
 				OneReadyDeviceFound(book);
 				return true;
 			}
