@@ -35,7 +35,10 @@ namespace Bloom.Collection
 		public const string kDefaultXmatterName = "Traditional";
 		private string _language1Iso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
-		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
+		private Dictionary<Tuple<string, string>, string> _mapIsoCodesToLanguageName = new Dictionary<Tuple<string, string>, string>();
+#if USING_ICU
+		private Dictionary<string, Icu.Locale> _mapCodeToIcuLocale = new Dictionary<string, Icu.Locale>();
+#endif
 
 		public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
 			new Dictionary<string, string>()
@@ -260,7 +263,7 @@ namespace Bloom.Collection
 			string exactLanguageMatch;
 			if (!_lookupIsoCode.GetBestLanguageName(Language1Iso639Code, out exactLanguageMatch))
 				return "L1-Unknown-" + Language1Iso639Code;
-			return GetLanguageNameInUILangIfPossible(exactLanguageMatch, inLanguage);
+			return GetLanguageNameInUILangIfPossible(exactLanguageMatch, Language1Iso639Code, inLanguage);
 		}
 
 		/// <summary>
@@ -298,37 +301,76 @@ namespace Bloom.Collection
 		/// Get the name of the language whose code is the first argument, if possible in the language specified by the second.
 		/// If the language code is unknown, return it unchanged.
 		/// </summary>
-		/// <param name="code"></param>
-		/// <param name="inLanguage"></param>
-		/// <returns></returns>
 		public string GetLanguageName(string code, string inLanguage)
 		{
 			//profiling showed we were spending a lot of time looking this up, hence the cache
-			if (!_isoToLangNameDictionary.ContainsKey(code))
-			{
-				string name;
-				_lookupIsoCode.GetBestLanguageName(code, out name);
-				_isoToLangNameDictionary[code] = name;
-			}
-
-			return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[code], inLanguage);
+			string name;
+			var keyToName = new Tuple<string, string>(code, inLanguage);
+			if (_mapIsoCodesToLanguageName.TryGetValue(keyToName, out name))
+				return name;
+			_lookupIsoCode.GetBestLanguageName(code, out name);
+			name = GetLanguageNameInUILangIfPossible(name, code, inLanguage);
+			_mapIsoCodesToLanguageName.Add(keyToName, name);
+			return name;
 		}
 
-		private string GetLanguageNameInUILangIfPossible(string name, string codeOfDesiredLanguage)
+		/// <summary>
+		/// Show each language name in its own language if we can't get it in the UI language.
+		/// (At the moment, it's problematic whether we can get the language name except in itself
+		/// or in English.)
+		/// </summary>
+		/// <returns>The language name in user interface lang if possible.</returns>
+		private string GetLanguageNameInUILangIfPossible(string name, string code, string codeOfUILanguage)
 		{
-			//we don't have a general way to get the language names translated yet. But at least we can show a few languages properly
-
-			if (codeOfDesiredLanguage == "fr" && name == "French")
-				return "français";
-			if(codeOfDesiredLanguage == "th" && name == "Thai")
-				return "ภาษา ไทย";
-			if(codeOfDesiredLanguage == "ar" && name == "Arabic")
-				return "العربية";
-			if (codeOfDesiredLanguage == "es" && name == "Spanish")
-				return "español";
-			if(codeOfDesiredLanguage == "id" && name == "Indonesian")
-				return "Bahasa Indonesia";
+			try
+			{
+#if USING_ICU
+				// ICU is cheaply available on Linux, but very expensive on Windows (adds ~28MB to the Bloom installer).
+				// But it's the only solution that doesn't seem to require coding up our own generalized fix.
+				// I'm leaving the code here as documentation in case a workable Windows solution is found.
+				string icuCode = code.Replace("-", "_");
+				string icuDisplayCode = codeOfUILanguage.Replace("-", "_");
+				Icu.Locale locale;
+				if (!_mapCodeToIcuLocale.TryGetValue(icuCode, out locale))
+				{
+				locale = new Icu.Locale(icuCode);
+				_mapCodeToIcuLocale.Add(icuCode, locale);
+				}
+				Icu.Locale displayLocale;
+				if (!_mapCodeToIcuLocale.TryGetValue(icuDisplayCode, out displayLocale))
+				{
+				displayLocale = new Icu.Locale(icuDisplayCode);
+				_mapCodeToIcuLocale.Add(icuDisplayCode, displayLocale);
+				}
+				name = locale.GetDisplayName(displayLocale);
+#else
+				// CultureInfo.DisplayName is known to be broken in Mono.  It always returns EnglishName.
+				// I can't tell that Windows behaves any differently, but maybe it does if the system is
+				// installed as a Spanish language, French language, or whatever language, system.
+				var generalUICode = GetGeneralCode(codeOfUILanguage);
+				var generalCode = GetGeneralCode(code);
+				var ci = CultureInfo.GetCultureInfo(generalCode);
+				name = ci.DisplayName;
+				if (name == ci.EnglishName && generalUICode != "en")
+					name = ci.NativeName;
+#endif
+			}
+			catch (Exception ex)
+			{
+				// Ignore any problems creating or accessing the CultureInfo object.
+			}
 			return name;
+		}
+
+		/// <summary>
+		/// Remove any country or script identifier from a language code, except leave zh-CN alone.
+		/// </summary>
+		private string GetGeneralCode(string code)
+		{
+			var idxCountry = code.IndexOf("-");
+			if (idxCountry == -1 || code == "zh-CN")
+				return code;
+			return code.Substring(0, idxCountry);
 		}
 
 		public string GetLanguage3Name(string inLanguage)
