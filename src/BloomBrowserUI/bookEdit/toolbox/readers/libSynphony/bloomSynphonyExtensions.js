@@ -160,7 +160,9 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
         // regex to find sentence ending sequences and inter-sentence space
         regex = XRegExp(
                 '([\\p{SEP}]+'                      // sentence ending punctuation (SEP)
-                + '[\'"\\p{Pf}\\p{Pe}\\u0005]*)'    // characters that can follow the SEP
+                // Note that categories Pf and Pi can both act as either Ps or Pe
+                // (See https://issues.bloomlibrary.org/youtrack/issue/BL-5063.)
+                + '[\'"\\p{Pe}\\p{Pf}\\p{Pi}\\u0005]*)' // characters that can follow the SEP
                 + '([\\u0004]*)'                    // opening tag between sentences
                 + intersentenceSpace
                 + '([\\u0005]*)'                    // closing tag between sentences
