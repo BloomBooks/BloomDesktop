@@ -1,17 +1,33 @@
 // The code reads the (bloom-visibility-template-langs + collection langs + multlingual settings)
 // and set this if it determines that this would normally be visible:
+// Note that these two rules are overridden to produce display:flex when we are dealing
+// with non-default vertical alignment.
 .bloom-editable.bloom-visibility-code-on {
     // The main point of this rule is to override a display:none
     // and make the div visible. Display:flex is needed for
     // possible vertical alignment.
-    display: flex;
+    display: block;
 }
 //If not the user can still make it visible:
 .bloom-editable.bloom-visibility-user-on {
-    display: flex;
+    display: block;
 }
 //And the user can alwyas hide it
 .bloom-editable.bloom-visibility-user-off {
     display: none !important;
 }
 
+// To achieve vertical alignment, the visibility-on rules have to use display:flex
+// instead of display:block to override display:none.
+// It would be simpler to just use display:flex always,
+// but a bug in Firefox causes bizarre behavior of up and down arrow keys in
+// paragraphs inside display:flex blocks, and we want to limit this to the unusual cases.
+// See BL-4781 and BL-5217
+.bloom-vertical-align-center, .bloom-vertical-align-bottom {
+    .bloom-editable.bloom-visibility-code-on {
+        display: flex;
+    }
+    .bloom-editable.bloom-visibility-user-on {
+        display: flex;
+    }
+}
