@@ -217,6 +217,8 @@ namespace BloomTests.Book
 								</body>
 							</html>";
 
+			string entryContents = null;
+
 			TestHtmlAfterCompression(bookHtml,
 				actionsOnFolderBeforeCompressing:
 				bookFolderPath => // Simulate the typical situation where we have the regular but not the wide svg
@@ -233,8 +235,14 @@ namespace BloomTests.Book
 					// Now that we do I haven't figured out a reasonable way to rewrite it to test this value again...
 					// Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html, bookPath)));
 					// ... so for now we just make sure that it was added and looks like a hash code
-						Assert.AreEqual(44, GetEntryContents(zip, "version.txt").Length)
-				);
+				{
+					entryContents = GetEntryContents(zip, "version.txt");
+					Assert.AreEqual(44, entryContents.Length);
+				},
+				assertionsOnRepeat: zip =>
+				{
+					Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(entryContents));
+				});
 		}
 
 		[Test]
@@ -460,7 +468,8 @@ namespace BloomTests.Book
 
 		private void TestHtmlAfterCompression(string originalBookHtml, Action<string> actionsOnFolderBeforeCompressing = null,
 			Action<string> assertionsOnResultingHtmlString = null,
-			Action<ZipFile> assertionsOnZipArchive = null)
+			Action<ZipFile> assertionsOnZipArchive = null,
+			Action<ZipFile> assertionsOnRepeat = null)
 		{
 			var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
 			var bookFileName = Path.GetFileName(testBook.GetPathHtmlFile());
@@ -474,6 +483,17 @@ namespace BloomTests.Book
 				assertionsOnZipArchive?.Invoke(zip);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				assertionsOnResultingHtmlString?.Invoke(newHtml);
+				if (assertionsOnRepeat != null)
+				{
+					// compress it again! Used for checking important repeatable results
+					using (var extraTempFile =
+						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.ExtensionForDeviceBloomBook))
+					{
+						BookCompressor.CompressBookForDevice(extraTempFile.Path, testBook, _bookServer);
+						zip = new ZipFile(extraTempFile.Path);
+						assertionsOnRepeat(zip);
+					}
+				}
 			}
 		}
 	}
