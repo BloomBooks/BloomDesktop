@@ -665,6 +665,14 @@ namespace Bloom.Book
 				newPage.SetAttribute("data-page", dataPageValue); //the template has these as data-page='extra'
 			}
 
+			// preserve the 'side' setting of the old page
+			var classes = page.Attributes["class"].Value;
+			var sideMatch = new Regex(@"\bside-\w*\b").Match(classes);
+			if (sideMatch.Success)
+			{
+				newPage.SetAttribute("class", newPage.Attributes["class"].Value + " " + sideMatch.Value);
+			}
+
 			//the leading '.'s here are needed because newPage is an element in a larger DOM, and we only want to search in this page
 			// migrate text (between visible translation groups!)
 			// enhance: I wish there was a better way to detect invisible translation groups than just knowing about one class
