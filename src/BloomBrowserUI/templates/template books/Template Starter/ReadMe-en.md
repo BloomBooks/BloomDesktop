@@ -8,7 +8,7 @@ The second way people can use templates is as source of new pages, regardless of
 Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template: {i18n="template.starter.waystohelp"}
 
 ## Label Your Pages {i18n="template.starter.labelpages"}
-When you add pages to your template, make sure to give each one useful label<sup>[3](#note2),[4](@note3)</sup>: {i18n="template.starter.labeleachpage"}
+When you add pages to your template, make sure to give each one a useful label<sup>[3](#note2),[4](@note3)</sup>: {i18n="template.starter.labeleachpage"}
 
 ![custom label](ReadMeImages/customLabel.png) {i18n="template.starter.labelexample"}
 
@@ -42,6 +42,6 @@ For local colleagues, an easy way to distribute your template is via a Bloom Pac
 
 <a name="note3">3</a>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team. {i18n="template.starter.labelsnottranslatable"}
 
-<a name="note4">4</a>: If you want to the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: ![](ReadMeImages/pageDescription.png) {i18n="template.starter.editrawhtml"}
+<a name="note4">4</a>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: ![](ReadMeImages/pageDescription.png) {i18n="template.starter.editrawhtml"}
 
 
