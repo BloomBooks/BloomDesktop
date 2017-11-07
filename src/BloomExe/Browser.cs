@@ -473,6 +473,8 @@ namespace Bloom
 				string.Format("{0} in {1}:{2}", e.Message, file, line));
 		}
 
+		public Boolean SuppressJavaScriptErrors { get; set; }
+
 		private void OnConsoleMessage(object sender, ConsoleMessageEventArgs e)
 		{
 			if(e.Message.StartsWith("[JavaScript Warning"))
@@ -480,7 +482,7 @@ namespace Bloom
 			if (e.Message.StartsWith("[JavaScript Error"))
 			{
 				// BL-4737 Don't report websocket errors, but do send them to the Debug console.
-				if (!e.Message.Contains("has terminated unexpectedly. Some data may have been transferred."))
+				if (!SuppressJavaScriptErrors && !e.Message.Contains("has terminated unexpectedly. Some data may have been transferred."))
 				{
 					ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
 				}

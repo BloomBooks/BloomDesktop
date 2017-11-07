@@ -58,6 +58,10 @@ namespace Bloom.Publish.Epub
 			{
 				view = new EpubView();
 				_epubPreviewBrowser = new Browser();
+				// We rather mangled the Readium code in the process of cutting away its own navigation
+				// and other controls. It produces all kinds of JavaScript errors, but it seems to do
+				// what we want. So just suppress the toasts for all of them.
+				_epubPreviewBrowser.SuppressJavaScriptErrors = true;
 				_epubPreviewBrowser.Isolator = _isolator;
 				_epubPreviewBrowser.Dock = DockStyle.Fill;
 				view.Controls.Add(_epubPreviewBrowser);
