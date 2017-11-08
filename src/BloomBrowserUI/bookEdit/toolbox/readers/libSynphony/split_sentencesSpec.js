@@ -194,4 +194,26 @@ describe("Splitting text into sentences", function() {
                 //
         });
 
+        it("Recognize sentence ending quotation marks", function() {
+            var input = "\"This is a test.\" 'This is a test.' «This is a test.» “This is a test.” „This is a test.‟ ‘This is a test.’ ’This is a test.‘ (So is this.)";
+            var fragments = theOneLibSynphony.stringToSentences(input);
+            expect(fragments.length).toBe(15);
+            expect(fragments[0].text).toBe('"This is a test."');
+            expect(fragments[1].text).toBe(" ");
+            expect(fragments[2].text).toBe("'This is a test.'");
+            expect(fragments[3].text).toBe(" ");
+            expect(fragments[4].text).toBe("«This is a test.»");
+            expect(fragments[5].text).toBe(" ");
+            expect(fragments[6].text).toBe("“This is a test.”");
+            expect(fragments[7].text).toBe(" ");
+            // The Unicode standard explicitly says that both Pi (opening quote characters) and
+            // Pf (closing quote characters) can serve as Pe (sentence closing characters).
+            expect(fragments[8].text).toBe("„This is a test.‟");    // https://issues.bloomlibrary.org/youtrack/issue/BL-5063
+            expect(fragments[9].text).toBe(" ");
+            expect(fragments[10].text).toBe("‘This is a test.’");   // Pi to open, Pf to close.
+            expect(fragments[11].text).toBe(" ");
+            expect(fragments[12].text).toBe("’This is a test.‘");   // Pf to open, Pi to close.
+            expect(fragments[13].text).toBe(" ");
+            expect(fragments[14].text).toBe("(So is this.)");   // okay, parentheses aren't usually quotation marks...
+        });
 });
