@@ -366,6 +366,9 @@ namespace Bloom.Workspace
 				idxCountry = nativeName.IndexOf(" (");
 				if (idxCountry > 0)
 					nativeName = nativeName.Substring(0, idxCountry);
+				// See http://issues.bloomlibrary.org/youtrack/issue/BL-5223.
+				if (nativeName == "Indonesia")
+					nativeName = "Bahasa Indonesia";
 			}
 			else
 			{

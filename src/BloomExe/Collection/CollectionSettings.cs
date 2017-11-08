@@ -353,7 +353,12 @@ namespace Bloom.Collection
 				var ci = CultureInfo.GetCultureInfo(generalCode);
 				name = ci.DisplayName;
 				if (name == ci.EnglishName && generalUICode != "en")
+				{
 					name = ci.NativeName;
+					// See http://issues.bloomlibrary.org/youtrack/issue/BL-5223.
+					if (name == "Indonesia")
+						name = "Bahasa Indonesia";
+				}
 #endif
 			}
 			catch (Exception ex)
