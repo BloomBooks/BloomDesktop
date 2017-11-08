@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using Bloom.Book;
 using Bloom.ToPalaso;
+using DesktopAnalytics;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.Windows.Forms.WritingSystems;
@@ -543,6 +544,8 @@ namespace Bloom.Collection
 			// Saving the styles doesn't write the obsolete rule, effectively removing it.  Doing
 			// this unconditionally ensures any future similar problems are covered automatically.
 			SaveSettingsCollectionStylesCss();
+
+			SetAnalyticsProperties();
 		}
 
 		private void DoOneTimeCheck()
@@ -884,6 +887,22 @@ namespace Bloom.Collection
 				this.XMatterPackName = kDefaultXmatterName;
 				Save();
 			}
+		}
+
+		/// <summary>
+		/// Set some properties related to this collection, which will go out with every subsequent event
+		/// </summary>
+		public void SetAnalyticsProperties()
+		{
+			// this is ambiguous with what country we are *in*. I'm preserving it for now so we don't have a discontinuity in the analytics database,
+			// but then adding an unambiguous duplicate with CollectionCountry
+			Analytics.SetApplicationProperty("Country", Country);
+			Analytics.SetApplicationProperty("CollectionCountry", Country);
+			Analytics.SetApplicationProperty("Language1Iso639Code", Language1Iso639Code);
+			Analytics.SetApplicationProperty("Language2Iso639Code", Language2Iso639Code);
+			Analytics.SetApplicationProperty("Language3Iso639Code", Language3Iso639Code ?? "---");
+			Analytics.SetApplicationProperty("Language1Iso639Name", Language1Name);
+			Analytics.SetApplicationProperty("BrandingProjectName", BrandingProjectName);
 		}
 	}
 }
