@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Leveled Reader ReadMe-pbu.md" source-language="en" target-language="pbu" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line00">
+      <source xml:lang="en"><mrk mtype="protected">&lt;div dir="ltr"&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">&lt;div dir="rtl"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line01">
+      <source xml:lang="en">A <mrk mtype="protected">**</mrk>Leveled Reader<mrk mtype="protected">**</mrk> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
+      <target xml:lang="pbu">یو <mrk mtype="protected">**</mrk>د زده کوونکو له سویې سره برابر کتاب<mrk mtype="protected">**</mrk> هغه کتاب دی چې په خاصه توګه د هغه لوستونکي لپاره وي چې د لوستلو د ودې په یوې مشخصې مرحلې کې وي. سويه بندي د کلمو د اوږدوالي، د جملو د اوږدوالي، او داسې نور شیان تعریفوي. او مناسبه طرحه، د لغتونو ټولګه، د انځور ملاتړ او عنوان مشخص کوي.</target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en">After you have defined a sequence of <mrk mtype="protected">*</mrk>levels<mrk mtype="protected">*</mrk>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
+      <target xml:lang="pbu">وروسته له هغه چې تاسو د <mrk mtype="protected">*</mrk>سويه بنديو<mrk mtype="protected">*</mrk> ، سلسله تعریف کړه، تاسو یو کتاب سويه بندی کوئ چې تاسې جوړ کړی، په هم دې نمونه او یا د "تجزیه (هجي) کېدو وړنمونه یی کتاب " په وسیله. کله چې تاسې په کتاب کې ټایپ کوئ، بلوم به تاسې سره د سویه په پام نیولو کې مرسته وکړي او درته وبه وایې چې کله د کچی له محدودیته نه بهر شئ.</target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en">You can also make a Bloom Pack of <mrk mtype="protected">*</mrk>templates<mrk mtype="protected">*</mrk> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
+      <target xml:lang="pbu">تاسو کولی شی د هغو <mrk mtype="protected">*</mrk>نمونو<mrk mtype="protected">*</mrk> څخه چی د سواد د متخصص په وسیله آماده شوي د بلوم یوه کڅوړه جوړه کړئ چې نور یې وکارولی شي او نظر په سویو او مرحلو کتابونه ژر جوړې کړي.</target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
+      <target xml:lang="pbu">د دې لپاره چې د زده کوونکو له سویې سره برابر کتابونه په اړه په بلوم کې پوه شئ، تاسو کولی شئ:</target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Watch <mrk mtype="protected">[</mrk>these instructional videos<mrk mtype="protected">](http://tiny.cc/8vbwux)</mrk>.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">- </mrk>وګورئ <mrk mtype="protected">[</mrk>دا ښوونیزې ویډیوګانې<mrk mtype="protected">](http://tiny.cc/8vbwux)</mrk>‏.</target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</source>
+      <target xml:lang="pbu"><mrk mtype="protected">- </mrk>د مرستې مینیو ته لاړ شئ، مرسته انتخاب کړئ، او لاندې "د زده کوونکو له سویې سره برابر کتابونو ته" وګورئ.</target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Go to the Help menu and choose: "Building Reader Templates".</source>
+      <target xml:lang="pbu"><mrk mtype="protected">- </mrk>د مرستې مینیو ته لاړ شئ او انتخاب کړئ: "د کتاب نمونو جوړول"</target>
+    </trans-unit>
+    <trans-unit id="Line12">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line13">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>Relationship to Decodable Readers</source>
+      <target xml:lang="pbu"><mrk mtype="protected">### </mrk>له تجزیه (هجي) کېدو وړ کتاب سره ارتباط</target>
+    </trans-unit>
+    <trans-unit id="Line14">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en">So how do leveled reader <mrk mtype="protected">*</mrk>levels<mrk mtype="protected">*</mrk> fit in decodable reader <mrk mtype="protected">*</mrk>stages<mrk mtype="protected">*</mrk>? The two concepts are complementary, and Bloom allows you to set both a <mrk mtype="protected">*</mrk>decodable stage<mrk mtype="protected">*</mrk> and a <mrk mtype="protected">*</mrk>leveled reader level<mrk mtype="protected">*</mrk> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <mrk mtype="protected">*</mrk>decodability stages<mrk mtype="protected">*</mrk> in mind. Books at the first level or two will also need to be careful about being <mrk mtype="protected">*</mrk>decodable<mrk mtype="protected">*</mrk> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
+      <target xml:lang="pbu">نو څنګه د زده کوونکو له سویې سره برابر <mrk mtype="protected">*</mrk>سویي<mrk mtype="protected">*</mrk> په مناسب ډول د تجزیه (هجي) کېدو وړ کتاب د <mrk mtype="protected">*</mrk>مرحلو<mrk mtype="protected">*</mrk>سره برابریږی؟ دوه مفکورې بشپړې دي، او بلوم اجازه درکوي چې دواړه تنظیم کړئ یو <mrk mtype="protected">*</mrk>د تجزیي وړ مرحله<mrk mtype="protected">*</mrk> او یو <mrk mtype="protected">*</mrk>د زده کونکو له سویي سره برابره کچه<mrk mtype="protected">*</mrk> د کتاب لپاره چې تاسې یې لیکئ. په همدې ډول کتابونه په 1 کچه او 2 کچه کې اړتیا لري چې <mrk mtype="protected">*</mrk>د تجزی وړ مرحلو<mrk mtype="protected">*</mrk> په پام کې نیولو سره ولیکل شي. کتابونه په لومړي یا دویم کچه کې باید <mrk mtype="protected">*</mrk>د تجزی وړ والي<mrk mtype="protected">*</mrk> سره محتاط اوسي (د بیلګي په توګه: هغه توری وکارول شی چې لوستونکي زده کړي وي). نو د کتابونو سلسله به داسې ښکاري:</target>
+    </trans-unit>
+    <trans-unit id="Line16">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line17">
+      <source xml:lang="en"><mrk mtype="protected">&lt;table&gt;</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">&lt;table&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line18">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr style="font-weight:bold"&gt;</mrk></source><target xml:lang="pbu"><mrk mtype="protected">  &lt;tr style="font-weight:bold"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line19">
+      <source xml:lang="en"><mrk mtype="protected">    &lt;td style="width:10em"&gt;</mrk>Leveled Reader Level<mrk mtype="protected">&lt;/td&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">    &lt;td style="width:10em"&gt;</mrk>د زده کوونکو له سویې سره برابره کچه<mrk mtype="protected">&lt;/td&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line20">
+      <source xml:lang="en"><mrk mtype="protected">    &lt;td&gt;</mrk>Decodable Stage<mrk mtype="protected">&lt;/td&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">    &lt;td&gt;</mrk>د تجزی مرحله<mrk mtype="protected">&lt;/td&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line21">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;/tr&gt;</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line22">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>1<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>1<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏1‏‎<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>‏1‏<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line23">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>1<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>2<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏1‏‎<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>‏2‏<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line24">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>1<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>3<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏1‏‎<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>‏3‏<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line25">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>1<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>4<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏1‏‎<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>‏4‏<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line26">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>1<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>5<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏1‏‎<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>‏5‏<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line27">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>1<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>6<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏1‏‎<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>‏6‏<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line28">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>2<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>n/a<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏2‏<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>n/a<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line29">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>3<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>n/a<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏3‏<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>n/a<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line30">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>4<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>n/a<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏4‏<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>n/a<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line31">
+      <source xml:lang="en"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>5<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>n/a<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">  &lt;tr&gt;    &lt;td&gt;</mrk>‏5‏<mrk mtype="protected">&lt;/td&gt;    &lt;td&gt;</mrk>n/a<mrk mtype="protected">&lt;/td&gt;  &lt;/tr&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line32">
+      <source xml:lang="en"><mrk mtype="protected">&lt;/table&gt;</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">&lt;/table&gt;</mrk></target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

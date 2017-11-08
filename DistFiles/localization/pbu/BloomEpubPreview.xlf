@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="bloomEpubPreview-pbu.pug" source-language="en" target-language="pbu" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line01">
+      <source xml:lang="en"><mrk mtype="protected">doctype html</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">doctype html</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en"><mrk mtype="protected">html dir="ltr"</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">html dir="rtl"</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en"><mrk mtype="protected">\tinclude ../templates/bloom-foundation-mixins.pug</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\tinclude ../templates/bloom-foundation-mixins.pug</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected">\thead</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\thead</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en"><mrk mtype="protected">\t\tmeta(charset="UTF-8")</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tmeta(charset="UTF-8")</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected">\t\tlink(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tlink(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en"><mrk mtype="protected">\t\tlink(rel='stylesheet', href='/bloom/lib/jquery-ui.css')</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tlink(rel='stylesheet', href='/bloom/lib/jquery-ui.css')</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected">\t\tscript(src='/bloom/node_modules/jquery/dist/jquery.js')</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tscript(src='/bloom/node_modules/jquery/dist/jquery.js')</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected">\t\tscript(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tscript(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected">\t\tscript.</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tscript.</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t$(function () { $('#device').resizable({ minHeight: 300, minWidth: 200, handles: { 'se': '#BottomRightHandle' } }); });</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t$(function () { $('#device').resizable({ minHeight: 300, minWidth: 200, handles: { 'se': '#BottomRightHandle' } }); });</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line12">
+      <source xml:lang="en"><mrk mtype="protected">\t//_AudioSituationClass_ is replaced at runtime</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t//_AudioSituationClass_ is replaced at runtime</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line13">
+      <source xml:lang="en"><mrk mtype="protected">\tbody._AudioSituationClass_</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\tbody._AudioSituationClass_</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line14">
+      <source xml:lang="en"><mrk mtype="protected">\t\t#sideColumn</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t#sideColumn</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line16">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>This is an</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>دا ده یو</target>
+	</trans-unit>
+    <trans-unit id="Line17">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('https://en.wikipedia.org/wiki/ePUB') </mrk>ePUB</source>
+      <target xml:lang="pbu">ePUB<mrk mtype="protected">\t\t\t\t+link-followed-by-space('https://en.wikipedia.org/wiki/ePUB') </mrk></target>
+    </trans-unit>
+    <trans-unit id="Line18">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>(e-book) version of your book.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>ستاسې د برېښنايي کتاب نسخه</target>
+	</trans-unit>
+    <trans-unit id="Line19">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+space</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t+space</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line20">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\tspan.showForTalkingBooks </mrk>It contains audio, so that new readers can listen as they read.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\tspan.showForTalkingBooks </mrk>دا غږونه لري، چې نوې غوږ نیونکي د لوستلو په وخت ورته غوږ ونیولی شي.</target>
+    </trans-unit>
+    <trans-unit id="Line21">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp.showWhenHaveAudioButNotMakingTalkingBook </mrk>This book has some recordings, but this audio is not included in the ePUB.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp.showWhenHaveAudioButNotMakingTalkingBook </mrk>دا کتاب ځینې ریکارډونه لري، خو دا غږونه په ‏ePUB‏ کې شامل نه دي.</target>
+    </trans-unit>
+    <trans-unit id="Line22">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\th3 </mrk>Preview</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\th3 </mrk>مخلید</target>
+    </trans-unit>
+    <trans-unit id="Line23">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp </mrk>You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp </mrk>د دې مشابه آلې لاندنې ښي کنج کش کولو له لارې تاسو د مخلید اندازه تغیرولی شئ. وګورئ چې ستاسو کتاب به څنګه په مختلفو اندازو پردو باندې ښکاره شي.</target>
+    </trans-unit>
+    <trans-unit id="Line24">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line25">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>This page uses the</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>دا پاڼه کاروي د</target>
+    </trans-unit>
+    <trans-unit id="Line26">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('http://readium.org/') </mrk>Readium</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('http://readium.org/') </mrk>Readium</target>
+    </trans-unit>
+    <trans-unit id="Line27">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>ePUB reader. Books will likely look different on different readers.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>ePUB‏ لوستونکی. کتابونه ښایي بیلابیلو لوستونکو ته په مختلفو ډولونو ښکاره شي.</target>
+    </trans-unit>
+    <trans-unit id="Line28">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp.showForTalkingBooks</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp.showForTalkingBooks</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line29">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>مخلید تر اوسه دلته غږیز کتابونه پلې کولی نشي. تاسو ورته غوږ نیولی شئ د ‏Adobe‏ وړیا نسخی په کارولو سره</target>
+    </trans-unit>
+    <trans-unit id="Line30">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('http://www.adobe.com/solutions/ebook/digital-editions.html') </mrk>Digital Editions</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('http://www.adobe.com/solutions/ebook/digital-editions.html') </mrk>ډیجیټلي ډولونه</target>
+    </trans-unit>
+    <trans-unit id="Line31">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>e-book reader.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>د بريښنایي کتاب لوستونکی.</target>
+    </trans-unit>
+    <trans-unit id="Line32">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\th3 </mrk>Getting This Book Onto Your Device</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\th3 </mrk>دا کتاب د ستاسو په وسیله کې اچول</target>
+    </trans-unit>
+    <trans-unit id="Line33">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line34">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>ښه لاره چې کتابونه خپل مبایل ته واستوئ، د ‏Dropbox‏ نصب کول دي یا همداسی بل کوم خدمت په دواړو خپلو مبایل/ټبلیټ او کمپیوټر کې جمتو کړئ. یواځې د په ‏ePUB ‏ ثبتولو زور وکړئ او بیا د ‏Dropbox ‏ پوښتې انتخاب کړئ. د تاسو په مبایل کې، د ‏Dropbox ‏کاریال خلاص کړئ او خپل کتاب انتخاب کړئ. که تاسو لپټاپ استعمالوئ، تاسو وړیا نسخه کارولي شئ</target>
+    </trans-unit>
+    <trans-unit id="Line35">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('http://www.ushareit.com/') </mrk>ShareIt</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('http://www.ushareit.com/') </mrk>شریک یې کړئ</target>
+    </trans-unit>
+    <trans-unit id="Line36">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>program to send files from your laptop to a phone or tablet.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>هغه پروګرام چې دوسیي ستاسې لپټاپ څخه ستاسو موبایل یا ټبلیټ ته استوي.</target>
+	</trans-unit>
+    <trans-unit id="Line37">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\th3 </mrk>Recommended Reader</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\th3 </mrk>وړاندیز شوی کتاب</target>
+    </trans-unit>
+    <trans-unit id="Line38">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line39">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>Our testing has shown</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>زموږ ازموینه ښکاره کړه</target>
+    </trans-unit>
+    <trans-unit id="Line40">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('/bloom/api/help/Concepts/Gitden_Reader.htm') </mrk>Gitden Reader</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('/bloom/api/help/Concepts/Gitden_Reader.htm') </mrk>د ‏Gitden‏ کتاب</target>
+    </trans-unit>
+    <trans-unit id="Line41">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>to be a good choice for Android and IOS (IPhone &amp;amp; IPad) devices.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>د انډرایډ او ‏IOS‏ (آیفون، او ‏amp؛ ‏IPad‏) وسیلو لپاره ښه انتخاب دي.</target>
+    </trans-unit>
+    <trans-unit id="Line42">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp.showForTalkingBooks</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp.showForTalkingBooks</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line43">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>دې غږیز کتاب ته د غوږ نیولو لپاره په مبایل یا ټبلیټ کې ‏Gitden‏ کارول، تاسو به د ‏Gitden‏ "متن نه وینا ته" غیر فعال کړئ. بیا به هغه تاسو ته غږیز کنټرولونه ښکاره کړي.</target>
+    </trans-unit>
+    <trans-unit id="Line44">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\th3.showWhenNoAudio </mrk>Make it Talk</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\th3.showWhenNoAudio </mrk>وئ غږه وئ</target>
+    </trans-unit>
+    <trans-unit id="Line45">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp.showWhenNoAudio</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp.showWhenNoAudio</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line46">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>If you want to make a "Talking Book" that new readers can read-along with, use Bloom's</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk>که تاسو غواړئ چې ‏"غږیز کتاب" جوړ کړئ چې نوي لوستونکي یې سره ولولي، له بلوم نه ګټه واخلئ</target>
+    </trans-unit>
+    <trans-unit id="Line47">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') </mrk>Talking Book Tool</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t+link-followed-by-space('/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') </mrk>د غږیز کتاب وسیله</target>
+    </trans-unit>
+    <trans-unit id="Line48">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t|  </mrk>to add voice recordings.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t|  </mrk>د غږیز ریکارډونو اضافه کولو لپاره.</target>
+    </trans-unit>
+    <trans-unit id="Line49">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\th3 </mrk>Write to us!</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\th3 </mrk>مونږ ته یې ولیکئ!</target>
+    </trans-unit>
+    <trans-unit id="Line50">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp </mrk>Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tp </mrk>آیا تاسو د بلوم کتابونو په شریکولو کې د مبایلونو له لارې او نورو بریښنایی توکو د کارونئ لپاره علاقه لرئ؟ آیا داسې کوم شی شته چې تاسو اړتیا وینئ مونږ یې وکړو له وړاندی نه چې تاسې ته ګټور وي؟ هیله ده مرسته وکاروئ: د قماندی د ستونزې په راپور ورکولو سره مونږ ته خپل وړاندیز راواسته وئ. مننه!</target>
+    </trans-unit>
+    <trans-unit id="Line51">
+      <source xml:lang="en"><mrk mtype="protected">\t\t#device.ui-resizable</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t#device.ui-resizable</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line52">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tiframe(src='readium-cloudreader.htm?epub={EPUBFOLDER}')</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\tiframe(src='readium-cloudreader.htm?epub={EPUBFOLDER}')</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line53">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t#BottomRightHandle.ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-grip-diagonal-se</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t#BottomRightHandle.ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-grip-diagonal-se</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line54">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

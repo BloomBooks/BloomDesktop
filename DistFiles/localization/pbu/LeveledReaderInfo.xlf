@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="leveledReaderInfo-pbu.pug" source-language="en" target-language="pbu" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+  <trans-unit id="Line1">
+      <source xml:lang="en"><mrk mtype="protected">// </mrk>Info document for offline Leveled Reader documentation</source>
+      <target xml:lang="pbu"><mrk mtype="protected">// </mrk>د معلوماتی اسناد د افلاین د زده کوونکو له سویې سره برابر کتاب د سند کولو لپاره</target>
+    </trans-unit>
+    <trans-unit id="Line2">
+      <source xml:lang="en"><mrk mtype="protected">html dir="ltr"</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">html dir="rtl"</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line3">
+      <source xml:lang="en"><mrk mtype="protected">\thead</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\thead</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line4">
+      <source xml:lang="en"><mrk mtype="protected">\t\tmeta(charset='UTF-8')</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tmeta(charset='UTF-8')</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line5">
+      <source xml:lang="en"><mrk mtype="protected">\tbody</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\tbody</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line6">
+      <source xml:lang="en"><mrk mtype="protected">\t\th1(id='Vocabulary') </mrk>Vocabulary</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\th1(id='Vocabulary') </mrk>د لغتونو ټولګه</target>
+    </trans-unit>
+    <trans-unit id="Line7">
+      <source xml:lang="en"><mrk mtype="protected">\t\tp </mrk>At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\tp </mrk>په لومړنیو سطحو کې، ساده لغتونونه کار واخلئ، چې ماشومانو ته اشنا وي. که تاسو ته ستاسو په ژبه کی آسانه وي، یواځې د یو سیلاب لرونکي کلمې وکاره وئ. تاسو کولی شئ چې د لږ آشنا کلمو په کارولو باندې پیل وکړئ. ماشومان باید وکولی شي چې د دې لغتونو په معنی باندې د شاوخوا کلیمو او جملو او همداسې له لارښوونو څخه پوه شی.</target>
+    </trans-unit>
+    <trans-unit id="Line8">
+      <source xml:lang="en"><mrk mtype="protected">\t\th1(id='Formatting') </mrk>Formatting</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\th1(id='Formatting') </mrk>بڼه ورکول</target>
+    </trans-unit>
+    <trans-unit id="Line9">
+      <source xml:lang="en"><mrk mtype="protected">\t\tp </mrk>Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\tp </mrk>د لومړنیو سطحي لوستونکي به د لوی لیکبڼی څخه د واضح او ښکاره فاصلو درلودلو سره ګټه واخلي. د کلمو او جملو درلودل په عین ځای کې په هر پاڼه کې هم مرسته کوي. لکه څنګه چې لوستونکي لوړو سطحو ته وده کوي، د لیکبڼي اندازه او فاصله به کمه شي او جملې هم د پاڼو په مختلفو ځایونو کې ښکاره کېدای شي.</target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected">\t\tp </mrk>To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\tp </mrk>د دې لپاره چې د لیکبڼی اندازه، د کرښو فاصله، او د کلمو فاصله په بلوم کې ډیره کړو، د متن په بکس کېکاږئ او بیا په خړ ‏"cog"‏ نښه باندې لاندې کیڼ خوا کنج کې زور وکړئ. که تاسو دا وکړئ او بیا د نمونو کتاب جوړ کړئ، کتابونه د هغه نموني سره جوړ شوي به هم د لیکبڼی تنظیمونه وکاره وي.</target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en"><mrk mtype="protected">\t\th1(id='Predictability') </mrk>Predictability</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\th1(id='Predictability') </mrk>وړاندوینه</target>
+    </trans-unit>
+    <trans-unit id="Line12">
+      <source xml:lang="en"><mrk mtype="protected">\t\tp</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tp</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line13">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tem </mrk>Predictability</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tem </mrk>‏وړاندوینه</target>
+    </trans-unit>
+    <trans-unit id="Line14">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t|  </mrk>in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t|  </mrk>په یو متن کې، په دې معنی چې لوستونکی اټکل کولي شي چې ورپسې به څه وي. تاسو کولی شئ د تکرار شویو مثالونو په کارولو سره وړاندوینه ډېره کړئ. دلته ځینې مثالونه دي چې تاسې تري کار اخیستي شئ:</target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en"><mrk mtype="protected">\t\tul</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tul</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line16">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>تکرار - د متن د ځینو برخو تکرار، لکه، د یوې جملې استعمال په هره پاڼه کې او یوازې د یوې کلمې په تغيیرولو سره</target>
+    </trans-unit>
+    <trans-unit id="Line17">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>سلسله – یوه کیسه چې د پېژندل شوي ترتیب سره لکه د اونۍ ورځې یا د یو نمونې شمیرې کاروي</target>
+    </trans-unit>
+    <trans-unit id="Line18">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>د سلسلې جوړول – یوه کیسه له یو نمونی سره د کوم چی تکرار او تسلسل هرې نوې پاڼې ته يې يوه برخه اضافه شوې وی.</target>
+    </trans-unit>
+    <trans-unit id="Line19">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>Rhyme - a story with a pattern or sequence that also includes rhyme. For example:</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>نظم او قافیه – یوه کیسه له یو نمونی سره یا سلسلې سره چې نظم او قافیه هم ورکې وي. لکه:</target>
+    </trans-unit>
+    <trans-unit id="Line20">
+      <source xml:lang="en">\t\t<mrk mtype="protected">\t\tblockquote.poetry</mrk></source>
+	  <target xml:lang="pbu">\t\t<mrk mtype="protected">\t\tblockquote.poetry</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line21">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t\tpre</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t\tpre</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line22">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>Brown Bear, Brown Bear, What do you see?</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>نصواري خرس، نصواري خرس، تاسو څه ګورئ؟</target>
+	  <note>This should be a childrens' rhyme from the local language. The goal is to illustrate rhyming.</note>
+    </trans-unit>
+    <trans-unit id="Line23">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>I see a red bird looking at me.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>زه یوه سره مرغۍ ګورم چې ماته ګوري</target>
+    </trans-unit>
+    <trans-unit id="Line24">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>Red Bird, Red Bird, What do you see?</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>سره مرغۍ، سره مرغۍ، تاسو څه ګورئ؟</target>
+    </trans-unit>
+    <trans-unit id="Line25">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>I see a yellow duck looking at me.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>زه یوه زیړه هیلۍ ګورم چې ماته ګوري.</target>
+    </trans-unit>
+    <trans-unit id="Line26">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>Yellow Duck, Yellow Duck, What do you see?</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t\t\t| </mrk>زیړه هیلۍ، زیړه هیلۍ، تاسو څه ګورئ؟</target>
+    </trans-unit>
+    <trans-unit id="Line27">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t\t.author - </mrk>Bill Martin, Jr. and Eric Carle</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t\t.author - </mrk>بل مارتین، جه آر. او ایرک کارل</target>
+    </trans-unit>
+    <trans-unit id="Line28">
+      <source xml:lang="en"><mrk mtype="protected">\t\th1(id='IllustrationSupport') </mrk>Illustration Support</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\th1(id='IllustrationSupport') </mrk>د انځور ملاتړ</target>
+    </trans-unit>
+    <trans-unit id="Line29">
+      <source xml:lang="en"><mrk mtype="protected">\t\tp </mrk>Illustrations provide support to the story. Illustrations relate to the story in different ways at different</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\tp </mrk>لار ښوونې کیسې ته ملاتړ برابروي. لارښوونې په بیلا بیلو لارو کې له کیسو سره په تفاوت تړلي دي</target>
+    </trans-unit>
+    <trans-unit id="Line30">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t= ' '</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t= ' '</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line31">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tem </mrk>levels</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tem </mrk>سويې</target>
+    </trans-unit>
+    <trans-unit id="Line32">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t|  </mrk>and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t|  </mrk>او د مختلفو لوستونکو لپاره (لاندې وګورئ). په یاد ولرئ چې په ډېرو کلتورونو کې چې ډیر چاپ شوي مواد نه لري، مغلق عکسونه ښایي د پوهاوي لپاره ستونزمن وي.</target>
+    </trans-unit>
+    <trans-unit id="Line33">
+      <source xml:lang="en"><mrk mtype="protected">\t\tul</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tul</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line34">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>For</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>لپاره</target>
+    </trans-unit>
+    <trans-unit id="Line35">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t= ' '</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t= ' '</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line36">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\tstrong </mrk>Emergent Readers</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\tstrong </mrk>لومړنی لوستونکي</target>
+    </trans-unit>
+    <trans-unit id="Line37">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t|  </mrk>the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t|  </mrk>عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.</target>
+    </trans-unit>
+    <trans-unit id="Line38">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>For</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>لپاره</target>
+    </trans-unit>
+    <trans-unit id="Line39">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t= ' '</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t= ' '</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line40">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\tstrong </mrk>Early Readers</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\tstrong </mrk>لومړني لوستونکي</target>
+    </trans-unit>
+    <trans-unit id="Line41">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t|  </mrk>the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t|  </mrk>عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.</target>
+    </trans-unit>
+    <trans-unit id="Line42">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>For</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>لپاره</target>
+    </trans-unit>
+    <trans-unit id="Line43">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t= ' '</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t= ' '</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line44">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\tstrong </mrk>Fluent Readers</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\tstrong </mrk>روان لوستونکي</target>
+    </trans-unit>
+    <trans-unit id="Line45">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t|  </mrk>the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t|  </mrk>عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.</target>
+    </trans-unit>
+    <trans-unit id="Line46">
+      <source xml:lang="en"><mrk mtype="protected">\t\th1(id='ChoiceOfTopic') </mrk>Choice of Topic</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\th1(id='ChoiceOfTopic') </mrk>د عنوان انتخاب</target>
+    </trans-unit>
+    <trans-unit id="Line47">
+      <source xml:lang="en"><mrk mtype="protected">\t\tp </mrk>Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\tp </mrk>کتابونه کولی شي په مختلفو عنوانونو وي. کله چې په توليد شويو کتابونو کې د نويو لوستونکو لپاره هغه عنوانونه وي چې هغو ته آشنا وي. لوستونکي به وتوانیږي چې ولولي او لا ډیر ولولي که چیرته هغوی د هغه شیانو په اړه لولي چې هغوی ته جالب او اشناوي. د ډیرو تجربه لرونکو لوستونکو لپاره، له عنوانونو سره معلومات شاملېدای شي چې لوستونکي ورسره له پخوا څخه آشنا نه دي.</target>
+    </trans-unit>
+    <trans-unit id="Line48">
+      <source xml:lang="en"><mrk mtype="protected">\t\tul</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\tul</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line49">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>For</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>لپاره</target>
+    </trans-unit>
+    <trans-unit id="Line50">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t= ' '</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t= ' '</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line51">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\tstrong </mrk>Emergent Readers</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\tstrong </mrk>لومړنی لوستونکي</target>
+    </trans-unit>
+    <trans-unit id="Line52">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t|  </mrk>the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t|  </mrk>کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.</target>
+    </trans-unit>
+    <trans-unit id="Line53">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>For</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>لپاره</target>
+    </trans-unit>
+    <trans-unit id="Line54">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t= ' '</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t= ' '</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line55">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\tstrong </mrk>Early Readers</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\tstrong </mrk>لومړني لوستونکي</target>
+    </trans-unit>
+    <trans-unit id="Line56">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>, develop a story around a familiar concept but in greater depth.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t| </mrk> ‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.</target>
+    </trans-unit>
+    <trans-unit id="Line57">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tli </mrk>For</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\tli </mrk>لپاره</target>
+    </trans-unit>
+    <trans-unit id="Line58">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t= ' '</mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t= ' '</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line59">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\tstrong </mrk>Fluent Readers</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\tstrong </mrk>روان لوستونکي</target>
+    </trans-unit>
+    <trans-unit id="Line60">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t|  </mrk>the concepts can expand beyond what is familiar, be more varied, and be abstract.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">\t\t\t\t|  </mrk>موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.</target>
+    </trans-unit>
+    <trans-unit id="Line61">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

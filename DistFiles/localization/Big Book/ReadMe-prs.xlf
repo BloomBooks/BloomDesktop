@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Big Book ReadMe-prs.md" source-language="en" target-language="prs" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line00">
+      <source xml:lang="en"><mrk mtype="protected">&lt;div dir="ltr"&gt;</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">&lt;div dir="rtl"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line01">
+      <source xml:lang="en"><mrk mtype="protected"># </mrk>About Big Books</source>
+      <target xml:lang="prs"><mrk mtype="protected"># </mrk>درباره کتاب های بزرگ</target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <mrk mtype="protected">[</mrk>PDF from Scholastic<mrk mtype="protected">](http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf)</mrk>.</source>
+      <target xml:lang="prs">کتاب های بزرگ برای استادان طرح ریزی شده که در دست بگیرند و درپیش صنف بخوانند. برای معلومات بیشتر، این <mrk mtype="protected">[</mrk>PDF‏ را از آموزشی<mrk mtype="protected">](http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf)</mrk> ببینید.</target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected"># </mrk>Printing a Big Book</source>
+      <target xml:lang="prs"><mrk mtype="protected"># </mrk>چاپ کردن کتاب های بزرگ</target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.</source>
+      <target xml:lang="prs">بخاطر مدیریت بهتر اشیا، این تیمپلیت به شکل افقی ‏A4‏ با نوع خط بزرگ گذاشته شده است.</target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en">You can easily produce books that are A3 (twice as large).</source>
+      <target xml:lang="prs">شما به آسانی میتوانید کتاب های ‏A3‏ را تولید نمایید (که دو چند بزرگتراست).</target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en">Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
+      <target xml:lang="prs">فقط PDF ‏‏A4‏ را به یک پرنتر ببرید و ازشان بخواهید که به A3 بزرگتر سازند.</target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected"># </mrk>Limitations of This Version</source>
+      <target xml:lang="prs"><mrk mtype="protected"># </mrk>محدودیت های این نسخه</target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try using CTRL+mouse wheel to zoom in to the page so you can edit it.</source>
+      <target xml:lang="prs">اگر شما سکرین یا صفحه خورد را استعمال میکنید، خواندن صفحه امتیاز مشکل خواهد بود. کوشش کنید که ‏CTRL‏+ تایرک موز را برای زوم کردن یا بزرګ ساختن در صفحه و ایدیت آن استعمال کنید.</target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line12">
+      <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.</source>
+      <target xml:lang="prs">این نسخه شامل "رهنمود برای استادان" میشود صفحه که قبلآ به انګلیسی خانه پری ګردیده.</target>
+    </trans-unit>
+    <trans-unit id="Line13">
+      <source xml:lang="en">If you would like to have instructions in a different language, you can delete that text and type in your own.</source>
+      <target xml:lang="prs">اگر شما میخواهید که در زبانهای مختلف رهنمود داشته باشید ، آن متن را فسخ کرده میتوانید و خودتان تایپ کرده میتوانید.</target>
+    </trans-unit>
+    <trans-unit id="Line14">
+      <source xml:lang="en">If you send us that text, we can include it in a future version of the template.</source>
+      <target xml:lang="prs">اگر آن متن را به ما ارسال نمایید ما آنرا در نسخه بعدی تیمپلیت شامل کرده میتوانیم.</target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en"><mrk mtype="protected"># </mrk>Feedback</source>
+      <target xml:lang="prs"><mrk mtype="protected"># </mrk>باز یافت</target>
+    </trans-unit>
+    <trans-unit id="Line16">
+      <source xml:lang="en">Please give and vote on <mrk mtype="protected">[</mrk>suggestions<mrk mtype="protected">](http://bloomlibrary.org/suggestions)</mrk>.</source>
+      <target xml:lang="prs">لطفاٌ رای بدهید و <mrk mtype="protected">[</mrk>پیشنهادات<mrk mtype="protected">](http://bloomlibrary.org/suggestions)</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line17">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line18">
+      <source xml:lang="en">Please report problems to <mrk mtype="protected">[issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&amp;nbsp;Book&amp;nbsp;Problem)</mrk>.</source>
+      <target xml:lang="prs">لطفاٌ مشکلات را به <mrk mtype="protected">[issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&amp;nbsp;Book&amp;nbsp;Problem)</mrk> گزارش دهی کنید.</target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

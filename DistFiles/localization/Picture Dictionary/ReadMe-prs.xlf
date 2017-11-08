@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Picture Dictionary ReadMe-prs.md" source-language="en" target-language="prs" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line00">
+      <source xml:lang="en"><mrk mtype="protected">&lt;div dir="ltr"&gt;</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">&lt;div dir="rtl"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line01">
+      <source xml:lang="en"><mrk mtype="protected"># </mrk>About the Picture Dictionary Template</source>
+      <target xml:lang="prs"><mrk mtype="protected"># </mrk>درباره نمونه لغتنامه تصویری</target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
+      <target xml:lang="prs">نمونه را برای ساختار لغتنامه تصویری استفاده نمائید که یک لسانه، دو لسانه، یا سه لسانه باشد.</target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected"># </mrk>Limitations of This Version</source>
+      <target xml:lang="prs"><mrk mtype="protected"># </mrk>محدودیت های این نسخه</target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
+      <target xml:lang="prs">این کتاب در حال حاضر به عنوان "تجربوِی" مشخص شده است، زیرا ما از چندین مشکل در طرح و اعتبار می دانیم.</target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en"><mrk mtype="protected"># </mrk>Feedback</source>
+      <target xml:lang="prs"><mrk mtype="protected"># </mrk>باز یافت</target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en">Please give and vote on <mrk mtype="protected">[</mrk>suggestions<mrk mtype="protected">](http://bloomlibrary.org/suggestions)</mrk></source>
+      <target xml:lang="prs">لطفاٌ رای <mrk mtype="protected">[</mrk>بدهید پیشنهادات<mrk mtype="protected">](http://bloomlibrary.org/suggestions)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en">Please report problems to <mrk mtype="protected">[issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Picture&amp;nbsp;Dictionary&amp;nbsp;Problem)</mrk>.</source>
+      <target xml:lang="prs">لطفاٌ مشکلات را به <mrk mtype="protected">[issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Picture&amp;nbsp;Dictionary&amp;nbsp;Problem)</mrk> گزارش دهی کنید.</target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

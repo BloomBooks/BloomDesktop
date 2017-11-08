@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="TrainingVideos-prs.md" source-language="en" target-language="prs" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line00">
+      <source xml:lang="en"><mrk mtype="protected">&lt;div dir="ltr"&gt;</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">&lt;div dir="rtl"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line01">
+      <source xml:lang="en"><mrk mtype="protected"># </mrk>Bloom Training Videos</source>
+      <target xml:lang="prs"><mrk mtype="protected"># </mrk>ویدیو های آموزشی بلوم</target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
+      <target xml:lang="prs">اگر شما فعلاٌ به انترنت وصل هستید، میتوانید ویدیوها را در ویب بروزر تماشا کنید:</target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>All videos<mrk mtype="protected">](http://tiny.cc/bloomVimeo)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>تمام ویدیو ها<mrk mtype="protected">](http://tiny.cc/bloomVimeo)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>Introductory Videos</source>
+      <target xml:lang="prs"><mrk mtype="protected">### </mrk>ویدیو های ابتدایه معرفتی</target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Bloom: Who it is for<mrk mtype="protected">](https://vimeo.com/114043219)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>بلوم: برای کی است<mrk mtype="protected">](https://vimeo.com/114043219)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Understanding Templates and Shell Books<mrk mtype="protected">](https://vimeo.com/114024308)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>فهمیدن به تمپلیت ها و کتاب های قبلاً تهیه شده به زبان های دیگر<mrk mtype="protected">](https://vimeo.com/114024308)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Using the Basic Book template<mrk mtype="protected">](https://vimeo.com/112825489)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>استفاده تیمپلیت اساسی کتاب<mrk mtype="protected">](https://vimeo.com/112825489)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line12">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Using Decodable and Leveled Reader Templates (several videos)<mrk mtype="protected">](http://tiny.cc/usingBloomReaderTemplates)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>استفاده تیمپلیت های قابل تجزیه و متناسب به سویه خواننده (چندین ویدیو)<mrk mtype="protected">](http://tiny.cc/usingBloomReaderTemplates)</mrk>‏</target>
+    </trans-unit>
+    <trans-unit id="Line13">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line14">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>Advanced Topics</source>
+      <target xml:lang="prs"><mrk mtype="protected">### </mrk>موضوعات پیشرفته</target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line16">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Changing the format of text<mrk mtype="protected">](https://vimeo.com/117820891)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>تغیر فارمت متن<mrk mtype="protected">](https://vimeo.com/117820891)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line17">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Using the Custom Page template<mrk mtype="protected">](https://vimeo.com/116868148)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>استعمال تیمپلیت صفحه دلخواه<mrk mtype="protected">](https://vimeo.com/116868148)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line18">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Inserting special characters<mrk mtype="protected">](https://vimeo.com/117927599)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>داخل نمودن حروف خاص<mrk mtype="protected">](https://vimeo.com/117927599)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line19">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Making a set of Decodable and Leveled Reader Templates (several videos)<mrk mtype="protected">](http://tiny.cc/8vbwux)</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>ساختن یک بسته تیمپلیت های قابل تجزیه و متناسب به سویه خواننده (چندین ویدیو)<mrk mtype="protected">](http://tiny.cc/8vbwux)</mrk>‏</target>
+    </trans-unit>
+    <trans-unit id="Line20">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line21">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>Offline Viewing</source>
+      <target xml:lang="prs"><mrk mtype="protected">### </mrk>مشاهده حالت نبود انترنت</target>
+    </trans-unit>
+    <trans-unit id="Line22">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line23">
+      <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
+      <target xml:lang="prs">اگر میخواهید یکی از این ویدیو ها را برای نمایش و شریک ساختن برای وقت دونلود نمائید که انترنت نباشد، شما میتوانید ویدیو ها را به کمپیوتر تان دونلود کنید.</target>
+    </trans-unit>
+    <trans-unit id="Line24">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line25">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>High Resolution<mrk mtype="protected">](http://tiny.cc/bloomHDVideos)</mrk> (Large files)</source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>کیفیت بالا<mrk mtype="protected">](http://tiny.cc/bloomHDVideos)</mrk> (فایل های بزرگ)</target>
+    </trans-unit>
+    <trans-unit id="Line26">
+      <source xml:lang="en"><mrk mtype="protected">- [</mrk>Low Resolution<mrk mtype="protected">](http://tiny.cc/bloomSDVideos)</mrk> (Smaller files)</source>
+      <target xml:lang="prs"><mrk mtype="protected">- [</mrk>کیفیت پائین<mrk mtype="protected">](http://tiny.cc/bloomSDVideos)</mrk> (فایل های کوچک تر)</target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

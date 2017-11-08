@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="IntegrityFailureAdvice-%two_letters_code%.md" source-language="en" target-language="%two_letters_code%" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line00">
+      <source xml:lang="en"><mrk mtype="protected">&lt;div dir="ltr"&gt;</mrk></source>
+      <target xml:lang="%two_letters_code%"><mrk mtype="protected">&lt;div dir="rtl"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line01">
+      <source xml:lang="en"><mrk mtype="protected">## </mrk>Bloom cannot find some of its own files, and cannot continue</source>
+      <target xml:lang="prs"><mrk mtype="protected">## </mrk>بلوم نمیتواند بعضی از فایل های خودش را پیدا نماید، و ادامه نیز داده نمیتواند</target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>Possible Causes</source>
+      <target xml:lang="prs"><mrk mtype="protected">### </mrk>عوامل ممکن</target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source><target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en">1) Your antivirus may have "quarantined" one or more Bloom files.</source>
+      <target xml:lang="prs">1) انتی ویروس شما شاید یک یا چند فایل بلوم را "کوارنتین" کرده باشد.</target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en">2) Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong.</source>
+      <target xml:lang="prs">2) اداره کننده کمپیوتر شما شاید کمپیوتر تانرا "قفل" کرده باشد تا از اشیای بد جلوگیری نماید، اما به شکل که بلوم نتواند این فایل ها را در جای که تعلق دارد جاگزین نماید.</target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>What To Do</source>
+      <target xml:lang="prs"><mrk mtype="protected">### </mrk>چه باید کرد</target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
+      <target xml:lang="prs">بعد ازتسلیم کردن این گزارش، ما در اجرا نمودن این کار به شما در تماس خواهیم شد و کمک خواهیم نمود. در عین زمان، اینجا چند نظریه است:</target>
+    </trans-unit>
+    <trans-unit id="Line12">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line13">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+     <trans-unit id="Line14">
+      <source xml:lang="en"><mrk mtype="protected">* </mrk>Run the Bloom installer again, and see if it starts up OK this time.</source>
+      <target xml:lang="prs"><mrk mtype="protected">* </mrk>نصب کننده بلوم را دوباره فعال کنید، و ببنید که این بار درست آغاز میشود یا نه.</target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line16">
+      <source xml:lang="en"><mrk mtype="protected">* </mrk>If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <mrk translate="no">**{installFolder}**</mrk>.</source>
+      <target xml:lang="prs"><mrk mtype="protected">* </mrk>اگر این حلش نکند، وقت است که به برنامه انتی ویروس تان برگردید. اگر بخش "فایل های گم شده" در پائین کدام فایل نشان دهد که با ‏".exe"‏ ختم شده باشد، لیست سفید ‏"whitelisting"‏ فولدر برنامه بلوم را ملاحظه کنید، که در ‏**{installFolder}**‏ است.</target>
+    </trans-unit>
+    <trans-unit id="Line17">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>AVAST: <mrk mtype="protected">[</mrk>Instructions<mrk mtype="protected">](http://www.getavast.net/support/managing-exceptions)</mrk>.</source>
+      <target xml:lang="prs"><mrk mtype="protected">    * </mrk>AVAST: <mrk mtype="protected">[</mrk>رهنمودها<mrk mtype="protected">](http://www.getavast.net/support/managing-exceptions)</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line18">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>Norton Antivirus: <mrk mtype="protected">[</mrk>Instructions from Symantec<mrk mtype="protected">](https://support.symantec.com/en_US/article.HOWTO80920.html)</mrk>.</source>
+      <target xml:lang="prs"><mrk mtype="protected">    * </mrk>انتی ویروس ‏Norton‏: <mrk mtype="protected">[</mrk>رهنمود ها از ‏Symantec‏<mrk mtype="protected">](https://support.symantec.com/en_US/article.HOWTO80920.html)</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line19">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>AVG: <mrk mtype="protected">[</mrk>Instructions from AVG<mrk mtype="protected">](https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning)</mrk>.</source>
+      <target xml:lang="prs"><mrk mtype="protected">    * </mrk>AVG‏: <mrk mtype="protected">[</mrk>رهنمود ها از ‏AVG‏<mrk mtype="protected">](https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning)</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line20">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>Others: Google for "whitelist directory name-of-your-antivirus"</source>
+      <target xml:lang="prs"><mrk mtype="protected">    * </mrk>دیگر: "برای لیست سفید (‏whitelist‏) کردن اسم دایریکتری تان" را در گوگل بررسی نمائید</target>
+    </trans-unit>
+    <trans-unit id="Line21">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line22">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>Run the Bloom installer again, and see if it starts up OK this time.</source>
+      <target xml:lang="prs"><mrk mtype="protected">    * </mrk>نصب کننده بلوم را دوباره فعال کنید، و ببنید که این بار درست آغاز میشود یا نه.</target>
+    </trans-unit>
+    <trans-unit id="Line23">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line24">
+      <source xml:lang="en"><mrk mtype="protected">* </mrk>You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <mrk mtype="protected">[</mrk>this image<mrk mtype="protected">](https://i.imgur.com/dlRrsSN.png)</mrk>.</source>
+      <target xml:lang="prs"><mrk mtype="protected">* </mrk>شما همچنان کوشش کرده میتوانید که بخش بلوم را دوباره بدست آورده بتوانید که برنامه انتی ویروس گرفته است. برای ‏AVG‏، شما به پیدا کردن "اختیارات" ‏AVG‏ نیاز دارید ‏"virus vault"در مینیو، را کلیک کنید، و خانه بلوم را کلیک کنید، و "ریستور" را کلیک کنید. برای رهنمای دیداری این <mrk mtype="protected">[</mrk>تصویر<mrk mtype="protected">](https://i.imgur.com/dlRrsSN.png)</mrk> را ببنید.</target>
+    </trans-unit>
+    <trans-unit id="Line25">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line26">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>Missing Files</source>
+      <target xml:lang="prs"><mrk mtype="protected">### </mrk>فایل های گم شده</target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

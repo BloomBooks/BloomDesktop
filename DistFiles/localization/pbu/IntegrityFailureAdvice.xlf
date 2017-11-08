@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="IntegrityFailureAdvice-pbu.md" source-language="en" target-language="pbu" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line00">
+      <source xml:lang="en"><mrk mtype="protected">&lt;div dir="ltr"&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">&lt;div dir="rtl"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line01">
+      <source xml:lang="en"><mrk mtype="protected">## </mrk>Bloom cannot find some of its own files, and cannot continue</source>
+      <target xml:lang="pbu"><mrk mtype="protected">## </mrk>بلوم خپل ځینې دوسیي نشي پیدا کولی او ادامه نشي ورکولی</target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>Possible Causes</source>
+      <target xml:lang="pbu"><mrk mtype="protected">### </mrk>ممکن علتونه</target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en">1) Your antivirus may have "quarantined" one or more Bloom files.</source>
+      <target xml:lang="pbu">1) ستاسو انټی ویروس ښایي چې د بلوم یو یا څو دوسیی قرنطین ‏"quarantined"‏ کړي وي.</target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en">2) Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong.</source>
+      <target xml:lang="pbu">2) ستاسو د کمپیوټر اداره کوونکی ښایي ستاسې کمپیوټر قفل کړي وئ ترڅو د بد شیانو مخنیوی وکړي، مګر په داسې طریقه چې بلوم نشي کولی دا فایلونه په کوم ځای پوری چې اړه لري په ځای کړي.</target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>What To Do</source>
+      <target xml:lang="pbu"><mrk mtype="protected">### </mrk>څه باید وکړو</target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
+      <target xml:lang="pbu">وروسته له دې چې تاسو دا راپور تسلیم کړئ، مونږ به تاسې سره اړیکه ونیسو او مرسته به وکړو. په همدې وخت کې، ځینې نظرونه په لاندې ډول شته:</target>
+    </trans-unit>
+    <trans-unit id="Line12">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line13">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+     <trans-unit id="Line14">
+      <source xml:lang="en"><mrk mtype="protected">* </mrk>Run the Bloom installer again, and see if it starts up OK this time.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">* </mrk>د بلوم نصب کوونکی بیا وچلوئ، او وګورئ که دا ځل په سمه توګه پیل شي.</target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line16">
+      <source xml:lang="en"><mrk mtype="protected">* </mrk>If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <mrk translate="no">**{installFolder}**</mrk>.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">* </mrk>که دا یې جوړ نکړي، نو بیا به د خپل انټي ویروس پروګرام وګورئ. که لاندې د ورک شویو فایلونه برخه کوم داسې فایل ښکاره کوي چې په ‏".exe"‏ ختم شوی وي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، چې په ‏**{installFolder}**‏ کې دی.</target>
+    </trans-unit>
+    <trans-unit id="Line17">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>AVAST: <mrk mtype="protected">[</mrk>Instructions<mrk mtype="protected">](http://www.getavast.net/support/managing-exceptions)</mrk>.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">    * </mrk>AVAST‏: <mrk mtype="protected">[</mrk>لارښوونې‏<mrk mtype="protected">](http://www.getavast.net/support/managing-exceptions)</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line18">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>Norton Antivirus: <mrk mtype="protected">[</mrk>Instructions from Symantec<mrk mtype="protected">](https://support.symantec.com/en_US/article.HOWTO80920.html)</mrk>.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">    * </mrk>د ‏Norton‏ انټی ویروس: <mrk mtype="protected">[</mrk>د ‏Symantec‏ لخوا لارښوونې‏<mrk mtype="protected">](https://support.symantec.com/en_US/article.HOWTO80920.html)</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line19">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>AVG: <mrk mtype="protected">[</mrk>Instructions from AVG<mrk mtype="protected">](https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning)</mrk>.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">    * </mrk>AVG: <mrk mtype="protected">[</mrk>د ‏AVG‏ له خوا لارښوونې‏<mrk mtype="protected">](https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning)</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line20">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>Others: Google for "whitelist directory name-of-your-antivirus"</source>
+      <target xml:lang="pbu"><mrk mtype="protected">    * </mrk>نور: د "خپل انټی-ویروس-نوم سپین ‏whitelist ‏" کولو لپاره ګوګل(په ګوګل کی پلټنه وکړئ) کړئ</target>
+    </trans-unit>
+    <trans-unit id="Line21">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line22">
+      <source xml:lang="en"><mrk mtype="protected">    * </mrk>Run the Bloom installer again, and see if it starts up OK this time.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">    * </mrk>د بلوم نصب کوونکی بیا وچلوئ، او وګورئ که دا ځل په سمه توګه پیل شي.</target>
+    </trans-unit>
+    <trans-unit id="Line23">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line24">
+      <source xml:lang="en"><mrk mtype="protected">* </mrk>You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <mrk mtype="protected">[</mrk>this image<mrk mtype="protected">](https://i.imgur.com/dlRrsSN.png)</mrk>.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">* </mrk>تاسو کوښښ کولی شي او بیرته د بلوم هغه برخه لاس ته راوړلی شئ چې ستاسې د انټی-ویروس پروګرام اخیستې وه. د ‏AVG‏ لپاره تاسو باید د ‏AVG‏ اختیارونه پیدا کړئ په مینیو کې، بیا په "virus vault"‏ کیکاږئ، په صندوق کې په بلوم فایل زور وکړئ، او په بیا اعاده کولو زور وکړئ. بصري لارښود لپاره، دا <mrk mtype="protected">[</mrk>انځور وګورئ<mrk mtype="protected">](https://i.imgur.com/dlRrsSN.png)</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line25">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line26">
+      <source xml:lang="en"><mrk mtype="protected">### </mrk>Missing Files</source>
+      <target xml:lang="pbu"><mrk mtype="protected">### </mrk>ورکې شوي دوسیی</target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

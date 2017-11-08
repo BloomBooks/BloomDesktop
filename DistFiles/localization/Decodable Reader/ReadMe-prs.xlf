@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Decodable Reader ReadMe-prs.md" source-language="en" target-language="prs" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line00">
+      <source xml:lang="en"><mrk mtype="protected">&lt;div dir="ltr"&gt;</mrk></source>
+      <target xml:lang="prs"><mrk mtype="protected">&lt;div dir="rtl"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line01">
+      <source xml:lang="en">A <mrk mtype="protected">**</mrk>Decodable Reader<mrk mtype="protected">**</mrk> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically, a language may have 5 - 10 <mrk mtype="protected">*</mrk>decodable stages<mrk mtype="protected">*</mrk> through which learners progress.</source>
+      <target xml:lang="prs">یک <mrk mtype="protected">**</mrk>کتاب قابل تجزیه<mrk mtype="protected">**</mrk> کتاب است که به احتیاط حروف و کلیمات استعمال شده را محدود میسازد که با خواندن خواننده جدید سازگار باشد. بطور عامیانه یک لسان شاید دارای 5-10 <mrk mtype="protected">*</mrk>مراحل قابل تجزیه<mrk mtype="protected">*</mrk> باشد که در آن آموزنده پیشرفت میکنند.</target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en">Bloom helps you to define this sequence of <mrk mtype="protected">*</mrk>stages<mrk mtype="protected">*</mrk> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <mrk mtype="protected">*</mrk>decodable<mrk mtype="protected">*</mrk> (figure out-able) by learners at that <mrk mtype="protected">*</mrk>stage<mrk mtype="protected">*</mrk>.</source>
+      <target xml:lang="prs">بلوم با شما کمک میکند که این تسلسل را اتعین نمایید <mrk mtype="protected">*</mrk>مراحل<mrk mtype="protected">*</mrk> که شاه ګردان در آن کار میکند. هر کتاب را که تهیه میکنید توسط یکی از آن مراحل مورد هدف قرار خواهد گرفت، وبلوم با شما کمک میکند که خود را متیقن سازید که کتاب شما <mrk mtype="protected">*</mrk>قابل تجزیه<mrk mtype="protected">*</mrk> است (قابل بیرون شدن از شکل) توسط آموزنده گان در آن <mrk mtype="protected">*</mrk>مرحله<mrk mtype="protected">*</mrk> ‏.</target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en">You can also make a Bloom Pack of <mrk mtype="protected">*</mrk>templates<mrk mtype="protected">*</mrk> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
+      <target xml:lang="prs">شما از <mrk mtype="protected">*</mrk>تیمپلیت هایکه<mrk mtype="protected">*</mrk> توسط متخصص سواد آماده شده است، یک بستۀ بلوم را بسازید که دیگران با استفاده از آن به سرعت کتاب ها را نظز به سطوح و مراحل، آماده سازند.</target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
+      <target xml:lang="prs">بخاطر آموزش در مورد کتاب قابل تجزیه در بلوم، شما میتوانید:</target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Watch <mrk mtype="protected">[</mrk>these instructional videos<mrk mtype="protected">](http://tiny.cc/8vbwux)</mrk>.</source>
+      <target xml:lang="prs"><mrk mtype="protected">- </mrk>تماشا نمائید <mrk mtype="protected">[</mrk>ین ویدیو های رهنمودی را‏<mrk mtype="protected">](http://tiny.cc/8vbwux)</mrk>‏.</target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
+      <target xml:lang="prs"><mrk mtype="protected">- </mrk>به مینیو کمک بروید، کمک را انتخاب نمائید، و در اندکس پائین برای "کتاب قابل تجزیه" ببنید.</target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Go to the Help menu and choose: "Building Reader Templates".</source>
+      <target xml:lang="prs"><mrk mtype="protected">- </mrk>به مینیو کمک بروید و انتخاب کنید: "ساختن تیمپلیت های خواننده".</target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

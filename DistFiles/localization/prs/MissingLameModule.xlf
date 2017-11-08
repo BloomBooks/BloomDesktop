@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="MissingLameModule-prs.pug" source-language="en" target-language="prs" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line01">
+      <source xml:lang="en"><mrk mtype="protected">doctype html</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">doctype html</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en"><mrk mtype="protected">html dir="ltr"</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">html dir="rtl"</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en"><mrk mtype="protected">\tinclude ../templates/bloom-foundation-mixins.pug</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\tinclude ../templates/bloom-foundation-mixins.pug</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected">\thead</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\thead</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en"><mrk mtype="protected">\t\tmeta(charset="UTF-8")</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\tmeta(charset="UTF-8")</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected">\t\tlink(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\tlink(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en"><mrk mtype="protected">\tbody</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\tbody</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected">\t\t#missingLame</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\t#missingLame</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\th3 </mrk>Please Install LAME</source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\th3 </mrk>لطفا ‏LAME‏ را انستال نمائید</target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp </mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\t\tp </mrk></target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the MP3 files that the book will use. Setting it up is easy. First download and run </source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t| </mrk>این کتاب دارای ریکاردهای صوتی میباشد. بلوم این را بخاطر ساختن "کتاب گفتاری" کتاب الکترونیکی استعمال کرده میتواند. گرچه بلوم به یک برنامه ضرورت دارد که بنام ‏"LAME for Audacity"‏ نامیده میشود بخاطر ساختن دوسیه های ‏MP3‏ که کتاب آنها را استعمال کند. تنظیم کردن آن اسان است. اول انرا دونلود نموده بعدآ فعال نمائید </target>
+    </trans-unit>
+    <trans-unit id="Line12">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link('http://lame.buanzo.org/#lamewindl') 'Lame_v3.99 for Windows.exe'</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t+link('http://lame.buanzo.org/#lamewindl') 'Lame_v3.99 for Windows.exe'</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line13">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>. Next, restart Bloom.</source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t| </mrk>. بعدی، بازفعال سازی بلوم.</target>
+    </trans-unit>
+    <trans-unit id="Line14">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp </mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\t\tp </mrk></target>
+    </trans-unit>
+    <trans-unit id="Line15">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>If you prefer to go ahead and publish your book without audio, click </source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t| </mrk>اگر شما ترجیح میدهید که پیش بروید و کتاب خود را بدون صوت نشر نمائید، کلیک کنید </target>
+   </trans-unit>
+    <trans-unit id="Line16">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link('javascript:void(0)')#proceedWithoutAudio </mrk>here</source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t+link('javascript:void(0)')#proceedWithoutAudio </mrk>اینجا</target>
+    </trans-unit>
+    <trans-unit id="Line17">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>.</source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t| </mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line18">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\th3 </mrk>Legal Considerations</source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\th3 </mrk>ملاحظات قانونی</target>
+    </trans-unit>
+    <trans-unit id="Line19">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\tp </mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\t\tp </mrk></target>
+    </trans-unit>
+    <trans-unit id="Line20">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>Our understanding is that in a few countries (perhaps only in the USA, and then only until 2017), there are patents covering the creation of MP3 files. In correspondence with the patent holder's representative, we were told:</source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t| </mrk>درک ما این است که در کشورهای کم (فقط در آیالات متحده و آن هم تا 2017)، اختراعاتی وجود دارد که ساختار دوسیه های ‏MP3‏ را پوشش میدهد. مطابق نماینده دارنده اختراع ، ما مطلع شدیم:</target>
+    </trans-unit>
+    <trans-unit id="Line21">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\tblockquote</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\t\t\tblockquote</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line22">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t\t| </mrk>You may need a license if there is any type of subscription, content, service, per trans-unit or itemized revenue for the distribution of MP3, or if there is any advertising present during the presentation of any MP3 content, either on a webpage with any links to your Talking Books, or as part of a messaging system, and this total MP3-associated MP3 revenue exceeds USD $100,000 per year.</source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t\t| </mrk>شما شاید کدام مجوز ضرورت داشته باشید بخاطر کدام وضاحت، محتویات، خدمت، بر یک واحد-ترانس، و مفاد گرفته شده از توضیع ‏MP3‏ باشد، ویا کدام اعلان در هنگام پیشکش کردن کدام یکی از محتویات ‏MP3‏ باشد، در کدام صفحه انترنتی و یا کدام لینک مرتبط به کتابهای گفتاری، یا مانند بخش از سیستم پیام کردن، و این تمام ‏MP3‏ مرتبط شده مفاد ‏MP3‏ از 100،000 دالر امریکایی سالانه زیاد شود.</target>
+    </trans-unit>
+    <trans-unit id="Line23">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>Therefore, if you are just making Talking Books and giving them away, then only the distributor (e.g. BloomLibrary.org) needs to be concerned about licensing this technology (and since we don't make money from BloomLibrary.org, we don't have to worry, either). For more information, see </source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t| </mrk>از اینرو اگرشما صرف کتابهای گفتاری را میسازید و آنرا توضیع میکنیذ، بعدا فقط توضیع کننده (مانند ‏BloomLibrary.org‏) ضرورت دارد در باره صدور مجوز این تکنالوژی نگران باشد (و قسمیکه ما از ‏BloomLibrary.org‏ مفاد پولی نداریم، ما هم باید نګران نباشیم). برای معلومات بیشتر، ببینید </target>
+    </trans-unit>
+    <trans-unit id="Line24">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t+link('http://www.mp3licensing.com/') mp3licensing.com</mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t+link('http://www.mp3licensing.com/') mp3licensing.com</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line25">
+      <source xml:lang="en"><mrk mtype="protected">\t\t\t\t| </mrk>.</source>
+      <target xml:lang="prs"><mrk mtype="protected">\t\t\t\t| </mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line26">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="prs"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>

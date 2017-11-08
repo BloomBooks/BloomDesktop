@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Decodable Reader ReadMe-pbu.md" source-language="en" target-language="pbu" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+  <body>
+    <trans-unit id="Line00">
+      <source xml:lang="en"><mrk mtype="protected">&lt;div dir="ltr"&gt;</mrk></source>
+      <target xml:lang="pbu"><mrk mtype="protected">&lt;div dir="rtl"&gt;</mrk></target>
+    </trans-unit>
+    <trans-unit id="Line01">
+      <source xml:lang="en">A <mrk mtype="protected">**</mrk>Decodable Reader<mrk mtype="protected">**</mrk> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically, a language may have 5 - 10 <mrk mtype="protected">*</mrk>decodable stages<mrk mtype="protected">*</mrk> through which learners progress.</source>
+      <target xml:lang="pbu">یو <mrk mtype="protected">**</mrk>تجزیه (هجي) کېدو وړ کتاب<mrk mtype="protected">**</mrk> یو کتاب دی چې په احتیاط سره توری او کلمې کارول محدودوي ترڅو دا وټاکي چې کوم نوی لوستونکی د لوستلو لپاره تیار دی. عموما، یوه ژبه ممکن د 5 - 10 پورې د <mrk mtype="protected">*</mrk>تجزیه (هجي) کېدوډ مرحلې<mrk mtype="protected">*</mrk> ولري چې زده کوونکي د هغه په وسیله پرمختګ کوي.</target>
+    </trans-unit>
+    <trans-unit id="Line02">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line03">
+      <source xml:lang="en">Bloom helps you to define this sequence of <mrk mtype="protected">*</mrk>stages<mrk mtype="protected">*</mrk> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <mrk mtype="protected">*</mrk>decodable<mrk mtype="protected">*</mrk> (figure out-able) by learners at that <mrk mtype="protected">*</mrk>stage<mrk mtype="protected">*</mrk>.</source>
+      <target xml:lang="pbu">بلوم له تاسې سره مرسته کوي چې د <mrk mtype="protected">*</mrk>مرحلو<mrk mtype="protected">*</mrk> سلسه تعریف کړي چې لوستونکي له هغه لاري کار وکړي. هر کتاب چې تاسې جوړوئ، یو له دغو مرحلو به ورباندې ترسره شي او بلوم له تاسې سره مرسته کوي څو مطمئن شئ ستاسې کتاب د <mrk mtype="protected">*</mrk>تجزیه (هجي) کېدو وړ دی<mrk mtype="protected">*</mrk> (د پیژندلو وړ) ده د زده کوونکو په وسیله په هغه <mrk mtype="protected">*</mrk>مرحله کې<mrk mtype="protected">*</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line04">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line05">
+      <source xml:lang="en">You can also make a Bloom Pack of <mrk mtype="protected">*</mrk>templates<mrk mtype="protected">*</mrk> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
+      <target xml:lang="pbu">تاسو کولی شی د هغو <mrk mtype="protected">*</mrk>نمونو<mrk mtype="protected">*</mrk> څخه چی د سواد د متخصص په وسیله آماده شوي د بلوم یوه کڅوړه جوړه کړئ چې نور یې وکارولی شي او نظر په سویو او مرحلو کتابونه ژر جوړې کړي.</target>
+    </trans-unit>
+    <trans-unit id="Line06">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line07">
+      <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
+      <target xml:lang="pbu">د دې لپاره چې په بلوم کې د تجزیه (هجي) کېدو وړ کتاب اړوند پوه شئ، تاسو کولی شئ:</target>
+    </trans-unit>
+    <trans-unit id="Line08">
+      <source xml:lang="en"><mrk mtype="protected"></mrk></source>
+	  <target xml:lang="pbu"><mrk mtype="protected"></mrk></target>
+    </trans-unit>
+    <trans-unit id="Line09">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Watch <mrk mtype="protected">[</mrk>these instructional videos<mrk mtype="protected">](http://tiny.cc/8vbwux)</mrk>.</source>
+      <target xml:lang="pbu"><mrk mtype="protected">- </mrk>وګورئ <mrk mtype="protected">[</mrk>دا ښوونیزې ویډیوګانې<mrk mtype="protected">](http://tiny.cc/8vbwux)</mrk>.</target>
+    </trans-unit>
+    <trans-unit id="Line10">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
+      <target xml:lang="pbu"><mrk mtype="protected">- </mrk>د مرستې مینیو ته لاړ شئ، او مرسته انتخاب کړئ، او لاندې وګورئ "د تجزیه (هجي) کېدو وړ کتاب"</target>
+    </trans-unit>
+    <trans-unit id="Line11">
+      <source xml:lang="en"><mrk mtype="protected">- </mrk>Go to the Help menu and choose: "Building Reader Templates".</source>
+      <target xml:lang="pbu"><mrk mtype="protected">- </mrk>د مرستې مینیو ته لاړ شئ او انتخاب کړئ: "د کتاب نمونو جوړول"</target>
+    </trans-unit>
+  </body>
+  </file>
+</xliff>
