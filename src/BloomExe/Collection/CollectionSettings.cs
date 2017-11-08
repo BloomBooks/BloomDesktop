@@ -768,6 +768,10 @@ namespace Bloom.Collection
 		/// </summary>
 		public void SetAnalyticsProperties()
 		{
+			if (!Analytics.AllowTracking)
+			{
+				return; //e.g. in unit tests
+			}
 			// this is ambiguous with what country we are *in*. I'm preserving it for now so we don't have a discontinuity in the analytics database,
 			// but then adding an unambiguous duplicate with CollectionCountry
 			Analytics.SetApplicationProperty("Country", Country);
