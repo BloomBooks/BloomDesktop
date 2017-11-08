@@ -1191,6 +1191,12 @@ namespace Bloom.Book
 
 		internal static string SanitizeNameForFileSystem(string name)
 		{
+			// First make sure it's not too long.
+			const int MAX = 50;	//arbitrary
+			if (name.Length > MAX)
+				name = name.Substring(0, MAX);
+			// Then replace invalid characters with spaces and trim off characters
+			// that shouldn't start or finish a directory name.
 			name = RemoveDangerousCharacters(name);
 			if (name.Length == 0)
 			{
@@ -1199,9 +1205,6 @@ namespace Bloom.Book
 				if (name.Length == 0)
 					name = "Book";	// This should absolutely never be needed, but let's be paranoid.
 			}
-			const int MAX = 50;	//arbitrary
-			if (name.Length > MAX)
-				return name.Substring(0, MAX);
 			return name;
 		}
 
@@ -1209,6 +1212,8 @@ namespace Bloom.Book
 		{
 			var dangerousCharacters = new List<char>();
 			dangerousCharacters.AddRange(PathUtilities.GetInvalidOSIndependentFileNameChars());
+			// NBSP also causes problems.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5212.
+			dangerousCharacters.Add('\u00a0');
 			//dangerousCharacters.Add('.'); Moved this to a trim because SHRP uses names like "SHRP 2.3" (term 2, week 3)
 			foreach (char c in dangerousCharacters)
 			{
