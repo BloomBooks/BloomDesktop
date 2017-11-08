@@ -399,6 +399,17 @@ function handleKeydown(): void {
         // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
         // markup.
         const editableDiv = $(selection.anchorNode).parents(".bloom-editable")[0];
+
+        // If longpress is currently engaged trying to determine what, if anything, it needs
+        // to do, we postpone the markup. Inexplicably, longpress and handleKeydown
+        // started interfering again even after the fix for BL-3900 (see comments for
+        // that elsewhere in this file). This code was added for BL-5215.
+        if (editableDiv.hasAttribute("data-longpress-evaluation-in-progress")) {
+            keypressTimer = null;
+            handleKeydown();
+            return;
+        }
+
         // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
         // presumably we could adjust the above query to still get the div it's looking for.
         if (editableDiv) {
