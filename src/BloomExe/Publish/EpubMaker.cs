@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -850,11 +850,10 @@ namespace Bloom.Publish
 				Application.RaiseIdle(new EventArgs());		// needed on Linux to avoid deadlock starving browser navigation
 			}
 
-			var xpathStr = ".//div";
 			var toBeDeleted = new List<XmlElement>();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-			foreach (XmlElement elt in pageElt.SafeSelectNodes(xpathStr))
+			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
 				if (!IsDisplayed(elt))
 					toBeDeleted.Add(elt);

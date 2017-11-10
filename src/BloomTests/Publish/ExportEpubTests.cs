@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -408,34 +408,6 @@ namespace BloomTests.Publish
 
 			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
-		}
-
-		[Test]
-		public void ShouldNotShowMultipleLanguagesInSecondTextBox()
-		{
-			var book = SetupBookLong("This is some text",
-				"en", extraPages: @"<div class='bloom-page'>
-						<div id='anotherId' class='marginBox'>
-							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
-								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
-									Page two text - 1st text box
-								</div>
-							</div>
-							<div id='testSecondTextBox' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
-								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
-									Page two text - 2nd text box
-								</div>
-								<div class='bloom-editable' lang = 'fr'>Page deux text</div>
-							</div>
-						</div>
-					</div>");
-			MakeEpub("output", "ShouldNotShowMultipleLanguages", book);
-			CheckBasicsInManifest();
-			CheckBasicsInPage();
-
-			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
-			// this ought to fail!
-			AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//xhtml:div[text()='Page deux text']", _ns);
 		}
 
 		/// <summary>
