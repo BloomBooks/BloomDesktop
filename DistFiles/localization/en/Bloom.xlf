@@ -2097,7 +2097,7 @@
         <note>Link to find Bloom Reader on Google Play Store</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
-        <source xml:lang="en">Method</source>
+        <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
       </trans-unit>
