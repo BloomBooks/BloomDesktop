@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -412,7 +412,29 @@ namespace BloomTests.Publish
 			CheckBasicsInPage();
 
 			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
-			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//div[@id='anotherId']");
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
+		}
+
+		[Test]
+		public void OmitsNonPrintingPages()
+		{
+			var book = SetupBookLong("This is some text",
+				"en", extraPages: @"<div class='bloom-page nonprinting'>
+						<div id='anotherId' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
+									Page two text
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+						</div>
+					</div>");
+			MakeEpub("output", "OmitsNonPrintingPages", book);
+			CheckBasicsInManifest();
+			CheckBasicsInPage();
+
+			var page2entry = _epub.GetEntry(Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
+			Assert.That(page2entry, Is.Null, "nonprinting page should be omitted");
 		}
 
 		/// <summary>
@@ -504,8 +526,45 @@ namespace BloomTests.Publish
 		{
 			var book = SetupBookLong("Page with a picture on top and a large, centered word below.", "en",
 				extraContent: @"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text should always display</div>
-							<div class='bloom-editable' lang='fr'>French text should only display if configured</div>
-							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+					<div class='bloom-editable' lang='fr'>French text should only display if configured</div>
+					<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+				extraContentOutsideTranslationGroup: @"
+					<div class='split-pane'>
+						<div class='split-pane-component'>
+							<div class='split-pane-component-inner'>
+								<div id='testSecondTextBox' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+									<div class='bloom-editable' lang='xyz'>2nd text box vernacular</div>
+									<div class='bloom-editable' lang='en'>Second text box</div>
+								</div>
+							</div>
+						</div>
+						<div class='split-pane-component'>
+							<div class='split-pane'>
+								<div class='split-pane-component'>
+									<div class='split-pane-component-inner'>
+										<div id='testThirdTextBox' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+											<div class='bloom-editable' lang='xyz'>3rd text box vernacular</div>
+											<div class='bloom-editable' lang='en'>Third text box</div>
+										</div>
+									</div>
+								</div>
+								<div class='split-pane-divider'></div>
+								<div class='split-pane-component'>
+									<div class='split-pane-component-inner'>
+<!-- class 'box-header-off' here pointed out a flaw in our deletion code in InvisibleAndUnwantedContentRemoved() -->
+										<div id='testFourthTextBox' class='box-header-off bloom-translationGroup bloom-requiresParagraphs' lang=''>
+											<div class='bloom-editable' lang='xyz'><p></p></div>
+											<div class='bloom-editable' lang='en'><p></p></div>
+										</div>
+										<div id='testFifthTextBox' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+											<div class='bloom-editable' lang='xyz'>5th text box vernacular</div>
+											<div class='bloom-editable' lang='en'>Fifth text box</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>",
 				defaultLanguages: "V");
 
 			MakeEpub("output", "InvisibleAndUnwantedContentRemoved", book);

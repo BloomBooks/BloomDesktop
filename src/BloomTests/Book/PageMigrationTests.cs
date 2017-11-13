@@ -412,7 +412,7 @@ namespace BloomTests.Book
 					</div>
 				</div>
 			</div>
-<div class='bloom-page' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
+<div class='bloom-page side-left' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
 			   <div class='marginBox'>
 					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
@@ -477,7 +477,7 @@ namespace BloomTests.Book
 			book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, "thePage");
 
 			var newPage = (XmlElement)dom.SafeSelectNodes(".//div[@id='thePage']")[0];
-			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("A5Portrait bloom-page numberedPage customPage bloom-combinedPage bloom-monolingual"));
+			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("A5Portrait bloom-page numberedPage customPage bloom-combinedPage side-left bloom-monolingual"));
 			Assert.That(newPage.Attributes["data-pagelineage"].Value, Is.EqualTo("newTemplate"));
 			// We kept the image
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//img[@data-license='cc-by-nc-sa' and @data-copyright='Copyright © 2012, LASI' and @src='erjwx3bl.q3c.png']", 1); // the one in the first page has slightly different attrs

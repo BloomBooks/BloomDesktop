@@ -33,20 +33,18 @@ namespace Bloom.Book
 		{
 			using(var temp = new TemporaryFolder())
 			{
-				BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
-				var bookInfo = new BookInfo(temp.FolderPath, true);
-				bookInfo.XMatterNameOverride = "Device";
-				var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-				modifiedBook.BringBookUpToDate(new NullProgress());
-				modifiedBook.Save();
-				modifiedBook.Storage.UpdateSupportFiles();
-				modifiedBook.MakeThumbnailFromCoverPicture();
-				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false);
+				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp);
+				// We use the original book to compute the sha, otherwise, each time we create a bloomd to send it,
+				// the sha is different, because SOMETHING changes in the book in the process of bringing it up to date.
+				// This leads to an infinite loop in the WiFi sending process.
+				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
+					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
 			}
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false, bool wrapWithFolder = true)
+			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false, bool wrapWithFolder = true,
+			string pathToFileForSha = null)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
 			{
@@ -69,7 +67,7 @@ namespace Bloom.Book
 						// a zip, as with .bloomd files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson, pathToFileForSha);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -93,7 +91,7 @@ namespace Bloom.Book
 		/// <para> name="reduceImages">If true, image files are reduced in size to no larger than 300x300 before saving</para>
 		/// <remarks>Protected for testing purposes</remarks>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false)
+			bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false, string pathToFileForSha = null)
 		{
 			if (excludeAudio && Path.GetFileName(directoryToCompress).ToLowerInvariant() == "audio")
 				return;
@@ -156,10 +154,13 @@ namespace Bloom.Book
 					modifiedContent = Encoding.UTF8.GetBytes(newContent);
 					newEntry.Size = modifiedContent.Length;
 
-					// Make an extra entry containing the sha
-					var sha = Book.MakeVersionCode(originalContent, filePath);
-					var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
-					MakeExtraEntry(zipStream, name, sha);
+					if (pathToFileForSha != null)
+					{
+						// Make an extra entry containing the sha
+						var sha = Book.MakeVersionCode(File.ReadAllText(pathToFileForSha, Encoding.UTF8), pathToFileForSha);
+						var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
+						MakeExtraEntry(zipStream, name, sha);
+					}
 					MakeExtraEntry(zipStream, "readerStyles.css",
 						File.ReadAllText(FileLocator.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"))));
 				}

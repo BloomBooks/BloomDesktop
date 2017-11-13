@@ -217,6 +217,8 @@ namespace BloomTests.Book
 								</body>
 							</html>";
 
+			string entryContents = null;
+
 			TestHtmlAfterCompression(bookHtml,
 				actionsOnFolderBeforeCompressing:
 				bookFolderPath => // Simulate the typical situation where we have the regular but not the wide svg
@@ -233,9 +235,224 @@ namespace BloomTests.Book
 					// Now that we do I haven't figured out a reasonable way to rewrite it to test this value again...
 					// Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html, bookPath)));
 					// ... so for now we just make sure that it was added and looks like a hash code
-						Assert.AreEqual(44, GetEntryContents(zip, "version.txt").Length)
-				);
+				{
+					entryContents = GetEntryContents(zip, "version.txt");
+					Assert.AreEqual(44, entryContents.Length);
+				},
+				assertionsOnRepeat: zip =>
+				{
+					Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(entryContents));
+				});
 		}
+		[Test]
+		public void CompressBookForDevice_QuestionsPages_ConvertsToJson()
+		{
+			// This requires a real book file (which a mocked book usually doesn't have).
+			// Test data reflects a number of important conditions, including presence or absence of
+			// white space before and after asterisk, paragraphs broken up with br.
+			// As yet does not cover questions with no answers (currently will be excluded),
+			// questions with no right answer (currently will be included)
+			// questions with more than one right answer (currently will be included)
+			// questions with only one answer (currently will be included),
+			// since I'm not sure what the desired behavior is.
+			// If we want to test corner cases it might be easier to test BloomReaderFileMaker.MakeQuestion directly.
+			var bookHtml = @"<html>
+<head>
+	<meta charset='UTF-8'></meta>
+	<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
+	<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+</head>
+<body>
+	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+		<div  contenteditable='true'>This page should make it into the book</div>
+	</div>
+    <div class='bloom-page customPage enterprise questions nonprinting Device16x9Portrait layout-style-Default side-left bloom-monolingual' id='86574a93-a50f-42da-b78f-574ef790c481' data-page='' data-pagelineage='4140d100-e4c3-49c4-af05-dda5789e019b' data-page-number='1' lang=''>
+        <div class='pageLabel' lang='en'>
+            Comprehension Questions
+        </div>
+        <div class='pageDescription' lang='en'></div>
+
+        <div class='marginBox'>
+            <div style='min-width: 0px;' class='split-pane vertical-percent'>
+                <div class='split-pane-component position-left'>
+                    <div class='split-pane-component-inner'>
+                        <div class='ccLabel'>
+                            <p>Enter your comprehension questions for this book..., see <a href='https://docs.google.com/document/d/1LV0_OtjH1BTJl7wqdth0bZXQxduTqD7WenX4AsksVGs/edit#heading=h.lxe9k6qcvzwb'>Bloom Enterprise Service</a></p>
+
+							...
+
+                            <p>*Appeared to wear the cap</p>
+                        </div>
+                    </div>
+                </div>
+                <div class='split-pane-divider vertical-divider'></div>
+
+                <div class='split-pane-component position-right'>
+                    <div class='split-pane-component-inner adding'>
+                        <div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+                            <div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable cke_editable_inline cke_contents_ltr cc-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+                                <p>Where do questions belong?</p>
+
+                                <p>* At the end</p>
+
+                                <p>At the start</p>
+
+                                <p>In the middle</p>
+
+                                <p></p>
+                            </div>
+                            <div class='bloom-editable' contenteditable='true' lang='fr'>
+                                <p>Where do French questions belong?</p>
+
+                                <p> *At the end of the French</p>
+
+                                <p>At the start of the French</p>
+
+                                <p>In the middle of the French</p>
+
+                            </div>
+                            <div class='bloom-editable' contenteditable='true' lang='z'></div>
+
+                            <div aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable cke_editable cke_editable_inline cke_contents_ltr bloom-contentNational1' contenteditable='true' lang='es'>
+                                <p></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page customPage enterprise questions nonprinting Device16x9Portrait layout-style-Default side-left bloom-monolingual' id='299c0b20-56f7-4a0f-a6d4-08f1ec01f1e6' data-page='' data-pagelineage='4140d100-e4c3-49c4-af05-dda5789e019b' data-page-number='2' lang=''>
+        <div class='pageLabel' lang='en'>
+            Comprehension Questions
+        </div>
+
+        <div class='pageDescription' lang='en'></div>
+
+        <div class='marginBox'>
+            <div style='min-width: 0px;' class='split-pane vertical-percent'>
+                <div class='split-pane-component position-left'>
+                    <div class='split-pane-component-inner'>
+                        <div class='ccLabel'>
+                            <p>Enter your ..., see <a href='https://docs.google.com/document/d/1LV0_OtjH1BTJl7wqdth0bZXQxduTqD7WenX4AsksVGs/edit#heading=h.lxe9k6qcvzwb'>Bloom Enterprise Service</a></p>
+
+                            <p></p>
+								...
+
+                            <p>*Appeared to wear the cap</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class='split-pane-divider vertical-divider'></div>
+
+                <div class='split-pane-component position-right'>
+                    <div class='split-pane-component-inner adding'>
+                        <div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+                            <div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable cke_editable_inline cke_contents_ltr cc-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+                                <p>Where is the USA?<br></br>
+                                South America<br></br>
+                                *North America<br></br>
+                                Europe<br></br>
+                                Asia</p>
+
+                                <p></p>
+
+                                <p>Where does the platypus come from?<br></br>
+                                *Australia<br></br>
+                                Papua New Guinea<br></br>
+                                Africa<br></br>
+                                Peru</p>
+
+                                <p></p>
+
+                                <p>What is an Emu?<br></br>
+                                A fish<br></br>
+                                An insect<br></br>
+                                A spider<br></br>
+                                * A bird</p>
+
+                                <p></p>
+
+                                <p>Where do emus live?<br></br>
+                                New Zealand<br></br>
+                                * Farms in the USA<br></br>
+                                England<br></br>
+                                Wherever</p>
+
+                                <p></p>
+                            </div>
+
+                            <div class='bloom-editable' contenteditable='true' lang='z'></div>
+
+                            <div aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable cke_editable cke_editable_inline cke_contents_ltr bloom-contentNational1' contenteditable='true' lang='es'>
+                                <p></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+
+			TestHtmlAfterCompression(bookHtml,
+				assertionsOnResultingHtmlString:
+				html =>
+				{
+					// The questions pages should be removed.
+					AssertThatXmlIn.String(html).HasNoMatchForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
+				},
+
+				assertionsOnZipArchive: zip =>
+				{
+					var json = GetEntryContents(zip, BloomReaderFileMaker.QuestionFileName);
+					var groups = QuestionGroup.FromJson(json);
+					// Two (non-z-language) groups in first question page, one in second.
+					Assert.That(groups, Has.Length.EqualTo(3));
+					Assert.That(groups[0].questions, Has.Length.EqualTo(1));
+					Assert.That(groups[1].questions, Has.Length.EqualTo(1));
+					Assert.That(groups[2].questions, Has.Length.EqualTo(4));
+
+					Assert.That(groups[0].lang, Is.EqualTo("en"));
+					Assert.That(groups[1].lang, Is.EqualTo("fr"));
+
+					Assert.That(groups[0].questions[0].question, Is.EqualTo("Where do questions belong?"));
+					Assert.That(groups[0].questions[0].answers, Has.Length.EqualTo(3));
+					Assert.That(groups[0].questions[0].answers[0].text, Is.EqualTo("At the end"));
+					Assert.That(groups[0].questions[0].answers[0].correct, Is.True);
+					Assert.That(groups[0].questions[0].answers[1].text, Is.EqualTo("At the start"));
+					Assert.That(groups[0].questions[0].answers[1].correct, Is.False);
+
+
+					Assert.That(groups[1].questions[0].question, Is.EqualTo("Where do French questions belong?"));
+					Assert.That(groups[1].questions[0].answers, Has.Length.EqualTo(3));
+					Assert.That(groups[1].questions[0].answers[0].text, Is.EqualTo("At the end of the French"));
+					Assert.That(groups[1].questions[0].answers[0].correct, Is.True);
+					Assert.That(groups[1].questions[0].answers[1].text, Is.EqualTo("At the start of the French"));
+					Assert.That(groups[1].questions[0].answers[1].correct, Is.False);
+
+					Assert.That(groups[2].questions[0].question, Is.EqualTo("Where is the USA?"));
+					Assert.That(groups[2].questions[0].answers, Has.Length.EqualTo(4));
+					Assert.That(groups[2].questions[0].answers[3].text, Is.EqualTo("Asia"));
+					Assert.That(groups[2].questions[0].answers[3].correct, Is.False);
+					Assert.That(groups[2].questions[0].answers[1].text, Is.EqualTo("North America"));
+					Assert.That(groups[2].questions[0].answers[1].correct, Is.True);
+
+					Assert.That(groups[2].questions[2].question, Is.EqualTo("What is an Emu?"));
+					Assert.That(groups[2].questions[2].answers, Has.Length.EqualTo(4));
+					Assert.That(groups[2].questions[2].answers[0].text, Is.EqualTo("A fish"));
+					Assert.That(groups[2].questions[2].answers[0].correct, Is.False);
+					Assert.That(groups[2].questions[2].answers[3].text, Is.EqualTo("A bird"));
+					Assert.That(groups[2].questions[2].answers[3].correct, Is.True);
+
+					// Make sure we don't miss the last answer of the last question.
+					Assert.That(groups[2].questions[3].answers[3].text, Is.EqualTo("Wherever"));
+				}
+			);
+		}
+
 
 		[Test]
 		public void CompressBookForDevice_MakesThumbnailFromCoverPicture()
@@ -460,7 +677,8 @@ namespace BloomTests.Book
 
 		private void TestHtmlAfterCompression(string originalBookHtml, Action<string> actionsOnFolderBeforeCompressing = null,
 			Action<string> assertionsOnResultingHtmlString = null,
-			Action<ZipFile> assertionsOnZipArchive = null)
+			Action<ZipFile> assertionsOnZipArchive = null,
+			Action<ZipFile> assertionsOnRepeat = null)
 		{
 			var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
 			var bookFileName = Path.GetFileName(testBook.GetPathHtmlFile());
@@ -474,6 +692,17 @@ namespace BloomTests.Book
 				assertionsOnZipArchive?.Invoke(zip);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				assertionsOnResultingHtmlString?.Invoke(newHtml);
+				if (assertionsOnRepeat != null)
+				{
+					// compress it again! Used for checking important repeatable results
+					using (var extraTempFile =
+						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.ExtensionForDeviceBloomBook))
+					{
+						BookCompressor.CompressBookForDevice(extraTempFile.Path, testBook, _bookServer);
+						zip = new ZipFile(extraTempFile.Path);
+						assertionsOnRepeat(zip);
+					}
+				}
 			}
 		}
 	}
