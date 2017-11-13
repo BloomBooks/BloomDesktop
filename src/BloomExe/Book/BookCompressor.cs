@@ -33,14 +33,7 @@ namespace Bloom.Book
 		{
 			using(var temp = new TemporaryFolder())
 			{
-				BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
-				var bookInfo = new BookInfo(temp.FolderPath, true);
-				bookInfo.XMatterNameOverride = "Device";
-				var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-				modifiedBook.BringBookUpToDate(new NullProgress());
-				modifiedBook.Save();
-				modifiedBook.Storage.UpdateSupportFiles();
-				modifiedBook.MakeThumbnailFromCoverPicture();
+				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp);
 				// We use the original book to compute the sha, otherwise, each time we create a bloomd to send it,
 				// the sha is different, because SOMETHING changes in the book in the process of bringing it up to date.
 				// This leads to an infinite loop in the WiFi sending process.
