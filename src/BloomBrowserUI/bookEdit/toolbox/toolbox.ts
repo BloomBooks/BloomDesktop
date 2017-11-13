@@ -4,7 +4,8 @@ import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom';
 import "../../lib/jquery.onSafe";
 import axios from "axios";
-import { EditableDivUtils } from '../js/editableDivUtils';
+
+export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
 /**
  * The html code for a check mark character
@@ -394,6 +395,17 @@ function handleKeydown(): void {
         var active = <HTMLDivElement>$(selection.anchorNode).closest("div").get(0);
         if (!active || selection.rangeCount > 1 || (selection.rangeCount === 1 && !selection.getRangeAt(0).collapsed)) {
             return; // don't even try to adjust markup while there is some complex selection
+        }
+
+        // If longpress is currently engaged trying to determine what, if anything, it needs
+        // to do, we postpone the markup. Inexplicably, longpress and handleKeydown
+        // started interfering again even after the fix for BL-3900 (see comments for
+        // that elsewhere in this file). This code was added for BL-5215.
+        // It would be great if we didn't have settle for using window.top,
+        // but the other player here (jquery.longpress.js) is in a totally different
+        // context currently, so my other attempts to share a boolean failed.
+        if (window.top[isLongPressEvaluating]) {
+            return;
         }
 
         // the hard thing about all this is preserving the user's insertion point while we change the actual

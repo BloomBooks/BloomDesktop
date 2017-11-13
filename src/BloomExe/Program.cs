@@ -181,9 +181,10 @@ namespace Bloom
 				propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
 
 #if DEBUG
-				using(
-					new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(),
-						propertiesThatGoWithEveryEvent, false))
+				using (
+				new DesktopAnalytics.Analytics("rw21mh2piu", RegistrationDialog.GetAnalyticsUserInfo(),
+						propertiesThatGoWithEveryEvent,
+						false )) /// change to true if you want to test sending
 					_supressRegistrationDialog = true;
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");

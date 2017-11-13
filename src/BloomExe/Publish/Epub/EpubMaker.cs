@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -896,10 +896,17 @@ namespace Bloom.Publish.Epub
 				Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
 			}
 
+			var toBeDeleted = new List<XmlElement>();
+			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
+			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
 			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
 				if (!IsDisplayed(elt))
-					elt.ParentNode.RemoveChild(elt);
+					toBeDeleted.Add(elt);
+			}
+			foreach (var elt in toBeDeleted)
+			{
+				elt.ParentNode.RemoveChild(elt);
 			}
 
 			// Remove any left-over bubbles
