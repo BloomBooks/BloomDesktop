@@ -187,8 +187,8 @@ gulp.task('markdownHelp', function () {
             file.contents = new Buffer(
                 //here we are assigning an unfortunately named stylesheet that goes with all Bloom help pages
                 `<html><head><meta charset='utf-8'><link rel='stylesheet' href='help.css' type='text/css'/></head><body>
-                    ` + result + `
-                    </body></html>`);
+` + result + `
+</body></html>`);
             file.path = gutil.replaceExtension(file.path, '.htm');
             return;
         }))
@@ -202,6 +202,7 @@ gulp.task('markdownTemplateReadme', function () {
         .pipe(debug({ title: 'md:' }))
         .pipe(tap(function (file) {
             var result = markdownIt.render(file.contents.toString());
+	    // this is converted to full HTML in C# code, adding base href and link to css file
             file.contents = new Buffer(result);
             file.path = gutil.replaceExtension(file.path, '.htm');
             return;
@@ -215,7 +216,10 @@ gulp.task('markdownDistInfo', function () {
         .pipe(debug({ title: 'md:' }))
         .pipe(tap(function (file) {
             var result = markdownIt.render(file.contents.toString());
-            file.contents = new Buffer(result);
+	    // convert to full HTML, ensuring that the file is known to be utf-8.
+            file.contents = new Buffer(`<html><head><meta charset='utf-8'></head><body>
+` + result + `
+</body></html>`);
             file.path = gutil.replaceExtension(file.path, '.htm');
             return;
         }))
