@@ -91,29 +91,61 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
             <div>
                 <H1 l10nKey="PublishTab.Android.Method"
                     l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser.">
-                    Method
+                    Method Choices
                 </H1>
-                <select className={`method-option ${this.state.method}-method-option`}
-                    disabled={this.state.stateId !== "stopped"} value={this.state.method} onChange={
-                        (event) => {
-                            self.setState({ method: event.target.value });
-                            axios.post("/bloom/api/publish/android/method", event.target.value,
-                                { headers: { "Content-Type": "text/plain" } });
-                        }}>
-                    <Option l10nKey="PublishTab.Android.ChooseWifi"
-                        className="method-option wifi-method-option"
-                        value="wifi">
-                        Serve on WiFi Network
+                {/* This wrapper, with some really tricky CSS, serves to make a select where the options have both text
+                and images, and the down arrow is a dark black on a plain white background with a black line left of it.
+                1. The outer div provides the outer border and, by means of a background image, both the down arrow
+                and the vertical line to the left of it.
+                2. The normal down arrow in the select is hidden by moz-appearance: none.
+                3. The outer div's background is allowed to show through the select by background-color: transparent.
+                4. A class for each option brings in the appropriate background image. One of these classes is
+                applied to the select itself by the react logic so the right image shows up there too.
+
+                We can't just put a background image on the select to get the down arrow, because we're already
+                using its background image to get the image that goes with the selected option.
+                I can't find a way to get a border between the select and the button without making the select
+                smaller, and then the down-arrow is not part of it and doesn't trigger the select action.
+                Modern browsers do not allow code to trigger the pulling down of the select list...it's
+                somehow considered a security risk, so we can't just put a click action on the button.
+                
+                Note: when the select has focus, the dotted focus outline is drawn around the text rather
+                than the whole select, putting a distracting line between the text and picture. For some reason
+                Firefox is drawing this inside the padding that is used to put the text at the top instead of
+                centered in the select. I've tried things that should turn the focus outline off, like
+                :focus {outline: none !important} and -moz-focusring {color: transparent; text-shadow: 0 0 0 #000;}
+                but they didn't make any difference. I've tried various things, including messing with the text
+                baseline and applying properties to the span that FF creates inside each option, to move the
+                text to the top without padding, but with no success. We decided to live with the dotted line
+                rather than spending more time trying to remove it (or re-implementing the control without
+                using a select, probably the most promising way to get exactly what we want.)
+
+                This approach does not work in FF 56 (no images in the options) so we will probably eventually
+                have to re-implement without using select.
+                 */}
+                <div className="method-select-wrapper">
+                    <select className={`method-shared method-root ${this.state.method}-method-option`}
+                        disabled={this.state.stateId !== "stopped"} value={this.state.method} onChange={
+                            (event) => {
+                                self.setState({ method: event.target.value });
+                                axios.post("/bloom/api/publish/android/method", event.target.value,
+                                    { headers: { "Content-Type": "text/plain" } });
+                            }}>
+                        <Option l10nKey="PublishTab.Android.ChooseWifi"
+                            className="method-shared wifi-method-option"
+                            value="wifi">
+                            Serve on WiFi Network
                     </Option>
-                    <Option l10nKey="PublishTab.Android.ChooseUSB"
-                        className="method-option usb-method-option" value="usb">
-                        Send over USB Cable
+                        <Option l10nKey="PublishTab.Android.ChooseUSB"
+                            className="method-shared usb-method-option" value="usb">
+                            Send over USB Cable
                     </Option>
-                    <Option l10nKey="PublishTab.Android.ChooseFile"
-                        className="method-option file-method-option" value="file">
-                        Save Bloom Reader File
+                        <Option l10nKey="PublishTab.Android.ChooseFile"
+                            className="method-shared file-method-option" value="file">
+                            Save Bloom Reader File
                     </Option>
-                </select>
+                    </select>
+                </div>
 
                 <p />
                 <H1 l10nKey="PublishTab.Android.Control"
