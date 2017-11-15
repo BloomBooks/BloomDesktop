@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -28,7 +29,7 @@ namespace Bloom.Publish.Android.wifi
 			_progress = progress.WithL10NPrefix("PublishTab.Android.Wifi.Progress.");
 		}
 
-		public void Start(Book.Book book, CollectionSettings collectionSettings)
+		public void Start(Book.Book book, CollectionSettings collectionSettings, Color backColor)
 		{
 			if (_wifiAdvertiser != null)
 			{
@@ -52,7 +53,7 @@ namespace Bloom.Publish.Android.wifi
 					var androidIpAddress = (string) settings.deviceAddress;
 
 					var androidName = (string) settings.deviceName;
-					SendBookOverWiFi(book, androidIpAddress, androidName);
+					SendBookOverWiFi(book, androidIpAddress, androidName, backColor);
 				}
 				// If there's something wrong with the JSON (maybe an obsolete or newer version of reader?)
 				// just ignore the request.
@@ -116,7 +117,7 @@ namespace Bloom.Publish.Android.wifi
 		/// <param name="book"></param>
 		/// <param name="androidIpAddress"></param>
 		/// <param name="androidName"></param>
-		private void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName)
+		private void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, Color backColor)
 		{
 			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
 			var safeName = BookStorage.SanitizeNameForFileSystem(book.Title);
@@ -129,7 +130,7 @@ namespace Bloom.Publish.Android.wifi
 			var publishedFileName = safeName + BookCompressor.ExtensionForDeviceBloomBook;
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, _bookServer);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, _bookServer, backColor);
 				using (WebClient myClient = new WebClient())
 				{
 					myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(safeName) +
@@ -144,11 +145,11 @@ namespace Bloom.Publish.Android.wifi
 				parameters: new object[] {safeName, androidName});
 		}
 
-		private void SendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName)
+		private void SendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName, Color backColor)
 		{
 			try
 			{
-				SendBookToClientOnLocalSubNet(book, androidIpAddress, androidName);
+				SendBookToClientOnLocalSubNet(book, androidIpAddress, androidName, backColor);
 			}
 			catch (Exception e)
 			{

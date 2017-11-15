@@ -1,6 +1,7 @@
 ﻿#if !__MonoCS__
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -36,7 +37,7 @@ namespace Bloom.Publish.Android.usb
 	/// </summary>
 	class AndroidDeviceUsbConnection
 	{
-		public Action<Book.Book> OneReadyDeviceFound;
+		public Action<Book.Book, Color> OneReadyDeviceFound;
 		public Action<DeviceNotFoundReportType, List<string>> OneReadyDeviceNotFound;
 
 		private const string kBloomFolderOnDevice = "Bloom";
@@ -48,7 +49,7 @@ namespace Bloom.Publish.Android.usb
 		/// Attempt to establish a connection with a device which has the Bloom Reader app,
 		/// then send it the book.
 		/// </summary>
-		public void ConnectAndSendToOneDevice(Book.Book book)
+		public void ConnectAndSendToOneDevice(Book.Book book, Color backColor)
 		{
 			_stopLookingForDevice = false;
 			_device = null;
@@ -57,7 +58,7 @@ namespace Bloom.Publish.Android.usb
 			while (!_stopLookingForDevice && _device == null)
 			{
 				var devices = EnumerateAllDevices();
-				if(!ConnectAndSendToOneDeviceInternal(devices, book))
+				if(!ConnectAndSendToOneDeviceInternal(devices, book, backColor))
 				{
 					Thread.Sleep(1000);
 				}
@@ -142,7 +143,7 @@ namespace Bloom.Publish.Android.usb
 		/// </summary>
 		/// <param name="devices"></param>
 		/// <returns>true if it found a ready device</returns>
-		private bool ConnectAndSendToOneDeviceInternal(IEnumerable<IDevice> devices, Book.Book book)
+		private bool ConnectAndSendToOneDeviceInternal(IEnumerable<IDevice> devices, Book.Book book, Color backColor)
 		{
 			List<IDevice> applicableDevices = new List<IDevice>();
 			int totalDevicesFound = 0;
@@ -159,7 +160,7 @@ namespace Bloom.Publish.Android.usb
 				_device = applicableDevices[0];
 				// Without this, we're depending on the LAST device we tried being the applicable one.
 				_bloomFolderPath = GetBloomFolderPath(_device);
-				OneReadyDeviceFound(book);
+				OneReadyDeviceFound(book, backColor);
 				return true;
 			}
 

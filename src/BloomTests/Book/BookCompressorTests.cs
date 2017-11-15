@@ -39,7 +39,7 @@ namespace BloomTests.Book
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure);
 				Assert.AreEqual(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
@@ -478,7 +478,7 @@ namespace BloomTests.Book
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure);
 				var zip = new ZipFile(bloomdTempFile.Path);
 				assertionsOnZipArchive?.Invoke(zip);
 				var newHtml = GetEntryContents(zip, bookFileName);
@@ -489,7 +489,7 @@ namespace BloomTests.Book
 					using (var extraTempFile =
 						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.ExtensionForDeviceBloomBook))
 					{
-						BookCompressor.CompressBookForDevice(extraTempFile.Path, testBook, _bookServer);
+						BookCompressor.CompressBookForDevice(extraTempFile.Path, testBook, _bookServer, Color.Azure);
 						zip = new ZipFile(extraTempFile.Path);
 						assertionsOnRepeat(zip);
 					}
