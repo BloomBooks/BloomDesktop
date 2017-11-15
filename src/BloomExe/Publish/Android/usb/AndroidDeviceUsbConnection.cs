@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using PodcastUtilities.PortableDevices;
@@ -176,7 +177,7 @@ namespace Bloom.Publish.Android.usb
 			{
 				deviceNotFoundReportType = DeviceNotFoundReportType.MoreThanOneReadyDevice;
 			}
-			OneReadyDeviceNotFound?.Invoke(DeviceNotFoundReportType.NoBloomDirectory,
+			OneReadyDeviceNotFound?.Invoke(deviceNotFoundReportType,
 				devices.Select(d => d.Name).ToList());
 
 			return false;
@@ -184,11 +185,20 @@ namespace Bloom.Publish.Android.usb
 
 		private string GetBloomFolderPath(IDevice device)
 		{
-			foreach (var rso in device.GetDeviceRootStorageObjects())
+			try
 			{
-				var possiblePath = Path.Combine(rso.Name, kBloomFolderOnDevice);
-				if (device.GetObjectFromPath(possiblePath) != null)
-					return possiblePath;
+				foreach (var rso in device.GetDeviceRootStorageObjects())
+				{
+					var possiblePath = Path.Combine(rso.Name, kBloomFolderOnDevice);
+					if (device.GetObjectFromPath(possiblePath) != null)
+						return possiblePath;
+				}
+			}
+			catch (COMException e)
+			{
+				// This can happen when the device is unplugged at just the wrong moment after we enumerated it.
+				// Just treat it as not a device that has Bloom.
+				SIL.Reporting.Logger.WriteError("Unable to check device for Bloom folder", e);
 			}
 			return null;
 		}
