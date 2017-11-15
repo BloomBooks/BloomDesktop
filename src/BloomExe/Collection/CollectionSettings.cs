@@ -444,10 +444,9 @@ namespace Bloom.Collection
 			}
 			catch (Exception error)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
+				ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
 			}
 		}
-
 
 		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight)
 		{

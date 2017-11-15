@@ -656,6 +656,16 @@
         <note>ID: Common.SeeWebPage</note>
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
       </trans-unit>
+      <trans-unit id="DefenderFolderProtectionCheck.WindowsDefenderProblem">
+        <source xml:lang="en">A Windows update around October 2017 added a feature which prevents Bloom from being able to write its own files, if the collection folder is in a “Controlled Folder”. Your “Documents” folder is one such “Controlled Folder”, and by default, that is where Bloom collections live.</source>
+        <note>ID: DefenderFolderProtectionCheck.WindowsDefenderProblem</note>
+        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+      </trans-unit>
+      <trans-unit id="DefenderFolderProtectionCheck.WindowsDefenderProblemHeading">
+        <source xml:lang="en">Check Windows Defender “Controlled Access”</source>
+        <note>ID: DefenderFolderProtectionCheck.WindowsDefenderProblemHeading</note>
+        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+      </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
