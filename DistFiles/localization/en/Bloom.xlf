@@ -68,6 +68,16 @@
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
       </trans-unit>
+      <trans-unit id="BloomSystemCheck.WindowsDefenderProblem">
+        <source xml:lang="en">A Windows update around October 2017 added a feature which prevents Bloom from being able to write its own files, if the collection folder is in a “Controlled Folder”. Your “Documents” folder is one such “Controlled Folder”, and by default, that is where Bloom collections live.</source>
+        <note>ID: BloomSystemCheck.WindowsDefenderProblem</note>
+        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+      </trans-unit>
+      <trans-unit id="BloomSystemCheck.WindowsDefenderProblemHeading">
+        <source xml:lang="en">Check Windows Defender “Controlled Access”</source>
+        <note>ID: BloomSystemCheck.WindowsDefenderProblemHeading</note>
+        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+      </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, then release the key.</source>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
