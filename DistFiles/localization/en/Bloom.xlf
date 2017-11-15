@@ -598,6 +598,16 @@
         <source xml:lang="en">Downloading update to {0} ({1}kb).</source>
         <note>ID: CollectionTab.Updating</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.WindowsDefenderProblem">
+        <source xml:lang="en">A Windows update around October 2017 added a feature which prevents Bloom from being able to write its own files, if the collection folder is in a “Controlled Folder”. Your “Documents” folder is one such “Controlled Folder”, and by default, that is where Bloom collections live.</source>
+        <note>ID: CollectionTab.WindowsDefenderProblem</note>
+        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.WindowsDefenderProblemHeading">
+        <source xml:lang="en">Check Windows Defender “Controlled Access”</source>
+        <note>ID: CollectionTab.WindowsDefenderProblemHeading</note>
+        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+      </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>

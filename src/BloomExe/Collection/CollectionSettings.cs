@@ -442,9 +442,20 @@ namespace Bloom.Collection
 				}
 				RobustFile.WriteAllText(path, sb.ToString());
 			}
+			catch (UnauthorizedAccessException accessException)
+			{
+				var heading = LocalizationManager.GetString("CollectionTab.WindowsDefenderProblemHeading", "Check Windows Defender “Controlled Access”.");
+				var mainMsg = LocalizationManager.GetString("CollectionTab.WindowsDefenderProblem",
+					"A Windows update around October 2017 added a feature which prevents Bloom from being able to write its own files, if the collection folder is in a “Controlled Folder”. Your “Documents” folder is one such “Controlled Folder”, and by default, that is where Bloom collections live.");
+				var msg = heading + Environment.NewLine + Environment.NewLine + mainMsg;
+				ErrorReport.NotifyUserOfProblem(accessException, msg);
+
+				// Quit
+				Environment.Exit(-1);
+			}
 			catch (Exception error)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
+				ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
 			}
 		}
 
