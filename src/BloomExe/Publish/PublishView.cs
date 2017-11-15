@@ -504,6 +504,25 @@ namespace Bloom.Publish
 				}
 				case PublishModel.DisplayModes.Android:
 				{
+					// Check for either "Device 16x9" or "Device 16x9 Landscape" layout.
+					// Complain to the user if another layout is currently chosen.
+					// See https://issues.bloomlibrary.org/youtrack/issue/BL-5274.
+					var desiredLayout = "Device16x9";
+					if (_model.PageLayout.SizeAndOrientation.PageSizeName != desiredLayout)
+					{
+						desiredLayout = desiredLayout + _model.PageLayout.SizeAndOrientation.OrientationName;
+						var msgFormat = LocalizationManager.GetString("PublishTab.Android.WrongLayout.Message",
+							"The layout of this book is currently \"{0}\". Bloom Reader will display it using \"{1}\", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to \"{1}\".",
+							"{0} and {1} are book layout tags");
+						var msg = String.Format(msgFormat, _model.PageLayout.SizeAndOrientation.ToString(), desiredLayout);
+						var heading = LocalizationManager.GetString("PublishTab.Android.WrongLayout.Caption",
+							"Wrong Layout for Android Devices",
+							"message box caption");
+						var response = MessageBox.Show(msg, "Heading", MessageBoxButtons.OKCancel);
+						if (response == DialogResult.Cancel)
+							break;
+					}
+
 					_workingIndicator.Visible = false;
 					_printButton.Enabled = false;
 					_pdfViewer.Visible = false;
