@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
 using SIL.Windows.Forms.Miscellaneous;
@@ -31,10 +34,16 @@ namespace Bloom.Publish.Android
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookServer _bookServer;
 
-		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer)
+		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color
+		private Book.Book _coverColorSourceBook;
+
+		private RuntimeImageProcessor _imageProcessor;
+
+		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, RuntimeImageProcessor imageProcessor)
 		{
 			_webSocketServer = bloomWebSocketServer;
 			_bookServer = bookServer;
+			_imageProcessor = imageProcessor;
 			var progress = new WebSocketProgress(_webSocketServer);
 			_wifiPublisher = new WiFiPublisher(progress, _bookServer);
 #if !__MonoCS__
@@ -43,6 +52,27 @@ namespace Bloom.Publish.Android
 				Stopped = () => SetState("stopped")
 			};
 #endif
+		}
+
+		private static string ToCssColorString(System.Drawing.Color c)
+		{
+			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+		}
+
+		private static bool TryCssColorFromString(string input, out Color result)
+		{
+			result = Color.White; // some default in case of error.
+			if (!input.StartsWith("#") || input.Length != 7)
+				return false; // arbitrary failure
+			try
+			{
+				result = ColorTranslator.FromHtml(input);
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+			return true;
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -68,11 +98,49 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
+			server.RegisterEndpointHandler(kApiUrlPart + "backColor", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					if (request.CurrentBook != _coverColorSourceBook)
+					{
+						_coverColorSourceBook = request.CurrentBook;
+						TryCssColorFromString(request.CurrentBook?.GetCoverColor()??"", out _thumbnailBackgroundColor);
+					}
+					request.ReplyWithText(ToCssColorString(_thumbnailBackgroundColor));
+				}
+				else // post
+				{
+					// ignore invalid colors (very common while user is editing hex)
+					Color newColor;
+					var newColorAsString = request.RequiredPostString();
+					if (TryCssColorFromString(newColorAsString, out newColor))
+					{
+						_thumbnailBackgroundColor = newColor;
+						request.CurrentBook.SetCoverColor(newColorAsString);
+					}
+					request.PostSucceeded();
+				}
+			}, true);
+
+
+			server.RegisterEndpointHandler(kApiUrlPart + "coverImage", request =>
+			{
+				var coverImage = request.CurrentBook.GetCoverImagePath();
+				if (coverImage == null)
+					request.Failed("no cover image");
+				else
+				{
+					// We don't care as much about making it resized as making its background transparent.
+					request.ReplyWithImage(_imageProcessor.GetPathToResizedImage(coverImage));
+				}
+			}, true);
+
 #if !__MonoCS__
 			server.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
 			{
 				SetState("UsbStarted");
-				_usbPublisher.Connect(request.CurrentBook);
+				_usbPublisher.Connect(request.CurrentBook, _thumbnailBackgroundColor);
 				request.PostSucceeded();
 			}, true);
 
@@ -85,7 +153,7 @@ namespace Bloom.Publish.Android
 #endif
 			server.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
-				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings);
+				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor);
 				SetState("ServingOnWifi");
 				request.PostSucceeded();
 			}, true);
@@ -99,7 +167,7 @@ namespace Bloom.Publish.Android
 
 			server.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
-				FilePublisher.Save(request.CurrentBook, _bookServer);
+				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);

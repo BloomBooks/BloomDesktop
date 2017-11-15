@@ -2096,6 +2096,11 @@
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Media">
+        <source xml:lang="en">Media</source>
+        <note>ID: PublishTab.Android.Media</note>
+        <note>A heading in the Publish to Android screen</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
@@ -2105,6 +2110,10 @@
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Android.Save</note>
         <note>Button that tells Bloom to save the book as a .bloomD file.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ThumbnailColor">
+        <source xml:lang="en">Thumbnail Color</source>
+        <note>ID: PublishTab.Android.ThumbnailColor</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting">
         <source xml:lang="en">Troubleshooting Tips</source>

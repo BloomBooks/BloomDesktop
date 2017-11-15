@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using Bloom.Book;
 using Bloom.web;
 using SIL.IO;
@@ -31,7 +32,7 @@ namespace Bloom.Publish.Android.usb
 		/// Attempt to connect to a device
 		/// </summary>
 		/// <param name="book"></param>
-		public void Connect(Book.Book book)
+		public void Connect(Book.Book book, Color backColor)
 		{
 			try
 			{
@@ -62,7 +63,7 @@ namespace Bloom.Publish.Android.usb
 				_previousDeviceNotFoundReportType = DeviceNotFoundReportType.Unknown;
 
 
-				_connectionHandler.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book);
+				_connectionHandler.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book, backColor);
 				_connectionHandler.RunWorkerCompleted += (sender, args) =>
 				{
 					if (args.Error != null)
@@ -96,14 +97,14 @@ namespace Bloom.Publish.Android.usb
 			Stopped();
 		}
 
-		private void HandleFoundAReadyDevice(Book.Book book)
+		private void HandleFoundAReadyDevice(Book.Book book, Color backColor)
 		{
 			_progress.MessageWithParams(id: "Connected",
 				message: "Connected to {0} via USB...",
 				comment: "{0} is a the name of the device Bloom connected to",
 				parameters: _androidDeviceUsbConnection.GetDeviceName());
 
-			SendBookAsync(book);
+			SendBookAsync(book, backColor);
 		}
 
 		private void HandeFoundOneNonReadyDevice(DeviceNotFoundReportType reportType, List<string> deviceNames)
@@ -141,12 +142,12 @@ namespace Bloom.Publish.Android.usb
 		/// Attempt to send the book to the device
 		/// </summary>
 		/// <param name="book"></param>
-		public void SendBookAsync(Book.Book book)
+		public void SendBookAsync(Book.Book book, Color backColor)
 		{
 			try
 			{
 				var backgroundWorker = new BackgroundWorker();
-				backgroundWorker.DoWork += (sender, args) => { SendBookDoWork(book); };
+				backgroundWorker.DoWork += (sender, args) => { SendBookDoWork(book, backColor); };
 
 				backgroundWorker.RunWorkerCompleted += (sender, args) =>
 				{
@@ -163,7 +164,7 @@ namespace Bloom.Publish.Android.usb
 			}
 		}
 
-		private void SendBookDoWork(Book.Book book)
+		private void SendBookDoWork(Book.Book book, Color backColor)
 		{
 			var bookTitle = book.Title;
 			_progress.MessageUsingTitle("LookingForExisting", "Looking for an existing \"{0}\"...", bookTitle);
@@ -174,7 +175,7 @@ namespace Bloom.Publish.Android.usb
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, _bookServer);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, _bookServer, backColor);
 
 				if (bookExistsOnDevice)
 					_progress.MessageUsingTitle("ReplacingBook", "Replacing existing \"{0}\"...", bookTitle);
