@@ -372,7 +372,7 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     }
 }
 
-:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
+:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only){
     &.side-left  // maintained by c#
     {
         .marginBox{
@@ -388,6 +388,12 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     }
 }
 
+.screen-only {
+    .marginBox{
+        left: 20px;
+        width: ~"calc(100% - 40px)";
+    }
+}
 // Note: we aren't making any assumption about this or that landscape being calendar fold.
 // The publishModel needs to make that decision (perhaps, in the future, user will be able to control that when
 // making the pdf). From the stylesheet's view, we just need to see this calendarFold class on the Body

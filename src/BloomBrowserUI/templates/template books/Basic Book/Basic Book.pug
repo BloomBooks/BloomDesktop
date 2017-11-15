@@ -12,6 +12,7 @@ html
 		title 'Basic Book'
 		+stylesheets('Basic Book.css')
 		+standardStyles
+			= '\n'
 			| .quiz-style { font-size: 11pt !important;}
 	body
 		+dataDiv
@@ -33,23 +34,19 @@ html
 		//- not be a problem after all.
 		//- Yet another option is to have one or more placeholders for the instructions here and have the
 		//- Add Page dialog code insert localizations.
-		+page('Comprehension Questions').customPage.questions.nonprinting#4140d100-e4c3-49c4-af05-dda5789e019b(data-page='extra')
+		+page('Bloom Reader Quiz', 'Use for comprehension testing on devices.' ).questions.nonprinting#4140d100-e4c3-49c4-af05-dda5789e019b(data-page='extra').screen-only
 			.split-pane.vertical-percent
 				.split-pane-component.position-left
 					.split-pane-component-inner
-						div.quizLabel
-							p Enter your comprehension questions for this book.
-								| When the book is read using the Bloom Reader Android app, the reader will see a quiz at the end.
-								| This will happen
-								b only if the book is branded.
-								| For more info, see
-								a(href='https://docs.google.com/document/d/1LV0_OtjH1BTJl7wqdth0bZXQxduTqD7WenX4AsksVGs/edit#heading=h.lxe9k6qcvzwb') Bloom Enterprise Service
-							p
-							p You may have to create more "Comprehension Question" pages if there is not enough room
-							p
-							p
-								b Example
-								span(style='color:grey') * marks correct answer
+						div.quizIntructions
+							h1 Bloom Reader Quiz
+							p When the Bloom Reader Android app shows the book, it will present an interactive quiz at the end.
+							p Note, it will show the quiz only if you publish this book from a project that is participating in the
+								+link('https://docs.google.com/document/d/e/2PACX-1vQP50XgYhdlyre7KZOtlm_b7KEbEgXYRv_MMuSFng_eQg6SOS00Lm7esFCdSlnbvsPGBDjzysVHnxJO/pub') Bloom Enterprise Service.
+							h1 Instructions
+							p Enter your comprehension questions for this book. Add more "Comprehension Question" pages if you need more room.
+							h2 Example
+							p.key * marks correct answer
 							p
 							p Why did the boy lose his cap?
 							p The bully took it
@@ -59,8 +56,8 @@ html
 							p What did the moon do?
 							p Sent him a lollipop
 							p Hid behind clouds
-							p *Appeared to wear the cap							
+							p *Appeared to wear the cap
 				.split-pane-divider.vertical-divider
 				.split-pane-component.position-right
 					.split-pane-component-inner.adding
-						+field("auto").bloom-trailingElement.quiz-style
+						+field("auto").quiz-style.quizContents
