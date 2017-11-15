@@ -146,7 +146,7 @@ namespace Bloom.Publish.Android.usb
 		{
 			var bookTitle = book.Title;
 			_progress.MessageUsingTitle("LookingForExisting", "Looking for an existing \"{0}\"...", bookTitle);
-			var publishedFileName = bookTitle + BookCompressor.ExtensionForDeviceBloomBook;
+			var publishedFileName = BookStorage.SanitizeNameForFileSystem(bookTitle + BookCompressor.ExtensionForDeviceBloomBook);
 			var bookExistsOnDevice = _androidDeviceUsbConnection.BookExists(publishedFileName);
 
 			_progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle);
@@ -163,7 +163,7 @@ namespace Bloom.Publish.Android.usb
 				PublishToAndroidApi.ReportAnalytics("usb", book);
 			}
 
-			if (_androidDeviceUsbConnection.BookExists(bookTitle + BookCompressor.ExtensionForDeviceBloomBook))
+			if (_androidDeviceUsbConnection.BookExists(publishedFileName))
 			{
 				_progress.MessageUsingTitle("BookSent", "You can now read \"{0}\" in Bloom Reader!", bookTitle);
 			}
