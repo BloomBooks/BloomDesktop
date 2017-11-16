@@ -40,6 +40,7 @@ namespace Bloom.Publish.Android.usb
 				// to figure out what was connected.
 				lock (this)
 				{
+					AndroidView.CheckBookLayout(book, _progress);
 					if (_connectionHandler != null)
 					{
 						// we're in an odd state...should only be able to click the button that calls this
