@@ -2888,7 +2888,7 @@
         <target xml:lang="pt-PT" state="translated">Obter o aplicativo BloomReader</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
-        <source xml:lang="en">Method</source>
+        <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
         <target xml:lang="pt-PT" state="translated">Método</target>
@@ -4486,6 +4486,12 @@ Deseja continuar?</target>
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
         <target xml:lang="pt-PT" state="translated">Imagem na parte inferior</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true">
+        <source xml:lang="en">Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Quiz</note>
+        <note>Used in page preview for Comprehension Question pages. Should be short.</note>
+        <target xml:lang="pt-PT" state="needs-translation">Quiz</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
