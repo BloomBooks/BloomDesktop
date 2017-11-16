@@ -3998,6 +3998,51 @@
           <target xml:lang="es-ES">Las páginas no pueden ser reordenadas cuando está traduciendo un libro</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="PublishTab.AdobeEulaTitle" approved="yes">
+        <source xml:lang="en">Adobe Color Profile License Agreement</source>
+        <note>ID: PublishTab.AdobeEulaTitle</note>
+        <note>dialog title for license agreement</note>
+        <target xml:lang="es-ES">Acuerdo de licencia del Perfil de Color de Adobe</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Acuerdo de licencia de Perfil de Color de Adobe</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
+        <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
+        <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
+        <target xml:lang="es-ES">Por favor instale Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo con otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor instale a Adobe Reader para que Bloom puede mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor instale a Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF" approved="yes">
+        <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
+        <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
+        <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontró un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro PDF.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error al intentar mostrar ese PDF. Todavía puede intentar salvar el libro PDF.</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError" approved="yes">
+        <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
+        <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
+        <target xml:lang="es-ES">Lastimosamente, Bloom no fue capaz de abrir Adobe Reader, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y reinstale 'Adobe Reader'.\nHasta que lo resuelva, puede guardar el libro PDF y abrirlo con otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lastimosamente, Bloom no fue capaz de abrir Adobe Reader, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva (re)instalar 'Adobe Reader'.\nHasta que lo resuelve, puede guardar el libro PDF y abrirlo con otro programa.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Noticia triste. Bloom no fue capaz de abrir Adobe Reader aquí, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva a instalar a 'Adobe Reader'.\nHasta que llegue ese fijo, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        </alt-trans>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
         <source xml:lang="en">Bloom Book for Devices</source>
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
@@ -4324,50 +4369,11 @@
           <target xml:lang="es-ES">Parar de servir</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.AdobeEulaTitle" approved="yes">
-        <source xml:lang="en">Adobe Color Profile License Agreement</source>
-        <note>ID: PublishTab.AdobeEulaTitle</note>
-        <note>dialog title for license agreement</note>
-        <target xml:lang="es-ES">Acuerdo de licencia del Perfil de Color de Adobe</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Acuerdo de licencia de Perfil de Color de Adobe</target>
-        </alt-trans>
-      </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
-        <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
-        <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
-        <target xml:lang="es-ES">Por favor instale Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo con otro programa.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor instale a Adobe Reader para que Bloom puede mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor instale a Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
-        </alt-trans>
-      </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF" approved="yes">
-        <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
-        <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
-        <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontró un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro PDF.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error al intentar mostrar ese PDF. Todavía puede intentar salvar el libro PDF.</target>
-        </alt-trans>
-      </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError" approved="yes">
-        <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
-        <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
-        <target xml:lang="es-ES">Lastimosamente, Bloom no fue capaz de abrir Adobe Reader, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y reinstale 'Adobe Reader'.\nHasta que lo resuelva, puede guardar el libro PDF y abrirlo con otro programa.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Lastimosamente, Bloom no fue capaz de abrir Adobe Reader, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva (re)instalar 'Adobe Reader'.\nHasta que lo resuelve, puede guardar el libro PDF y abrirlo con otro programa.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Noticia triste. Bloom no fue capaz de abrir Adobe Reader aquí, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva a instalar a 'Adobe Reader'.\nHasta que llegue ese fijo, puede guardar el libro PDF y abrirlo en otro programa.</target>
-        </alt-trans>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <note>ID: PublishTab.Android.WrongLayout.Message</note>
+        <note>{0} and {1} are book layout tags.</note>
+        <target xml:lang="es-ES" state="needs-translation">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</target>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Publish to an Android device.</source>
@@ -5911,7 +5917,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
-        <target xml:lang="es-ES">Paquete de Bloom de Plantillas de Libros</target>
+        <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantillas de Libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Crear un Paquete de Bloom de plantilla de libros</target>
         </alt-trans>
