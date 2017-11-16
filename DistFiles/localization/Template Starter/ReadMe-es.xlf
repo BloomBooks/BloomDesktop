@@ -146,8 +146,16 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           
           
           
+          
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">
           
@@ -176,10 +184,18 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           
           
           
+          
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo llamado "NotForAddPage.txt." en la carpeta de Plantillas del Libro.</target>
         <note>ID: template.starter.nametonotaddpage</note>
         <alt-trans>
           <target xml:lang="es-ES">
+          
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo llamado "NotForAddPage.txt." en la carpeta de Plantillas del Libro.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
           
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo llamado "NotForAddPage.txt." en la carpeta de Plantillas del Libro.</target>
         </alt-trans>
@@ -206,8 +222,16 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           
           
           
+          
 <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Otras personas no serán capaces de traducir sus etiquetas y descripciones a otros idiomas nacionales. Si esto es problemático, póngase en contacto con el equipo técnico de Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Otras personas no serán capaces de traducir sus etiquetas y descripciones a otros idiomas nacionales. Si esto es problemático, póngase en contacto con el equipo técnico de Bloom.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">
           
@@ -231,8 +255,16 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           
           
           
+          
 <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salirse de Bloom y editar el archivo html de la plantilla en "Notepad", de esta manera: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salirse de Bloom y editar el archivo html de la plantilla en "Notepad", de esta manera: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">
           
@@ -255,11 +287,6 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           <target xml:lang="es-ES">
           
 <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salir de Bloom y editar el archivo html de la plantilla en Notepad, como esto: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
-          
-<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de Agregar página también proporciona una descripción breve de la página, tendrá que salir de Bloom y editar el archivo html de la plantilla en Notepad, como esto: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
       </trans-unit>
     </body>

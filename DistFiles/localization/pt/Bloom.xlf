@@ -2849,6 +2849,27 @@
         <note>ID: PageList.CantMoveWhenTranslating</note>
         <target xml:lang="pt-PT" state="translated">Páginas não podem ser reordenadas quando você está traduzindo um livro.</target>
       </trans-unit>
+      <trans-unit id="PublishTab.AdobeEulaTitle" approved="yes">
+        <source xml:lang="en">Adobe Color Profile License Agreement</source>
+        <note>ID: PublishTab.AdobeEulaTitle</note>
+        <note>dialog title for license agreement</note>
+        <target xml:lang="pt-PT">Contrato de licença de usuário do Adobe Color</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
+        <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
+        <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
+        <target xml:lang="pt-PT" state="translated">Por favor, instale o Adobe Reader para que Bloom pode mostrar seu livro completo. Até lá, você pode ainda salvar o livro em PDF e abri-lo em algum outro programa.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+        <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
+        <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
+        <target xml:lang="pt-PT" state="translated">Isso é estranho... Adobe Reader deu um erro ao tentar mostrar o PDF. Você pode ainda tentar salvar o livro em PDF.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
+        <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
+        <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
+        <target xml:lang="pt-PT" state="translated">Noticia triste. Noticia riste. Bloom não foi capaz de obter que o Adobe Reader mostrara aqui. Então Bloom não pode mostrar seu livro completo.\nPor favor, desinstale a versão existente do 'Adobe Reader' e reinstalar o 'Adobe Reader'.\nAté conseguir consertar isso, você ainda pode salvar o livro em PDF e abri-lo em algum outro programa.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
         <source xml:lang="en">Bloom Book for Devices</source>
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
@@ -3043,26 +3064,11 @@
         <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
         <target xml:lang="pt-PT" state="translated">Pare de servir</target>
       </trans-unit>
-      <trans-unit id="PublishTab.AdobeEulaTitle" approved="yes">
-        <source xml:lang="en">Adobe Color Profile License Agreement</source>
-        <note>ID: PublishTab.AdobeEulaTitle</note>
-        <note>dialog title for license agreement</note>
-        <target xml:lang="pt-PT">Contrato de licença de usuário do Adobe Color</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
-        <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
-        <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
-        <target xml:lang="pt-PT" state="translated">Por favor, instale o Adobe Reader para que Bloom pode mostrar seu livro completo. Até lá, você pode ainda salvar o livro em PDF e abri-lo em algum outro programa.</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
-        <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
-        <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
-        <target xml:lang="pt-PT" state="translated">Isso é estranho... Adobe Reader deu um erro ao tentar mostrar o PDF. Você pode ainda tentar salvar o livro em PDF.</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
-        <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
-        <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
-        <target xml:lang="pt-PT" state="translated">Noticia triste. Noticia riste. Bloom não foi capaz de obter que o Adobe Reader mostrara aqui. Então Bloom não pode mostrar seu livro completo.\nPor favor, desinstale a versão existente do 'Adobe Reader' e reinstalar o 'Adobe Reader'.\nAté conseguir consertar isso, você ainda pode salvar o livro em PDF e abri-lo em algum outro programa.</target>
+      <trans-unit id="PublishTab.Android.WrongLayout.Message">
+        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+        <note>ID: PublishTab.Android.WrongLayout.Message</note>
+        <note>{0} and {1} are book layout tags.</note>
+        <target xml:lang="pt-PT" state="needs-translation">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</target>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
         <source xml:lang="en">Publish to an Android device.</source>
