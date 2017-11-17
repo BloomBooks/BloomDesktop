@@ -99,9 +99,16 @@
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <target xml:lang="fr" state="translated">
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">[Créer des modèles d'outils de livres déchiffrables et gradués (plusieurs vidéos)] (<g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">http://tiny.cc/8vbwux</g>)</g>
+        </g>
         </target>
         <note>ID: training.videos.readertemplates</note>
+        <alt-trans>
+          <target xml:lang="fr">
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">[Créer des modèles d'outils de livres déchiffrables et gradués (plusieurs vidéos)] (<g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">http://tiny.cc/8vbwux</g>)</g>
+        </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.offline">
         <source xml:lang="en">Offline Viewing</source>
@@ -117,15 +124,27 @@
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
         <target xml:lang="fr" state="translated">
           
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Haute résolution</g> (Fichiers lourds)</target>
         <note>ID: training.videos.hires</note>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Haute résolution</g> (Fichiers lourds)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.lores">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
         <target xml:lang="fr" state="translated">
           
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Basse résolution</g> (Fichiers légers)</target>
         <note>ID: training.videos.lores</note>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Basse résolution</g> (Fichiers légers)</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

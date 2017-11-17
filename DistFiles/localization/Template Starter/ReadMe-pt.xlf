@@ -30,8 +30,8 @@ There are two ways people can use your template. The first way is to start new b
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
-        <source xml:lang="en">When you add pages to your template, make sure to give each one useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note2">3</g>,<g id="genid-7" ctype="x-html-a" html:href="@note3">4</g></g>:</source>
-        <target xml:lang="pt-PT" state="needs-translation">When you add pages to your template, make sure to give each one useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note2">3</g>,<g id="genid-7" ctype="x-html-a" html:href="@note3">4</g></g>:</target>
+        <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note2">3</g>,<g id="genid-7" ctype="x-html-a" html:href="@note3">4</g></g>:</source>
+        <target xml:lang="pt-PT" state="needs-translation">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note2">3</g>,<g id="genid-7" ctype="x-html-a" html:href="@note3">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails">
@@ -106,10 +106,10 @@ There are two ways people can use your template. The first way is to start new b
         <note>ID: template.starter.labelsnottranslatable</note>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml">
-        <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: If you want to the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
+        <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="pt-PT" state="needs-translation">
           
-          <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: If you want to the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+          <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
       </trans-unit>
     </body>
