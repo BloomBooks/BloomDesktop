@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -31,15 +32,20 @@ namespace Bloom.Publish
 		/// <returns>true if everything is compressed</returns>
 		public static bool TryCompressingAudioAsNeeded(string bookFolderPath, XmlDocument dom)
 		{
-			return GetTrueForAllAudioSpans(bookFolderPath, dom,
+			var watch = Stopwatch.StartNew();
+			bool result = GetTrueForAllAudioSpans(bookFolderPath, dom,
 				(wavpath, mp3path) =>
 				{
-					if (RobustFile.Exists(wavpath) && !RobustFile.Exists(mp3path))
+					if (RobustFile.Exists(wavpath) &&
+					(!RobustFile.Exists(mp3path) || (new FileInfo(wavpath).LastWriteTimeUtc) > new FileInfo(mp3path).LastWriteTimeUtc))
 					{
 						return MakeCompressedAudio(wavpath) != null;
 					}
-					return true; // already have the mp3
+					return true; // already have an up-to-date mp3 (or can't make one because there's no wav)
 				});
+			watch.Stop();
+			Debug.WriteLine("compressing audio took " + watch.ElapsedMilliseconds);
+			return result;
 		}
 
 		private static bool GetTrueForAllAudioSpans(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)
