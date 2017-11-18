@@ -20,7 +20,11 @@ export default class ProgressBox extends React.Component<ComponentProps, Compone
         WebSocketManager.addListener(props.lifetimeLabel, event => {
             var e = JSON.parse(event.data);
             if (e.id === "progress") {
-                self.setState({ progress: self.state.progress + "<br/>" + e.payload });
+                if (e.style) {
+                    self.setState({progress: self.state.progress + "<br/>" + "<span style='" + e.style +"'>" + e.payload + "</span>"});
+                } else {
+                    self.setState({ progress: self.state.progress + "<br/>" + e.payload });
+                }
                 this.tryScrollToBottom();
             }
         });
