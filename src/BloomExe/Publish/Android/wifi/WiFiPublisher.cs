@@ -20,7 +20,7 @@ namespace Bloom.Publish.Android.wifi
 		private readonly WebSocketProgress _progress;
 		private WiFiAdvertiser _wifiAdvertiser;
 		private BloomReaderUDPListener _wifiListener;
-		public const string ProtocolVersion = "1.0";
+		public const string ProtocolVersion = "2.0";
 
 		public WiFiPublisher(WebSocketProgress progress, BookServer bookServer)
 		{
@@ -135,7 +135,6 @@ namespace Bloom.Publish.Android.wifi
 				{
 					myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(safeName) +
 					                    BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdTempFile.Path));
-					myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] { 0 });
 				}
 				PublishToAndroidApi.ReportAnalytics("wifi", book);
 			}
