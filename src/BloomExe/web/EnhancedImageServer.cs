@@ -382,10 +382,12 @@ namespace Bloom.Api
 					// each having label (what to show in a menu) and tag (the language code).
 					// Used in language select control in hint bubbles tab of text box properties dialog
 					// brought up from cog control in origami mode.
+
 					var langs = new List<object>();
-					foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
+					foreach (var code in L10NSharp.LocalizationManager.GetAvailableLocalizedLanguages())
 					{
-						langs.Add(new {label=WorkspaceView.MenuItemName(lang), tag=lang.IetfLanguageTag});
+						var langItem = WorkspaceView.CreateLanguageItem(code);
+						langs.Add(new {label=langItem.MenuText, tag=code});
 					}
 					info.ContentType = "application/json";
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new {languages=langs}));

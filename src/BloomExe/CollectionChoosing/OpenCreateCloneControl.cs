@@ -346,11 +346,11 @@ namespace Bloom.CollectionChoosing
 		{
 			foreach (ToolStripDropDownItem item in _uiLanguageMenu.DropDownItems)
 			{
-				CultureInfo cultureInfo = (CultureInfo) item.Tag;
-				if (cultureInfo.IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
+				var tag = (LanguageItem)item.Tag;
+				if (tag.IsoCode == Settings.Default.UserInterfaceLanguage)
 				{
 					item.Select();
-					WorkspaceView.UpdateMenuTextToShorterNameOfSelection(_uiLanguageMenu, cultureInfo);
+					WorkspaceView.UpdateMenuTextToShorterNameOfSelection(_uiLanguageMenu, item.Text);
 					return;
 				}
 			}
