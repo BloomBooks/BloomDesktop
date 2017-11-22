@@ -78,11 +78,13 @@ namespace Bloom.Api
 			Application.Exit();
 		}
 
-		public void Send(string eventId, string eventData)
+		public void Send(string eventId, string eventData, string eventStyle = null)
 		{
 			dynamic e = new DynamicJson();
 			e.id = eventId;
 			e.payload = eventData;
+			if (!String.IsNullOrEmpty(eventStyle))
+				e.style = eventStyle;
 
 			//note, if there is no open socket, this isn't going to do anything, and
 			//that's (currently) fine.

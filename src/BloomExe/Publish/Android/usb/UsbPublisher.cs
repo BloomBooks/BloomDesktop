@@ -18,6 +18,7 @@ namespace Bloom.Publish.Android.usb
 		private readonly WebSocketProgress _progress;
 		private readonly AndroidDeviceUsbConnection _androidDeviceUsbConnection;
 		private DeviceNotFoundReportType _previousDeviceNotFoundReportType;
+		private BackgroundWorker _connectionHandler;
 
 		public UsbPublisher(WebSocketProgress progress, BookServer bookServer)
 		{
@@ -34,23 +35,44 @@ namespace Bloom.Publish.Android.usb
 		{
 			try
 			{
+				// Calls to this come from JavaScript, not sure they will always be on the UI thread.
+				// Before I added this, I definitely saw race conditions with more than one thread trying
+				// to figure out what was connected.
+				lock (this)
+				{
+					AndroidView.CheckBookLayout(book, _progress);
+					if (_connectionHandler != null)
+					{
+						// we're in an odd state...should only be able to click the button that calls this
+						// while stopped.
+						// Try to really get into the right state in case the user tries again.
+						_androidDeviceUsbConnection.StopFindingDevice();
+						return;
+					}
+					// Create this while locked...once we have it, can't enter the main logic of this method
+					// on another thread.
+					_connectionHandler = new BackgroundWorker();
+				}
 				_progress.Message(id: "LookingForDevice",
 					message: "Looking for an Android device connected by USB cable and set up for MTP...",
 					comment: "This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.");
 
 				_androidDeviceUsbConnection.OneReadyDeviceFound = HandleFoundAReadyDevice;
 				_androidDeviceUsbConnection.OneReadyDeviceNotFound = HandeFoundOneNonReadyDevice;
+				// Don't suppress the first message after (re)starting.
+				_previousDeviceNotFoundReportType = DeviceNotFoundReportType.Unknown;
 
-				var backgroundWorker = new BackgroundWorker();
-				backgroundWorker.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book);
-				backgroundWorker.RunWorkerCompleted += (sender, args) =>
+
+				_connectionHandler.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book);
+				_connectionHandler.RunWorkerCompleted += (sender, args) =>
 				{
 					if (args.Error != null)
 					{
 						UsbFailConnect(args.Error);
 					}
+					_connectionHandler = null; // now OK to try to connect again.
 				};
-				backgroundWorker.RunWorkerAsync();
+				_connectionHandler.RunWorkerAsync();
 			}
 			catch (Exception e)
 			{
@@ -146,7 +168,7 @@ namespace Bloom.Publish.Android.usb
 		{
 			var bookTitle = book.Title;
 			_progress.MessageUsingTitle("LookingForExisting", "Looking for an existing \"{0}\"...", bookTitle);
-			var publishedFileName = bookTitle + BookCompressor.ExtensionForDeviceBloomBook;
+			var publishedFileName = BookStorage.SanitizeNameForFileSystem(bookTitle) + BookCompressor.ExtensionForDeviceBloomBook;
 			var bookExistsOnDevice = _androidDeviceUsbConnection.BookExists(publishedFileName);
 
 			_progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle);
@@ -163,7 +185,7 @@ namespace Bloom.Publish.Android.usb
 				PublishToAndroidApi.ReportAnalytics("usb", book);
 			}
 
-			if (_androidDeviceUsbConnection.BookExists(bookTitle + BookCompressor.ExtensionForDeviceBloomBook))
+			if (_androidDeviceUsbConnection.BookExists(publishedFileName))
 			{
 				_progress.MessageUsingTitle("BookSent", "You can now read \"{0}\" in Bloom Reader!", bookTitle);
 			}

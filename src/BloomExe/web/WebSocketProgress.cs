@@ -45,6 +45,11 @@ namespace Bloom.web
 			_bloomWebSocketServer.Send("progress", message);
 		}
 
+		public void MessageWithStyleWithoutLocalizing(string message, string style)
+		{
+			_bloomWebSocketServer.Send("progress", message, style);
+		}
+
 		public void Message(string id, string message, string comment = null)
 		{
 			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message, comment: comment));
