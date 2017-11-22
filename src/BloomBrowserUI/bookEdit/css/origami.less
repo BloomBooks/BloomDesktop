@@ -1,8 +1,14 @@
+// These rules control the layout of pages which include origami markup.
+// Rules here should not include those that are only needed while editing,
+// such as rules affecting the cursor or making controls visible while hovering.
+// Put all the edit-mode-only origami rules in origamiEditing.less.
+// Note: there may well be more rules here which could be moved to
+// origamiEditing.less. The initial goal of splitting them up was to avoid
+// getting the orgigami editing behaviors while reading in BloomReader.
 @import (inline) "../../lib/split-pane/split-pane.css";
 
 @flowerPetalGrey:#7e7e7e;
 @inactiveColor: rgb(80%,80%,80%);
-@activeColor:  #E48C84;
 @font: "Segoe UI", "Open Sans", Arial, sans-serif;
 
 .origami-ui {
@@ -35,53 +41,27 @@
     height: 50%;
 }
 
-.split-pane.vertical-percent > .vertical-divider {
-    right: 50%;
-    cursor: col-resize;
-    border-right: 3px dashed transparent;
-
-        &:hover:after, &.dragged:after{
-                content: attr(title);
-                position: absolute;
-                left: 5px;
-                z-index: 1000000;
-                color: @activeColor;
-        }
+// overridden in origamiEditing.less. Unless we're editing, we don't
+// need to see these elements, and there are rules inherited from split-pane.css
+// which do annoying things if they are visible in epubs.
+.split-pane-divider {
+        visibility: hidden;
 }
 
-.split-pane.vertical-percent > .vertical-divider:hover,
-.origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
-.vertical-divider.dragged {
-    border-right-color: @activeColor !important;
+.split-pane.vertical-percent > .vertical-divider {
+    right: 50%;
+    border-right: 3px dashed transparent;
 }
 
 .split-pane.horizontal-percent > .horizontal-divider {
     bottom: 50%;
-    cursor: row-resize;
     border-bottom: 3px dashed transparent;
-
-    &:hover:after, &.dragged:after{
-                content: attr(title);
-                position: absolute;
-                bottom: 0;
-                right: 0;
-                z-index: 1000000;
-                color: @activeColor;
-        }
-}
-
-.split-pane.horizontal-percent > .horizontal-divider:hover,
-.origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
-.horizontal-divider.dragged {
-    border-bottom-color: @activeColor !important;
-
 }
 
 .origami-toggle {
     position: absolute;
     right: 19px;
     top: 19px;
-    cursor: pointer;
     line-height: 1em;
     color: @inactiveColor;
     font-family: @font;
@@ -115,7 +95,6 @@
                 display: inline-block;
                 text-decoration: none;
                 position: relative;
-                cursor: pointer;
                 height: 20px;
                 width: 20px;
                 text-align: center;
@@ -177,10 +156,6 @@
 	.horizontal-adders>div {
 		float: left;
 	}
-        .button:hover, .button:focus {
-                color: white;
-                background-color: @activeColor;
-        }
 }
 
 @smallSplitterLength: 30px;
@@ -252,9 +227,7 @@
     text-align: center;
     z-index: 50000;
 }
-.selector-links, .selector-links a {
-    color: @activeColor;
-}
+
 .selector-links div {
 	display: inline;
 }
@@ -315,9 +288,6 @@
 
 //only show the plus signs that add new blocks for the block that has the mouse
 .origami-layout-mode .origami-ui{
-         &:hover .adders{
-                display:block;
-         }
         .adders{
                 display: none;
         }
