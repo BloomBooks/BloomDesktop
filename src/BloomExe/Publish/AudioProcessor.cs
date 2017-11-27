@@ -21,7 +21,7 @@ namespace Bloom.Publish
 		public static bool IsAnyCompressedAudioMissing(string bookFolderPath, XmlDocument dom)
 		{
 			return !GetTrueForAllAudioSpans(bookFolderPath, dom,
-				(wavpath, mp3path) => !RobustFile.Exists(wavpath) || RobustFile.Exists(mp3path));
+				(wavpath, mp3path) => !Mp3IsNeeded(wavpath, mp3path));
 		}
 
 
@@ -36,8 +36,7 @@ namespace Bloom.Publish
 			bool result = GetTrueForAllAudioSpans(bookFolderPath, dom,
 				(wavpath, mp3path) =>
 				{
-					if (RobustFile.Exists(wavpath) &&
-					(!RobustFile.Exists(mp3path) || (new FileInfo(wavpath).LastWriteTimeUtc) > new FileInfo(mp3path).LastWriteTimeUtc))
+					if (Mp3IsNeeded(wavpath, mp3path))
 					{
 						return MakeCompressedAudio(wavpath) != null;
 					}
@@ -46,6 +45,18 @@ namespace Bloom.Publish
 			watch.Stop();
 			Debug.WriteLine("compressing audio took " + watch.ElapsedMilliseconds);
 			return result;
+		}
+
+		// We only need to make an MP3 if we actually have a corresponding wav file. If not, it's just a hypothetical recording that
+		// the user could have made but didn't.
+		// Assuming we have a wav file and thus want a corresponding mp3, we need to make it if either it does not exist
+		// or it is out of date (older than the wav file).
+		// It's of course possible that although it is newer the two don't correspond. I don't know any way to reliably prevent that
+		// except to regenerate them all on every publish event, but that is quite time-consuming.
+		private static bool Mp3IsNeeded(string wavpath, string mp3path)
+		{
+			return RobustFile.Exists(wavpath) &&
+			       (!RobustFile.Exists(mp3path) || (new FileInfo(wavpath).LastWriteTimeUtc) > new FileInfo(mp3path).LastWriteTimeUtc);
 		}
 
 		private static bool GetTrueForAllAudioSpans(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)

@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.web;
 using L10NSharp;
 
 namespace Bloom.Publish.Android.file
@@ -15,7 +16,7 @@ namespace Bloom.Publish.Android.file
 	/// </summary>
 	public class FilePublisher
 	{
-		public static void Save(Book.Book book, BookServer bookServer, Color backColor)
+		public static void Save(Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
 		{
 			using(var dlg = new SaveFileDialog())
 			{
@@ -32,7 +33,11 @@ namespace Bloom.Publish.Android.file
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(dlg.FileName);
-					BookCompressor.CompressBookForDevice(dlg.FileName, book, bookServer, backColor);
+					PublishToAndroidApi.SendBook(book, bookServer, dlg.FileName, null,
+						progress,
+						(publishedFileName, bookTitle) => progress.GetMessageWithParams("Saving", "{0} is a file path", "Saving as {0}", dlg.FileName),
+						null,
+						backColor);
 					PublishToAndroidApi.ReportAnalytics("file", book);
 				}
 			}
