@@ -2146,6 +2146,11 @@
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.Saving">
+        <source xml:lang="en">Saving as {0}</source>
+        <note>ID: PublishTab.Android.File.Progress.Saving</note>
+        <note>{0} is a file path</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
         <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>

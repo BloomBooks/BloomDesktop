@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using Bloom.Book;
 using Bloom.web;
@@ -167,33 +168,16 @@ namespace Bloom.Publish.Android.usb
 
 		private void SendBookDoWork(Book.Book book, Color backColor)
 		{
-			var bookTitle = book.Title;
-			_progress.MessageUsingTitle("LookingForExisting", "Looking for an existing \"{0}\"...", bookTitle);
-			var publishedFileName = BookStorage.SanitizeNameForFileSystem(bookTitle) + BookCompressor.ExtensionForDeviceBloomBook;
-			var bookExistsOnDevice = _androidDeviceUsbConnection.BookExists(publishedFileName);
-
-			_progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle);
-
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
-			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, _bookServer, backColor);
-
-				if (bookExistsOnDevice)
-					_progress.MessageUsingTitle("ReplacingBook", "Replacing existing \"{0}\"...", bookTitle);
-				else
-					_progress.MessageUsingTitle("SendingBook", "Sending \"{0}\" to your Android device...",  bookTitle);
-				_androidDeviceUsbConnection.SendBook(bloomdTempFile.Path);
-				PublishToAndroidApi.ReportAnalytics("usb", book);
-			}
-
-			if (_androidDeviceUsbConnection.BookExists(publishedFileName))
-			{
-				_progress.MessageUsingTitle("BookSent", "You can now read \"{0}\" in Bloom Reader!", bookTitle);
-			}
-			else
-			{
-				throw new ApplicationException("Book does not exist after write operation.");
-			}
+			PublishToAndroidApi.SendBook(book, _bookServer,
+				null, (publishedFileName, path) => _androidDeviceUsbConnection.SendBook(path),
+				_progress,
+				(publishedFileName, bookTitle) =>
+					_androidDeviceUsbConnection.BookExists(publishedFileName) ?
+						_progress.GetTitleMessage("ReplacingBook", "Replacing existing \"{0}\"...", bookTitle) :
+						_progress.GetTitleMessage("SendingBook", "Sending \"{0}\" to your Android device...", bookTitle),
+				publishedFileName => _androidDeviceUsbConnection.BookExists(publishedFileName),
+				backColor);
+			PublishToAndroidApi.ReportAnalytics("usb", book);
 		}
 
 		private void FailSendBook(Exception e)

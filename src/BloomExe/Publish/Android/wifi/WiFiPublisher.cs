@@ -120,29 +120,24 @@ namespace Bloom.Publish.Android.wifi
 		/// <param name="androidName"></param>
 		private void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, Color backColor)
 		{
-			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
-			var safeName = BookStorage.SanitizeNameForFileSystem(book.Title);
-
-			_progress.MessageWithParams(id: "Sending",
-				comment: "{0} is the name of the book, {1} is the name of the device",
-				message: "Sending \"{0}\" to device {1}",
-				parameters: new object[] {safeName,androidName});
-
-			var publishedFileName = safeName + BookCompressor.ExtensionForDeviceBloomBook;
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
-			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, _bookServer, backColor);
-				using (WebClient myClient = new WebClient())
+			PublishToAndroidApi.SendBook(book, _bookServer,
+				null, (publishedFileName, bloomDPath) =>
 				{
-					myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(safeName) +
-					                    BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdTempFile.Path));
-				}
-				PublishToAndroidApi.ReportAnalytics("wifi", book);
-			}
-			_progress.MessageWithParams(id: "Finished",
-				comment: "{0} is the name of the book, {1} is the name of the device",
-				message: "Finished sending \"{0}\" to device {1}",
-				parameters: new object[] {safeName, androidName});
+					using (WebClient myClient = new WebClient())
+					{
+						var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
+						myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(publishedFileName) +
+											BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomDPath));
+					}
+				},
+				_progress,
+				(publishedFileName, bookTitle)=> _progress.GetMessageWithParams(id: "Sending",
+					comment: "{0} is the name of the book, {1} is the name of the device",
+					message: "Sending \"{0}\" to device {1}",
+					parameters: new object[] { bookTitle, androidName }),
+				null,
+				backColor);
+			PublishToAndroidApi.ReportAnalytics("wifi", book);
 		}
 
 		private void SendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName, Color backColor)
