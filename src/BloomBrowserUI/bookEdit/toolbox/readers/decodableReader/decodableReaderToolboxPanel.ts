@@ -13,8 +13,7 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
             if (settings['decodableReaderState']) {
-                var state = theOneLibSynphony.dbGet('drt_state');
-                if (!state) state = new DRTState();
+                var state = new DRTState();
                 var decState = settings['decodableReaderState'];
                 if (decState.startsWith("stage:")) {
                     var parts = decState.split(";");

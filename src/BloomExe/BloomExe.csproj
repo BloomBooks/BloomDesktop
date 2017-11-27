@@ -113,9 +113,8 @@
       <HintPath>..\..\packages\DeltaCompressionDotNet.1.1.0\lib\net20\DeltaCompressionDotNet.PatchApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DesktopAnalytics, Version=1.2.4.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DesktopAnalytics.1.2.4.1\lib\net40\DesktopAnalytics.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DesktopAnalytics, Version=1.2.4.11, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DesktopAnalytics.1.2.4.11\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="EasyHttp, Version=1.6.86.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EasyHttp.1.6.86.0\lib\net40\EasyHttp.dll</HintPath>
