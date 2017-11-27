@@ -1,4 +1,4 @@
-## 4.2 (preliminary plan)
+﻿## 4.2 (preliminary plan)
 Preliminary Plan:
 - Edit Tab
     - Add an Image Credits field which Bloom will automatically fill and keep up to date.
@@ -27,22 +27,22 @@ Still to do for this version:
 
 ## 4.0 (beta)
 - Publish Tab
-    - &#x2b50; Publish Book to [Bloom Reader](https://play.google.com/store/search?q=bloom%20reader&c=apps) Android app.
-    - &#x2b50; PDFs are now automatically compressed, so they are often a small fraction of their previous size.
-    - &#x2b50; When you save a PDF, you can now choose CMYK coloring to satisfy some print shops.
+    - Publish Book to **[Bloom Reader](https://play.google.com/store/search?q=bloom%20reader&c=apps)** Android app. On the Play store, you'll see a "beta" and an "alpha" version. The beta works with 4.0. The alpha works with Bloom 4.1, which is also in alpha (the progression is alpha --> beta --> release).
+    - **PDFs are now automatically compressed**, so they are often a small fraction of their previous size.
+    - When you save a PDF, you can now choose CMYK coloring to satisfy some print shops.
 - Collection Tab
     - When creating a new collection, Bloom now chooses the *primary* country of the language as a default.
     - When choosing a language, Bloom no longer displays "alternative names* of languages, as some may be offensive.
     - Added a custom Front/Back matter choice for SIL PNG
     - Added a custom branding pack choice for ToMasewalTlahtol of Mexico.
 - Edit Tab
-    - &#x2b50; You can now add moveable text blocks on top of images. Use this for comic books or kids’ books that fill the page with an image and then put text on top of it.
-    - &#x2b50; We've added new zoom control in the upper left. We've removed CTRL-Mouse wheel zooming (sorry) because it appears that some people were doing it accidentally and then getting very confused.
+    - You can now add moveable text blocks on top of images. Use this for comic books or kids’ books that fill the page with an image and then put text on top of it. This feature is still pretty rough, so **we've left it rather hidden**. Right-click on an image to add a moveable and resizable text block.
+    - We've added new zoom control in the upper left. We've removed CTRL-Mouse wheel zooming (sorry) because it appears that some people were doing it accidentally and then getting very confused.
     - Bloom now shows page numbers on the page, in the Edit Tab.
-    - Left vs. right margins are now shown as they will on the final page.
-    - We have reduced the time it takes to change pages. This is still slow for large books like the picture dictionaries some folks are building.
+    - Left vs. right margins are now shown as they will on the printed book.
+    - We have **reduced the time it takes to change pages**. This is still slow for large books like the picture dictionaries some folks are building.
 - Misc
-    - &#x2b50; Localization (translating the Bloom user interface) has moved from something you could do inside Bloom to something you do on the web, on crowdin.com. Use [this link](https://crwd.in/sil-bloom) to sign up as a translator. If you are a native speaker, please tell us so that we can make you a proofreader too.
+    - Localization (translating the Bloom user interface) has moved from something you could do inside Bloom to something you do on the web, using crowdin.com. Use [this link](https://crwd.in/sil-bloom) to **sign up as a translator**. If you are a native speaker, please tell us so that we can make you a proofreader too.
     - When Bloom is first run after your computer starts, there was a delay caused by .net. This could cause people to think Bloom wasn't running, so they would try and run it again. Bloom will now show a simple splash screen instantly to indicate that it is coming. Currently on Windows, this feature is lost if you pin a running Bloom to the Windows taskbar. Instead, pin the icon from the desktop.
     - Changed "Vernacular" to "Local Language"
     - We removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes an understanding of what it is that they do.
