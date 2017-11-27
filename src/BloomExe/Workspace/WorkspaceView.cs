@@ -21,7 +21,9 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
+using Bloom.ToPalaso;
 using Gecko.Cache;
+using SIL.Windows.Forms.WritingSystems;
 
 namespace Bloom.Workspace
 {
@@ -58,6 +60,7 @@ namespace Bloom.Workspace
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 		private ZoomControl _zoomControl;
+		private static LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -316,27 +319,37 @@ namespace Bloom.Workspace
 		/// </summary>
 		public static void SetupUiLanguageMenuCommon(ToolStripDropDownButton uiMenuControl, Action finishClickAction = null)
 		{
+			var items = new List<LanguageItem>();
+			foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+				items.Add(CreateLanguageItem(lang));
+			items.Sort(compareLangItems);
+
 			uiMenuControl.DropDownItems.Clear();
-			foreach (var lang in LocalizationManager.GetUILanguages(true))
+			foreach (var langItem in items)
 			{
-				var item = uiMenuControl.DropDownItems.Add(MenuItemName(lang));
-				item.Tag = lang;
+				var item = uiMenuControl.DropDownItems.Add(langItem.MenuText);
+				item.Tag = langItem;
 				item.Click += (sender, args) => UiLanguageMenuItemClickHandler(uiMenuControl, sender as ToolStripItem, finishClickAction);
-				if (lang.IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
-					UpdateMenuTextToShorterNameOfSelection(uiMenuControl, lang);
+				if (langItem.IsoCode == Settings.Default.UserInterfaceLanguage)
+					UpdateMenuTextToShorterNameOfSelection(uiMenuControl, langItem.MenuText);
 			}
+		}
+
+		private static int compareLangItems(LanguageItem a, LanguageItem b)
+		{
+			return string.Compare(a.EnglishName, b.EnglishName, StringComparison.Ordinal);
 		}
 
 		private static void UiLanguageMenuItemClickHandler(ToolStripDropDownButton toolStripButton, ToolStripItem item, Action finishClickAction)
 		{
-			var tag = (CultureInfo)item.Tag;
+			var tag = (LanguageItem)item.Tag;
 
-			LocalizationManager.SetUILanguage(tag.IetfLanguageTag, true);
-			Settings.Default.UserInterfaceLanguage = tag.IetfLanguageTag;
+			LocalizationManager.SetUILanguage(tag.IsoCode, true);
+			Settings.Default.UserInterfaceLanguage = tag.IsoCode;
 			Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 			Settings.Default.Save();
 			item.Select();
-			UpdateMenuTextToShorterNameOfSelection(toolStripButton, tag);
+			UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
 
 			if (finishClickAction != null)
 				finishClickAction();
@@ -350,53 +363,32 @@ namespace Bloom.Workspace
 			_localizationChangedEvent.Raise(null);
 		}
 
-		public static string MenuItemName(CultureInfo lang)
+		public static LanguageItem CreateLanguageItem(string code)
 		{
-			string englishName = string.Empty;
-			var nativeName = lang.NativeName;
-			var testChar = nativeName[0];
-			if (lang.EnglishName != lang.NativeName && !IsLatinChar(testChar))
-				englishName = " (" + lang.EnglishName + ")";
-			// Remove any country (or script?) names apart from Chinese (Simplified)
-			if (lang.Name != "zh-CN")
+			// Get the language name in its own language if at all possible.
+			// Add an English name suffix if it's not in a Latin script.
+			var menuText = _lookupIsoCode.GetNativeLanguageNameWithEnglishSubtitle(code);
+			var englishName = _lookupIsoCode.GetLocalizedLanguageName(code, "en");
+			return new LanguageItem {EnglishName = englishName, IsoCode = code, MenuText = menuText};
+		}
+
+		public static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, string itemText)
+		{
+			var idxChinese = itemText.IndexOf(" (Chinese");
+			if (idxChinese > 0)
 			{
-				var idxCountry = englishName.IndexOf(" (");
-				if (englishName.Length > 0 && idxCountry > 0)
-					englishName = englishName.Substring(0, idxCountry) + ")";
-				idxCountry = nativeName.IndexOf(" (");
-				if (idxCountry > 0)
-					nativeName = nativeName.Substring(0, idxCountry);
+				toolStripButton.Text = itemText.Substring(0, idxChinese);
 			}
 			else
 			{
-				// some people have seen more cruft after the country name, so remove that as well.
-				var idxCountry = englishName.IndexOf(", China");
-				if (englishName.Length > 0 && idxCountry > 0)
-					englishName = englishName.Substring(0, idxCountry) + "))";
+				var idxCountry = itemText.IndexOf(" (");
+				if (idxCountry > 0)
+					toolStripButton.Text = itemText.Substring(0, idxCountry);
+				else
+				{
+					toolStripButton.Text = itemText;
+				}
 			}
-			var menuItemName = nativeName + englishName;
-			return menuItemName;
-		}
-
-		/// <summary>
-		/// Return true for ASCII, Latin-1, Latin Ext. A, Latin Ext. B, IPA Extensions, and Spacing Modifier Letters.
-		/// </summary>
-		public static bool IsLatinChar(char test)
-		{
-			return ((int)test <= 0x02FF);
-		}
-
-		public static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, CultureInfo language)
-		{
-			var nativeName = language.NativeName;
-			// Don't display any country name.  Chinese is an exception, it's not a country name.
-			if (language.Name != "zh-CN")
-			{
-				var idx = nativeName.IndexOf(" (");
-				if (idx > 0)
-					nativeName = nativeName.Substring(0, idx);
-			}
-			toolStripButton.Text = nativeName;
 		}
 
 		private void OnEditBook(Book.Book book)
@@ -1019,5 +1011,18 @@ namespace Bloom.Workspace
 	{
 		// BL-5071 Make the border the same color as the button when selected/hovered
 		public override Color ButtonSelectedBorder => SystemColors.GradientActiveCaption;
+	}
+
+	/// <summary>
+	/// Mono refuses to create CultureInfo items for languages it doesn't recognize.  And I'm not
+	/// sure that .Net allows you to modify the dummy objects it creates.  So this class serves
+	/// to store the language code and the most useful names associated with it, at least for the
+	/// purposes of the drop-down menus that display the localization languages available.
+	/// </summary>
+	public class LanguageItem
+	{
+		public string IsoCode;
+		public string EnglishName;
+		public string MenuText;
 	}
 }
