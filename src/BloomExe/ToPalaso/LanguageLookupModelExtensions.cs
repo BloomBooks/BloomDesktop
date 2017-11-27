@@ -127,6 +127,8 @@ namespace Bloom.ToPalaso
 			langName = GetNativeNameIfKnown(code);
 			if (generalUiCode == "en" || String.IsNullOrWhiteSpace(langName))
 				langName = GetEnglishNameIfKnown(isoModel, code);
+			if (String.IsNullOrWhiteSpace(langName))
+				langName = code;
 			_mapIsoCodesToLanguageName.Add(key, langName);
 			return langName;
 		}
