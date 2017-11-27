@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Bloom.Book;
+using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using DesktopAnalytics;
 using L10NSharp;
@@ -137,6 +138,7 @@ namespace Bloom.Collection
 
 			if (RobustFile.Exists(desiredOrExistingSettingsFilePath))
 			{
+				DoDefenderFolderProtectionCheck();
 				Load();
 			}
 			else
@@ -147,7 +149,20 @@ namespace Bloom.Collection
 				if (!Directory.Exists(libraryDirectory))
 					Directory.CreateDirectory(libraryDirectory);
 
+				DoDefenderFolderProtectionCheck();
 				Save();
+			}
+		}
+
+		private void DoDefenderFolderProtectionCheck()
+		{
+			// We check for a Windows Defender "Controlled Access" problem when we start Bloom,
+			// but the user may have moved their startup collection to a "safe" place and now be opening a different
+			// collection in a "controlled" place. Test again with this settings file path.
+			// 'FolderPath' is the directory part of 'SettingsFilePath'.
+			if (!DefenderFolderProtectionCheck.CanWriteToDirectory(FolderPath))
+			{
+				Environment.Exit(-1);
 			}
 		}
 
@@ -378,10 +393,9 @@ namespace Bloom.Collection
 			}
 			catch (Exception error)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
+				ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
 			}
 		}
-
 
 		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight)
 		{

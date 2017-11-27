@@ -81,6 +81,100 @@ body {
     margin-right: 2em; // a bit of space between this and the troubleshooting tips
 }
 
+// Thumbnail color block: style and variable names start with tc-
+@tc-image-height: 50px;
+@tc-arrow-height: 6px;
+@tc-arrow-top-margin: @tc-image-height - @tc-arrow-height;
+@tc-color-radius: 5px;
+@tc-color-margin: 4px;
+@tc-hex-padding: 3px;
+@tc-image-margin: 2px;
+
+.media-heading {
+    // less than the default, because what is right under it is text
+    // rather than a control like under most of our H1s, and without this
+    // the gap LOOKS bigger.
+    margin-bottom: 7px;
+}
+
+.tc-outer-wrapper {
+    display:flex;
+    flex-direction: row;
+}
+
+.tc-image-wrapper {
+    height: @tc-image-height + @tc-image-margin * 2;
+}
+
+.tc-image {
+    height: @tc-image-height;
+    margin: @tc-image-margin;
+}
+
+.tc-pulldown-wrapper {
+    display: flex;
+    flex-direction: row;
+    width: 320px;
+    flex-wrap: wrap;
+    position: absolute; // relative to background-color-arrow
+    top: @tc-arrow-height + @tc-arrow-height;
+    left: -@tc-arrow-height;
+    background-color: white;
+    &:after {
+        content: "";
+        position: absolute;
+        top: -@tc-arrow-height;
+        left: 0;
+        border-width: 0 @tc-arrow-height @tc-arrow-height;
+        border-style: solid;
+        border-color: white transparent;
+        display: block;
+        width: 0;
+    }
+}
+
+.media-subheading {
+    font-weight: bold;
+}
+.tc-menu-arrow {
+    margin-left: 5px;
+    margin-top: @tc-arrow-top-margin;
+    height: 0;
+    width: 0;
+    border: @tc-arrow-height solid transparent;
+    border-top: @tc-arrow-height solid black;
+    position: relative; // so absolutely positioned pull-down is relative to this.
+}
+
+.tc-color-option {
+    height: 30px;
+    width: 30px;
+    margin: @tc-color-margin;
+    border-radius: @tc-color-radius;
+}
+
+.tc-hex-wrapper {
+    display:flex;
+    flex-direction: row;
+    margin: @tc-color-margin;
+}
+
+.tc-hex-leadin {
+    background-color: lightgray;
+    border-radius: @tc-color-radius 0 0 @tc-color-radius;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: @tc-hex-padding;
+}
+
+.tc-hex-value {
+    width: 50px;
+    border: solid lightgray thin;
+    padding-left:5px;
+    border-radius: 0 @tc-color-radius @tc-color-radius 0;
+    padding-top: @tc-hex-padding;
+}
+
 div.method-select-wrapper {
     border: 1px solid;
     background-image: url(drop-down-arrow-left-line.svg);

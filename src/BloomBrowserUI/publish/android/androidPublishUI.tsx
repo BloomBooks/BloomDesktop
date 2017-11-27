@@ -3,11 +3,12 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
 import BloomButton from "../../react_components/bloomButton";
+import ContentEditable from "../../react_components/ContentEditable";
 import Option from "../../react_components/option";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import { H1, H2, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
+import { H1, H2, Div, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
 
 const kWebSocketLifetime = "publish-android";
@@ -15,6 +16,8 @@ const kWebSocketLifetime = "publish-android";
 interface IComponentState {
     method: string;
     stateId: string;
+    backColor: string;
+    colorsVisible: boolean;
 }
 // This is a screen of controls that gives the user instructions and controls
 // for pushing a book to a connected Android device running Bloom Reader.
@@ -24,7 +27,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         super(props);
 
         this.isLinux = this.getIsLinuxFromUrl();
-        this.state = { stateId: "stopped", method: "wifi" };
+        this.state = { stateId: "stopped", method: "wifi", backColor: "#FFFFFF", colorsVisible: false };
 
         // enhance: For some reason setting the callback to "this.handleUpdate" calls handleUpdate()
         // with "this" set to the button, not this overall control.
@@ -42,6 +45,10 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         axios.get("/bloom/api/publish/android/method").then(result => {
             this.setState({ method: result.data });
         });
+
+        axios.get("/bloom/api/publish/android/backColor").then(result =>
+            this.setState({ backColor: result.data })
+        )
     }
 
     public componentDidMount() {
@@ -86,9 +93,56 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
     render() {
         let self = this;
+        let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5", "#B2CC7D", "#F8B576", "#D29FEF", "#ABB8C3", "#C1EF93", "#FFD4D4", "#FFAAD4"];
+
 
         return (
             <div>
+                <H1 className="media-heading" l10nKey="PublishTab.Android.Media"
+                    l10nComment="A heading in the Publish to Android screen.">
+                    Media
+                </H1>
+
+                <div className="media-row">
+                    <div className="media-subheading">
+                        <Div l10nKey="PublishTab.Android.ThumbnailColor">
+                            Thumbnail Color
+                        </Div>
+                    </div>
+                    <div className="tc-outer-wrapper" onClick={
+                        (event) => {
+                            self.setState({ colorsVisible: !this.state.colorsVisible });
+                            axios.get("/bloom/api/publish/android/backColor").then(result =>
+                                this.setState({ backColor: result.data })
+                            );
+                        }}>
+                        <div className="tc-image-wrapper" style={{ backgroundColor: this.state.backColor }} >
+                            <img className="tc-image" src="/bloom/api/publish/android/coverImage"></img>
+                        </div>
+                        <div className="tc-menu-arrow">
+                            <div className="tc-pulldown-wrapper" style={{ visibility: (self.state.colorsVisible ? "visible" : "hidden") }}>
+                                {colors.map((color, i) => <div className="tc-color-option" style={{ backgroundColor: color }} data-color={color} onClick={
+                                    (event) => {
+                                        let newColor = event.currentTarget.getAttribute("data-color");
+                                        self.setState({ backColor: newColor });
+                                        axios.post("/bloom/api/publish/android/backColor", newColor,
+                                            { headers: { "Content-Type": "text/plain" } });
+                                    }}></div>)}
+                                <div className="tc-hex-wrapper" onClick={(event) => event.stopPropagation()}>
+                                    <div className="tc-hex-leadin">#</div>
+                                    <div className="tc-hex-value">
+                                        <ContentEditable content={this.state.backColor.substring(1)} onChange={(newContent => {
+                                            let newColor = "#" + newContent
+                                            self.setState({ backColor: newColor });
+                                            axios.post("/bloom/api/publish/android/backColor", newColor,
+                                                { headers: { "Content-Type": "text/plain" } });
+                                        })} onEnterKeyPressed={() => self.setState({ colorsVisible: false })} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <H1 l10nKey="PublishTab.Android.Method"
                     l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser.">
                     Method Choices

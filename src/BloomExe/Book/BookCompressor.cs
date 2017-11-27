@@ -29,11 +29,18 @@ namespace Bloom.Book
 		// these files (if encountered) won't be included in the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder" };
 
-		public static void CompressBookForDevice(string outputPath, Book book, BookServer bookServer)
+		public static void CompressBookForDevice(string outputPath, Book book, BookServer bookServer, Color backColor)
 		{
 			using(var temp = new TemporaryFolder())
 			{
-				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp);
+				BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
+				var bookInfo = new BookInfo(temp.FolderPath, true);
+				bookInfo.XMatterNameOverride = "Device";
+				var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+				modifiedBook.BringBookUpToDate(new NullProgress());
+				modifiedBook.Save();
+				modifiedBook.Storage.UpdateSupportFiles();
+				modifiedBook.MakeThumbnailFromCoverPicture(backColor);
 				// We use the original book to compute the sha, otherwise, each time we create a bloomd to send it,
 				// the sha is different, because SOMETHING changes in the book in the process of bringing it up to date.
 				// This leads to an infinite loop in the WiFi sending process.

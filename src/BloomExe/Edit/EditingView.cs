@@ -836,7 +836,15 @@ namespace Bloom.Edit
 			}
 
 			Debug.Fail("Could not find image element");
-			return null;
+			// This shouldn't happen, but BL-5278 reports that it did. To allow the image toolbox
+			// to be opened so at least a new image can be inserted, we need to put some img element
+			// there, and it has to have a source.
+			var repairedImg = imageContainer.OwnerDocument.CreateElement("img");
+			repairedImg.SetAttribute("src", "placeHolder.png");
+			repairedImg.SetAttribute("data-problem", "inserted to repair missing img BL-5278");
+			imageContainer.AppendChild(repairedImg);
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Missing picture partly repaired", "An <img> element on this page was missing and things were repaired enough to let you choose a new one. We would appreciate help in figuring out how to make this happen so that we can fix it. This is issue BL-5278 in our bug tracking system");
+			return (GeckoHtmlElement) repairedImg;
 		}
 
 		/// <summary>

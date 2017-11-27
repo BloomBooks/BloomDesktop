@@ -1514,6 +1514,45 @@ namespace Bloom.Book
 			dom.Head.AppendChild(colorStyle);
 		}
 
+		public String GetCoverColor()
+		{
+			foreach (XmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
+			{
+				string content = stylesheet.InnerText;
+				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
+				// work with. The Stylesheet content is just raw CDATA text.
+				var match = new Regex(@"DIV.coverColor\s*TEXTAREA\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
+					.Match(content);
+				if (match.Success)
+				{
+					return match.Groups[1].Value;
+				}
+			}
+			return "#FFFFFF";
+		}
+
+		/// <summary>
+		/// Set the cover color. Not used initially; assumes there is already an (unfortunately unmarked)
+		/// stylesheet created as in AddCoverColor.
+		/// </summary>
+		/// <param name="color"></param>
+		public void SetCoverColor(string color)
+		{
+			foreach (XmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
+			{
+				string content = stylesheet.InnerXml;
+				var regex =
+					new Regex(@"(DIV.(coverColor\s*TEXTAREA|bloom-page.coverColor)\s*{\s*background-color:\s*)(#[0-9a-fA-F]*)");
+				if (regex.IsMatch(content))
+				{
+					var newContent = regex.Replace(content, "$1" + color);
+					stylesheet.InnerXml = newContent;
+					Save();
+					ContentsChanged?.Invoke(this, new EventArgs());
+					return;
+				}
+			}
+		}
 
 		/// <summary>
 		/// Make stuff readonly, which isn't doable via css, surprisingly
@@ -2400,24 +2439,34 @@ namespace Bloom.Book
 			return Convert.ToBase64String(sha.Hash);
 		}
 
-		public void MakeThumbnailFromCoverPicture()
+		public void MakeThumbnailFromCoverPicture(Color backColor)
+		{
+			string coverImagePath =GetCoverImagePath();
+			if (coverImagePath == null)
+				return; // no image on cover?? Just use default thumbnail.
+			var thumbPath = Path.Combine(StoragePageFolder, "thumbnail.png");
+			RuntimeImageProcessor.GenerateThumbnail(coverImagePath, thumbPath, 70, 70, backColor);
+		}
+
+		public string GetCoverImagePath()
 		{
 			// It's unfortunate that we have to check for @style here, because it partly exposes how we do images
 			// with background-image. But if we don't check something beyond the data-book attribute, this xpath
 			// typically finds the data-div element, and that doesn't have the data in the form that GetImageElementUrl
 			// can handle.
-			var coverImgElt = _storage.Dom.SafeSelectNodes("//div[@data-book='coverImage' and @style]").Cast<XmlElement>().FirstOrDefault();
+			var coverImgElt = _storage.Dom.SafeSelectNodes("//div[@data-book='coverImage' and @style]")
+				.Cast<XmlElement>()
+				.FirstOrDefault();
 			if (coverImgElt == null)
-				return; // no image on cover?? Just use default thumbnail.
+				return null;
 			var coverImageUrl = HtmlDom.GetImageElementUrl(coverImgElt);
 			var coverImageFileName = coverImageUrl.NotEncoded;
 			if (string.IsNullOrEmpty(coverImageFileName))
-				return; // I think this is redundant but it makes things clearly valid.
+				return null;
 			var coverImagePath = Path.Combine(StoragePageFolder, coverImageFileName);
 			if (!File.Exists(coverImagePath))
-				return;
-			var thumbPath = Path.Combine(StoragePageFolder, "thumbnail.png");
-			RuntimeImageProcessor.GenerateThumbnail(coverImagePath, thumbPath, 70, 70);
+				return null;
+			return coverImagePath;
 		}
 	}
 }

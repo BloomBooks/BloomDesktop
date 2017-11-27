@@ -1664,6 +1664,16 @@
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
       </trans-unit>
+      <trans-unit id="Errors.DefenderFolderProtection">
+        <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
+        <note>ID: Errors.DefenderFolderProtection</note>
+        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+      </trans-unit>
+      <trans-unit id="Errors.DefenderFolderProtectionHeading">
+        <source xml:lang="en">This program cannot write to the folder {0}.</source>
+        <note>ID: Errors.DefenderFolderProtectionHeading</note>
+        <note>This only happens on Windows after an October 2017 update, {0} is the folder that Bloom failed to write to.</note>
+      </trans-unit>
       <trans-unit id="Errors.DeniedAccess">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
         <note>ID: Errors.DeniedAccess</note>
@@ -2123,6 +2133,11 @@
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Media">
+        <source xml:lang="en">Media</source>
+        <note>ID: PublishTab.Android.Media</note>
+        <note>A heading in the Publish to Android screen</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
@@ -2132,6 +2147,10 @@
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Android.Save</note>
         <note>Button that tells Bloom to save the book as a .bloomD file.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ThumbnailColor">
+        <source xml:lang="en">Thumbnail Color</source>
+        <note>ID: PublishTab.Android.ThumbnailColor</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting">
         <source xml:lang="en">Troubleshooting Tips</source>

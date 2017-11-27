@@ -31,7 +31,7 @@ namespace Bloom.ImageProcessing
 
 		private string _cacheFolder;
 
-		private readonly ImageAttributes _convertWhiteToTransparent;
+		private static ImageAttributes _convertWhiteToTransparent;
 
 		public RuntimeImageProcessor(BookRenamedEvent bookRenamedEvent)
 		{
@@ -40,8 +40,19 @@ namespace Bloom.ImageProcessing
 			_imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
 			_cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
 			_bookRenamedEvent.Subscribe(OnBookRenamed);
-			_convertWhiteToTransparent = new ImageAttributes();
-			_convertWhiteToTransparent.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
+		}
+
+		private static ImageAttributes ConvertWhiteToTransparent
+		{
+			get
+			{
+				if (_convertWhiteToTransparent == null)
+				{
+					_convertWhiteToTransparent = new ImageAttributes();
+					_convertWhiteToTransparent.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
+				}
+				return _convertWhiteToTransparent;
+			}
 		}
 
 		private void OnBookRenamed(KeyValuePair<string, string> fromPathAndToPath)
@@ -158,7 +169,8 @@ namespace Bloom.ImageProcessing
 
 		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not be larger than orignally,
 		// but if necessary will be shrunk to fit within the indicated rectangle.
-		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth, int newHeight = Int32.MaxValue)
+		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth, int newHeight = Int32.MaxValue,
+			Color? backColor = null)
 		{
 			using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
 			{
@@ -175,13 +187,55 @@ namespace Bloom.ImageProcessing
 					newW = newH * originalImage.Image.Width / originalImage.Image.Height;
 				}
 
-				using (var newImg = originalImage.Image.GetThumbnailImage(newW, newH, () => false, IntPtr.Zero))
+				var thumbnail = new Bitmap(newW, newH);
+
+				var g = Graphics.FromImage(thumbnail);
+
+				if (backColor != null)
 				{
-					RobustImageIO.SaveImage(newImg, pathToProcessedImage);
+					using (var brush = new SolidBrush(backColor.Value))
+						g.FillRectangle(brush, 0, 0, newW, newH);
 				}
+
+				Image imageToDraw = originalImage.Image;
+				bool useOriginalImage = ImageUtils.AppearsToBeJpeg(originalImage);
+				if (!useOriginalImage)
+				{
+					imageToDraw = MakePngBackgroundTransparent(originalImage);
+				}
+				var destRect = new Rectangle(0, 0, newW, newH);
+				if (backColor != null)
+				{
+					// We want to see some backcolor, even if the image is a photo.
+					int inset = Math.Min(newW, newH) / 10;
+					destRect = new Rectangle(inset, inset, newW - inset * 2, newH - inset * 2 );
+				}
+				g.DrawImage(imageToDraw, destRect , new Rectangle(0,0,originalImage.Image.Width, originalImage.Image.Height),GraphicsUnit.Pixel);
+				if (!useOriginalImage)
+					imageToDraw.Dispose();
+				RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
 			}
 
 			return true;
+		}
+
+		private static Image MakePngBackgroundTransparent(PalasoImage originalImage)
+		{
+			//impose a maximum size because in BL-2871 "Opposites" had about 6k x 6k and we got an ArgumentException
+			//from the new BitMap()
+			var destinationWidth = Math.Min(1000, originalImage.Image.Width);
+			var destinationHeight = (int)((float)originalImage.Image.Height * ((float)destinationWidth / (float)originalImage.Image.Width));
+			var processedBitmap = new Bitmap(destinationWidth, destinationHeight);
+			using (var g = Graphics.FromImage(processedBitmap))
+			{
+				var destRect = new Rectangle(0, 0, destinationWidth, destinationHeight);
+				lock (ConvertWhiteToTransparent)
+				{
+					g.DrawImage(originalImage.Image, destRect, 0, 0, originalImage.Image.Width, originalImage.Image.Height,
+						GraphicsUnit.Pixel, ConvertWhiteToTransparent);
+				}
+			}
+			return processedBitmap;
 		}
 
 
@@ -197,22 +251,9 @@ namespace Bloom.ImageProcessing
 					{
 						return false;
 					}
-					//impose a maximum size because in BL-2871 "Opposites" had about 6k x 6k and we got an ArgumentException
-					//from the new BitMap()
-					var destinationWidth = Math.Min(1000, originalImage.Image.Width);
-					var destinationHeight = (int)((float)originalImage.Image.Height*((float)destinationWidth/ (float)originalImage.Image.Width));
-                    using (var processedBitmap = new Bitmap(destinationWidth, destinationHeight))
-					{
-						using (var g = Graphics.FromImage(processedBitmap))
-						{
-							var destRect = new Rectangle(0, 0, destinationWidth, destinationHeight);
-							lock (_convertWhiteToTransparent)
-							{
-								g.DrawImage(originalImage.Image, destRect, 0, 0, originalImage.Image.Width, originalImage.Image.Height,
-									GraphicsUnit.Pixel, _convertWhiteToTransparent);
-							}
-						}
 
+					using (var processedBitmap = MakePngBackgroundTransparent(originalImage))
+					{
 						//Hatton July 2012:
 						//Once or twice I saw a GDI+ error on the Save below, when the app 1st launched.
 						//I verified that if there is an IO error, that's what you get (a GDI+ error).
