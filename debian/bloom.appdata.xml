@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2016 SIL International -->
 <component type="desktop">
-	<id>bloom-beta.desktop</id>
+	<id>bloom.desktop</id>
 	<metadata_license>MIT</metadata_license>
 	<project_license>MIT</project_license>
 	<name>Bloom</name>
@@ -47,7 +47,7 @@
 	</provides>
 
 	<releases>
-		<release version="3.6" date="2016-04-19">
+		<release version="3.9" date="2017-11-17">
 		</release>
 	</releases>
 </component>
