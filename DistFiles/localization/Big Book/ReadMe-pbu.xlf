@@ -1,42 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pbu">
     <body>
-      <trans-unit id="bigbook.title">
+      <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
         <target xml:lang="pbu">د غټو کتابونو په اړه</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
-      <trans-unit id="bigbook.use">
+      <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
         <target xml:lang="pbu">غټ کتابونه د ښوونکو لپاره ډیزاین شوي دي او د ټولګي په مخ کې یې لولي. د لا ډېرو معلوماتو لپاره <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">د ښوونکو د روزنې له خوا دا ‏PDF‏ ولولئ</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing">
+      <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
         <target xml:lang="pbu">د غټ کتاب چاپول</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4">
+      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="pbu">د شیانو د ښه مدیریت لپاره دا ټیمپلیټ د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
+        <target xml:lang="pbu">د موادو/شیانو د ښه مدیریت لپاره دا نمونه د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
+تاسو په آسانۍ سره د ‏A3‏ کتابونه چاپولی شئ (دوه چنده غټ).
+یواځې د خپل ‏A4‏ ‏PDF‏ یو چاپیندي (پرنټر) ته ویسئ او ورڅخه وغواړئ چې A3 ته یې غټ کړي.</target>
+        <note>ID: bigbook.printing.enlargeA4</note>
+        <alt-trans>
+          <target xml:lang="pbu">د موادو/شیانو د ښه مدیریت لپاره دا نمونه د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
 تاسو په آسانۍ سره د ‏A3‏ کتابونه چاپولی شئ (دوه چنده غټ).
 یواځې د خپل ‏A4‏ ‏PDF‏ یو پرنټر ته ویسئ او ورڅخه وغواړئ چې A3 ته یې غټ کړي.</target>
-        <note>ID: bigbook.printing.enlargeA4</note>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">د شیانو د ښه مدیریت لپاره دا ټیمپلیټ د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
+تاسو په آسانۍ سره د ‏A3‏ کتابونه چاپولی شئ (دوه چنده غټ).
+یواځې د خپل ‏A4‏ ‏PDF‏ یو پرنټر ته ویسئ او ورڅخه وغواړئ چې A3 ته یې غټ کړي.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.limits">
+      <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
         <target xml:lang="pbu">د دې نسخې محدودیتونه</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
-      <trans-unit id="bigbook.limits.smallscreen">
+      <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="pbu">که تاسو وړوکی سکرین استعمالوی، د کریډیټ پاڼې لوستل به ستونزمن وي. د ‏CTRL‏+ موز ټایر څخه په ګټه پورته کولو پاڼه زوم کړئ تر څو تاسو هغه ایډیټ کړای شی.</target>
+        <target xml:lang="pbu">که تاسو وړوکی سکرین استعمالوی، د امتیازاتو پاڼې لوستل به ستونزمن وي. د ‏CTRL‏+ موز ټایر څخه په ګټه پورته کولو پاڼه غټه کړئ تر څو تاسو هغه ایډیټ کړای شی.</target>
         <note>ID: bigbook.limits.smallscreen</note>
+        <alt-trans>
+          <target xml:lang="pbu">که تاسو وړوکی سکرین استعمالوی، د کریډیټ پاڼې لوستل به ستونزمن وي. د ‏CTRL‏+ موز ټایر څخه په ګټه پورته کولو پاڼه زوم کړئ تر څو تاسو هغه ایډیټ کړای شی.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.limits.Englishtemplate">
+      <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
@@ -45,19 +58,14 @@ If you send us that text, we can include it in a future version of the template.
 که تاسو مونږ ته هغه متن واستوئ، نو مونږ به یې په راتلونکي نمونه یي نسخه کې شامل کړو.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
-      <trans-unit id="bigbook.feedback">
+      <trans-unit id="bigbook.feedback" approved="yes">
         <source xml:lang="en">Feedback</source>
         <target xml:lang="pbu">وړاندیز</target>
         <note>ID: bigbook.feedback</note>
       </trans-unit>
-      <trans-unit id="bigbook.feedbackvoting">
-        <source xml:lang="en">Please give and vote on <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="pbu">هیله کوو چې په <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">رايه ورکړئ او په</g> وړانديزونه وړاندې کړئ.</target>
-        <note>ID: bigbook.feedbackvoting</note>
-      </trans-unit>
       <trans-unit id="bigbook.reportsbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="pbu">هیله ده د ستونزو راپور ورکړئ  <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
+        <target xml:lang="pbu" state="translated">هیله ده د ستونزو راپور ورکړئ  <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         <note>ID: bigbook.reportsbugs</note>
       </trans-unit>
     </body>
