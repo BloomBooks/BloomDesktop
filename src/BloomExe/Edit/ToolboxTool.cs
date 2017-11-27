@@ -57,6 +57,15 @@ namespace Bloom.Edit
 		[JsonProperty("state")]
 		public string State { get; set; }
 
+		public virtual void SaveDefaultState()
+		{
+		}
+
+		public virtual string DefaultState()
+		{
+			return null;
+		}
+
 		public static ToolboxTool CreateFromToolId(string toolId)
 		{
 			switch (toolId)
