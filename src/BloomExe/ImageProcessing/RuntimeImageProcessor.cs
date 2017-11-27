@@ -40,10 +40,18 @@ namespace Bloom.ImageProcessing
 			_imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
 			_cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
 			_bookRenamedEvent.Subscribe(OnBookRenamed);
-			if (_convertWhiteToTransparent == null)
+		}
+
+		private static ImageAttributes ConvertWhiteToTransparent
+		{
+			get
 			{
-				_convertWhiteToTransparent = new ImageAttributes();
-				_convertWhiteToTransparent.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
+				if (_convertWhiteToTransparent == null)
+				{
+					_convertWhiteToTransparent = new ImageAttributes();
+					_convertWhiteToTransparent.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
+				}
+				return _convertWhiteToTransparent;
 			}
 		}
 
@@ -221,10 +229,10 @@ namespace Bloom.ImageProcessing
 			using (var g = Graphics.FromImage(processedBitmap))
 			{
 				var destRect = new Rectangle(0, 0, destinationWidth, destinationHeight);
-				lock (_convertWhiteToTransparent)
+				lock (ConvertWhiteToTransparent)
 				{
 					g.DrawImage(originalImage.Image, destRect, 0, 0, originalImage.Image.Width, originalImage.Image.Height,
-						GraphicsUnit.Pixel, _convertWhiteToTransparent);
+						GraphicsUnit.Pixel, ConvertWhiteToTransparent);
 				}
 			}
 			return processedBitmap;
