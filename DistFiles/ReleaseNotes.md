@@ -59,7 +59,6 @@ Still to do for this version:
     - &#x2b50;  When you make books from a shellbook, Bloom now moves the original copyright and license to its own field. Thus preserved, you can now set your own copyright and license for the adaptation. Bloom does not yet verify that the new license is compatible with the original. If you add a book to a Source Collection, Bloom does *not* take this step. Bloom assumes that what you are trying to do is to edit the book you just added in some way, not really create a new derivative.
     - &#x2b50; Text Box Formatting (under "Change Layout")
         - You can now set the vertical alignment of text boxes (top, middle, bottom)
-        - You can now control the what sides of a text box now have sides
         - We have moved borders and background shading from the text styles to the Text Box Formatting
     - &#x2b50; You can now copy a page from one book and paste it into another. One use for this is for making template pages out of complex pages you've already created.
     - Text on cover pages (the large boxes where you can type anything) is no longer copied into derived books.
