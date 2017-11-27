@@ -259,10 +259,10 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
         <target xml:lang="pt-PT" state="translated">Identidade visual (branding)</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.Default">
-        <source xml:lang="en">Default</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.Default</note>
-        <target xml:lang="pt-PT" state="needs-translation">Default</target>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None">
+        <source xml:lang="en">None</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
+        <target xml:lang="pt-PT" state="needs-translation">None</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
@@ -1707,6 +1707,11 @@
         <note>ID: EditTab.LayoutMode.ChangeLayout</note>
         <target xml:lang="pt-PT" state="translated">Cambiar cofiguração (layout)</target>
       </trans-unit>
+      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
+        <source xml:lang="en">This book is temporarily unlocked.</source>
+        <note>ID: EditTab.LockBook.ToolTip</note>
+        <target xml:lang="pt-PT" state="needs-translation">This book is temporarily unlocked.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Monolingual">
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
@@ -2310,6 +2315,11 @@
         <note>ID: EditTab.UndoButton.ToolTipWhenDisabled</note>
         <target xml:lang="pt-PT" state="translated">Não há nada para desfazer</target>
       </trans-unit>
+      <trans-unit id="EditTab.UnlockBook.ToolTip" sil:dynamic="true">
+        <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
+        <note>ID: EditTab.UnlockBook.ToolTip</note>
+        <target xml:lang="pt-PT" state="needs-translation">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</target>
+      </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
@@ -2330,6 +2340,18 @@
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
         <target xml:lang="pt-PT" state="translated">Bloom era incapaz de começar seu próprio ouvinte HTTP que usa para comunicar com seu navegador Firefox incorporado. Se isso acontecer mesmo se você apenas ha reiniciado o computador, deve pedir que alguém investiga se você tem instalado um produto de firewall agressivo. É possível que o produto de firewall agressivo devería ser desinstalado antes de que você pode usar Bloom.</target>
+      </trans-unit>
+      <trans-unit id="Errors.DefenderFolderProtection">
+        <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
+        <note>ID: Errors.DefenderFolderProtection</note>
+        <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
+        <target xml:lang="pt-PT" state="needs-translation">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</target>
+      </trans-unit>
+      <trans-unit id="Errors.DefenderFolderProtectionHeading">
+        <source xml:lang="en">This program cannot write to the folder {0}.</source>
+        <note>ID: Errors.DefenderFolderProtectionHeading</note>
+        <note>This only happens on Windows after an October 2017 update, {0} is the folder that Bloom failed to write to.</note>
+        <target xml:lang="pt-PT" state="needs-translation">This program cannot write to the folder {0}.</target>
       </trans-unit>
       <trans-unit id="Errors.DeniedAccess">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
@@ -2908,6 +2930,12 @@
         <note>Link to find Bloom Reader on Google Play Store</note>
         <target xml:lang="pt-PT" state="translated">Obter o aplicativo BloomReader</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Media">
+        <source xml:lang="en">Media</source>
+        <note>ID: PublishTab.Android.Media</note>
+        <note>A heading in the Publish to Android screen</note>
+        <target xml:lang="pt-PT" state="needs-translation">Media</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
@@ -2920,10 +2948,21 @@
         <note>Button that tells Bloom to save the book as a .bloomD file.</note>
         <target xml:lang="pt-PT" state="translated">Salvar...</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.ThumbnailColor">
+        <source xml:lang="en">Thumbnail Color</source>
+        <note>ID: PublishTab.Android.ThumbnailColor</note>
+        <target xml:lang="pt-PT" state="needs-translation">Thumbnail Color</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
         <target xml:lang="pt-PT" state="translated">Dicas de solução de problemas</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.Saving">
+        <source xml:lang="en">Saving as {0}</source>
+        <note>ID: PublishTab.Android.File.Progress.Saving</note>
+        <note>{0} is a file path</note>
+        <target xml:lang="pt-PT" state="needs-translation">Saving as {0}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>

@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pt-PT">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="az">
     <body>
       <trans-unit id="wall.calendar">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="pt-PT" state="translated">Sobre o Modelo de Calendário</target>
+        <target xml:lang="az" state="needs-translation">About the Wall Calendar Template</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="pt-PT" state="translated">Usando este modelo, você pode fazer um calendário tamanho A5 de 12 meses, com uma imagem e uma citação no topo da página e os dias na parte inferior. O calendário usará os nomes dos meses e dias em seu idioma.</target>
+        <target xml:lang="az" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="pt-PT" state="translated">Limitações desta versão</target>
+        <target xml:lang="az" state="needs-translation">Limitations of this version</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="pt-PT" state="translated">Atualmente, você não pode fazer um "shell" que pode ser utilizado em outros idiomas.</target>
+        <target xml:lang="az" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="pt-PT" state="translated">Créditos</target>
+        <target xml:lang="az" state="needs-translation">Credits</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="pt-PT" state="translated">Obrigado ao Bruce Cox (SIL Camarões) por iniciar este modelo.</target>
+        <target xml:lang="az" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
       <trans-unit id="wall.calendar.feedback">
         <source xml:lang="en">Feedback</source>
-        <target xml:lang="pt-PT" state="translated">Sugestões</target>
+        <target xml:lang="az" state="needs-translation">Feedback</target>
         <note>ID: wall.calendar.feedback</note>
       </trans-unit>
       <trans-unit id="wall.calendar.reportbugs">
         <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="pt-PT" state="translated">Por favor reportar problemas para <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <target xml:lang="az" state="needs-translation">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</target>
         <note>ID: wall.calendar.reportbugs</note>
       </trans-unit>
     </body>

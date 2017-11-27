@@ -46,13 +46,8 @@ If you send us that text, we can include it in a future version of the template.
         <target xml:lang="pt-PT" state="translated">Sugestões</target>
         <note>ID: bigbook.feedback</note>
       </trans-unit>
-      <trans-unit id="bigbook.feedbackvoting">
-        <source xml:lang="en">Please give and vote on <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="pt-PT" state="translated">Por favor dê e votar em <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">sugestões</g></target>
-        <note>ID: bigbook.feedbackvoting</note>
-      </trans-unit>
       <trans-unit id="bigbook.reportsbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
         <target xml:lang="pt-PT" state="translated">Por favor reportar problemas para <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         <note>ID: bigbook.reportsbugs</note>
       </trans-unit>
