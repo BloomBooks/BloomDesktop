@@ -16,6 +16,7 @@ using Bloom.Publish.Android.wifi;
 using Bloom.web;
 using DesktopAnalytics;
 using SIL.IO;
+using SIL.Progress;
 
 namespace Bloom.Publish.Android
 {
@@ -163,12 +164,18 @@ namespace Bloom.Publish.Android
 		/// <param name="sendAction"></param>
 		/// <param name="progress"></param>
 		/// <param name="bookServer"></param>
-		/// <param name="startingMessageAction"></param>
-		public static void SendBook(Book.Book book, BookServer bookServer, string destFileName, Action<string, string> sendAction, WebSocketProgress progress, Func<string, string, string> startingMessageAction,
-			Func<string, bool> confirmAction)
+		/// <param name="startingMessageFunction"></param>
+		public static void SendBook(Book.Book book, BookServer bookServer, string destFileName, Action<string, string> sendAction, WebSocketProgress progress, Func<string, string, string> startingMessageFunction,
+			Func<string, bool> confirmFunction)
 		{
 			var bookTitle = book.Title;
 			progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle);
+
+			// Bring the book up to date, just in case any settings etc. changed since we did so.
+			// Enhance: this is probably mostly or entirely redundant with the work the book compressor
+			// does switching the book to device xmatter.
+			book.BringBookUpToDate(new NullProgress());
+
 			// compress audio if needed, with progress message
 			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
 			{
@@ -176,8 +183,8 @@ namespace Bloom.Publish.Android
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
 			var publishedFileName = BookStorage.SanitizeNameForFileSystem(bookTitle) + BookCompressor.ExtensionForDeviceBloomBook;
-			if (startingMessageAction != null)
-				progress.MessageWithoutLocalizing(startingMessageAction(publishedFileName, bookTitle));
+			if (startingMessageFunction != null)
+				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
 			if (destFileName == null)
 			{
 				// wifi or usb...make the .bloomd in a temp folder.
@@ -185,7 +192,7 @@ namespace Bloom.Publish.Android
 				{
 					BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, bookServer);
 					sendAction(publishedFileName, bloomdTempFile.Path);
-					if (confirmAction != null && !confirmAction(publishedFileName))
+					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
 					progress.MessageUsingTitle("BookSent", "You can now read \"{0}\" in Bloom Reader!", bookTitle);
 				}
