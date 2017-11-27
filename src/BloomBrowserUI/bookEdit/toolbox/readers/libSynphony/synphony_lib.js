@@ -616,7 +616,18 @@ LibSynphony.prototype.dbSet = function (key, value) {
 
     if (this.supportsHTML5Storage()) {
         var json = JSON.stringify(value);
-        localStorage.setItem(key, json);
+        try {
+            localStorage.setItem(key, json);
+        } catch (e) {
+            // See BL-5122. In one circumstance (saving before addpage), this setItem mysteriously fails.
+            // It's not a serious problem because all the state we save here is also saved in other
+            // ways. At worst, if we don't get a successful save later, the next new book that opens
+            // might not be the right level.
+            // Do NOT try to log the message. Part of the mystery is that calling console.log()
+            // in an exception handler for this problem causes an access violation that crashes
+            // Bloom altogether.
+            //console.log(e.message);
+        }
     } else {
         alert('Local storage is not supported in your browser.');
     }
