@@ -1,3 +1,10 @@
+bloom-desktop-beta (4.0.0) stable; urgency=medium
+
+  * Rename the package to bloom-desktop-beta.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 17 Nov 2017 11:03:57 -0700
+
 bloom-desktop-alpha (4.0.0) stable; urgency=medium
 
   * Up the version number on the master (alpha) branch to 4.0.
