@@ -57,19 +57,33 @@ namespace Bloom.web
 
 		public void MessageWithParams(string id, string comment, string message, params object[] parameters)
 		{
-			Debug.Assert(message.Contains("{0}"));
-			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message, comment: comment);
-			var formatted = String.Format(localized, parameters);
+			var formatted = GetMessageWithParams(id, comment, message, parameters);
 			MessageWithoutLocalizing(formatted);
+		}
+
+		public string GetMessageWithParams(string id, string comment, string message, params object[] parameters)
+		{
+			Debug.Assert(message.Contains("{0}"));
+			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message,
+				comment: comment);
+			var formatted = String.Format(localized, parameters);
+			return formatted;
 		}
 
 		public void MessageUsingTitle(string id, string message, string bookTitle)
 		{
+			var formatted = GetTitleMessage(id, message, bookTitle);
+			MessageWithoutLocalizing(formatted);
+		}
+
+		public string GetTitleMessage(string id, string message, string bookTitle)
+		{
 			Debug.Assert(message.Contains("{0}"));
 			Debug.Assert(!message.Contains("{1}"));
-			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message, comment: "{0} is a book title");
+			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message,
+				comment: "{0} is a book title");
 			var formatted = String.Format(localized, bookTitle);
-			MessageWithoutLocalizing(formatted);
+			return formatted;
 		}
 
 		public void Exception(Exception exception)

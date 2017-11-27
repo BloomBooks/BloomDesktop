@@ -509,8 +509,11 @@ namespace Bloom.Publish
 					_pdfViewer.Visible = false;
 					Cursor = Cursors.WaitCursor;
 
-					// Calls LoadBookIfNeeded() which calls BringBookUpToDate() and Save() if needed
-					_model.DoAnyNeededAudioCompression();
+					// Calls BringBookUpToDate() and Save() if needed.
+					// Not sure if this is necessary at this point; it replaced a call to DoAnyNeededAudioCompression(),
+					// which is NOT wanted at this point since it can be time-consuming, and the old comment
+					// emphasized that doing the compression involved this step, so it seemed safer to keep this.
+					_model.LoadBookIfNeeded();
 
 					_androidControl = new AndroidView(_isolator, _webSocketServer);
 					_androidControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
