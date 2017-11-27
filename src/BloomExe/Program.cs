@@ -302,6 +302,11 @@ namespace Bloom
 							Environment.Exit(-1);
 						}
 
+						if (!DefenderFolderProtectionCheck.CanWriteToDirectory())
+						{
+							Environment.Exit(-1);
+						}
+
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
