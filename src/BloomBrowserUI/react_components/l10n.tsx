@@ -10,6 +10,7 @@ export interface IUILanguageAwareProps {
     currentUILanguage?: string;
     hidden?: boolean;
     //l10nVerbose?: boolean
+    className?: string;
 }
 
 export interface ILocalizationProps extends IUILanguageAwareProps {
@@ -74,12 +75,16 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
         }
         //        }
     }
+
+    public getClassName(): string {
+        return ((this.props.hidden ? "hidden " : "") + this.props.className).trim();
+    }
 }
 
 export class H1 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
     render() {
         return (
-            <h1 className={this.props.hidden ? "hidden" : ""}>
+            <h1 className={this.getClassName()}>
                 {this.getLocalizedContent()}
             </h1>
         );
@@ -89,7 +94,7 @@ export class H1 extends LocalizableElement<ILocalizationProps, ILocalizationStat
 export class H2 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
     render() {
         return (
-            <h2 className={this.props.hidden ? "hidden" : ""}>
+            <h2 className={this.getClassName()}>
                 {this.getLocalizedContent()}
             </h2>
         );
@@ -99,7 +104,7 @@ export class H2 extends LocalizableElement<ILocalizationProps, ILocalizationStat
 export class H3 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
     render() {
         return (
-            <h3 className={this.props.hidden ? "hidden" : ""}>
+            <h3 className={this.getClassName()}>
                 {this.getLocalizedContent()}
             </h3>
         );
@@ -109,9 +114,19 @@ export class H3 extends LocalizableElement<ILocalizationProps, ILocalizationStat
 export class P extends LocalizableElement<ILocalizationProps, ILocalizationState> {
     render() {
         return (
-            <p className={this.props.hidden ? "hidden" : ""}>
+            <p className={this.getClassName()}>
                 {this.getLocalizedContent()}
             </p>
+        );
+    }
+}
+
+export class Div extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+    render() {
+        return (
+            <div className={this.getClassName()}>
+                {this.getLocalizedContent()}
+            </div>
         );
     }
 }

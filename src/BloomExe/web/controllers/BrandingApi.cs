@@ -39,7 +39,7 @@ namespace Bloom.Api
 				if (request.CurrentBook == null || request.CurrentBook.FolderPath == null ||
 					!Book.BookStorage.IsStaticContent(request.CurrentBook.FolderPath))
 				{
-					Debug.Fail("Books should no longer have branding api urls");
+					//Debug.Fail("Books should no longer have branding api urls");
 				}
 #endif
 				var fileName = request.RequiredFileNameOrPath("id");
