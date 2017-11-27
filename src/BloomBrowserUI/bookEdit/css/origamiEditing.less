@@ -1,0 +1,78 @@
+// Aspects of origami we only need in the edit view.
+// Note that this is not limited to when the origami layout switch is turned on;
+// some of these rules apply when editing the page even with the switch off.
+// For example, you can hover over a splitter and drag it and see the percent.
+// But these rules are not included in static views of the book, including all
+// publishing view and the preview.
+@activeColor:  #E48C84;
+
+.split-pane-divider {
+    visibility: visible !important; // should be enough to include this after origami, but make sure
+}
+
+.split-pane.vertical-percent > .vertical-divider {
+        &:hover:after, &.dragged:after{
+                content: attr(title);
+                position: absolute;
+                left: 5px;
+                z-index: 1000000;
+                color: @activeColor;
+        }
+}
+
+.split-pane.vertical-percent > .vertical-divider:hover,
+.origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
+.vertical-divider.dragged {
+    border-right-color: @activeColor !important;
+}
+
+.split-pane.vertical-percent > .vertical-divider {
+    cursor: col-resize;
+}
+
+.split-pane.horizontal-percent > .horizontal-divider {
+    cursor: row-resize;
+}
+
+.origami-toggle {
+    cursor: pointer;
+}
+
+.split-pane.horizontal-percent > .horizontal-divider {
+    &:hover:after, &.dragged:after{
+                content: attr(title);
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                z-index: 1000000;
+                color: @activeColor;
+        }
+}
+
+.split-pane.horizontal-percent > .horizontal-divider:hover,
+.origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
+.horizontal-divider.dragged {
+    border-bottom-color: @activeColor !important;
+
+}
+
+.selector-links, .selector-links a {
+    color: @activeColor;
+}
+
+.origami-controls {
+    .button, .origami-controls .button:visited {
+            cursor: pointer;
+    }
+    .button:hover, .button:focus {
+            color: white;
+            background-color: @activeColor;
+    }
+}
+
+//only show the plus signs that add new blocks for the block that has the mouse
+.origami-layout-mode .origami-ui{
+    &:hover .adders{
+           display:block;
+    }
+}

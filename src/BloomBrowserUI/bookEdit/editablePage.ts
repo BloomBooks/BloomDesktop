@@ -23,6 +23,7 @@ var styleSheets = [
     'bookEdit/css/qtipOverrides.css',
     'js/toolbar/jquery.toolbars.css',
     'bookEdit/css/origami.css',
+    'bookEdit/css/origamiEditing.css',
     'bookEdit/css/tab.winclassic.css',
     'StyleEditor/StyleEditor.css',
     'bookEdit/TextBoxProperties/TextBoxProperties.css',
