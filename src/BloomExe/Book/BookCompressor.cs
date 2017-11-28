@@ -33,20 +33,23 @@ namespace Bloom.Book
 		{
 			using(var temp = new TemporaryFolder())
 			{
-				BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
-				var bookInfo = new BookInfo(temp.FolderPath, true);
-				bookInfo.XMatterNameOverride = "Device";
-				var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-				modifiedBook.BringBookUpToDate(new NullProgress());
-				modifiedBook.Save();
-				modifiedBook.Storage.UpdateSupportFiles();
+				var tempFolderPath = temp.FolderPath;
+				var modifiedBook = MakeDeviceXmatterTempBook(book, bookServer, tempFolderPath);
 				modifiedBook.MakeThumbnailFromCoverPicture(backColor);
-				// We use the original book to compute the sha, otherwise, each time we create a bloomd to send it,
-				// the sha is different, because SOMETHING changes in the book in the process of bringing it up to date.
-				// This leads to an infinite loop in the WiFi sending process.
-				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
-					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
+				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false);
 			}
+		}
+
+		public static Book MakeDeviceXmatterTempBook(Book book, BookServer bookServer, string tempFolderPath)
+		{
+			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
+			var bookInfo = new BookInfo(tempFolderPath, true);
+			bookInfo.XMatterNameOverride = "Device";
+			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+			modifiedBook.BringBookUpToDate(new NullProgress());
+			modifiedBook.Save();
+			modifiedBook.Storage.UpdateSupportFiles();
+			return modifiedBook;
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
