@@ -21,53 +21,53 @@ require("./jquery.mousewheel.js");
             instructions: ""
         };
 
-    var moreChars = {
+    var characterSets = splitCharacterSetsByGrapheme({
         // extended latin (and african latin)
         // upper
-        'A': 'ĀĂÀÁÂÃÄÅĄⱭÆ∀',
+        'A': 'ĀĂÀÁÂÃÄÅĄA̱ⱭÆ∀',
         'B': 'Ɓ',
         'C': 'ÇĆĈƆ̃ĊČƆ',
         'D': 'ÐĎĐḎƊ',
-        'E': 'ÈÉÊẼËĒĖĘẸĚƏÆƎƐ€',
+        'E': 'ÈÉÊẼËĒĖĘẸĚE̱ƏÆƎƐ€',
         'F': 'ƑƩ',
         'G': 'ĜĞĠĢƢ',
         'H': 'ĤĦ',
-        'I': 'ÌÍȊĬÎǏÏḮĨȈĮĪỈỊḬƗİĲ',
+        'I': 'ÌÍȊĬÎǏÏḮĨȈĮĪỈỊḬI̱ƗİĲ',
         'J': 'ĴĲ',
         'K': 'ĶƘ',
         'L': 'ĹĻĽŁΛ',
         'N': 'ÑŃŅŇŊƝ₦',
-        'O': 'ÒÓÔÕÖŌØŐŒƠƟ',
+        'O': 'ÒÓÔÕÖŌŐO̱ØŒƠƟ',
         'P': 'Ƥ¶',
         'R': 'ŔŘɌⱤ',
         'S': 'ßſŚŜŞṢŠÞ§',
         'T': 'ŢŤṮƬƮ',
-        'U': 'ÙÚÛŨÜŪŬŮŰŲɄƯƱ',
+        'U': 'ÙÚÛŨÜŪŬŮŰŲU̱ɄƯƱ',
         'V': 'Ʋ',
         'W': 'ŴẄΩ',
         'Y': 'ÝŶŸƔƳ',
         'Z': 'ŹŻŽƵƷẔ',
 
         // lower
-        'a': 'āăàáâãäåąɑæαª',
+        'a': 'āăàáâãäåąa̱ɑæαª',
         'b': 'ßβɓ',
         'c': 'çςćĉɔ̃ċč¢ɔ©',
         'd': 'ðďđɖḏɖɗ',
-        'e': 'èéêẽëēėęẹěəæεɛ€',
+        'e': 'èéêẽëēėęẹěe̱əæεɛ€',
         'f': 'ƒʃƭ',
         'g': 'ĝğġģɠƣ',
         'h': 'ĥħɦẖ',
-        'i': 'ìíȋĭîǐïḯĩȉįīỉịḭɨıĳɪᵻᶖι',
+        'i': 'ìíȋĭîǐïḯĩȉįīỉịḭi̱ɨıĳɪᵻᶖι',
         'j': 'ĵɟʄĳ',
         'k': 'ķƙ',
         'l': 'ĺļľłλ',
         'n': 'ñńņňŋɲ',
-        'o': 'òóôõöōøőœơɵ°',
+        'o': 'òóôõöōo̱øőœơɵ°',
         'p': 'ƥ¶',
         'r': 'ŕřɍɽ',
         's': 'ßſśŝşṣšþ§',
         't': 'ţťṯƭʈ',
-        'u': 'ùúûũüūŭůűųưμυʉʊ',
+        'u': 'ùúûũüūŭůűųưμυu̱ʉʊ',
         'v': 'ʋ',
         'w': 'ŵẅω',
         'y': 'ýŷÿɣyƴ',
@@ -88,7 +88,7 @@ require("./jquery.mousewheel.js");
         '=': '≈≠≡',
         '/': '÷'
 
-    };
+    });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
     // 9  tab
@@ -124,6 +124,27 @@ require("./jquery.mousewheel.js");
 
     $(window).mousewheel(onWheel);
 
+
+    //https://stackoverflow.com/questions/10758913/unicode-string-split-by-chars/39846360#39846360
+    function splitIntoGraphemes(s) {
+        const re = /.[\u0300-\u036F]*/g; // notice, currently only handles the Combining Diacritical Marks range
+        var match, matches = [];
+        while (match = re.exec(s))
+            matches.push(match[0]);
+        return matches;
+    }
+
+    // chop up the lists like
+    //   'a': 'āa̱ɑ'
+    // into an array that puts the combining characters together, like
+    //     'a': [ā, a_, ɑ]  (the underline there represents the "combining macron below" (U+0331))
+    function splitCharacterSetsByGrapheme(sets) {
+        var output = {};
+        Object.keys(sets).forEach(key => {
+            output[key] = splitIntoGraphemes(sets[key]);
+        });
+        return output;
+    }
 
     function makeShortcuts(skipKey) {
         shortcuts = [];
@@ -209,9 +230,9 @@ require("./jquery.mousewheel.js");
             $(activeElement).val().split('')[getTextAreaCaretPosition(activeElement) - 1] :
             $(activeElement).text().split('')[getCaretPositionOffset(activeElement) - 1];
 
-        if (moreChars[typedChar]) {
+        if (characterSets[typedChar]) {
             storeCaretPosition();
-            showPopup((moreChars[typedChar]));
+            showPopup((characterSets[typedChar]));
         } else {
             hidePopup();
         }
