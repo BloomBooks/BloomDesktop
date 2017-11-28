@@ -54,6 +54,7 @@ namespace Bloom.Edit
 		private readonly BloomWebSocketServer _webSocketServer;
 		private Dictionary<string, IPage> _templatePagesDict;
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
+		internal event EventHandler PageSelectedChangedEvent;
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -209,7 +210,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void OnDuplicatePage()
+		internal void OnDuplicatePage()
 		{
 			DuplicatePage(_pageSelection.CurrentSelection);
 		}
@@ -234,7 +235,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void OnDeletePage()
+		internal void OnDeletePage()
 		{
 			DeletePage(_pageSelection.CurrentSelection);
 		}
@@ -625,7 +626,14 @@ namespace Bloom.Edit
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
+
+				InvokePageSelectedChangedEvent();
 			}
+		}
+
+		public void InvokePageSelectedChangedEvent()
+		{
+			PageSelectedChangedEvent?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void RefreshDisplayOfCurrentPage()

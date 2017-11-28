@@ -170,10 +170,18 @@ BODY {
 }
 .placeholder { pointer-events: none; }
 
+html, body {
+    height: 100%; // need this to get page browser to fill available space on the screen
+}
+
+body > #menuIconHolder {
+    display: none; // don't display icon when no page is selected (briefly)
+}
+
 #menuIconHolder {
-        position:absolute;
-        bottom:6px;
-        right: 0;
+    position: absolute;
+    bottom: 6px;
+    right: 0;
 }
 
 //for "Saved" toast

@@ -1174,6 +1174,10 @@
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.LayoutMode.ChangeLayout</note>
       </trans-unit>
+      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
+        <source xml:lang="en">This book is temporarily unlocked.</source>
+        <note>ID: EditTab.LockBook.ToolTip</note>
+      </trans-unit>
       <trans-unit id="EditTab.Monolingual">
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
@@ -1646,6 +1650,10 @@
       <trans-unit id="EditTab.UndoButton.ToolTipWhenDisabled">
         <source xml:lang="en">There is nothing to undo</source>
         <note>ID: EditTab.UndoButton.ToolTipWhenDisabled</note>
+      </trans-unit>
+      <trans-unit id="EditTab.UnlockBook.ToolTip" sil:dynamic="true">
+        <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
+        <note>ID: EditTab.UnlockBook.ToolTip</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>

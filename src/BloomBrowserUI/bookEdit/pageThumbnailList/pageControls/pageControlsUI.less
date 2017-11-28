@@ -1,0 +1,52 @@
+@DarkGray:#404040;
+@SecondButtonRowOffset: -15px;
+@SecondButtonRowTop: 15px;
+@ButtonSpacing: 5px;
+
+html {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    margin: 0;
+    background-color: @DarkGray;
+    font-family: "Segoe UI", "Sans";
+    font-size: 10pt;
+    height: 100%;
+}
+
+// The div at the root of our react view (right below body). It's given this ID in our
+// skeleton HTML file (pageControlsUI.html).
+#PageControlsUI {
+    height: 100%
+}
+
+// This is the div that react inserts and which becomes the real parent of all the content.
+#PageControlsUI [data-reactroot]{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; // stops buttons (and anything else) stretching to fill width.
+    padding: 3em;
+    box-sizing: border-box;
+}
+
+// The second row of buttons contains duplicate, delete, and lock buttons
+#row2 {
+    margin-left: @SecondButtonRowOffset;
+    margin-top: @SecondButtonRowTop;
+}
+
+button {
+    background-color: @DarkGray;
+    border: none;
+    span {
+        display: block;
+        color: white;
+    }
+}
+
+button button {
+    margin-left: @ButtonSpacing;
+}

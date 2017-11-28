@@ -8,7 +8,7 @@ import Option from "../../react_components/option";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import { H1, H2, Div, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
+import { H1, Div, IUILanguageAwareProps } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
 
 const kWebSocketLifetime = "publish-android";
@@ -48,7 +48,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
         axios.get("/bloom/api/publish/android/backColor").then(result =>
             this.setState({ backColor: result.data })
-        )
+        );
     }
 
     public componentDidMount() {
@@ -93,7 +93,8 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
     render() {
         let self = this;
-        let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5", "#B2CC7D", "#F8B576", "#D29FEF", "#ABB8C3", "#C1EF93", "#FFD4D4", "#FFAAD4"];
+        let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5",
+            "#B2CC7D", "#F8B576", "#D29FEF", "#ABB8C3", "#C1EF93", "#FFD4D4", "#FFAAD4"];
 
 
         return (
@@ -121,18 +122,20 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                         </div>
                         <div className="tc-menu-arrow">
                             <div className="tc-pulldown-wrapper" style={{ visibility: (self.state.colorsVisible ? "visible" : "hidden") }}>
-                                {colors.map((color, i) => <div className="tc-color-option" style={{ backgroundColor: color }} data-color={color} onClick={
-                                    (event) => {
-                                        let newColor = event.currentTarget.getAttribute("data-color");
-                                        self.setState({ backColor: newColor });
-                                        axios.post("/bloom/api/publish/android/backColor", newColor,
-                                            { headers: { "Content-Type": "text/plain" } });
-                                    }}></div>)}
+                                {colors.map((color, i) =>
+                                    <div className="tc-color-option" key={i} style={{ backgroundColor: color }} data-color={color} onClick={
+                                        (event) => {
+                                            let newColor = event.currentTarget.getAttribute("data-color");
+                                            self.setState({ backColor: newColor });
+                                            axios.post("/bloom/api/publish/android/backColor", newColor,
+                                                { headers: { "Content-Type": "text/plain" } });
+                                        }}>
+                                    </div>)}
                                 <div className="tc-hex-wrapper" onClick={(event) => event.stopPropagation()}>
                                     <div className="tc-hex-leadin">#</div>
                                     <div className="tc-hex-value">
                                         <ContentEditable content={this.state.backColor.substring(1)} onChange={(newContent => {
-                                            let newColor = "#" + newContent
+                                            let newColor = "#" + newContent;
                                             self.setState({ backColor: newColor });
                                             axios.post("/bloom/api/publish/android/backColor", newColor,
                                                 { headers: { "Content-Type": "text/plain" } });
@@ -162,7 +165,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 smaller, and then the down-arrow is not part of it and doesn't trigger the select action.
                 Modern browsers do not allow code to trigger the pulling down of the select list...it's
                 somehow considered a security risk, so we can't just put a click action on the button.
-                
+
                 Note: when the select has focus, the dotted focus outline is drawn around the text rather
                 than the whole select, putting a distracting line between the text and picture. For some reason
                 Firefox is drawing this inside the padding that is used to put the text at the top instead of
@@ -212,13 +215,15 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                         <BloomButton l10nKey="PublishTab.Android.Wifi.Start"
                             l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                             enabled={this.state.stateId === "stopped"}
-                            clickEndpoint="publish/android/wifi/start">
+                            clickEndpoint="publish/android/wifi/start"
+                            hasText={true}>
                             Start Serving
                         </BloomButton>
                         <BloomButton l10nKey="PublishTab.Android.Wifi.Stop"
                             l10nComment="Button that tells Bloom to stop offering this book on the wifi network."
                             enabled={this.state.stateId === "ServingOnWifi"}
-                            clickEndpoint="publish/android/wifi/stop">
+                            clickEndpoint="publish/android/wifi/stop"
+                            hasText={true}>
                             Stop Serving
                         </BloomButton>
                     </div>
@@ -230,13 +235,15 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                             l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                             enabled={this.state.stateId === "stopped"}
                             clickEndpoint="publish/android/usb/start"
-                            hidden={this.isLinux}>
+                            hidden={this.isLinux}
+                            hasText={true}>
                             Connect with USB cable
                         </BloomButton>
 
                         <BloomButton l10nKey="PublishTab.Android.Usb.Stop"
                             enabled={this.state.stateId === "UsbStarted"}
-                            clickEndpoint="publish/android/usb/stop">
+                            clickEndpoint="publish/android/usb/stop"
+                            hasText={true}>
                             Stop Trying
                         </BloomButton>
                     </div>
@@ -246,7 +253,8 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                         <BloomButton l10nKey="PublishTab.Android.Save"
                             l10nComment="Button that tells Bloom to save the book as a .bloomD file."
                             clickEndpoint="publish/android/file/save"
-                            enabled={true}>
+                            enabled={true}
+                            hasText={true}>
                             Save...
                         </BloomButton>
                     </div>

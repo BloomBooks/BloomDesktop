@@ -299,6 +299,13 @@
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
+    <Compile Include="Edit\EditPageControlsApi.cs" />
+    <Compile Include="Edit\PageControlsView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\PageControlsView.Designer.cs">
+	  <DependentUpon>PageControlsView.cs</DependentUpon>
+	</Compile>
     <Compile Include="Publish\Android\usb\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
@@ -802,6 +809,10 @@
     <EmbeddedResource Include="Edit\JpegWarningDialog.resx">
       <DependentUpon>JpegWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Edit\PageControlsView.resx">
+      <DependentUpon>PageControlsView.cs</DependentUpon>
+      <SubType>Designer</SubType>
+	</EmbeddedResource>
     <EmbeddedResource Include="Edit\WebThumbNailList.resx">
       <DependentUpon>WebThumbNailList.cs</DependentUpon>
       <SubType>Designer</SubType>
