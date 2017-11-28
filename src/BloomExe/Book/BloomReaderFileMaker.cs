@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Bloom.Book
 	{
 		public const string QuestionFileName = "questions.json";
 
-		public static Book PrepareBookForBloomReader(Book book, BookServer bookServer, TemporaryFolder temp)
+		public static Book PrepareBookForBloomReader(Book book, BookServer bookServer, TemporaryFolder temp, Color backColor)
 		{
 			BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
 			var bookInfo = new BookInfo(temp.FolderPath, true);
@@ -50,7 +51,7 @@ namespace Bloom.Book
 
 			modifiedBook.Save();
 			modifiedBook.Storage.UpdateSupportFiles();
-			modifiedBook.MakeThumbnailFromCoverPicture();
+			modifiedBook.MakeThumbnailFromCoverPicture(backColor);
 
 			return modifiedBook;
 		}
