@@ -47,6 +47,8 @@ namespace Bloom.Book
 			bookInfo.XMatterNameOverride = "Device";
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress());
+			// When merging to master, this line wants to move to BloomReaderFileMaker
+			modifiedBook.RemoveBlankPages();
 			modifiedBook.Save();
 			modifiedBook.Storage.UpdateSupportFiles();
 			return modifiedBook;
