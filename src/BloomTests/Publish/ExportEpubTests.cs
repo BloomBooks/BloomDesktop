@@ -459,6 +459,25 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img");
 		}
 
+		[Test]
+		public void LeftToRight_SpineDoesNotDeclareDirection()
+		{
+			var book = SetupBook("This is some text", "xyz");
+			book.CollectionSettings.IsLanguage1Rtl = false;
+			MakeEpub("output", "SpineDoesNotDeclareDirection", book);
+			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("//spine[not(@page-progression-direction)]", 1);
+			;
+		}
+
+		[Test]
+		public void RightToLeft_SpineDeclaresRtlDirection()
+		{
+			var book = SetupBook("This is some text", "xyz");
+			book.CollectionSettings.IsLanguage1Rtl = true;
+			MakeEpub("output", "SpineDeclaresRtlDirection", book);
+			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("//spine[@page-progression-direction='rtl']", 1);;
+		}
+
 		/// <summary>
 		/// Motivated by "Look in the sky. What do you see?" from bloom library, if elements with class bloom-ui have
 		/// somehow been left in the book, don't put them in the ePUB.

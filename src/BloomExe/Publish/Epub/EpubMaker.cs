@@ -424,6 +424,10 @@ namespace Bloom.Publish.Epub
 			// These IDs must match the corresponding ones in the manifest, since the spine
 			// doesn't indicate where to actually find the content.
 			var spineElt = new XElement(opf + "spine");
+			if(this.Book.CollectionSettings.IsLanguage1Rtl)
+			{
+				spineElt.SetAttributeValue("page-progression-direction","rtl");
+			}
 			rootElt.Add(spineElt);
 			foreach(var item in _spineItems)
 			{
