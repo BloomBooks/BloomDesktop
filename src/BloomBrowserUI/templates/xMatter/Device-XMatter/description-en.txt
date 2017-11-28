@@ -1,1 +1,1 @@
-This is automatically applied when publishing to Bloom Reader (Android).
+This is automatically applied when publishing to Bloom Reader (Android). It moves front matter pages (other than the cover) to the back.
