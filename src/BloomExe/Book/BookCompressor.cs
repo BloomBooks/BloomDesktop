@@ -36,7 +36,8 @@ namespace Bloom.Book
 				var tempFolderPath = temp.FolderPath;
 				var modifiedBook = MakeDeviceXmatterTempBook(book, bookServer, tempFolderPath);
 				modifiedBook.MakeThumbnailFromCoverPicture(backColor);
-				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false);
+				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
+					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
 			}
 		}
 

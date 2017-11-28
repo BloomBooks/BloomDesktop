@@ -364,7 +364,7 @@ namespace BloomTests.Publish
 			// lose that fix, although currently the failure that happens if I take out the conversion is not
 			// a simple failure of this assert...something goes wrong before that making a real physical file
 			// for the unit test.
-			var page5 = GetZipContent(_epub, "content/5.xhtml");
+			var page5 = GetZipContent(_epub, "content/4.xhtml");
 			AssertThatXmlIn.String(page5).HasAtLeastOneMatchForXpath("//div[@data-book='end-of-book-label']");
 		}
 
