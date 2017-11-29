@@ -507,10 +507,15 @@ namespace Bloom
 			//to ctrl+v. I'm doing a hotfix to a beta here so I don't want to change more than necessary.
 			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
-				if (_pasteCommand==null /*happened in calendar config*/ || !_pasteCommand.Enabled)
+				// pasteCommand may well be null in minor instances of browser, such as configuring Wall Calendar.
+				// allow the default Paste to do its best there (BL-5322)
+				if (_pasteCommand != null)
 				{
-					Debug.WriteLine("Paste not enabled, so ignoring.");
-					e.PreventDefault();
+					if (!_pasteCommand.Enabled)
+					{
+						Debug.WriteLine("Paste not enabled, so ignoring.");
+						e.PreventDefault();
+					}
 				}
 				//otherwise, ckeditor will handle the paste
 			}
