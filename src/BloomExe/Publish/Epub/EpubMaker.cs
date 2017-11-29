@@ -74,6 +74,8 @@ namespace Bloom.Publish.Epub
 		}
 
 		private Book.Book _book;
+
+		private Book.Book _originalBook;
 		// This is a shorthand for _book.Storage. Since that is something of an implementation secret of Book,
 		// it also provides a safe place for us to make changes if we ever need to get the Storage some other way.
 		private IBookStorage Storage
@@ -148,6 +150,7 @@ namespace Bloom.Publish.Epub
 
 			_outerStagingFolder = new TemporaryFolder(kEPUBExportFolder);
 			var tempBookPath = Path.Combine(_outerStagingFolder.FolderPath, Path.GetFileName(Book.FolderPath));
+			_originalBook = _book;
 			if (_bookServer != null)
 			{
 				// It should only be null while running unit tests.
@@ -447,11 +450,23 @@ namespace Bloom.Publish.Epub
 				var name = Path.GetFileName(href);
 				if(name == "fonts.css")
 					continue; // generated file for this book, already copied to output.
-
-				var fl = Storage.GetFileLocator();
-				//var path = this.GetFileLocator().LocateFileWithThrow(name);
-				var path = fl.LocateFileWithThrow(name);
-				CopyFileToEpub(path);
+				string path;
+				if (name == "customCollectionStyles.css" || name == "settingsCollectionStyles.css")
+				{
+					// These two files should be in the original book's parent folder, not in some arbitrary place
+					// in our search path.
+					path = Path.Combine(Path.GetDirectoryName(_originalBook.FolderPath), name);
+					// It's OK not to find these.
+					if (!File.Exists(path))
+						path = null;
+				}
+				else
+				{
+					var fl = Storage.GetFileLocator();
+					path = fl.LocateFileWithThrow(name);
+				}
+				if (path != null)
+					CopyFileToEpub(path);
 			}
 		}
 
