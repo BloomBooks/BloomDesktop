@@ -56,6 +56,9 @@ else
 	MONO_GAC_PREFIX="${MONO_PREFIX}:/usr"
 fi
 
+# point to our private version of libtidy
+LD_LIBRARY_PATH="/opt/tidy-sil/lib:${LD_LIBRARY_PATH}"
+
 ################################################################################################
 
 MONO_TRACE_LISTENER="Console.Out"
