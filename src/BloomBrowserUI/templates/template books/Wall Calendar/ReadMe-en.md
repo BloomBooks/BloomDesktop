@@ -10,4 +10,4 @@ Thanks to Bruce Cox (SIL Cameroon) for getting this template started. {i18n="wal
 # Feedback {i18n="wall.calendar.feedback"}
 Please give and vote on [suggestions](http://bloomlibrary.org/suggestions) {i18n="wall.calendar.feedbackvoting"}
 
-Please report problems to [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem). {i18n="wall.calendar.reportbugs"}
+Please report problems to [issues@bloomremovethislibrary.org](mailto:issues@bloomremovethislibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem). {i18n="wall.calendar.reportbugs"}
