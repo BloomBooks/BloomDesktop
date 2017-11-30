@@ -2437,15 +2437,6 @@ namespace Bloom.Book
 			return Convert.ToBase64String(sha.Hash);
 		}
 
-		public void MakeThumbnailFromCoverPicture(Color backColor)
-		{
-			string coverImagePath =GetCoverImagePath();
-			if (coverImagePath == null)
-				return; // no image on cover?? Just use default thumbnail.
-			var thumbPath = Path.Combine(StoragePageFolder, "thumbnail.png");
-			RuntimeImageProcessor.GenerateThumbnail(coverImagePath, thumbPath, 70, 70, backColor);
-		}
-
 		public string GetCoverImagePath()
 		{
 			// It's unfortunate that we have to check for @style here, because it partly exposes how we do images
