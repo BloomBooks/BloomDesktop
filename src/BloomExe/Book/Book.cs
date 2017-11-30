@@ -1468,7 +1468,27 @@ namespace Bloom.Book
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
 				var pathAsUrl = "file://" + AboutBookMarkdownPath.Replace('\\', '/').Replace(" ", "%20");
-				var html = $"<html><head><base href='{pathAsUrl}'><link rel='stylesheet' href='file://{pathToCss}' type='text/css'><head/><body>{contents}</body></html>";
+				// This script gets inserted at the end of the body (an easy way to get it to run after all the content is there to modify).
+				// Its purpose is to fix links like #note1 which otherwise fail because of the base element; the browser
+				// attempts to follow a link to the base href note1 instead of note1 in the current document. Since the base href
+				// is not even html (it's the original md file), the results are not good (BL-5321).
+				// This is a hotfix which should NOT be merged. In Bloom 4.0 we already made a better fix,
+				// since the md file is converted to html at build time and we were able to arrange for
+				// the other changes to be made then too so that we don't need a temp file (and hence a base href) at all.
+				// But here, we must have a temp file as the output of the md conversion, it must have a base href in
+				// case it references anything in the original folder, we can't put the temp file there because that folder
+				// might be part of a bloom installation we can't modify, and so the only solution I can see is to mangle
+				// the problem links. The idea is to dynamically change any #X href in a link to be preceded by the actual
+				// location of the temp file.
+				var fixRelativeLinks = @"
+var list = document.getElementsByTagName('a');
+for(var i = 0; i < list.length; i++) {
+  var element = list[i];
+  if (element.getAttribute('href') !==null && element.getAttribute('href').indexOf('#') === 0) {
+    element.href = location.href + element.getAttribute('href');
+  }
+}";
+				var html = $"<html><head><base href='{pathAsUrl}'><link rel='stylesheet' href='file://{pathToCss}' type='text/css'><head/><body>{contents}<script>{fixRelativeLinks}</script></body></html>";
 				return html;
 
 			} //todo add other ui languages
