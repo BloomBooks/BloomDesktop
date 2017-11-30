@@ -288,8 +288,8 @@ namespace BloomTests.Book
 							// the shirt.png image happens to be higher than it is wide.
 							// It would make sense to test that it works for jpg images, too, but it's rather a slow
 							// test and jpg doesn't involve a different path through the new code.
-							Assert.That(thumbImage.Width, Is.LessThanOrEqualTo(70));
-							Assert.That(thumbImage.Height, Is.LessThanOrEqualTo(70));
+							Assert.That(thumbImage.Width, Is.LessThanOrEqualTo(256));
+							Assert.That(thumbImage.Height, Is.LessThanOrEqualTo(256));
 						}
 					}
 				}
