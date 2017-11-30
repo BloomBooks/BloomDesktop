@@ -202,8 +202,10 @@ gulp.task('markdownTemplateReadme', function () {
         .pipe(debug({ title: 'md:' }))
         .pipe(tap(function (file) {
             var result = markdownIt.render(file.contents.toString());
-	    // this is converted to full HTML in C# code, adding base href and link to css file
-            file.contents = new Buffer(result);
+            // wrap the generated HTML in a document and make it use our standard stylesheet.
+            file.contents = new Buffer(`<html><head><meta charset='utf-8'><link rel='stylesheet' href='../../../bookPreview/BookReadme.css' type='text/css' /></head><body>
+                ` + result + `
+                </body></html>`);
             file.path = gutil.replaceExtension(file.path, '.htm');
             return;
         }))
