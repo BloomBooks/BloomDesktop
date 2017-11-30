@@ -46,7 +46,6 @@ namespace Bloom.Book
 			bookInfo.XMatterNameOverride = "Device";
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress());
-			modifiedBook.RemoveBlankPages();
 			modifiedBook.Save();
 			modifiedBook.Storage.UpdateSupportFiles();
 			return modifiedBook;

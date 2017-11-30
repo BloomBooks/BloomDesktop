@@ -24,12 +24,9 @@ namespace Bloom.Book
 
 		public static Book PrepareBookForBloomReader(Book book, BookServer bookServer, TemporaryFolder temp, Color backColor)
 		{
-			BookStorage.CopyDirectory(book.FolderPath, temp.FolderPath);
-			var bookInfo = new BookInfo(temp.FolderPath, true);
-			bookInfo.XMatterNameOverride = "Device";
-			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+			var modifiedBook = BookCompressor.MakeDeviceXmatterTempBook(book, bookServer, temp.FolderPath);
+
 			var jsonPath = Path.Combine(temp.FolderPath, QuestionFileName);
-			modifiedBook.BringBookUpToDate(new NullProgress());
 			var questionPages = modifiedBook.RawDom.SafeSelectNodes(
 				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
 			var questions = new List<QuestionGroup>();
@@ -49,9 +46,11 @@ namespace Bloom.Book
 			builder.Append("]");
 			File.WriteAllText(jsonPath, builder.ToString());
 
+			// Do this after making questions, as they satisfy the criteria for being 'blank'
 			modifiedBook.RemoveBlankPages();
+
 			modifiedBook.Save();
-			modifiedBook.Storage.UpdateSupportFiles();
+
 			modifiedBook.MakeThumbnailFromCoverPicture(backColor);
 
 			return modifiedBook;
