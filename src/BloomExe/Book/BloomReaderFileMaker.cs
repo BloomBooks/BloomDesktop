@@ -49,6 +49,7 @@ namespace Bloom.Book
 			builder.Append("]");
 			File.WriteAllText(jsonPath, builder.ToString());
 
+			modifiedBook.RemoveBlankPages();
 			modifiedBook.Save();
 			modifiedBook.Storage.UpdateSupportFiles();
 			modifiedBook.MakeThumbnailFromCoverPicture(backColor);

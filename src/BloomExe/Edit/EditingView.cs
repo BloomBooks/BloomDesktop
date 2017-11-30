@@ -25,6 +25,7 @@ using Gecko.DOM;
 using SIL.IO;
 using SIL.Windows.Forms.ImageToolbox.ImageGallery;
 using SIL.Windows.Forms.Widgets;
+using System.Globalization;
 
 namespace Bloom.Edit
 {
@@ -1418,7 +1419,7 @@ namespace Bloom.Edit
 						return 100;
 				}
 				int zoomInt;
-				if (int.TryParse(zoomString, System.Globalization.NumberStyles.Integer, L10NCultureInfo.InvariantCulture, out zoomInt))
+				if (int.TryParse(zoomString, System.Globalization.NumberStyles.Integer, CultureInfo.InvariantCulture, out zoomInt))
 				{
 					// we can't go below 30 (30%), so those must be old floating point values that rounded to an integer.
 					if (zoomInt < 30)
@@ -1433,7 +1434,7 @@ namespace Bloom.Edit
 			}
 			set
 			{
-				Settings.Default.PageZoom = value.ToString(L10NCultureInfo.InvariantCulture);
+				Settings.Default.PageZoom = value.ToString(CultureInfo.InvariantCulture);
 				Settings.Default.Save();
 				if (_browser1 != null)
 				{

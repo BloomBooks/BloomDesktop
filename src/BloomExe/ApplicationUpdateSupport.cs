@@ -191,14 +191,17 @@ namespace Bloom
 					return "Developer/Release";       // verifies this code is running on a developer machine.
 				if (Platform.IsUnix)
 				{
-					// The package name and the specific directories where the program is installed reflect
-					// the status ("channel") of the program on Linux.  Use this package name on Linux to
-					// help screen shots clarify immediately which Linux package is being used.  (and to help
-					// testers remember?)
+					// The specific directories where the program is installed reflect
+					// the status ("channel") of the program on Linux.
 					if (path.Contains("/bloom-desktop-alpha/"))
-						return "bloom-desktop-alpha";
+						return "Alpha";
 					if (path.Contains ("/bloom-desktop-beta/"))
-						return "bloom-desktop-beta";
+						return "Beta";
+					// The next two have never existed yet, but maybe someday we'll want to use them.
+					if (path.Contains ("/bloom-desktop-betainternal/"))
+						return "BetaInternal";
+					if (path.Contains("/bloom-desktop-internal/"))
+						return "ReleaseInternal";
 					return "Release";
 				}
 				var s = Assembly.GetEntryAssembly().ManifestModule.Name.Replace("bloom", "").Replace("Bloom", "").Replace(".exe", "").Trim();

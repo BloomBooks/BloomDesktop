@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Palaso-prs.dll" source-language="en" target-language="prs" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="AboutDialog.BuiltOnDate">
+        <source xml:lang="en">Built on {0}</source>
+        <target xml:lang="prs">ساخته شده در ‎‏{0}</target>
+        <note>ID: AboutDialog.BuiltOnDate</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog.NoUpdates">
+        <source xml:lang="en">No Updates</source>
+        <target xml:lang="prs">تجدید نیست</target>
+        <note>ID: AboutDialog.NoUpdates</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog.WindowTitle">
+        <source xml:lang="en">About {0}</source>
+        <target xml:lang="prs">درباره ‎‏{0}</target>
+        <note>ID: AboutDialog.WindowTitle</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog._checkForUpdates">
+        <source xml:lang="en">Check For Updates</source>
+        <target xml:lang="prs">کنترول نمودن برای تجدید ها</target>
+        <note>ID: AboutDialog._checkForUpdates</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog._releaseNotesLabel">
+        <source xml:lang="en">Release Notes</source>
+        <target xml:lang="prs">یادداشت های نشر شده</target>
+        <note>ID: AboutDialog._releaseNotesLabel</note>
+      </trans-unit>
+      <trans-unit id="Application.AlreadyRunning.General">
+        <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
+        <target xml:lang="prs">کاپی دیگر درخواست شده در حالت فعالیت است. اگر شما انرا پیدا کرده نمیتوانید، کمپیوتر تان را باز فعال نمائید.</target>
+        <note>ID: Application.AlreadyRunning.General</note>
+      </trans-unit>
+      <trans-unit id="Application.AlreadyRunning.Specific">
+        <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
+        <target xml:lang="prs">کاپی دیگر ‎{0} در حالت فعالیت است. اگر کاپی ‎{0} را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
+        <note>ID: Application.AlreadyRunning.Specific</note>
+        <note>{0} is the application name</note>
+      </trans-unit>
+      <trans-unit id="Application.ProblemStarting.General">
+        <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
+        <target xml:lang="prs">هنګام باز نمودن درخواست گر مشکل موجود بود شاید به باز فعال کردن کمپیوتر نیاز داشته باشد.</target>
+        <note>ID: Application.ProblemStarting.General</note>
+      </trans-unit>
+      <trans-unit id="Application.ProblemStarting.Specific">
+        <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
+        <target xml:lang="prs">درآغاز {0}‎‏ مشکل موجود بود که شاید نیاز داشته باشد کمپیوتر تان راباز فعال نمائید.</target>
+        <note>ID: Application.ProblemStarting.Specific</note>
+        <note>{0} is the application name</note>
+      </trans-unit>
+      <trans-unit id="Application.WaitingFinish.General">
+        <source xml:lang="en">Waiting for other application to finish...</source>
+        <target xml:lang="prs">انتظار کشیدن بخاطر درخواست دیگر که تمام شود...</target>
+        <note>ID: Application.WaitingFinish.General</note>
+      </trans-unit>
+      <trans-unit id="Application.WaitingFinish.Specific">
+        <source xml:lang="en">Waiting for other {0} to finish...</source>
+        <target xml:lang="prs">انتظار کشیدن برای‎ {0} دیگر تمام شود...</target>
+        <note>ID: Application.WaitingFinish.Specific</note>
+        <note>{0} is the application name</note>
+      </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="prs">&amp;لغو</target>
+        <note>ID: Common.CancelButton</note>
+      </trans-unit>
+      <trans-unit id="Common.No">
+        <source xml:lang="en">No</source>
+        <target xml:lang="prs">نخیر</target>
+        <note>ID: Common.No</note>
+      </trans-unit>
+      <trans-unit id="Common.OKButton">
+        <source xml:lang="en">&amp;OK</source>
+        <target xml:lang="prs">&amp;تائید</target>
+        <note>ID: Common.OKButton</note>
+      </trans-unit>
+      <trans-unit id="Common.Yes">
+        <source xml:lang="en">Yes</source>
+        <target xml:lang="prs">بلی</target>
+        <note>ID: Common.Yes</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
+        <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
+        <target xml:lang="prs">{0}‏ به بکس مواد فسخ شده انتقال خواهد شد.</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
+        <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files")</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
+        <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
+        <target xml:lang="prs">{0}‏ به بکس مواد فسخ شده انتقال خواهد شد.</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
+        <note>Parameter {0} is a file name</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
+        <source xml:lang="en">Confirm Delete</source>
+        <target xml:lang="prs">فسخ شدن را تائید نمائید</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="prs">&amp;لغو</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
+        <source xml:lang="en">&amp;Delete</source>
+        <target xml:lang="prs">&amp;حذف</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.AlmostMatchingImages">
+        <source xml:lang="en">Found {0} images with names close to {1}</source>
+        <target xml:lang="prs">تصاویر ‎{0} را با نامهای نزدیک به ‎{1}‏ پیدا کرد</target>
+        <note>ID: ImageToolbox.AlmostMatchingImages</note>
+        <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ArtOfReading">
+        <source xml:lang="en">Art Of Reading</source>
+        <target xml:lang="prs">مهارت خوانش</target>
+        <note>ID: ImageToolbox.ArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.Camera">
+        <source xml:lang="en">Camera</source>
+        <target xml:lang="prs">کمره</target>
+        <note>ID: ImageToolbox.Camera</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.CopyExemplarMetadata">
+        <source xml:lang="en">Use {0}</source>
+        <target xml:lang="prs">استعمال {0}</target>
+        <note>ID: ImageToolbox.CopyExemplarMetadata</note>
+        <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.Crop">
+        <source xml:lang="en">Crop</source>
+        <target xml:lang="prs">بریدن</target>
+        <note>ID: ImageToolbox.Crop</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.DownloadArtOfReading">
+        <source xml:lang="en">Download Art Of Reading Installer</source>
+        <target xml:lang="prs">دونلود نمودن نصب کننده یا فعال سازی همهارت خوانش</target>
+        <note>ID: ImageToolbox.DownloadArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.EditMetadataLink">
+        <source xml:lang="en">Edit...</source>
+        <target xml:lang="prs">اصلاح...</target>
+        <note>ID: ImageToolbox.EditMetadataLink</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.EnterSearchTerms">
+        <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
+        <target xml:lang="prs">این گالری مهارت خوانش است. در خانه بالا، هر آنچیزیکه در جستجوی آن هستید بنویسید، بعداٌ ‏ENTER‏ را فشار دهید. شما میتوانید کلیمات را در انگلیسی و اندونیزیایی تایپ نمائید.</target>
+        <note>ID: ImageToolbox.EnterSearchTerms</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.FileButton">
+        <source xml:lang="en">File</source>
+        <target xml:lang="prs">فایل یا دوسیه</target>
+        <note>ID: ImageToolbox.FileButton</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.GenericGettingImageProblem">
+        <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
+        <target xml:lang="prs">ببخشید، در حال گرفتن تصویرکدام چیز غلط شد.</target>
+        <note>ID: ImageToolbox.GenericGettingImageProblem</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.GenericProblem">
+        <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
+        <target xml:lang="prs">ببخشید، کدام چیز با بکس وصیله تصویر غلط شد</target>
+        <note>ID: ImageToolbox.GenericProblem</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.GetPicture">
+        <source xml:lang="en">Get Picture</source>
+        <target xml:lang="prs">گرفتن تصویر</target>
+        <note>ID: ImageToolbox.GetPicture</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
+        <source xml:lang="en">Image Toolbox</source>
+        <target xml:lang="prs">بکس وصیله تصویر</target>
+        <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.InstallArtOfReading">
+        <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
+        <target xml:lang="prs">بسته مهارت خوانش را فعال نمائید (این شاید بسیار اهسته باشد)</target>
+        <note>ID: ImageToolbox.InstallArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.MatchingImages">
+        <source xml:lang="en">Found {0} images</source>
+        <target xml:lang="prs">تصاویر ‎{0}‏ یافت شد</target>
+        <note>ID: ImageToolbox.MatchingImages</note>
+        <note>The {0} will be replaced by the number of matching images</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.NewMultilingual">
+        <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</source>
+        <target xml:lang="prs">آیا میدانستید که نسخه جدید این مجموعه است که شما را اجازه میدهد در عربی، بنگالی، چینایی، انگلیسی، فرانسوی، اندونیزیایی، هندی، پرتگالی، هسپانوی، تایلندی، یا سواحلی جستجو کنید؟ این رایگان است و برای دونلود نمودن موجود است.</target>
+        <note>ID: ImageToolbox.NewMultilingual</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.NoArtOfReading">
+        <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
+        <target xml:lang="prs">به نظر نمیرسد که این کمپیوتر تا حال کدام گالری ‎'مهارت خوانش‎'‏ را انستال یا فعال کرده باشد.</target>
+        <note>ID: ImageToolbox.NoArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.NoMatchingImages">
+        <source xml:lang="en">Found no matching images</source>
+        <target xml:lang="prs">تصاویر تطابق کننده را پیدا نکردیم</target>
+        <note>ID: ImageToolbox.NoMatchingImages</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.PictureFiles">
+        <source xml:lang="en">picture files</source>
+        <target xml:lang="prs">دوسیه های تصویری</target>
+        <note>ID: ImageToolbox.PictureFiles</note>
+        <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
+        <source xml:lang="en">Problem Getting Image</source>
+        <target xml:lang="prs">در گرفتن تصویر مشکل وجود دارد</target>
+        <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ProblemLoadingImage">
+        <source xml:lang="en">Sorry, there was a problem loading that image.</source>
+        <target xml:lang="prs">ببخشید، در بالا آوردن تصویر مشکل بود.</target>
+        <note>ID: ImageToolbox.ProblemLoadingImage</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.PromptForMissingMetadata">
+        <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
+        <target xml:lang="prs">این تصویر نمیداند: ‏\n\nکه کی آنرا ساخته است؟\nکی آنرا استعمال میتواند؟</target>
+        <note>ID: ImageToolbox.PromptForMissingMetadata</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.Scanner">
+        <source xml:lang="en">Scanner</source>
+        <target xml:lang="prs">سکنر</target>
+        <note>ID: ImageToolbox.Scanner</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.SearchArtOfReading">
+        <source xml:lang="en">Search the Art of Reading Gallery</source>
+        <target xml:lang="prs">گالری مهارت خوانش را چک نمائید</target>
+        <note>ID: ImageToolbox.SearchArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.SearchLanguage">
+        <source xml:lang="en">The search box is currently set to {0}</source>
+        <target xml:lang="prs">خانه جستجو فعلا به {0}‎‏ تنظیم شده است</target>
+        <note>ID: ImageToolbox.SearchLanguage</note>
+        <note>The {0} will be replaced by the name of the language used in the searches.</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.SetUpMetadataLink">
+        <source xml:lang="en">Set up metadata...</source>
+        <target xml:lang="prs">تنظیم معلومات خام</target>
+        <note>ID: ImageToolbox.SetUpMetadataLink</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.AlternateNamesHeader">
+        <source xml:lang="en">Other Names</source>
+        <target xml:lang="prs">نام ها ی دیگر</target>
+        <note>ID: LanguageLookup.AlternateNamesHeader</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
+        <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
+        <target xml:lang="prs">این لست باید شامل تمام لسان های ‏ISO-639‏، بشمول تمام نامهای دیگر به ‏ethnologue.com‏ معلوم است، باشد.‏ \n\nاگر ضرورت باشد، اختیار "زبان لست ناشده" را استعمال نمائید، که برای شما حالا انتخاب خواهد شد.</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
+        <source xml:lang="en">Ethnologue.com</source>
+        <target xml:lang="prs">Ethnologue.com</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
+        <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
+        <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
+        <target xml:lang="prs">بخاطر کود های ‎639-3‏ و چگونه برای جدید بکار برده شود</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
+        <source xml:lang="en">About The ISO Language Registry</source>
+        <target xml:lang="prs">در بار ه ثبت لسان ISO</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CodeHeader">
+        <source xml:lang="en">Code</source>
+        <target xml:lang="prs">کود</target>
+        <note>ID: LanguageLookup.CodeHeader</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CountryCount">
+        <source xml:lang="en">{0} Countries</source>
+        <target xml:lang="prs">{0}‏ کشورها</target>
+        <note>ID: LanguageLookup.CountryCount</note>
+        <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CountryHeader">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="prs">کشور</target>
+        <note>ID: LanguageLookup.CountryHeader</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
+        <source xml:lang="en">You can change how the language name will be displayed here:</source>
+        <target xml:lang="prs">شما میتوانید که تبدیل کنید که اسم لسان چگونه اینجا معلوم خواهد شد:</target>
+        <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
+        <source xml:lang="en">Lookup Language Code...</source>
+        <target xml:lang="prs">به کود لسان ببنید...</target>
+        <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.PrimaryNameHeader">
+        <source xml:lang="en">Name</source>
+        <target xml:lang="prs">اسم</target>
+        <note>ID: LanguageLookup.PrimaryNameHeader</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
+        <source xml:lang="en">Show regional dialects</source>
+        <target xml:lang="prs">لهجه های محلی را نشان دهید</target>
+        <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.UnlistedLanguage">
+        <source xml:lang="en">Unlisted Language</source>
+        <target xml:lang="prs">لسان لست ناشده</target>
+        <note>ID: LanguageLookup.UnlistedLanguage</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup._cannotFindLanguageLink">
+        <source xml:lang="en">Can't find your language?</source>
+        <target xml:lang="prs">لسان خود تان را ‎یافت نکردید؟</target>
+        <note>ID: LanguageLookup._cannotFindLanguageLink</note>
+      </trans-unit>
+      <trans-unit id="MemoryWarning">
+        <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
+        <target xml:lang="prs">متاسفانه، {0}‎‏ به کم حافظه گی آغاز کرده است، و زود تر شاید اهسته شود و به مشکلات دیگری بربخورد. ما پیشنهاد میکنیم که در وقت مناسب خاموش نموده و باز فعال نمائید.</target>
+        <note>ID: MemoryWarning</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Creator">
+        <source xml:lang="en">Creator: {0}</source>
+        <target xml:lang="prs">تخلیق کنندګان: {0}</target>
+        <note>ID: MetadataDisplay.Creator</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.CreatorLabel">
+        <source xml:lang="en">Creator</source>
+        <target xml:lang="prs">خلاق</target>
+        <note>ID: MetadataDisplay.CreatorLabel</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.LicenseInfo">
+        <source xml:lang="en">License Info</source>
+        <target xml:lang="prs">معلومات جواز</target>
+        <note>ID: MetadataDisplay.LicenseInfo</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
+        <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
+        <target xml:lang="prs">شما باید حق کاپی و امتیازها را برای مولفین ، رسامان، وغیره نگهدارید.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
+        <source xml:lang="en">You are free to make commercial use of this work.</source>
+        <target xml:lang="prs">شما اختیار دارید که از این کار استفاده تحارتی نمائید.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true">
+        <source xml:lang="en">You may adapt and add to this work.</source>
+        <target xml:lang="prs">شما شاید تطابق کنید و به این کار علاوه نمائید.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
+        <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
+        <target xml:lang="prs">شما شاید تطابق کنید و به این کارعلاوه نمائید، اما شما شاید نتایج کار را تحت همین جواز یا مشابه آن توضیع خواهید کرد.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
+        <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
+        <target xml:lang="prs">شما بدون اجازه بالای این کار چیزی ساخته نمیتوانید و نه در این تغیرات اورده میتوانید.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
+        <source xml:lang="en">You may not use this work for commercial purposes.</source>
+        <target xml:lang="prs">شما این کار را برای اهداف تجارتی استفاده کرده نمیتوانید.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
+        <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
+        <target xml:lang="prs">بخطار اجازه برای استعمال دوباره، با دارنده حق کاپی درتماس شوید.</target>
+        <note>ID: MetadataDisplay.Licenses.NullLicense</note>
+        <note>This is used when all we have is a copyright, no other license.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.NoLicense">
+        <source xml:lang="en">No license specified</source>
+        <target xml:lang="prs">هیچ جواز مشخص نشده است</target>
+        <note>ID: MetadataDisplay.NoLicense</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.AllowCommercialUse">
+        <source xml:lang="en">Allow commercial uses of your work?</source>
+        <target xml:lang="prs">آیا استفاده تجارتی از کار شما اجازه است؟</target>
+        <note>ID: MetadataEditor.AllowCommercialUse</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.AllowDerivatives">
+        <source xml:lang="en">Allow modifications of your work?</source>
+        <target xml:lang="prs">تغیر در کار شما اجازه هست؟</target>
+        <note>ID: MetadataEditor.AllowDerivatives</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CopyrightHolder">
+        <source xml:lang="en">Copyright Holder</source>
+        <target xml:lang="prs">دارنده حق طبع و نشر</target>
+        <note>ID: MetadataEditor.CopyrightHolder</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CreativeCommons">
+        <source xml:lang="en">Creative Commons</source>
+        <target xml:lang="prs">عام خلاق</target>
+        <note>ID: MetadataEditor.CreativeCommons</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
+        <source xml:lang="en">Intergovernmental Version</source>
+        <target xml:lang="prs">نسخه بین المللی</target>
+        <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CreatorLabel">
+        <source xml:lang="en">Creator</source>
+        <target xml:lang="prs">خلاق</target>
+        <note>ID: MetadataEditor.CreatorLabel</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CustomLicense">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="prs">دلخواه</target>
+        <note>ID: MetadataEditor.CustomLicense</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.TitleNoCredit">
+        <source xml:lang="en">Copyright and License</source>
+        <target xml:lang="prs">حق طبع و نشر و جواز</target>
+        <note>ID: MetadataEditor.TitleNoCredit</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.TitleWithCredit">
+        <source xml:lang="en">Credit, Copyright, and License</source>
+        <target xml:lang="prs">امتیازات، حق طبع و نشر و جواز</target>
+        <note>ID: MetadataEditor.TitleWithCredit</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.UnknownLicense">
+        <source xml:lang="en">Contact the copyright holder for any permissions</source>
+        <target xml:lang="prs">با دارنده حق طبع و نشر برای هر نوع اجازه در تماس شوید</target>
+        <note>ID: MetadataEditor.UnknownLicense</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.YesShareAlike">
+        <source xml:lang="en">Yes, as long as others share alike</source>
+        <target xml:lang="prs">بله، تا که دیگران با هم همسان باشند</target>
+        <note>ID: MetadataEditor.YesShareAlike</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.additionalRequestsLabel">
+        <source xml:lang="en">Additional Requests</source>
+        <target xml:lang="prs">درخواست های اضافی</target>
+        <note>ID: MetadataEditor.additionalRequestsLabel</note>
+        <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.betterLinkLabel1">
+        <source xml:lang="en">more info</source>
+        <target xml:lang="prs">معلومات بیشتر</target>
+        <note>ID: MetadataEditor.betterLinkLabel1</note>
+        <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
+        <source xml:lang="en">Not Enforceable</source>
+        <target xml:lang="prs">قابل اجرا نیست</target>
+        <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
+        <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
+        <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
+        <target xml:lang="prs">این شاید کلید های دیگر را نیز پنهان نماید که توسط استعمال کننده غیر پیشرفته ضرورت نیست.</target>
+        <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.CtrlShiftHint">
+        <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
+        <target xml:lang="prs">این سویچ با گرفتن ‏Ctrl‏ و ‏Shift‏ هر دو باهم یکجا اشکار خواهد شد</target>
+        <note>ID: SettingsProtection.CtrlShiftHint</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.LauncherButtonLabel">
+        <source xml:lang="en">Settings...</source>
+        <target xml:lang="prs">تنظیمات...</target>
+        <note>ID: SettingsProtection.LauncherButtonLabel</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
+        <source xml:lang="en">Hide the button that opens settings.</source>
+        <target xml:lang="prs">پنهان کردن کلید که تنظیمات را باز میکند.</target>
+        <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
+        <source xml:lang="en">Factory Password</source>
+        <target xml:lang="prs">رمز فابریکه</target>
+        <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
+        <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
+        <target xml:lang="prs">بخطار جلوگیری از تغیرات حادثه ای که این آله را از کارکرن برای شما متوقف سازد، این تنظیمات قفل شده است.</target>
+        <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
+        <source xml:lang="en">Settings Protection Password</source>
+        <target xml:lang="prs">رمز حفاظت تنظیمات</target>
+        <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
+        <source xml:lang="en">Show Characters</source>
+        <target xml:lang="prs">کرکتر ها را نشان دهید</target>
+        <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordNotice">
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
+        <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از ‎"{0}"‏. اگر شما فراموش کردید، شما همیشه برای ‎"{1}"‏ و ‎"{2}"‏ در گوگل جستجو میتوانید.</target>
+        <note>ID: SettingsProtection.PasswordNotice</note>
+        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
+        <source xml:lang="en">Require the factory password to get into settings.</source>
+        <target xml:lang="prs">بخاطر داخل شدن در تنظیمات به رمز فابریکه نیاز دارد.</target>
+        <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
+        <source xml:lang="en">Settings Protection</source>
+        <target xml:lang="prs">حمایت تنظیمات</target>
+        <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
+      </trans-unit>
+      <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
+        <source xml:lang="en">Release Notes</source>
+        <target xml:lang="prs">یادداشت های نشر شده</target>
+        <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.Font">
+        <source xml:lang="en">&amp;Font:</source>
+        <target xml:lang="prs">&amp;فانت:</target>
+        <note>ID: WSFontControl.Font</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.FontNotAvailable">
+        <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
+        <target xml:lang="prs">(فانت انتخاب شده در این ماشین موجود نیست. اصلی را استعمال میکند)</target>
+        <note>ID: WSFontControl.FontNotAvailable</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.RightToLeftWS">
+        <source xml:lang="en">This is a &amp;right to left writing system.</source>
+        <target xml:lang="prs">این سیستم نوشتاری از راست به چپ است.</target>
+        <note>ID: WSFontControl.RightToLeftWS</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.Size">
+        <source xml:lang="en">&amp;Size:</source>
+        <target xml:lang="prs">&amp;اندازه:</target>
+        <note>ID: WSFontControl.Size</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.TestArea">
+        <source xml:lang="en">&amp;Test Area:</source>
+        <target xml:lang="prs">&amp;ساحه تست:</target>
+        <note>ID: WSFontControl.TestArea</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardNotListed">
+        <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
+        <target xml:lang="prs">اگر کیبورد که شما نیاز دارید در لست نیست، لینک مناسب ذیل را کلیک نمائید تا تنظیم شود</target>
+        <note>ID: WSKeyboardControl.KeyboardNotListed</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
+        <source xml:lang="en">Windows keyboard settings</source>
+        <target xml:lang="prs">تنظیمات کیبورد ویندوز</target>
+        <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
+        <source xml:lang="en">Available keyboards</source>
+        <target xml:lang="prs">کیبوردهای موجود</target>
+        <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
+        <source xml:lang="en">Previously used keyboards</source>
+        <target xml:lang="prs">کیبوردهای استفاده شده سابق</target>
+        <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
+        <source xml:lang="en">Keyman Configuration</source>
+        <target xml:lang="prs">ترتیب (Configuration) کیمن</target>
+        <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
+        <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
+        <target xml:lang="prs">کیمن 5.0 یا بیشترش نصب نشده است.</target>
+        <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
+        <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
+        <target xml:lang="prs">کیبورد را انتخاب نمائید که با آن متن‎ {0} را تایپ کنید</target>
+        <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.TestAreaCaption">
+        <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
+        <target xml:lang="prs">&amp;ساحه ازمایش (این ساحه را برای تایپ نمودن چیزی استعمال کنید که کیبورد تانرا تست کیند.)</target>
+        <note>ID: WSKeyboardControl.TestAreaCaption</note>
+      </trans-unit>
+      <trans-unit id="Warning">
+        <source xml:lang="en">Warning</source>
+        <target xml:lang="prs">اخطاریه</target>
+        <note>ID: Warning</note>
+      </trans-unit>
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
+        <source xml:lang="en">Unable to connect to SLDR</source>
+        <target xml:lang="prs">به SLDR‏ وصل شده نتوانست</target>
+        <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
+      </trans-unit>
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
+        <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
+        <target xml:lang="prs">اپلکیشن نمیتواند‎ که با انبار معلومات محلی ‏SIL‏ وصل شود تا معلومات اخیر را در باره این لسان بدست آرد. اگر شما این سیستم نوشتاری را بسازید، تنظیمات اصلی شاید غلط باشد و یا تاریخ آن تیر باشد. آیا شما مطمئن هستید که میخواهید سیستم نوشتاری جدید بسازید؟</target>
+        <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

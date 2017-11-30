@@ -458,7 +458,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._progressBox.ShowDiagnosticsMenuItem = false;
 			this._progressBox.ShowFontMenuItem = false;
 			this._progressBox.ShowMenu = true;
-			this._progressBox.Size = new System.Drawing.Size(604, 175);
+			this._progressBox.Size = new System.Drawing.Size(604, 42);
 			this._progressBox.TabIndex = 30;
 			// 
 			// _userId
@@ -564,7 +564,7 @@ namespace Bloom.Publish.BloomLibrary
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(610, 672);
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(610, 542);
 			this.tableLayoutPanel1.TabIndex = 27;
 			// 
 			// panel1
@@ -647,7 +647,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "PublishTab.Upload.BloomLibraryPublishControl.BloomLibraryPublishControl");
 			this.Name = "BloomLibraryPublishControl";
-			this.Size = new System.Drawing.Size(694, 715);
+			this.Size = new System.Drawing.Size(694, 585);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();

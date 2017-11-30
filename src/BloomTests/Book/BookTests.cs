@@ -1725,6 +1725,64 @@ namespace BloomTests.Book
 			Assert.AreEqual("Stephen McConnel", div.InnerText.Trim());
 		}
 
+		[Test]
+		public void RemoveBlankPages_BlankPageRemoved()
+		{
+			// This page should be deleted, despite containing a visible div (but with only whitespace content),
+			// a div with text (but hidden, since it doesn't have bloom-visibility-code-on),
+			// and two kinds of image (but both pointing at placeholders).
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div class='bloom-page' id='guid1'>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>
+						</div>
+						<div class='bloom-editable bloom-content1' contenteditable='true'>This is hidden.</div>
+						<div class='bloom-imageContainer'>
+							<img src='placeHolder.png'></img>
+						</div>
+						<div class='bloom-imageContainer bloom-backgroundImage' style=" + "\"background-image:url('placeHolder.png')\"" + @" ></div>
+					</div>
+				  </body></html>");
+			var book = CreateBook();
+			book.RemoveBlankPages();
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@class='bloom-page']");
+		}
+
+		[Test]
+		public void RemoveBlankPages_ImagePagesKept()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div class='bloom-page' id='guid1'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+						<img src='somePicture.png'></img>
+					</div>
+					<div class='bloom-page' id='guid2'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+						<div class='bloom-imageContainer bloom-backgroundImage' style=" + "\"background-image:url('someImage.png')\"" + @" ></div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+			book.RemoveBlankPages();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-page']", 2);
+		}
+
+		[Test]
+		public void RemoveBlankPages_TextPagesKept()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div class='bloom-page' id='guid1'>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>some real text!</div>
+					</div>
+					<div class='bloom-page' id='guid2'>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+			book.RemoveBlankPages();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-page']", 2);
+		}
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{

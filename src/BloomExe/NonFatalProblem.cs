@@ -37,10 +37,7 @@ namespace Bloom
 		{
 			s_expectedByUnitTest?.ProblemWasReported();
 
-			// Simplify some checks below by tweaking the channel name on Linux.
 			var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
-			if (channel.EndsWith("-unstable"))
-				channel = channel.Replace("unstable", "alpha");
 			try
 			{
 				shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;

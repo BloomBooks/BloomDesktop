@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using Bloom.Api;
@@ -16,6 +17,8 @@ using Bloom.Publish.Android.usb;
 using Bloom.Publish.Android.wifi;
 using Bloom.web;
 using DesktopAnalytics;
+using SIL.IO;
+using SIL.Progress;
 
 namespace Bloom.Publish.Android
 {
@@ -175,7 +178,7 @@ namespace Bloom.Publish.Android
 
 			server.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
-				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor);
+				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
@@ -205,6 +208,63 @@ namespace Bloom.Publish.Android
 		public static void ReportAnalytics(string mode, Book.Book book)
 		{
 			Analytics.Track("Publish Android", new Dictionary<string, string>() {{"mode", mode}, {"BookId", book.ID}, { "Country", book.CollectionSettings.Country}, {"Language", book.CollectionSettings.Language1Iso639Code}});
+		}
+
+		/// <summary>
+		/// This is the core of sending a book to a device. We need a book and a bookServer in order to come up
+		/// with the .bloomd file.
+		/// We are either simply saving the .bloomd to destFileName, or else we will make a temporary .bloomd file and
+		/// actually send it using sendAction.
+		/// We report important progress on the progress control. This includes reporting that we are starting
+		/// the actual transmission using startingMessageAction, which is passed the safe file name (for checking pre-existence
+		/// in UsbPublisher) and the book title (typically inserted into the message).
+		/// If a confirmAction is passed (currently only by UsbPublisher), we use it check for a successful transfer
+		/// before reporting completion (except for file save, where the current message is inappropriate).
+		/// This is an awkward case where the three ways of publishing are similar enough that
+		/// it's annoying and dangerous to have three entirely separate methods but somewhat awkward to combine them.
+		/// Possibly we could eventually make them more similar, e.g., it would simplify things if they all said
+		/// "Sending X to Y", though I'm not sure that would be good i18n if Y is sometimes a device name
+		/// and sometimes a path.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="destFileName"></param>
+		/// <param name="sendAction"></param>
+		/// <param name="progress"></param>
+		/// <param name="bookServer"></param>
+		/// <param name="startingMessageFunction"></param>
+		public static void SendBook(Book.Book book, BookServer bookServer, string destFileName, Action<string, string> sendAction, WebSocketProgress progress, Func<string, string, string> startingMessageFunction,
+			Func<string, bool> confirmFunction, Color backColor)
+		{
+			var bookTitle = book.Title;
+			progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle);
+
+			// compress audio if needed, with progress message
+			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
+			{
+				progress.Message("CompressingAudio", "Compressing audio files");
+				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
+			}
+			var publishedFileName = BookStorage.SanitizeNameForFileSystem(bookTitle) + BookCompressor.ExtensionForDeviceBloomBook;
+			if (startingMessageFunction != null)
+				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
+			if (destFileName == null)
+			{
+				// wifi or usb...make the .bloomd in a temp folder.
+				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
+				{
+					BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, bookServer, backColor);
+					sendAction(publishedFileName, bloomdTempFile.Path);
+					if (confirmFunction != null && !confirmFunction(publishedFileName))
+						throw new ApplicationException("Book does not exist after write operation.");
+					progress.MessageUsingTitle("BookSent", "You can now read \"{0}\" in Bloom Reader!", bookTitle);
+				}
+			} else
+			{
+				// save file...user has supplied name, there is no further action.
+				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
+				BookCompressor.CompressBookForDevice(destFileName, book, bookServer, backColor);
+			}
+
 		}
 	}
 }

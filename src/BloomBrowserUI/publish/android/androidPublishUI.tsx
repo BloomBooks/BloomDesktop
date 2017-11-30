@@ -252,7 +252,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     </div>
                 }
 
-                <div id="progress-section" style={{ visibility: this.state.method === "file" ? "hidden" : "visible" }}>
+                <div id="progress-section" style={{ visibility: "visible" }}>
                     <div id="progress-row">
                         <h1>Progress</h1>
                         <Link id="getBloomReaderLink"

@@ -74,6 +74,8 @@ namespace Bloom.Publish.Epub
 		}
 
 		private Book.Book _book;
+
+		private Book.Book _originalBook;
 		// This is a shorthand for _book.Storage. Since that is something of an implementation secret of Book,
 		// it also provides a safe place for us to make changes if we ever need to get the Storage some other way.
 		private IBookStorage Storage
@@ -114,6 +116,7 @@ namespace Bloom.Publish.Epub
 		private BookThumbNailer _thumbNailer;
 		public bool PublishWithoutAudio { get; set; }
 		Browser _browser = new Browser();
+		private BookServer _bookServer;
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -124,10 +127,11 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
-		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator)
+		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator, BookServer bookServer)
 		{
 			_thumbNailer = thumbNailer;
 			_browser.Isolator = _isolator;
+			_bookServer = bookServer;
 		}
 
 		/// <summary>
@@ -145,6 +149,16 @@ namespace Bloom.Publish.Epub
 			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
 
 			_outerStagingFolder = new TemporaryFolder(kEPUBExportFolder);
+			var tempBookPath = Path.Combine(_outerStagingFolder.FolderPath, Path.GetFileName(Book.FolderPath));
+			_originalBook = _book;
+			if (_bookServer != null)
+			{
+				// It should only be null while running unit tests.
+				// Eventually, we want a unit test that checks this device xmatter behavior.
+				// But don't have time for now.
+				_book = BookCompressor.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
+			}
+
 			// The readium control remembers the current page for each book.
 			// So it is useful to have a unique name for each one.
 			// However, it needs to be something we can put in a URL without complications,
@@ -413,6 +427,10 @@ namespace Bloom.Publish.Epub
 			// These IDs must match the corresponding ones in the manifest, since the spine
 			// doesn't indicate where to actually find the content.
 			var spineElt = new XElement(opf + "spine");
+			if(this.Book.CollectionSettings.IsLanguage1Rtl)
+			{
+				spineElt.SetAttributeValue("page-progression-direction","rtl");
+			}
 			rootElt.Add(spineElt);
 			foreach(var item in _spineItems)
 			{
@@ -432,11 +450,23 @@ namespace Bloom.Publish.Epub
 				var name = Path.GetFileName(href);
 				if(name == "fonts.css")
 					continue; // generated file for this book, already copied to output.
-
-				var fl = Storage.GetFileLocator();
-				//var path = this.GetFileLocator().LocateFileWithThrow(name);
-				var path = fl.LocateFileWithThrow(name);
-				CopyFileToEpub(path);
+				string path;
+				if (name == "customCollectionStyles.css" || name == "settingsCollectionStyles.css")
+				{
+					// These two files should be in the original book's parent folder, not in some arbitrary place
+					// in our search path.
+					path = Path.Combine(Path.GetDirectoryName(_originalBook.FolderPath), name);
+					// It's OK not to find these.
+					if (!File.Exists(path))
+						path = null;
+				}
+				else
+				{
+					var fl = Storage.GetFileLocator();
+					path = fl.LocateFileWithThrow(name);
+				}
+				if (path != null)
+					CopyFileToEpub(path);
 			}
 		}
 

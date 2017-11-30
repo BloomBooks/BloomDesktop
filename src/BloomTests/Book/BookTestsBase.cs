@@ -221,7 +221,12 @@ namespace BloomTests.Book
 
 		public static HtmlDom MakeDom(string bodyContents, string headContents="")
 		{
-			return new HtmlDom(@"<html ><head>" + headContents + "</head><body>" + bodyContents + "</body></html>");
+			return new HtmlDom(MakeBookHtml(bodyContents, headContents));
+		}
+
+		protected static string MakeBookHtml(string bodyContents, string headContents)
+		{
+			return @"<html ><head>" + headContents + "</head><body>" + bodyContents + "</body></html>";
 		}
 
 		public BookServer CreateBookServer()

@@ -2468,5 +2468,60 @@ namespace Bloom.Book
 				return null;
 			return coverImagePath;
 		}
+
+		/// <summary>
+		/// The primary focus of this method is removing pages we don't want in bloomd files,
+		/// particularly xmatter pages that often don't have content but just might.
+		/// It will detect pages with img elements or bloom-imageContainer elements with
+		/// background images, and as long as the image isn't our placeholder, such pages
+		/// are non-blank. For text, it is looking for divs that have the bloom-visibility-code-on
+		/// class (and some non-white content). This means that it's looking for content that is
+		/// visible given the current collection settings. Blank pages might have content in other
+		/// languages. It's even possible (see comments on the code that inserts the
+		/// bloom-visibility-code-on class) that the user might override it somehow.
+		/// It's conceivable that pages contain text that's not in our editable divs.
+		/// Thus, this mechanism is not as reliable as the process used in epub publishing to delete
+		/// invisible text, which involves actually building a display of the page in the browser,
+		/// but it is much faster and simpler and seems adequate to the current purpose.
+		/// Currently the intention is to apply this to a copy of the book, not the original.
+		/// </summary>
+		public void RemoveBlankPages()
+		{
+			foreach (var page in RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
+			{
+				if (PageHasImages(page))
+					continue;
+				if (PageHasVisibleText(page))
+					continue;
+				page.ParentNode.RemoveChild(page);
+			}
+		}
+
+		private bool PageHasVisibleText(XmlElement page)
+		{
+			foreach (XmlElement div in page.SafeSelectNodes(".//div[contains(@class, 'bloom-visibility-code-on')]"))
+			{
+				if (!string.IsNullOrWhiteSpace(div.InnerText))
+					return true;
+			}
+			return false;
+		}
+
+		private bool PageHasImages(XmlElement page)
+		{
+			foreach (XmlElement img in page.SafeSelectNodes(".//img"))
+			{
+				if (img.Attributes["src"]?.Value != "placeHolder.png")
+					return true;
+			}
+			foreach (XmlElement div in page.SafeSelectNodes(".//div[contains(@class, 'bloom-imageContainer')]"))
+			{
+				var imgUrl = HtmlDom.GetImageElementUrl(div).NotEncoded;
+				// Actually getting a background img url is a good indication that it's one we want.
+				if (!string.IsNullOrEmpty(imgUrl) && imgUrl != "placeHolder.png")
+					return true;
+			}
+			return false;
+		}
 	}
 }

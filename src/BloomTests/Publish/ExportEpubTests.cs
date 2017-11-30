@@ -33,6 +33,7 @@ namespace BloomTests.Publish
 		private XmlNamespaceManager _ns; // Set up with all the namespaces we use (See GetNamespaceManager())
 		private static EnhancedImageServer s_testServer;
 		private static BookSelection s_bookSelection;
+		private BookServer _bookServer;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
@@ -50,6 +51,7 @@ namespace BloomTests.Publish
 		{
 			base.Setup();
 			GetNamespaceManager();
+			_bookServer = CreateBookServer();
 		}
 
 		[Test]
@@ -111,7 +113,7 @@ namespace BloomTests.Publish
 		/// <returns></returns>
 		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraContentOutsideTranslationGroup = "",
 			string parentDivId = "somewrapper", string extraPages="", string[] images = null,
-			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto")
+			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto", bool createPhysicalFile = false)
 		{
 			if (images == null)
 				images = new string[0];
@@ -133,14 +135,21 @@ namespace BloomTests.Publish
 					</div>
 					{5}",
 				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
-
-			SetDom(body,
-				@"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+			Bloom.Book.Book book;
+			string head = @"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
 				<link rel='stylesheet' href='languageDisplay.css' type='text/css'/>
 				<link rel='stylesheet' href='../customCollectionStyles.css'/>
-				<link rel='stylesheet' href='customBookStyles.css'/>");
-			var book = CreateBook();
+				<link rel='stylesheet' href='customBookStyles.css'/>";
+			if (createPhysicalFile)
+			{
+				book = CreateBookWithPhysicalFile(MakeBookHtml(body, head));
+			}
+			else
+			{
+				SetDom(body, head);
+				book = CreateBook();
+			}
 			CreateCommonCssFiles(book);
 			s_bookSelection.SelectBook(book);
 
@@ -308,7 +317,7 @@ namespace BloomTests.Publish
 
 		private EpubMakerAdjusted CreateEpubMaker(Bloom.Book.Book book)
 		{
-			return new EpubMakerAdjusted(book, new BookThumbNailer(_thumbnailer.Object));
+			return new EpubMakerAdjusted(book, new BookThumbNailer(_thumbnailer.Object), _bookServer);
 		}
 
 		[Test]
@@ -343,6 +352,20 @@ namespace BloomTests.Publish
 			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
 
 			GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
+		}
+
+		[Test]
+		public void BookSwitchedToDeviceXMatter()
+		{
+			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true);
+			MakeEpub("output", "BookSwitchedToDeviceXMatter", book);
+			// This is a rather crude way to test that it is switched to device XMatter, but we aren't even sure we
+			// really want to do that yet. This at least gets something in there which should fail if we somehow
+			// lose that fix, although currently the failure that happens if I take out the conversion is not
+			// a simple failure of this assert...something goes wrong before that making a real physical file
+			// for the unit test.
+			var page5 = GetZipContent(_epub, "content/4.xhtml");
+			AssertThatXmlIn.String(page5).HasAtLeastOneMatchForXpath("//div[@data-book='end-of-book-label']");
 		}
 
 		[Test]
@@ -456,6 +479,25 @@ namespace BloomTests.Publish
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img");
+		}
+
+		[Test]
+		public void LeftToRight_SpineDoesNotDeclareDirection()
+		{
+			var book = SetupBook("This is some text", "xyz");
+			book.CollectionSettings.IsLanguage1Rtl = false;
+			MakeEpub("output", "SpineDoesNotDeclareDirection", book);
+			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("//spine[not(@page-progression-direction)]", 1);
+			;
+		}
+
+		[Test]
+		public void RightToLeft_SpineDeclaresRtlDirection()
+		{
+			var book = SetupBook("This is some text", "xyz");
+			book.CollectionSettings.IsLanguage1Rtl = true;
+			MakeEpub("output", "SpineDeclaresRtlDirection", book);
+			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("//spine[@page-progression-direction='rtl']", 1);;
 		}
 
 		/// <summary>
@@ -1117,7 +1159,14 @@ namespace BloomTests.Publish
 
 	class EpubMakerAdjusted : EpubMaker
 	{
-		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer) : base(thumbNailer, new NavigationIsolator())
+		// Todo: at least some test involving a real BookServer which validates the device xmatter behavior.
+		// The minimal bookServer created by CreateBookServer fails to copy mock books because
+		// GetPathHtmlFile() return an empty string, I think because we don't make a real book file with mocked books.
+		// So I think all the tests are currently passing null for the bookserver, which disables the
+		// device xmatter code.
+		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer, BookServer bookServer) :
+			base(thumbNailer, new NavigationIsolator(),
+				string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
 		{
 			this.Book = book;
 			AudioProcessor._compressorMethod = EpubMakerAdjusted.PretendMakeCompressedAudio;
