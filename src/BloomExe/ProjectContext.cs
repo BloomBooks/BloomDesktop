@@ -111,6 +111,7 @@ namespace Bloom
 							typeof (AudioRecording),
 							typeof(BookSettingsApi),
 							typeof(PublishToAndroidApi),
+							typeof(PageControlsApi),
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
 							typeof(AddOrChangePageApi),
@@ -284,6 +285,7 @@ namespace Bloom
 			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
 			_scope.Resolve<PublishToAndroidApi>().RegisterWithServer(server);
+			_scope.Resolve<PageControlsApi>().RegisterWithServer(server);
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);
 			_scope.Resolve<ImageApi>().RegisterWithServer(server);

@@ -207,14 +207,18 @@ namespace Bloom.Edit
 				UpdateItems(_pages);
 		}
 
-		private void OnPaneContentsChanging()
+		private void OnPaneContentsChanging(bool hasPages)
 		{
 			RemoveThumbnailListeners();
-			// We get confusing Javascript errors if the websocket made for the previous version of this page
-			// is still listening after the browser has navigated away to a new version of the page.
-			// This used to be part of RemoveThumbnailListeners(), but that function is used elsewhere such that
-			// we lost the Saving... toast functionality.
-			_browser.RunJavaScript("if (typeof FrameExports !== 'undefined') {FrameExports.stopListeningForSave();}");
+			// This check avoids a javascript error where "'stopListeningForSave' is not a function."
+			if (hasPages)
+			{
+				// We get confusing Javascript errors if the websocket made for the previous version of this page
+				// is still listening after the browser has navigated away to a new version of the page.
+				// This used to be part of RemoveThumbnailListeners(), but that function is used elsewhere such that
+				// we lost the Saving... toast functionality.
+				_browser.RunJavaScript("if (typeof FrameExports !== 'undefined') {FrameExports.stopListeningForSave();}");
+			}
 		}
 
 		private bool _usingTwoColumns;
@@ -222,7 +226,7 @@ namespace Bloom.Edit
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
-			OnPaneContentsChanging();
+			OnPaneContentsChanging(pages.Any());
 			var result = new List<IPage>();
 			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
 			if (firstRealPage == null)

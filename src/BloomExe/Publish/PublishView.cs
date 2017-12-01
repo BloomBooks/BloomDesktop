@@ -11,18 +11,14 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.Reporting;
-using Gecko;
 using SIL.IO;
 using System.Drawing;
-using Bloom.Api;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
-using SIL.PlatformUtilities;
 
 namespace Bloom.Publish
 {
@@ -38,17 +34,15 @@ namespace Bloom.Publish
 		private EpubView _epubPreviewControl;
 		private AndroidView _androidControl;
 		private NavigationIsolator _isolator;
-		private BloomWebSocketServer _webSocketServer;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator, BloomWebSocketServer webSocketServer)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
-			_webSocketServer = webSocketServer;
 
 			InitializeComponent();
 
@@ -508,7 +502,7 @@ namespace Bloom.Publish
 					_printButton.Enabled = false;
 					_pdfViewer.Visible = false;
 					Cursor = Cursors.WaitCursor;
-					_androidControl = new AndroidView(_isolator, _webSocketServer);
+					_androidControl = new AndroidView(_isolator);
 					_androidControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 						_pdfViewer.Width, _pdfViewer.Height);
 					_androidControl.Dock = _pdfViewer.Dock;

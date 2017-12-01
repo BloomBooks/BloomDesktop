@@ -37,8 +37,8 @@ module.exports = {
         bookPreviewBundle: "./bookPreview/bookPreview.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
         pageChooserBundle: ["./pageChooser/page-chooser.ts"], //https://github.com/webpack/webpack/issues/300
-        pageThumbnailListBundle:
-        "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
+        pageThumbnailListBundle: "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
+        pageControlsBundle: "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         publishUIBundle: globule.find(["./publish/**/*.tsx"]),
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
