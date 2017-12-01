@@ -47,6 +47,7 @@ require("./jquery.mousewheel.js");
         'U': 'ÙÚÛŨÜŪŬŮŰŲỤU̱ɄƯƱ',
         'V': 'Ʋ',
         'W': 'ŴẄΩ',
+        'X': 'Ẍ',
         'Y': 'ÝŶŸƔƳ',
         'Z': 'ŹŻŽƵƷẔ',
 
@@ -72,6 +73,7 @@ require("./jquery.mousewheel.js");
         'u': 'ùúûũüūŭůűųưμυụu̱ʉʊ',
         'v': 'ʋ',
         'w': 'ŵẅω',
+        'x': 'ẍ',
         'y': 'ýŷÿɣyƴ',
         'z': 'źżžƶẕʒƹ',
 
@@ -84,12 +86,12 @@ require("./jquery.mousewheel.js");
         '-': '±‐–—',
         '+': '±†‡',
         '\\': '′″‴‘’‚‛',
-        '"': '“”„‟',
+        "'": 'ꞌ',
+        '"': '“”„‟Ꞌ',
         '<': '«≤‹',
         '>': '»≥›',
         '=': '≈≠≡',
-        '/': '÷'
-
+        '/': '÷',
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
