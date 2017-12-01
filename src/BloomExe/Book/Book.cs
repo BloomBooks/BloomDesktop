@@ -2469,6 +2469,7 @@ namespace Bloom.Book
 					continue;
 				page.ParentNode.RemoveChild(page);
 			}
+			OrderOrNumberOfPagesChanged();
 		}
 
 		private bool PageHasVisibleText(XmlElement page)
