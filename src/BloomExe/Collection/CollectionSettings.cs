@@ -87,7 +87,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public CollectionSettings()
 		{
-			BrandingProjectName = "Default";
+			BrandingProjectKey = "Default";
 			PageNumberStyle = "Decimal";
 			XMatterPackName = kDefaultXmatterName;
 			Language2Iso639Code = "en";
@@ -120,7 +120,7 @@ namespace Bloom.Collection
 			IsSourceCollection = collectionInfo.IsSourceCollection;
 			XMatterPackName = collectionInfo.XMatterPackName;
 			PageNumberStyle = collectionInfo.PageNumberStyle;
-			BrandingProjectName = collectionInfo.BrandingProjectName;
+			BrandingProjectKey = collectionInfo.BrandingProjectKey;
 
 			Save();
 		}
@@ -363,7 +363,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("PageNumberStyle", PageNumberStyle));
-			library.Add(new XElement("BrandingProjectName", BrandingProjectName));
+			library.Add(new XElement("BrandingProjectName", BrandingProjectKey));
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
@@ -430,7 +430,7 @@ namespace Bloom.Collection
 				//CSS counter number styles
 				PageNumberStyle = CssNumberStylesToCultureOrDigits.Keys.Contains(style) ? style : "Decimal";
 
-				BrandingProjectName = GetValue(library, "BrandingProjectName", "Default");
+				BrandingProjectKey = GetValue(library, "BrandingProjectName", "Default");
 
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
@@ -643,7 +643,7 @@ namespace Bloom.Collection
 
 		public string PageNumberStyle { get; set; }
 
-		public string BrandingProjectName { get; set; }
+		public string BrandingProjectKey { get; set; }
 
 		public int OneTimeCheckVersionNumber { get; set; }
 
@@ -854,7 +854,7 @@ namespace Bloom.Collection
 			Analytics.SetApplicationProperty("Language2Iso639Code", Language2Iso639Code);
 			Analytics.SetApplicationProperty("Language3Iso639Code", Language3Iso639Code ?? "---");
 			Analytics.SetApplicationProperty("Language1Iso639Name", Language1Name);
-			Analytics.SetApplicationProperty("BrandingProjectName", BrandingProjectName);
+			Analytics.SetApplicationProperty("BrandingProjectName", BrandingProjectKey);
 		}
 	}
 }

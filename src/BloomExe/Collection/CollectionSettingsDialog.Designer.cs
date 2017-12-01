@@ -47,8 +47,6 @@ namespace Bloom.Collection
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this._numberStyleCombo = new System.Windows.Forms.ComboBox();
 			this.label3 = new System.Windows.Forms.Label();
-			this._brandingCombo = new System.Windows.Forms.ComboBox();
-			this.label2 = new System.Windows.Forms.Label();
 			this._fontSettings3Link = new System.Windows.Forms.LinkLabel();
 			this._fontSettings2Link = new System.Windows.Forms.LinkLabel();
 			this._fontSettings1Link = new System.Windows.Forms.LinkLabel();
@@ -62,6 +60,9 @@ namespace Bloom.Collection
 			this._language1FontLabel = new System.Windows.Forms.Label();
 			this._xmatterPackLabel = new System.Windows.Forms.Label();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
+			this._enterpriseInformationLink = new System.Windows.Forms.LinkLabel();
+			this._brandingCombo = new System.Windows.Forms.ComboBox();
+			this.label2 = new System.Windows.Forms.Label();
 			this._bloomCollectionName = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this._districtText = new System.Windows.Forms.TextBox();
@@ -71,6 +72,7 @@ namespace Bloom.Collection
 			this._districtLabel = new System.Windows.Forms.Label();
 			this._provinceLabel = new System.Windows.Forms.Label();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this.showTroubleShooterCheckBox = new System.Windows.Forms.CheckBox();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this._showExperimentCommands = new System.Windows.Forms.CheckBox();
 			this._showExperimentalTemplates = new System.Windows.Forms.CheckBox();
@@ -81,7 +83,6 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.showTroubleShooterCheckBox = new System.Windows.Forms.CheckBox();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -263,7 +264,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel");
 			this._language1Label.Location = new System.Drawing.Point(26, 24);
 			this._language1Label.Name = "_language1Label";
-			this._language1Label.Size = new System.Drawing.Size(139, 19);
+			this._language1Label.Size = new System.Drawing.Size(106, 19);
 			this._language1Label.TabIndex = 7;
 			this._language1Label.Text = "Local Language";
 			// 
@@ -271,8 +272,6 @@ namespace Bloom.Collection
 			// 
 			this.tabPage2.Controls.Add(this._numberStyleCombo);
 			this.tabPage2.Controls.Add(this.label3);
-			this.tabPage2.Controls.Add(this._brandingCombo);
-			this.tabPage2.Controls.Add(this.label2);
 			this.tabPage2.Controls.Add(this._fontSettings3Link);
 			this.tabPage2.Controls.Add(this._fontSettings2Link);
 			this.tabPage2.Controls.Add(this._fontSettings1Link);
@@ -322,33 +321,6 @@ namespace Bloom.Collection
 			this.label3.Size = new System.Drawing.Size(149, 19);
 			this.label3.TabIndex = 34;
 			this.label3.Text = "Page Numbering Style";
-			// 
-			// _brandingCombo
-			// 
-			this._brandingCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._brandingCombo.FormattingEnabled = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._brandingCombo, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._brandingCombo, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._brandingCombo, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._brandingCombo, "CollectionSettingsDialog._brandingCombo");
-			this._brandingCombo.Location = new System.Drawing.Point(32, 366);
-			this._brandingCombo.Name = "_brandingCombo";
-			this._brandingCombo.Size = new System.Drawing.Size(189, 25);
-			this._brandingCombo.TabIndex = 37;
-			this._brandingCombo.SelectedIndexChanged += new System.EventHandler(this._brandingCombo_SelectedIndexChanged);
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
-			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.BookMakingTab.Branding");
-			this.label2.Location = new System.Drawing.Point(28, 344);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(65, 19);
-			this.label2.TabIndex = 36;
-			this.label2.Text = "Branding";
 			// 
 			// _fontSettings3Link
 			// 
@@ -510,6 +482,9 @@ namespace Bloom.Collection
 			// 
 			// tabPage3
 			// 
+			this.tabPage3.Controls.Add(this._enterpriseInformationLink);
+			this.tabPage3.Controls.Add(this._brandingCombo);
+			this.tabPage3.Controls.Add(this.label2);
 			this.tabPage3.Controls.Add(this._bloomCollectionName);
 			this.tabPage3.Controls.Add(this.label1);
 			this.tabPage3.Controls.Add(this._districtText);
@@ -527,6 +502,47 @@ namespace Bloom.Collection
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "Project Information";
 			this.tabPage3.UseVisualStyleBackColor = true;
+			// 
+			// _enterpriseInformationLink
+			// 
+			this._enterpriseInformationLink.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseInformationLink, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseInformationLink, null);
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseInformationLink, "CollectionSettingsDialog.AboutBloomEnterprise");
+			this._enterpriseInformationLink.Location = new System.Drawing.Point(258, 311);
+			this._enterpriseInformationLink.Name = "_enterpriseInformationLink";
+			this._enterpriseInformationLink.Size = new System.Drawing.Size(225, 19);
+			this._enterpriseInformationLink.TabIndex = 40;
+			this._enterpriseInformationLink.TabStop = true;
+			this._enterpriseInformationLink.Text = "About the Bloom Enterprise Service";
+			this._enterpriseInformationLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._enterpriseInformationLink_LinkClicked);
+			// 
+			// _brandingCombo
+			// 
+			this._brandingCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._brandingCombo.FormattingEnabled = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._brandingCombo, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._brandingCombo, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._brandingCombo, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._brandingCombo, "CollectionSettingsDialog._brandingCombo");
+			this._brandingCombo.Location = new System.Drawing.Point(32, 311);
+			this._brandingCombo.Name = "_brandingCombo";
+			this._brandingCombo.Size = new System.Drawing.Size(189, 25);
+			this._brandingCombo.TabIndex = 39;
+			this._brandingCombo.SelectedIndexChanged += new System.EventHandler(this._brandingCombo_SelectedIndexChanged);
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
+			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject");
+			this.label2.Location = new System.Drawing.Point(28, 289);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(163, 19);
+			this.label2.TabIndex = 38;
+			this.label2.Text = "Bloom Enterprise Project";
 			// 
 			// _bloomCollectionName
 			// 
@@ -641,6 +657,21 @@ namespace Bloom.Collection
 			this.tabPage4.TabIndex = 3;
 			this.tabPage4.Text = "Advanced Program Settings";
 			this.tabPage4.UseVisualStyleBackColor = true;
+			// 
+			// showTroubleShooterCheckBox
+			// 
+			this.showTroubleShooterCheckBox.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.showTroubleShooterCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.showTroubleShooterCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this.showTroubleShooterCheckBox, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this.showTroubleShooterCheckBox, "showTroubleshooter");
+			this.showTroubleShooterCheckBox.Location = new System.Drawing.Point(50, 170);
+			this.showTroubleShooterCheckBox.Name = "showTroubleShooterCheckBox";
+			this.showTroubleShooterCheckBox.Size = new System.Drawing.Size(237, 23);
+			this.showTroubleShooterCheckBox.TabIndex = 6;
+			this.showTroubleShooterCheckBox.Text = "Show Performance Troubleshooter";
+			this.showTroubleShooterCheckBox.UseVisualStyleBackColor = true;
+			this.showTroubleShooterCheckBox.CheckedChanged += new System.EventHandler(this.showTroubleShooterCheckBox_CheckedChanged);
 			// 
 			// _automaticallyUpdate
 			// 
@@ -764,21 +795,6 @@ namespace Bloom.Collection
 			this._helpButton.UseVisualStyleBackColor = true;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
 			// 
-			// showTroubleShooterCheckBox
-			// 
-			this.showTroubleShooterCheckBox.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.showTroubleShooterCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.showTroubleShooterCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this.showTroubleShooterCheckBox, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this.showTroubleShooterCheckBox, "showTroubleshooter");
-			this.showTroubleShooterCheckBox.Location = new System.Drawing.Point(50, 170);
-			this.showTroubleShooterCheckBox.Name = "showTroubleShooterCheckBox";
-			this.showTroubleShooterCheckBox.Size = new System.Drawing.Size(237, 23);
-			this.showTroubleShooterCheckBox.TabIndex = 6;
-			this.showTroubleShooterCheckBox.Text = "Show Performance Troubleshooter";
-			this.showTroubleShooterCheckBox.UseVisualStyleBackColor = true;
-			this.showTroubleShooterCheckBox.CheckedChanged += new System.EventHandler(this.showTroubleShooterCheckBox_CheckedChanged);
-			// 
 			// CollectionSettingsDialog
 			// 
 			this.AcceptButton = this._okButton;
@@ -864,10 +880,11 @@ namespace Bloom.Collection
 		private LinkLabel _fontSettings3Link;
 		private LinkLabel _fontSettings2Link;
 		private LinkLabel _fontSettings1Link;
-		private ComboBox _brandingCombo;
-		private Label label2;
 		private ComboBox _numberStyleCombo;
 		private Label label3;
 		private CheckBox showTroubleShooterCheckBox;
+		private ComboBox _brandingCombo;
+		private Label label2;
+		private LinkLabel _enterpriseInformationLink;
 	}
 }

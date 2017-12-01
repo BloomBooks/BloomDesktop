@@ -10,6 +10,7 @@ using SIL.Windows.Forms.WritingSystems;
 using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Bloom.MiscUI;
 
@@ -202,9 +203,11 @@ namespace Bloom.Collection
 				var styleName = _styleNames[_numberStyleCombo.SelectedIndex];
 				_collectionSettings.PageNumberStyle = styleName;
 			}
+
 			if (_brandingCombo.SelectedItem != null)
 			{
-				_collectionSettings.BrandingProjectName = _brandingCombo.SelectedItem.ToString();
+				var brand = _brandingCombo.SelectedItem as BrandingProject;
+				_collectionSettings.BrandingProjectKey = brand?.Key;
 			}
 
 			//no point in letting them have the Nat lang 2 be the same as 1
@@ -338,16 +341,14 @@ namespace Bloom.Collection
 
 		private void LoadBrandingCombo()
 		{
-			var brandingDirectory = BloomFileLocator.GetDirectoryDistributedWithApplication("branding");
-			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
+			foreach (var brand in BrandingProject.GetProjectChoices())
 			{
-				var brand = Path.GetFileName(brandDirectory);
-				// Only brandings that NEED translation should be added to the English xliff file,
-				// the others will just get the English label. At this point, only 'Default' is localized.
-				var brandLabel = LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.Branding." + brand, brand);
-				_brandingCombo.Items.Add(brandLabel);
-				if (brand == _collectionSettings.BrandingProjectName)
+				_brandingCombo.Items.Add(brand);
+
+				if(brand.Key == _collectionSettings.BrandingProjectKey)
+				{
 					_brandingCombo.SelectedIndex = _brandingCombo.Items.Count - 1;
+				}
 			}
 		}
 
@@ -492,7 +493,12 @@ namespace Bloom.Collection
 
 		private void _brandingCombo_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_brandingCombo.SelectedItem.ToString() != _collectionSettings.BrandingProjectName)
+			if(_brandingCombo.SelectedItem == null)
+				return;
+
+			var brand = _brandingCombo.SelectedItem as BrandingProject;
+
+			if(brand?.Key != _collectionSettings.BrandingProjectKey)
 				ChangeThatRequiresRestart();
 		}
 
@@ -506,6 +512,11 @@ namespace Bloom.Collection
 			{
 				TroubleShooterDialog.HideTroubleShooter();
 			}
+		}
+
+		private void _enterpriseInformationLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			Process.Start("http://bit.ly/2zTQHfM");
 		}
 	}
 }
