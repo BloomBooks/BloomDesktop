@@ -1461,21 +1461,6 @@ namespace Bloom.Book
 			return false; // not found
 		}
 
-
-		public string GetAboutBookHtml
-		{
-			get
-			{
-				var contents = RobustFile.ReadAllText(AboutBookHtmlPath);
-				contents = contents.Replace("remove", "");//used to hide email addresses in the html from scanners (probably unnecessary.... do they scan .htm files?
-
-				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
-				var pathAsUrl = "file://" + AboutBookHtmlPath.Replace('\\', '/').Replace(" ", "%20");
-				var html = $"<html><head><meta charset='utf-8'><base href='{pathAsUrl}'><link rel='stylesheet' href='file://{pathToCss}' type='text/css'><head/><body>{contents}</body></html>";
-				return html;
-			}
-		}
-
 		public bool HasAboutBookInformationToShow
 		{
 			get

@@ -14,4 +14,4 @@ If you send us that text, we can include it in a future version of the template.
 # Feedback {i18n="bigbook.feedback"}
 Please give and vote on [suggestions](http://bloomlibrary.org/suggestions) {i18n="bigbook.feedbackvoting"}
 
-Please report problems to [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&nbsp;Book&nbsp;Problem). {i18n="bigbook.reportsbugs"}
+Please report problems to [issues@bloomremovethislibrary.org](mailto:issues@bloomremovethislibrary.org?subject=Big&nbsp;Book&nbsp;Problem). {i18n="bigbook.reportsbugs"}

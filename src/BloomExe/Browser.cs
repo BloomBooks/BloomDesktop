@@ -124,7 +124,9 @@ namespace Bloom
 			// See http://kb.mozillazine.org/About:config_entries, http://www.davidtan.org/tips-reduce-firefox-memory-cache-usage
 			// and http://forums.macrumors.com/showthread.php?t=1838393.
 			GeckoPreferences.User["memory.free_dirty_pages"] = true;
-			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 0;
+			// Do NOT set this to zero. Somehow that disables following hyperlinks within a document (e.g., the ReadMe
+			// for the template starter, BL-5321).
+			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 1;
 			GeckoPreferences.User["browser.sessionhistory.max_total_viewers"] = 0;
 			GeckoPreferences.User["browser.cache.memory.enable"] = false;
 
