@@ -24,12 +24,14 @@ using SIL.Windows.Forms.Registration;
 using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
+using System.Xml;
 using Bloom.CLI;
 using Bloom.MiscUI;
 using Bloom.web;
 using CommandLine;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
+using SIL.Xml;
 
 namespace Bloom
 {
@@ -962,13 +964,41 @@ namespace Bloom
 				// support multiple variants for a single language like zh-CN or zh-Hans, at which point both might be in the
 				// list and we'd want the best match. In the meantime we want zh-Hans to find zh-CN. See BL-3691.)
 				string localeMatchingLanguage = null;
-				foreach  (var ci in LocalizationManager.GetUILanguages(true))
+				foreach (var subdir in Directory.EnumerateDirectories(installedStringFileFolder))
 				{
-					var lang = ci.IetfLanguageTag;
-					if (lang == UserInterfaceCulture.IetfLanguageTag)
-						return UserInterfaceCulture.IetfLanguageTag;
-					if (localeMatchingLanguage == null && lang.StartsWith(UserInterfaceCulture.TwoLetterISOLanguageName))
-						localeMatchingLanguage = lang;
+					// The LocalizationManager has not been initialized yet when this method is called.
+					// (Indeed, the output of this method is used to initialize the LocalizationManager!)
+					// So we need to scan the disk ourselves to see what is available.  Unfortunately, the
+					// subdirectory names in the given folder are not sufficient because some localizations
+					// are more specific than the directory name.  For example, Spanish uses "es" for the
+					// subdirectory name, but the actual language tags inside the files are "es-ES".
+					// (Perhaps matching against the subdirectory name would be sufficient, but maybe
+					// someday a case will arise where the country/script name is significant in some but
+					// not all cases.)
+					var dirTag = Path.GetFileName(subdir);
+					if (IsSameActualLanguage(dirTag, UserInterfaceCulture.IetfLanguageTag))
+					{
+						var xliffPath = Path.Combine(subdir, "Bloom.xlf");
+						if (File.Exists(xliffPath))
+						{
+							var doc = new XmlDocument();
+							doc.Load(xliffPath);
+							var fileNode = doc.DocumentElement.SelectSingleNodeHonoringDefaultNS("/xliff/file");
+							if (fileNode != null)
+							{
+								var target = fileNode.GetOptionalStringAttribute("target-language", null);
+								if (!string.IsNullOrEmpty(target))
+								{
+									if (target == UserInterfaceCulture.IetfLanguageTag)
+										return target;
+									// We don't have an exact match, but we do have a match that should work.  Remember
+									// it, but hold out (fading) hope for an exact match and don't quit the loop.
+									if (localeMatchingLanguage == null)
+										localeMatchingLanguage = target;
+								}
+							}
+						}
+					}
 				}
 				// No exact match; did we find one that is at least the right language? If so use that.
 				if (localeMatchingLanguage != null)
@@ -978,6 +1008,20 @@ namespace Bloom
 				return UserInterfaceCulture.TwoLetterISOLanguageName;
 			}
 			return desiredLanguage;
+		}
+
+		/// <summary>
+		/// Test whether two language codes refer to the same language, ignoring any country, script, or variant tagging.
+		/// </summary>
+		private static bool IsSameActualLanguage(string code1, string code2)
+		{
+			if (code1 == code2)
+				return true;
+			if (string.IsNullOrEmpty(code1) || string.IsNullOrEmpty(code2))
+				return false;
+			var codeTags1 = code1.Split('-');
+			var codeTags2 = code2.Split('-');
+			return (codeTags1[0] == codeTags2[0]);
 		}
 
 		private static bool _errorHandlingHasBeenSetUp;
