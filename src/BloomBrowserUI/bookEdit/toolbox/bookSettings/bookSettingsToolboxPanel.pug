@@ -17,13 +17,15 @@ html
 		script(src='/bloom/bookEdit/toolbox/bookSettings/bookSettings.js')
 		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/bookSettings/bookSettings.css')
 	body
-		h3(data-panelId='bookSettingsTool', data-order='100')
-			img(src="/bloom/bookEdit/toolbox/bookSettings/icon.svg")
-		div(data-panelId='bookSettingsTool')
-			form#bookSettings
-				.showOnlyWhenBookWouldNormallyBeLocked
-					+text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')
-					+checkbox('unlockShellBook', 'EditTab.Toolbox.Settings.Unlock', 'Allow changes to this shellbook')
+		//- Uncomment the next 4 lines to reactivate the Settings panel
+		//- h3(data-panelId='bookSettingsTool', data-order='100')
+		//- 	img(src="/bloom/bookEdit/toolbox/bookSettings/icon.svg")
+		//- div(data-panelId='bookSettingsTool')
+		//- 	form#bookSettings
+					//- .showOnlyWhenBookWouldNormallyBeLocked
+					//- Function moved to page controls React panel (BL-5073)
+					//- +text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')
+					//- +checkbox('unlockShellBook', 'EditTab.Toolbox.Settings.Unlock', 'Allow changes to this shellbook')
 				// if you turn this on, look for code #if UserControlledTemplate
 				//- .showOnlyIfBookIsNeverLocked
 				//- 	+text('EditTab.Toolbox.Settings.IsTemplateBookIntroductionText','When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.')

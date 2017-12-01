@@ -121,7 +121,7 @@ namespace Bloom.Api
 					// Note that sockets remove themselves from _allSockets when they are closed.
 					foreach(var socket in _allSockets.ToArray())
 					{
-						Debug.WriteLine($"*** This sockets was still open and is being closed during shutdown: \"{socket.ConnectionInfo?.SubProtocol}\"");
+						Debug.WriteLine($"*** This socket was still open and is being closed during shutdown: \"{socket?.ConnectionInfo?.SubProtocol}\"");
 						socket.Close();
 					}
 					_allSockets.Clear();

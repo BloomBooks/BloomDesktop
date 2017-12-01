@@ -1,8 +1,6 @@
 import * as React from "react";
 
-interface ComponentState {
-}
-interface ComponentProps {
+interface IContentEditableProps {
     content: string;
     onChange: (content: string) => void;
     onEnterKeyPressed: () => void;
@@ -12,13 +10,13 @@ interface ComponentProps {
 // Property onChange is a function that triggers when the editable content changes.
 // If onEnterKeyPressed is set, it will be called when the user types that key.
 // content property is the current text of the div.
-export default class ContentEditable extends React.Component<ComponentProps, ComponentState> {
+export default class ContentEditable extends React.Component<IContentEditableProps, {}> {
     lastContent: string;
     editDiv: HTMLDivElement;
     ipPosition: number;
     ipNode: Node;
 
-    constructor(props: ComponentProps) {
+    constructor(props: IContentEditableProps) {
         super(props);
     }
     render() {
