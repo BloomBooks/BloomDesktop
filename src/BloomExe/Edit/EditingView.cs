@@ -178,8 +178,6 @@ namespace Bloom.Edit
 			_cutButton.Left += shift;
 			_copyButton.Left += shift;
 			_undoButton.Left += shift;
-			_duplicatePageButton.Left += shift;
-			_deletePageButton.Left += shift;
 			_menusToolStrip.Left += shift;
 			_topBarPanel.Width = _menusToolStrip.Left + _menusToolStrip.Width + 1;
 		}
@@ -1173,8 +1171,6 @@ namespace Bloom.Edit
 				_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
 					//_layoutChoices.ToolTipText); doesn't work because the scanner needs literals
 					"Choose a page size and orientation");
-
-				_pageListView.UpdateDisplay();
 			}
 			catch(Exception error)
 			{
@@ -1210,8 +1206,6 @@ namespace Bloom.Edit
 			UpdateButtonEnabled(_copyButton, _copyCommand);
 			UpdateButtonEnabled(_pasteButton, _pasteCommand);
 			UpdateButtonEnabled(_undoButton, _undoCommand);
-			UpdateButtonEnabled(_duplicatePageButton, _duplicatePageCommand);
-			UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
 		}
 
 		public void UpdateButtonLocalizations()
@@ -1228,8 +1222,6 @@ namespace Bloom.Edit
 			CycleOneButton(_copyButton, _copyCommand);
 			CycleOneButton(_pasteButton, _pasteCommand);
 			CycleOneButton(_undoButton, _undoCommand);
-			CycleOneButton(_duplicatePageButton, _duplicatePageCommand);
-			CycleOneButton(_deletePageButton, _deletePageCommand);
 		}
 
 		private void CycleOneButton(Button button, Command command)
@@ -1317,19 +1309,6 @@ namespace Bloom.Edit
 		{
 			_pageListView.Clear();
 			_browser1.Navigate("about:blank", false);
-		}
-
-		private void _deletePageButton_Click_1(object sender, EventArgs e)
-		{
-			if(ConfirmRemovePageDialog.Confirm())
-			{
-				ExecuteCommandSafely(_deletePageCommand);
-			}
-		}
-
-		private void _duplicatePageButton_Click(object sender, EventArgs e)
-		{
-			ExecuteCommandSafely(_duplicatePageCommand);
 		}
 
 		protected override void OnLoad(EventArgs e)

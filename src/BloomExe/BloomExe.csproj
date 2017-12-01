@@ -299,6 +299,7 @@
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
+    <Compile Include="Edit\PageControlsApi.cs" />
     <Compile Include="Publish\Android\usb\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />

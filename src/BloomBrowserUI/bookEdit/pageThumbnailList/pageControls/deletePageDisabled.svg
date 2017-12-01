@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="4.810698mm"
+   height="6.0985999mm"
+   viewBox="0 0 4.810698 6.0985999"
+   version="1.1"
+   id="svg7026"
+   inkscape:version="0.92.0 r15299"
+   sodipodi:docname="deletePageDisabled.svg">
+  <defs
+     id="defs7020" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="-360.90909"
+     inkscape:cy="-148.47509"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7023">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-75.457793,-103.4507)">
+    <path
+       inkscape:connector-curvature="0"
+       d="m 75.457793,103.4507 v 5.38593 l 1.438673,0.0144 0.0028,-0.28222 -1.159208,-0.0116 v -4.82425 h 3.615971 l 0.01324,2.5334 h 0.282225 l -0.01487,-2.81449 z m 2.021603,3.07865 -0.131256,0.13335 -0.133604,0.13332 h 0.0023 l 1.242235,1.24215 -1.242235,1.2164 0.227349,0.29473 c 0.829957,-0.77191 0.877235,-0.81235 1.296149,-1.23044 0.437754,0.39783 0.817182,0.7979 1.300847,1.23044 l 0.22501,-0.29473 -1.244592,-1.2164 1.244592,-1.24215 h 0.0023 l -0.133584,-0.13332 -0.133599,-0.13335 -0.135952,0.13569 -1.122705,1.09943 -1.14615,-1.12048 z m -1.30131,-1.3002 h 1.719865 v 0.13996 h -1.719865 z m 0,-0.36099 h 2.251326 v 0.13999 h -2.251326 z m 0,-0.36096 h 2.251326 v 0.13995 h -2.251326 z"
+       style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#575757;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.28222221;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       id="path6484" />
+  </g>
+</svg>

@@ -1,0 +1,43 @@
+@DarkGray:#404040;
+@SecondButtonRowHeight: 55px;
+@PageControlPanelHeight: 150px;
+@PageControlPanelPad: 20px;
+@ButtonPadding: 4px;
+
+// The div at the root of our react view (right below body). It's given this ID in our
+// skeleton HTML file (pageThumbnailList.pug).
+#PageControls {
+    min-height: @PageControlPanelHeight;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+// This div that React inserts is just inside of the root and becomes
+// the real parent of all the content.
+div[data-reactroot] {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; // keeps the first button up near the top of the page controls panel.
+    align-items: center; // buttons will be in the center of the (side) panel.
+    padding-top: @PageControlPanelPad;
+    box-sizing: border-box;
+}
+
+// The second row of buttons contains duplicate, delete, and lock buttons
+#row2 {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end; // aligns buttons to bottom of row
+    height: @SecondButtonRowHeight;
+}
+
+button {
+    background-color: @DarkGray;
+    border: none;
+    padding: @ButtonPadding;
+    span {
+        color: white;
+        display: block; // keeps the button text under the image
+    }
+}
