@@ -891,7 +891,7 @@ namespace Bloom.Book
 					ConvertTagsToMetaData(oldTagsPath, BookInfo);
 					RobustFile.Delete(oldTagsPath);
 				}
-				BookInfo.BrandingProjectName = _collectionSettings.BrandingProjectName;
+				BookInfo.BrandingProjectKey = _collectionSettings.BrandingProjectKey;
 			}
 			else //used for making a preview dom
 			{
@@ -1003,7 +1003,7 @@ namespace Bloom.Book
 			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
 			// still requiring it to be a valid layout.
 			layout = Layout.FromDomAndChoices(bookDOM, layout, _storage.GetFileLocator());
-			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, _collectionSettings.BrandingProjectName, _storage.FolderPath);
+			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, _collectionSettings.BrandingProjectKey, _storage.FolderPath);
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
 			TranslationGroupManager.PrepareDataBookTranslationGroups(RawDom, dataBookLangs);
@@ -2267,7 +2267,7 @@ namespace Bloom.Book
 		public Metadata GetLicenseMetadata()
 		{
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
-			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, _collectionSettings.BrandingProjectName);
+			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, _collectionSettings.BrandingProjectKey);
 
 			//Logger.WriteEvent("After");
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);

@@ -298,6 +298,7 @@
     <Compile Include="Book\BloomReaderFileMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
+    <Compile Include="Collection\BrandingProject.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
     <Compile Include="Publish\Android\usb\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />

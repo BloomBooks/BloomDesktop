@@ -8,7 +8,7 @@ using SIL.IO;
 namespace Bloom.Api
 {
 	/// <summary>
-	/// Supports branding (e.g. logos) needed by projects.
+	/// Supports branding (e.g. logos, CC License) needed by projects.
 	/// Currently we don't allow the image server to see these requests, which always occur in xmatter.
 	/// Instead, as part of the process of bringing xmatter up to date, we change the image src attributes
 	/// to point to the svg or png file which we copy into the book folder.
@@ -43,7 +43,7 @@ namespace Bloom.Api
 				}
 #endif
 				var fileName = request.RequiredFileNameOrPath("id");
-				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectName, fileName.NotEncoded);
+				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectKey, fileName.NotEncoded);
 
 				// And this is perfectly normal, to not have a branding image at all, for a particular page:
 				if (string.IsNullOrEmpty(path))
