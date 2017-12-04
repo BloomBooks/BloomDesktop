@@ -1125,6 +1125,26 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void BringBookUpToDate_UpdatesRtlInMetaJson()
+		{
+			_bookDom = new HtmlDom(@"<html ><head>
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.That(book.BookInfo.IsRtl, Is.False);
+			var old = _collectionSettings.IsLanguage1Rtl;
+			try
+			{
+				_collectionSettings.IsLanguage1Rtl = true;
+				book.BringBookUpToDate(new NullProgress());
+			}
+			finally
+			{
+				_collectionSettings.IsLanguage1Rtl = old;
+			}
+			Assert.That(book.BookInfo.IsRtl, Is.True);
+		}
+
+		[Test]
 		public void BringBookUpToDate_MovesMetaDataToJson()
 		{
 			_bookDom = new HtmlDom(

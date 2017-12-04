@@ -361,6 +361,7 @@ namespace Bloom.Book
 		{
 			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings, _collectionSettings.Language1Iso639Code, _bookData.MultilingualContentLanguage2,
 													 _bookData.MultilingualContentLanguage3);
+			BookInfo.IsRtl = _collectionSettings.IsLanguage1Rtl;
 
 			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, _collectionSettings);
 		}
