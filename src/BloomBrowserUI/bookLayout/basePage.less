@@ -141,10 +141,12 @@ div.bloom-page
     display: block;
     page-break-after: auto;
     background-color: #FFFFFF;
-    /*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
+    /* This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
 the margin-top is calculated to center the text vertically, but htmltopdf then doesn't shrink the box as it should
-so it just heads down off the page, messing things up.*/
-    overflow: hidden;
+so it just heads down off the page, messing things up.
+    Unfortunately, it also keeps us from moving the page label and origami toggle off of the page and
+up into its own space. Fortunately, we don't center text vertically anymore, so I think we're good! */
+    //overflow: hidden;
 }
 div#bloomDataDiv
 {
