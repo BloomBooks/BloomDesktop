@@ -1,6 +1,7 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 @import "../../templates/common-mixins.less";
 @import "../sourceBubbles/sourceBubbles.less";
+@PageLabelVerticalDisplacement: -33px;
 
 BODY
 {
@@ -8,6 +9,12 @@ BODY
     transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
     transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
 }
+
+#labelAndLayoutPane
+{
+    height: 45px;
+}
+
 .tool-items:after
 {
     content: ".";
@@ -37,27 +44,27 @@ DIV.bloom-imageContainer
 {
     border: thin solid rgba(1, 1, 1, 0.2);
 }
+
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
 .marginBox DIV.pageLabel
 {
     /*+placement:anchor-top-left -1px -29px;*/
     position: absolute;
     left: -1px;
-    top: -29px;
+    top: calc(@PageLabelVerticalDisplacement - 48);
+    //top: -29px;
 }
 .pageLabel
 {
     text-align: left;
-    /*This black with high transparency gives us a grey on white, and a darker color of whatever the colored background is.*/
-    color: rgba(0, 0, 0, 0.2);
-    /*+placement:anchor-top-left 0px 19px;*/
+    color: @bloom-purple;
     position: absolute;
     left: 5mm;
-    top: 19px;
+    top: @PageLabelVerticalDisplacement;
     float: left;
     font-family: "Segoe UI", "Open Sans", Arial, sans-serif;
     &[contenteditable="true"] {
-        color: black;
+        color: @bloom-purple;
         padding: 0 2px;
     }
 }

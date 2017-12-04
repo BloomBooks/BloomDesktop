@@ -646,9 +646,20 @@ namespace Bloom.Edit
 			CheckForBL2634("made tags safe");
 			if (_currentPage != null)
 				_currentPage.Dispose();
+			InsertLabelAndLayoutTogglePane(_domForCurrentPage);
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 			CheckForBL2634("made simulated page");
 			_server.AuthorMode = CanAddPages;
+		}
+
+		private static void InsertLabelAndLayoutTogglePane(HtmlDom dom)
+		{
+			// Add an empty div that will provide space for the page label and origami toggle above the displayed page.
+			var node = dom.RawDom.CreateNode(XmlNodeType.Element, "div", "");
+			var attr = dom.RawDom.CreateAttribute("id");
+			attr.Value = "labelAndLayoutPane";
+			node.Attributes.Append(attr);
+			dom.Body.InsertBefore(node, dom.Body.FirstChild);
 		}
 
 		public bool AreToolboxAndOuterFrameCurrent()
@@ -729,7 +740,6 @@ namespace Bloom.Edit
 			// See EnhancedImageServer.MakeSimulatedPageFileInBookFolder() for more details.
 			var frameText = RobustFile.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
-
 
 			if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
 			{
