@@ -133,6 +133,12 @@ namespace Bloom.Book
 			set { MetaData.IsFolio = value; }
 		}
 
+		public bool IsRtl
+		{
+			get {return MetaData.IsRtl;}
+			set { MetaData.IsRtl = value; }
+		}
+
 		// Todo: multilingual
 		public string Title
 		{
@@ -668,6 +674,10 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("folio")]
 		public bool IsFolio { get; set; }
+
+		// A book is considerted RTL if its first content language is.
+		[JsonProperty("isRtl")]
+		public bool IsRtl { get; set; }
 
 		// Enhance: multilingual?
 		// BL-3774 was caused by a book with a meta.json value for Title of null.
