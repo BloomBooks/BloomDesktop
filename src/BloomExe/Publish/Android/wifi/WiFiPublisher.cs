@@ -126,8 +126,7 @@ namespace Bloom.Publish.Android.wifi
 					using (WebClient myClient = new WebClient())
 					{
 						var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
-						myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(publishedFileName) +
-											BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomDPath));
+						myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(publishedFileName), File.ReadAllBytes(bloomDPath));
 					}
 				},
 				_progress,
