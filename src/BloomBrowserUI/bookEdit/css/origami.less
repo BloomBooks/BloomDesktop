@@ -10,6 +10,8 @@
 @flowerPetalGrey:#7e7e7e;
 @inactiveColor: rgb(80%,80%,80%);
 @font: "Segoe UI", "Open Sans", Arial, sans-serif;
+@ToggleRightOffset: 19px;
+@ToggleVerticalOffset: -30px;
 
 .origami-ui {
     visibility: hidden;
@@ -60,8 +62,8 @@
 
 .origami-toggle {
     position: absolute;
-    right: 19px;
-    top: 19px;
+    right: @ToggleRightOffset;
+    top: @ToggleVerticalOffset;
     line-height: 1em;
     color: @inactiveColor;
     font-family: @font;
