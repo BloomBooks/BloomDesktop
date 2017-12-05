@@ -34,9 +34,25 @@ namespace Bloom.Book
 			using(var temp = new TemporaryFolder())
 			{
 				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp, backColor);
+				// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
+				// 64dp in Bloom Reader.
+
+				MakeSizedThumbnail(modifiedBook, backColor, temp.FolderPath, 256);
+
 				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
 					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
 			}
+		}
+
+		private static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
+		{
+			var coverImagePath = book.GetCoverImagePath();
+			if(coverImagePath != null)
+			{
+				var thumbPath = Path.Combine(destinationFolder, "thumbnail.png");
+				RuntimeImageProcessor.GenerateThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, backColor);
+			}
+			// else, BR shows a default thumbnail for the book
 		}
 
 		public static Book MakeDeviceXmatterTempBook(Book book, BookServer bookServer, string tempFolderPath)
@@ -118,7 +134,7 @@ namespace Bloom.Book
 				// or displaying collections but not needed by the reader. The most important is probably
 				// eliminating the pdf, which can be very large. Note that we do NOT eliminate the
 				// basic thumbnail.png, as we want eventually to extract that to use in the Reader UI.
-				if (fileName=="thumbnail-70.png" || fileName=="thumbnail-256.png")
+				if (fileName == "thumbnail-70.png" || fileName == "thumbnail-256.png")
 					continue;
 				if (fileName == "meta.json" && omitMetaJson)
 					continue;

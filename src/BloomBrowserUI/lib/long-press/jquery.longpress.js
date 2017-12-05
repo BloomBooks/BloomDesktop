@@ -15,6 +15,8 @@ require("./jquery.mousewheel.js");
 
 (function ($, window, undefined) {
 
+    var lengthOfPreviouslyInsertedCharacter = 1; //when we convert to Typescript, this is a member variable
+
     var pluginName = 'longPress',
         document = window.document,
         defaults = {
@@ -45,6 +47,7 @@ require("./jquery.mousewheel.js");
         'U': 'ÙÚÛŨÜŪŬŮŰŲỤU̱ɄƯƱ',
         'V': 'Ʋ',
         'W': 'ŴẄΩ',
+        'X': 'Ẍ',
         'Y': 'ÝŶŸƔƳ',
         'Z': 'ŹŻŽƵƷẔ',
 
@@ -70,6 +73,7 @@ require("./jquery.mousewheel.js");
         'u': 'ùúûũüūŭůűųưμυụu̱ʉʊ',
         'v': 'ʋ',
         'w': 'ŵẅω',
+        'x': 'ẍ',
         'y': 'ýŷÿɣyƴ',
         'z': 'źżžƶẕʒƹ',
 
@@ -82,12 +86,12 @@ require("./jquery.mousewheel.js");
         '-': '±‐–—',
         '+': '±†‡',
         '\\': '′″‴‘’‚‛',
-        '"': '“”„‟',
+        "'": 'ꞌ',
+        '"': '“”„‟Ꞌ',
         '<': '«≤‹',
         '>': '»≥›',
         '=': '≈≠≡',
-        '/': '÷'
-
+        '/': '÷',
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
@@ -238,6 +242,7 @@ require("./jquery.mousewheel.js");
         }
     }
     function showPopup(chars) {
+        lengthOfPreviouslyInsertedCharacter = 1;//the key they are holding down will be a single character
         popup.find('ul').empty();
         var letter;
         for (var i = 0; i < chars.length; i++) {
@@ -300,7 +305,7 @@ require("./jquery.mousewheel.js");
 
     function updateChar() {
         var newChar = $('.long-press-letter.selected').text();
-        replacePreviousLetterWithText(newChar);
+        replacePreviousLetterWithNewLetter(newChar);
     }
 
     function isTextArea() {
@@ -338,12 +343,12 @@ require("./jquery.mousewheel.js");
 
 
     // See notes on BL-3900 in toolbox.ts for important regression information.
-    function replacePreviousLetterWithText(text) {
+    function replacePreviousLetterWithNewLetter(newLetter) {
 
         if (isTextArea()) {
             var pos = getTextAreaCaretPosition(activeElement);
             var arVal = $(activeElement).val().split('');
-            arVal[pos - 1] = text;
+            arVal[pos - 1] = newLetter;
             $(activeElement).val(arVal.join(''));
             setTextAreaCaretPosition(activeElement, pos);
         }
@@ -364,13 +369,17 @@ require("./jquery.mousewheel.js");
 
                     //remove the character they typed to open this tool
                     var rangeToRemoveStarterCharacter = insertPointRange.cloneRange();
-                    rangeToRemoveStarterCharacter.setStart(insertPointRange.startContainer, insertPointRange.startOffset - 1);
+                    rangeToRemoveStarterCharacter.setStart(insertPointRange.startContainer, insertPointRange.startOffset - lengthOfPreviouslyInsertedCharacter);
                     rangeToRemoveStarterCharacter.setEnd(insertPointRange.startContainer, insertPointRange.startOffset);
                     rangeToRemoveStarterCharacter.deleteContents();
 
                     //stick in the replacement character
-                    var textNode = document.createTextNode(text);
+                    var textNode = document.createTextNode(newLetter);
                     insertPointRange.insertNode(textNode);
+
+                    //composed characters can be more than one unicode value, e.g. a̱
+                    //so remember what we inserted so that if we go to another character before releasing, using mouse or mouseweel, we can remove this one
+                    lengthOfPreviouslyInsertedCharacter = newLetter.length;
 
                     // Move caret to the end of the newly inserted text node
                     insertPointRange.setStart(textNode, textNode.length);

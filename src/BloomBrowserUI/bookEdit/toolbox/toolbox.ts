@@ -425,30 +425,38 @@ function handleKeydown(): void {
         // presumably we could adjust the above query to still get the div it's looking for.
         if (editableDiv) {
             const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
-            const ckeditorSelection = ckeditorOfThisBox.getSelection();
+            // Normally every editable box has a ckeditor attached. But some arithmetic template boxes are
+            // intended to contain numbers not needing translation and don't get one...because the logic
+            // that invokes WireToCKEditor is looking for classes like bloom-content1 that are not present
+            // in ArithmeticTemplate. Here we're presumng that if a block didn't get one attached,
+            // it's not true vernacular text and doesn't need markup. So all the code below is skipped
+            // if we don't have one.
+            if (ckeditorOfThisBox) {
+                const ckeditorSelection = ckeditorOfThisBox.getSelection();
 
-            // there is also createBookmarks2(), which avoids actually inserting anything. That has the
-            // advantage that changing a character in the middle of a word will allow the entire word to
-            // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
-            // actually go back to where it was: it gets shifted to the right.
-            const bookmarks = ckeditorSelection.createBookmarks(true);
+                // there is also createBookmarks2(), which avoids actually inserting anything. That has the
+                // advantage that changing a character in the middle of a word will allow the entire word to
+                // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
+                // actually go back to where it was: it gets shifted to the right.
+                const bookmarks = ckeditorSelection.createBookmarks(true);
 
-            // For some reason, we have cases, mostly (always?) on paste, where
-            // ckeditor is inserting tons of comments which are messing with our parsing
-            // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
-            removeCommentsFromEditableHtml(editableDiv);
+                // For some reason, we have cases, mostly (always?) on paste, where
+                // ckeditor is inserting tons of comments which are messing with our parsing
+                // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
+                removeCommentsFromEditableHtml(editableDiv);
 
-            // If there's no tool active, we don't need to update the markup.
-            if (currentTool && toolbox.toolboxIsShowing()) {
-                currentTool.updateMarkup();
+                // If there's no tool active, we don't need to update the markup.
+                if (currentTool && toolbox.toolboxIsShowing()) {
+                    currentTool.updateMarkup();
+                }
+
+                //set the selection to wherever our bookmark node ended up
+                //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
+                //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
+                // in some way that is still not understood. This was fixed by changing all this to trigger on
+                // a different event (keydown instead of keypress).
+                ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
             }
-
-            //set the selection to wherever our bookmark node ended up
-            //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
-            //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
-            // in some way that is still not understood. This was fixed by changing all this to trigger on
-            // a different event (keydown instead of keypress).
-            ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;

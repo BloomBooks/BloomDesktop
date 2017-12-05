@@ -361,6 +361,7 @@ namespace Bloom.Book
 		{
 			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings, _collectionSettings.Language1Iso639Code, _bookData.MultilingualContentLanguage2,
 													 _bookData.MultilingualContentLanguage3);
+			BookInfo.IsRtl = _collectionSettings.IsLanguage1Rtl;
 
 			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, _collectionSettings);
 		}
@@ -1461,21 +1462,6 @@ namespace Bloom.Book
 			return false; // not found
 		}
 
-
-		public string GetAboutBookHtml
-		{
-			get
-			{
-				var contents = RobustFile.ReadAllText(AboutBookHtmlPath);
-				contents = contents.Replace("remove", "");//used to hide email addresses in the html from scanners (probably unnecessary.... do they scan .htm files?
-
-				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
-				var pathAsUrl = "file://" + AboutBookHtmlPath.Replace('\\', '/').Replace(" ", "%20");
-				var html = $"<html><head><meta charset='utf-8'><base href='{pathAsUrl}'><link rel='stylesheet' href='file://{pathToCss}' type='text/css'><head/><body>{contents}</body></html>";
-				return html;
-			}
-		}
-
 		public bool HasAboutBookInformationToShow
 		{
 			get
@@ -2439,15 +2425,6 @@ namespace Bloom.Book
 			return Convert.ToBase64String(sha.Hash);
 		}
 
-		public void MakeThumbnailFromCoverPicture(Color backColor)
-		{
-			string coverImagePath =GetCoverImagePath();
-			if (coverImagePath == null)
-				return; // no image on cover?? Just use default thumbnail.
-			var thumbPath = Path.Combine(StoragePageFolder, "thumbnail.png");
-			RuntimeImageProcessor.GenerateThumbnail(coverImagePath, thumbPath, 70, 70, backColor);
-		}
-
 		public string GetCoverImagePath()
 		{
 			// It's unfortunate that we have to check for @style here, because it partly exposes how we do images
@@ -2495,6 +2472,7 @@ namespace Bloom.Book
 					continue;
 				page.ParentNode.RemoveChild(page);
 			}
+			OrderOrNumberOfPagesChanged();
 		}
 
 		private bool PageHasVisibleText(XmlElement page)

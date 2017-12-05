@@ -143,7 +143,7 @@ namespace Bloom.CollectionTab
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{
 					_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = false;
-					_readmeBrowser.NavigateRawHtml(_bookSelection.CurrentSelection.GetAboutBookHtml);
+					_readmeBrowser.Navigate(_bookSelection.CurrentSelection.AboutBookHtmlPath, false);
 					_readmeBrowser.Visible = true;
 				}
 				_reshowPending = false;

@@ -1125,6 +1125,26 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void BringBookUpToDate_UpdatesRtlInMetaJson()
+		{
+			_bookDom = new HtmlDom(@"<html ><head>
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.That(book.BookInfo.IsRtl, Is.False);
+			var old = _collectionSettings.IsLanguage1Rtl;
+			try
+			{
+				_collectionSettings.IsLanguage1Rtl = true;
+				book.BringBookUpToDate(new NullProgress());
+			}
+			finally
+			{
+				_collectionSettings.IsLanguage1Rtl = old;
+			}
+			Assert.That(book.BookInfo.IsRtl, Is.True);
+		}
+
+		[Test]
 		public void BringBookUpToDate_MovesMetaDataToJson()
 		{
 			_bookDom = new HtmlDom(
@@ -1745,7 +1765,7 @@ namespace BloomTests.Book
 				  </body></html>");
 			var book = CreateBook();
 			book.RemoveBlankPages();
-			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@class='bloom-page']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[contains(@class,'bloom-page')]");
 		}
 
 		[Test]
@@ -1764,7 +1784,7 @@ namespace BloomTests.Book
 				</body></html>");
 			var book = CreateBook();
 			book.RemoveBlankPages();
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-page']", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 2);
 		}
 
 		[Test]
@@ -1781,7 +1801,27 @@ namespace BloomTests.Book
 				</body></html>");
 			var book = CreateBook();
 			book.RemoveBlankPages();
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-page']", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 2);
+		}
+
+		[Test]
+		public void RemoveBlankPages_RenumbersPages()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage' id='guid1' data-page-number='1'>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>some real text!</div>
+					</div>
+					<div class='bloom-page numberedPage' id='guid2' data-page-number='2'>
+					</div>
+					<div class='bloom-page numberedPage' id='guid2' data-page-number='3'>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+			book.RemoveBlankPages();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and @data-page-number='2']", 1);
 		}
 
 		private Mock<IPage> CreateTemplatePage(string divContent)

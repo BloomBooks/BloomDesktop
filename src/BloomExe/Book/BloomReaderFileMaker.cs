@@ -51,8 +51,6 @@ namespace Bloom.Book
 
 			modifiedBook.Save();
 
-			modifiedBook.MakeThumbnailFromCoverPicture(backColor);
-
 			return modifiedBook;
 		}
 

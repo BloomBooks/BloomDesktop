@@ -7,4 +7,4 @@ This book is currently marked "experimental" because we know of several problems
 # Feedback {i18n="picture.dictionary.feedback"}
 Please give and vote on [suggestions](http://bloomlibrary.org/suggestions) {i18n="picture.dictionary.feedbackvoting"}
 
-Please report problems to [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Picture&nbsp;Dictionary&nbsp;Problem). {i18n="picture.dictionary.reportbugs"}
+Please report problems to [issues@bloomremovethislibrary.org](mailto:issues@bloomremovethislibrary.org?subject=Picture&nbsp;Dictionary&nbsp;Problem). {i18n="picture.dictionary.reportbugs"}

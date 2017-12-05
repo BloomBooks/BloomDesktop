@@ -167,7 +167,7 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
-		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not be larger than orignally,
+		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not be larger than original,
 		// but if necessary will be shrunk to fit within the indicated rectangle.
 		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth, int newHeight = Int32.MaxValue,
 			Color? backColor = null)
@@ -207,8 +207,8 @@ namespace Bloom.ImageProcessing
 				if (backColor != null)
 				{
 					// We want to see some backcolor, even if the image is a photo.
-					int inset = Math.Min(newW, newH) / 10;
-					destRect = new Rectangle(inset, inset, newW - inset * 2, newH - inset * 2 );
+					const int kBorderWidth = 1;
+					destRect = new Rectangle(kBorderWidth, kBorderWidth, newW - kBorderWidth * 2, newH - kBorderWidth * 2 );
 				}
 				g.DrawImage(imageToDraw, destRect , new Rectangle(0,0,originalImage.Image.Width, originalImage.Image.Height),GraphicsUnit.Pixel);
 				if (!useOriginalImage)

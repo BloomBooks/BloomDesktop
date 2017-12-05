@@ -303,8 +303,7 @@ namespace Bloom.web.controllers
 			}
 			catch (Exception e)
 			{
-				Logger.WriteEvent("Error in server imageInfo/: url was " + request.LocalPath());
-				Logger.WriteEvent("Error in server imageInfo/: exception is " + e.Message);
+				Logger.WriteError("Error in server imageInfo/: url was " + request.LocalPath(), e);
 				request.Failed(e.Message);
 			}
 		}
