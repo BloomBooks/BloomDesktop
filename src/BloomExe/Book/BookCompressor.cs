@@ -52,7 +52,7 @@ namespace Bloom.Book
 			if(coverImagePath != null)
 			{
 				var thumbPath = Path.Combine(destinationFolder, "thumbnail.png");
-				RuntimeImageProcessor.GenerateThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, backColor);
+				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, backColor);
 			}
 			// else, BR shows a default thumbnail for the book
 		}

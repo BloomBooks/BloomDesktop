@@ -440,6 +440,7 @@ namespace Bloom.Publish
 					_pdfViewer.Visible = false;
 					break;
 				case PublishModel.DisplayModes.ShowPdf:
+					Logger.WriteEvent("Entering Publish PDF Screen");
 					if (RobustFile.Exists(_model.PdfFilePath))
 					{
 						_pdfViewer.Visible = true;
@@ -468,6 +469,7 @@ namespace Bloom.Publish
 					break;
 				case PublishModel.DisplayModes.Upload:
 				{
+					Logger.WriteEvent("Entering Publish Upload Screen");
 					_workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					_pdfViewer.Visible = false;
@@ -482,6 +484,7 @@ namespace Bloom.Publish
 				}
 				case PublishModel.DisplayModes.EPUB:
 				{
+					Logger.WriteEvent("Entering Publish Epub Screen");
 					// We may reuse this for the process of generating the ePUB staging files. For now, skip it.
 					_workingIndicator.Visible = false;
 					_printButton.Enabled = false; // don't know how to print an ePUB
@@ -504,6 +507,7 @@ namespace Bloom.Publish
 				}
 				case PublishModel.DisplayModes.Android:
 				{
+					Logger.WriteEvent("Entering Publish Android Screen");
 					_workingIndicator.Visible = false;
 					_printButton.Enabled = false;
 					_pdfViewer.Visible = false;
