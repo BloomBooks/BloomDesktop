@@ -12,10 +12,12 @@ namespace Bloom.Publish.Android
 	{
 		private Browser _browser;
 		private BloomWebSocketServer _webSocketServer;
+		private PublishToAndroidApi _publishToAndroidApi;
 
-		public AndroidView(NavigationIsolator isolator, BloomWebSocketServer webSocketServer)
+		public AndroidView(NavigationIsolator isolator, BloomWebSocketServer webSocketServer, PublishToAndroidApi publishToAndroidApi)
 		{
 			_webSocketServer = webSocketServer;
+			_publishToAndroidApi = publishToAndroidApi;
 			InitializeComponent();
 
 			_browser = new Browser();
@@ -31,6 +33,25 @@ namespace Bloom.Publish.Android
 			VisibleChanged += OnVisibleChanged;
 		}
 
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			// We're trying to catch all the ways this control can be hidden from the user.
+			// Unfortunately the VisibleChanged event is only raised if the control's own local
+			// visibility setting changes. So we need to consider all its parents, as well as
+			// the possibilty that the whole app is going away.
+			// There's probably a few of these that we don't need to do it to, but it's fairly
+			// harmless (and very hard to predict which might somehow get hidden).
+			Control control = this;
+			while (!(control is Form))
+			{
+				control.VisibleChanged += OnVisibleChanged;
+				control = control.Parent;
+			}
+			var form = control as Form;
+			form.Closing += (sender, args) => Deactivate();
+		}
+
 		private string GetUrlParams()
 		{
 			return $"?isLinux={Platform.IsLinux}";
@@ -38,6 +59,8 @@ namespace Bloom.Publish.Android
 
 		private void OnVisibleChanged(object sender, EventArgs eventArgs)
 		{
+			if (IsDisposed)
+				return; // too late.
 			if (!Visible)
 			{
 				Deactivate();
@@ -46,6 +69,15 @@ namespace Bloom.Publish.Android
 
 		public void Deactivate()
 		{
+			// It's harmless to do the various stop things an extra time.
+			// But it's important to do them at least once when this view is switched away from,
+			// especially if we're quitting the program, so that any sends in progress get
+			// aborted rather than keeping Bloom running a background thread forever.
+			// And the notifications that result from
+			// navigating to about:blank may be delayed by the navigation isolator, conceivably
+			// might never happen if the browser is disposed too soon.
+			if (_publishToAndroidApi != null)
+				_publishToAndroidApi.Stop();
 			// This is important so the react stuff can do its cleanup
 			_browser.WebBrowser.Navigate("about:blank");
 		}
