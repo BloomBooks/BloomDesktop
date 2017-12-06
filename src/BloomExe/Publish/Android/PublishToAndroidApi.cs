@@ -37,7 +37,7 @@ namespace Bloom.Publish.Android
 		private readonly BookServer _bookServer;
 		private readonly WebSocketProgress _progress;
 
-		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color
+		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
 		private Book.Book _coverColorSourceBook;
 
 		private RuntimeImageProcessor _imageProcessor;
@@ -132,8 +132,7 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-
-			server.RegisterEndpointHandler(kApiUrlPart + "coverImage", request =>
+			server.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>
 			{
 				var coverImage = request.CurrentBook.GetCoverImagePath();
 				if (coverImage == null)
@@ -141,7 +140,15 @@ namespace Bloom.Publish.Android
 				else
 				{
 					// We don't care as much about making it resized as making its background transparent.
-					request.ReplyWithImage(_imageProcessor.GetPathToResizedImage(coverImage));
+					using(var thumbnail = TempFile.CreateAndGetPathButDontMakeTheFile())
+					{
+						if(_thumbnailBackgroundColor == Color.Transparent)
+						{
+							TryCssColorFromString(request.CurrentBook?.GetCoverColor(), out _thumbnailBackgroundColor);
+						}
+						RuntimeImageProcessor.GenerateEBookThumbnail(coverImage, thumbnail.Path, 256, 256, _thumbnailBackgroundColor);
+						request.ReplyWithImage( thumbnail.Path);
+					}
 				}
 			}, true);
 

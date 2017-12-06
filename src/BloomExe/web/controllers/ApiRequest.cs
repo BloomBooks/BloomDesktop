@@ -145,7 +145,10 @@ namespace Bloom.Api
 			}
 			catch (Exception e)
 			{
-				SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(e, info.RawUrl);
+				//Hard to reproduce, but I got one of these supertooltip disposal errors in a yellow box
+				//while switching between publish tabs (e.g. /bloom/api/publish/android/cleanup).
+				//I don't think these are worth alarming the user about, so let's be sensitive to what channel we're on.
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error in " + info.RawUrl, exception: e);
 				return false;
 			}
 			return true;
