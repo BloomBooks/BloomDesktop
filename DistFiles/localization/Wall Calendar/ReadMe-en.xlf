@@ -43,7 +43,7 @@
         <note>ID: wall.calendar.feedbackvoting</note>
       </trans-unit>
       <trans-unit id="wall.calendar.reportbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
         <target />
         <note>ID: wall.calendar.reportbugs</note>
       </trans-unit>
