@@ -146,9 +146,9 @@
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.Default">
-        <source xml:lang="en">Default</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.Default</note>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None">
+        <source xml:lang="en">None</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
         <source xml:lang="en">Default Font for {0}</source>

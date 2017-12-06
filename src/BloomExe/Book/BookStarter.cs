@@ -382,7 +382,7 @@ namespace Bloom.Book
 
 				var helper = new XMatterHelper(storage.Dom, _collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation, _collectionSettings.BrandingProjectName, storage.FolderPath);
+				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation, _collectionSettings.BrandingProjectKey, storage.FolderPath);
 				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);
 			}
 		}

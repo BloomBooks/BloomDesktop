@@ -199,7 +199,7 @@ namespace Bloom.Book
 			set { MetaData.FormatVersion = value; }
 		}
 
-		public string BrandingProjectName
+		public string BrandingProjectKey
 		{
 			get { return MetaData.BrandingProjectName; }
 			set { MetaData.BrandingProjectName = value; }
