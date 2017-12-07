@@ -50,6 +50,7 @@ namespace BloomTests.Book
 		{
 			_localizationManager.Dispose();
 			_palasoLocalizationManager.Dispose();
+			LocalizationManager.ForgetDisposedManagers();
 			_brandingFolder.Dispose();
 		}
 
