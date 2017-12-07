@@ -1,4 +1,7 @@
+@import "../../../templates/common-mixins.less";
+
 @DarkGray:#404040;
+@DisabledGray: #575757;
 @SecondButtonRowHeight: 55px;
 @PageControlPanelHeight: 150px;
 @PageControlPanelPad: 20px;
@@ -36,8 +39,11 @@ button {
     background-color: @DarkGray;
     border: none;
     padding: @ButtonPadding;
+    &:disabled span {
+        color: @DisabledGray;
+    }
     span {
-        color: white;
+        color: @bloom-purple;
         display: block; // keeps the button text under the image
     }
 }
