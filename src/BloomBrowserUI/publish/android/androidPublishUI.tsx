@@ -91,6 +91,15 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
             document.getElementById("progress-box").innerText, { headers: { "Content-Type": "text/plain" } });
     }
 
+    reportColorChange(newColor: string) {
+        axios.post("/bloom/api/publish/android/backColor", newColor,
+            { headers: { "Content-Type": "text/plain" } }).then(
+            //wait until it's set because once the state changes, a
+            // new image gets requested and we want that to happen
+            // only after the server has registered this change.
+            () => this.setState({ backColor: newColor }));
+    }
+
     render() {
         let self = this;
         let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5",
@@ -117,28 +126,26 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                                 this.setState({ backColor: result.data })
                             );
                         }}>
-                        <div className="tc-image-wrapper" style={{ backgroundColor: this.state.backColor }} >
-                            <img className="tc-image" src="/bloom/api/publish/android/coverImage"></img>
+                        <div className="tc-image-wrapper">
+                            <img className="tc-image"
+                                // the api ignores the color parameter, but it
+                                // causes this to re-request the img whenever the backcolor changes
+                                src={"/bloom/api/publish/android/thumbnail?color=" + self.state.backColor}></img>
                         </div>
                         <div className="tc-menu-arrow">
                             <div className="tc-pulldown-wrapper" style={{ visibility: (self.state.colorsVisible ? "visible" : "hidden") }}>
                                 {colors.map((color, i) =>
                                     <div className="tc-color-option" key={i} style={{ backgroundColor: color }} data-color={color} onClick={
                                         (event) => {
-                                            let newColor = event.currentTarget.getAttribute("data-color");
-                                            self.setState({ backColor: newColor });
-                                            axios.post("/bloom/api/publish/android/backColor", newColor,
-                                                { headers: { "Content-Type": "text/plain" } });
+                                            const newColor = event.currentTarget.getAttribute("data-color");
+                                            self.reportColorChange(newColor);
                                         }}>
                                     </div>)}
                                 <div className="tc-hex-wrapper" onClick={(event) => event.stopPropagation()}>
                                     <div className="tc-hex-leadin">#</div>
                                     <div className="tc-hex-value">
                                         <ContentEditable content={this.state.backColor.substring(1)} onChange={(newContent => {
-                                            let newColor = "#" + newContent;
-                                            self.setState({ backColor: newColor });
-                                            axios.post("/bloom/api/publish/android/backColor", newColor,
-                                                { headers: { "Content-Type": "text/plain" } });
+                                            self.reportColorChange("#" + newContent);
                                         })} onEnterKeyPressed={() => self.setState({ colorsVisible: false })} />
                                     </div>
                                 </div>

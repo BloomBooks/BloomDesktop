@@ -47,6 +47,7 @@ namespace BloomTests.Book
 		{
 			_localizationManager.Dispose();
 			_palasoLocalizationManager.Dispose();
+			LocalizationManager.ForgetDisposedManagers();
 		}
 
 		[Test]

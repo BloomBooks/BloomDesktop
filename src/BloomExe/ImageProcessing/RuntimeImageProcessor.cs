@@ -169,8 +169,7 @@ namespace Bloom.ImageProcessing
 
 		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not be larger than original,
 		// but if necessary will be shrunk to fit within the indicated rectangle.
-		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth, int newHeight = Int32.MaxValue,
-			Color? backColor = null)
+		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
 		{
 			using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
 			{
@@ -181,21 +180,9 @@ namespace Bloom.ImageProcessing
 				var newW = (originalImage.Image.Width > newWidth) ? newWidth : originalImage.Image.Width;
 				var newH = newW * originalImage.Image.Height / originalImage.Image.Width;
 
-				if (newH > newHeight)
-				{
-					newH = newHeight;
-					newW = newH * originalImage.Image.Width / originalImage.Image.Height;
-				}
-
 				var thumbnail = new Bitmap(newW, newH);
 
 				var g = Graphics.FromImage(thumbnail);
-
-				if (backColor != null)
-				{
-					using (var brush = new SolidBrush(backColor.Value))
-						g.FillRectangle(brush, 0, 0, newW, newH);
-				}
 
 				Image imageToDraw = originalImage.Image;
 				bool useOriginalImage = ImageUtils.AppearsToBeJpeg(originalImage);
@@ -204,12 +191,7 @@ namespace Bloom.ImageProcessing
 					imageToDraw = MakePngBackgroundTransparent(originalImage);
 				}
 				var destRect = new Rectangle(0, 0, newW, newH);
-				if (backColor != null)
-				{
-					// We want to see some backcolor, even if the image is a photo.
-					const int kBorderWidth = 1;
-					destRect = new Rectangle(kBorderWidth, kBorderWidth, newW - kBorderWidth * 2, newH - kBorderWidth * 2 );
-				}
+
 				g.DrawImage(imageToDraw, destRect , new Rectangle(0,0,originalImage.Image.Width, originalImage.Image.Height),GraphicsUnit.Pixel);
 				if (!useOriginalImage)
 					imageToDraw.Dispose();
@@ -219,6 +201,76 @@ namespace Bloom.ImageProcessing
 			return true;
 		}
 
+		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not be larger than original,
+		// but if necessary will be shrunk to fit within the indicated rectangle.
+		public static bool GenerateEBookThumbnail(string coverImagePath, string pathToProcessedImage, int thumbnailWidth, int thumbnailHeight, Color backColor)
+		{
+			using (var coverImage = PalasoImage.FromFileRobustly(coverImagePath))
+			{
+				var coverImageWidth = coverImage.Image.Width;
+				var coverImageHeight = coverImage.Image.Height;
+
+
+				// We want to see a small border of background color, even if the image is a photo.
+				const int kborder = 1;
+				var availableThumbnailWidth = thumbnailWidth - (2 * kborder);
+				var availableThumbnailHeight = thumbnailHeight - (2 * kborder);
+
+				// Calculate how big the image can be while keeping its original proportions.
+				// First assume the width is the limiting factor
+				var targetImageWidth = (coverImageWidth > availableThumbnailWidth) ? availableThumbnailWidth : coverImage.Image.Width;
+				var targetImageHeight = targetImageWidth * coverImageHeight / coverImageWidth;
+
+				// if actually the height is the limiting factor, maximize height and re-compute the width
+				if (targetImageHeight > availableThumbnailHeight)
+				{
+					targetImageHeight = availableThumbnailHeight;
+					targetImageWidth = targetImageHeight * coverImageWidth / coverImageHeight;
+				}
+
+				// pad to center the cover image
+				var horizontalPadding = (availableThumbnailWidth - targetImageWidth) / 2;
+				var verticalPadding = (availableThumbnailHeight - targetImageHeight) / 2;
+				var destRect = new Rectangle(kborder + horizontalPadding, kborder + verticalPadding, targetImageWidth, targetImageHeight);
+
+				// the decision here is just a heuristic based on the observation that line-drawings seem to look better in nice square block of color,
+				// while full-color (usually jpeg) books look better with a thin (or no) border. We could put this under user control eventually.
+
+				Rectangle backgroundAndBorderRect;
+				var appearsToBeJpeg = ImageUtils.AppearsToBeJpeg(coverImage);
+				if(appearsToBeJpeg)
+				{
+					backgroundAndBorderRect = destRect;
+					backgroundAndBorderRect.Inflate(kborder * 2, kborder * 2);
+				}
+				else
+				{
+					// or, if we decide to always deliver the full thing:
+					backgroundAndBorderRect = new Rectangle(0, 0, thumbnailWidth, thumbnailHeight);
+				}
+
+				using (var thumbnail = new Bitmap(thumbnailWidth, thumbnailHeight))
+				using (var g = Graphics.FromImage(thumbnail))
+				using(var brush = new SolidBrush(backColor))
+				{
+					g.FillRectangle(brush, backgroundAndBorderRect);
+
+					lock(ConvertWhiteToTransparent)
+					{
+						var imageAttributes = appearsToBeJpeg ? null : ConvertWhiteToTransparent;
+						g.DrawImage(
+							coverImage.Image, // finally, draw the cover image
+							destRect, // with a scaled and centered destination
+							0, 0, coverImageWidth, coverImageHeight, // from the entire cover image,
+							GraphicsUnit.Pixel,
+							imageAttributes); // changing white to transparent if a png
+					}
+					RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
+				}
+			}
+
+			return true;
+		}
 		private static Image MakePngBackgroundTransparent(PalasoImage originalImage)
 		{
 			//impose a maximum size because in BL-2871 "Opposites" had about 6k x 6k and we got an ArgumentException
