@@ -101,8 +101,6 @@ namespace Bloom.Edit
 				new float[] {0,  0,  0,  1,  0},		// alpha scaling factor of 1
 				new float[] {0,  0,  0,  0,  1}};		// three translations of 0.0
 			var colorMatrix = new ColorMatrix(colorMatrixElements);
-			_duplicatePageButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-			_deletePageButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 			_undoButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 			_cutButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 			_pasteButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
