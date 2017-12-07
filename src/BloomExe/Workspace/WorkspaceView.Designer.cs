@@ -59,7 +59,7 @@
 			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
-			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
+			this._panelHoldingToolStrip = new NestedDockedChildPanel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this._tabStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
@@ -491,7 +491,7 @@
 		private System.Windows.Forms.ToolStripMenuItem _checkForNewVersionMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _registrationMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _aboutBloomMenuItem;
-		private System.Windows.Forms.Panel _panelHoldingToolStrip;
+		private NestedDockedChildPanel _panelHoldingToolStrip;
 		private System.Windows.Forms.ToolStripMenuItem _askAQuestionMenuItem;
 	}
 }

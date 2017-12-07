@@ -170,6 +170,8 @@ namespace Bloom.Workspace
 				_tabStrip.AutoSize = false;
 			}
 
+			_toolStrip.SizeChanged += ToolStripOnSizeChanged;
+
 			SetupUiLanguageMenu();
 			SetupZoomControl();
 			AdjustButtonTextsForLocale();
@@ -767,11 +769,19 @@ namespace Bloom.Workspace
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
 		private ToolStripControlHost _zoomWrapper;
 
+		private const int MinToolStripMargin = 3;
+
+		// The width of the toolstrip panel in stage 1 is typically its original width, which leaves a bit of margin
+		// left of the toolstrip. If a long language name requires more width than typical, make it at least wide
+		// enough to hold the language name. In the latter case, stage 2 won't do anything, and we will move right
+		// on to stage 3 if stage 1 isn't enough.
+		private int Stage_1WidthOfToolStringPanel => Math.Max(_originalToolStripPanelWidth, _toolStrip.Width + MinToolStripMargin);
+
 		// The width at which we switch to stage 1: the actual space needed for the controls in the top panel,
 		// when each is in its widest form and the preferred extra space is between the tab controls and the TopBarControl.
 		// Since this is meant to be BEFORE we push the _toolSpecificPanel up against the tabs, we use its location
 		// rather than the with of the tabs.
-		private int STAGE_1 => _originalToolSpecificPanelHorizPos + (CurrentTabView?.WidthToReserveForTopBarControl ?? 0) + _originalToolStripPanelWidth;
+		private int STAGE_1 => _originalToolSpecificPanelHorizPos + (CurrentTabView?.WidthToReserveForTopBarControl ?? 0) + Stage_1WidthOfToolStringPanel;
 
 		private int STAGE_2
 		{
@@ -780,6 +790,13 @@ namespace Bloom.Workspace
 		private int STAGE_3
 		{
 			get { return STAGE_2 - _stage2SpaceSaved;}
+		}
+
+		// The tabstrip typically changes size when a different language is selected.
+
+		private void ToolStripOnSizeChanged(object o, EventArgs eventArgs)
+		{
+			AdjustTabStripDisplayForScreenSize();
 		}
 
 		private void AdjustTabStripDisplayForScreenSize()
@@ -791,6 +808,17 @@ namespace Bloom.Workspace
 			{
 				SaveOriginalWidthValues();
 				SaveOriginalButtonTexts();
+			}
+
+			// First, set the width of _panelHoldingToolstrip, the control holding the language menu,  help menu,
+			// and possibly zoom control. It must be wide enough to display its content. In stages Full and 1,
+			// it is also not less than original width.
+			int desiredToolStripPanelWidth = Math.Max(_toolStrip.Width + MinToolStripMargin,
+				_currentShrinkage <= Shrinkage.Stage1 ? _originalToolStripPanelWidth : 0);
+			if (desiredToolStripPanelWidth != _panelHoldingToolStrip.Width)
+			{
+				_panelHoldingToolStrip.Width = desiredToolStripPanelWidth;
+				AlignTopRightPanels();
 			}
 
 			switch (_currentShrinkage)
@@ -933,7 +961,7 @@ namespace Bloom.Workspace
 		// by shrinking _panelHoldingToolStrip.
 		private void ShrinkToStage2()
 		{
-			_panelHoldingToolStrip.Width = _toolStrip.Width + 3;
+			_panelHoldingToolStrip.Width = _toolStrip.Width + MinToolStripMargin;
 			AlignTopRightPanels();
 			_stage2SpaceSaved = _originalToolStripPanelWidth - _panelHoldingToolStrip.Width;
 		}
@@ -1024,5 +1052,24 @@ namespace Bloom.Workspace
 		public string IsoCode;
 		public string EnglishName;
 		public string MenuText;
+	}
+	/// <summary>
+	/// This class follows a recommendation at
+	/// https://support.microsoft.com/en-us/help/953934/deeply-nested-controls-do-not-resize-properly-when-their-parents-are-r
+	/// It works around a bug that causes a "deeply nested" panel with a docked child to
+	/// fail to adjust the position of the docked child when the parent resizes.
+	/// </summary>
+	public class NestedDockedChildPanel : Panel
+	{
+		protected override void OnSizeChanged(EventArgs e)
+		{
+			if (this.Handle != null)
+			{
+				this.BeginInvoke((MethodInvoker)delegate
+				{
+					base.OnSizeChanged(e);
+				});
+			}
+		}
 	}
 }
