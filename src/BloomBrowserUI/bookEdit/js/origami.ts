@@ -5,6 +5,7 @@ import { fireCSharpEditEvent } from "./bloomEditing";
 import { SetupImage } from "./bloomImages";
 import "split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
+import axios from "axios";
 
 //I was not able to get css-element-queries to load from here.. I think this should have worked:
 //import {ElementQueries} from 'css-element-queries'; //nb: this in turn loads resizesensor.js from the same module
@@ -27,10 +28,11 @@ $(function () {
     $("div.split-pane").splitPane();
 });
 
-export function setupOrigami() {
-    $(".customPage").append(getOnOffSwitch().append(createTypeSelectors()).append(createTextBoxIdentifier()));
+export function setupOrigami(isBookLocked: boolean) {
+    $(".customPage").append(getOrigamiControl(isBookLocked).append(createTypeSelectors()).append(createTextBoxIdentifier()));
 
     $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
+    $(".toggleLocked").click(unlockBook);
 
     if ($(".customPage .marginBox.origami-layout-mode").length) {
         setupLayoutMode();
@@ -247,19 +249,29 @@ function getSplitPaneComponentInner() {
     return spci;
 }
 
-function getOnOffSwitch() {
-    return $("\
-<div class='origami-toggle bloom-ui'> \
-    <div data-i18n='EditTab.CustomPage.ChangeLayout'>Change Layout</div> \
-    <div class='onoffswitch'> \
-        <input type='checkbox' name='onoffswitch' class='onoffswitch-checkbox' id='myonoffswitch'> \
-        <label class='onoffswitch-label' for='myonoffswitch'> \
-            <span class='onoffswitch-inner'></span> \
-            <span class='onoffswitch-switch'></span> \
-        </label> \
-    </div> \
-</div>");
+function getOrigamiControl(isBookLocked: boolean): JQuery {
+    var innerPart = "\
+    <div style='display: REPLACEME0;' data-i18n='EditTab.CustomPage.ChangeLayout'>Change Layout</div>\
+    <div style='display: REPLACEME1;' class='onoffswitch'>\
+        <input type='checkbox' name='onoffswitch' class='onoffswitch-checkbox' id='myonoffswitch'>\
+        <label class='onoffswitch-label' for='myonoffswitch'>\
+            <span class='onoffswitch-inner'></span>\
+            <span class='onoffswitch-switch'></span>\
+        </label>\
+    </div>\
+    <div class='toggleLocked' style='display: REPLACEME2;'>\
+        <img src='/bloom/bookEdit/pageThumbnailList/pageControls/lockedPage.svg' alt='Book Locked'>\
+    </div>";
+    innerPart = innerPart.replace("REPLACEME0", isBookLocked ? "none" : "inline")
+        .replace("REPLACEME1", isBookLocked ? "none" : "inline-block")
+        .replace("REPLACEME2", isBookLocked ? "inline" : "none");
+    return $("<div class='origami-toggle bloom-ui'>" + innerPart + "</div>");
 }
+
+function unlockBook() {
+    axios.post("/bloom/api/edit/pageControls/unlockBook");
+}
+
 function getButtons() {
     var buttons = $("<div class='origami-controls bloom-ui origami-ui'></div>");
     buttons
