@@ -515,7 +515,17 @@ function showToolboxChanged(wasShowing: boolean): void {
     } else {
         // starting up for the very first time in this book...no tool is current,
         // so select and properly initialize the first one.
-        switchTool($('#toolbox').find(('> h3')).first().attr('data-panelId'));
+        var newToolName = $('#toolbox').find(('> h3')).first().attr('data-panelId');
+        if (!newToolName) {
+            // temporary hack for BL-5272; see notes there.
+            // Somehow in a new book this code runs against the document in the wrong iframe
+            // and fails to find the #toolbox div; then we get a null and end up saving
+            // current tool as "undefined" with various bad results. Until we have time
+            // to clean things up, we just hard code that in this situation we default to
+            // the talking book tool.
+            newToolName = "talkingBookTool";
+        }
+        switchTool(newToolName);
     }
 }
 
