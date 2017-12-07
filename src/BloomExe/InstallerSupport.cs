@@ -170,7 +170,7 @@ namespace Bloom
 	    {
 	        mgr.CreateShortcutForThisExe();
 
-			// See BL-4590 where an upgrade from a clean 3.7.22 to 3.8 either would get no Bloom.exe stub, or get one of 0KB. 
+			// See BL-4590 where an upgrade from a clean 3.7.22 to 3.8 either would get no Bloom.exe stub, or get one of 0KB.
 			// This is nominally because the installer in 3.7.22 did not use this stub technique... though we don't know why the upgrade
 			// process gave us a 0kb attempt at the stub. So we're fixing it here because we need to push this out quickly.
 	        var stubPath = Application.ExecutablePath.Replace(".exe", "_ExecutionStub.exe");
@@ -241,7 +241,16 @@ namespace Bloom
 				return;
 			}
 
-			var iconDir = FileLocator.GetDirectoryDistributedWithApplication("icons");
+			var iconDir = FileLocator.GetDirectoryDistributedWithApplication(true, "icons");
+			if (iconDir == null)
+			{
+				// Note: if this happens a lot we'd want to make it localizable. I think that's unlikely, so it may not be worth the
+				// burden on localizers.
+				ErrorReport.ReportFatalException(new FileNotFoundException("Bloom was not able to find some of its files. The shortcut icon you clicked on may be out of date. Try deleting it and reinstalling Bloom"));
+				// Not sure these lines are reachable. Just making sure.
+				Application.Exit();
+				return;
+			}
 
 			// This is what I (JohnT) think should make Bloom display the right icon for .BloomCollection files.
 			EnsureRegistryValue(@".BloomCollection\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico"));
