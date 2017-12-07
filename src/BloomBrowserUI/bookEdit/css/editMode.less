@@ -2,6 +2,7 @@
 @import "../../templates/common-mixins.less";
 @import "../sourceBubbles/sourceBubbles.less";
 @PageLabelVerticalDisplacement: -33px;
+@TogglePartsRadius: 8px;
 
 BODY
 {
@@ -53,7 +54,7 @@ DIV.bloom-imageContainer
     left: -1px;
     top: calc(@PageLabelVerticalDisplacement - 48);
 }
-.pageLabel
+.bloom-page .pageLabel
 {
     text-align: left;
     color: @bloom-purple;
@@ -505,6 +506,10 @@ SPAN.possible-word
 /*
  * Layout Mode (origami) switch (from proto.io)
  */
+ .origami-toggle * {
+     color: @bloom-purple;
+ }
+
 .onoffswitch {
     display: inline-block; vertical-align: middle; /* This is the only thing I added custom */
     position: relative; width: 50px;
@@ -515,12 +520,13 @@ SPAN.possible-word
 }
 .onoffswitch-label {
     display: block; overflow: hidden; cursor: pointer;
-    border: 2px solid #999999; border-radius: 0px;
+    border: 2px solid @bloom-purple; border-radius: @TogglePartsRadius;
 }
 .onoffswitch-inner {
     display: block; width: 200%; margin-left: -100%;
     -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
     -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+    border-radius: @TogglePartsRadius;
 }
 .onoffswitch-inner:before, .onoffswitch-inner:after {
     display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 10px;
@@ -532,7 +538,7 @@ SPAN.possible-word
 .onoffswitch-inner:before {
     content: "";
     padding-left: 10px;
-    background-color: #D65649; color: #FFFFFF;
+    background-color: @bloom-purple; color: #FFFFFF;
 }
 .onoffswitch-inner:after {
     content: "";
@@ -543,9 +549,10 @@ SPAN.possible-word
 .onoffswitch-switch {
     display: block; width: 14px; margin: 0px;
     background: #000000;
-    position: absolute; top: 0; bottom: 0; right: 36px;
+    position: absolute; top: 0; bottom: 0; right: 34px;
     -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
     -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+    border-radius: @TogglePartsRadius;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
     margin-left: 0;
