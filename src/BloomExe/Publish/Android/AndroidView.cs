@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using Bloom.Api;
 using SIL.PlatformUtilities;
 
 namespace Bloom.Publish.Android
@@ -11,11 +10,9 @@ namespace Bloom.Publish.Android
 	public partial class AndroidView : UserControl
 	{
 		private Browser _browser;
-		private BloomWebSocketServer _webSocketServer;
 
-		public AndroidView(NavigationIsolator isolator, BloomWebSocketServer webSocketServer)
+		public AndroidView(NavigationIsolator isolator)
 		{
-			_webSocketServer = webSocketServer;
 			InitializeComponent();
 
 			_browser = new Browser();
@@ -44,7 +41,7 @@ namespace Bloom.Publish.Android
 			}
 		}
 
-		public void Deactivate()
+		private void Deactivate()
 		{
 			// This is important so the react stuff can do its cleanup
 			_browser.WebBrowser.Navigate("about:blank");

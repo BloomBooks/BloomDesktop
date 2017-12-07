@@ -2,17 +2,18 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import WebSocketManager from "../utils/WebSocketManager";
 
-
-interface ComponentState {
-    progress: string;
-}
-interface ComponentProps {
+interface IProgressBoxProps {
     lifetimeLabel: string;
 }
+
+interface IProgressState {
+    progress: string;
+}
+
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
-export default class ProgressBox extends React.Component<ComponentProps, ComponentState> {
-    constructor(props: ComponentProps) {
+export default class ProgressBox extends React.Component<IProgressBoxProps, IProgressState> {
+    constructor(props: IProgressBoxProps) {
         super(props);
         let self = this;
         this.state = { progress: "" };

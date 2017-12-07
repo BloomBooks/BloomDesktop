@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
-using Bloom.Properties;
 using L10NSharp;
 using SIL.Reporting;
 
@@ -16,9 +15,8 @@ namespace Bloom.Edit
 		private readonly EditingModel _model;
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
-		private DateTime _lastButtonClickedTime = DateTime.Now; // initially, instance creation time
 
-		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,
+		public PageListView(PageSelection pageSelection, RelocatePageEvent relocatePageEvent, EditingModel model,
 			HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
 		{
 			_pageSelection = pageSelection;
@@ -34,12 +32,13 @@ namespace Bloom.Edit
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
 			_thumbNailList.Isolator = isolator;
 			_thumbNailList.ControlKeyEvent = controlKeyEvent;
+			_thumbNailList.BringToFront(); // needed to get DockStyle.Fill to work right.
 			// First action determines whether the menu item is enabled, second performs it.
 			var menuItems = new List<WebThumbNailList.MenuItemSpec>();
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec() {
-					Label = LocalizationManager.GetString("EditTab.DuplicatePageButton", "Duplicate Page"), // same ID as button in toolbar));
-					EnableFunction = (page) => page != null && !page.Required && _model.CanAddPages,
+					Label = LocalizationManager.GetString("EditTab.DuplicatePageButton", "Duplicate Page"),
+					EnableFunction = (page) => page != null && _model.CanDuplicatePage,
 					ExecuteCommand = (page) => _model.DuplicatePage(page)});
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec()
@@ -57,8 +56,8 @@ namespace Bloom.Edit
 				});
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec() {
-					Label = LocalizationManager.GetString("EditTab.DeletePageButton", "Remove Page"),  // same ID as button in toolbar));
-					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					Label = LocalizationManager.GetString("EditTab.DeletePageButton", "Remove Page"),
+					EnableFunction = (page) => page != null && _model.CanDeletePage,
 					ExecuteCommand = (page) =>
 					{
 						if (ConfirmRemovePageDialog.Confirm())
@@ -107,21 +106,6 @@ namespace Bloom.Edit
 			_thumbNailList.BackColor = BackColor;
 		}
 
-		public void UpdateDisplay()
-		{
-			//Enhance: when you go to another book, currently this shows briefly before we get a
-			//chance to select how to display it. I haven't found any existing event I can use
-			//to hide it first.
-
-			//What we're doing here is unusual; we want to always get clicks, so that if the button is
-			//disabled, we can at least tell the user *why* its disabled.
-			//Whereas this class has an ImageNormal and ImageDisabled, in order to never be truly
-			//disabled, we don't use that. The button always thinks its in the "Normal" (enabled) state.
-			//But we switch its "normal" image and forecolor in order to get this "soft disabled" state
-			_addPageButton.ImageNormal = _model.CanAddPages ? Resources.AddPageButton : Resources.AddPageButtonDisabled;
-			_addPageButton.ForeColor = _model.CanAddPages ? Palette.BloomRed : Color.FromArgb(87,87,87);
-		}
-
 		public void SetBook(Book.Book book)//review: could do this instead by giving this class the bookselection object
 		{
 			if (book == null)
@@ -141,7 +125,6 @@ namespace Bloom.Edit
 					SelectThumbnailWithoutSendingEvent(_pageWeThinkShouldBeSelected);
 				}
 			}
-			UpdateDisplay();
 		}
 
 		public void UpdateThumbnailAsync(IPage page)
@@ -182,24 +165,6 @@ namespace Bloom.Edit
 		public new bool Enabled
 		{
 			set { _thumbNailList.Enabled = value; }
-		}
-
-		private void _addPageButton_Click(object sender, EventArgs e)
-		{
-			// Turn double-click into a single-click
-			if (_lastButtonClickedTime > DateTime.Now.AddSeconds(-1))
-				return;
-			_lastButtonClickedTime = DateTime.Now;
-
-			if (_model.CanAddPages)
-			{
-				_model.ShowAddPageDialog();
-			}
-			else
-			{
-				// TODO: localize buttons
-				MessageBox.Show(EditingView.GetInstructionsForUnlockingBook(), "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
-			}
 		}
 	}
 }

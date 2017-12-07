@@ -48,8 +48,6 @@
 			System.Drawing.Imaging.ImageAttributes imageAttributes2 = new System.Drawing.Imaging.ImageAttributes();
 			System.Drawing.Imaging.ImageAttributes imageAttributes3 = new System.Drawing.Imaging.ImageAttributes();
 			System.Drawing.Imaging.ImageAttributes imageAttributes4 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes5 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes6 = new System.Drawing.Imaging.ImageAttributes();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
 			this.settingsLauncherHelper1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
@@ -57,8 +55,6 @@
 			this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarPanel = new System.Windows.Forms.Panel();
-			this._duplicatePageButton = new SIL.Windows.Forms.Widgets.BitmapButton();
-			this._deletePageButton = new SIL.Windows.Forms.Widgets.BitmapButton();
 			this._undoButton = new SIL.Windows.Forms.Widgets.BitmapButton();
 			this._cutButton = new SIL.Windows.Forms.Widgets.BitmapButton();
 			this._pasteButton = new SIL.Windows.Forms.Widgets.BitmapButton();
@@ -148,8 +144,6 @@
 			// 
 			// _topBarPanel
 			// 
-			this._topBarPanel.Controls.Add(this._duplicatePageButton);
-			this._topBarPanel.Controls.Add(this._deletePageButton);
 			this._topBarPanel.Controls.Add(this._undoButton);
 			this._topBarPanel.Controls.Add(this._cutButton);
 			this._topBarPanel.Controls.Add(this._pasteButton);
@@ -157,92 +151,8 @@
 			this._topBarPanel.Controls.Add(this._menusToolStrip);
 			this._topBarPanel.Location = new System.Drawing.Point(97, 225);
 			this._topBarPanel.Name = "_topBarPanel";
-			this._topBarPanel.Size = new System.Drawing.Size(478, 66);
+			this._topBarPanel.Size = new System.Drawing.Size(384, 66);
 			this._topBarPanel.TabIndex = 3;
-			// 
-			// _duplicatePageButton
-			// 
-			this._duplicatePageButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
-			this._duplicatePageButton.BorderColor = System.Drawing.Color.Transparent;
-			this._duplicatePageButton.DisabledTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(114)))), ((int)(((byte)(74)))), ((int)(((byte)(106)))));
-			this._duplicatePageButton.FlatAppearance.BorderSize = 0;
-			this._duplicatePageButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._duplicatePageButton.FocusRectangleEnabled = true;
-			this._duplicatePageButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._duplicatePageButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
-			this._duplicatePageButton.Image = null;
-			this._duplicatePageButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._duplicatePageButton.ImageAttributes = imageAttributes1;
-			this._duplicatePageButton.ImageBorderColor = System.Drawing.Color.Transparent;
-			this._duplicatePageButton.ImageBorderEnabled = false;
-			this._duplicatePageButton.ImageDropShadow = false;
-			this._duplicatePageButton.ImageFocused = null;
-			this._duplicatePageButton.ImageInactive = global::Bloom.Properties.Resources.duplicatePageDisabled32x32;
-			this._duplicatePageButton.ImageMouseOver = null;
-			this._duplicatePageButton.ImageNormal = global::Bloom.Properties.Resources.duplicatePage32x32;
-			this._duplicatePageButton.ImagePressed = null;
-			this._duplicatePageButton.InnerBorderColor = System.Drawing.Color.Transparent;
-			this._duplicatePageButton.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
-			this._duplicatePageButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._duplicatePageButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._duplicatePageButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._duplicatePageButton, "EditTab.DuplicatePageButton");
-			this._duplicatePageButton.Location = new System.Drawing.Point(184, 0);
-			this._duplicatePageButton.Margin = new System.Windows.Forms.Padding(3, 3, 3, 1);
-			this._duplicatePageButton.Name = "_duplicatePageButton";
-			this._duplicatePageButton.OffsetPressedContent = true;
-			this._duplicatePageButton.Size = new System.Drawing.Size(53, 69);
-			this._duplicatePageButton.StretchImage = false;
-			this._duplicatePageButton.TabIndex = 10;
-			this._duplicatePageButton.Text = "Duplicate\r\n   Page";
-			this._duplicatePageButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-			this._duplicatePageButton.TextDropShadow = false;
-			this._betterToolTip1.SetToolTip(this._duplicatePageButton, "Insert a new page which is a duplicate of this one");
-			this._betterToolTip1.SetToolTipWhenDisabled(this._duplicatePageButton, "This page cannot be duplicated");
-			this._duplicatePageButton.UseVisualStyleBackColor = false;
-			this._duplicatePageButton.Click += new System.EventHandler(this._duplicatePageButton_Click);
-			// 
-			// _deletePageButton
-			// 
-			this._deletePageButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
-			this._deletePageButton.BorderColor = System.Drawing.Color.Transparent;
-			this._deletePageButton.DisabledTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(114)))), ((int)(((byte)(74)))), ((int)(((byte)(106)))));
-			this._deletePageButton.FlatAppearance.BorderSize = 0;
-			this._deletePageButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._deletePageButton.FocusRectangleEnabled = true;
-			this._deletePageButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._deletePageButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
-			this._deletePageButton.Image = null;
-			this._deletePageButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._deletePageButton.ImageAttributes = imageAttributes2;
-			this._deletePageButton.ImageBorderColor = System.Drawing.Color.Transparent;
-			this._deletePageButton.ImageBorderEnabled = false;
-			this._deletePageButton.ImageDropShadow = false;
-			this._deletePageButton.ImageFocused = null;
-			this._deletePageButton.ImageInactive = global::Bloom.Properties.Resources.DeletePageDisabled32x32;
-			this._deletePageButton.ImageMouseOver = null;
-			this._deletePageButton.ImageNormal = global::Bloom.Properties.Resources.DeletePage32x32;
-			this._deletePageButton.ImagePressed = null;
-			this._deletePageButton.InnerBorderColor = System.Drawing.Color.Transparent;
-			this._deletePageButton.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
-			this._deletePageButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._deletePageButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._deletePageButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._deletePageButton, "EditTab.DeletePageButton");
-			this._deletePageButton.Location = new System.Drawing.Point(239, 0);
-			this._deletePageButton.Margin = new System.Windows.Forms.Padding(3, 3, 3, 1);
-			this._deletePageButton.Name = "_deletePageButton";
-			this._deletePageButton.OffsetPressedContent = true;
-			this._deletePageButton.Size = new System.Drawing.Size(51, 69);
-			this._deletePageButton.StretchImage = false;
-			this._deletePageButton.TabIndex = 11;
-			this._deletePageButton.Text = "Remove\r\n  Page";
-			this._deletePageButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-			this._deletePageButton.TextDropShadow = false;
-			this._betterToolTip1.SetToolTip(this._deletePageButton, "Remove this page from the book");
-			this._betterToolTip1.SetToolTipWhenDisabled(this._deletePageButton, "This page cannot be removed");
-			this._deletePageButton.UseVisualStyleBackColor = false;
-			this._deletePageButton.Click += new System.EventHandler(this._deletePageButton_Click_1);
 			// 
 			// _undoButton
 			// 
@@ -256,7 +166,7 @@
 			this._undoButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._undoButton.Image = null;
 			this._undoButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._undoButton.ImageAttributes = imageAttributes3;
+			this._undoButton.ImageAttributes = imageAttributes1;
 			this._undoButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._undoButton.ImageBorderEnabled = false;
 			this._undoButton.ImageDropShadow = false;
@@ -297,7 +207,7 @@
 			this._cutButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._cutButton.Image = null;
 			this._cutButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._cutButton.ImageAttributes = imageAttributes4;
+			this._cutButton.ImageAttributes = imageAttributes2;
 			this._cutButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._cutButton.ImageBorderEnabled = false;
 			this._cutButton.ImageDropShadow = false;
@@ -337,7 +247,7 @@
 			this._pasteButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._pasteButton.Image = null;
 			this._pasteButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._pasteButton.ImageAttributes = imageAttributes5;
+			this._pasteButton.ImageAttributes = imageAttributes3;
 			this._pasteButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._pasteButton.ImageBorderEnabled = false;
 			this._pasteButton.ImageDropShadow = false;
@@ -378,7 +288,7 @@
 			this._copyButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._copyButton.Image = null;
 			this._copyButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._copyButton.ImageAttributes = imageAttributes6;
+			this._copyButton.ImageAttributes = imageAttributes4;
 			this._copyButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._copyButton.ImageBorderEnabled = false;
 			this._copyButton.ImageDropShadow = false;
@@ -422,7 +332,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab.MenusToolStrip");
-			this._menusToolStrip.Location = new System.Drawing.Point(294, 2);
+			this._menusToolStrip.Location = new System.Drawing.Point(200, 0);
 			this._menusToolStrip.Name = "_menusToolStrip";
 			this._menusToolStrip.Size = new System.Drawing.Size(165, 56);
 			this._menusToolStrip.TabIndex = 2;
@@ -547,9 +457,7 @@
 		private SIL.Windows.Forms.Widgets.BitmapButton _pasteButton;
 		private SIL.Windows.Forms.Widgets.BitmapButton _cutButton;
 		private SIL.Windows.Forms.Widgets.BitmapButton _undoButton;
-		private SIL.Windows.Forms.Widgets.BitmapButton _deletePageButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-        private SIL.Windows.Forms.Widgets.BitmapButton _duplicatePageButton;
 
 
     }

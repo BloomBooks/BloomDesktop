@@ -9,28 +9,37 @@ import theOneLocalizationManager from "../lib/localizationManager/localizationMa
 export interface IUILanguageAwareProps {
     currentUILanguage?: string;
     hidden?: boolean;
-    //l10nVerbose?: boolean
     className?: string;
 }
 
 export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nKey: string;
     l10nComment?: string;
+    l10nTipEnglishEnabled?: string;
+    l10nTipEnglishDisabled?: string;
 }
 
 export interface ILocalizationState {
     translation?: string;
+    tipEnabledTranslation?: string;
+    tipDisabledTranslation?: string;
 }
 
 // A base class for all elements that display text. It uses Bloom's localizationManager wrapper to get strings.
 export class LocalizableElement<P extends ILocalizationProps, S extends ILocalizationState> extends React.Component<P, ILocalizationState> {
     localizationRequestCancelToken: CancelTokenStatic;
     isComponentMounted: boolean;
+    tooltipKey: string;
+    disabledTooltipKey: string;
+
     constructor(props: ILocalizationProps) {
         super(props as P);
         this.isComponentMounted = false; // This is an antipattern. See note on componentWillUnmount()
+        this.tooltipKey = this.props.l10nKey + ".ToolTip";
+        this.disabledTooltipKey = this.props.l10nKey + ".ToolTipWhenDisabled";
         this.state = {};
     }
+
     private getOriginalEnglishStringContent(): string {
         // Note the following *looks* better, but React complains that there is not exactly one child
         // even though React.Children.count returns 1.
@@ -45,16 +54,38 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
     // React Docs: "If you need to load data from a remote endpoint, this is a good place to instantiate the network request.
     // Setting state in this method will trigger a re-rendering."
     public componentDidMount() {
-        let self = this;
+        if (!this.props.l10nKey) {
+            console.log("l10n component mounted with no key.");
+            return;
+        }
         this.isComponentMounted = true;
-        theOneLocalizationManager.asyncGetText(this.props.l10nKey, this.getOriginalEnglishStringContent(), this.props.l10nComment)
-            .done(function (result) {
-                // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
-                // after this component is no longer visible. See note on componentWillUnmount()
-                if (self.isComponentMounted) {
-                    self.setState({ translation: result });
-                }
-            });
+        var english = this.getOriginalEnglishStringContent();
+        if (!english.startsWith("ERROR: must have exactly one child")) {
+            theOneLocalizationManager.asyncGetText(this.props.l10nKey, english, this.props.l10nComment)
+                .done((result) => {
+                    // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
+                    // after this component is no longer visible. See note on componentWillUnmount()
+                    if (this.isComponentMounted) {
+                        this.setState({ translation: result });
+                    }
+                });
+        }
+        if (this.props.l10nTipEnglishEnabled) {
+            theOneLocalizationManager.asyncGetText(this.tooltipKey, this.props.l10nTipEnglishEnabled, this.props.l10nComment)
+                .done((result) => {
+                    if (this.isComponentMounted) {
+                        this.setState({ tipEnabledTranslation: result });
+                    }
+                });
+        }
+        if (this.props.l10nTipEnglishDisabled) {
+            theOneLocalizationManager.asyncGetText(this.disabledTooltipKey, this.props.l10nTipEnglishDisabled, this.props.l10nComment)
+                .done((result) => {
+                    if (this.isComponentMounted) {
+                        this.setState({ tipDisabledTranslation: result });
+                    }
+                });
+        }
     }
 
     public componentWillUnmount() {
@@ -64,16 +95,16 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
     }
 
     public getLocalizedContent(): JSX.Element {
-        // if (l10nVerbose) { // enhance... I was playing with a "verbose" feature
-        //     return <span>{(this.state as any) + "[l10nKey=" + this.props.l10nKey + " uilang=" +
-        //            this.props.currentUILanguage + "]"} </span>;
-        // } else {
-        if (this.state.translation !== undefined) {
+        if (this.state && this.state.translation) {
             return <span> {this.state.translation} </span>;
         } else {
             return <span style={{ color: "grey" }}> {this.getOriginalEnglishStringContent()} </span>;
         }
-        //        }
+    }
+
+    public getLocalizedTooltip(controlIsEnabled: boolean): string {
+        return controlIsEnabled ? this.state.tipEnabledTranslation :
+            this.state.tipDisabledTranslation ? this.state.tipDisabledTranslation : this.state.tipEnabledTranslation;
     }
 
     public getClassName(): string {
