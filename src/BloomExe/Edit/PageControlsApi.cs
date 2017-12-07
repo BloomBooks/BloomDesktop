@@ -68,14 +68,16 @@ namespace Bloom.Edit
 			{
 				_editingModel.CurrentBook.TemporarilyUnlocked = false;
 				request.PostSucceeded();
-				UpdateState();
+				UpdateState(); // because we aren't selecting a new page
+				_editingModel.RefreshDisplayOfCurrentPage();
 			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "unlockBook", request =>
 			{
 				_editingModel.CurrentBook.TemporarilyUnlocked = true;
 				request.PostSucceeded();
-				UpdateState();
+				UpdateState(); // because we aren't selecting a new page
+				_editingModel.RefreshDisplayOfCurrentPage();
 			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>

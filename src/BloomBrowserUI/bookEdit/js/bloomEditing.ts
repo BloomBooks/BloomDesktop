@@ -264,10 +264,12 @@ function GetOverflowChecker() {
 
 function IsInTranslationMode() {
     var body = $("body");
-    if (!body.hasAttr("editMode")) {
+    // This used to check for "editMode", but that has been replaced by "bookcreationtype"
+    // by the time we get here.
+    if (!body.hasAttr("bookcreationtype")) {
         return false;
     } else {
-        return body.attr("editMode") === "translation";
+        return body.attr("bookcreationtype") === "translation";
     }
 }
 
@@ -663,7 +665,7 @@ function AddXMatterLabelAfterPageLabel(container) {
 // Only put setup code here which is guaranteed to only be run once per page load.
 // e.g. Don't put setup for elements such as image containers or editable boxes which may get added after page load.
 function OneTimeSetup() {
-    setupOrigami();
+    setupOrigami(IsInTranslationMode()); // 'true' means book is locked.
 }
 
 interface String {
