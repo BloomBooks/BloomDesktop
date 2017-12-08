@@ -31,7 +31,7 @@ export function setupOrigami(isBookLocked: boolean) {
     $(".customPage").append(getOrigamiControl().append(createTypeSelectors()).append(createTextBoxIdentifier()));
 
     if (isBookLocked) {
-        $(".origami-toggle").attr("title", "localized tooltip");
+        //$(".origami-toggle").attr("title", "localized tooltip");
         $("#myonoffswitch").attr("disabled", "true");
     } else {
         $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
@@ -96,6 +96,7 @@ function setupLayoutMode() {
 
 function layoutToggleClickHandler() {
     var marginBox = $(".marginBox");
+    const toggleTransitionLength = 450; // 400ms CSS toggle transition + 50ms extra to get it working.
     if (!marginBox.hasClass("origami-layout-mode")) {
         marginBox.addClass("origami-layout-mode");
         setupLayoutMode();
@@ -110,9 +111,12 @@ function layoutToggleClickHandler() {
     } else {
         marginBox.removeClass("origami-layout-mode");
         marginBox.find(".textBox-identifier").remove();
-        fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
         origamiUndoStack.length = origamiUndoIndex = 0;
-        $("html").off("keydown.origami");
+        // delay further processing to avoid messing up origami toggle transition
+        setTimeout(function () {
+            $("html").off("keydown.origami");
+            fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
+        }, toggleTransitionLength);
     }
 }
 

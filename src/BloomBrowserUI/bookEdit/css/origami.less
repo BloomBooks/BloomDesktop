@@ -4,15 +4,13 @@
 // Put all the edit-mode-only origami rules in origamiEditing.less.
 // Note: there may well be more rules here which could be moved to
 // origamiEditing.less. The initial goal of splitting them up was to avoid
-// getting the orgigami editing behaviors while reading in BloomReader.
+// getting the origami editing behaviors while reading in BloomReader.
 @import (inline) "../../lib/split-pane/split-pane.css";
 @import "../../templates/common-mixins.less";
 
 @flowerPetalGrey:#7e7e7e;
 @inactiveColor: rgb(80%,80%,80%);
 @font: "Segoe UI", "Open Sans", Arial, sans-serif;
-@ToggleRightOffset: 19px;
-@ToggleVerticalOffset: -30px;
 
 .origami-ui {
     visibility: hidden;
@@ -61,20 +59,6 @@
     border-bottom: 3px dashed transparent;
 }
 
-.origami-toggle {
-    position: absolute;
-    right: @ToggleRightOffset;
-    top: @ToggleVerticalOffset;
-    line-height: 1em;
-    color: @inactiveColor;
-    font-family: @font;
-}
-.origami-toggle > :first-of-type {
-	display: inline;
-}
-.origami-layout-mode ~ .origami-toggle {
-    color: @bloom-red;
-}
 .origami-layout-mode .bloom-editable{
     // We want to see some text in the background, but it can't interfer with the forground.
     // If you change this color, be sure to see how it looks when grey background is enabled.

@@ -9,9 +9,9 @@
 @PasteImageButtonColor: #0C8597;
 @MetadataButtonColor: #3A7F62;
 @OverflowColor: red;
-@PageLabelVerticalDisplacement: -33px;
-@TogglePartsRadius: 8px;
+
 @PageLabelAndChangeLayoutPaneHeight: 45px;
+@PageLabelVerticalDisplacement: -33px;
 
 BODY
 {
@@ -500,64 +500,6 @@ SPAN.possible-word
     -moz-text-decoration-color: blue;
 }
 */
-
-/*
- * Layout Mode (origami) switch (from proto.io)
- */
- .origami-toggle * {
-     color: @bloom-purple;
- }
-
-.onoffswitch {
-    display: inline-block; vertical-align: middle; /* This is the only thing I added custom */
-    position: relative; width: 50px;
-    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
-}
-.onoffswitch-checkbox {
-    display: none;
-}
-.onoffswitch-label {
-    display: block; overflow: hidden; cursor: pointer;
-    border: 2px solid @bloom-purple; border-radius: @TogglePartsRadius;
-}
-.onoffswitch-inner {
-    display: block; width: 200%; margin-left: -100%;
-    -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
-    -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
-    border-radius: @TogglePartsRadius;
-}
-.onoffswitch-inner:before, .onoffswitch-inner:after {
-    display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 10px;
-    font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
-    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-}
-.onoffswitch-inner:before {
-    content: "";
-    padding-left: 10px;
-    background-color: @bloom-purple; color: #FFFFFF;
-}
-.onoffswitch-inner:after {
-    content: "";
-    padding-right: 10px;
-    background-color: #CCCCCC; color: #333333;
-    text-align: right;
-}
-.onoffswitch-switch {
-    display: block; width: 14px; margin: 0px;
-    background: #000000;
-    position: absolute; top: 0; bottom: 0; right: 34px;
-    -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
-    -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
-    border-radius: @TogglePartsRadius;
-}
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
-    margin-left: 0;
-}
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-    right: 0px;
-}
 
 div.cke_float {
   div.cke_top {

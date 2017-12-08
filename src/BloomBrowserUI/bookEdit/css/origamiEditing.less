@@ -4,20 +4,32 @@
 // For example, you can hover over a splitter and drag it and see the percent.
 // But these rules are not included in static views of the book, including all
 // publishing view and the preview.
+@import "../../templates/common-mixins.less"; // only for bloom-purple, if we do BL-5326
 @activeColor:  #E48C84;
+@DisabledGray: #575757;
+@DarkGray:#404040;
+
+@font: "Segoe UI", "Open Sans", Arial, sans-serif;
+
+@ToggleRightOffset: 19px;
+@ToggleVerticalOffset: -30px;
+@TogglePartsRadius: 8px;
+@ToggleInnerOffset: -2px;
+@ToggleWidth: 60px;
+@ToggleBorderThickness: 2px;
 
 .split-pane-divider {
     visibility: visible !important; // should be enough to include this after origami, but make sure
 }
 
 .split-pane.vertical-percent > .vertical-divider {
-        &:hover:after, &.dragged:after{
-                content: attr(title);
-                position: absolute;
-                left: 5px;
-                z-index: 1000000;
-                color: @activeColor;
-        }
+    &:hover:after, &.dragged:after{
+        content: attr(title);
+        position: absolute;
+        left: 5px;
+        z-index: 1000000;
+        color: @activeColor;
+    }
 }
 
 .split-pane.vertical-percent > .vertical-divider:hover,
@@ -34,26 +46,21 @@
     cursor: row-resize;
 }
 
-.origami-toggle {
-    cursor: pointer;
-}
-
 .split-pane.horizontal-percent > .horizontal-divider {
     &:hover:after, &.dragged:after{
-                content: attr(title);
-                position: absolute;
-                bottom: 0;
-                right: 0;
-                z-index: 1000000;
-                color: @activeColor;
-        }
+        content: attr(title);
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        z-index: 1000000;
+        color: @activeColor;
+    }
 }
 
 .split-pane.horizontal-percent > .horizontal-divider:hover,
 .origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
 .horizontal-divider.dragged {
     border-bottom-color: @activeColor !important;
-
 }
 
 .selector-links, .selector-links a {
@@ -62,11 +69,11 @@
 
 .origami-controls {
     .button, .origami-controls .button:visited {
-            cursor: pointer;
+        cursor: pointer;
     }
     .button:hover, .button:focus {
-            color: white;
-            background-color: @activeColor;
+        color: white;
+        background-color: @activeColor;
     }
 }
 
@@ -74,5 +81,113 @@
 .origami-layout-mode .origami-ui{
     &:hover .adders{
            display:block;
+    }
+}
+
+/*
+ * Layout Mode (origami) switch (from proto.io)
+ *
+ */
+.origami-toggle {
+    cursor: pointer;
+    position: absolute;
+    right: @ToggleRightOffset;
+    top: @ToggleVerticalOffset;
+    line-height: 1em;
+    color: @DisabledGray;
+    font-family: @font;
+    div {
+        color: @bloom-purple;
+    }
+    > :first-of-type {
+        display: inline;
+    }
+}
+
+// here follows the inner workings of the toggle
+.onoffswitch {
+    display: inline-block;
+    vertical-align: middle; /* This is the only thing I added custom */
+    position: relative;
+    width: @ToggleWidth;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    height: 17px;
+    border: @ToggleBorderThickness solid @bloom-purple;
+    border-radius: 10px;
+}
+.onoffswitch-inner {
+    display: block;
+    width: 200%;
+    margin-left: -100%;
+    -moz-transition: margin 0.3s ease-in-out 0s; -webkit-transition: margin 0.3s ease-in-out 0s;
+    -o-transition: margin 0.3s ease-in-out 0s; transition: margin 0.3s ease-in-out 0s;
+}
+.onoffswitch-inner::before, .onoffswitch-inner::after {
+    display: block;
+    float: left;
+    width: 50%;
+    height: 22px;
+    padding: 0;
+    line-height: 10px;
+    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+    border: @ToggleBorderThickness solid transparent;
+    background-clip: padding-box;
+}
+.onoffswitch-inner::before {
+    content: "";
+    background-color: @bloom-purple;
+    margin: @ToggleInnerOffset;
+}
+.onoffswitch-inner::after {
+    content: "";
+    margin: @ToggleInnerOffset;
+}
+// The inner ball of the toggle that moves
+.onoffswitch-switch {
+    display: block;
+    width: 14px;
+    margin: 1px;
+    background-color: @bloom-purple;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 39px;
+    -moz-transition: all 0.3s ease-in-out 0s; -webkit-transition: all 0.3s ease-in-out 0s;
+    -o-transition: all 0.3s ease-in-out 0s; transition: all 0.3s ease-in-out 0s;
+    border-radius: @TogglePartsRadius;
+}
+// the checkbox is not visible, but we use its checked state here
+.onoffswitch-checkbox:checked + .onoffswitch-label {
+    background-color: @bloom-purple; // make sure the active color is solid
+    -moz-transition: background-color 0.4s ease-in-out 0s; -webkit-transition: background-color 0.4s ease-in-out 0s;
+    -o-transition: background-color 0.4s ease-in-out 0s; transition: background-color 0.4s ease-in-out 0s;
+    .onoffswitch-inner {
+        margin-left: 0;
+    }
+    .onoffswitch-switch {
+        right: 1px;
+        background-color: @DarkGray; // switched-on switch turns dark gray
+    }
+}
+
+// Turn whole toggle gray if in translation mode
+// Review: I haven't figured out how to get the disabled switch 'hollow'. It seems inordinately complicated.
+body[bookcreationtype='translation'] .origami-toggle {
+    div {
+        color: @DisabledGray;
+    }
+    label {
+        border-color: @DisabledGray;
+    }
+    span {
+        background-color: @DisabledGray;
     }
 }
