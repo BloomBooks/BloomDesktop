@@ -1,8 +1,8 @@
 import AudioRecording from './audioRecording';
 
 
-describe("audio recording tests", function() {
-    it("inserts sentence spans with ids and class when none exist", function() {
+describe("audio recording tests", function () {
+    it("inserts sentence spans with ids and class when none exist", function () {
         var div = $("<div>This is a sentence. This is another</div>");
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
@@ -15,7 +15,7 @@ describe("audio recording tests", function() {
         expect(spans.first().attr('class')).toBe('audio-sentence');
         expect(spans.last().attr('class')).toBe('audio-sentence');
     });
-    it("retains matching sentence spans with same ids.keeps md5s and adds missing ones", function() {
+    it("retains matching sentence spans with same ids.keeps md5s and adds missing ones", function () {
         var div = $('<div><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
@@ -30,7 +30,7 @@ describe("audio recording tests", function() {
         expect(spans.first().attr('class')).toBe('audio-sentence');
         expect(spans.last().attr('class')).toBe('audio-sentence');
     });
-    it("retains markup within sentences", function() {
+    it("retains markup within sentences", function () {
         var div = $('<div><span id="abc" class="audio-sentence">This <b>is</b> a sentence.</span> This <i>is</i> another</div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
@@ -39,7 +39,7 @@ describe("audio recording tests", function() {
         expect(spans[0].innerHTML).toBe('This <b>is</b> a sentence.');
         expect(spans[1].innerHTML).toBe('This <i>is</i> another');
     });
-    it("keeps id with unchanged recorded sentence when new inserted before", function(){
+    it("keeps id with unchanged recorded sentence when new inserted before", function () {
         var div = $('<div>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
@@ -54,7 +54,7 @@ describe("audio recording tests", function() {
         expect(spans.first().attr('class')).toBe('audio-sentence');
         expect(spans.last().attr('class')).toBe('audio-sentence');
     });
-    it("keeps ids and md5s when inserted between", function(){
+    it("keeps ids and md5s when inserted between", function () {
         var div = $('<div><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first sentence.</span> This is inserted. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> Inserted after.</div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
@@ -100,6 +100,23 @@ describe("audio recording tests", function() {
         expect(spans.length).toBe(1);
         expect(spans[0].innerHTML).toBe('&nbsp;');
         expect(spans.first().attr('class')).not.toContain('audio-sentence');
+    });
+
+    it("flattens nested audio spans", function () {
+        var p = $('<p><span id="efgh" recordingmd5="xyz" class="audio-sentence"><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first.</span> <span id="abde" recordingmd5="qef" class="audio-sentence">This is the second.</span> This is the third.</span></p>');
+        var recording = new AudioRecording();
+        recording.makeSentenceSpans(p);
+        var spans = p.find("span");
+        // Should have removed the outer span and left the two inner ones.
+        expect(spans.length).toBe(3);
+        expect(spans.first().attr("id")).toBe("abcd");
+        expect(spans.first().next().attr("id")).toBe("abde");
+        expect(spans[0].innerHTML).toBe('This is the first.');
+        expect(spans[1].innerHTML).toBe('This is the second.');
+        expect(spans[2].innerHTML).toBe('This is the third.');
+        expect(spans.first().attr('class')).toBe('audio-sentence');
+        expect(spans.first().next().attr('class')).toBe('audio-sentence');
+        expect(spans.first().next().next().attr('class')).toBe('audio-sentence');
     });
 
     //reviewSlog: this is broken because it now emits more spaces.
