@@ -1,8 +1,17 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 @import "../../templates/common-mixins.less";
 @import "../sourceBubbles/sourceBubbles.less";
+
+@MediumGray: #C0B9B9;
+@ImageHoverOverlay: #D5D5E4;
+@ImageButtonBorder: #716666;
+@ChangeImageButtonColor: #96668F;
+@PasteImageButtonColor: #0C8597;
+@MetadataButtonColor: #3A7F62;
+@OverflowColor: red;
 @PageLabelVerticalDisplacement: -33px;
 @TogglePartsRadius: 8px;
+@PageLabelAndChangeLayoutPaneHeight: 45px;
 
 BODY
 {
@@ -13,7 +22,7 @@ BODY
 
 #labelAndLayoutPane
 {
-    height: 45px;
+    height: @PageLabelAndChangeLayoutPaneHeight;
 }
 
 .tool-items:after
@@ -54,6 +63,7 @@ DIV.bloom-imageContainer
     left: -1px;
     top: calc(@PageLabelVerticalDisplacement - 48);
 }
+
 .bloom-page .pageLabel
 {
     text-align: left;
@@ -68,10 +78,12 @@ DIV.bloom-imageContainer
         padding: 0 2px;
     }
 }
+
 .evenPage DIV.pageLabel
 {
     margin-left: 2.5cm;
 }
+
 .oddPage DIV.pageLabel
 {
     margin-left: 1.3cm;
@@ -84,17 +96,15 @@ DIV.page
 }
 DIV.page.coverColor
 {
-    background-color: #D5D5E4;
+    background-color: @ImageHoverOverlay;
     border: medium outset #000000;
 }
-/*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
-@MediumGray: #C0B9B9;
-@ImageHoverOverlay: #D5D5E4;
-@ImageButtonBorder: #716666;
-@ChangeImageButtonColor: #96668F;
-@PasteImageButtonColor: #0C8597;
-@MetadataButtonColor: #3A7F62;
-
+/* We want divs which are used for editing to look just like textareas (e.g. border).
+   For now, this readOnlyInTranslationMode is an indicator that this is edtiable,
+   but there could be divs which are always edtiable... unfortunately we can't access
+   the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css,
+   and there is javascript which notices that transparnet border and makes the field read-only.
+*/
 DIV.readOnlyInTranslationMode
 {
     border: thin solid @MediumGray;
@@ -274,8 +284,6 @@ DIV.bloom-templateMode {
     border: 3px dashed black;
 }
 
-@OverflowColor: red;
-
 .overflow
 {
     color: @OverflowColor !important;
@@ -311,10 +319,8 @@ DIV.bloom-templateMode {
     margin-right: 8px;
 }
 
-
 DIV.textWholePage UL
 {
-    /*+placement:displace 1px -37px;*/
     position: absolute;
     margin-left: 1px;
     margin-top: -37px;
@@ -334,11 +340,6 @@ DIV.textWholePage UL
 .ui-resizable-e, .ui-resizable-w
 {
     top: 45%;
-}
-.ui-resizable-se
-{
-    /*[disabled]bottom:-5px;*/
-    /*[disabled]right:-5px;*/
 }
 DIV.marginBox
 {
@@ -382,14 +383,11 @@ DIV.marginBox
 #pagedragtoolbox
 {
     background-color: #FFFFA3;
-    /*+placement:shift 564px -649px;*/
     position: relative;
     left: 564px;
     top: -649px;
     width: 274px;
     height: 645px;
-    /*[empty]padding-top:;*/
-    /*[empty]margin-top:;*/
 }
 .ui-resizable, .ui-draggable, .ui-deletable
 {
