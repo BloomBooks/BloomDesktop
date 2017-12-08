@@ -760,6 +760,12 @@ export default class AudioRecording {
             var processedChild: boolean = false; // Did we find a significant child?
             for (var i = 0; i < children.length; i++) {
                 var child: HTMLElement = children[i];
+                if ($(child).is("span.audio-sentence") && $(child).find("span.audio-sentence").length > 0) {
+                    // child is spurious; an extra layer of wrapper around other audio spans.
+                    $(child).replaceWith($(child).html()); // clean up.
+                    this.makeSentenceSpans(root); // start over.
+                    return;
+                }
                 var name = child.nodeName.toLowerCase();
                 // Review: is there a better way to pick out the elements that can occur within content elements?
                 if (name != 'span' && name != 'br' && name != 'i' && name != 'b' && name != 'u' && $(child).attr('id') !== 'formatButton') {
