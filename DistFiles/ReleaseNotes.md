@@ -217,7 +217,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 - Note, Bloom will automatically change the default font from Andika to Andika New Basic, if you have Andika set. It will only do this once, so if you choose to change it back to Andika, it won't keep changing it. Note also that Bloom will not attempt to change any custom styles you may have created. If you need bold/italics to show up in a custom style, you'll have to change away from Andika by hand.
 
 ### Keyman 9
-- If you enable Keyman 9 while on a page, you'll need to switch to another page and back before you can type. If this is causing you problems, please [post a suggestion here](http://bloomlibrary.org/#/suggestions) for us to do more work on this.
+- If you enable Keyman 9 while on a page, you'll need to switch to another page and back before you can type.
 
 ### Printing Quality
 - To get good printing reliability on Windows, install the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) software. On Linux, we are switching to the system's default way of printing PDFs (which is normally GhostScript). On Windows, having Adobe Reader installed will also take care of some problems with showing images in preview of the PDF.
