@@ -8,6 +8,4 @@ Currently, you cannot make a "shell" for other languages to use.
 Thanks to Bruce Cox (SIL Cameroon) for getting this template started.
 
 #Feedback
-Please give and vote on [suggestions](http://bloomlibrary.org/suggestions)
-
 Please report problems to [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem).

@@ -12,6 +12,4 @@ If you would like to have instructions in a different language, you can delete t
 If you send us that text, we can include it in a future version of the template.
 
 #Feedback
-Please give and vote on [suggestions](http://bloomlibrary.org/suggestions)
-
 Please report problems to [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&nbsp;Book&nbsp;Problem).
