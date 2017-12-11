@@ -72,16 +72,15 @@ for (var j = 0; j < styleSheets.length; j++) {
 // }
 import TopicChooser from './TopicChooser/TopicChooser';
 
-
 //ShowTopicChooser() is called by a script tag on a <a> element in a tooltip
 window['ShowTopicChooser'] = () => {
     TopicChooser.showTopicChooser();
-}
+};
 
 //PasteImageCredits() is called by a script tag on a <a> element in a tooltip
 window['PasteImageCredits'] = () => {
     EditableDivUtils.pasteImageCredits();
-}
+};
 
 $(document).ready(function () {
     $('body').find('*[data-i18n]').localize();
