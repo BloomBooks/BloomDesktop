@@ -1,6 +1,10 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import axios from "axios";
 
+interface qtipInterface extends JQuery {
+    qtip(options: string): JQuery;
+}
+
 export class EditableDivUtils {
 
     static getElementSelectionIndex(element: HTMLElement): number {
@@ -146,7 +150,7 @@ export class EditableDivUtils {
     }
 
     static pasteImageCredits() {
-        axios.get('/bloom/api/image/imageCreditsForWholeBook').then(result => {
+        axios.get("/bloom/api/image/imageCreditsForWholeBook").then(result => {
             var data = result.data;
             if (!data)
                 return;     // nothing to insert: no images apparently...
@@ -157,7 +161,7 @@ export class EditableDivUtils {
             // div element to which the qtip bubble is attached has an aria-describedby attribute
             // that refers to the div.qtip's id.
             var bubble = document.activeElement.parentElement.parentElement;
-            var query = '[aria-describedby="' + bubble.getAttribute('id') + '"]';
+            var query = "[aria-describedby='" + bubble.getAttribute("id") + "']";
             var credits = document.querySelectorAll(query);
             if (credits.length > 0) {
                 var artists = credits[0];
@@ -165,14 +169,18 @@ export class EditableDivUtils {
                 // information, I'd be happy to learn what it is.  data is a string consisting
                 // of one or more <p> elements properly terminated by </p> and separated by
                 // newlines.
-                var d2 = document.createElement('div');
+                var d2 = document.createElement("div");
                 d2.innerHTML = data;
-                var paras = d2.getElementsByTagName('p');
+                var paras = d2.getElementsByTagName("p");
                 // Note that when the p element is appended to the div element, it gets removed from the list.
                 while (paras.length > 0) {
                     artists.appendChild(paras[0]);
                 }
             }
         });
+        // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
+        setTimeout(function () {
+            (<qtipInterface>$("div[data-hasqtip]")).qtip("reposition");
+        }, 100); // make sure the DOM has the inserted text before we try to reposition qtips
     }
 }
