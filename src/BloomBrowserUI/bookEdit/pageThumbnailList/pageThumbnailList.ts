@@ -118,7 +118,7 @@ function loadNextThumbnail() {
     // adding this to the query string tells the server to generate a thumbnail from the image file
     var src = img.getAttribute("thumb-src");
     if (src.indexOf("?") >= 0) {
-        // already has a query (e.g., optional=true for branding)
+        // already has a query (e.g., at one point we had optional=true for branding)
         src = src + "&thumbnail=1";
     } else {
         src = src + "?thumbnail=1";
