@@ -204,22 +204,33 @@ namespace Bloom.Book
 			if (BookStorage.IsStaticContent(bookFolderPath))
 				return;
 			var prefix = BrandingApi.kApiBrandingImage + "?id=";
-			foreach (XmlElement imageElt in newPageDiv.SafeSelectNodes("//img"))
+			foreach (XmlElement imageElt in newPageDiv.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
 			{
 				var src = imageElt.Attributes["src"]?.Value;
 				if (src == null || !src.StartsWith(prefix))
 					continue;
 				var fileName = src.Substring(prefix.Length);
 				var pathToRealImage = BrandingApi.FindBrandingImageFileIfPossible(branding, fileName);
-				if (!string.IsNullOrEmpty(pathToRealImage))
+				if (string.IsNullOrEmpty(pathToRealImage))
+				{
+					// If the book folder contains this file already, it's obsolete, from some previous branding choice.
+					// Get rid of it to save space. We might also have an obsolete file with a png extension; get rid of
+					// that too.
+					var destFileName = Path.Combine(bookFolderPath, fileName);
+					RobustFile.Delete(destFileName);
+					RobustFile.Delete(Path.ChangeExtension(destFileName, ".png"));
+					// And we may as well get rid of the img element itself
+					imageElt.ParentNode.RemoveChild(imageElt);
+				} else
 				{
 					fileName = Path.GetFileName(pathToRealImage); // May have changed extension
 					RobustFile.Copy(pathToRealImage, Path.Combine(bookFolderPath, fileName), true);
+					// The HTML typically already has onerror="style='display:none'" to prevent a missing
+					// image icon in the book, since branding images are generally optional.
+					// And we are deleting branding img elements
+					// This marker prevents the image server from complaining that it is missing.
+					imageElt.SetAttribute("src", fileName + "?optional=true");
 				}
-				// The HTML typically already has onerror="style='display:none'" to prevent a missing
-				// image icon in the book, since branding images are generally optional.
-				// This marker prevents the image server from complaining that it is missing.
-				imageElt.SetAttribute("src", fileName + "?optional=true");
 			}
 		}
 

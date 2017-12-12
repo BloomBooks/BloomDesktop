@@ -94,9 +94,9 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void InjectXMatter_BrandingApi_ChangesSrcAndCopiesFileAndMarksOptional()
+		public void InjectXMatter_BrandingApi_ChangesSrcAndCopiesFileAndMarksOptionalAndDeletesUnusedFilesAndImgs()
 		{
-			using (var tempFolder = new TemporaryFolder("InjectXMatter_BrandingApi_ChangesSrcAndCopiesFile"))
+			using (var tempFolder = new TemporaryFolder("InjectXMatter_BrandingApi_ChangesSrcAndCopiesFileAndMarksOptionalAndDeletesUnusedFilesAndImgs"))
 			{
 				var bookFolder = Path.Combine(tempFolder.FolderPath, "book");
 				Directory.CreateDirectory(bookFolder);
@@ -104,12 +104,16 @@ namespace BloomTests.Book
 				Directory.CreateDirectory(srcFolder);
 				var srcImagePath = Path.Combine(srcFolder, "another-image.png");
 				File.WriteAllText(srcImagePath, "some nonsense");
+				var obsoleteFileInBookFolder = Path.Combine(bookFolder, "some nonexistent file.svg");
+				var anotherObsoleteFile = Path.ChangeExtension(obsoleteFileInBookFolder, ".png");
+				File.WriteAllText(obsoleteFileInBookFolder, "some nonsense");
+				File.WriteAllText(anotherObsoleteFile, "some nonsense");
 				var frontMatterDom = new XmlDocument();
 				frontMatterDom.LoadXml(@"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
 						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
-						 <img class='branding branding-wide' src='/bloom/api/branding/image?id=back-cover-outside.svg' type='image/svg'/>
-						 <img class='branding branding-wide' src='/bloom/api/branding/image?id=" + Path.ChangeExtension(srcImagePath, "svg") + @"' type='image/svg'/>
-						 <img class='branding branding-wide' src='/bloom/api/branding/image?id=some nonexistent file.svg' type='image/svg'/>
+						 <img class='branding' src='/bloom/api/branding/image?id=back-cover-outside.svg' type='image/svg'/>
+						 <img class='branding' src='/bloom/api/branding/image?id=" + Path.ChangeExtension(srcImagePath, "svg") + @"' type='image/svg'/>
+						 <img class='branding' src='/bloom/api/branding/image?id=some nonexistent file.svg' type='image/svg'/>
 						</div></body></html>");
 				var helper = CreatePaperSaverHelper();
 				helper.XMatterDom = frontMatterDom;
@@ -117,10 +121,12 @@ namespace BloomTests.Book
 				helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, "Default", bookFolder);
 				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg?optional=true']", 1);
 				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='another-image.png?optional=true']", 1);
-				// Can't find this file, so just leave in case user sometime supplies it?
-				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='some nonexistent file.svg?optional=true']", 1);
+				// Not in source, so delete img
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='some nonexistent file.svg?optional=true']", 0);
 				Assert.That(File.Exists(Path.Combine(bookFolder, "back-cover-outside.svg")));
 				Assert.That(File.Exists(Path.Combine(bookFolder, "another-image.png")));
+				Assert.That(!File.Exists(obsoleteFileInBookFolder));
+				Assert.That(!File.Exists(anotherObsoleteFile));
 			}
 		}
 
