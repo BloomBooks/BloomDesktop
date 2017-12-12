@@ -1061,6 +1061,8 @@ namespace Bloom.Workspace
 	/// </summary>
 	public class NestedDockedChildPanel : Panel
 	{
+		// This fix is Windows/.Net specific.  It prevents Bloom from displaying the main window at all in Linux/Mono.
+#if !__MonoCS__
 		protected override void OnSizeChanged(EventArgs e)
 		{
 			if (this.Handle != null)
@@ -1071,5 +1073,6 @@ namespace Bloom.Workspace
 				});
 			}
 		}
+#endif
 	}
 }
