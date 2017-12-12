@@ -129,7 +129,7 @@ namespace Bloom.web.controllers
 			// Dictionary Key is metadata.MinimalCredits, Value is the list of pages that have images this credits string applies to.
 			// Generate a formatted credit string like:
 			//   Image on page 2 by John Doe, Copyright John Doe, 2016, CC-BY-NC. or
-			//   Images on pages 1,3, and 4 from Art of Reading, Copyright SIL International 2017, CC-BY-SA.
+			//   Images on pages 1, 3, 4 by Art of Reading, Copyright SIL International 2017, CC-BY-SA.
 			// The goal is to return one string for each credit source listing the pages that apply.
 			var singleCredit = LocalizationManager.GetString("EditTab.FrontMatter.SingleImageCredit", "Image on page {0} by {1}.");
 			var multipleCredit = LocalizationManager.GetString("EditTab.FrontMatter.MultipleImageCredit", "Images on pages {0} by {1}.");
@@ -154,7 +154,7 @@ namespace Bloom.web.controllers
 						}
 						else
 						{
-							sb.Append("and " + pages[i]);
+							sb.Append(pages[i]);
 						}
 					}
 					yield return string.Format(multipleCredit, sb, credit);
