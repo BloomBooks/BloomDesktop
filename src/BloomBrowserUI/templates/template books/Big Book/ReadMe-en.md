@@ -12,6 +12,4 @@ If you would like to have instructions in a different language, you can delete t
 If you send us that text, we can include it in a future version of the template. {i18n="bigbook.limits.Englishtemplate"}
 
 # Feedback {i18n="bigbook.feedback"}
-Please give and vote on [suggestions](http://bloomlibrary.org/suggestions) {i18n="bigbook.feedbackvoting"}
-
 Please report problems to [issues@bloomremovethislibrary.org](mailto:issues@bloomremovethislibrary.org?subject=Big&nbsp;Book&nbsp;Problem). {i18n="bigbook.reportsbugs"}
