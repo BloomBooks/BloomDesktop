@@ -625,8 +625,33 @@ StoryCheckResults.prototype.getNumbers = function () {
  * @returns {Boolean}
  */
 LibSynphony.prototype.langDataFromString = function (langDataString) {
-
+    // Typically langDataString is from a ReaderToolsWords-xxx.json stored in sample texts.
+    // This file comes from a bloom pack and is not updated as other sample word data is edited.
+    // We arrange to load it before other sample words files so that data from them will not
+    // be overwritten here. However, sample words entered by the user directly in the settings
+    // dialog are stored in ReaderToolsSettings-xxx.json which is loaded before any sample texts.
+    // To avoid losing any new words the user has put there, we must make sure any pre-existing
+    // words are transferred to the new object.
+    // Enhance: this is ugly and messy and assumes this method is called in just one particular
+    // way. If the user deletes words in sample words that were in the original bloompack
+    // ReaderToolsWords file, they won't disappear. Even if the user deletes the sample texts
+    // version of ReaderToolsWords, Bloom will copy it again from the common data folder where
+    // it was put while unpacking the bloompack. To really kill them, the user would have to know
+    // to either delete the file from both Sample Texts and the common data folder, or to copy
+    // the one from the project root folder into the sample texts folder.
+    // But I don't see a better way to fix it while keeping compatibility with older bloompacks
+    // (and without a heck of a lot of work for a fairly minor bug that hasn't yet even been
+    // noticed by real users.)
+    var previousLangData = theOneLanguageDataInstance;
     theOneLanguageDataInstance = this.parseLangDataString(langDataString);
+    if (previousLangData && previousLangData.group1) {
+
+        for (var i = 0; i < previousLangData.group1.length; i++) {
+            if (!theOneLanguageDataInstance.findWord(previousLangData.group1[i].Name)) {
+                theOneLanguageDataInstance.group1.push(previousLangData.group1[i]);
+            }
+        }
+    }
 
     theOneLibSynphony.processVocabularyGroups();
 
