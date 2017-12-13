@@ -1,5 +1,6 @@
 @import "../../../templates/common-mixins.less";
 
+@ButtonDarkerGray: #363333;
 @DarkGray:#404040;
 @DisabledGray: #575757;
 @SecondButtonRowHeight: 55px;
@@ -39,6 +40,9 @@ button {
     background-color: @DarkGray;
     border: none;
     padding: @ButtonPadding;
+    &:hover {
+        background-color: @ButtonDarkerGray;
+    }
     &:disabled span {
         color: @DisabledGray;
     }
