@@ -71,20 +71,12 @@ Si nos envía el texto traducido, podemos incluirlo en una futura versión de la
           <target xml:lang="es-ES">Comentarios</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.feedbackvoting" approved="yes">
-        <source xml:lang="en">Please give and vote on <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="es-ES">Por favor dé y vote en <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions"> sugerencias</g></target>
-        <note>ID: bigbook.feedbackvoting</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor dar y votar sobre <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions"> sugerencias</g></target>
-        </alt-trans>
-      </trans-unit>
       <trans-unit id="bigbook.reportsbugs" approved="yes">
-        <source xml:lang="en">Please report problems to <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
+        <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         <note>ID: bigbook.reportsbugs</note>
         <alt-trans>
-          <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+          <target xml:lang="es-ES">Favor de reportar cualquier problema por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>

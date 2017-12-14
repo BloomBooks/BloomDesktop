@@ -33,15 +33,16 @@
         <target xml:lang="es-ES">Sugerencias</target>
         <note>ID: picture.dictionary.feedback</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.feedbackvoting" approved="yes">
-        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="es-ES">Por favor dé y vote en <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">sugerencias</g></target>
-        <note>ID: picture.dictionary.feedbackvoting</note>
-      </trans-unit>
       <trans-unit id="picture.dictionary.reportbugs" approved="yes">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
+        <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</target>
         <note>ID: picture.dictionary.reportbugs</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Favor de reportar cualquier problema por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
         </alt-trans>
