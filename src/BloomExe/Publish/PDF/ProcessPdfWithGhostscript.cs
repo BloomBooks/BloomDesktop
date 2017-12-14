@@ -99,6 +99,16 @@ namespace Bloom.Publish.PDF
 		/// </remarks>
 		private string FindGhostcriptOnWindows()
 		{
+			var basedir = FileLocator.DirectoryOfApplicationOrSolution;
+			var dir = Path.Combine(basedir, "ghostscript");
+			if (!Directory.Exists(dir))
+				dir = Path.Combine(basedir, "DistFiles", "ghostscript");
+			if (Directory.Exists(dir))
+			{
+				var filename = Path.Combine(dir, "gswin32c.exe");
+				if (File.Exists(filename))
+					return filename;
+			}
 			// TODO: if we decide to distribute GS with Bloom, enhance this to look first wherever we
 			// install GS in the user area.
 			var baseName = "gswin32";
@@ -118,6 +128,10 @@ namespace Bloom.Publish.PDF
 				return null;
 			foreach (var versionDir in Directory.GetDirectories(baseDir))
 			{
+				// gs9.18 works on Linux.  gs9.16 fails on Windows.  See BL-5295.
+				var version = Path.GetFileName(versionDir);
+				if (string.Compare(version, "gs9.18", StringComparison.Ordinal) < 0)
+					continue;
 				var prog = Path.Combine(versionDir, "bin", baseName + "c.exe");
 				if (File.Exists(prog))
 					return prog;
