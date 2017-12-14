@@ -27,13 +27,8 @@
         <target xml:lang="fr" state="translated">Retour d'information</target>
         <note>ID: picture.dictionary.feedback</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.feedbackvoting">
-        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="fr" state="translated">Donner et voter sur les <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g>.</target>
-        <note>ID: picture.dictionary.feedbackvoting</note>
-      </trans-unit>
       <trans-unit id="picture.dictionary.reportbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
+        <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
         <target xml:lang="fr" state="translated">Veuillez signaler les problèmes : <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g></target>
         <note>ID: picture.dictionary.reportbugs</note>
       </trans-unit>

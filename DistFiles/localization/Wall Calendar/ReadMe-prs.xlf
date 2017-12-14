@@ -1,50 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="prs">
     <body>
-      <trans-unit id="wall.calendar">
+      <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
         <target xml:lang="prs">درباره نمونه تقویم دیواری</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.use">
+      <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
         <target xml:lang="prs">‏A5‏، 12 ماهه همراه با تصویر و نقل قول در بالای صفحه و روزها در پائین صفحه بسازید. تقویم نام های ماه ها و روزها را به زبان شما استفاده خواهد کرد.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.limits">
+      <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
         <target xml:lang="prs">محدودیت های این نسخه</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.noshells">
+      <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
         <target xml:lang="prs">فعلاٌ، برای استفاده از لسانهای دیگر شما ‏"shell"‏ ساخته نمیتوانید.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.credits">
+      <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
         <target xml:lang="prs">امتیازات</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.thanks">
+      <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
         <target xml:lang="prs">از بروس کاکس (SIL‏ کیمرون) بخاطر شروع کردن این نمونه تشکر.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.feedback">
+      <trans-unit id="wall.calendar.feedback" approved="yes">
         <source xml:lang="en">Feedback</source>
         <target xml:lang="prs">باز یافت</target>
         <note>ID: wall.calendar.feedback</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.feedbackvoting">
-        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g>.</source>
-        <target xml:lang="prs">لطفاٌ رای بدهید <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">پیشنهادات</g>.</target>
-        <note>ID: wall.calendar.feedbackvoting</note>
-      </trans-unit>
       <trans-unit id="wall.calendar.reportbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="prs">لطفاٌ مشکلات را به <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g> گزارش دهی کنید.</target>
+        <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
+        <target xml:lang="prs" state="translated">لطفاٌ مشکلات را به <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g> گزارش دهی کنید.</target>
         <note>ID: wall.calendar.reportbugs</note>
       </trans-unit>
     </body>

@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="prs">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="az">
     <body>
-      <trans-unit id="picture.dictionary" approved="yes">
+      <trans-unit id="picture.dictionary">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="prs">درباره نمونه لغتنامه تصویری</target>
+        <target xml:lang="az" state="needs-translation">About the Picture Dictionary Template</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.use" approved="yes">
+      <trans-unit id="picture.dictionary.use">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="prs">نمونه را برای ساختار لغتنامه تصویری استفاده نمائید که یک لسانه، دو لسانه، یا سه لسانه باشد.</target>
+        <target xml:lang="az" state="needs-translation">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.limits" approved="yes">
+      <trans-unit id="picture.dictionary.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="prs">محدودیت های این نسخه</target>
+        <target xml:lang="az" state="needs-translation">Limitations of this version</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
+      <trans-unit id="picture.dictionary.stillexperimental">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="prs">این کتاب در حال حاضر به عنوان "تجربوِی" مشخص شده است، زیرا ما از چندین مشکل در طرح و اعتبار می دانیم.</target>
+        <target xml:lang="az" state="needs-translation">This book is currently marked "experimental" because we know of several problems in layout and convenience.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.feedback" approved="yes">
+      <trans-unit id="picture.dictionary.feedback">
         <source xml:lang="en">Feedback</source>
-        <target xml:lang="prs">باز یافت</target>
+        <target xml:lang="az" state="needs-translation">Feedback</target>
         <note>ID: picture.dictionary.feedback</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.reportbugs">
         <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="prs" state="translated">لطفاٌ مشکلات را به <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g> گزارش دهی کنید.</target>
+        <target xml:lang="az" state="needs-translation">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</target>
         <note>ID: picture.dictionary.reportbugs</note>
       </trans-unit>
     </body>
