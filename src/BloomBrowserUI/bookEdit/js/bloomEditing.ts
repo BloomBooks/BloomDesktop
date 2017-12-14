@@ -191,7 +191,8 @@ function AddEditKeyHandlers(container) {
         document.execCommand("justifycenter", false, null);
     });
 
-    //Note, CTRL+N is also caught, but up on the Shell where it is turned into an event, so that it can be caught even when the focus isn't on the browser
+    // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
+    // so that it can be caught even when the focus isn't on the browser
 }
 
 // Add little language tags
@@ -263,10 +264,12 @@ function GetOverflowChecker() {
 
 function IsInTranslationMode() {
     var body = $("body");
-    if (!body.hasAttr("editMode")) {
+    // This used to check for "editMode", but that has been replaced by "bookcreationtype"
+    // by the time we get here.
+    if (!body.hasAttr("bookcreationtype")) {
         return false;
     } else {
-        return body.attr("editMode") === "translation";
+        return body.attr("bookcreationtype") === "translation";
     }
 }
 
@@ -275,8 +278,8 @@ window.onload = () => {
     // seems to mean it has actually been painted.
     window.requestAnimationFrame(() => {
         fireCSharpEditEvent("timingNotification", "editPagePainted");
-    })
-}
+    });
+};
 
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
@@ -360,8 +363,7 @@ function SetupElements(container) {
         var matches = re.exec(s);
         if (matches == null) {
             //just let it paste
-        }
-        else {
+        } else {
             e.preventDefault();
             var x = s.replace(re, "<span class='superscript'>$1</span>");
             document.execCommand("insertHtml", false, x);
@@ -473,7 +475,7 @@ function SetupElements(container) {
 
     $(container).find(".bloom-draggableLabel").mouseleave(function () {
         $(this).find(".dragHandle").each(function () {
-            $(this).remove()
+            $(this).remove();
         });
     });
 
@@ -556,7 +558,7 @@ function SetupElements(container) {
     BloomHintBubbles.addHintBubbles(container, divsThatHaveSourceBubbles, bubbleDivs);
 
     for (var i = 0; i < bubbleDivs.length; i++) {
-        BloomSourceBubbles.MakeSourceBubblesIntoQtips(divsThatHaveSourceBubbles[i], bubbleDivs[i])
+        BloomSourceBubbles.MakeSourceBubblesIntoQtips(divsThatHaveSourceBubbles[i], bubbleDivs[i]);
     }
 
     // Add overflow event handlers so that when a div is overfull,
@@ -584,7 +586,8 @@ function SetupElements(container) {
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container).find(".bloom-editable").keypress(function (event) {
-        //this is causing a worse problem, (preventing us from typing empty lines to move the start of the text down), so we're going to live with the empty space for now.
+        // this is causing a worse problem, (preventing us from typing empty lines to move the start of the
+        // text down), so we're going to live with the empty space for now.
         // TODO: perhaps we can act when the DEL or Backspace occurs and then detect this situation and clean it up.
         //         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
         //            event.target.innerHTML = "";
@@ -594,14 +597,18 @@ function SetupElements(container) {
     $(container).find(".bloom-editable").keyup(function (event) {
         //console.log(event.target.innerHTML);
         // If they pressed a letter instead of DEL, we get this case:
-        if ($(event.target).find("#formatButton").length === 0) { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
-            //they have also deleted the formatButton, so put it back in
-            // console.log('attaching'); REVIEW: this shows that we're doing the attaching on the first character entered, even though it appears the editor was already attached.
-            //so we actually attach twice. That's ok, the editor handles that, but I don't know why we're passing the if, and it could be improved.
+        //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+        if ($(event.target).find("#formatButton").length === 0) {
+            // they have also deleted the formatButton, so put it back in
+
+            // REVIEW: this shows that we're doing the attaching on the first character entered,
+            // even though it appears the editor was already attached.
+            // So we actually attach twice. That's ok, the editor handles that, but I don't know why
+            // we're passing the if, and it could be improved.
+            // console.log('attaching');
             if ($(this).closest(".bloom-userCannotModifyStyles").length === 0)
                 editor.AttachToBox(this);
-        }
-        else {
+        } else {
             // already have a format cog, better make sure it's in the right place
             editor.AdjustFormatButton(this);
         }
@@ -616,8 +623,10 @@ function SetupElements(container) {
     // HACK for BL-1139: except for some reason when the Reader tools are active this causes
     // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
     // user will need to actually click in the div to start typing.
-    if (!toolboxVisible)
-        $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
+    if (!toolboxVisible) {
+        //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
+        $(container).find("textarea, div.bloom-editable").first().focus();
+    }
 
     AddXMatterLabelAfterPageLabel(container);
     ConstrainContentsOfPageLabel(container);
@@ -649,14 +658,14 @@ function AddXMatterLabelAfterPageLabel(container) {
             theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel.FrontBackMatter", "Front/Back Matter", "")
                 .done(function (frontBackTranslation) {
                     $(pageLabel).attr("data-after-content", xMatterLabelTranslation + " " + frontBackTranslation);
-                })
+                });
         });
 }
 
 // Only put setup code here which is guaranteed to only be run once per page load.
 // e.g. Don't put setup for elements such as image containers or editable boxes which may get added after page load.
 function OneTimeSetup() {
-    setupOrigami();
+    setupOrigami(IsInTranslationMode()); // 'true' means book is locked.
 }
 
 interface String {
@@ -787,9 +796,9 @@ function localizeCkeditorTooltips(bar: JQuery) {
         .done(function (result) {
             $(toolGroup).find(".cke_button__underline").attr("title", result);
         });
-    theOneLocalizationManager.asyncGetText('EditTab.DirectFormatting.Superscript', 'Superscript', "")
+    theOneLocalizationManager.asyncGetText("EditTab.DirectFormatting.Superscript", "Superscript", "")
         .done(function (result) {
-            $(toolGroup).find('.cke_button__superscript').attr('title', result);
+            $(toolGroup).find(".cke_button__superscript").attr("title", result);
         });
 }
 
@@ -840,7 +849,7 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
                     });
             } else {
                 console.log("Longpress disabled")
-            };
+            }
         }).catch(e => console.log("useLongpress query failed:" + e));
 }
 
