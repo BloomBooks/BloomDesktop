@@ -83,7 +83,7 @@ DistFiles/Bloom.chm
 DistFiles/optipng.exe
 DistFiles/bloomPlayer.js
 DistFiles/leveledRTInfo/*.html
-DistFiles/ghostscript/
+DistFiles/ghostscript/gs*.*
 build/ChorusInstallerStuff/ChorusMergeModule.msm
 build/JohnsTestInstallerBuild.bat
 lib/dotnet/
