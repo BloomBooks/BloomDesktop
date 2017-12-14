@@ -10,6 +10,3 @@ If you are using a small screen, it can be hard to read the credits page. Try zo
 This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template. {i18n="bigbook.limits.Englishtemplate"}
-
-# Feedback {i18n="bigbook.feedback"}
-Please report problems to [issues@bloomremovethislibrary.org](mailto:issues@bloomremovethislibrary.org?subject=Big&nbsp;Book&nbsp;Problem). {i18n="bigbook.reportsbugs"}
