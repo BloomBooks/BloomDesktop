@@ -99,8 +99,18 @@ namespace Bloom.Publish.PDF
 		/// </remarks>
 		private string FindGhostcriptOnWindows()
 		{
-			// TODO: if we decide to distribute GS with Bloom, enhance this to look first wherever we
-			// install GS in the user area.
+			// Look first for the barebones version distributed with Bloom 4.0 (and later presumably).
+			// Don't give up if you can't find it.
+			var basedir = FileLocator.DirectoryOfApplicationOrSolution;
+			var dir = Path.Combine(basedir, "ghostscript");
+			if (!Directory.Exists(dir))
+				dir = Path.Combine(basedir, "DistFiles", "ghostscript");
+			if (Directory.Exists(dir))
+			{
+				var filename = Path.Combine(dir, "gswin32c.exe");
+				if (File.Exists(filename))
+					return filename;
+			}
 			var baseName = "gswin32";
 			if (Environment.Is64BitOperatingSystem)
 				baseName = "gswin64";
@@ -118,12 +128,25 @@ namespace Bloom.Publish.PDF
 				return null;
 			foreach (var versionDir in Directory.GetDirectories(baseDir))
 			{
-				var prog = Path.Combine(versionDir, "bin", baseName + "c.exe");
-				if (File.Exists(prog))
-					return prog;
-				prog = Path.Combine(versionDir, "bin", baseName + ".exe");
-				if (File.Exists(prog))
-					return prog;
+				// gs9.18 works on Linux.  gs9.16 fails on Windows.  See BL-5295.
+				// We know gs9.21 works on Windows.
+				var gsversion = Path.GetFileName(versionDir);
+				if (gsversion != null && gsversion.StartsWith("gs") && gsversion.Length > 2)
+				{
+					gsversion = gsversion.Substring(2);
+					float version;
+					if (float.TryParse(gsversion, out version))
+					{
+						if (version < 9.21F)
+							continue;
+						var prog = Path.Combine(versionDir, "bin", baseName + "c.exe");
+						if (File.Exists(prog))
+							return prog;
+						prog = Path.Combine(versionDir, "bin", baseName + ".exe");
+						if (File.Exists(prog))
+							return prog;
+					}
+				}
 			}
 			return null;
 		}
