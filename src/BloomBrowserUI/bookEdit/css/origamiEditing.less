@@ -4,10 +4,11 @@
 // For example, you can hover over a splitter and drag it and see the percent.
 // But these rules are not included in static views of the book, including all
 // publishing view and the preview.
-@import "../../templates/common-mixins.less"; // only for bloom-purple, if we do BL-5326
-@activeColor:  #E48C84;
-@DisabledGray: #575757;
-@DarkGray:#404040;
+@import "../../templates/common-mixins.less";
+
+@DisabledColor: @bloom-gray;
+@DarkSwitch: @DarkBackgroundColor;
+@ActiveSwitchColor: @ControlColor;
 
 @font: "Segoe UI", "Open Sans", Arial, sans-serif;
 
@@ -28,14 +29,14 @@
         position: absolute;
         left: 5px;
         z-index: 1000000;
-        color: @activeColor;
+        color: @OrigamiActiveColor;
     }
 }
 
 .split-pane.vertical-percent > .vertical-divider:hover,
 .origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
 .vertical-divider.dragged {
-    border-right-color: @activeColor !important;
+    border-right-color: @OrigamiActiveColor !important;
 }
 
 .split-pane.vertical-percent > .vertical-divider {
@@ -53,18 +54,18 @@
         bottom: 0;
         right: 0;
         z-index: 1000000;
-        color: @activeColor;
+        color: @OrigamiActiveColor;
     }
 }
 
 .split-pane.horizontal-percent > .horizontal-divider:hover,
 .origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
 .horizontal-divider.dragged {
-    border-bottom-color: @activeColor !important;
+    border-bottom-color: @OrigamiActiveColor !important;
 }
 
 .selector-links, .selector-links a {
-    color: @activeColor;
+    color: @OrigamiActiveColor;
 }
 
 .origami-controls {
@@ -73,7 +74,7 @@
     }
     .button:hover, .button:focus {
         color: white;
-        background-color: @activeColor;
+        background-color: @OrigamiActiveColor;
     }
 }
 
@@ -94,10 +95,10 @@
     right: @ToggleRightOffset;
     top: @ToggleVerticalOffset;
     line-height: 1em;
-    color: @DisabledGray;
+    color: @DisabledColor;
     font-family: @font;
     div {
-        color: @bloom-purple;
+        color: @ActiveSwitchColor;
     }
     > :first-of-type {
         display: inline;
@@ -120,7 +121,7 @@
     overflow: hidden;
     cursor: pointer;
     height: 17px;
-    border: @ToggleBorderThickness solid @bloom-purple;
+    border: @ToggleBorderThickness solid @ActiveSwitchColor;
     border-radius: 10px;
 }
 .onoffswitch-inner {
@@ -143,7 +144,7 @@
 }
 .onoffswitch-inner::before {
     content: "";
-    background-color: @bloom-purple;
+    background-color: @ActiveSwitchColor;
     margin: @ToggleInnerOffset;
 }
 .onoffswitch-inner::after {
@@ -155,7 +156,7 @@
     display: block;
     width: 14px;
     margin: 1px;
-    background-color: @bloom-purple;
+    background-color: @ActiveSwitchColor;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -166,7 +167,7 @@
 }
 // the checkbox is not visible, but we use its checked state here
 .onoffswitch-checkbox:checked + .onoffswitch-label {
-    background-color: @bloom-purple; // make sure the active color is solid
+    background-color: @ActiveSwitchColor; // make sure the active color is solid
     -moz-transition: background-color 0.4s ease-in-out 0s; -webkit-transition: background-color 0.4s ease-in-out 0s;
     -o-transition: background-color 0.4s ease-in-out 0s; transition: background-color 0.4s ease-in-out 0s;
     .onoffswitch-inner {
@@ -174,7 +175,7 @@
     }
     .onoffswitch-switch {
         right: 1px;
-        background-color: @DarkGray; // switched-on switch turns dark gray
+        background-color: @DarkSwitch; // switched-on switch turns dark gray
     }
 }
 
@@ -182,12 +183,12 @@
 // Review: I haven't figured out how to get the disabled switch 'hollow'. It seems inordinately complicated.
 body[bookcreationtype='translation'] .origami-toggle {
     div {
-        color: @DisabledGray;
+        color: @DisabledColor;
     }
     label {
-        border-color: @DisabledGray;
+        border-color: @DisabledColor;
     }
     span {
-        background-color: @DisabledGray;
+        background-color: @DisabledColor;
     }
 }

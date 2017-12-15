@@ -1,3 +1,5 @@
+@import "../../templates/common-mixins.less";
+
 /*Styles for ReaderTools.htm*/
 div.stageLine {
     display: block;
@@ -5,7 +7,7 @@ div.stageLine {
 }
 span.stageLine { float: left; -moz-user-select: none; }
 td.acceptable { color: lightgreen; }
-td.tooLarge { color: orange; }
+td.tooLarge { color: @LeveledReaderViolationColor; }
 td.statistics-label { padding-right: 5px; }
 td.statistics-max { padding-right: 3px; text-align: center; }
 td.statistics-actual { padding-right: 3px; text-align: center; }
@@ -16,7 +18,7 @@ div.sortBlock {
     float: right;
     margin: 0 14px 8px 6px;
     display: inline-block;
-    border: 1px solid #fff;
+    border: 1px solid white;
 }
 div.rightBorder {
     border: 0 solid white;
@@ -47,7 +49,7 @@ div.sight-word {
 }
 
 div.section ul { padding-left: 16px; margin-top: 4px; }
-div.section ul li { color: #fff; }
+div.section ul li { color: white; }
 
 .ui-icon-triangle-1-w, .ui-icon-triangle-1-e { cursor: pointer; }
 
@@ -55,7 +57,7 @@ div.section ul li { color: #fff; }
   	position: absolute;
     bottom: 0;
   	padding: 8px 4px;
-    background-color: #333;
+    background-color: @bloom-darkestgray;
     box-sizing: border-box;
     width: ~"calc(100% - 3px)";
 }
@@ -89,6 +91,6 @@ div.section ul li { color: #fff; }
     position: absolute;
     bottom: 0;
     padding: 8px 4px;
-    background-color: #333;
+    background-color: @bloom-darkestgray;
     color: #87CEFA;
 }

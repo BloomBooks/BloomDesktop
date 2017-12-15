@@ -1,12 +1,14 @@
 // page-chooser.less - rules for the Bloom Page Chooser dialog
 // try not to overwrite the bloomDialog.less rules
 
+@import "../templates/common-mixins.less";
+
 @PreviewPaneLeftPadding: 15px;
 @WindowsDialogBackgroundColor: #F0F0F0;
 @WindowsButton-BackgroundColor: #E1E1E1;
-@WindowsButton-BackgroundColor-Hover: #B0DEE4;
+@WindowsButton-BackgroundColor-Hover: @bloom-lightblue;
 @WindowsButton-Border: #ADADAD;
-@HighlightColor: rgba(176, 222, 228, 1);
+@HighlightColor: @bloom-lightblue;
  // partly transparent to go on TOP of the page image but still let it show through.
  // Intended to be similar to HighlightColor when over the default dialog background, but I haven't
  // tried to figure out exactly what would achieve that.
@@ -139,7 +141,7 @@ BODY {
     display: block;
     margin-top: 4px;
     background: inherit;
-    border: 1px solid darkgray;
+    border: 1px solid @bloom-buff;
 
     //todo: this will have to change depending on orientation
     width: 60px;
@@ -201,8 +203,7 @@ BODY {
 
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
     background: @WindowsButton-BackgroundColor-Hover !important;
-    color:
-    black;
+    color: black;
 }
 
 #mainContainer .ui-dialog-buttonpane{
@@ -252,19 +253,19 @@ BODY {
     background-image:none;
 
     &:disabled{
-        color:lightgrey;
-        border: medium solid lightgray;
+        color: @bloom-buff;
+        border: medium solid @bloom-buff;
     }
 }
 
 #convertAnyway {
-    color:red;
+    color: @WarningColor;
     visibility:hidden;
     margin-left: @PreviewPaneLeftPadding;
     margin-right: @PreviewPaneLeftPadding;
 }
 #convertLosesMaterial {
-    color:red;
+    color: @WarningColor;
     visibility:hidden;
     margin-left: @PreviewPaneLeftPadding; // rather arbitrary. I'd like it to be left-aligned with the picture.
     margin-right: @PreviewPaneLeftPadding;

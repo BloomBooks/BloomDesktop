@@ -1,8 +1,7 @@
-// C# used to replace this with the desired background color,
-// but the switch to a separate less/css file defeated that mechanism.
-@DarkGray:#404040;
+@import "../../templates/common-mixins.less";
+
 body {
-    background-color: @DarkGray !important; // previewMode.css tries to override; don't let it.
+    background-color: @DarkBackgroundColor !important; // previewMode.css tries to override; don't let it.
 }
 .bloom-page {
     /* bizarrely, the translate moves it to the top left instead of the middle of the original space.

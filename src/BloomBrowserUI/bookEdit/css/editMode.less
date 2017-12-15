@@ -5,17 +5,21 @@
 @MediumGray: #C0B9B9;
 @ImageHoverOverlay: #D5D5E4;
 @ImageButtonBorder: #716666;
-@ChangeImageButtonColor: #96668F;
-@PasteImageButtonColor: #0C8597;
-@MetadataButtonColor: #3A7F62;
-@OverflowColor: red;
+@ChangeImageButtonColor: @ControlColor;
+@PasteImageButtonColor: @bloom-blue; /*#0C8597; */
+@MetadataButtonColor: #3A7F62; // the only place in .less files that any green is used
+@OverflowColor: @WarningColor;
+@MainPageBackgroundColor: #F8F8F8;
+@PageDragBackgroundColor: #FFFFA3;
+@PageDragBorderColor: #C1E6CA;
+@PageDragInnerItemBorderColor: #787800;
 
 @PageLabelAndChangeLayoutPaneHeight: 45px;
 @PageLabelVerticalDisplacement: -33px;
 
 BODY
 {
-    background-color: #363333;
+    background-color: @bloom-darkestgray;
     transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
     transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
 }
@@ -48,7 +52,7 @@ BODY
 /*+}*/
 DIV.bloom-imageContainer
 {
-    border: 1px solid #C0B9B9;
+    border: 1px solid @MediumGray;
 }
 .coverColor DIV.bloom-imageContainer
 {
@@ -67,14 +71,14 @@ DIV.bloom-imageContainer
 .bloom-page .pageLabel
 {
     text-align: left;
-    color: @bloom-purple;
+    color: @ControlColor;
     position: absolute;
     left: 5mm;
     top: @PageLabelVerticalDisplacement;
     float: left;
     font-family: "Segoe UI", "Open Sans", Arial, sans-serif;
     &[contenteditable="true"] {
-        color: @bloom-purple;
+        color: @ControlColor;
         padding: 0 2px;
     }
 }
@@ -91,13 +95,13 @@ DIV.bloom-imageContainer
 
 DIV.page
 {
-    background-color: #F8F8F8;
-    border: medium outset #000000;
+    background-color: @MainPageBackgroundColor;
+    border: medium outset black;
 }
 DIV.page.coverColor
 {
     background-color: @ImageHoverOverlay;
-    border: medium outset #000000;
+    border: medium outset black;
 }
 /* We want divs which are used for editing to look just like textareas (e.g. border).
    For now, this readOnlyInTranslationMode is an indicator that this is edtiable,
@@ -248,13 +252,13 @@ BUTTON.moveButton
     background-color: transparent;
     width: 16px;
     height: 16px;
-    border: 0 hidden #000000;
+    border: 0 hidden black;
     z-index: 1000;
     background-size: contain;
 }
 TEXTAREA, DIV.bloom-editable, DIV.pageLabel[contenteditable="true"]
 {
-    border: thin solid #C0B9B9;
+    border: thin solid @MediumGray;
     /*[disabled]min-height:34px;*/
 }
 /*need a darker border when we have a background color*/
@@ -264,8 +268,8 @@ TEXTAREA, DIV.bloom-editable, DIV.pageLabel[contenteditable="true"]
 }
 IMG.hoverUp
 {
-    background-color: #DFDFDF;
-    border: 1px outset #000000;
+    background-color: @bloom-buff;
+    border: 1px outset black;
 }
 TEXTAREA:focus, DIV.bloom-editable:focus, DIV.pageLabel[contenteditable="true"]:focus
 {
@@ -313,7 +317,7 @@ DIV.bloom-templateMode {
     border: 0 solid #A03C50;
     padding: 0px;
     text-align: right;
-    color: #363333;
+    color: @bloom-darkestgray;
     font-size: 8pt;
     margin-top: -8px;
     margin-right: 8px;
@@ -376,13 +380,13 @@ DIV.marginBox
         left: 0;
     }
     &:Hover {
-        color: #000000;
+        color: black;
     }
 }
 /*Toolbox*/
 #pagedragtoolbox
 {
-    background-color: #FFFFA3;
+    background-color: @PageDragBackgroundColor;
     position: relative;
     left: 564px;
     top: -649px;
@@ -391,7 +395,7 @@ DIV.marginBox
 }
 .ui-resizable, .ui-draggable, .ui-deletable
 {
-    border: 1px solid #C1E6CA;
+    border: 1px solid @PageDragBorderColor;
 }
 #pagedragtoolbox IMG
 {
@@ -399,7 +403,7 @@ DIV.marginBox
 }
 #pagedragtoolbox > UL > LI > DIV
 {
-    border: 1px dotted #787800;
+    border: 1px dotted @PageDragInnerItemBorderColor;
     margin-top: 34px;
     /*[empty]padding-top:;*/
 }
@@ -463,22 +467,22 @@ even when the div is focused (as long as it is empty).*/
 [contentEditable=true][data-placeholder]:empty:not(:focus):before
 {
     content: attr(data-placeholder);
-    color: #DDDBDB;
+    color: @bloom-buff;
 }
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
 SPAN.sentence-too-long
 {
-    background-color: orange;
+    background-color: @LeveledReaderViolationColor;
 }
 
 .page-too-many-words .marginBox {
-    border: 5px solid orange !important;
+    border: 5px solid @LeveledReaderViolationColor !important;
 }
 .book-too-many-unique-words .marginBox {
-    border: 5px solid orange !important;
+    border: 5px solid @LeveledReaderViolationColor !important;
 }
 .book-too-many-words .marginBox {
-    border: 5px solid orange !important;
+    border: 5px solid @LeveledReaderViolationColor !important;
 }
 
 .ui-dialog { z-index: 20000; }
@@ -488,8 +492,7 @@ SPAN.sight-word
 }
 SPAN.word-not-found
 {
-    background-color: #1D94A4;/*bloomblue	   #D65649; /* bloomRed */
-
+    background-color: @DecodableReaderViolationColor;
 }
 
 /* We are disabling the "Possible Word" feature at this time.

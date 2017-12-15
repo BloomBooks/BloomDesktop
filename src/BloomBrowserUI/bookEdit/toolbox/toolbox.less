@@ -1,8 +1,9 @@
 //importing this (less) here makes it actually start this file off with the contents of the toastr.css,
 //which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
 @import (less) '../../node_modules/toastr/toastr.less';
-@toolboxBackgroundColor: #404040;
+@import "../../templates/common-mixins.less";
 
+@toolboxBackgroundColor: @DarkBackgroundColor;
 
 div.toolboxRoot {
     display: inline-block;
@@ -29,7 +30,7 @@ div.ui-accordion { padding-left: 0; padding-right: 0; }
 div.ui-accordion-content { padding-left: 3px !important; padding-right: 0 !important; }
 
 .h1{padding-top:20px;}
-.section { padding-top: 20px; color: lightskyblue; }
+.section { padding-top: 20px; color: @bloom-lightblue; }
 .tableTitle{padding-top:20px;}
 .thisPageSection{ padding-top: 0;}
 
@@ -40,15 +41,15 @@ div.clear, table.clear { clear: both; }
 .align-top { vertical-align: top; }
 
 input[type="checkbox"] {
-    color: #fff;
+    color: white;
     background-color: transparent;
-    border-color: #fff;
+    border-color: white;
 }
 
 div.checkbox {
     width: 11px !important;
     height: 11px !important;
-    border: 1px solid #fff;
+    border: 1px solid white;
     display: inline-block;
     position: relative;
     float: left;
