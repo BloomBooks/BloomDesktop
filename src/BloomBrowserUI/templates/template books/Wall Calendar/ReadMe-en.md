@@ -6,6 +6,3 @@ Currently, you cannot make a "shell" for other languages to use. {i18n="wall.cal
 
 # Credits {i18n="wall.calendar.credits"}
 Thanks to Bruce Cox (SIL Cameroon) for getting this template started. {i18n="wall.calendar.thanks"}
-
-# Feedback {i18n="wall.calendar.feedback"}
-Please report problems to [issues@bloomremovethislibrary.org](mailto:issues@bloomremovethislibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem). {i18n="wall.calendar.reportbugs"}

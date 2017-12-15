@@ -32,16 +32,6 @@
         <target />
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.feedback">
-        <source xml:lang="en">Feedback</source>
-        <target />
-        <note>ID: wall.calendar.feedback</note>
-      </trans-unit>
-      <trans-unit id="wall.calendar.reportbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target />
-        <note>ID: wall.calendar.reportbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>
