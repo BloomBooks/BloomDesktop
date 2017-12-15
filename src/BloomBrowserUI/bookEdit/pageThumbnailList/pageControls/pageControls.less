@@ -1,8 +1,8 @@
 @import "../../../templates/common-mixins.less";
 
-@ButtonDarkerGray: #363333;
-@DarkGray:#404040;
-@DisabledGray: #575757;
+@ButtonDarkerGray: @bloom-darkestgray;
+@bloom-disabledbuttongray: @bloom-gray;
+
 @SecondButtonRowHeight: 55px;
 @PageControlPanelHeight: 150px;
 @PageControlPanelPad: 20px;
@@ -37,14 +37,14 @@ div[data-reactroot] {
 }
 
 button {
-    background-color: @DarkGray;
+    background-color: @bloom-darkgray;
     border: none;
     padding: @ButtonPadding;
     &:hover {
         background-color: @ButtonDarkerGray;
     }
     &:disabled span {
-        color: @DisabledGray;
+        color: @bloom-disabledbuttongray;
     }
     span {
         color: @bloom-purple;

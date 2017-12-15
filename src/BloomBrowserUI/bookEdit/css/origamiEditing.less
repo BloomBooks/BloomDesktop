@@ -4,10 +4,11 @@
 // For example, you can hover over a splitter and drag it and see the percent.
 // But these rules are not included in static views of the book, including all
 // publishing view and the preview.
-@import "../../templates/common-mixins.less"; // only for bloom-purple, if we do BL-5326
-@activeColor:  #E48C84;
-@DisabledGray: #575757;
-@DarkGray:#404040;
+@import "../../templates/common-mixins.less";
+
+@activeColor: @bloom-salmon;
+@DisabledColor: @bloom-gray;
+@DarkSwitch: @bloom-darkgray;
 
 @font: "Segoe UI", "Open Sans", Arial, sans-serif;
 
@@ -94,7 +95,7 @@
     right: @ToggleRightOffset;
     top: @ToggleVerticalOffset;
     line-height: 1em;
-    color: @DisabledGray;
+    color: @DisabledColor;
     font-family: @font;
     div {
         color: @bloom-purple;
@@ -174,7 +175,7 @@
     }
     .onoffswitch-switch {
         right: 1px;
-        background-color: @DarkGray; // switched-on switch turns dark gray
+        background-color: @DarkSwitch; // switched-on switch turns dark gray
     }
 }
 
@@ -182,12 +183,12 @@
 // Review: I haven't figured out how to get the disabled switch 'hollow'. It seems inordinately complicated.
 body[bookcreationtype='translation'] .origami-toggle {
     div {
-        color: @DisabledGray;
+        color: @DisabledColor;
     }
     label {
-        border-color: @DisabledGray;
+        border-color: @DisabledColor;
     }
     span {
-        background-color: @DisabledGray;
+        background-color: @DisabledColor;
     }
 }
