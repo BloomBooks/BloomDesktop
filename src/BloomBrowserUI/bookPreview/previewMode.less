@@ -1,13 +1,15 @@
+@import "../templates/common-mixins.less";
+
 @media screen
 {
     body
     {
-        background-color: #363333;
+        background-color: @bloom-darkestgray;
     }
 }
 div.bloom-page.coverColor
 {
-    background-color: #D8ADAD;
+    background-color: @PreviewCoverColor;
 }
 /*When in preview, people often think they are looking at something edtiable. Give them this visual feedack*/
 .disabledVisual
@@ -39,9 +41,9 @@ textarea
 }
 div.bloom-page
 {
-    border-bottom: 15px solid #363333 !important;
+    border-bottom: 15px solid @bloom-darkestgray !important;
     /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
-    background-color: #FFFFFF;
+    background-color: white;
 }
 @media print
 {
@@ -50,7 +52,7 @@ div.bloom-page
         /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
 This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
 This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
-        border: 0 none #EF0808 !important;
+        border: 0 none @WarningColor !important;
         /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
 This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
 This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
@@ -72,11 +74,11 @@ div#formatButton
 }
 textarea.coverColor
 {
-    background-color: #D8ADAD;
+    background-color: @PreviewCoverColor;
 }
 input.coverColor
 {
-    background-color: #D8ADAD;
+    background-color: @PreviewCoverColor;
 }
 /*this could be placed on an element by hand, but it is notably added by jscript when the element has
 a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
