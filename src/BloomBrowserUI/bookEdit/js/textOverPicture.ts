@@ -147,9 +147,11 @@ class TextOverPictureManager {
         var scale = EditableDivUtils.getPageScale();
 
         textOverPictureElems.resizable({
-            // There was a problem where resizing a box messed up its draggable containment,
-            // so now after we resize we go back through making it draggable and clickable again.
             stop: (event, ui) => {
+                // Resizing also changes size and position to pixels. Fix it.
+                this.calculatePercentagesAndFixTextboxPosition($(event.target));
+                // There was a problem where resizing a box messed up its draggable containment,
+                // so now after we resize we go back through making it draggable and clickable again.
                 this.makeTOPBoxDraggableAndClickable($(event.target), scale);
             }
         });
@@ -172,7 +174,9 @@ class TextOverPictureManager {
             width: container.width()
         };
         wrapperBox.css("left", (pos.left / scale / containerSize.width * 100) + "%")
-            .css("top", (pos.top / scale / containerSize.height * 100) + "%");
+            .css("top", (pos.top / scale / containerSize.height * 100) + "%")
+            .css("width", (wrapperBox.width() / containerSize.width * 100) + "%")
+            .css("height", (wrapperBox.height() / containerSize.height * 100) + "%");
     }
 
     // Gets the bloom-imageContainer that hosts this TextOverPictureManager textbox.
