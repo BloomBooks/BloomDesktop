@@ -179,8 +179,6 @@ namespace Bloom.Book
 				"Name of the translator, in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.PasteImageCreditsLink",
 				"Paste Image Credits");
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.PasteMissingCredits",
-				"Missing credits:");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt",
 				"Acknowledgments for translated version, in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.NameofTranslatorPrompt",
