@@ -549,12 +549,13 @@ export default class StyleEditor {
     }
 
     AdjustFormatButton(element: Element): void {
-        var newBottom = -1 * GetDifferenceBetweenHeightAndParentHeight($(element.parentElement));
-        if (newBottom < 0) {
-            newBottom = 0;
-        }
+        // Bizarrely, bottom:0 means to place it where the bottom of the content would be
+        // if not scrolled. That's where we want it, but we want it to stay at the bottom
+        // even if the block is overflowing and scrolled, and bottom:0 doesn't keep it
+        // there; the button scrolls with the other content. We can't use postion: sticky,
+        // because this may be inside other scrolling elements. So we do this hack.
         $('#formatButton').css({
-            bottom: newBottom
+            bottom: - $(element).scrollTop()
         });
     }
 

@@ -1164,9 +1164,6 @@
     <None Include="Resources\newBook1.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\LogoForSplashScreen.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\LogoForLibraryChoosingDialog.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1365,6 +1362,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\LogoForSplashScreen.png" />
     <None Include="Resources\help16x16Darker.png" />
     <None Include="Resources\sad16x16.png" />
     <None Include="Resources\weblink.png" />

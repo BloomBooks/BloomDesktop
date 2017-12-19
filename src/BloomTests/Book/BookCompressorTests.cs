@@ -150,7 +150,7 @@ namespace BloomTests.Book
 				html =>
 				{
 					AssertThatXmlIn.String(html).HasSpecifiedNumberOfMatchesForXpath("//img", 2); // only license and back-cover-outside.svg survives
-					AssertThatXmlIn.String(html).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg?optional=true']", 1); // only back-cover-outside.svg survives
+					AssertThatXmlIn.String(html).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg']", 1); // only back-cover-outside.svg survives
 					AssertThatXmlIn.String(html).HasNoMatchForXpath("//div[@contenteditable]");
 				});
 		}

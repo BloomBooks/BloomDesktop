@@ -364,11 +364,12 @@ namespace BloomTests.Publish
 			// lose that fix, although currently the failure that happens if I take out the conversion is not
 			// a simple failure of this assert...something goes wrong before that making a real physical file
 			// for the unit test.
-			// This test is also somewhat fragile in that it depends on the number of pages in device xmatter
-			// and on the one content page being kept. The content above is not enough to prevent Book.RemoveBlankPages()
-			// from deleting it, but the test in EpubMaker is more sophisticated.
-			var page5 = GetZipContent(_epub, "content/5.xhtml");
-			AssertThatXmlIn.String(page5).HasAtLeastOneMatchForXpath("//div[@data-book='end-of-book-label']");
+			// This loop just finds the last page.
+			int i = 1;
+			while (_epub.GetEntry("content/" + (i+1) + ".xhtml") != null)
+				i++;
+			var lastPage = GetZipContent(_epub, "content/"+ i + ".xhtml");
+			AssertThatXmlIn.String(lastPage).HasAtLeastOneMatchForXpath("//div[@data-book='end-of-book-label']");
 		}
 
 		[Test]
