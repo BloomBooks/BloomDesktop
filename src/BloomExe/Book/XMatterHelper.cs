@@ -204,22 +204,45 @@ namespace Bloom.Book
 			if (BookStorage.IsStaticContent(bookFolderPath))
 				return;
 			var prefix = BrandingApi.kApiBrandingImage + "?id=";
-			foreach (XmlElement imageElt in newPageDiv.SafeSelectNodes("//img"))
+			foreach (XmlElement imageElt in newPageDiv.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
 			{
 				var src = imageElt.Attributes["src"]?.Value;
 				if (src == null || !src.StartsWith(prefix))
 					continue;
 				var fileName = src.Substring(prefix.Length);
 				var pathToRealImage = BrandingApi.FindBrandingImageFileIfPossible(branding, fileName);
-				if (!string.IsNullOrEmpty(pathToRealImage))
+				if (string.IsNullOrEmpty(pathToRealImage))
+				{
+					// If the book folder contains this file already, it's obsolete, from some previous branding choice.
+					// Get rid of it to save space. We might also have an obsolete file with a png extension; get rid of
+					// that too.
+					var destFileName = Path.Combine(bookFolderPath, fileName);
+					RobustFile.Delete(destFileName);
+					RobustFile.Delete(Path.ChangeExtension(destFileName, ".png"));
+					// At this point the <img> element has src api/branding/something not in the current branding.
+					// So it's not actually going to produce an image in Bloom itself. We could change it, as
+					// in the following block, so that it points to a non-existent file in the book folder,
+					// and do various tricks to try to prevent warnings about missing files.
+					// But such an element does no good. Even if someone manually inserted the missing file
+					// (presumably an attempt to circumvent the current branding?) the next bring-book-up-to-date
+					// will remove it as not part of the current branding.
+					// Meanwhile, we need tricks to prevent missing-image errors in Bloom itself, and more tricks
+					// to prevent them in epubs, and .bloomd, and however else we might publish.
+					// All this is made unnecessary by just deleting the <img> element if it's not used in the
+					// current branding.
+					// If we later switch to a different branding which does need it,
+					// the next cycle of updating xmatter will start again with the original xmatter files
+					// which contain all the api/branding urls, and this time we will find the file and not
+					// delete the <img>.
+					imageElt.ParentNode.RemoveChild(imageElt);
+				} else
 				{
 					fileName = Path.GetFileName(pathToRealImage); // May have changed extension
 					RobustFile.Copy(pathToRealImage, Path.Combine(bookFolderPath, fileName), true);
+					// Point the <img> element at the local file...which should be available since we
+					// just copied it there.
+					imageElt.SetAttribute("src", fileName);
 				}
-				// The HTML typically already has onerror="style='display:none'" to prevent a missing
-				// image icon in the book, since branding images are generally optional.
-				// This marker prevents the image server from complaining that it is missing.
-				imageElt.SetAttribute("src", fileName + "?optional=true");
 			}
 		}
 

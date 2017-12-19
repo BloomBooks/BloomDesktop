@@ -461,13 +461,13 @@ namespace Bloom.Api
 
 		/// <summary>
 		/// Check for files that may be missing but that we know aren't important enough to complain about.
-		/// Includes branding files marked "optional" and image files in the CurrentBook folder.
+		/// Includes files marked "?optional=true" (not currently used, but may be useful some day) and image files in the CurrentBook folder.
 		/// </summary>
 		protected static bool ShouldReportFailedRequest(IRequestInfo info, string currentBookFolderPath = null)
 		{
-			// images with src derived from Branding API img elements get this marker 
-			// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of 
-			// images that are intentionally optional. 
+			// images with src derived from Branding API img elements get this marker
+			// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of
+			// images that are intentionally optional.
 			var hasOptionalQueryParam = info.GetQueryParameters().Get("optional") == "true";
 			if (hasOptionalQueryParam)
 				return false;
