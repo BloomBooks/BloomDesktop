@@ -363,8 +363,9 @@ namespace Bloom.Book
 			return text;
 		}
 
-		private const int kMaxWidth = 300;
-		private const int kMaxHeight = 300;
+		// See discussion in BL-5385
+		private const int kMaxWidth = 600;
+		private const int kMaxHeight = 600;
 
 		/// <summary>
 		/// For electronic books, we want to minimize the actual size of images since they'll
@@ -442,6 +443,16 @@ namespace Bloom.Book
 						// Save the file in the same format as the original, and return its bytes.
 						using (var tempFile = TempFile.WithExtension(Path.GetExtension(filePath)))
 						{
+							// This uses default quality settings for jpgs...one site says this is
+							// 75 quality on a scale that runs from 0-100. For most images, this
+							// should give a quality barely distinguishable from uncompressed and still save
+							// about 7/8 of the file size. Lower quality settings rapidly lose quality
+							// while only saving a little space; higher ones rapidly use more space
+							// with only marginal quality improvement.
+							// See  https://photo.stackexchange.com/questions/30243/what-quality-to-choose-when-converting-to-jpg
+							// for more on quality and  https://docs.microsoft.com/en-us/dotnet/framework/winforms/advanced/how-to-set-jpeg-compression-level
+							// for how to control the quality setting if we decide to (RobustImageIO has
+							// suitable overloads).
 							RobustImageIO.SaveImage(newImage, tempFile.Path, image.RawFormat);
 							// Copy the metadata from the original file to the new file.
 							var metadata = SIL.Windows.Forms.ClearShare.Metadata.FromFile(filePath);
