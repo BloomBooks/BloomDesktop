@@ -119,10 +119,10 @@ namespace BloomTests.Book
 				helper.XMatterDom = frontMatterDom;
 
 				helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, "Default", bookFolder);
-				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg?optional=true']", 1);
-				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='another-image.png?optional=true']", 1);
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg']", 1);
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='another-image.png']", 1);
 				// Not in source, so delete img
-				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='some nonexistent file.svg?optional=true']", 0);
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='some nonexistent file.svg']", 0);
 				Assert.That(File.Exists(Path.Combine(bookFolder, "back-cover-outside.svg")));
 				Assert.That(File.Exists(Path.Combine(bookFolder, "another-image.png")));
 				Assert.That(!File.Exists(obsoleteFileInBookFolder));
