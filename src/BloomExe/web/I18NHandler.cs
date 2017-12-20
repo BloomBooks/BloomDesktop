@@ -185,6 +185,12 @@ namespace Bloom.Api
 
 		private static void ReportL10NMissingString(string id, string englishText, string comment)
 		{
+			if (LocalizationManager.IgnoreExistingEnglishXliffFiles)
+			{
+				// This will store it in the generated xliff file.
+				LocalizationManager.GetDynamicString("Bloom", id, englishText, comment);
+				return;
+			}
 			if (ApplicationUpdateSupport.ChannelName.StartsWith("Developer"))
 			{
 				//It would be a nice improvement to l10n to allow us to write directly to the source-code XLF file, so that the
