@@ -63,10 +63,12 @@ WebSite/
 *.psess
 lib/dotnet/Palaso*.*
 lib/dotnet/Chorus*.*
+lib/lame/*
 DistFiles/exiftool.exe
 Copy*.bat
 !CopyLocalSquirrelToLocalBloom.bat
 DistFiles/wkhtmltopdf/
+Distfiles/lame*.*
 lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
 .nuget/nuget.exe
