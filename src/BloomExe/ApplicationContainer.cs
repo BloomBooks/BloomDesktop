@@ -56,6 +56,7 @@ namespace Bloom
 			private void OnApplicationExit(object sender, EventArgs e)
 			{
 				Application.ApplicationExit -= OnApplicationExit;
+				Bloom.Program.FinishLocalizationHarvesting();
 				Dispose();
 			}
 

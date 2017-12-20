@@ -91,7 +91,7 @@ namespace Bloom.Publish.BloomLibrary
 			Book.BookInfo.Uploader = Uploader;
 		}
 
-		internal bool IsBookPublicDomain => _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
+		internal bool IsBookPublicDomain => _license?.Url != null && _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
 
 		internal bool BookIsAlreadyOnServer => LoggedIn && _transferrer.IsBookOnServer(Book.FolderPath);
 

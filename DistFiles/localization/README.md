@@ -165,7 +165,25 @@ a normal merge with all that history would probably be okay.)
         git log
     </pre>
 
-4. Force push the modified l10n_master branch back to the master BloomDesktop repository.  The
+4. Verify that the modified xliff files are still valid.  As a minimum, this requires checking
+   that they are well formed XML files.  It might be worth validating against the Xliff 1.2
+   schema as well.  On Linux, these steps can be carried out something like the following:
+
+   <pre>
+       for f in DistFiles/localization/*/*.xlf; do
+           echo $f
+	   xmllint $f >/dev/null   # checks for being well formed XML
+	   xmllint --schema /path/to/xliff-core-1.2-transitional.xsd $f >/dev/null
+       done
+   </pre>
+
+   Fix any errors that are reported.  I'm not sure how to feed this information back to crowdin,
+   however.  Perhaps just uploading the corrected translated xliff file to crowdin would work.
+
+   This won't check for malformed formatting markers ({0}, {1}, etc.).  I don't know of any
+   automatic checks for whether translators mess those up.
+
+5. Force push the modified l10n_master branch back to the master BloomDesktop repository.  The
    form of the command given here ensures that nobody else has modified the branch on github
    since you acquired it.
 
@@ -174,7 +192,7 @@ a normal merge with all that history would probably be okay.)
     </pre>
 
 
-5. Merge the modified PR on github using the normal web browser interface.  If translated xliff
+6. Merge the modified PR on github using the normal web browser interface.  If translated xliff
    files have been modified locally, this may require resolving conflicts.  The web browser
    conflict resolution view will essentially show you a simple textual comparison of the
    l10n_master and master branch contents.  You will probably want to delete one branch's
@@ -184,15 +202,138 @@ a normal merge with all that history would probably be okay.)
    "Delete branch" button provide by the web browser interface.  **Do not forget to delete the
    remote l10n__master branch!**
 
-6. Delete the temporary local copy of the BloomDesktop repository.
+7. Delete the temporary local copy of the BloomDesktop repository.
 
     <pre>
         cd ~/tmp
         rm -rf BloomDesktop
     </pre>
 
-7. Go back to [Crowdin Integration
+8. Go back to [Crowdin Integration
    Settings](https://crowdin.com/project/SIL-Bloom/settings#integration) for github and click on
    the "Resume" button to allow translation changes to be committed to the l10n_master branch
    once again.  The l10n_master branch (and a new pull request) will be automatically created by
    Crowdin when it is first needed.
+
+
+## Updating Bloom and Palaso xliff files
+
+Bloom 4.1 and later have a special mode of operation to help with updating the English source
+Bloom and Palaso xliff files that operates only with Debug builds.  It is enabled either by a
+"--harvest-for-localization" command line argument or by setting an environment variable
+"HARVEST_FOR_LOCALIZATION" to "on" or "yes".  In this mode, the English Bloom.xlf and Palaso.xlf
+files are not loaded from DistFiles/localization/en when the program starts, and any existing
+English Bloom.xlf or Palaso.xlf that are created in the user's data area are deleted so that
+fresh copies will be made by scanning the program and by collecting any strings encountered by
+dynamic calls to the LocalizationManager.  When Bloom finishes, the existing files from
+DistFiles/localization/en are merged into the new files that have the newly collected strings.
+Differences in the two files are marked by adding notes to the affected trans-unit elements.
+
+To maximize the strings collected, you need to step through as much of the program as possible
+so that as many dynamic strings as posssible are encountered.  Here's a list of possible steps
+to accomplish this end.  In some ways it reads like a test script.
+
+ 1. Start Bloom with the "--harvest-for-localization" command line argument.  Make sure the UI
+    language is set to English.
+
+ 2. Create a new Local Language (English) book collection.  Click on the "Settings" icon.  Click
+    on each tab of the dialog.  Change the National Language to "Tok Pisin" (tpi).  Enable the
+    "Show Experimental Templates" and "Show Experimental Commands" features.  On Windows, check
+    the "Automatically update Bloom" feature.  Close the dialog with the "Restart" button.
+
+ 3. Create a new basic book and start editing it.
+
+ 4. On the front cover, type in a title.  Then click on the format gear and close it without
+    changing anything.  After closing the formatting dialog, click on the "Click to choose
+    topic" link.  Close the menu without changing anything.  Add a picture to the front cover
+    from Art of Reading.  Check its copyright from the upper left icon link.
+
+ 5. Open the toolbox to expose the Talking Book Tool.  Click on the More... at the bottom.
+    Check the "Decodable Reader Tool" box, then click on the "Set up Stages" link to open the
+    dialog.  Close the dialog without changing anything.  Click on the "Generate a letter and
+    word list report" link, and then close the document that opens.  Click on the More... at the
+    bottom of the toolbox pane again.  Check the "Leveled Reader Tool" box, then click on the
+    "Set up Levels" link. Close the dialog without changing anything.  Close the toolbox pane.
+
+ 6. Click on the "Inside Front Cover" thumbnail.  Click on the "Title Page" thumbnail.  Click on
+    the "Credits Page" thumbnail.  Click on the "Click to Edit Copyright & License" link.  Add
+    your name to the "Copyright Holder" box.  Close the dialog by clicking "OK".  Click on the
+    "Add Page" icon and add a default ("Basic Text & Picture") page.
+
+ 7. Add a JPG (or PNG) picture to the default page from the filesystem.  (A photograph or
+    screenshot picture will do.)  Click on the "Set up metadata..." link.  Enter appropriate
+    values for the Creator, Copyright Year, and Copypright Holder fields.  Close the dialog with
+    "OK", and close the picture dialog with "OK".  Type some text in the text box, then open the
+    Format dialog from the gear icon.  On the Style tab, click on the "Create a new style" link.
+    Close the dialog without creating anything.  Highlight a word of the text to bring up the
+    character style popup.
+
+ 8. Click on the "Inside Back Cover" thumbnail.  Click on the "Outside Back Cover" thumbnail.
+    Click on the "Title Page" thumbnail.  Click on the "Paste Image Credits" link.  Click on the
+    "Publish" tab icon.
+
+ 9. Click on each of the publish type icons in turn, from top to bottom.  Click on the "Start
+    Serving" button on the "Android" publishing page, then click on the "Stop Serving" button.
+    Change the "Method Choices" selection to "Send over USB Cable".  Click on the "Connect with
+    USB cable" button.  Click on the "Stop Trying" button.  Change the "Method Choices"
+    selection to "Save Bloom Reader File".  Click the "Save..." button.  Cancel out of the
+    output file selection dialog that pops up.
+
+10. Click on the "Collections" tab icon.  Click on each of the "Templates" books in turn.  Click
+    on each of the "Sample Shells" books in turn.
+
+11. Click on the "Get more source books at BloomLibrary.org" link.  Download "Two Brothers" from
+    the test site.  Create a book "Two Brothers" and start editing it.  Unlock the book.  Change
+    the book to be "Two Languages" with both English and Tok Pisin.  Go to the first page of
+    text.  Cut the text from the English box and paste it in the Tok Pisin box.  (The text is
+    obviously Tok Pisin.)  Do the same for a few more pages.  Go back to the first page of text.
+    Lock the book again.  Change back to "One Language" with only English.
+
+12. Go the collection tab.  Create a new "Source Collection".  Create a book from "Big Book".
+    Type in a title.  Go to the Instructions page.  Add a "Just a Picture" page.  Add a picture,
+    giving it a copyright owner and creator.  Add a "Just Text" page.  Type something in the
+    page.  Close Bloom.
+
+On Windows, the output Bloom.xlf and Palaso.xlf files will be found at
+
+<pre>
+    C:\Users\<username>\AppData\Local\Temp\Bloom.xlf
+    C:\Users\<username>\AppData\Local\Temp\Palaso.xlf
+    C:\Users\<username>\AppData\Local\SIL\Bloom\localizations\en\Bloom.xlf
+    C:\Users\<username>\AppData\Local\SIL\Bloom\localizations\en\Palaso.xlf
+</pre>
+
+On Linux, the output files will be found at
+
+<pre>
+    /tmp/Bloom.xlf
+    /tmp/Palaso.xlf
+    /home/<username>/.local/share/SIL/Bloom/localizations/en/Bloom.xlf
+    /home/<username>/.local/share/SIL/Bloom/localizations/en/Palaso.xlf
+</pre>
+
+Note that it is better to run this process on Windows for two reasons.  First, there are often
+features (and therefore strings) that are implemented only on Windows, but the opposite is
+rarely if ever true.  Second, some code sends out \r\n pairs for line endings which usually
+doesn't matter when displaying strings in Linux, but can affect the file content with literal
+carriage return characters possibly inserted into the middle of lines on while processing on
+Linux.
+
+The first two files (those in the temporary directory) are the merged output files combining the
+result of the harvesting with the old content coming from the corresponding files stored in the
+DistFiles/localization/en directory.  The latter two files (in the SIL/Bloom/localizations/en
+directory) are the direct output of the harvesting process.  Rather than blindly replacing the
+files in source control with those from the temporary directory, some thought should be given to
+which changes in the files are really desireable.  Consider these points in particular:
+
+* Not all of the new strings that are harvested are really meant to be localized for Bloom in
+  general.
+
+* Some of the comment notes added during the merge process probably should be removed.
+
+* Strings added back from the old file can possibly be removed, but should be checked against
+  the sources at least as far back as the Version4.0 branch.  Any strings that exist in
+  Version4.0 but not later should have a comment added that they are used by Version4.0.
+
+There may be other points to consider as well before blindly moving new or modified data into
+source control and thence to crowdin.
