@@ -967,9 +967,13 @@ export class ReaderToolsModel {
             //TODO remove this is bizarre artifact of the original synphony, where the data file was actually some javascript. Still used in a unit test.
             fileContents.substr(0, 12) === 'setLangData(') {
             theOneLibSynphony.langDataFromString(fileContents);
-            this.synphony.loadFromLangData(theOneLanguageDataInstance);
+            if (this.synphony) {
+                this.synphony.loadFromLangData(theOneLanguageDataInstance);
+            } else {
+                console.warn("ReaderToolsModel.AddWordsFromFile() - this.synphony is null, fileContents starts: " + fileContents.substr(0,24));
+            }
         }
-        // handle sample texts files that are just a set of space-delimeted words
+        // handle sample texts files that are just a set of space-delimited words
         else {
             var words = theOneLibSynphony.getWordsFromHtmlString(fileContents);
             // Limit the number of words processed from files.  The program hangs on very long lists.
