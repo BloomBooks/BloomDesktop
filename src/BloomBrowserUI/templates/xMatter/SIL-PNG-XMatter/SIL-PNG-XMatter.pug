@@ -34,3 +34,22 @@ block versionAcknowledgmentsLabel
 		| - Compiled by (if applicable)
 		br
 		| - Name and location of printer
+
+block copyrightHolderAddress
+	div.copyrightHolderAddress(lang='en') SIL PNG Ukarumpa, EHP 444, PNG
+
+//- items in block are re-ordered and one changed.
+block creditsContent
+	+block-licenseAndCopyright
+	//- modified and re-ordered field-acknowledgments-originalVersion
+	+field-prototypeDeclaredExplicity("N1").originalAcknowledgments
+		label.bubble Acknowledgment for original work
+		+editable(kLanguageForPrototypeOnly).bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
+			| {Original Acknowledgments}
+	+field-acknowledgments-localizedVersion
+	//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+	.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+
+	if(includeIsbn)
+		+field-ISBN
+	+field-credits-branding
