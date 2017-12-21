@@ -1824,6 +1824,39 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and @data-page-number='2']", 1);
 		}
 
+		[Test]
+		public void SetAnimationDurationsFromAudioDurations_SetsExpectedDuration()
+		{
+			// page 2 is left with no image to test that it doesn't choke on that.
+			// page 4 has an image with no animation; a data-duration should not be set.
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage' id='guid1' data-page-number='1'>
+						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><span class='audio-sentence' data-duration='1.200'>some real text!</span> <span class='audio-sentence' data-duration='0.400'>another sentence!</span></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><span class='audio-sentence' data-duration='1.500'>some more text!</span></div>
+						<div class='bloom-editable bloom-visibility-code-on' contenteditable='true'><span class='audio-sentence' data-duration='1.800'>text not in content1, duration does not count</span></div>
+					</div>
+					<div class='bloom-page numberedPage' id='guid2' data-page-number='2'>
+					</div>
+					<div class='bloom-page numberedPage' id='guid3' data-page-number='3'>
+						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
+					</div>
+					<div class='bloom-page numberedPage' id='guid4' data-page-number='4'>
+						<div class='bloom-imageContainer some other classes'></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+			book.SetAnimationDurationsFromAudioDurations();
+			// Note: these tests are rather too picky about the formatting of the output floats. We'd be quite happy if the result
+			// was 3.10000 and 4.0. If this proves problematic we can make the test smarter.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(@"//div[@id='guid1']/div[contains(@class,'bloom-imageContainer') and @data-duration='3.1']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(@"//div[@id='guid3']/div[contains(@class,'bloom-imageContainer') and @data-duration='4']",1);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[@id='guid4']/div[contains(@class,'bloom-imageContainer') and @data-duration]");
+		}
+
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{
 

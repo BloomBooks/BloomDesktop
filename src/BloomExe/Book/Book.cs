@@ -2501,5 +2501,31 @@ namespace Bloom.Book
 			}
 			return false;
 		}
+
+		public void SetAnimationDurationsFromAudioDurations()
+		{
+			foreach (XmlElement page in RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			{
+				// For now we only apply this to the first image container.
+				var imgContainer = page.SelectSingleNode(".//div[contains(@class, 'bloom-imageContainer') and @data-initialrect]") as XmlElement;
+				if (imgContainer == null)
+					continue;
+				double duration = 0.0;
+				foreach (XmlElement editable in page.SafeSelectNodes(
+					".//div[contains(@class,'bloom-editable') and contains(@class, 'bloom-content1')]"))
+				{
+					foreach (XmlElement span in editable.SafeSelectNodes(
+						".//span[contains(@class, 'audio-sentence') and @data-duration]"))
+					{
+						double time;
+						double.TryParse(span.Attributes["data-duration"].Value, out time);
+						duration += time;
+					}
+				}
+				if (duration == 0.0)
+					duration = 4.0; // per BL-5393, if we don't have voice durations use 4 seconds.
+				imgContainer.SetAttribute("data-duration", duration.ToString());
+			}
+		}
 	}
 }

@@ -1,0 +1,45 @@
+@textColor: #D2D2D2;// #0C8597;
+@bloomYellow : #FEBF00;
+@highlightColor: @bloomYellow;//#96668f;
+@toolboxBackgroundColor: #404040;
+@sectionVerticalGap: 25px;
+@buttonColumnWidth: 40px;
+
+
+.ui-animationBody{
+    padding-left: 15px;
+    padding-right: 15px;
+    *, a{color: @textColor;}
+    background-color: @toolboxBackgroundColor;
+
+    background-position: center;
+
+    .ui-animation-button {
+            height:@buttonColumnWidth;
+            width: @buttonColumnWidth;
+            border:none;
+            background-size:contain;
+            background-color:transparent;
+            background-repeat:no-repeat;
+            display:inline-block;
+            margin-bottom:5px;
+    }
+
+    .animation-label {
+        display:inline-block;
+        max-width:100px;
+    }
+
+    .disabled {
+            opacity: 0.4;
+    }
+
+    #animation-preview {
+            background-image: url(audio/play_enabled.svg);
+            height:45px;
+            width:45px;
+    }
+
+    .button-label-wrapper {margin-top: 10px;}
+    .button-wrapper {display:inline-block;min-width: 60px;}
+}

@@ -362,7 +362,8 @@ function beginAddPanel(checkBoxId: string, panelId: string): Promise<void> {
             'decodableReaderTool': 'readers/decodableReader/decodableReaderToolboxPanel.html',
             'leveledReaderTool': 'readers/leveledReader/leveledReaderToolboxPanel.html',
             'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
-            'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html'
+            'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html',
+            'animationControlTool': 'animationControl/animationControlToolboxPanel.html'
         };
         return axios.get("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
             loadToolboxPanel(result.data, panelId);
