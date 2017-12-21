@@ -135,6 +135,8 @@ mixin block-licenseAndCopyright
 	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License",lang="V")
 		.copyright(data-derived="copyright", lang="*").Credits-Page-style
 			| {copyright}
+		block copyrightHolderAddress
+			// no default content
 		.licenseBlock
 			img.licenseImage(src="license.png" data-derived="licenseImage")
 			.licenseUrl(data-derived="licenseUrl", lang="en") http://creativecommons.org/licenses/by/4.0/
@@ -143,15 +145,16 @@ mixin block-licenseAndCopyright
 				| {License Notes}
 
 mixin credits-contents(includeIsbn = true)
-	+block-licenseAndCopyright
-	+field-acknowledgments-localizedVersion
-	//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
-	.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
-	+field-acknowledgments-originalVersion
+	block creditsContent
+		+block-licenseAndCopyright
+		+field-acknowledgments-localizedVersion
+		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+		+field-acknowledgments-originalVersion
 
-	if(includeIsbn)
-		+field-ISBN
-	+field-credits-branding
+		if(includeIsbn)
+			+field-ISBN
+		+field-credits-branding
 
 mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
