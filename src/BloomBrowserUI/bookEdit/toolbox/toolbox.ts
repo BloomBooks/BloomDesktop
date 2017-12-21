@@ -315,7 +315,7 @@ function setCurrentPanel(currentPanel) {
         currentPanel = toolbox.find('> h3').first().attr('data-panelId');
     }
 
-    // turn off animation
+    // turn off panAndZoom
     var ani = toolbox.accordion('option', 'animate');
     toolbox.accordion('option', 'animate', false);
 
@@ -327,7 +327,7 @@ function setCurrentPanel(currentPanel) {
     var toolIndex = parseInt(idx);
     toolbox.accordion('option', 'active', toolIndex);
 
-    // turn animation back on
+    // turn panAndZoom back on
     toolbox.accordion('option', 'animate', ani);
 
     // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
@@ -362,7 +362,8 @@ function beginAddPanel(checkBoxId: string, panelId: string): Promise<void> {
             'decodableReaderTool': 'readers/decodableReader/decodableReaderToolboxPanel.html',
             'leveledReaderTool': 'readers/leveledReader/leveledReaderToolboxPanel.html',
             'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
-            'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html'
+            'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html',
+            'panAndZoomTool': 'panAndZoom/panAndZoomToolboxPanel.html'
         };
         return axios.get("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
             loadToolboxPanel(result.data, panelId);

@@ -49,6 +49,8 @@ namespace Bloom.Book
 			// Do this after making questions, as they satisfy the criteria for being 'blank'
 			modifiedBook.RemoveBlankPages();
 
+			modifiedBook.SetAnimationDurationsFromAudioDurations();
+
 			modifiedBook.Save();
 
 			return modifiedBook;

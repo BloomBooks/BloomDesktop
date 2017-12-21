@@ -54,6 +54,15 @@ DIV.bloom-imageContainer
 {
     border: 1px solid @MediumGray;
 }
+
+// The editing buttons are hidden when this class is added (currently by panAndZoom toolbar)
+.bloom-imageContainer.bloom-hideImageButtons
+{
+    .imageButton,
+    .miniButton {
+        display:none
+    }
+}
 .coverColor DIV.bloom-imageContainer
 {
     border: thin solid rgba(1, 1, 1, 0.2);

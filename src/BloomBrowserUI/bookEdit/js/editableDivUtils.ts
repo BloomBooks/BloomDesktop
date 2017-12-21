@@ -121,10 +121,21 @@ export class EditableDivUtils {
         }
     }
 
+    static getPageFrame(): HTMLIFrameElement {
+        return <HTMLIFrameElement>window.top.document.getElementById('page');
+    }
+
+    // The body of the editable page, a root for searching for document content.
+    static getPage(): JQuery {
+        var page = this.getPageFrame();
+        if (!page) return null;
+        return $(page.contentWindow.document.body);
+    }
+
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     static getPageScale(): number {
         var scale = 1.0;
-        var styleString = $("div#page-scaling-container").attr("style");
+        var styleString = this.getPage().find("div#page-scaling-container").attr("style");
         var searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
         if (searchData) {
             scale = parseFloat(searchData[1]);
