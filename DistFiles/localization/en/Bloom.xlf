@@ -1382,6 +1382,22 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.AnimationTool.AnimationControlTool" sil:dynamic="true">
+        <source xml:lang="en">Animation Control Tool</source>
+        <note>ID: EditTab.Toolbox.AnimationTool.AnimationControlTool</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.AnimationTool.ChooseImage" sil:dynamic="true">
+        <source xml:lang="en">Choose an image to activate the animation controls</source>
+        <note>ID: EditTab.Toolbox.AnimationTool.ChooseImage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.AnimationTool.Heading" sil:dynamic="true">
+        <source xml:lang="en">Animation</source>
+        <note>ID: EditTab.Toolbox.AnimationTool.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.AnimationTool.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: EditTab.Toolbox.AnimationTool.Preview</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>

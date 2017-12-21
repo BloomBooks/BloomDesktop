@@ -11,8 +11,8 @@ import '../lib/jquery.myimgscale.js'; //scaleImage()
 
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.
-import { pageSelectionChanging, pageUnloading, disconnectForGarbageCollection, setZoom } from "./js/bloomEditing";
-export { pageSelectionChanging, pageUnloading, disconnectForGarbageCollection, setZoom };
+import { pageSelectionChanging, pageUnloading, disconnectForGarbageCollection, setZoom, makeElement } from "./js/bloomEditing";
+export { pageSelectionChanging, pageUnloading, disconnectForGarbageCollection, setZoom, makeElement };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 export { origamiCanUndo, origamiUndo }
 

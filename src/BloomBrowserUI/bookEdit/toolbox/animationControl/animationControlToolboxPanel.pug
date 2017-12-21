@@ -1,0 +1,18 @@
+﻿mixin checkbox(key, i18nKey, englishLabel)
+	input(type='checkbox', name=key, value=theValue)
+	label(data-i18n=i18nKey)
+		=englishLabel
+
+html
+	head
+
+	body
+		h3(data-panelId='animationControl', data-order='40', data-i18n='EditTab.Toolbox.AnimationTool.Heading') Animation
+		div(data-panelId='animationControl')
+			div.ui-animationBody
+				+checkbox('zoomAndPan', 'EditTab.Toolbox.Animation.ZoomAndPan', 'Zoom and Pan')
+				div.button-label-wrapper(id='animation-play-wrapper')
+					.button-wrapper
+						button(id='animation-preview' class='ui-animation-button ui-button enabled')
+					div.animation-label(id='animation-preview-label' data-i18n='EditTab.Toolbox.AnimationTool.Preview') Preview
+					div.animation-message(id='animation-choose-img' data-i18n='EditTab.Toolbox.AnimationTool.ChooseImage') Choose an image to activate the animation controls
