@@ -1374,7 +1374,7 @@ namespace Bloom.Edit
 		public static string GetInstructionsForUnlockingBook()
 		{
 			return LocalizationManager.GetString("EditTab.HowToUnlockBook",
-							"To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.");
+							"To unlock this shellbook, click the lock icon in the lower left corner.");
 		}
 
 		// The zoom factor that is shown in the top right of the toolbar (a percent).
