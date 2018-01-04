@@ -447,7 +447,7 @@ namespace Bloom.Publish
 				progress.ShowDialog();	// will start the background process when loaded/showing
 				if (progress.ProgressStateResult != null && progress.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-					string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.ErrorProcessing",
+					string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.ErrorSaving",
 						"Error compressing or recoloring the PDF file",
 						@"Message briefly displayed to the user in a toast");
 					var longMsg = String.Format("Exception encountered processing the PDF file: {0}", progress.ProgressStateResult.ExceptionThatWasEncountered);
