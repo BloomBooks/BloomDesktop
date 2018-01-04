@@ -323,7 +323,7 @@ class PageChooser {
             var innerGroup = groupToAdd.find(".innerGroupContainer");
             innerGroup.remove();
             groupToAdd.append("<div id='missingMsg'/>")
-            theOneLocalizationManager.asyncGetText('EditPage.AddPageDialog.NoTemplate', "Could not find {0}", "")
+            theOneLocalizationManager.asyncGetText('EditTab.AddPageDialog.NoTemplate', "Could not find {0}", "")
                 .done(translation => {
                     groupToAdd.find("#missingMsg").text(translation.replace("{0}", templateName));
                 });

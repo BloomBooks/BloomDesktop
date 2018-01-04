@@ -1081,7 +1081,7 @@ namespace Bloom.CollectionTab
 			var button = FindBookButton(SelectedBook.BookInfo);
 			if (_model.DeleteBook(SelectedBook))
 			{
-				Debug.Assert(button != null);
+				Debug.Assert(button != null);	// what if we just deleted the last book that had been downloaded?
 				if (button != null)
 				{
 					// BL-2678 it must be in one or the other, but now it could be
