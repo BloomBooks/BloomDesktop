@@ -75,8 +75,10 @@ namespace Bloom.CollectionCreating
 			_wizardControl.AfterInitialization();
 		}
 
-		public void ChangeLocalization(CultureInfo cultureInfo)
+		public void ChangeLocalization()
 		{
+			// By the time we get here, L10NSharp has already changed the UI language underneath us, so
+			// all we need to do is redisplay everything.  We don't even need to know the new UI language!
 			SetLocalizedStrings();
 			if (UiLanguageChanged != null)
 				UiLanguageChanged();

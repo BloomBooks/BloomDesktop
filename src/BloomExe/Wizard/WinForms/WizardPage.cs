@@ -173,7 +173,7 @@ namespace Bloom.Wizard.WinForms
 			{
 				var newCollectionWizard = GetNewCollectionWizard(s_toolStripDropDownButton.GetCurrentParent());
 				if (newCollectionWizard != null)
-					newCollectionWizard.ChangeLocalization((CultureInfo)selectedItem.Tag);
+					newCollectionWizard.ChangeLocalization();
 			}
 		}
 
