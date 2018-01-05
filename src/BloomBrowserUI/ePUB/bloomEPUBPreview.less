@@ -1,12 +1,16 @@
+@import "../templates/common-mixins.less";
+
+@LightGrey: @bloom-gray;
+
 a:hover {
-        color: blue;
+        color: blue; // can we get away with @bloom-blue here (much less harsh)?
 }
 a {
         color: black;
 }
 
 body {
-	background-color: #808080;
+	background-color: #808080; // should we use @bloom-buff here?
         font-family:"Segoe UI";
 }
 
@@ -16,7 +20,7 @@ body {
     height: 457px;
     padding-top: 35px;
     padding-left: 27px;
-    background-color: #333;
+    background-color: @bloom-darkestgray;
     border-radius: 25px;
 }
 #device-inner {
@@ -52,7 +56,7 @@ body {
         padding-bottom: 18px;
         //border: 5px solid white;
         border-radius: 38px;
-        background-color: #404040;
+        background-color: @DarkBackgroundColor;
         box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -67,7 +71,6 @@ body {
         background-color: @LightGrey;
 }
 @CircleDiameter: 40px;
-@LightGrey: #575757;
 
 //the bottom button is the "after" rule
 #device:after {

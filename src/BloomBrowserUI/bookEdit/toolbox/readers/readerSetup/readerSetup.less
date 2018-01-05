@@ -1,3 +1,5 @@
+@import "../../../../templates/common-mixins.less";
+
 /* Used by all tabs */
 * { font-size: 9pt; }
 body { margin: 0; box-sizing: border-box; }
@@ -43,7 +45,7 @@ textarea { resize: none; }
     float: right;
 }
 
-.format-not-supported { color: #EF0808; }
+.format-not-supported { color: @WarningColor; }
 
 div.sub-float { position: relative; }
 // be careful of changes here, they can produce unexpected layout problems for long translations of the powered-by string. BL-4241.
@@ -58,7 +60,7 @@ div.scrolling-table-container-inner {
     table {
         background-color: #eee;
 
-        td { color: #000; height: 26px; white-space: nowrap; min-width: 26px; }
+        td { color: black; height: 26px; white-space: nowrap; min-width: 26px; }
         tr:nth-child(even) { background-color: #e0e0e0; }
         a { color: #2392db; }
     }
@@ -76,27 +78,27 @@ div.rs-letters {
     margin: -1px 0 0 -1px;
     padding: 4px 0;
     text-align: center;
-    border: thin solid #333;
+    border: thin solid @bloom-darkestgray;
     -moz-user-select: none;
     z-index: 4;
     height: 34px;
 }
 
-div.unselected-letter { color: #666; background-color: #fff; cursor: pointer; }
+div.unselected-letter { color: #666; background-color: white; cursor: pointer; }
 div.previous-letter {
-    color: #000;
-    background-color: #fff;
+    color: black;
+    background-color: white;
     font-weight: 700;
     cursor: not-allowed;
     z-index: 1;
-    border: 4px solid #febf00;
+    border: 4px solid @bloom-yellow;
     padding-top: 1px;
 }
-div.current-letter { color: #000; background-color: #febf00; font-weight: 700; cursor: pointer; }
+div.current-letter { color: black; background-color: @bloom-yellow; font-weight: 700; cursor: pointer; }
 div.rs-letters-s { width: 32px; }
 div.rs-letters-l { width: 35px; }
-div.rs-letter-container-s { max-width: 218px; overflow-y: hidden; border-top: 1px solid #333; border-left: 1px solid #333; }
-div.rs-letter-container-l { max-width: 223px; overflow-y: auto; height: 180px; border: 1px solid #333; }
+div.rs-letter-container-s { max-width: 218px; overflow-y: hidden; border-top: 1px solid @bloom-darkestgray; border-left: 1px solid @bloom-darkestgray; }
+div.rs-letter-container-l { max-width: 223px; overflow-y: auto; height: 180px; border: 1px solid @bloom-darkestgray; }
 div.word { width: 100%; margin: 0 2px 2px; }
 div.rs-word-container {
     border: thin solid #666;
@@ -104,7 +106,7 @@ div.rs-word-container {
     overflow-x: hidden;
     margin-bottom: 8px;
     background-color: #e0e0e0;
-    color: #000;
+    color: black;
     margin-top: 1px;
 }
 span.desired-grapheme { color: #b2652b; }
@@ -137,8 +139,8 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk { margin: 0; padding-left: 12px; borde
     height: 200px;
     width: 100%;
     box-sizing: border-box;
-    background-color: #fff;
-    color: #000;
+    background-color: white;
+    color: black;
     padding-left: 20px;
     margin-top: 2px;
     overflow-y: auto;

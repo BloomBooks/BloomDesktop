@@ -1,13 +1,15 @@
-﻿﻿@textColor: #D2D2D2;// #0C8597;
-@bloomYellow : #FEBF00;
-@highlightColor: @bloomYellow;//#96668f;
-@toolboxBackgroundColor: #404040;
+﻿﻿@import "../../../templates/common-mixins.less";
+
+@textColor: @bloom-buff;
+@hoverBackgroundColor: @bloom-buff;
+@highlightColor: @bloom-yellow;
+@toolboxBackgroundColor: @DarkBackgroundColor;
 @sectionVerticalGap: 25px;
 @buttonColumnWidth: 40px;
 
 //highlight of the text on the page
 span.ui-audioCurrent {
-        background: rgb(254,191,0);
+        background: @highlightColor;
 
         &:before{
                 background-image: url(currentTextIndicator.svg);
@@ -112,90 +114,88 @@ span.ui-audioCurrent {
             color:black;
             padding-left:5px;
             white-space:nowrap;
-            &:hover {background-color:lightgray}
+            &:hover {background-color: @hoverBackgroundColor}
         }
     }
 
+    #audio-next {
+            background-image: url(audio/next_enabled.svg);
+            &.expected {background-image: url(audio/next_expected.svg)}
+    }
 
-        #audio-next {
-                background-image: url(audio/next_enabled.svg);
-                &.expected {background-image: url(audio/next_expected.svg)}
-        }
+    #audio-prev {background-image: url(audio/prev_enabled.svg)}
 
-        #audio-prev {background-image: url(audio/prev_enabled.svg)}
+    #audio-listen {
+            margin-left:2px; // visually centered
+            background-image: url(audio/listen_enabled.svg);
+            &.active {background-image: url(audio/listen_active.svg)}
+    }
 
-        #audio-listen {
-                margin-left:2px; // visually centered
-                background-image: url(audio/listen_enabled.svg);
-                &.active {background-image: url(audio/listen_active.svg)}
-        }
+    #audio-clear {background-image: url(audio/clear_enabled.svg)}
 
-        #audio-clear {background-image: url(audio/clear_enabled.svg)}
+    .button-label-wrapper {margin-top: 10px;}
+    .button-wrapper {display:inline-block;min-width: 60px;}
 
-        .button-label-wrapper {margin-top: 10px;}
-        .button-wrapper {display:inline-block;min-width: 60px;}
+    .audio-label {
+            display:inline-block;
+            max-width:100px;
 
-        .audio-label {
-                display:inline-block;
-                max-width:100px;
+            &.expected {
+                    color: @highlightColor;
+                    //font-weight: bold;
+                    //font-size: 11pt;
+            }
+    }
 
-                &.expected {
-                        color: @highlightColor;
-                        //font-weight: bold;
-                        //font-size: 11pt;
-                }
-        }
+    .audio-about {margin-top:@sectionVerticalGap;}
+    #audio-look-at, #audio-check{max-width:none;}
 
-        .audio-about {margin-top:@sectionVerticalGap;}
-        #audio-look-at, #audio-check{max-width:none;}
+    #audio-listen-label {
+            position:relative;
+            top:12px;
+            width:80px;
+    }
 
-        #audio-listen-label {
-                position:relative;
-                top:12px;
-                width:80px;
-        }
+    a {
+            display: block; //start on a new line
+            margin-top:10px;
+            text-decoration:underline;
+            cursor:pointer
+    }
 
+    .ui-audioFooter {margin-top: 30px; margin-bottom: 5px}
+    .ui-audioInput, div.ui-audioMeter {display:inline-block;}
 
-        a {
-                display: block; //start on a new line
-                margin-top:10px;
-                text-decoration:underline;
-                cursor:pointer
-        }
+    .ui-audioInputGroup {margin-top:5px;margin-bottom:12px;}
+    img#audio-input-dev {height:30px;width:30px;}
 
-        .ui-audioFooter {margin-top: 30px; margin-bottom: 5px}
-        .ui-audioInput, div.ui-audioMeter {display:inline-block;}
-
-        .ui-audioInputGroup {margin-top:5px;margin-bottom:12px;}
-        img#audio-input-dev {height:30px;width:30px;}
-
-        // hidden unless we need to choose between three or more input devices.
-        #audio-devlist {
-                display:none;
-                position:absolute;
-                background-color:white;
-                width:200px;
-                li {min-height:20px; font-size:12px;
-                        &:hover {background-color:lightgray}
-                }
-                #audio-input-dev  {margin-top: 2px; width:15px;}
-        }
+    // hidden unless we need to choose between three or more input devices.
+    #audio-devlist {
+            display:none;
+            position:absolute;
+            background-color:white;
+            width:200px;
+            li {min-height:20px; font-size:12px;
+                    &:hover {background-color: @hoverBackgroundColor}
+            }
+            #audio-input-dev  {margin-top: 2px; width:15px;}
+    }
 }
 
- #toast-container {
-     z-index: 999999 !important;
-     font-family: "Segoe UI","sans-serif";
-     font-size: 9pt;
- }
+#toast-container {
+    z-index: 999999 !important;
+    font-family: "Segoe UI","sans-serif";
+    font-size: 9pt;
+}
 
- #toast-container > .toast{
-         opacity: 1.0 !important;
-         box-shadow: none !important;
-         background-image: none !important;
-         padding-left:8px;//don't leave room for the icon
- }
+#toast-container > .toast{
+    opacity: 1.0 !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    padding-left: 8px; //don't leave room for the icon
+}
 
- .toast-toolbox-bottom {
-        left: 32px;
-        bottom: 46px;
+.toast-toolbox-bottom {
+    left: 32px;
+    bottom: 46px;
 }

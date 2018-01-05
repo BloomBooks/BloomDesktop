@@ -1,8 +1,18 @@
-@bloom-blue: #1D94A4;
-@bloom-lightblue: #B0DEE4;
-@bloom-red: #D65649;
-@bloom-purple: #96668F;
-@bloom-green: #98D0B9;
+// Bloom's web palette; import this file whereever we need colors
+@bloom-blue: #1D94A4; // used in decodable reader and various text backgrounds and Paste Image button
+@bloom-lightblue: #B0DEE4; // used in a few highlight and hover situations
+@bloom-yellow : #FEBF00;
+@bloom-gray: #575757; // used for disabled controls and EPub preview controls
+@bloom-darkestgray: #363333; // used for borders and backgrounds... this is the darker main panel background
+@bloom-buff: #D2D2D2; // used for various unrelated things like hovered/disabled controls, text on dark background, borders, etc.
+@DisabledButtonColor: @bloom-gray;
+@ControlColor: #96668F;
+@DarkBackgroundColor: #404040; // side panels; toolbox and page thumbs
+@WarningColor: #D65649;
+@OrigamiActiveColor: #E48C84;
+@PreviewCoverColor: #D8ADAD;
+@LeveledReaderViolationColor: orange;
+@DecodableReaderViolationColor: @bloom-blue;
 
 //NB: why wouldn't you *always* want this? If you're doing something fancy,
 //and placing editables around(like basic book: basic text & picture does),
