@@ -101,7 +101,7 @@ namespace Bloom.Api
 						// I don't know if Sending on a closed socket would throw, so we'll catch it in any case
 						try
 						{
-							socket.Send(e.ToString());
+							socket?.Send(e.ToString());
 						}
 						catch (Exception error)
 						{
@@ -122,7 +122,7 @@ namespace Bloom.Api
 					foreach(var socket in _allSockets.ToArray())
 					{
 						Debug.WriteLine($"*** This socket was still open and is being closed during shutdown: \"{socket?.ConnectionInfo?.SubProtocol}\"");
-						socket.Close();
+						socket?.Close();
 					}
 					_allSockets.Clear();
 					_server.Dispose();
