@@ -35,16 +35,6 @@
         <target xml:lang="fr" state="translated">Merci à Bruce Cox (SIL Cameroun) d'avoir mis en place ce modèle.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.feedback">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="fr" state="translated">Vos commentaires</target>
-        <note>ID: wall.calendar.feedback</note>
-      </trans-unit>
-      <trans-unit id="wall.calendar.reportbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="fr" state="translated">Veuillez signaler des problèmes à : <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        <note>ID: wall.calendar.reportbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>
