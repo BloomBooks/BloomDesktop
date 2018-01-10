@@ -41,16 +41,6 @@ If you send us that text, we can include it in a future version of the template.
         <target xml:lang="pt-PT" state="translated">Esta versão inclui uma página de "Instruções para professores" que já está preenchida, em inglês. Se você gostaria de ter instruções em um idioma diferente, você pode excluir esse texto e digite seu próprio. Se você nos enviar esse texto, nós pode incluí-lo em uma versão futura do modelo.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
-      <trans-unit id="bigbook.feedback">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="pt-PT" state="translated">Sugestões</target>
-        <note>ID: bigbook.feedback</note>
-      </trans-unit>
-      <trans-unit id="bigbook.reportsbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="pt-PT" state="translated">Por favor reportar problemas para <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        <note>ID: bigbook.reportsbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>
