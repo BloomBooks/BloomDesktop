@@ -1630,7 +1630,7 @@
         <target xml:lang="pt-PT" state="translated">Reconhecimentos para versão traduzida, em {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.HowToUnlockBook">
-        <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
+        <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
         <target xml:lang="pt-PT" state="translated">Para desbloquear este "livro shell", vá para a caixa de ferramentas no lado direito, encontrar o ícone de engrenagem e clique em 'Permitir alterações a este shellbook'.</target>
       </trans-unit>

@@ -944,7 +944,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
-        <target xml:lang="bn">{০} ধরণ এবং ভাষা '{1}' বহনকারী সকল প্রকারের বক্সের লেখার আকার পরিবর্তন করতে পারে।\nবর্তমান আকার {2}pt.</target>
+        <target xml:lang="bn">{0} ধরণ এবং ভাষা '{1}' বহনকারী সকল প্রকারের বক্সের লেখার আকার পরিবর্তন করতে পারে।\nবর্তমান আকার {2}pt.</target>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
