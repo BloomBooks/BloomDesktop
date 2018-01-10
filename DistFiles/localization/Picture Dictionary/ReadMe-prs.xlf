@@ -22,16 +22,6 @@
         <target xml:lang="prs">این کتاب در حال حاضر به عنوان "تجربوِی" مشخص شده است، زیرا ما از چندین مشکل در طرح و اعتبار می دانیم.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.feedback" approved="yes">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="prs">باز یافت</target>
-        <note>ID: picture.dictionary.feedback</note>
-      </trans-unit>
-      <trans-unit id="picture.dictionary.reportbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="prs" state="translated">لطفاٌ مشکلات را به <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g> گزارش دهی کنید.</target>
-        <note>ID: picture.dictionary.reportbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>

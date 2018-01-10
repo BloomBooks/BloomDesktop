@@ -28,10 +28,13 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es pa
 Hay dos maneras en que la gente puede usar su plantilla. La primera manera es comenzar libros nuevos. Por ejemplo, imagine libros de estudiantes que tengan una página por cada día escolar de la semana. Usted podría hacer una plantilla con 5 páginas, cada una con lugares para escribir en el texto y elegir las imágenes. Los autores del currículo pueden seleccionar su plantilla y hacer un nuevo libro, uno por cada semana<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.secondusage">
+      <trans-unit id="template.starter.secondusage" approved="yes">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="es-ES" state="translated">La segunda manera que la gente puede utilizar las plantillas es como fuente para nuevas páginas, no importando cómo comenzaron el libro. Por ejemplo, en algunos lugares, cada libro requiere una página específica como parte de un proceso de aprobación del gobierno. Puede crear una plantilla que contenga esa página y entregársela a otros en su país. Luego, cuando otros traduzcan un Libro Prediseñado, pueden ir al final del libro y hacer clic en "Agregar página". La página que usted hizo aparecerá en la lista de opciones. Algunas otras ideas para plantillas incluyen tablas del alfabeto, glosarios e instrucciones sobre cómo usar el libro en un aula. <g id="genid-3" ctype="x-html-sup"> <g id="genid-4" ctype="x-html-a" html:href="#note1">2</g></g></target>
+        <target xml:lang="es-ES">La segunda manera que las personas pueden utilizar las plantillas es como fuente para nuevas páginas, no importando cómo comenzaron el libro. Por ejemplo, en algunos lugares, cada libro requiere una página específica como parte de un proceso de aprobación del gobierno. Puede crear una plantilla que contenga esa página y entregársela a otros en su país. Luego, cuando otros traduzcan un Libro Prediseñado, pueden ir al final del libro y hacer clic en "Agregar página". La página que usted hizo aparecerá en la lista de opciones. Algunas otras ideas para plantillas incluyen tablas del alfabeto, glosarios e instrucciones sobre cómo usar el libro en un aula. <g id="genid-3" ctype="x-html-sup"> <g id="genid-4" ctype="x-html-a" html:href="#note1">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
+        <alt-trans>
+          <target xml:lang="es-ES">La segunda manera que la gente puede utilizar las plantillas es como fuente para nuevas páginas, no importando cómo comenzaron el libro. Por ejemplo, en algunos lugares, cada libro requiere una página específica como parte de un proceso de aprobación del gobierno. Puede crear una plantilla que contenga esa página y entregársela a otros en su país. Luego, cuando otros traduzcan un Libro Prediseñado, pueden ir al final del libro y hacer clic en "Agregar página". La página que usted hizo aparecerá en la lista de opciones. Algunas otras ideas para plantillas incluyen tablas del alfabeto, glosarios e instrucciones sobre cómo usar el libro en un aula. <g id="genid-3" ctype="x-html-sup"> <g id="genid-4" ctype="x-html-a" html:href="#note1">2</g></g></target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">La segunda manera que la gente puede utilizar las plantillas es como fuente de nuevas páginas, a pesar de cómo comenzaron el libro. Por ejemplo, en algunos lugares, cada libro requiere una página específica como parte de un proceso de aprobación del gobierno. Puede crear una plantilla que contenga esa página y entregarlo a otros en su país. Luego, cuando otros traduzcan un libro Prediseñado, pueden ir al final del libro y hacer clic en "Agregar página". La página que usted hizo aparecerá en la lista de opciones. Algunas otras ideas para plantillas incluyen tablas del alfabeto, glosarios y instrucciones sobre cómo usar el libro en una aula. <g id="genid-3" ctype="x-html-sup"> <g id="genid-4" ctype="x-html-a" html:href="#note1">2</g></g></target>
         </alt-trans>
@@ -55,9 +58,9 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
         <target xml:lang="es-ES">Etiquetar sus páginas</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
-      <trans-unit id="template.starter.labeleachpage">
+      <trans-unit id="template.starter.labeleachpage" approved="yes">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="es-ES" state="translated">Cuando agrega páginas a su plantilla, dé a cada página una etiqueta útil <g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
+        <target xml:lang="es-ES">Cuando agrega páginas a su plantilla, dé a cada página una etiqueta útil <g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
         <alt-trans>
           <target xml:lang="es-ES">Cuando agrega páginas a su plantilla, dé a cada una una etiqueta útil <g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
@@ -140,9 +143,9 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
         <target xml:lang="es-ES">Notas</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
-      <trans-unit id="template.starter.nothingautomatic">
+      <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom 3.9 does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
           
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
         <note>ID: template.starter.nothingautomatic</note>
@@ -182,9 +185,9 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo de "Agregar Página".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nametonotaddpage">
+      <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
           
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo llamado "NotForAddPage.txt." en la carpeta de Plantillas del Libro.</target>
         <note>ID: template.starter.nametonotaddpage</note>
@@ -224,9 +227,9 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo en la carpeta de Plantillas del Libro llamado NotForAddPage.txt.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable">
+      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
           
 <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Otras personas no serán capaces de traducir sus etiquetas y descripciones a otros idiomas nacionales. Si esto es problemático, póngase en contacto con el equipo técnico de Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
@@ -266,15 +269,21 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
 <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Otras personas no serán capazes de traducir sus etiquetas y descripciones a otros idiomas nacionales. Si esto es problemático, póngase en contacto con el equipo técnico de Bloom.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml">
+      <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
+          
           
 <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salirse de Bloom y editar el archivo html de la plantilla en "Notepad", de esta manera: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
         <alt-trans>
           <target xml:lang="es-ES">
           
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salirse de Bloom y editar el archivo html de la plantilla en "Notepad", de esta manera: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
           
           
           
@@ -299,12 +308,6 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
         <alt-trans>
           <target xml:lang="es-ES">
           
-          
-          
-<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salirse de Bloom y editar el archivo html de la plantilla en Notepad, de esta manera: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
           
           
 <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salirse de Bloom y editar el archivo html de la plantilla en Notepad, de esta manera: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>

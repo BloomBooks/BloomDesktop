@@ -22,16 +22,6 @@
         <target xml:lang="pt-PT" state="translated">Este livro é atualmente marcado "experimental" porque sabemos de vários problemas na configuração e de conveniência.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.feedback">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="pt-PT" state="translated">Sugestões</target>
-        <note>ID: picture.dictionary.feedback</note>
-      </trans-unit>
-      <trans-unit id="picture.dictionary.reportbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="pt-PT" state="translated">Por favor reportar problemas para <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        <note>ID: picture.dictionary.reportbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>

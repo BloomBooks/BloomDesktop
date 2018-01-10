@@ -44,28 +44,6 @@
         <target xml:lang="es-ES">Gracias a Bruce Cox (SIL Camerún) por iniciar esta plantilla.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.feedback" approved="yes">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="es-ES">Sugerencias</target>
-        <note>ID: wall.calendar.feedback</note>
-      </trans-unit>
-      <trans-unit id="wall.calendar.reportbugs" approved="yes">
-        <source xml:lang="en">Please report problems to <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</target>
-        <note>ID: wall.calendar.reportbugs</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Favor de reportar cualquier problema por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        </alt-trans>
-      </trans-unit>
     </body>
   </file>
 </xliff>

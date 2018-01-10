@@ -58,16 +58,6 @@ If you send us that text, we can include it in a future version of the template.
 که تاسو مونږ ته هغه متن واستوئ، نو مونږ به یې په راتلونکي نمونه یي نسخه کې شامل کړو.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
-      <trans-unit id="bigbook.feedback" approved="yes">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="pbu">وړاندیز</target>
-        <note>ID: bigbook.feedback</note>
-      </trans-unit>
-      <trans-unit id="bigbook.reportsbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="pbu" state="translated">هیله ده د ستونزو راپور ورکړئ  <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        <note>ID: bigbook.reportsbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>
