@@ -88,6 +88,37 @@ export default class BloomField {
                 event.cancel();
             }
         });
+        // ckeditor.on('afterPasteFromWord', event => {
+        //     alert(event.data.dataValue);
+        // });
+        ckeditor.on('paste', event => {
+            var endMkr = "";
+            let paras = event.data.dataValue.match(/<p>/g);
+            if (!paras) {
+                // Enhance: should we remove the probable <span> and just leave the text?
+                // But it might be carrying some important style info.
+                return;
+            }
+            // OK, we are going to unwrap the first <p> and just leave its content.
+            // This prevents a typically unwanted extra line break being inserted before the
+            // start of the material copied. Without the <p> wrapper, that material just
+            // gets inserted into the current paragraph.
+            if (paras.length === 1) {
+                // Unwrapping the one and only <p> will leave no break between what used to be that
+                // paragraph and the following text, which should now start a new paragraph.
+                // We insert an empty paragraph to force a break, but that will leave an unwanted
+                // empty paragraph! So we have an afterPaste event to remove it. 
+                endMkr += "<p class='removeMe'></p>"
+            }
+            // However many paragraphs there are, we will remove the FIRST <p> (if any) and its
+            // corresponding </p> (possibly inserting in its place the empty paragraph which
+            // will be removed after the paste).
+            event.data.dataValue = event.data.dataValue.replace("<p>", "").replace("</p>", endMkr);
+        });
+        ckeditor.on('afterPaste', event => {
+            // clean up possible unwanted paragraph inserted by paste event.
+            $('.removeMe').remove();
+        });
 
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.

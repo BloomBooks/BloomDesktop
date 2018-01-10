@@ -268,6 +268,8 @@ namespace Bloom
 					return path;
 				return null;
 			}
+			if (Path.IsPathRooted(fileName) && RobustFile.Exists(fileName)) // also just for unit tests
+				return fileName;
 			return BloomFileLocator.GetFileDistributedWithApplication(true, "branding", brandingNameOrFolderPath, fileName);
 		}
 	}

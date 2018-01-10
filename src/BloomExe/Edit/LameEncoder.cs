@@ -68,24 +68,7 @@ namespace Bloom.Edit
 			if (RobustFile.Exists("/usr/bin/lame"))
 				return "/usr/bin/lame";
 #else
-			//nb: this is sensitive to whether we are compiled against win32 or not,
-			//not just the host OS, as you might guess.
-			var pf = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-
-
-			var progFileDirs = new List<string>
-				{
-					pf.Replace(" (x86)", ""),			//native (win32 or 64, depending)
-					pf.Replace(" (x86)", "")+" (x86)"	//win32
-				};
-
-
-			foreach (var path in progFileDirs)
-			{
-				var exePath = (Path.Combine(path, "LAME for Audacity/lame.exe"));
-				if (RobustFile.Exists(exePath))
-					return exePath;
-			}
+			return BloomFileLocator.GetFileDistributedWithApplication("lame.exe");
 #endif
 			return string.Empty;
 		}

@@ -365,7 +365,7 @@ namespace Bloom.Edit
 						var query = imageElementUrl.QueryOnly;
 						if (query.NotEncoded.Length > 0)
 						{
-							// Already has query, add another parameter. (e.g.: optional=true for branding image).
+							// Already has query, add another parameter. (e.g.: at one point we used optional=true for branding images).
 							// It's important that the query be not encoded, otherwise the %3f for question mark
 							// gets interpreted as part of the filename.
 							url = filename + query.NotEncoded + "&thumbnail=1";

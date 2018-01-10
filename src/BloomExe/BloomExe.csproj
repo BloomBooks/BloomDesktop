@@ -1164,9 +1164,6 @@
     <None Include="Resources\newBook1.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\LogoForSplashScreen.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\LogoForLibraryChoosingDialog.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1306,6 +1303,9 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <SourceFiles Include="..\..\lib\dotnet\*.config" />
   </ItemGroup>
   <ItemGroup>
+    <LameFiles Include="..\..\lib\lame\lame*.*" />
+  </ItemGroup>
+  <ItemGroup>
     <RemoteDebugFiles Include="..\..\remoteDebugging\**" />
   </ItemGroup>
   <ItemGroup>
@@ -1365,6 +1365,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\LogoForSplashScreen.png" />
     <None Include="Resources\help16x16Darker.png" />
     <None Include="Resources\sad16x16.png" />
     <None Include="Resources\weblink.png" />
@@ -1388,6 +1389,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'"/>
     <Copy SourceFiles="@(GeckoBrowserAdapter)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />

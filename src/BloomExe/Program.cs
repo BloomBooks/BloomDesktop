@@ -167,9 +167,15 @@ namespace Bloom
 #if DEBUG
 				if (args.Length > 0)
 				{
-					// This allows us to debug things like  interpreting a URL.
-					MessageBox.Show("Attach debugger now");
+					if (IsLocalizationHarvestingLaunch(args))
+						LocalizationManager.IgnoreExistingEnglishXliffFiles = true;
+					else
+						// This allows us to debug things like  interpreting a URL.
+						MessageBox.Show("Attach debugger now");
 				}
+				var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
+				if (!String.IsNullOrWhiteSpace(harvest) && (harvest.ToLowerInvariant() == "on" || harvest.ToLowerInvariant() == "yes"))
+					LocalizationManager.IgnoreExistingEnglishXliffFiles = true;
 #endif
 
 				// Ensures that registration settings for all channels of Bloom are stored in a common place,
@@ -264,7 +270,7 @@ namespace Bloom
 						SetUpLocalization();
 
 
-						if (args.Length == 1 && !IsInstallerLaunch(args))
+						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args))
 						{
 							Debug.Assert(args[0].ToLowerInvariant().EndsWith(".bloomcollection")); // Anything else handled above.
 							if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(args[0]))
@@ -332,6 +338,34 @@ namespace Bloom
 			return 0;
 		}
 
+#if DEBUG
+		private static bool _harvestFinalized;
+		private static object _harvestLock = new object();
+#endif
+
+		/// <summary>
+		/// When exiting, finish any processing needed for harvesting strings for localization.
+		/// </summary>
+		/// <remarks>
+		/// The lock and boolean check are to prevent this from being executed more than once
+		/// as the program is shutting down.  Somehow this was being called twice before these
+		/// checks were added.
+		/// </remarks>
+		public static void FinishLocalizationHarvesting()
+		{
+#if DEBUG
+			lock(_harvestLock)
+			{
+				if (LocalizationManager.IgnoreExistingEnglishXliffFiles && !_harvestFinalized)
+				{
+					var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication(true,"localization");
+					LocalizationManager.MergeExistingEnglishXliffFileIntoNew(installedStringFileFolder, "Bloom");
+					LocalizationManager.MergeExistingEnglishXliffFileIntoNew(installedStringFileFolder, "Palaso");
+				}
+				_harvestFinalized = true;
+			}
+#endif
+		}
 
 		private static int HandlePrepareCommandLine(HydrateParameters opts)
 		{
@@ -409,6 +443,11 @@ namespace Bloom
 		private static bool IsInstallerLaunch(string[] args)
 		{
 			return args.Length > 0 &&  args[0].ToLowerInvariant().StartsWith("--squirrel");
+		}
+
+		private static bool IsLocalizationHarvestingLaunch(string[] args)
+		{
+			return args.Length == 1 && args[0].StartsWith("--ha") &&  "--harvest-for-localization".StartsWith(args[0]);
 		}
 
 		// I think this does something like the Wix element
