@@ -24,7 +24,7 @@ Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  optipng, libsndfile1,
  wmctrl, lame, ghostscript
 Suggests: art-of-reading
-Replaces: bloom-desktop, bloom-desktop-beta
+Replaces: bloom-desktop, bloom-desktop-beta, bloom-desktop-betainternal
 Conflicts: bloom-desktop-unstable
 Description: Literacy materials development for language communities
  Bloom Desktop is an application that dramatically "lowers the bar" for
