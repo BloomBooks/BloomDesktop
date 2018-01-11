@@ -20,7 +20,7 @@ namespace Bloom.Edit
 	/// The State field is persisted in this way; it is also passed in to the JavaScript that manages
 	/// the toolbox. New fields and properties should be kept non-public or marked with an
 	/// appropriate attribute if they should NOT be persisted in JSON.
-	/// New subclasses will typically require a new case in CreateFromJsonToolId and also in ToolboxToolConverter.ReadJson.
+	/// New subclasses will typically require a new case in CreateFromToolId and also in GetToolboxToolFromJsonObject.
 	/// Note that the values of the Name field are used in the json and therefore cannot readily be changed.
 	/// (Migration would handle a change going forward, but older Blooms would lose the data at best.)
 	/// </summary>
@@ -74,6 +74,7 @@ namespace Bloom.Edit
 				case LeveledReaderTool.StaticToolId: return new LeveledReaderTool();
 				case TalkingBookTool.StaticToolId: return new TalkingBookTool();
 				case BookSettingsTool.StaticToolId: return new BookSettingsTool();
+				case PanAndZoomTool.StaticToolId: return new PanAndZoomTool();
 			}
 			throw new ArgumentException("Unexpected tool name "+toolId);
 		}
@@ -91,6 +92,35 @@ namespace Bloom.Edit
 		// Default does nothing.
 		internal virtual void SaveSettings(ElementProxy toolbox)
 		{ }
+
+		public static object GetToolboxToolFromJsonObject(JObject item)
+		{
+			switch ((string) item["name"])
+			{
+				//enhance: we don't really want to "register" our panels in several places like this
+				case DecodableReaderTool.StaticToolId:
+					return item.ToObject<DecodableReaderTool>();
+				case LeveledReaderTool.StaticToolId:
+					return item.ToObject<LeveledReaderTool>();
+				case TalkingBookTool.StaticToolId:
+					return item.ToObject<TalkingBookTool>();
+				case BookSettingsTool.StaticToolId:
+					return item.ToObject<BookSettingsTool>();
+				case PanAndZoomTool.StaticToolId:
+					return item.ToObject<PanAndZoomTool>();
+				default: // this version doesn't know about that tool
+					return new UnknownTool();
+			}
+
+			// At this point we are either encountering a meta.json that has been modified by hand,
+			// or more likely one from a more recent Bloom that has an additional tool.
+			// We will ignore the unknown tool (see BookMetaData.FromString()). Here in the
+			// deserialize process, however, we have to return something.
+			// Enhance: in theory, we could keep at least the tool's state and enabled status
+			// in case this book moves back to a version of Bloom that has the tool. But we'd
+			// have to carefully ignore Unknown tools in many places. Hopefully YAGNI.
+			return new UnknownTool();
+		}
 	}
 
 	/// <summary>
@@ -123,29 +153,7 @@ namespace Bloom.Edit
 			Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			JObject item = JObject.Load(reader);
-			switch ((string)item["name"])
-			{
-				//enhance: we don't really want to "register" our panels in several places like this
-				case DecodableReaderTool.StaticToolId:
-					return item.ToObject<DecodableReaderTool>();
-				case LeveledReaderTool.StaticToolId:
-					return item.ToObject<LeveledReaderTool>();
-				case TalkingBookTool.StaticToolId:
-					return item.ToObject<TalkingBookTool>();
-				case BookSettingsTool.StaticToolId:
-					return item.ToObject<BookSettingsTool>();
-				default: // this version doesn't know about that tool
-					return new UnknownTool();
-			}
-
-			// At this point we are either encountering a meta.json that has been modified by hand,
-			// or more likely one from a more recent Bloom that has an additional tool.
-			// We will ignore the unknown tool (see BookMetaData.FromString()). Here in the
-			// deserialize process, however, we have to return something.
-			// Enhance: in theory, we could keep at least the tool's state and enabled status
-			// in case this book moves back to a version of Bloom that has the tool. But we'd
-			// have to carefully ignore Unknown tools in many places. Hopefully YAGNI.
-			return new UnknownTool();
+			return ToolboxTool.GetToolboxToolFromJsonObject(item);
 		}
 
 		// We don't need a real implementation of this because returning false from CanWrite

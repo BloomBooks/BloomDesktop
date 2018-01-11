@@ -1,0 +1,18 @@
+﻿mixin checkbox(key, i18nKey, englishLabel)
+	input(type='checkbox', name=key, value=theValue)
+	label(data-i18n=i18nKey)
+		=englishLabel
+
+html
+	head
+
+	body
+		h3(data-panelId='panAndZoom', data-order='40', data-i18n='EditTab.Toolbox.PanAndZoom.Heading') Pan and Zoom
+		div(data-panelId='panAndZoom')
+			div.ui-panAndZoomBody
+				+checkbox('panAndZoom', 'EditTab.Toolbox.PanAndZoom.Heading', 'Pan and Zoom')
+				div.button-label-wrapper(id='panAndZoom-play-wrapper')
+					.button-wrapper
+						button(id='panAndZoom-preview' class='ui-panAndZoom-button ui-button enabled')
+					div.panAndZoom-label(id='panAndZoom-preview-label' data-i18n='EditTab.Toolbox.PanAndZoom.Preview') Preview
+					div.panAndZoom-message(id='panAndZoom-choose-img' data-i18n='EditTab.Toolbox.PanAndZoom.ChooseImage') Choose an image to activate the Pan and Zoom controls

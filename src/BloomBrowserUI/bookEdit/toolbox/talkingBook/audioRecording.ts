@@ -1,4 +1,5 @@
 ﻿// This class supports creating audio recordings for talking books.
+// It is also used by the panAndZoom toolbox when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
 // in this file. That code breaks the
@@ -105,6 +106,13 @@ export default class AudioRecording {
         toastr.options.positionClass = 'toast-toolbox-bottom';
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
+    }
+    public setupForListen() {
+        $('#player').bind('ended', e => this.playEnded());
+        $('#player').bind('error', e => {
+            // during a "listen", we walk through each segment, but some (or all) may not have audio
+            this.playEnded();//move to the next one
+        });
     }
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
@@ -301,7 +309,7 @@ export default class AudioRecording {
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
-    private listen(): void {
+    public listen(): void {
         var original: JQuery = this.getPage().find('.ui-audioCurrent');
         var audioElts = this.getAudioElements();
         var first = audioElts.eq(0);

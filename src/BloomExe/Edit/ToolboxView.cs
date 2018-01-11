@@ -23,7 +23,7 @@ namespace Bloom.Edit
 	/// </summary>
 	public class ToolboxView
 	{
-		static readonly string[] IdsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, BookSettingsTool.StaticToolId };
+		static readonly string[] IdsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, BookSettingsTool.StaticToolId, PanAndZoomTool.StaticToolId };
 
 		public static void RegisterWithServer(EnhancedImageServer server)
 		{
@@ -57,6 +57,7 @@ namespace Bloom.Edit
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/leveledReader");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/decodableReader");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/talkingBook");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/panAndZoom");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/bookSettings");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/readerSetup");
 		}

@@ -299,6 +299,7 @@
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
     <Compile Include="Collection\BrandingProject.cs" />
+    <Compile Include="Edit\PanAndZoomTool.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
     <Compile Include="Edit\PageControlsApi.cs" />
     <Compile Include="Publish\Android\usb\AndroidDeviceUsbConnection.cs" />
@@ -1389,7 +1390,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'"/>
+    <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'" />
     <Copy SourceFiles="@(GeckoBrowserAdapter)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />

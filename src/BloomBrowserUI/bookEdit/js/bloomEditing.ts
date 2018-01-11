@@ -47,6 +47,21 @@ export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
     return jqueryNode.parent().height() - jqueryNode.height();
 }
 
+// Allows toolbox code to make an element properly in the context of this iframe.
+export function makeElement(html: string, parent: JQuery, resizableArgs, draggableArgs): JQuery {
+    let result = $(html);
+    if (parent) {
+        parent.prepend(result);
+    }
+    if (resizableArgs) {
+        result.resizable(resizableArgs);
+    }
+    if (draggableArgs) {
+        result.draggable(draggableArgs);
+    }
+    return result;
+}
+
 function isBrOrWhitespace(node) {
     return node && ((node.nodeType === 1 && node.nodeName.toLowerCase() === "br") ||
         (node.nodeType === 3 && /^\s*$/.test(node.nodeValue)));
