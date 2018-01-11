@@ -1380,10 +1380,10 @@
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
         <target xml:lang="fr">Remerciements pour la version traduite, en {lang}</target>
       </trans-unit>
-      <trans-unit id="EditTab.HowToUnlockBook" approved="yes">
-        <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
+      <trans-unit id="EditTab.HowToUnlockBook">
+        <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="fr">Pour déverrouiller ce livre canevas, aller dans la boîte à outils qui se trouve à droite, puis trouver l'icône représentant une roue dentée et cliquer sur "autoriser des modifications à ce livre canevas".</target>
+        <target xml:lang="fr" state="translated">Pour déverrouiller ce livre canevas, aller dans la boîte à outils qui se trouve à droite, puis trouver l'icône représentant une roue dentée et cliquer sur "autoriser des modifications à ce livre canevas".</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>

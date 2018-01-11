@@ -48,16 +48,6 @@ Si vous souhaitez avoir des instructions dans une autre langue, vous pouvez supp
 Si vous nous envoyez ce texte, nous pouvons l'inclure dans une future version du modèle.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
-      <trans-unit id="bigbook.feedback">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="fr" state="translated">Vos commentaires</target>
-        <note>ID: bigbook.feedback</note>
-      </trans-unit>
-      <trans-unit id="bigbook.reportsbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="fr" state="translated">Veuillez signaler des problèmes à : <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        <note>ID: bigbook.reportsbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>

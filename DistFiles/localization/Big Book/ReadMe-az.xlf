@@ -45,16 +45,6 @@ If you would like to have instructions in a different language, you can delete t
 If you send us that text, we can include it in a future version of the template.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
-      <trans-unit id="bigbook.feedback">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="az" state="needs-translation">Feedback</target>
-        <note>ID: bigbook.feedback</note>
-      </trans-unit>
-      <trans-unit id="bigbook.reportsbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="az" state="needs-translation">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</target>
-        <note>ID: bigbook.reportsbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>
