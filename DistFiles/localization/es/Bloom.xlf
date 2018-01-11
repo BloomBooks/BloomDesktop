@@ -2184,10 +2184,10 @@
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
         <target xml:lang="es-ES">Reconocimientos para la versión traducida, en {lang}</target>
       </trans-unit>
-      <trans-unit id="EditTab.HowToUnlockBook" approved="yes">
-        <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
+      <trans-unit id="EditTab.HowToUnlockBook">
+        <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese a la caja de herramientas a la derecha, haga clic en el ícono del engranaje, y haga clic en 'Permitir cambios en este libro prediseñado'.</target>
+        <target xml:lang="es-ES" state="translated">Para desbloquear este libro prediseñado, ingrese a la caja de herramientas a la derecha, haga clic en el ícono del engranaje, y haga clic en 'Permitir cambios en este libro prediseñado'.</target>
         <alt-trans>
           <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
         </alt-trans>
@@ -2310,10 +2310,10 @@
         <note>ID: EditTab.LayoutMode.ChangeLayout</note>
         <target xml:lang="es-ES">Cambiar el diseño</target>
       </trans-unit>
-      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book is temporarily unlocked.</source>
         <note>ID: EditTab.LockBook.ToolTip</note>
-        <target xml:lang="es-ES" state="translated">Este libro está temporalmente desbloqueado.</target>
+        <target xml:lang="es-ES">Este libro está temporalmente desbloqueado.</target>
       </trans-unit>
       <trans-unit id="EditTab.Monolingual" approved="yes">
         <source xml:lang="en">One Language</source>
@@ -3173,10 +3173,13 @@
         <note>ID: EditTab.UndoButton.ToolTipWhenDisabled</note>
         <target xml:lang="es-ES">No hay nada que deshacer</target>
       </trans-unit>
-      <trans-unit id="EditTab.UnlockBook.ToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.UnlockBook.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
         <note>ID: EditTab.UnlockBook.ToolTip</note>
-        <target xml:lang="es-ES" state="translated">Este libro esta protegido y solamente puede ser traducido. Si desea hacer otros cambios, haga clic aquí para desbloquearlo temporalmente.</target>
+        <target xml:lang="es-ES">Este libro está protegido y solamente puede ser traducido. Si desea hacer otros cambios, haga clic aquí para desbloquearlo temporalmente.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro esta protegido y solamente puede ser traducido. Si desea hacer otros cambios, haga clic aquí para desbloquearlo temporalmente.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -4139,11 +4142,11 @@
           <target xml:lang="es-ES">Obtenga la aplicación BloomReader</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Media">
+      <trans-unit id="PublishTab.Android.Media" approved="yes">
         <source xml:lang="en">Media</source>
         <note>ID: PublishTab.Android.Media</note>
         <note>A heading in the Publish to Android screen</note>
-        <target xml:lang="es-ES" state="translated">Medio</target>
+        <target xml:lang="es-ES">Medio</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method" approved="yes">
         <source xml:lang="en">Method Choices</source>

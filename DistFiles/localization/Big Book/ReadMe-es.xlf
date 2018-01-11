@@ -63,34 +63,6 @@ Si nos envía el texto traducido, podemos incluirlo en una futura versión de la
           <target xml:lang="es-ES">Esta versión incluye una página "Instrucciones para maestros" que ya está rellenad en inglés. Si le gustaría tener las instrucciones en un idioma diferente, puede borrar este texto y ingresar texto traducido. Si nos envía el texto traducido, podemos incluirlo en una futura versión de la plantilla.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.feedback" approved="yes">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="es-ES">Sugerencias</target>
-        <note>ID: bigbook.feedback</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Comentarios</target>
-        </alt-trans>
-      </trans-unit>
-      <trans-unit id="bigbook.reportsbugs" approved="yes">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        <note>ID: bigbook.reportsbugs</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Favor de reportar cualquier problema por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor reporténos los problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor reportenos los problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Por favor informenos de problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
-        </alt-trans>
-      </trans-unit>
     </body>
   </file>
 </xliff>

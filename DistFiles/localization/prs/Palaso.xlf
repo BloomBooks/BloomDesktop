@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Palaso.dll" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="prs">
     <body>
@@ -36,7 +36,7 @@
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="prs">کاپی دیگر {‎{0 در حالت فعالیت است. اگر کاپی {‎{0 را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
+        <target xml:lang="prs">کاپی دیگر ‎{0}‏ در حالت فعالیت است. اگر کاپی ‎{0}‏ را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
         <alt-trans>
           <target xml:lang="prs">کاپی دیگر ‎{0} در حالت فعالیت است. اگر کاپی ‎{0} را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
         </alt-trans>
@@ -64,7 +64,7 @@
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="prs">انتظار کشیدن برای {‎ {0دیگر تمام شود...</target>
+        <target xml:lang="prs">انتظار کشیدن برای ‎{0}‏ دیگر تمام شود...</target>
         <alt-trans>
           <target xml:lang="prs">انتظار کشیدن برای‎ {0} دیگر تمام شود...</target>
         </alt-trans>
@@ -120,7 +120,7 @@
         <source xml:lang="en">Found {0} images with names close to {1}</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="prs">تصاویر {‎{0 را با نامهای نزدیک به {‎{1‏ پیدا کرد</target>
+        <target xml:lang="prs">تصاویر ‎{0}‏ را با نامهای نزدیک به ‎{1}‏ پیدا کرد</target>
         <alt-trans>
           <target xml:lang="prs">تصاویر ‎{0} را با نامهای نزدیک به ‎{1}‏ پیدا کرد</target>
         </alt-trans>
@@ -198,7 +198,7 @@
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="prs">تصاویر {‎{0‏ یافت شد</target>
+        <target xml:lang="prs">تصاویر ‎{0}‏ یافت شد</target>
         <alt-trans>
           <target xml:lang="prs">تصاویر ‎{0}‏ یافت شد</target>
         </alt-trans>
@@ -286,6 +286,9 @@
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
         <target xml:lang="prs">بخاطر کود های;‎639-3 Codes &amp;amp و چگونه برای جدید بکار برده شود</target>
+        <alt-trans>
+          <target xml:lang="prs">بخاطر کود های;‎639-3 Codes &amp;amp و چگونه برای جدید بکار برده شود</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">بخاطر کود های ‎639-3‏ و چگونه برای جدید بکار برده شود</target>
         </alt-trans>
@@ -528,7 +531,7 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از "{‎"{0‏. اگر شما فراموش کردید، شما همیشه برای "{‎"{1‏ و "{‎"{2‏ در گوگل جستجو میتوانید.</target>
+        <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از ‎"{0}"‏. اگر شما فراموش کردید، شما همیشه برای ‎"{1}"‏ و ‎"{2}"‏ در گوگل جستجو میتوانید.</target>
         <alt-trans>
           <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از ‎"{0}"‏. اگر شما فراموش کردید، شما همیشه برای ‎"{1}"‏ و ‎"{2}"‏ در گوگل جستجو میتوانید.</target>
         </alt-trans>
@@ -609,7 +612,7 @@
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="prs">کیبورد را انتخاب نمائید &amp; که با آن متن {‎ {0 را تایپ کنید</target>
+        <target xml:lang="prs">کیبورد را انتخاب نمائید &amp; که با آن متن ‎{0}‏  را تایپ کنید</target>
         <alt-trans>
           <target xml:lang="prs">کیبورد را انتخاب نمائید که با آن متن‎ {0} را تایپ کنید</target>
         </alt-trans>

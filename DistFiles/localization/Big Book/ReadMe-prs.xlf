@@ -50,16 +50,6 @@ If you send us that text, we can include it in a future version of the template.
 اگر آن متن را به ما ارسال نمایید ما آنرا در نسخه بعدی تیمپلیت شامل کرده میتوانیم.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
-      <trans-unit id="bigbook.feedback" approved="yes">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="prs">باز یافت</target>
-        <note>ID: bigbook.feedback</note>
-      </trans-unit>
-      <trans-unit id="bigbook.reportsbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomlibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovethislibrary.org</g>.</source>
-        <target xml:lang="prs" state="translated">لطفاٌ مشکلات را به <g id="genid-1" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g> گزارش دهی کنید.</target>
-        <note>ID: bigbook.reportsbugs</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>
