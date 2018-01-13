@@ -1044,8 +1044,33 @@ namespace Bloom.Book
 			//html file in Firefox.
 			destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
 
+			// Copy the two background audio attributes which can be set using the music toolbox.
+			// Ensuring that volume is missing unless the main attribute is non-empty is
+			// currently redundant, everything should work if we just copied all attributes.
+			// (But, it IS imporant to DELETE any old versions of these attributes if the edited page div
+			// does NOT have them.)
+			var bgAudio = edittedPageDiv.Attributes["data-backgroundaudio"]?.Value;
+			var bgAudioVolume = edittedPageDiv.Attributes["data-backgroundaudiovolume"]?.Value;
+			if (bgAudio != null)
+			{
+				destinationPageDiv.SetAttribute("data-backgroundaudio", bgAudio);
+				if (bgAudioVolume != null)
+				{
+					destinationPageDiv.SetAttribute("data-backgroundaudiovolume", bgAudioVolume);
+				}
+				else
+				{
+					destinationPageDiv.RemoveAttribute("data-backgroundaudiovolume");
+				}
+			}
+			else
+			{
+				destinationPageDiv.RemoveAttribute("data-backgroundaudio");
+				destinationPageDiv.RemoveAttribute("data-backgroundaudiovolume");
+			}
+
 			// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
-			foreach(
+			foreach (
 				var node in
 					destinationPageDiv.SafeSelectNodes(".//*[contains(concat(' ', @class, ' '), ' origami-layout-mode ')]")
 						.Cast<XmlNode>()
