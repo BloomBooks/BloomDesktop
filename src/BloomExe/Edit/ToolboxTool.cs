@@ -75,6 +75,7 @@ namespace Bloom.Edit
 				case TalkingBookTool.StaticToolId: return new TalkingBookTool();
 				case BookSettingsTool.StaticToolId: return new BookSettingsTool();
 				case PanAndZoomTool.StaticToolId: return new PanAndZoomTool();
+				case BackgroundAudioTool.StaticToolId: return new BackgroundAudioTool();
 			}
 			throw new ArgumentException("Unexpected tool name "+toolId);
 		}
@@ -108,6 +109,8 @@ namespace Bloom.Edit
 					return item.ToObject<BookSettingsTool>();
 				case PanAndZoomTool.StaticToolId:
 					return item.ToObject<PanAndZoomTool>();
+				case BackgroundAudioTool.StaticToolId:
+					return item.ToObject<BackgroundAudioTool>();
 				default: // this version doesn't know about that tool
 					return new UnknownTool();
 			}
