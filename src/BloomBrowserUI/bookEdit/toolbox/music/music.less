@@ -1,0 +1,84 @@
+@import "../../../templates/common-mixins.less";
+@textColor: @bloom-buff;// #0C8597;
+@toolboxBackgroundColor: @DarkBackgroundColor;
+@buttonColumnWidth: 40px;
+
+
+.musicBody{
+    padding-left: 10px;
+    padding-right: 10px;
+    *, a{color: @textColor;}
+    background-color: @toolboxBackgroundColor;
+
+    background-position: center;
+
+    .music-button {
+        height:@buttonColumnWidth;
+        width: @buttonColumnWidth;
+        border:none;
+        background-size:contain;
+        background-color:transparent;
+        background-repeat:no-repeat;
+        display:inline-block;
+        margin-bottom:5px;
+    }
+
+    .disabled {
+        opacity: 0.4;
+    }
+
+    #musicPreview {
+        background-image: url(audio/play_enabled.svg);
+        height:25px;
+        width:25px;
+    }
+    .speaker-volume {height:30px;width:30px;}
+    .musicOption {margin-top:20px;}
+    .bgLabelWrapper {display:inline-block; max-width: 120px;}
+    #musicFilename {
+        // The combination of these makes us have just one line of filename,
+        // adjacent to the Play button, with ellipsis if it is truncated.
+        display: inline-block;
+        max-width: 140px;
+        overflow:hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    #musicPlayAndLabelWrapper {
+        display:flex;
+        align-items: center;
+    }
+    .musicButton {vertical-align: top}
+    .musicChooseFile {text-decoration: @textColor underline; margin-left: 10px;}
+    #musicVolumePercent {text-align: center;margin-left: 10px;}
+    #musicVolumeSlider {
+        background-color:@textColor;
+        height:2px;
+    }
+    #musicSetVolume {display:flex;}
+    .bgSliderWrapper {
+        flex-grow: 1; // only grow item, so takes as much space as it can
+        margin-top: 12px;
+        margin-left: 15px;
+    }
+    .ui-slider-horizontal .ui-slider-handle {
+        // found by experiment things to tweak from default to make a small circular white handle.
+        top:-0.6em;
+        border-radius: 8px;
+        padding-top:0;
+        width:8px;
+        height:8px;
+        // not sure we need all these; between them they overcome complex coloring that is done by default.
+        // in particular a background image that is a plain orangey color tends to turn it orange when dragged.
+        background-color: @textColor;
+        color: @textColor;
+        border-color:@textColor;
+        background-image: none;
+    }
+    #musicOuterWrapper {
+        margin-left:5px; // needed to make the nested controls line up visually with the radio buttons
+    }
+
+    .button-label-wrapper {margin-top: 10px;}
+    .musicButtonWrapper {display:inline-block;min-width: 30px; margin-top:9px;}
+}

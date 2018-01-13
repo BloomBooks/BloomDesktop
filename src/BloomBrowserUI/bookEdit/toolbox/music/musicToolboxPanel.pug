@@ -1,0 +1,35 @@
+﻿mixin musicRadio(key, i18nKey, englishLabel)
+	div.musicOption
+		input.musicButton(type='radio', name='music', value=key)
+		div.bgLabelWrapper
+			label(data-i18n=i18nKey)
+				=englishLabel
+		block
+
+html
+	head
+
+	body
+		h3(data-panelId='music', data-order='50', data-i18n='EditTab.Toolbox.Music.Heading') Music Tool
+		div(data-panelId='music')
+			div.musicBody
+				div.musicHelp(data-i18n='EditTab.Toolbox.Music.Overview') You can set up background music to play with this page when the book is viewed in the Bloom Reader app.
+				+musicRadio('noMusic', 'EditTab.Toolbox.PanAndZoom.NoMusic', 'No Music')
+				+musicRadio('continueMusic', 'EditTab.Toolbox.PanAndZoom.ContinueMusic', 'Continue music from previous page')
+				+musicRadio('newMusic', 'EditTab.Toolbox.PanAndZoom.NewMusic', 'Start new music')
+					label(id='musicChooseFile' data-i18n='EditTab.Toolbox.Music.Choose') Choose...
+				div.button-label-wrapper(id='musicOuterWrapper')
+					div(id='musicPlayAndLabelWrapper')
+						.musicButtonWrapper
+							button(id='musicPreview' class='music-button ui-button enabled')
+						div(id='musicFilename')
+					div(id='musicVolumePercent') 100%
+					div(id='musicSetVolume')
+						img.speaker-volume(src='speaker-volume.png')
+						div.bgSliderWrapper
+							div.musicVolumeSlider(id='musicVolumeSlider')
+				// preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
+				// which in BL-3153 was faster than the c# thread writing the file could finish with it.
+				// As an alternative, a settimeout() in the javascript also worked, but
+				// this seems more durable. By the time the user can click Play, we'll be done.
+				audio(id='bgPlayer', preload='none')
