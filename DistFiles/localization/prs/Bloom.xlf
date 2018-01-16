@@ -77,6 +77,9 @@
         <note>ID: BloomPackInstallDialog.Replace</note>
         <target xml:lang="prs">این کمپیوتر از قبل دارای مجموعه بلوم است که ‎'{0}'‏نام دارد. آیا میخواهید که آنرا جاگزین این بسته بلوم نمائید?</target>
         <alt-trans>
+          <target xml:lang="prs">این کمپیوتر از قبل دارای مجموعه بلوم است که '{‎'{0نام دارد. آیا میخواهید که آنرا جاگزین این بسته بلوم نمائید?</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="prs">این کمپیوتر از قبل دارای مجموعه بلوم است که ‎'{0}'‏ نام دارد. آیا میخواهید که آنرا جاگزین این بسته بلوم نمائید؟</target>
         </alt-trans>
       </trans-unit>
@@ -221,6 +224,9 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
         <target xml:lang="prs">نوع خط اصلی برای ‎{0}‏</target>
+        <alt-trans>
+          <target xml:lang="prs">نوع خط اصلی برای {‎{0</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">نوع خط اصلی برای ‎{0}</target>
         </alt-trans>
@@ -1250,6 +1256,9 @@
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
         <target xml:lang="prs">اندازه متن را تغیر میدهد برای تمام بکس های که سبک ‎'{0}'‏ ولسان ‎'{1}'‏ را انتقال میدهد.‏ \nاندازه فعلی ‎{2}pt‏ است.</target>
         <alt-trans>
+          <target xml:lang="prs">اندازه متن را تغیر میدهد برای تمام بکس های که سبک '{‎0}' ولسان '{‎1}'‏ را انتقال میدهد.‏ \nاندازه فعلی ‎{2}pt‏ است.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="prs">اندازه متن را تغیر میدهد برای تمام بکس های که سبک ‎'{0}' ولسان ‎'{1}'‏ را انتقال میدهد.‏ \nاندازه فعلی ‎{2}pt‏ است.</target>
         </alt-trans>
       </trans-unit>
@@ -1839,6 +1848,27 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="prs">معلومات ملکیت معنوی عکس</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom Tool</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <target xml:lang="prs" state="needs-translation">Pan and Zoom Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
+        <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
+        <target xml:lang="prs" state="needs-translation">Choose an image to activate the Pan and Zoom controls</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
+        <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
+        <target xml:lang="prs" state="needs-translation">Pan and Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
+        <target xml:lang="prs" state="needs-translation">Preview</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
@@ -1887,6 +1917,9 @@
         <source xml:lang="en">New Sight Words: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords</note>
         <target xml:lang="prs">کلیمات جدید عام: ‎{0}‏</target>
+        <alt-trans>
+          <target xml:lang="prs">کلیمات جدید عام: {‎0}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">کلیمات جدید عام: ‎{0}</target>
         </alt-trans>
@@ -2263,6 +2296,9 @@
         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
         <target xml:lang="prs">{0}‏ به نسخه جدید بلوم نیاز دارد. اخرین نسخه بلوم را از‎{1}‏ دونلود نمائید.</target>
         <alt-trans>
+          <target xml:lang="prs">{0}‏ به نسخه جدید بلوم نیاز دارد. اخرین نسخه بلوم را از{‎1} دونلود نمائید.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="prs">{0}‏ به نسخه جدید بلوم نیاز دارد. اخرین نسخه بلوم را از‎ {1}دونلود نمائید.</target>
         </alt-trans>
       </trans-unit>
@@ -2270,6 +2306,9 @@
         <source xml:lang="en">Bloom had a problem deleting this file: {0}</source>
         <note>ID: Errors.ProblemDeletingFile</note>
         <target xml:lang="prs">بلوم در حذف نمودن این فایل مشکل داشت: ‎{0}‏</target>
+        <alt-trans>
+          <target xml:lang="prs">بلوم در حذف نمودن این فایل مشکل داشت: {‎0}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">بلوم در حذف نمودن این فایل مشکل داشت: ‎{0}</target>
         </alt-trans>
@@ -2298,6 +2337,9 @@
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
         <note>ID: Errors.XMatterNotFound</note>
         <target xml:lang="prs">این کتاب برای وصیله موضوعات جلو/عقب بنام ‎'{0}'‏ احضار کرد، اما بلوم انرا در این کمپیوتر یافته نتوانست. شما بسته بلوم را نصب کنید که ‎'{0}'‏ را برایتان بدهد، یا به تنظیمات بروید: کتاب سازی و به وصیله موضوعات جلو/عقب انرا تغیر دهید.</target>
+        <alt-trans>
+          <target xml:lang="prs">این کتاب برای وصیله موضوعات جلو/عقب بنام '{‎'{0 احضار کرد، اما بلوم انرا در این کمپیوتر یافته نتوانست. شما بسته بلوم را نصب کنید که '{‎'{0‏ را برایتان بدهد، یا به تنظیمات بروید: کتاب سازی و به وصیله موضوعات جلو/عقب انرا تغیر دهید.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">این کتاب برای وصیله موضوعات جلو/عقب بنام ‎'{0} احضار کرد، اما بلوم انرا در این کمپیوتر یافته نتوانست. شما بسته بلوم را نصب کنید که ‎'{0}'‏ را برایتان بدهد، یا به تنظیمات بروید: کتاب سازی و به وصیله موضوعات جلو/عقب انرا تغیر دهید.</target>
         </alt-trans>
@@ -2705,6 +2747,9 @@
         <note>ID: NewCollectionWizard.NewBookPattern</note>
         <note>The {0} is replaced by the name of the language.</note>
         <target xml:lang="prs">کتاب های ‎{0}‏</target>
+        <alt-trans>
+          <target xml:lang="prs">کتاب های {‎{0</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">کتاب های ‎{0}</target>
         </alt-trans>
@@ -3363,6 +3408,9 @@
         <note>ID: PublishTab.Upload.FinalUploadFailureNotice</note>
         <target xml:lang="prs">ببخشید، ‎"{0}"‏ موفقانه اپلود نشد. بعضی اوقات این توسط مشکلات موقتی با سرور که ما استعمال میکنیم بمیان میاید. ارزش کوشش دوباره در یک یا دوساعت را دارد. اگر شما باقاعده با این مشکل بر میخورید، لطفاٌ به ما گزارش دهید.</target>
         <alt-trans>
+          <target xml:lang="prs">ببخشید، "{‎"{0 موفقانه اپلود نشد. بعضی اوقات این توسط مشکلات موقتی با سرور که ما استعمال میکنیم بمیان میاید. ارزش کوشش دوباره در یک یا دوساعت را دارد. اگر شما باقاعده با این مشکل بر میخورید، لطفاٌ به ما گزارش دهید.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="prs">ببخشید، ‎"{0}" موفقانه اپلود نشد. بعضی اوقات این توسط مشکلات موقتی با سرور که ما استعمال میکنیم بمیان میاید. ارزش کوشش دوباره در یک یا دوساعت را دارد. اگر شما باقاعده با این مشکل بر میخورید، لطفاٌ به ما گزارش دهید.</target>
         </alt-trans>
       </trans-unit>
@@ -3858,6 +3906,9 @@ Do you want to go ahead?</source>
         <note>ID: ReaderSetup.RemoveLevel</note>
         <target xml:lang="prs">دور کردن سویه ‎{0}‏</target>
         <alt-trans>
+          <target xml:lang="prs">دور کردن سویه {‎{0</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="prs">دور کردن سویه ‎{0}</target>
         </alt-trans>
       </trans-unit>
@@ -4066,6 +4117,9 @@ Do you want to go ahead?</source>
         <note>Place a {0} where the name of the program goes.</note>
         <target xml:lang="prs">لطفا بخاطر ثبت نام ‎یک دقعه تانرا بدهید ‎{0}‏</target>
         <alt-trans>
+          <target xml:lang="prs">لطفا بخاطر ثبت نام ‎یک دقعه تانرا بدهید {‎{0</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="prs">لطفا بخاطر ثبت نام ‎یک دقعه تانرا بدهید ‎{0}</target>
         </alt-trans>
       </trans-unit>
@@ -4111,6 +4165,9 @@ Do you want to go ahead?</source>
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
         <note>ID: ReportProblemDialog.CouldNotSendToServer</note>
         <target xml:lang="prs">بلوم نتوانست که راپور شما را مستقیماٌ به سرور تسلیم کند. لطفا دوباره کوشش کنید یا ‎{0}‏ را به {1}‏ ایمیل نمائید.</target>
+        <alt-trans>
+          <target xml:lang="prs">بلوم نتوانست که راپور شما را مستقیماٌ به سرور تسلیم کند. لطفا دوباره کوشش کنید یا {‎{0 را به {1}‏ ایمیل نمائید.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">بلوم نتوانست که راپور شما را مستقیماٌ به سرور تسلیم کند. لطفا دوباره کوشش کنید یا ‎{0} را به ‎{1}‏ ایمیل نمائید.</target>
         </alt-trans>

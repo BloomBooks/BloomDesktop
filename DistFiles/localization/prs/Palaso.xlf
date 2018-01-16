@@ -38,6 +38,9 @@
         <note>{0} is the application name</note>
         <target xml:lang="prs">کاپی دیگر ‎{0}‏ در حالت فعالیت است. اگر کاپی ‎{0}‏ را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
         <alt-trans>
+          <target xml:lang="prs">کاپی دیگر {‎{0 در حالت فعالیت است. اگر کاپی {‎{0 را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="prs">کاپی دیگر ‎{0} در حالت فعالیت است. اگر کاپی ‎{0} را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
         </alt-trans>
       </trans-unit>
@@ -65,6 +68,9 @@
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
         <target xml:lang="prs">انتظار کشیدن برای ‎{0}‏ دیگر تمام شود...</target>
+        <alt-trans>
+          <target xml:lang="prs">انتظار کشیدن برای {‎ {0دیگر تمام شود...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">انتظار کشیدن برای‎ {0} دیگر تمام شود...</target>
         </alt-trans>
@@ -121,6 +127,9 @@
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
         <target xml:lang="prs">تصاویر ‎{0}‏ را با نامهای نزدیک به ‎{1}‏ پیدا کرد</target>
+        <alt-trans>
+          <target xml:lang="prs">تصاویر {‎{0 را با نامهای نزدیک به {‎{1‏ پیدا کرد</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">تصاویر ‎{0} را با نامهای نزدیک به ‎{1}‏ پیدا کرد</target>
         </alt-trans>
@@ -613,6 +622,9 @@
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
         <target xml:lang="prs">کیبورد را انتخاب نمائید &amp; که با آن متن ‎{0}‏  را تایپ کنید</target>
+        <alt-trans>
+          <target xml:lang="prs">کیبورد را انتخاب نمائید &amp; که با آن متن {‎ {0 را تایپ کنید</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">کیبورد را انتخاب نمائید که با آن متن‎ {0} را تایپ کنید</target>
         </alt-trans>
