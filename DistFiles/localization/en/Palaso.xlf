@@ -5,6 +5,7 @@
       <trans-unit id="AboutDialog.BuiltOnDate">
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
+        <note>{0} is the date the application was built</note>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
@@ -13,6 +14,7 @@
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
+        <note>{0} is the application name</note>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
@@ -49,31 +51,51 @@
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
       </trans-unit>
+      <trans-unit id="Common.AbortButton">
+        <source xml:lang="en">&amp;Abort</source>
+        <note>ID: Common.AbortButton</note>
+      </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
+      </trans-unit>
+      <trans-unit id="Common.IgnoreButton">
+        <source xml:lang="en">&amp;Ignore</source>
+        <note>ID: Common.IgnoreButton</note>
       </trans-unit>
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
       </trans-unit>
+      <trans-unit id="Common.NoButton">
+        <source xml:lang="en">&amp;No</source>
+        <note>ID: Common.NoButton</note>
+      </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
+      </trans-unit>
+      <trans-unit id="Common.RetryButton">
+        <source xml:lang="en">&amp;Retry</source>
+        <note>ID: Common.RetryButton</note>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
       </trans-unit>
+      <trans-unit id="Common.YesButton">
+        <source xml:lang="en">&amp;Yes</source>
+        <note>ID: Common.YesButton</note>
+      </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
-        <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files")</note>
+        <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
-        <note>Parameter {0} is a file name</note>
+        <note>Param {0} is a file name</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
         <source xml:lang="en">Confirm Delete</source>
@@ -118,12 +140,17 @@
         <note>ID: ImageToolbox.EditMetadataLink</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms">
-        <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
+        <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
+        <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.Galleries">
+        <source xml:lang="en">Galleries</source>
+        <note>ID: ImageToolbox.Galleries</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
@@ -136,6 +163,10 @@
       <trans-unit id="ImageToolbox.GetPicture">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ImageGalleries">
+        <source xml:lang="en">Image Galleries</source>
+        <note>ID: ImageToolbox.ImageGalleries</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
@@ -151,12 +182,17 @@
         <note>The {0} will be replaced by the number of matching images</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual">
-        <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</source>
+        <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
+        <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.NoGalleries">
+        <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
+        <note>ID: ImageToolbox.NoGalleries</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
@@ -300,6 +336,11 @@
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
+        <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
@@ -321,6 +362,10 @@
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
       </trans-unit>
+      <trans-unit id="MetadataEditor.CopyrightYear">
+        <source xml:lang="en">Copyright Year</source>
+        <note>ID: MetadataEditor.CopyrightYear</note>
+      </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
@@ -336,6 +381,10 @@
       <trans-unit id="MetadataEditor.CustomLicense">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.License">
+        <source xml:lang="en">License</source>
+        <note>ID: MetadataEditor.License</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit">
         <source xml:lang="en">Copyright and License</source>
@@ -377,8 +426,9 @@
         <note>ID: SettingsProtection.CtrlShiftHint</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel">
-        <source xml:lang="en">Settings...</source>
+        <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
+        <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
         <source xml:lang="en">Hide the button that opens settings.</source>
@@ -401,9 +451,10 @@
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
-        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
+        <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
+        <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -465,6 +516,10 @@
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
       </trans-unit>
+      <trans-unit id="WSKeyboardControl.SetupKeyboards">
+        <source xml:lang="en">Set up keyboards</source>
+        <note>ID: WSKeyboardControl.SetupKeyboards</note>
+      </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
@@ -480,6 +535,10 @@
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
+      </trans-unit>
+      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
+        <source xml:lang="en">[Missing] {0} ({1})</source>
+        <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
       </trans-unit>
     </body>
   </file>
