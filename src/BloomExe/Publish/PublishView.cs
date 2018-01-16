@@ -39,16 +39,18 @@ namespace Bloom.Publish
 		private AndroidView _androidControl;
 		private NavigationIsolator _isolator;
 		private BloomWebSocketServer _webSocketServer;
+		private PublishToAndroidApi _publishToAndroidApi;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator, BloomWebSocketServer webSocketServer)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator, BloomWebSocketServer webSocketServer, PublishToAndroidApi publishToAndroidApi)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
 			_webSocketServer = webSocketServer;
+			_publishToAndroidApi = publishToAndroidApi;
 
 			InitializeComponent();
 
@@ -512,7 +514,7 @@ namespace Bloom.Publish
 					_printButton.Enabled = false;
 					_pdfViewer.Visible = false;
 					Cursor = Cursors.WaitCursor;
-					_androidControl = new AndroidView(_isolator, _webSocketServer);
+					_androidControl = new AndroidView(_isolator, _webSocketServer, _publishToAndroidApi);
 					_androidControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 						_pdfViewer.Width, _pdfViewer.Height);
 					_androidControl.Dock = _pdfViewer.Dock;

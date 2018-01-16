@@ -2248,7 +2248,7 @@
         <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1">
-        <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</source>
+        <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2">

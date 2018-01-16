@@ -75,6 +75,13 @@ namespace Bloom.Publish.Android.wifi
 				_listener?.Close(); // forcibly end communication
 				_listener = null;
 			}
+			if (_listeningThread == null)
+				return;
+
+			// Since we told the listener to close already this shouldn't have to do much (nor be dangerous)
+			_listeningThread.Abort();
+			_listeningThread.Join(2 * 1000);
+			_listeningThread = null;
 		}
 	}
 }

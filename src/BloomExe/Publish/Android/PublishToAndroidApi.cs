@@ -57,6 +57,15 @@ namespace Bloom.Publish.Android
 #endif
 		}
 
+		/// <summary>
+		/// Stop any transfers in progress (used when the window is closed).
+		/// </summary>
+		public void Stop()
+		{
+			_wifiPublisher.Stop();
+			_usbPublisher.Stop();
+		}
+
 		private static string ToCssColorString(System.Drawing.Color c)
 		{
 			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
