@@ -11,8 +11,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.describe</note>
+        <alt-trans>
+          <target xml:lang="fr">Voici une version <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book). <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Il contient de l'audio, afin que les nouveaux lecteurs puissent écouter en lisant.</g>
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Voici une version <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book). <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Il contient de l'audio, afin que les nouveaux lecteurs puissent écouter en lisant.</g>
       
@@ -64,8 +74,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.readium</note>
+        <alt-trans>
+          <target xml:lang="fr">Cette page utilise le lecteur ePUB <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g>.  Les livres sembleront probablement différents sur différents lecteurs.
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Cette page utilise le lecteur ePUB <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g>.  Les livres sembleront probablement différents sur différents lecteurs.
       
@@ -102,8 +122,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talkingbookpreview</note>
+        <alt-trans>
+          <target xml:lang="fr">L'aperçu ici ne peut pas encore jouer des livres audio. Vous pouvez l’écouter en utilisant le programme gratuit d'Adobe <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>.
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">L'aperçu ici ne peut pas encore jouer des livres audio. Vous pouvez l’écouter en utilisant le programme gratuit d'Adobe <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>.
       
@@ -145,8 +175,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
+        <alt-trans>
+          <target xml:lang="fr">Une façon pratique d'obtenir des livres sur votre téléphone consiste à configurer Dropbox ou un service similaire sur votre ordinateur et sur votre téléphone / tablette.  Il suffit de cliquer sur Enregistrer ePUB, puis de choisir votre dossier Dropbox.  Sur votre téléphone, ouvrez l'application Dropbox et sélectionnez votre livre.  Si vous utilisez un ordinateur portable, vous pouvez également essayer le programme gratuit <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> pour envoyer des fichiers depuis votre ordinateur portable vers un téléphone ou une tablette.
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Une façon pratique d'obtenir des livres sur votre téléphone consiste à configurer Dropbox ou un service similaire sur votre ordinateur et sur votre téléphone / tablette.  Il suffit de cliquer sur Enregistrer ePUB, puis de choisir votre dossier Dropbox.  Sur votre téléphone, ouvrez l'application Dropbox et sélectionnez votre livre.  Si vous utilisez un ordinateur portable, vous pouvez également essayer le programme gratuit <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> pour envoyer des fichiers depuis votre ordinateur portable vers un téléphone ou une tablette.
       
@@ -188,8 +228,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.gitden.okay</note>
+        <alt-trans>
+          <target xml:lang="fr">Nos tests ont montré que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> est un bon choix pour les appareils Android et IOS (IPhone et IPad).
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Nos tests ont montré que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> est un bon choix pour les appareils Android et IOS (IPhone et IPad).
       
@@ -236,8 +286,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talking.book.tool</note>
+        <alt-trans>
+          <target xml:lang="fr">Si vous voulez faire un « livre audio » que les nouveaux lecteurs peuvent lire et écouter au même temps, utilisez <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">l’outil de livre audio</g> de Bloom pour ajouter des enregistrements de voix.
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Si vous voulez faire un « livre audio » que les nouveaux lecteurs peuvent lire et écouter au même temps, utilisez <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">l’outil de livre audio</g> de Bloom pour ajouter des enregistrements de voix.
       

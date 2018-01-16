@@ -304,10 +304,13 @@
           <target xml:lang="es-ES">Branding/Marcacíon</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" approved="yes">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="es-ES" state="translated">Ninguna</target>
+        <target xml:lang="es-ES">Ninguno</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ninguna</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
@@ -2187,7 +2190,13 @@
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES" state="translated">Para desbloquear este libro prediseñado, ingrese a la caja de herramientas a la derecha, haga clic en el ícono del engranaje, y haga clic en 'Permitir cambios en este libro prediseñado'.</target>
+        <target xml:lang="es-ES" state="translated">Para desbloquear este libro prediseñado, haga clic en el ícono del candado en la esquina inferior izquierda.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para desbloquear este libro prediseñado, haga clic en el ícono del candado.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese a la caja de herramientas a la derecha, haga clic en el ícono del engranaje, y haga clic en 'Permitir cambios en este libro prediseñado'.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
         </alt-trans>
@@ -2196,9 +2205,6 @@
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para desbloquear este libro de fuente, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para desbloquear este libro de fuente, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro de fuente'.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
@@ -2675,6 +2681,27 @@
         <alt-trans>
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom Tool</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <target xml:lang="es-ES" state="translated">Herramienta de Mano y Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
+        <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
+        <target xml:lang="es-ES" state="translated">Elija una imagen para activar los controles de Mano y Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
+        <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
+        <target xml:lang="es-ES" state="translated">Mano y Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
+        <target xml:lang="es-ES" state="translated">Vista previa</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>

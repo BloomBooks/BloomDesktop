@@ -1974,6 +1974,27 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="pt-PT" state="translated">Informação de propriedade intelectual da imagem</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom Tool</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <target xml:lang="pt-PT" state="needs-translation">Pan and Zoom Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
+        <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
+        <target xml:lang="pt-PT" state="needs-translation">Choose an image to activate the Pan and Zoom controls</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
+        <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
+        <target xml:lang="pt-PT" state="needs-translation">Pan and Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
+        <target xml:lang="pt-PT" state="needs-translation">Preview</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
