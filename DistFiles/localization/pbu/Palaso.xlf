@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Palaso.dll" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="pbu">
     <body>
@@ -37,6 +37,9 @@
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
         <target xml:lang="pbu">بله کاپي د ‎{0}‏ تیاره روانه ده. که تاسې ‎{0}‏ هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
+        <alt-trans>
+          <target xml:lang="pbu">بله کاپي د {‎{0 تیاره روانه ده. که تاسې {‎{0 هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">بله کاپي د ‎{0} تیاره روانه ده. که تاسې ‎{0} هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
         </alt-trans>
@@ -119,6 +122,9 @@
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
         <target xml:lang="pbu">دې ‎{1}‏ نوم ته نږدي د دې {0}‏ انځورونه پیدا شو</target>
         <alt-trans>
+          <target xml:lang="pbu">دې {‎{1‏ نوم ته نږدي د دې {0}‏ انځورونه پیدا شو</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="pbu">دې ‎{1}‏ نوم ته نږدي د دې ‎{0}‏ انځورونه پیدا شو</target>
         </alt-trans>
       </trans-unit>
@@ -137,6 +143,9 @@
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
         <target xml:lang="pbu">د ‎{0}‏ استعمال</target>
+        <alt-trans>
+          <target xml:lang="pbu">د {‎0} استعمال</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">د ‎{0} استعمال</target>
         </alt-trans>
@@ -197,6 +206,9 @@
         <note>The {0} will be replaced by the number of matching images</note>
         <target xml:lang="pbu">د ‎{0}‏ انځورونه پیدا شو</target>
         <alt-trans>
+          <target xml:lang="pbu">د {‎{0 انځورونه پیدا شو</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="pbu">د ‎{0} انځورونه پیدا شو</target>
         </alt-trans>
       </trans-unit>
@@ -254,6 +266,9 @@
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
         <target xml:lang="pbu">د پلټنې بکس اوس ‎{0}‏ ته تنظیمه شوې ده</target>
+        <alt-trans>
+          <target xml:lang="pbu">د پلټنې بکس اوس {‎0} ته تنظیمه شوې ده</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">د پلټنې بکس اوس ‎{0} ته تنظیمه شوې ده</target>
         </alt-trans>
@@ -340,6 +355,9 @@
         <note>ID: MemoryWarning</note>
         <target xml:lang="pbu">له بده مرغه، ‎{0}‏ د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
         <alt-trans>
+          <target xml:lang="pbu">له بده مرغه، {‎{0 د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="pbu">له بده مرغه، ‎{0} د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
         </alt-trans>
       </trans-unit>
@@ -347,6 +365,9 @@
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
         <target xml:lang="pbu">جوړونکی: ‎{0}‏</target>
+        <alt-trans>
+          <target xml:lang="pbu">جوړونکی: {‎{0</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">جوړونکی: ‎{0}</target>
         </alt-trans>
@@ -533,6 +554,9 @@
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
         <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0}‏ دی. که تاسو یې له یاده وباسئ تاسې هرکله د "‎{1}‏"‏ او "‎{2}‏"‏ لپاره ګوګل کی لټون کولی شئ.</target>
         <alt-trans>
+          <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0}‏ دی. که تاسو یې له یاده وباسئ تاسې هرکله د "{‎1}"‏ او "{‎2}"‏ لپاره ګوګل کی لټون کولی شئ.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0}‏ دی. که تاسو یې له یاده وباسئ تاسې هرکله د ‎"{1}"‏ او ‎"{2}"‏ لپاره ګوګل کی لټون کولی شئ.</target>
         </alt-trans>
       </trans-unit>
@@ -613,6 +637,9 @@
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
         <target xml:lang="pbu">&amp;کیبورډ او کوم ډول ‎{0}‏ خط یې انتخاب کړئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">&amp;کیبورډ او کوم ډول {‎0} خط یې انتخاب کړئ</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">&amp;کیبورډ او کوم ډول ‎{0} خط یې انتخاب کړئ</target>
         </alt-trans>
