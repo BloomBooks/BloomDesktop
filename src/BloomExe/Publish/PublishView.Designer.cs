@@ -294,7 +294,7 @@ namespace Bloom.Publish
 			superToolTipInfo4.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo4.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo4.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo4.BodyText = "Make a booklet from the inside pages of the book.\r Pages will be laid out and reo" +
+			superToolTipInfo4.BodyText = "Make a booklet from the inside pages of the book.\r\nPages will be laid out and reo" +
     "rdered so that when you fold it, you\'ll have a booklet.\r\n";
 			superToolTipInfo4.HeaderText = "Booklet Inside Pages";
 			superToolTipInfo4.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
