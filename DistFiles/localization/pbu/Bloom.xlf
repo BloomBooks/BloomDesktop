@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="pbu">
     <body>
@@ -1743,6 +1743,27 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="pbu">د انځور د معنوي ملکیت معلومات</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom Tool</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <target xml:lang="pbu" state="needs-translation">Pan and Zoom Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
+        <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
+        <target xml:lang="pbu" state="needs-translation">Choose an image to activate the Pan and Zoom controls</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
+        <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
+        <target xml:lang="pbu" state="needs-translation">Pan and Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
+        <target xml:lang="pbu" state="needs-translation">Preview</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
@@ -1751,7 +1772,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
-        <target xml:lang="pbu">بلوم یوازې لومړی ‎{0}‏ کلمات په لاس کې نیولی شي.</target>
+        <target xml:lang="pbu">بلوم یوازې لومړی {‎{0‏ کلمات په لاس کې نیولی شي.</target>
         <alt-trans>
           <target xml:lang="pbu">بلوم یوازې لومړی ‎{0}‏ کلمات په لاس کې نیولی شي.</target>
         </alt-trans>
@@ -2162,7 +2183,7 @@
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</source>
         <note>ID: Errors.NeedNewerVersion</note>
         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
-        <target xml:lang="pbu">{0}‏ د بلوم نوې نسخې ته اړتیا لري. د بلوم وروستۍ نسخه له ‎{1}‏ څخه ښکته کړئ.</target>
+        <target xml:lang="pbu">{0}‏ د بلوم نوې نسخې ته اړتیا لري. د بلوم وروستۍ نسخه له {‎{1‏ څخه ښکته کړئ.</target>
         <alt-trans>
           <target xml:lang="pbu">{0}‏ د بلوم نوې نسخې ته اړتیا لري. د بلوم وروستۍ نسخه له ‎{1}‏ څخه ښکته کړئ.</target>
         </alt-trans>
@@ -2171,6 +2192,9 @@
         <source xml:lang="en">Bloom had a problem deleting this file: {0}</source>
         <note>ID: Errors.ProblemDeletingFile</note>
         <target xml:lang="pbu">بلوم د دې دوسیِِي حذفولوکې ستونزه درلوده: ‎{0}‏</target>
+        <alt-trans>
+          <target xml:lang="pbu">بلوم د دې دوسیِِي حذفولوکې ستونزه درلوده: {‎{0</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">بلوم د دې دوسیِِي حذفولوکې ستونزه درلوده: ‎{0}</target>
         </alt-trans>
@@ -2199,6 +2223,9 @@
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
         <note>ID: Errors.XMatterNotFound</note>
         <target xml:lang="pbu">دا کتاب د مخ/شا موضوع کڅوړو لپاره غوښتل شوی وو چې نوم یې ‎'{0}'‏ و، خو بلوم دا په دې کمپیوټر باندې پیدا نکړی شو. ته یا د بلوم داسې کڅوړه نصب کړه چې '{0}'‏ درکړي، یا تنظیمونو ته لاړ شه: د کتاب جوړول او د بل مخ/شا موضوع کڅوړي تغیرته.</target>
+        <alt-trans>
+          <target xml:lang="pbu">دا کتاب د مخ/شا موضوع کڅوړو لپاره غوښتل شوی وو چې نوم یې '{‎'{0 و، خو بلوم دا په دې کمپیوټر باندې پیدا نکړی شو. ته یا د بلوم داسې کڅوړه نصب کړه چې '{0}'‏ درکړي، یا تنظیمونو ته لاړ شه: د کتاب جوړول او د بل مخ/شا موضوع کڅوړي تغیرته.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">دا کتاب د مخ/شا موضوع کڅوړو لپاره غوښتل شوی وو چې نوم یې ‎'{0}' و، خو بلوم دا په دې کمپیوټر باندې پیدا نکړی شو. ته یا د بلوم داسې کڅوړه نصب کړه چې ‎'{0}'‏ درکړي، یا تنظیمونو ته لاړ شه: د کتاب جوړول او د بل مخ/شا موضوع کڅوړي تغیرته.</target>
         </alt-trans>
@@ -2454,6 +2481,9 @@
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
         <target xml:lang="pbu">بلوم ‎{0}‏</target>
+        <alt-trans>
+          <target xml:lang="pbu">بلوم {‎{0</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">بلوم ‎{0}</target>
         </alt-trans>
@@ -3728,6 +3758,9 @@ Do you want to go ahead?</source>
         <note>ID: ReaderSetup.RemoveLevel</note>
         <target xml:lang="pbu">سویه لرې کړئ ‎{0}‏</target>
         <alt-trans>
+          <target xml:lang="pbu">سویه لرې کړئ {‎{0</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="pbu">سویه لرې کړئ ‎{0}</target>
         </alt-trans>
       </trans-unit>
@@ -3735,6 +3768,9 @@ Do you want to go ahead?</source>
         <source xml:lang="en">Remove Stage {0}</source>
         <note>ID: ReaderSetup.RemoveStage</note>
         <target xml:lang="pbu">مرحله ‎{0}‏</target>
+        <alt-trans>
+          <target xml:lang="pbu">مرحله {‎{0</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">مرحله ‎{0}</target>
         </alt-trans>
