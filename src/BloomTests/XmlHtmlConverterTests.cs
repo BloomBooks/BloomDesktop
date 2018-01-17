@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom;
+using Bloom.Book;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -171,6 +172,20 @@ namespace BloomTests
 				found = xml.Select((c, i) => xml.Substring(i)).Count(sub => sub.StartsWith("<br />"));
 			}
 			Assert.AreEqual(1, found);
+		}
+
+		[Test]
+		public void SaveDOMAsHtml5_SavesBrCorrectly()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><br /></body></html>");
+			using (var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				var text = File.ReadAllText(temp.Path);
+				Assert.That(text, Does.Contain("<br>"));
+				Assert.That(text, Does.Not.Contain("</br>"));
+			}
 		}
 
 		/// <summary>
