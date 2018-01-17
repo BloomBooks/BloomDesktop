@@ -299,6 +299,7 @@
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
     <Compile Include="Collection\BrandingProject.cs" />
+    <Compile Include="Edit\MusicTool.cs" />
     <Compile Include="Edit\PanAndZoomTool.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
     <Compile Include="Edit\PageControlsApi.cs" />
@@ -617,6 +618,7 @@
     <Compile Include="web\controllers\BookSettingsApi.cs" />
     <Compile Include="web\controllers\BrandingApi.cs" />
     <Compile Include="web\BloomHttpListenerContext.cs" />
+    <Compile Include="web\controllers\MusicApi.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersApi.cs" />

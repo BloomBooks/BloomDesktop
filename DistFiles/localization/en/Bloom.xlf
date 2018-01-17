@@ -1351,6 +1351,19 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
+        <source xml:lang="en">Background Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
+        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
+        <source xml:lang="en">Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
+        <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
+        <note>ID: EditTab.Toolbox.Music.Overview</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom Tool</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>

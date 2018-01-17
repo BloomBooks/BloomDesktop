@@ -118,6 +118,7 @@ namespace Bloom
 							typeof(BloomWebSocketServer),
 							typeof(KeyboardingConfigApi),
 							typeof(ImageApi),
+							typeof(MusicApi),
 							typeof(BrandingApi)
 						}.Contains(t));
 
@@ -291,6 +292,7 @@ namespace Bloom
 			_scope.Resolve<ImageApi>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 			_scope.Resolve<BrandingApi>().RegisterWithServer(server);
+			_scope.Resolve<MusicApi>().RegisterWithServer(server);
 		}
 
 
