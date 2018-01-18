@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using ICSharpCode.SharpZipLib.Zip;
@@ -149,9 +150,10 @@ namespace BloomTests.Book
 				assertionsOnResultingHtmlString:
 				html =>
 				{
-					AssertThatXmlIn.String(html).HasSpecifiedNumberOfMatchesForXpath("//img", 2); // only license and back-cover-outside.svg survives
-					AssertThatXmlIn.String(html).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg']", 1); // only back-cover-outside.svg survives
-					AssertThatXmlIn.String(html).HasNoMatchForXpath("//div[@contenteditable]");
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img", 2); // only license and back-cover-outside.svg survives
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg']", 1); // only back-cover-outside.svg survives
+					AssertThatXmlIn.Dom(htmlDom).HasNoMatchForXpath("//div[@contenteditable]");
 				});
 		}
 
@@ -189,11 +191,12 @@ namespace BloomTests.Book
 						// Oct 2017 jh: I added this bloom-imageContainer/ because the code that does the conversion is limited to these,
 						// presumably because that is the only img's that were giving us problems (ones that need to be sized at display time).
 						// But Xmatter has other img's, for license & branding.
-						AssertThatXmlIn.String(changedHtml).HasNoMatchForXpath("//bloom-imageContainer/img"); // should be merged into parent
+						var changedDom = XmlHtmlConverter.GetXmlDomFromHtml(changedHtml);
+						AssertThatXmlIn.Dom(changedDom).HasNoMatchForXpath("//bloom-imageContainer/img"); // should be merged into parent
 
 						//Note: things like  @data-creator='Anis', @data-license='cc-by' and @data-copyright='1996 SIL PNG' are not going to be there by now,
 						//because they aren't actually supported by the image file, so they get stripped.
-						AssertThatXmlIn.String(changedHtml).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714%201.svg')\"]", 2);
+						AssertThatXmlIn.Dom(changedDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714%201.svg')\"]", 2);
 					});
 		}
 
@@ -227,7 +230,7 @@ namespace BloomTests.Book
 				assertionsOnResultingHtmlString:
 				html =>
 				{
-					AssertThatXmlIn.String(html).HasSpecifiedNumberOfMatchesForXpath("//html/head/link[@rel='stylesheet' and @href='readerStyles.css' and @type='text/css']", 1);
+					AssertThatXmlIn.Dom(XmlHtmlConverter.GetXmlDomFromHtml(html)).HasSpecifiedNumberOfMatchesForXpath("//html/head/link[@rel='stylesheet' and @href='readerStyles.css' and @type='text/css']", 1);
 				},
 
 				assertionsOnZipArchive: zip =>
@@ -456,10 +459,11 @@ namespace BloomTests.Book
 			TestHtmlAfterCompression(bookHtml,
 				assertionsOnResultingHtmlString: html =>
 				{
-					AssertThatXmlIn.String(html)
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom)
 						.HasSpecifiedNumberOfMatchesForXpath(
 							"//html/head/link[@rel='stylesheet' and @href='Device-XMatter.css' and @type='text/css']", 1);
-					AssertThatXmlIn.String(html)
+					AssertThatXmlIn.Dom(htmlDom)
 						.HasNoMatchForXpath(
 							"//html/head/link[@rel='stylesheet' and @href='Traditional-XMatter.css' and @type='text/css']");
 
