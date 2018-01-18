@@ -5,6 +5,7 @@
       <trans-unit id="AboutDialog.BuiltOnDate">
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
+        <note>{0} is the date the application was built</note>
         <target xml:lang="pt-PT" state="translated">Construído em {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
@@ -15,6 +16,7 @@
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
+        <note>{0} is the application name</note>
         <target xml:lang="pt-PT">Sobre {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
@@ -60,6 +62,11 @@
         <note>{0} is the application name</note>
         <target xml:lang="pt-PT" state="translated">Esperando que outros {0} terminam...</target>
       </trans-unit>
+      <trans-unit id="Common.AbortButton">
+        <source xml:lang="en">&amp;Abort</source>
+        <note>ID: Common.AbortButton</note>
+        <target xml:lang="pt-PT" state="needs-translation">&amp;Abort</target>
+      </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
@@ -68,31 +75,51 @@
           <target xml:lang="pt-PT">&amp; Cancelar</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="Common.IgnoreButton">
+        <source xml:lang="en">&amp;Ignore</source>
+        <note>ID: Common.IgnoreButton</note>
+        <target xml:lang="pt-PT" state="needs-translation">&amp;Ignore</target>
+      </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
         <target xml:lang="pt-PT">Não</target>
+      </trans-unit>
+      <trans-unit id="Common.NoButton">
+        <source xml:lang="en">&amp;No</source>
+        <note>ID: Common.NoButton</note>
+        <target xml:lang="pt-PT" state="needs-translation">&amp;No</target>
       </trans-unit>
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
         <target xml:lang="pt-PT">&amp;OK</target>
       </trans-unit>
+      <trans-unit id="Common.RetryButton">
+        <source xml:lang="en">&amp;Retry</source>
+        <note>ID: Common.RetryButton</note>
+        <target xml:lang="pt-PT" state="needs-translation">&amp;Retry</target>
+      </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
         <target xml:lang="pt-PT">Sim</target>
       </trans-unit>
+      <trans-unit id="Common.YesButton">
+        <source xml:lang="en">&amp;Yes</source>
+        <note>ID: Common.YesButton</note>
+        <target xml:lang="pt-PT" state="needs-translation">&amp;Yes</target>
+      </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
-        <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files")</note>
+        <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
         <target xml:lang="pt-PT" state="translated">{0} será movido para reciclagem.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
-        <note>Parameter {0} is a file name</note>
+        <note>Param {0} is a file name</note>
         <target xml:lang="pt-PT" state="translated">{0} será movido para reciclagem.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
@@ -160,14 +187,20 @@
         <target xml:lang="pt-PT">Editar...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms">
-        <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
+        <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
+        <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
         <target xml:lang="pt-PT" state="translated">Esta é a Galeria 'Arte da Leitura'. Na caixa acima, digite o que você está procurando e, em seguida, pressione APLICAR/ENTER. Você pode digitar palavras em inglês e indonésio.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
         <target xml:lang="pt-PT">Arquivo</target>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.Galleries">
+        <source xml:lang="en">Galleries</source>
+        <note>ID: ImageToolbox.Galleries</note>
+        <target xml:lang="pt-PT" state="needs-translation">Galleries</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
@@ -183,6 +216,11 @@
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
         <target xml:lang="pt-PT" state="translated">Pegue o imagem</target>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ImageGalleries">
+        <source xml:lang="en">Image Galleries</source>
+        <note>ID: ImageToolbox.ImageGalleries</note>
+        <target xml:lang="pt-PT" state="needs-translation">Image Galleries</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
@@ -204,14 +242,20 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual">
-        <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</source>
+        <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
+        <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
         <target xml:lang="pt-PT" state="translated">Sabias que há uma nova versão desta coleção que permite que você pesquisar em árabe, bengali, chinês, inglês, francês, indonésio, hindi, português, espanhol, tailandês ou swahili? É gratuito e está disponível para download/baixar.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
         <target xml:lang="pt-PT" state="translated">Este computador não parece ter a Galeria 'Arte da Leitura' instalada ainda.</target>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.NoGalleries">
+        <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
+        <note>ID: ImageToolbox.NoGalleries</note>
+        <target xml:lang="pt-PT" state="needs-translation">This computer doesn't appear to have any galleries installed yet.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
@@ -388,6 +432,12 @@
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
         <target xml:lang="pt-PT" state="translated">Você não pode utilizar esta obra para fins comerciais.</target>
       </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
+        <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+        <target xml:lang="pt-PT" state="needs-translation">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</target>
+      </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
@@ -414,6 +464,11 @@
         <note>ID: MetadataEditor.CopyrightHolder</note>
         <target xml:lang="pt-PT" state="translated">Detentor de direitos autorais</target>
       </trans-unit>
+      <trans-unit id="MetadataEditor.CopyrightYear">
+        <source xml:lang="en">Copyright Year</source>
+        <note>ID: MetadataEditor.CopyrightYear</note>
+        <target xml:lang="pt-PT" state="needs-translation">Copyright Year</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
@@ -433,6 +488,11 @@
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
         <target xml:lang="pt-PT" state="translated">Personalizado</target>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.License">
+        <source xml:lang="en">License</source>
+        <note>ID: MetadataEditor.License</note>
+        <target xml:lang="pt-PT" state="needs-translation">License</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -482,10 +542,11 @@
         <note>ID: SettingsProtection.CtrlShiftHint</note>
         <target xml:lang="pt-PT" state="translated">O botão irá aparecer quando você mantenha pressionada as teclas Ctrl e Shift juntos.</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
-        <source xml:lang="en">Settings...</source>
+      <trans-unit id="SettingsProtection.LauncherButtonLabel">
+        <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
-        <target xml:lang="pt-PT">Configurações...</target>
+        <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
+        <target xml:lang="pt-PT" state="translated">Configurações...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
         <source xml:lang="en">Hide the button that opens settings.</source>
@@ -513,9 +574,10 @@
         <target xml:lang="pt-PT" state="translated">Mostrar caracteres</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
-        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
+        <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
+        <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
         <target xml:lang="pt-PT" state="translated">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google</target>
         <alt-trans>
           <target xml:lang="pt-PT">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google.</target>
@@ -608,6 +670,11 @@
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
         <target xml:lang="pt-PT" state="translated">Selecione o &amp;teclado com o qual deseja digitar texto {0}</target>
       </trans-unit>
+      <trans-unit id="WSKeyboardControl.SetupKeyboards">
+        <source xml:lang="en">Set up keyboards</source>
+        <note>ID: WSKeyboardControl.SetupKeyboards</note>
+        <target xml:lang="pt-PT" state="needs-translation">Set up keyboards</target>
+      </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
@@ -630,6 +697,11 @@
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
         <target xml:lang="pt-PT" state="translated">O aplicativo é incapaz de se conectar com o repositório de dados de localidade SIL para recuperar as informações mais recentes sobre essa linguagem. Se você criar este sistema de escrita, as configurações padrão podem estar incorretos ou desatualizados. Tem certeza de que você deseja criar um novo sistema de escrita?</target>
+      </trans-unit>
+      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
+        <source xml:lang="en">[Missing] {0} ({1})</source>
+        <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
+        <target xml:lang="pt-PT" state="needs-translation">[Missing] {0} ({1})</target>
       </trans-unit>
     </body>
   </file>
