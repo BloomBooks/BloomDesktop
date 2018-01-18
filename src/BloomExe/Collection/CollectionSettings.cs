@@ -418,7 +418,16 @@ namespace Bloom.Collection
 		{
 			try
 			{
-				XElement library = SIL.IO.RobustIO.LoadXElement(SettingsFilePath);
+				// Previously was SIL.IO.RobustIO.LoadXElement(SettingsFilePath). However, we had problems with this
+				// using some non-roman collection names...specifically, one involving the Northern Pashti
+				// localization of 'books' (کتابونه)...see BL-5416. It seems that somewhere in the
+				// implementation of Linq.XElement.Load() the path is converted to a URL and then back
+				// to a path and something changes in that process so that a valid path passed to Load()
+				// raises an invalid path exception. Reading the file directly and then parsing the string
+				// works around this problem.
+				var settingsContent = RobustFile.ReadAllText(SettingsFilePath, Encoding.UTF8);
+				XElement library = XElement.Parse(settingsContent);
+
 				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
 				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
 				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
