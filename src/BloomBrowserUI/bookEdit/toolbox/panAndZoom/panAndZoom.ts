@@ -18,6 +18,9 @@ export default class PanAndZoom implements ITabModel {
     }
     configureElements(container: HTMLElement) {
     }
+    isAlwaysEnabled(): boolean {
+        return false;
+    }
     showTool() {
         $("input[name='panAndZoom']").change(() => this.zoomAndPanChanged());
         $('#panAndZoom-play-wrapper').click(() => this.previewPanAndZoom())

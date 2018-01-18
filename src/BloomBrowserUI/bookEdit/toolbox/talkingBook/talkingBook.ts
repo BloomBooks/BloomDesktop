@@ -11,6 +11,10 @@ export default class TalkingBookModel implements ITabModel {
         return result;
     }
 
+    isAlwaysEnabled(): boolean {
+        return true;
+    }
+
     configureElements(container: HTMLElement) { }
 
     showTool() {

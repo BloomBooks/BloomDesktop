@@ -1,4 +1,5 @@
 ﻿import axios from "axios";
+import { ITabModel, ToolBox } from "../toolbox";
 
 $(document).ready(() => {
     // request our model and set the controls
@@ -29,3 +30,33 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
     })[0];
     axios.post("/bloom/api/book/settings", settings);
 }
+
+// We need a minimal model to get ourselves loaded
+class BookSettings implements ITabModel {
+    beginRestoreSettings(settings: string): JQueryPromise<void> {
+        // Nothing to do, so return an already-resolved promise.
+        var result = $.Deferred<void>();
+        result.resolve();
+        return result;
+    }
+    configureElements(container: HTMLElement) {
+    }
+    showTool() {
+    }
+    hideTool() {
+    }
+    updateMarkup() {
+    }
+    name(): string {
+        return "bookSettings";
+    }
+    hasRestoredSettings: boolean;
+    isAlwaysEnabled(): boolean {
+        return true;
+    }
+    finishTabPaneLocalization(pane: HTMLElement) {
+    }
+}
+
+// Make the one instance of this class and register it with the master toolbox.
+ToolBox.getTabModels().push(new BookSettings());

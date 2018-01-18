@@ -25,6 +25,7 @@ export interface ITabModel {
     updateMarkup();
     name(): string; // without trailing 'Tool'!
     hasRestoredSettings: boolean;
+    isAlwaysEnabled(): boolean;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
@@ -104,6 +105,58 @@ export class ToolBox {
     }
 
     static getTabModels() { return tabModels; }
+
+    // Called from document.ready, initializes the whole toolbox.
+    initialize(): void {
+        axios.get("/bloom/api/toolbox/bookTools").then(result => {
+            let toolsToLoad = result.data.split(",");
+            // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
+            for (var i = toolsToLoad.length - 1; i >= 0; i--) {
+                if (!tabModels.some(mod => mod.name() == toolsToLoad[i])) {
+                    toolsToLoad.splice(i, 1);
+                }
+            }
+            // add any tools we always show
+            for (var j = 0; j < tabModels.length; j++) {
+                if (tabModels[j].isAlwaysEnabled() && !toolsToLoad.includes(tabModels[j].name())) {
+                    toolsToLoad.push(tabModels[j].name());
+                }
+            }
+            // for correct positioning and so we can find check boxes when adding others must load this one first,
+            // which means putting it last in the array.
+            toolsToLoad.push("settings");
+            $("#toolbox").hide();
+            const loadNextTool = function () {
+                if (toolsToLoad.length == 0) {
+                    $("#toolbox").accordion({
+                        heightStyle: "fill"
+                    });
+                    $('body').find('*[data-i18n]').localize(); // run localization
+
+                    // Now bind the window's resize function to the toolbox resizer
+                    $(window).bind('resize', function () {
+                        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
+                        resizeTimer = setTimeout(resizeToolbox, 100);
+                    });
+                    // loaded them all, now we can deal with settings.
+                    restoreToolboxSettings();
+                    $("#toolbox").show();
+                    // I don't know why, but the accordion refresh inside resizeToolbox is needed
+                    // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
+                    setTimeout(resizeToolbox, 0);
+                }
+                else {
+                    // optimize: maybe we can overlap these?
+                    const nextToolId = toolsToLoad.pop();
+                    const checkBoxId = nextToolId + "Check";
+                    const panelId = nextToolId + "Tool"
+                    beginAddPanel(checkBoxId, panelId, false).then(() => loadNextTool());
+                }
+            }
+            loadNextTool();
+        });
+
+    }
 }
 
 var toolbox = new ToolBox();
@@ -129,7 +182,7 @@ export function showOrHidePanel_click(chkbox) {
         chkbox.innerHTML = checkMarkString;
         ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t1");
         if (panel) {
-            beginAddPanel(chkbox.id, panel);
+            beginAddPanel(chkbox.id, panel, true);
         }
     }
     else {
@@ -295,24 +348,28 @@ function getPanel(tool): HTMLElement {
  */
 function setCurrentPanel(currentPanel) {
     // NOTE: panels without a "data-panelId" attribute (such as the More panel) cannot be the "currentPanel."
-    var idx = '0';
+    var idx = 0;
     var toolbox = $('#toolbox');
 
+    const accordionHeaders = toolbox.find('> h3');
     if (currentPanel) {
 
         // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
-        toolbox.find('> h3').each(function () {
+        accordionHeaders.each(function () {
             if ($(this).attr('data-panelId') === currentPanel) {
-                // the index is the last segment of the element id
-                idx = this.id.substr(this.id.lastIndexOf('-') + 1);
                 // break from the each() loop
                 return false;
             }
+            idx++;
             return true; // continue the each() loop
         });
     } else {
         // Leave idx at 0, and update currentPanel to the corresponding ID.
         currentPanel = toolbox.find('> h3').first().attr('data-panelId');
+    }
+    if (idx >= accordionHeaders.length - 1) {
+        // don't pick the More... tool, pick whatever happens to be first.
+        idx = 0;
     }
 
     // turn off animation
@@ -320,12 +377,7 @@ function setCurrentPanel(currentPanel) {
     toolbox.accordion('option', 'animate', false);
 
     // the index must be passed as an int, a string will not work.
-    // (May be worth retaining a note that in an earlier version of accordion, H3 elements had indexes 1, 3, 5, 7,
-    // since an ID was generated for the intermediate content divs also. We need 0, 1, 2, 3.
-    // Currently however it seems the generated IDs are 0, 1, and 2 as would be expected; the 'more' header doesn't
-    // seem to get a numbered ID which is not a problem since it can't be a persisted current tool.)
-    var toolIndex = parseInt(idx);
-    toolbox.accordion('option', 'active', toolIndex);
+    toolbox.accordion('option', 'active', idx);
 
     // turn animation back on
     toolbox.accordion('option', 'animate', ani);
@@ -353,23 +405,25 @@ function setCurrentPanel(currentPanel) {
  * Normally that job goes to an equivalent c# function. Enhance: remove the c# one.
  */
 // these last three parameters were never used: function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPanel) {
-function beginAddPanel(checkBoxId: string, panelId: string): Promise<void> {
+function beginAddPanel(checkBoxId: string, panelId: string, openTool: boolean): Promise<void> {
     var chkBox = document.getElementById(checkBoxId);
-    if (chkBox) {
+    if (chkBox) { // always-enabled tools don't have checkboxes.
         chkBox.innerHTML = checkMarkString;
-
-        var subpath = {
-            'decodableReaderTool': 'readers/decodableReader/decodableReaderToolboxPanel.html',
-            'leveledReaderTool': 'readers/leveledReader/leveledReaderToolboxPanel.html',
-            'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
-            'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html',
-            'panAndZoomTool': 'panAndZoom/panAndZoomToolboxPanel.html',
-            'musicTool': 'music/musicToolboxPanel.html'
-        };
-        return axios.get("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
-            loadToolboxPanel(result.data, panelId);
-        });
     }
+
+    var subpath = {
+        'talkingBookTool': 'talkingBook/talkingBookToolboxPanel.html',
+        'decodableReaderTool': 'readers/decodableReader/decodableReaderToolboxPanel.html',
+        'leveledReaderTool': 'readers/leveledReader/leveledReaderToolboxPanel.html',
+        'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
+        'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html',
+        'panAndZoomTool': 'panAndZoom/panAndZoomToolboxPanel.html',
+        'musicTool': 'music/musicToolboxPanel.html',
+        'settingsTool': 'settings/settings.html'
+    };
+    return axios.get("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
+        loadToolboxPanel(result.data, panelId, openTool);
+    });
 }
 
 function handleKeydown(): void {
@@ -487,7 +541,7 @@ function resizeToolbox() {
  * @param {String} newContent
  * @param {String} panelId
  */
-function loadToolboxPanel(newContent, panelId) {
+function loadToolboxPanel(newContent, panelId, openTool: boolean) {
     var parts = $($.parseHTML(newContent, document, true));
 
     parts.filter('*[data-i18n]').localize();
@@ -500,27 +554,32 @@ function loadToolboxPanel(newContent, panelId) {
 
     // get the toolbox panel tab/button
     var tab = parts.filter('h3').first();
+    if (tab.length < 1) return; // bookSettings currently is empty and doesn't get added.
 
-    // Get the order. If no order, set to top (zero)
-    var order = tab.data('order');
-    if (!order && (order !== 0)) order = 0;
+    var label = tab.text();
 
     // get the panel content div
     var div = parts.filter('div').first();
 
-    // Where to insert the new panel?
-    // NOTE: there will always be at least one panel, the "More..." panel, so there will always be at least one panel
-    // in the toolbox. And the "More..." panel will have the highest order so it is always at the bottom of the stack.
-    var insertBefore = toolboxElt.children().filter(function () { return $(this).data('order') > order; }).first();
-
-    // Insert now.
-    tab.insertBefore(insertBefore);
-    div.insertBefore(insertBefore);
-
-    toolboxElt.accordion('refresh');
+    // Where to insert the new panel? We want to keep them alphabetical except for More...which is always last,
+    // so insert before the first one with text alphabetically greater than this (if any).
+    if (toolboxElt.children().length == 0) {
+        // none yet...this will be the 'more' tab which we insert first.
+        toolboxElt.append(tab);
+        toolboxElt.append(div);
+    } else {
+        var insertBefore = toolboxElt.children().filter(function () { return $(this).text() > label; }).first();
+        if (insertBefore.length == 0) {
+            // Nothing is greater, but still insert before 'More'. Two children represent 'More', so before the second last.
+            insertBefore = $(toolboxElt.children()[toolboxElt.children.length - 2]);
+        }
+        tab.insertBefore(insertBefore);
+        div.insertBefore(insertBefore);
+    }
 
     // if requested, open the panel that was just inserted
-    if (toolbox.toolboxIsShowing()) {
+    if (openTool && toolbox.toolboxIsShowing()) {
+        toolboxElt.accordion('refresh');
         var id = tab.attr('id');
         var tabNumber = parseInt(id.substr(id.lastIndexOf('_')));
         toolboxElt.accordion('option', 'active', tabNumber); // must pass as integer
@@ -548,20 +607,6 @@ function showToolboxChanged(wasShowing: boolean): void {
         switchTool(newToolName);
     }
 }
-
-$(document).ready(function () {
-    $("#toolbox").accordion({
-        heightStyle: "fill"
-    });
-    resizeToolbox(); // Make sure it gets run once, at least.
-    $('body').find('*[data-i18n]').localize(); // run localization
-
-    // Now bind the window's resize function to the toolbox resizer
-    $(window).bind('resize', function () {
-        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-        resizeTimer = setTimeout(resizeToolbox, 100);
-    });
-});
 
 $(parent.window.document).ready(function () {
     $(parent.window.document).find('#pure-toggle-right').change(function () { showToolboxChanged(!this.checked); });

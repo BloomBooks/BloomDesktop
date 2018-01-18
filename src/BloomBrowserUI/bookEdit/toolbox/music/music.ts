@@ -9,6 +9,9 @@ import { getPageFrameExports } from '../../js/bloomFrames';
 import axios from 'axios';
 
 export default class Music implements ITabModel {
+    isAlwaysEnabled(): boolean {
+        return false;
+    }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();

@@ -28,6 +28,9 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
             }
         });
     }
+    isAlwaysEnabled(): boolean {
+        return false;
+    }
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.

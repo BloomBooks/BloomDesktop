@@ -14,6 +14,9 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
     }
 
     configureElements(container: HTMLElement) { }
+    isAlwaysEnabled(): boolean {
+        return false;
+    }
 
     showTool() {
         // change markup based on visible options
