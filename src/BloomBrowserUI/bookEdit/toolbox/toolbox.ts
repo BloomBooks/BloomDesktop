@@ -30,6 +30,11 @@ export interface ITabModel {
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
     finishTabPaneLocalization(pane: HTMLElement);
+
+    // Implement this if the tool uses React.
+    // It should return a JQuery object containing one h3 followed by one div.
+    // Both should have data-panelId of name() followed by 'Tool'
+    makeRootElements(): JQuery;
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
@@ -418,12 +423,38 @@ function beginAddPanel(checkBoxId: string, panelId: string, openTool: boolean): 
         'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
         'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html',
         'panAndZoomTool': 'panAndZoom/panAndZoomToolboxPanel.html',
-        'musicTool': 'music/musicToolboxPanel.html',
+        //'musicTool': 'music/musicToolboxPanel.html',
         'settingsTool': 'settings/settings.html'
     };
-    return axios.get("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
-        loadToolboxPanel(result.data, panelId, openTool);
-    });
+    const subPathToPremadeHtml = subpath[panelId];
+    if (subPathToPremadeHtml) {
+        // old-style tool implemented in pug and typescript
+        return axios.get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml).then(result => {
+            loadToolboxPanelText(result.data, panelId, openTool);
+        });
+    } else {
+        // new-style tool implemented in React
+        const toolId = panelId.substring(0, panelId.length - 4); // strip of "Tool"
+        // for some reason our version of typescript does not know about find()
+        var tool: ITabModel = (<any>ToolBox.getTabModels()).find(tool => tool.name() == toolId);
+        const parts = tool.makeRootElements();
+        loadToolboxPanel(parts, panelId, openTool);
+
+        // api calls for promise, but we don't need one here; just return something
+        // that behaves like a promise already fulfilled.
+        return new TrivialPromise();
+    }
+}
+
+// Review: there should be some built-in Promise implementation I can use here, but I can't find it.
+class TrivialPromise implements Promise<void> {
+    then<TResult1 = void, TResult2 = never>(onfulfilled?: (value: void) => TResult1 | PromiseLike<TResult1>, onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>): Promise<TResult1 | TResult2> {
+        onfulfilled(null);
+        return null;
+    }
+    catch<TResult = never>(onrejected?: (reason: any) => TResult | PromiseLike<TResult>): Promise<void | TResult> {
+        throw new Error("Method not implemented.");
+    }
 }
 
 function handleKeydown(): void {
@@ -541,8 +572,11 @@ function resizeToolbox() {
  * @param {String} newContent
  * @param {String} panelId
  */
-function loadToolboxPanel(newContent, panelId, openTool: boolean) {
+function loadToolboxPanelText(newContent, panelId, openTool: boolean) {
     var parts = $($.parseHTML(newContent, document, true));
+    loadToolboxPanel(parts, panelId, openTool);
+}
+function loadToolboxPanel(parts: JQuery, panelId, openTool: boolean) {
 
     parts.filter('*[data-i18n]').localize();
     parts.find('*[data-i18n]').localize();

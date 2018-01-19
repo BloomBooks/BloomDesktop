@@ -5,6 +5,9 @@ import { ITabModel } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
 
 export default class LeveledReaderToolboxPanel implements ITabModel {
+    makeRootElements(): JQuery {
+        throw new Error("Method not implemented.");
+    }
     beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts['leveledReaderState']) {

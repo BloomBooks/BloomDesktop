@@ -33,6 +33,9 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
 
 // We need a minimal model to get ourselves loaded
 class BookSettings implements ITabModel {
+    makeRootElements(): JQuery {
+        throw new Error("Method not implemented.");
+    }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();

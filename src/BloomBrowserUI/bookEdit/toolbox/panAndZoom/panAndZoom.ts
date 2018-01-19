@@ -10,6 +10,9 @@ import AudioRecording from '../talkingBook/audioRecording';
 
 
 export default class PanAndZoom implements ITabModel {
+    makeRootElements(): JQuery {
+        throw new Error("Method not implemented.");
+    }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();

@@ -6,9 +6,17 @@ import { ITabModel } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from '../../js/bloomFrames';
+import MusicPanelControls from './musicPanelControls';
+import * as React from "react";;
+import * as ReactDOM from "react-dom";
 import axios from 'axios';
 
 export default class Music implements ITabModel {
+    makeRootElements(): JQuery {
+        var parts = $("<h3 data-panelId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'> Music Tool</h3><div data-panelId='musicTool'/>");
+        MusicPanelControls.setup(parts[1]);
+        return parts;
+    }
     isAlwaysEnabled(): boolean {
         return false;
     }

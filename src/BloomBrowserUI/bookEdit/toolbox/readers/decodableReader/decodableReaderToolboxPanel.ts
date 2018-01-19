@@ -10,6 +10,9 @@ import theOneLocalizationManager from '../../../../lib/localizationManager/local
 
 
 export default class DecodableReaderToolboxPanel implements ITabModel {
+    makeRootElements(): JQuery {
+        throw new Error("Method not implemented.");
+    }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
             if (settings['decodableReaderState']) {

@@ -32,6 +32,10 @@ namespace Bloom.Edit
 	///			- also beginRestoreSettings should return a (possibly already-resolved) promise.
 	///			- create one instance and publish it to get the tool known to the toolbox:
 	///				ToolBox.getTabModels().push(new MyWonderfulTool());
+	///			- should implement makeRootElements() to create html with one h3 and one div,
+	///				both having attribute data-panelId='{toolId}Tool'. The h3 should have the tool's
+	///				accordion label (with suitable i18n attr).
+	///			- the div will be passed to ReactDOM.render() as the root element.
 	/// </summary>
 	public class ToolboxView
 	{
