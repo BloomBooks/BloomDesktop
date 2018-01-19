@@ -234,22 +234,22 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="fr" state="needs-translation">Arabic-Indic</target>
+        <target xml:lang="fr" state="translated">arabe-indo</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="fr" state="needs-translation">Armenian</target>
+        <target xml:lang="fr" state="translated">arménien</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="fr" state="needs-translation">Bengali</target>
+        <target xml:lang="fr" state="translated">bengali</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="fr" state="needs-translation">Cambodian</target>
+        <target xml:lang="fr" state="translated">khmer central</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true">
         <source xml:lang="en">Cjk-Decimal</source>
@@ -269,12 +269,12 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" sil:dynamic="true">
         <source xml:lang="en">Georgian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian</note>
-        <target xml:lang="fr" state="needs-translation">Georgian</target>
+        <target xml:lang="fr" state="translated">géorgien</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" sil:dynamic="true">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="fr" state="needs-translation">Gujarati</target>
+        <target xml:lang="fr" state="translated">goudjrati</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" sil:dynamic="true">
         <source xml:lang="en">Gurmukhi</source>
@@ -284,47 +284,47 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="fr" state="needs-translation">Hebrew</target>
+        <target xml:lang="fr" state="translated">hébreu</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada" sil:dynamic="true">
         <source xml:lang="en">Kannada</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada</note>
-        <target xml:lang="fr" state="needs-translation">Kannada</target>
+        <target xml:lang="fr" state="translated">kannada</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" sil:dynamic="true">
         <source xml:lang="en">Khmer</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
-        <target xml:lang="fr" state="needs-translation">Khmer</target>
+        <target xml:lang="fr" state="translated">khmer</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" sil:dynamic="true">
         <source xml:lang="en">Lao</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao</note>
-        <target xml:lang="fr" state="needs-translation">Lao</target>
+        <target xml:lang="fr" state="translated">lao</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" sil:dynamic="true">
         <source xml:lang="en">Lower-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
-        <target xml:lang="fr" state="needs-translation">Lower-Armenian</target>
+        <target xml:lang="fr" state="translated">bas-arménien</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam" sil:dynamic="true">
         <source xml:lang="en">Malayalam</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
-        <target xml:lang="fr" state="needs-translation">Malayalam</target>
+        <target xml:lang="fr" state="translated">malayalam</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" sil:dynamic="true">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="fr" state="needs-translation">Mongolian</target>
+        <target xml:lang="fr" state="translated">mongol</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar" sil:dynamic="true">
         <source xml:lang="en">Myanmar</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
-        <target xml:lang="fr" state="needs-translation">Myanmar</target>
+        <target xml:lang="fr" state="translated">birman</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" sil:dynamic="true">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
-        <target xml:lang="fr" state="needs-translation">Oriya</target>
+        <target xml:lang="fr" state="translated">oriya</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
@@ -334,32 +334,32 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" sil:dynamic="true">
         <source xml:lang="en">Persian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian</note>
-        <target xml:lang="fr" state="needs-translation">Persian</target>
+        <target xml:lang="fr" state="translated">persan</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" sil:dynamic="true">
         <source xml:lang="en">Tamil</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
-        <target xml:lang="fr" state="needs-translation">Tamil</target>
+        <target xml:lang="fr" state="translated">tamoul</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu" sil:dynamic="true">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="fr" state="needs-translation">Telugu</target>
+        <target xml:lang="fr" state="translated">télougou</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai" sil:dynamic="true">
         <source xml:lang="en">Thai</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
-        <target xml:lang="fr" state="needs-translation">Thai</target>
+        <target xml:lang="fr" state="translated">thaï</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" sil:dynamic="true">
         <source xml:lang="en">Tibetan</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan</note>
-        <target xml:lang="fr" state="needs-translation">Tibetan</target>
+        <target xml:lang="fr" state="translated">tibétain</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian" sil:dynamic="true">
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
-        <target xml:lang="fr" state="needs-translation">Upper-Armenian</target>
+        <target xml:lang="fr" state="translated">haut-arménien</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
@@ -1667,6 +1667,42 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="fr">Informations sur la propriété intellectuelle de l'illustration</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
+        <source xml:lang="en">Background Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
+        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
+        <target xml:lang="fr" state="needs-translation">Background Music Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
+        <source xml:lang="en">Choose...</source>
+        <note>ID: EditTab.Toolbox.Music.Choose</note>
+        <target xml:lang="fr" state="needs-translation">Choose...</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
+        <source xml:lang="en">Continue music from previous page</source>
+        <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
+        <target xml:lang="fr" state="needs-translation">Continue music from previous page</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
+        <source xml:lang="en">Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.Heading</note>
+        <target xml:lang="fr" state="needs-translation">Music Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
+        <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
+        <note>ID: EditTab.Toolbox.Music.Overview</note>
+        <target xml:lang="fr" state="needs-translation">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.NewMusic" sil:dynamic="true">
+        <source xml:lang="en">Start new music</source>
+        <note>ID: EditTab.Toolbox.Music.NewMusic</note>
+        <target xml:lang="fr" state="needs-translation">Start new music</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.NoMusic" sil:dynamic="true">
+        <source xml:lang="en">No Music</source>
+        <note>ID: EditTab.Toolbox.Music.NoMusic</note>
+        <target xml:lang="fr" state="needs-translation">No Music</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom Tool</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
@@ -2447,7 +2483,7 @@
       <trans-unit id="NewCollectionWizard.LocationPage.Province">
         <source xml:lang="en">Province</source>
         <note>ID: NewCollectionWizard.LocationPage.Province</note>
-        <target xml:lang="fr" state="needs-translation">Province</target>
+        <target xml:lang="fr" state="translated">Province</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.NewBookPattern" approved="yes">
         <source xml:lang="en">{0} Books</source>

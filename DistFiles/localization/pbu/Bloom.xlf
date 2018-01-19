@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="pbu">
     <body>
@@ -147,7 +147,7 @@
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="pbu" state="needs-translation">About the Bloom Enterprise Service</target>
+        <target xml:lang="pbu" state="translated">د بلوم د بنسټيزو خدماتو په اړه</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -163,7 +163,10 @@
         <source xml:lang="en">Show Experimental Commands</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="pbu" state="translated">تجربوي کمانډونه (‏Experimental Commands‏) وښایاست (لکه، ‏Export XML for InDesign‏)</target>
+        <target xml:lang="pbu" state="translated">تجربي دستورات وښاياست</target>
+        <alt-trans>
+          <target xml:lang="pbu">تجربوي کمانډونه (‏Experimental Commands‏) وښایاست (لکه، ‏Export XML for InDesign‏)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
@@ -447,7 +450,7 @@
         <source xml:lang="en">Bloom Enterprise Project</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom Enterprise Project</target>
+        <target xml:lang="pbu" state="translated">د بلوم بنسټيزه پروژه</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
@@ -669,12 +672,12 @@
       <trans-unit id="CollectionTab.Progress">
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
-        <target xml:lang="pbu" state="needs-translation">({0}% complete)</target>
+        <target xml:lang="pbu" state="translated"> ({0}%پوره)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
         <source xml:lang="en">Restart to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
-        <target xml:lang="pbu" state="needs-translation">Restart to Update</target>
+        <target xml:lang="pbu" state="translated">د اپډېټ لپاره يې بيا روښانه کړئ</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
@@ -738,7 +741,10 @@
         <note>ID: CollectionTab.UpdateInstalled</note>
         <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Update for {0} is ready.</note>
-        <target xml:lang="pbu" state="translated">د {0} آپډیت تیار دی.</target>
+        <target xml:lang="pbu" state="translated">د {0} آپډیت تیار دی</target>
+        <alt-trans>
+          <target xml:lang="pbu">د {0} آپډیت تیار دی.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">د ‎{0} آپډیت تیار دی.</target>
         </alt-trans>
@@ -757,7 +763,10 @@
         <source xml:lang="en">Downloading update to {0} ({1}K)</source>
         <note>ID: CollectionTab.Updating</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
-        <target xml:lang="pbu" state="translated">د (‎{0} ({1}kb لپاره د آپډیټ ښکته کول.</target>
+        <target xml:lang="pbu" state="translated">د ({0} ({1}kb لپاره د آپډیټ ښکته کول</target>
+        <alt-trans>
+          <target xml:lang="pbu">د (‎{0} ({1}kb لپاره د آپډیټ ښکته کول.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -844,7 +853,10 @@
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</source>
         <note>ID: Download.CopyFailed</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</note>
-        <target xml:lang="pbu" state="translated">بلوم کتاب ښکته کړو؛ خو په بلوم کې یې د موجودیت لپاره ستونزې درلودې. هیله ده خپل کمپیوټر بیا روښانه کړئ او بیا کوښښ وکړئ. که تاسو بیا دا پیغام ولید، هیله ده چې د جزئیاتو تڼۍ ته زور وکړئ او ستونزه حل کوونکو ته راپور کړئ.</target>
+        <target xml:lang="pbu" state="translated">بلوم کتاب ښکته کړ؛ خو په بلوم کې یې د موجودیت لپاره ستونزې درلودې. هیله ده خپل کمپیوټر بیا روښانه کړئ او بیا کوښښ وکړئ. که تاسو بیا دا پیغام ولید، هیله ده چې د جزئیاتو تڼۍ ته زور وکړئ او ستونزه حل کوونکو ته راپور کړئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">بلوم کتاب ښکته کړو؛ خو په بلوم کې یې د موجودیت لپاره ستونزې درلودې. هیله ده خپل کمپیوټر بیا روښانه کړئ او بیا کوښښ وکړئ. که تاسو بیا دا پیغام ولید، هیله ده چې د جزئیاتو تڼۍ ته زور وکړئ او ستونزه حل کوونکو ته راپور کړئ.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
@@ -855,7 +867,10 @@
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.GenericNetworkProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9): There was a problem downloading your book.</note>
-        <target xml:lang="pbu" state="translated">د کتاب په ښکته کولو کې یوه ستونزه وه.</target>
+        <target xml:lang="pbu" state="translated">د کتاب په ښکته کولو کې یوه ستونزه وه. تاسې بيا هڅه وکړئ او که چېرې يې له خپل موقعيت څخه نشی ډونلوډ کولای نو له موږ سره په اړيکه کې شئ: issues@bloomlibrary.org.</target>
+        <alt-trans>
+          <target xml:lang="pbu">د کتاب په ښکته کولو کې یوه ستونزه وه.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
@@ -866,7 +881,10 @@
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9, capitalization of website): There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</note>
-        <target xml:lang="pbu" state="translated">د کتاب په ښکته کولو کې ستونزه وه: کوم شي ډیر وخت ونیو. تاسې بل وخت بیا کوښښ کولی شئ، او یا مونږ ته په ‏issues@BloomLibrary.org‏ پته ولیکئ که تاسو یي د خپل ځای څخه کار کولو لپاره نشئ ښکته کولی.</target>
+        <target xml:lang="pbu" state="translated">د کتاب په ښکته کولو کې ستونزه وه: کوم شي ډیر وخت ونیو. تاسې بل وخت بیا کوښښ کولی شئ، او یا مونږ ته په issues@BloomLibrary.org پته ولیکئ که تاسو یي د خپل ځای څخه کار کولو لپاره نشئ ښکته کولی.</target>
+        <alt-trans>
+          <target xml:lang="pbu">د کتاب په ښکته کولو کې ستونزه وه: کوم شي ډیر وخت ونیو. تاسې بل وخت بیا کوښښ کولی شئ، او یا مونږ ته په ‏issues@BloomLibrary.org‏ پته ولیکئ که تاسو یي د خپل ځای څخه کار کولو لپاره نشئ ښکته کولی.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddPageButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page</source>
@@ -906,7 +924,10 @@
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
         <note>Seen when the book's main template page file is missing.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
-        <target xml:lang="pbu" state="translated">(هېڅ نمونوي فايل ونه موندل شو)</target>
+        <target xml:lang="pbu" state="translated">{0}هېڅ نمونوي فايل ونه موندل شو</target>
+        <alt-trans>
+          <target xml:lang="pbu">(هېڅ نمونوي فايل ونه موندل شو)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
@@ -985,7 +1006,7 @@
       <trans-unit id="EditTab.ContentLanguagesDropdown_ToolTip_">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown_ToolTip_</note>
-        <target xml:lang="pbu" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <target xml:lang="pbu" state="translated">ژبه وټاکئ چې دا کتاب په دوو که په درېيو ژبو جوړ کړي</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton" approved="yes">
         <source xml:lang="en">Copy</source>
@@ -1054,7 +1075,10 @@
         <source xml:lang="en">Remove Page</source>
         <note>ID: EditTab.DeletePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Remove\n  Page</note>
-        <target xml:lang="pbu" state="translated">لرې کړئ\n‏ پاڼه</target>
+        <target xml:lang="pbu" state="translated">پاڼه لرې کړئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">لرې کړئ\n‏ پاڼه</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove this page from the book</source>
@@ -1101,7 +1125,10 @@
         <source xml:lang="en">Duplicate Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Duplicate\n  Page</note>
-        <target xml:lang="pbu" state="translated">نقل\n‏ پاڼه</target>
+        <target xml:lang="pbu" state="translated">پاڼه نقل کړئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">نقل\n‏ پاڼه</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
@@ -1339,12 +1366,12 @@
       <trans-unit id="EditTab.FrontMatter.MarkTheBookEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end of the book.</source>
         <note>ID: EditTab.FrontMatter.MarkTheBookEnd</note>
-        <target xml:lang="pbu" state="needs-translation">Something to tell the reader/viewer that this is the end of the book.</target>
+        <target xml:lang="pbu" state="translated">هغه څه چې بايد لوستونکي او يا هم کتونکي ته وويل شي دادي چې دا د کتاب پای دی.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MarkTheVideoEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end.</source>
         <note>ID: EditTab.FrontMatter.MarkTheVideoEnd</note>
-        <target xml:lang="pbu" state="needs-translation">Something to tell the reader/viewer that this is the end.</target>
+        <target xml:lang="pbu" state="translated">هغه څه چې بايد لوستونکي او يا هم کتونکي ته وويل شي دادي چې دا وروستۍ برخه ده.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MultipleImageCredit">
         <source xml:lang="en">Images on pages {0} by {1}.</source>
@@ -1352,7 +1379,10 @@
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked. Put {0} in the translation where the list of page numbers should go and put {1} in the translation where the image credits should go. For example in English, 'Images on pages {0} by {1}.' comes out like 'Images on pages 1, 2, and 4 by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note xml:lang="en">OLD TEXT (early 4.1, remove quotation marks): "Images on pages {0} by {1}."</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="pbu" state="translated">پر پاڼو انځورونه {0} پر {1}."</target>
+        <target xml:lang="pbu" state="translated">پر پاڼو انځورونه {0} پر {1}".</target>
+        <alt-trans>
+          <target xml:lang="pbu">پر پاڼو انځورونه {0} پر {1}."</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name of Translator, in {lang}</source>
@@ -1408,7 +1438,10 @@
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked. Put {0} in the translation where the page number of an image should go and put {1} in the translation where the image credits should go. For example in English, 'Image on page {0} by {1}.' comes out like 'Image on page 3 by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note xml:lang="en">OLD TEXT (early 4.1, remove quotation marks): "Image on page {0} by {1}."</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="pbu" state="translated">" انځور{0} پر {1} پاڼه."</target>
+        <target xml:lang="pbu" state="translated">" انځور{0} پر {1} پاڼه".</target>
+        <alt-trans>
+          <target xml:lang="pbu">" انځور{0} پر {1} پاڼه."</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
@@ -1423,7 +1456,10 @@
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="pbu" state="translated">د دې لپاره چې د مخکي نه په نورو ژبو تیار شوي کتابونه (‏shellbook) خلاص کړئ، په ښي لوري کې وسیله بکس ته لاړشئ، د (ګیر) نښه پیدا کړئ، او بیا ‎'تغیرونو ته مخکي نه په نورو ژبو تیار شوي کتابونو (‏shellbook‏) کې اجازه ورکړئ‎'‏ باندې زور وکړئ.</target>
+        <target xml:lang="pbu" state="translated">د دې لپاره چې (shellbook) خلاص کړئ، په ښکتني چپ اړخ کې د بندېدو په آیکن کلېک وکړئ. </target>
+        <alt-trans>
+          <target xml:lang="pbu">د دې لپاره چې د مخکي نه په نورو ژبو تیار شوي کتابونه (‏shellbook) خلاص کړئ، په ښي لوري کې وسیله بکس ته لاړشئ، د (ګیر) نښه پیدا کړئ، او بیا ‎'تغیرونو ته مخکي نه په نورو ژبو تیار شوي کتابونو (‏shellbook‏) کې اجازه ورکړئ‎'‏ باندې زور وکړئ.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
@@ -1697,26 +1733,62 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="pbu">د انځور د معنوي ملکیت معلومات</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
+        <source xml:lang="en">Background Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
+        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
+        <target xml:lang="pbu" state="needs-translation">Background Music Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
+        <source xml:lang="en">Choose...</source>
+        <note>ID: EditTab.Toolbox.Music.Choose</note>
+        <target xml:lang="pbu" state="needs-translation">Choose...</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
+        <source xml:lang="en">Continue music from previous page</source>
+        <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
+        <target xml:lang="pbu" state="needs-translation">Continue music from previous page</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
+        <source xml:lang="en">Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.Heading</note>
+        <target xml:lang="pbu" state="needs-translation">Music Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
+        <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
+        <note>ID: EditTab.Toolbox.Music.Overview</note>
+        <target xml:lang="pbu" state="needs-translation">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.NewMusic" sil:dynamic="true">
+        <source xml:lang="en">Start new music</source>
+        <note>ID: EditTab.Toolbox.Music.NewMusic</note>
+        <target xml:lang="pbu" state="needs-translation">Start new music</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.NoMusic" sil:dynamic="true">
+        <source xml:lang="en">No Music</source>
+        <note>ID: EditTab.Toolbox.Music.NoMusic</note>
+        <target xml:lang="pbu" state="needs-translation">No Music</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom Tool</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
-        <target xml:lang="pbu" state="needs-translation">Pan and Zoom Tool</target>
+        <target xml:lang="pbu" state="translated">د پن او زوم ابزار</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
         <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
-        <target xml:lang="pbu" state="needs-translation">Choose an image to activate the Pan and Zoom controls</target>
+        <target xml:lang="pbu" state="translated">يو انځور وټاکئ؛ څو د زوم او پن کنترولوونکی فعال شي</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
         <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
-        <target xml:lang="pbu" state="needs-translation">Pan and Zoom</target>
+        <target xml:lang="pbu" state="translated">پن او زوم</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
         <source xml:lang="en">Preview</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
-        <target xml:lang="pbu" state="needs-translation">Preview</target>
+        <target xml:lang="pbu" state="translated">ښودنه</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -2074,12 +2146,15 @@
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
         <note xml:lang="en">OLD TEXT (before 3.9, shorter wording): Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</note>
-        <target xml:lang="pbu" state="translated">بلوم و نتوانید چې خپله ‏HTTP‏ اوریدونکی پیل کړي چې د فایرفاکس تړل شوي لټونګر سره یې د خبرو کولو لپاره کاره وی. که دا په داسې حال کې هم وشي چې سم د لاسه مو کمپیوټر بیا روښانه کړی وي، نو له چا پوښتنه وکړئ چې تحقیق وکړي که تاسو کوم جدي فایروال نصب کړی دی. جدي فایر وال محصول ښایی چې اړین وي چې د بلوم استعمل لپاره بیرته لغوه شي.</target>
+        <target xml:lang="pbu" state="translated">بلوم و نتوانید چې خپله HTTP اوریدونکی پیل کړي چې د فایرفاکس تړل شوي لټونګر سره یې د خبرو کولو لپاره کاره وی. که دا په داسې حال کې هم وشي چې سم د لاسه مو کمپیوټر بیا روښانه کړی وي، نو له چا پوښتنه وکړئ چې تحقیق وکړي که تاسو کوم جدي فایروال نصب کړی دی. جدي فایر وال محصول ښایی چې اړین وي چې د بلوم استعمل لپاره بیرته لغوه شي.</target>
+        <alt-trans>
+          <target xml:lang="pbu">بلوم و نتوانید چې خپله ‏HTTP‏ اوریدونکی پیل کړي چې د فایرفاکس تړل شوي لټونګر سره یې د خبرو کولو لپاره کاره وی. که دا په داسې حال کې هم وشي چې سم د لاسه مو کمپیوټر بیا روښانه کړی وي، نو له چا پوښتنه وکړئ چې تحقیق وکړي که تاسو کوم جدي فایروال نصب کړی دی. جدي فایر وال محصول ښایی چې اړین وي چې د بلوم استعمل لپاره بیرته لغوه شي.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.CouldNotSavePage">
         <source xml:lang="en">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
         <note>ID: Errors.CouldNotSavePage</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</target>
+        <target xml:lang="pbu" state="translated">بلوم د يوې پاڼې په ساتلو کې ستونزه لري. د مهربانۍ له مخې په لاندې جزياتو کلېک وکړئ او موږ ته يې راپور راکړئ. ورپسې له بلوم څخه ووځئ او بيا ځلي يې ترسره کړئ. وګورئ چې اډېټ کړې پاڼه هرڅه له لاسه ورکوي که نه. په بښنې سره!</target>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtection" approved="yes">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
@@ -2105,20 +2180,29 @@
         <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
         <note>ID: Errors.ErrorSelecting</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
-        <target xml:lang="pbu" state="translated">د کتاب په انتخابولو کې یوه ستونزه وه. د بلوم بیا روښانه کول ښایي دا ستونزه حل کړي. که ونشو، هیله ده چې د ‎'جزئیاتو‎'‏ تڼۍ کیکاږۍ او ستونزه د بلوم جوړونکو ته راپور کړئ.</target>
+        <target xml:lang="pbu" state="translated">د کتاب په انتخابولو کې یوه ستونزه وه. د بلوم بیا روښانه کول ښایي دا ستونزه حل کړي. که ونشو، هیله ده چې د 'جزئیاتو' تڼۍ کیکاږۍ او ستونزه د بلوم جوړونکو ته راپور کړئ.</target>
+        <alt-trans>
+          <target xml:lang="pbu">د کتاب په انتخابولو کې یوه ستونزه وه. د بلوم بیا روښانه کول ښایي دا ستونزه حل کړي. که ونشو، هیله ده چې د ‎'جزئیاتو‎'‏ تڼۍ کیکاږۍ او ستونزه د بلوم جوړونکو ته راپور کړئ.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.ErrorUpdating">
         <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
         <note>ID: Errors.ErrorUpdating</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
-        <target xml:lang="pbu" state="translated">د کتاب آپډیټولو کې ستونزه وه. د بلوم بیا روښانول ښایي ستونزه حل کړي. که ونشو، هیله ده چې د ‎'جزئیاتو‎'‏ تڼۍ کیکاږۍ او ستونزه د بلوم جوړونکو ته راپور کړئ.</target>
+        <target xml:lang="pbu" state="translated">د کتاب آپډیټولو کې ستونزه وه. د بلوم بیا روښانول ښایي ستونزه حل کړي. که ونشو، هیله ده چې د 'جزئیاتو' تڼۍ کیکاږۍ او ستونزه د بلوم جوړونکو ته راپور کړئ.</target>
+        <alt-trans>
+          <target xml:lang="pbu">د کتاب آپډیټولو کې ستونزه وه. د بلوم بیا روښانول ښایي ستونزه حل کړي. که ونشو، هیله ده چې د ‎'جزئیاتو‎'‏ تڼۍ کیکاږۍ او ستونزه د بلوم جوړونکو ته راپور کړئ.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
         <note>ID: Errors.NeedNewerVersion</note>
         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
         <note xml:lang="en">OLD TEXT (before 3.9, removed period): {0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</note>
-        <target xml:lang="pbu" state="translated">{0}‏ د بلوم نوې نسخې ته اړتیا لري. د بلوم وروستۍ نسخه له ‎{1}‏ څخه ښکته کړئ.</target>
+        <target xml:lang="pbu" state="translated">{0} د بلوم نوې نسخې ته اړتیا لري. د بلوم وروستۍ نسخه له {{1 څخه ښکته کړئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">{0}‏ د بلوم نوې نسخې ته اړتیا لري. د بلوم وروستۍ نسخه له {‎{1‏ څخه ښکته کړئ.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">{0}‏ د بلوم نوې نسخې ته اړتیا لري. د بلوم وروستۍ نسخه له ‎{1}‏ څخه ښکته کړئ.</target>
         </alt-trans>
@@ -2159,7 +2243,10 @@
         <source xml:lang="en">This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.</source>
         <note>ID: Errors.XMatterNotFound</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</note>
-        <target xml:lang="pbu" state="translated">دا کتاب د مخ/شا موضوع کڅوړو لپاره غوښتل شوی وو چې نوم یې ‎'{0}'‏ و، خو بلوم دا په دې کمپیوټر باندې پیدا نکړی شو. ته یا د بلوم داسې کڅوړه نصب کړه چې '{0}'‏ درکړي، یا تنظیمونو ته لاړ شه: د کتاب جوړول او د بل مخ/شا موضوع کڅوړي تغیرته.</target>
+        <target xml:lang="pbu" state="translated">دا کتاب د مخ/شا موضوع کڅوړو لپاره غوښتل شوی وو چې نوم یې '{0}' و، خو بلوم دا په دې کمپیوټر باندې پیدا نه کړای شو. د بلوم داسې کڅوړه نصب کړه چې '{0}' درکړي، یا تنظیمونو ته لاړ شه: د کتاب جوړول او د بل مخ/شا موضوع کڅوړې تغيیر کړه.</target>
+        <alt-trans>
+          <target xml:lang="pbu">دا کتاب د مخ/شا موضوع کڅوړو لپاره غوښتل شوی وو چې نوم یې ‎'{0}'‏ و، خو بلوم دا په دې کمپیوټر باندې پیدا نکړی شو. ته یا د بلوم داسې کڅوړه نصب کړه چې '{0}'‏ درکړي، یا تنظیمونو ته لاړ شه: د کتاب جوړول او د بل مخ/شا موضوع کڅوړي تغیرته.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">دا کتاب د مخ/شا موضوع کڅوړو لپاره غوښتل شوی وو چې نوم یې '{‎'{0 و، خو بلوم دا په دې کمپیوټر باندې پیدا نکړی شو. ته یا د بلوم داسې کڅوړه نصب کړه چې '{0}'‏ درکړي، یا تنظیمونو ته لاړ شه: د کتاب جوړول او د بل مخ/شا موضوع کڅوړي تغیرته.</target>
         </alt-trans>
@@ -2187,7 +2274,10 @@
         <source xml:lang="en">Ask a Question</source>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Ask a Question (web)</note>
-        <target xml:lang="pbu" state="translated">پوښتنه وکړئ (ویب)</target>
+        <target xml:lang="pbu" state="translated">پوښتنه وکړئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">پوښتنه وکړئ (ویب)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem" approved="yes">
         <source xml:lang="en">Building Reader Templates</source>
@@ -2203,7 +2293,10 @@
         <source xml:lang="en">About Bloom...</source>
         <note>ID: HelpMenu.CreditsMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): About Bloom</note>
-        <target xml:lang="pbu" state="translated">د بلوم په اړه</target>
+        <target xml:lang="pbu" state="translated">د بلوم په اړه...</target>
+        <alt-trans>
+          <target xml:lang="pbu">د بلوم په اړه</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
         <source xml:lang="en">Documentation</source>
@@ -2235,7 +2328,10 @@
         <source xml:lang="en">Registration...</source>
         <note>ID: HelpMenu.RegistrationMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): Registration</note>
-        <target xml:lang="pbu" state="translated">ثبت نام کول</target>
+        <target xml:lang="pbu" state="translated">ثبت نام کول...</target>
+        <alt-trans>
+          <target xml:lang="pbu">ثبت نام کول</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.ReleaseNotesMenuItem" approved="yes">
         <source xml:lang="en">Release Notes...</source>
@@ -2261,7 +2357,10 @@
         <source xml:lang="en">BloomLibrary.org</source>
         <note>ID: HelpMenu.WebSiteMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Web Site</note>
-        <target xml:lang="pbu" state="translated">پاڼه</target>
+        <target xml:lang="pbu" state="translated">Bloomlibrary.org</target>
+        <alt-trans>
+          <target xml:lang="pbu">پاڼه</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.trainingVideos" approved="yes">
         <source xml:lang="en">Training Videos</source>
@@ -2734,7 +2833,7 @@
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.File.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="pbu" state="needs-translation">Packaging "{0}" for use with Bloom Reader...</target>
+        <target xml:lang="pbu" state="translated">د بلوم د لوستونکو د ګټې اخيستنې لپاره د "{0}" بسته بندي...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.Saving" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Saving as {0}</source>
@@ -2932,7 +3031,7 @@
       <trans-unit id="PublishTab.AndroidButton">
         <source xml:lang="en">Android</source>
         <note>ID: PublishTab.AndroidButton</note>
-        <target xml:lang="pbu" state="needs-translation">Android</target>
+        <target xml:lang="pbu" state="translated">انډرویډ</target>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Publish to an Android device.</source>
@@ -2948,7 +3047,10 @@
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
         <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
-        <target xml:lang="pbu" state="translated">د کتاب دننۍ پاڼو څخه وړوکی کتاب جوړ کړئ. پاڼې به بهر وي او د تاوولو په وخت کې له سره تنظیم کیدای شي، تاسو به وړوکی کتاب لرئ.‏ \n</target>
+        <target xml:lang="pbu" state="translated">د کتاب دننۍ پاڼو څخه وړوکی کتاب جوړ کړئ. پاڼې به بهر وي او د تاوولو په وخت کې له سره تنظیم کیدای شي، تاسو به وړوکی کتاب لرئ. \n</target>
+        <alt-trans>
+          <target xml:lang="pbu">د کتاب دننۍ پاڼو څخه وړوکی کتاب جوړ کړئ. پاڼې به بهر وي او د تاوولو په وخت کې له سره تنظیم کیدای شي، تاسو به وړوکی کتاب لرئ.‏ \n</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Share on the Web</source>
@@ -3035,7 +3137,7 @@
         <source xml:lang="en">Choose a page size and orientation</source>
         <note>ID: PublishTab.Options_ToolTip_</note>
         <note>menu header in the Publish tab</note>
-        <target xml:lang="pbu" state="needs-translation">Choose a page size and orientation</target>
+        <target xml:lang="pbu" state="translated">د پاڼې اندازه او لوری وټاکئ</target>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton" approved="yes">
         <source xml:lang="en">Replace Existing</source>
@@ -3078,7 +3180,10 @@
         <note>ID: PublishTab.PdfMaker.Creating</note>
         <note>Message displayed in a progress report dialog box</note>
         <note xml:lang="en">OLD TEXT (before 4.0, removed space): Creating PDF ...</note>
-        <target xml:lang="pbu" state="translated">د PDF جوړول ...</target>
+        <target xml:lang="pbu" state="translated">د PDF جوړول...</target>
+        <alt-trans>
+          <target xml:lang="pbu">د PDF جوړول ...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ErrorProcessing" approved="yes">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
@@ -3090,7 +3195,7 @@
         <source xml:lang="en">Error compressing or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="pbu" state="needs-translation">Error compressing or recoloring the PDF file</target>
+        <target xml:lang="pbu" state="translated">د PDF فايل په خلاصه کولو او بيالوستنه کې تېروتنه </target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Finished" approved="yes">
         <source xml:lang="en">Finished making PDF from HTML</source>
@@ -3126,7 +3231,7 @@
         <source xml:lang="en">Saving PDF...</source>
         <note>ID: PublishTab.PdfMaker.Saving</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="pbu" state="needs-translation">Saving PDF...</target>
+        <target xml:lang="pbu" state="translated">د PDF فايل خوندي کول...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.TryMoreMemory" approved="yes">
         <source xml:lang="en">Try doing this on a computer with more memory</source>
@@ -3199,7 +3304,7 @@
       <trans-unit id="PublishTab.Upload.Cancelled">
         <source xml:lang="en">Upload was cancelled</source>
         <note>ID: PublishTab.Upload.Cancelled</note>
-        <target xml:lang="pbu" state="needs-translation">Upload was cancelled</target>
+        <target xml:lang="pbu" state="translated">اپلوډ کول مسترد شول</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink" approved="yes">
         <source xml:lang="en">CC-BY-NC</source>
@@ -3210,7 +3315,10 @@
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): BloomLibrary.org already has a previous version of this book from you. If you upload it again, it will be replaced with your current version.</note>
-        <target xml:lang="pbu" state="translated">د‏ ‏BloomLibrary.org‏ د تاسې د دې کتاب مخکینۍ نسخه تیاره لري. که تاسو یی بیا پورته کړئ، دا به ستاسو اوسنۍ نسخه پر ځای ثبت شي.</target>
+        <target xml:lang="pbu" state="translated">د BloomLibrary.org د تاسې د دې کتاب مخکینۍ نسخه تیاره لري. که تاسو یی بیا پورته کړئ، دا به ستاسو اوسنۍ نسخه پر ځای ثبت شي.</target>
+        <alt-trans>
+          <target xml:lang="pbu">د‏ ‏BloomLibrary.org‏ د تاسې د دې کتاب مخکینۍ نسخه تیاره لري. که تاسو یی بیا پورته کړئ، دا به ستاسو اوسنۍ نسخه پر ځای ثبت شي.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Copyright" approved="yes">
         <source xml:lang="en">Copyright</source>
@@ -3258,7 +3366,7 @@
       <trans-unit id="PublishTab.Upload.HelpEachOther">
         <source xml:lang="en">In the Bloom community, we help each other by sharing both new and newly translated books on the Bloom Library.</source>
         <note>ID: PublishTab.Upload.HelpEachOther</note>
-        <target xml:lang="pbu" state="needs-translation">In the Bloom community, we help each other by sharing both new and newly translated books on the Bloom Library.</target>
+        <target xml:lang="pbu" state="translated">د بلوم په نړۍ کې موږ يو له بل سره د بلوم د کتابتون له لارې د نويو او يا هم نويو ژباړل شويو کتابونو له لارې مرسته کوو.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.IncompleteTranslation" approved="yes">
         <source xml:lang="en">(incomplete translation)</source>
@@ -3444,9 +3552,12 @@
         <note xml:lang="en">OLD TEXT (before 4.0, mark newlines properly): This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.
 
 Do you want to go ahead?</note>
-        <target xml:lang="pbu" state="translated">دا کتاب یوه نمونه ده، هغه دا چې دا خالي پاڼی لری چې یو نوی کتاب ولیکل شي د دې پرځای چې منځپانګه د نورو ژبو د ژباړی لپاره وي. که دا هغه څه نه وي چې تاسو یې اراده لرئ، تاسو باید د دې کتاب د پورته کولو دمخه د کارپوه مرسته واخلئ.
+        <target xml:lang="pbu" state="translated">"دا کتاب یوه نمونه ده، هغه دا چې دا خالي پاڼی لری چې یو نوی کتاب ولیکل شي د دې پرځای چې منځپانګه د نورو ژبو د ژباړی لپاره وي. که دا هغه څه نه وي چې تاسو یې اراده لرئ، تاسو باید د دې کتاب د پورته کولو دمخه د کارپوه مرسته واخلئ. \n\n ایا تاسو غواړئ چې مخ ته ولاړ شئ?</target>
+        <alt-trans>
+          <target xml:lang="pbu">دا کتاب یوه نمونه ده، هغه دا چې دا خالي پاڼی لری چې یو نوی کتاب ولیکل شي د دې پرځای چې منځپانګه د نورو ژبو د ژباړی لپاره وي. که دا هغه څه نه وي چې تاسو یې اراده لرئ، تاسو باید د دې کتاب د پورته کولو دمخه د کارپوه مرسته واخلئ.
 
 ایا تاسو غواړئ چې مخ ته ولاړ شئ?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TermsLink" approved="yes">
         <source xml:lang="en">Show Terms of Use</source>
@@ -3632,7 +3743,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Level </source>
         <note>ID: ReaderSetup.LevelLabel</note>
         <note xml:lang="en">OLD TEXT (before 3.9, use literal NBSP character): Level&amp;nbsp;</note>
-        <target xml:lang="pbu" state="translated">سویه او&amp;psbn‏;</target>
+        <target xml:lang="pbu" state="translated">سویه</target>
+        <alt-trans>
+          <target xml:lang="pbu">سویه او&amp;psbn‏;</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
@@ -3847,7 +3961,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
         <note xml:lang="en">OLD TEXT (before 3.9, remove unwanted backslashes): In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</note>
-        <target xml:lang="pbu" state="translated">اضاف پر دې، دا د بلوم کڅوړه به ستاسو وروستي د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه د \"{0}"\‏ ژبې لپاره په یاد ولري. هر څوک چې دا د بلوم کڅوړه خلاصوي، او بیا د \"{0}"\‏ ټولګه خلاصوي، اوسني د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه به یې د بلوم کڅوړې په تنظیمونوبدل شي. هغوی به د اوسني کلیمو سیټ هم د زده کوونکو له سویې سره برابر کتاب لپاره واخلي.</target>
+        <target xml:lang="pbu" state="translated">اضاف پر دې، دا د بلوم کڅوړه به ستاسو وروستي د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه د \"{0}"\ ژبې لپاره په یاد ولري. هر څوک چې دا د بلوم کڅوړه خلاصوي، او بیا د \"{0}"\ ټولګه خلاصوي، اوسني د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه به یې د بلوم کڅوړې په تنظیمونوبدل شي. هغوی به د اوسني کلیمو سیټ هم د زده کوونکو له سویې سره برابر کتاب لپاره واخلي.</target>
+        <alt-trans>
+          <target xml:lang="pbu">اضاف پر دې، دا د بلوم کڅوړه به ستاسو وروستي د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه د \"{0}"\‏ ژبې لپاره په یاد ولري. هر څوک چې دا د بلوم کڅوړه خلاصوي، او بیا د \"{0}"\‏ ټولګه خلاصوي، اوسني د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه به یې د بلوم کڅوړې په تنظیمونوبدل شي. هغوی به د اوسني کلیمو سیټ هم د زده کوونکو له سویې سره برابر کتاب لپاره واخلي.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel" approved="yes">
         <source xml:lang="en">The following books will be made into templates:</source>
@@ -3994,7 +4111,10 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.Zipping</note>
         <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Zipping up book...</note>
-        <target xml:lang="pbu" state="translated">د کتاب د حجم کمولو په حال کی...</target>
+        <target xml:lang="pbu" state="translated">د کتاب اپلوډ کول...</target>
+        <alt-trans>
+          <target xml:lang="pbu">د کتاب د حجم کمولو په حال کی...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
         <source xml:lang="en">Will not be private</source>
@@ -4014,7 +4134,7 @@ Do you want to go ahead?</note>
       <trans-unit id="SamplePrintNotification.WindowTitle">
         <source xml:lang="en">Sample Print Settings</source>
         <note>ID: SamplePrintNotification.WindowTitle</note>
-        <target xml:lang="pbu" state="needs-translation">Sample Print Settings</target>
+        <target xml:lang="pbu" state="translated">د نمونوي پرېنټ تنظيمات</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Default line spacing</source>
@@ -4024,23 +4144,23 @@ Do you want to go ahead?</note>
       <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox">
         <source xml:lang="en">This script is right to left</source>
         <note>ID: ScriptSettingsDialog.RightToLeftScriptCheckBox</note>
-        <target xml:lang="pbu" state="needs-translation">This script is right to left</target>
+        <target xml:lang="pbu" state="translated">دا متن له ښي څخه چپ اړخ ته دی</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle">
         <source xml:lang="en">Special Script Settings...</source>
         <note>ID: ScriptSettingsDialog.ScriptSettingsWindowTitle</note>
-        <target xml:lang="pbu" state="needs-translation">Special Script Settings...</target>
+        <target xml:lang="pbu" state="translated">د متن ځانګړي تنظيمات...</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox">
         <source xml:lang="en">This script requires taller lines</source>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
-        <target xml:lang="pbu" state="needs-translation">This script requires taller lines</target>
+        <target xml:lang="pbu" state="translated">دا متن اوږدو کرښو ته اړتيا لري</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Template</source>
         <note>ID: TemplateBooks.BookName.Arithmetic Template</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Arithmetic</note>
-        <target xml:lang="pbu" state="needs-translation">Arithmetic Template</target>
+        <target xml:lang="pbu" state="translated">محاسباتي چوکاټ</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
@@ -4065,7 +4185,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Multimedia" sil:dynamic="true">
         <source xml:lang="en">Multimedia</source>
         <note>ID: TemplateBooks.BookName.Multimedia</note>
-        <target xml:lang="pbu" state="needs-translation">Multimedia</target>
+        <target xml:lang="pbu" state="translated">مولټی مېډيا</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
@@ -4080,7 +4200,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.The Moon and the Cap" sil:dynamic="true">
         <source xml:lang="en">The Moon and the Cap</source>
         <note>ID: TemplateBooks.BookName.The Moon and the Cap</note>
-        <target xml:lang="pbu" state="needs-translation">The Moon and the Cap</target>
+        <target xml:lang="pbu" state="translated">سپوږمۍ او خولۍ</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Vaccinations</source>
@@ -4425,7 +4545,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.The End" sil:dynamic="true">
         <source xml:lang="en">The End</source>
         <note>ID: TemplateBooks.PageLabel.The End</note>
-        <target xml:lang="pbu" state="needs-translation">The End</target>
+        <target xml:lang="pbu" state="translated">پای</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Page Is Intentionally Blank</source>
@@ -4565,7 +4685,7 @@ Do you want to go ahead?</note>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="pbu" state="needs-translation">Warning</target>
+        <target xml:lang="pbu" state="translated">ګواښ</target>
       </trans-unit>
       <trans-unit id="WebServer.Warning.NoFile" approved="yes">
         <source xml:lang="en">Cannot Find File</source>
