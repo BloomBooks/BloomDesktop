@@ -705,7 +705,7 @@
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="es-ES">Comuníquese con el titular de los derechos de autor para solicitar permisos</target>
+        <target xml:lang="es-ES">Comuníquese con el titular de los derechos de autor para\n                                                                  solicitar permisos</target>
         <alt-trans>
           <target xml:lang="es-ES">Comuniquese con el titular de derechos de autor para solicitar permisos</target>
         </alt-trans>

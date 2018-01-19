@@ -397,6 +397,7 @@
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
+        <note>Space for the translation of this is limited. If you can't make it fit, it's possible to put a couple of extra words below the right end of the message using \n and some white space. See es for an example.</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
