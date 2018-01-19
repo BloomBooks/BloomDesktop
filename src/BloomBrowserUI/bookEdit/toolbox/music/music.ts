@@ -13,7 +13,7 @@ import axios from 'axios';
 
 export default class Music implements ITabModel {
     makeRootElements(): JQuery {
-        var parts = $("<h3 data-panelId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'> Music Tool</h3><div data-panelId='musicTool'/>");
+        var parts = $("<h3 data-panelId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'> Music Tool</h3><div data-panelId='musicTool' class='musicBody'/>");
         MusicPanelControls.setup(parts[1]);
         return parts;
     }

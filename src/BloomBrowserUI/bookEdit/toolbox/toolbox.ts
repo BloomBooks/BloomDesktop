@@ -423,8 +423,8 @@ function beginAddPanel(checkBoxId: string, panelId: string, openTool: boolean): 
         'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
         'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html',
         'panAndZoomTool': 'panAndZoom/panAndZoomToolboxPanel.html',
-        //'musicTool': 'music/musicToolboxPanel.html',
         'settingsTool': 'settings/settings.html'
+        // none for music: done in React
     };
     const subPathToPremadeHtml = subpath[panelId];
     if (subPathToPremadeHtml) {

@@ -25,6 +25,7 @@ namespace Bloom.Edit
 	///		- Give it a static constant string StaticToolId
 	///		- override ToolId to return StaticToolId
 	/// - Add a case to ToolboxTool.CreateFromToolId() and GetToolboxToolFromJsonObject().
+	/// - Add the tool's folder to ToolboxView.GetToolboxServerDirectories().
 	/// - Create a folder under BloomBrowserUI/bookEdit/toolbox. It's name should match the toolId.
 	/// - Create a file in that folder with extension .tsx to contain the React code of the panel
 	///		- it (or another file) should have a class which implements ITabModel
