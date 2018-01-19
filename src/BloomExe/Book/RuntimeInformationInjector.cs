@@ -273,7 +273,8 @@ namespace Bloom.Book
 			var keyUsedInTheJavascriptDictionary = defaultText;
 			if (!dictionary.ContainsKey(keyUsedInTheJavascriptDictionary))
 			{
-				dictionary.Add(keyUsedInTheJavascriptDictionary, WebUtility.HtmlEncode(translation));
+				// Do NOT HtmlEncode these strings!.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5469.
+				dictionary.Add(keyUsedInTheJavascriptDictionary, translation);
 			}
 		}
 
