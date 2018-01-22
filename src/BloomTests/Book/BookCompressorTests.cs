@@ -405,7 +405,8 @@ namespace BloomTests.Book
 				html =>
 				{
 					// The questions pages should be removed.
-					AssertThatXmlIn.String(html).HasNoMatchForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom).HasNoMatchForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
 				},
 
 				assertionsOnZipArchive: zip =>
