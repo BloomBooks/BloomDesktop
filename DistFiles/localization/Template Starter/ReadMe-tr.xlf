@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="template.starter">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="tr" state="needs-translation">How to use the Template Starter</target>
+        <target xml:lang="tr" state="translated">Şablon başlatıcı nasıl kullanılır?</target>
         <note>ID: template.starter</note>
       </trans-unit>
       <trans-unit id="template.starter.firstusage">
@@ -26,7 +26,7 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.labelpages">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="tr" state="needs-translation">Label Your Pages</target>
+        <target xml:lang="tr" state="translated">Sayfalarınızı Etiketleyin</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
@@ -36,7 +36,7 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.thumbnails">
         <source xml:lang="en">Check Your Thumbnails</source>
-        <target xml:lang="tr" state="needs-translation">Check Your Thumbnails</target>
+        <target xml:lang="tr" state="translated">Küçük Resimlerinizi Kontrol Edin</target>
         <note>ID: template.starter.thumbnails</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.onlyonce">
@@ -51,7 +51,7 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.document">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="tr" state="needs-translation">Document Your Template</target>
+        <target xml:lang="tr" state="translated">Şablonunuzu Belgeleyin</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours">
@@ -66,7 +66,7 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.share">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="tr" state="needs-translation">Share Your Template</target>
+        <target xml:lang="tr" state="translated">Şablonunuzu Paylaşın</target>
         <note>ID: template.starter.share</note>
       </trans-unit>
       <trans-unit id="template.starter.share.publish">
@@ -81,7 +81,7 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.notes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="tr" state="needs-translation">Notes</target>
+        <target xml:lang="tr" state="translated">Notlar</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic">

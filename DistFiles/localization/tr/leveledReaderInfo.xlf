@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="leveled.reader.vocabulary">
         <source xml:lang="en">Vocabulary</source>
-        <target xml:lang="tr" state="needs-translation">Vocabulary</target>
+        <target xml:lang="tr" state="translated">Kelime Hazinesi</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.formatting">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="tr" state="needs-translation">Formatting</target>
+        <target xml:lang="tr" state="translated">Biçimlendirme</target>
         <note>ID: leveled.reader.formatting</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large">

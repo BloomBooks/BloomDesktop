@@ -1330,11 +1330,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: Download.CompletedCaption</note>
         <target xml:lang="es-ES">Descarga completa</target>
       </trans-unit>
-      <trans-unit id="Download.CopyFailed">
+      <trans-unit id="Download.CopyFailed" approved="yes">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</source>
         <note>ID: Download.CopyFailed</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</note>
-        <target xml:lang="es-ES" state="translated">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie su computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los programadores de Bloom</target>
+        <target xml:lang="es-ES">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie su computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los programadores de Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los programadores de Bloom.</target>
         </alt-trans>
@@ -2621,6 +2621,42 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <alt-trans>
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
+        <source xml:lang="en">Background Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
+        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
+        <target xml:lang="es-ES" state="translated">Herramienta de música de fondo</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
+        <source xml:lang="en">Choose...</source>
+        <note>ID: EditTab.Toolbox.Music.Choose</note>
+        <target xml:lang="es-ES" state="translated">Elija...</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
+        <source xml:lang="en">Continue music from previous page</source>
+        <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
+        <target xml:lang="es-ES" state="translated">Continue la música de la página anterior</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
+        <source xml:lang="en">Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.Heading</note>
+        <target xml:lang="es-ES" state="translated">Herramienta de música</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
+        <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
+        <note>ID: EditTab.Toolbox.Music.Overview</note>
+        <target xml:lang="es-ES" state="translated">Puede seleccionar que se toca música de fondo con esta página cuando el libro está visto con el LectorBloom.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.NewMusic" sil:dynamic="true">
+        <source xml:lang="en">Start new music</source>
+        <note>ID: EditTab.Toolbox.Music.NewMusic</note>
+        <target xml:lang="es-ES" state="translated">Comienze nueva música</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.NoMusic" sil:dynamic="true">
+        <source xml:lang="en">No Music</source>
+        <note>ID: EditTab.Toolbox.Music.NoMusic</note>
+        <target xml:lang="es-ES" state="translated">Sin música</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom Tool</source>
