@@ -52,6 +52,9 @@
         <note>{0} is the application name</note>
         <target xml:lang="es-ES">Ya se está ejecutando otra copia de {0}. Si no la encuentra, reinicie su computadora.</target>
         <alt-trans>
+          <target xml:lang="es-ES">Ya se está ejecutando otra copia de {0}. Si no encuentra la copia de {0}, reinicie su computadora.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Se está ejecutando otra copia de {0}. Si no lo encuentra, reinicie su computadora.</target>
         </alt-trans>
         <alt-trans>
