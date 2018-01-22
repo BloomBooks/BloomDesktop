@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="integrity.causes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="tr" state="needs-translation">Possible Causes</target>
+        <target xml:lang="tr" state="translated">Olası Nedenler</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="tr" state="needs-translation">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</target>
+        <target xml:lang="tr" state="translated">Bu raporu sunduktan sonra, sizinle irtibata geçeceğiz ve bu konuda size yardımcı olacağız. Bu arada, burada bazı fikirler var:</target>
         <note>ID: integrity.todo.ideas</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="integrity.missing">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="tr" state="needs-translation">Missing Files</target>
+        <target xml:lang="tr" state="translated">Eksik Dosyalar</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>
