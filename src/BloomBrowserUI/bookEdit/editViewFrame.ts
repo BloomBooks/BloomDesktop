@@ -80,7 +80,7 @@ export function canUndo(): string {
     var contentWindow = getPageFrameExports();
     if (contentWindow && (<any>contentWindow).origamiCanUndo()) { return 'yes'; }
     var toolboxWindow = getToolboxFrameExports();
-    if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
+    if (toolboxWindow && (<any>toolboxWindow).canUndo && (<any>toolboxWindow).canUndo()) {
         return 'yes';
     }
     if (contentWindow && contentWindow.ckeditorCanUndo()) {

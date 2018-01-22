@@ -1,5 +1,5 @@
 @import "../../../templates/common-mixins.less";
-@textColor: @bloom-buff;// #0C8597;
+@textColor: @bloom-buff;// #D2D2D2;
 @toolboxBackgroundColor: @DarkBackgroundColor;
 @buttonColumnWidth: 40px;
 
@@ -32,7 +32,20 @@
         height:25px;
         width:25px;
     }
-    .speaker-volume {height:30px;width:30px;}
+    .speaker-volume {
+        height:23px;
+        width:23px;
+        position: relative;
+
+        &.disabled ::after {
+            content:"";
+            background-color: @toolboxBackgroundColor;
+            opacity: 60%;
+            top:0;bottom:0;left:0;right:0;
+            position: absolute;
+            z-index: 1;
+        }
+    }
     .musicOption {margin-top:20px;}
     .musicLabelWrapper {display:inline-block; max-width: 120px;}
     #musicFilename {
@@ -58,8 +71,9 @@
     #musicSetVolume {display:flex;}
     .bgSliderWrapper {
         flex-grow: 1; // only grow item, so takes as much space as it can
-        margin-top: 12px;
-        margin-left: 15px;
+        margin-top: 10px;
+        margin-left: 8px;
+        margin-right: 15px
     }
     .ui-slider-horizontal .ui-slider-handle {
         // found by experiment things to tweak from default to make a small circular white handle.

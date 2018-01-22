@@ -79,7 +79,7 @@ export default class MusicPanelControls extends React.Component<{}, IMusicState>
                     </div>
                     <div id="musicVolumePercent" style={{ visibility: this.state.audioEnabled ? "visible" : "hidden" }}>{Math.round(100 * this.state.musicVolume)}%</div>
                     <div id="musicSetVolume">
-                        <img className="speaker-volume" src="speaker-volume.png" />
+                        <img className={"speaker-volume" + (this.state.audioEnabled ? "" : " disabled")} src="speaker-volume.svg" />
                         <div className="bgSliderWrapper">
                             <Slider id="musicVolumeSlider" value={100 * this.state.musicVolume} enabled={this.state.audioEnabled} onChange={
                                 value => this.sliderMoved(value)} />

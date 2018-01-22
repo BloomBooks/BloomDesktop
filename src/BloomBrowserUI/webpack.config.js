@@ -35,8 +35,8 @@ module.exports = {
         readerSetupBundle: "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
         bookPreviewBundle: "./bookPreview/bookPreview.ts",
-        toolboxBundle: ["./bookEdit/toolbox/toolboxBootstrap.ts", globule.find("./bookEdit/toolbox/**/*.tsx")],
-        pageChooserBundle: ["./pageChooser/page-chooser.ts"], //https://github.com/webpack/webpack/issues/300
+        toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts", //["./bookEdit/toolbox/toolboxBootstrap.ts"].concat(globule.find("./bookEdit/toolbox/**/*.tsx")),
+        pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle: "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
         pageControlsBundle: "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         publishUIBundle: globule.find(["./publish/**/*.tsx"]),
