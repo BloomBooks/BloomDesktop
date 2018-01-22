@@ -162,3 +162,17 @@ export class Div extends LocalizableElement<ILocalizationProps, ILocalizationSta
     }
 }
 
+export interface ILabelProps extends ILocalizationProps {
+    onClick: () => void; // enhance: make optional; possibly promote to LocalizableElement? possibly pass this as argument?
+}
+
+export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
+    render() {
+        return (
+            <label className={this.getClassName()} onClick={() => this.props.onClick()}>
+                {this.getLocalizedContent()}
+            </label>
+        );
+    }
+}
+

@@ -7,8 +7,10 @@ export interface IRadioProps extends ILocalizationProps {
     wrapClassName: string;
     inputClassName: string;
     labelClassName: string;
-    group: string;
-    value: string;
+    group: string; // name property of input, groups radios which switch together
+    value: string; // identifies this radio in set
+    groupValue: string; // current value of group; this one is checked if it has the group value.
+    change: (string) => void;
 }
 
 // An radio button that is localizable and automatically handles unselecting others with the same group.
@@ -22,7 +24,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
     render() {
         return (
             <div className={this.props.wrapClassName}>
-                <input type="radio" className={this.props.inputClassName} name={this.props.group} value={this.props.value} onClick={this.selectRadio} />
+                <input type="radio" className={this.props.inputClassName} name={this.props.group} value={this.props.value} onClick={this.selectRadio} checked={this.props.value === this.props.groupValue} />
                 <div className={this.props.labelClassName}>
                     {this.getLocalizedContent()}
                 </div>
@@ -31,7 +33,8 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
     }
 
     selectRadio() {
-        $("input[name='" + this.props.group + "']").prop("checked", false); // turn all off.
-        $("input[name='" + this.props.group + "' value='" + this.props.value + "']").prop("checked", true); // desired one on
+        // $("input[name='" + this.props.group + "']").prop("checked", false); // turn all off.
+        // $("input[name='" + this.props.group + "' value='" + this.props.value + "']").prop("checked", true); // desired one on
+        this.props.change(this.props.value);
     }
 }
