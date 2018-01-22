@@ -325,6 +325,10 @@ namespace Bloom
 			var xml = xmlStringBuilder.ToString();
 			xml = AddFillerToKeepTidyFromRemovingEmptyElements(xml);
 
+			// Tidy will convert <br /> to <br></br> which is not valid and produces an unexpected double line break.
+			var BrPlaceholder = "$$ConvertThisBackToBr$$";
+			xml = xml.Replace("<br />", BrPlaceholder);
+
 			// Now re-write as html, indented nicely
 			string html;
 			using (var tidy = Document.FromString(xml))
@@ -362,6 +366,7 @@ namespace Bloom
 			}
 
 			// Now revert the stuff we did to make it "safe from libtidy"
+			html = html.Replace(BrPlaceholder, "<br>");
 			html = RemoveFillerInEmptyElements(html);
 			return html;
 		}

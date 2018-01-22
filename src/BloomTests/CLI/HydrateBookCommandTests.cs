@@ -90,7 +90,8 @@ namespace BloomTests.CLI
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			var html = File.ReadAllText(_eventualHtmlPath);
-			AssertThatXmlIn.File(_eventualHtmlPath).HasAtLeastOneMatchForXpath("//div[contains(@class,'bloom-page') and contains(@class,'Device16x9Landscape')]");
+			var xhtml = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			AssertThatXmlIn.Dom(xhtml).HasAtLeastOneMatchForXpath("//div[contains(@class,'bloom-page') and contains(@class,'Device16x9Landscape')]");
 			Assert.That(!html.Contains("A5Landscape"));
 		}
 
