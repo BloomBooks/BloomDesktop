@@ -1848,37 +1848,37 @@
         <source xml:lang="en">Background Music Tool</source>
         <note>ID: EditTab.Toolbox.Music.MusicTool</note>
         <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
-        <target xml:lang="prs" state="needs-translation">Background Music Tool</target>
+        <target xml:lang="prs" state="translated">ابزار میوزیک بگروند</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
-        <target xml:lang="prs" state="needs-translation">Choose...</target>
+        <target xml:lang="prs" state="translated">انتخاب...</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
         <source xml:lang="en">Continue music from previous page</source>
         <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
-        <target xml:lang="prs" state="needs-translation">Continue music from previous page</target>
+        <target xml:lang="prs" state="translated">از صفحه قبلی میوزیک را ادامه دهید</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.Music.Heading</note>
-        <target xml:lang="prs" state="needs-translation">Music Tool</target>
+        <target xml:lang="prs" state="translated">ابزار ميوزیک</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
         <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
         <note>ID: EditTab.Toolbox.Music.Overview</note>
-        <target xml:lang="prs" state="needs-translation">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</target>
+        <target xml:lang="prs" state="translated">شما ميتوانید میوزیک بگروند را با این صفحه هنگامی پلی کنید که در اپلیکشن بلوم نمایان میباشد.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.NewMusic" sil:dynamic="true">
         <source xml:lang="en">Start new music</source>
         <note>ID: EditTab.Toolbox.Music.NewMusic</note>
-        <target xml:lang="prs" state="needs-translation">Start new music</target>
+        <target xml:lang="prs" state="translated">میوزیک جدید را آغاز کنید</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.NoMusic" sil:dynamic="true">
         <source xml:lang="en">No Music</source>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
-        <target xml:lang="prs" state="needs-translation">No Music</target>
+        <target xml:lang="prs" state="translated">میوزیک جدید را آغاز کنید</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom Tool</source>
@@ -1936,7 +1936,7 @@
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</note>
-        <target xml:lang="prs" state="translated">راپور تولید شده ذیل از مراحل قابل تجزیه است برای ‎{0}‏. هر تغیر که میخواهید به این فایل وارد کرده میتوانید، اما بلوم تغیرات شما را نخواهد دید. بخاطریکه فقط راپور است.</target>
+        <target xml:lang="prs" state="translated">راپور تولید شده ذیل از مراحل قابل تجزیه است برای {0}. هر تغیر که میخواهید به این فایل وارد کرده میتوانید، اما بلوم تغیرات شما را نخواهد دید. بخاطریکه فقط راپور است.</target>
         <alt-trans>
           <target xml:lang="prs">راپور تولید شده ذیل از مراحل قابل تجزیه است برای {‎{0‏. هر تغیر که میخواهید به این فایل وارد کرده میتوانید، اما بلوم تغیرات شما را نخواهد دید. بخاطریکه فقط راپور است.</target>
         </alt-trans>
@@ -2360,7 +2360,10 @@
         <source xml:lang="en">This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.</source>
         <note>ID: Errors.XMatterNotFound</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</note>
-        <target xml:lang="prs" state="translated">این کتاب برای وصیله موضوعات جلو/عقب بنام ‎'{0}'‏ احضار کرد، اما بلوم انرا در این کمپیوتر یافته نتوانست. شما بسته بلوم را نصب کنید که ‎'{0}'‏ را برایتان بدهد، یا به تنظیمات بروید: کتاب سازی و به وصیله موضوعات جلو/عقب انرا تغیر دهید.</target>
+        <target xml:lang="prs" state="translated">این کتاب برای وصیله موضوعات جلو/عقب بنام '{0}' احضار کرد، اما بلوم انرا در این کمپیوتر یافته نتوانست. این مجموعه برای استفاده از موضوعات جلو/عقب پیش فرض تغییر کرده است.</target>
+        <alt-trans>
+          <target xml:lang="prs">این کتاب برای وصیله موضوعات جلو/عقب بنام ‎'{0}'‏ احضار کرد، اما بلوم انرا در این کمپیوتر یافته نتوانست. شما بسته بلوم را نصب کنید که ‎'{0}'‏ را برایتان بدهد، یا به تنظیمات بروید: کتاب سازی و به وصیله موضوعات جلو/عقب انرا تغیر دهید.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">این کتاب برای وصیله موضوعات جلو/عقب بنام '{‎'{0 احضار کرد، اما بلوم انرا در این کمپیوتر یافته نتوانست. شما بسته بلوم را نصب کنید که '{‎'{0‏ را برایتان بدهد، یا به تنظیمات بروید: کتاب سازی و به وصیله موضوعات جلو/عقب انرا تغیر دهید.</target>
         </alt-trans>
@@ -3191,7 +3194,10 @@
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
         <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
-        <target xml:lang="prs" state="translated">از صفحات داخلی کتاب یک کتاب کوچک بسازید. صفحات بیرون خواهد شد و منظم خواهد شد تا که شما آنرا دوباره دولا کنید، شما یک کتاب کوچک خواهید داشت.‏ \n</target>
+        <target xml:lang="prs" state="translated">از صفحات داخلی کتاب یک کتاب کوچک بسازید. \n صفحات بیرون خواهد شد و منظم خواهد شد تا که شما آنرا دوباره دولا کنید، شما یک کتاب کوچک خواهید داشت. \n</target>
+        <alt-trans>
+          <target xml:lang="prs">از صفحات داخلی کتاب یک کتاب کوچک بسازید. صفحات بیرون خواهد شد و منظم خواهد شد تا که شما آنرا دوباره دولا کنید، شما یک کتاب کوچک خواهید داشت.‏ \n</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Share on the Web</source>
@@ -3308,6 +3314,9 @@
         <target xml:lang="prs">فشرده سازی PDF &amp; amp؛ تبدیل رنگ به CMYK</target>
         <alt-trans>
           <target xml:lang="prs">فشرده سازی PDF &amp; amp؛ تبدیل رنگ به CMYK</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">فشرده سازی PDF &amp;؛ تبدیل رنگ به CMYK</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Creating">
@@ -3888,7 +3897,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Level </source>
         <note>ID: ReaderSetup.LevelLabel</note>
         <note xml:lang="en">OLD TEXT (before 3.9, use literal NBSP character): Level&amp;nbsp;</note>
-        <target xml:lang="prs" state="translated">سویه</target>
+        <target xml:lang="prs" state="translated">سویه </target>
         <alt-trans>
           <target xml:lang="prs">سویه&amp;nbsp؛</target>
         </alt-trans>

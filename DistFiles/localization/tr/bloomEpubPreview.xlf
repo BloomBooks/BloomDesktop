@@ -17,7 +17,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.preview">
         <source xml:lang="en">Preview</source>
-        <target xml:lang="tr" state="needs-translation">Preview</target>
+        <target xml:lang="tr" state="translated">Önizleme</target>
         <note>ID: epubpreview.preview</note>
       </trans-unit>
       <trans-unit id="epubpreview.resizing">
@@ -87,7 +87,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.write.us">
         <source xml:lang="en">Write to us!</source>
-        <target xml:lang="tr" state="needs-translation">Write to us!</target>
+        <target xml:lang="tr" state="translated">Bize yazın!</target>
         <note>ID: epubpreview.write.us</note>
       </trans-unit>
       <trans-unit id="epubpreview.use.help.report">

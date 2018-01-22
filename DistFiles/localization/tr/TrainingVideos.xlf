@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="training.videos">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="tr" state="needs-translation">Bloom Training Videos</target>
+        <target xml:lang="tr" state="translated">Bloom Eğitim Videoları</target>
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch">
@@ -16,14 +16,14 @@
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Tüm videolar</g>
         </target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="tr" state="needs-translation">Introductory Videos</target>
+        <target xml:lang="tr" state="translated">Tanıtım Videoları</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
       <trans-unit id="training.videos.whofor">
@@ -71,8 +71,8 @@
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Metnin biçimini değiştirme</g>
         </target>
         <note>ID: training.videos.formatting</note>
       </trans-unit>
@@ -80,8 +80,8 @@
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Özel Sayfa Şablonunu Kullanma</g>
         </target>
         <note>ID: training.videos.custompage</note>
       </trans-unit>
@@ -89,8 +89,8 @@
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Özel karakterler ekleme</g>
         </target>
         <note>ID: training.videos.specialcharacters</note>
       </trans-unit>
@@ -105,7 +105,7 @@
       </trans-unit>
       <trans-unit id="training.videos.offline">
         <source xml:lang="en">Offline Viewing</source>
-        <target xml:lang="tr" state="needs-translation">Offline Viewing</target>
+        <target xml:lang="tr" state="translated">Çevrimdışı Görüntüleme</target>
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download">

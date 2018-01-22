@@ -39,12 +39,12 @@
       </trans-unit>
       <trans-unit id="android.publish.usb">
         <source xml:lang="en">Send Over USB Cable</source>
-        <target xml:lang="tr" state="needs-translation">Send Over USB Cable</target>
+        <target xml:lang="tr" state="translated">USB Kablosu Üzerinden Gönder</target>
         <note>ID: android.publish.usb</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>
-        <target xml:lang="tr" state="needs-translation">Problem: Bloom is not connecting to my device</target>
+        <target xml:lang="tr" state="translated">Sorun: Bloom cihazıma bağlanmıyor</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi">
@@ -73,7 +73,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="tr" state="needs-translation">Try a different cable, or a different USB port.</target>
+        <target xml:lang="tr" state="translated">Farklı bir kablo veya farklı bir USB bağlantı noktası deneyin.</target>
         <note>ID: android.publish.usb.cable.or.port</note>
       </trans-unit>
     </body>
