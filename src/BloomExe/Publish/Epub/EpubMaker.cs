@@ -1346,7 +1346,10 @@ namespace Bloom.Publish.Epub
 
 		public bool ReadyToSave()
 		{
-			return PublishWithoutAudio || !AudioProcessor.IsAnyCompressedAudioMissing(Storage.FolderPath, Book.RawDom);
+			// The same files have already been copied over to the staging area, but if we compare timestamps on the copied files
+			// the comparison is unreliable (.wav files are larger and take longer to copy than the corresponding .mp3 files).
+			// So we compare the original book's audio files to determine if any are missing -- BL-5437
+			return PublishWithoutAudio || !AudioProcessor.IsAnyCompressedAudioMissing(_originalBook.FolderPath, Book.RawDom);
 		}
 	}
 }

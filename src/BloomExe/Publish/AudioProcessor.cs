@@ -18,13 +18,17 @@ namespace Bloom.Publish
 		//extracted so unit test can override
 		public static Func<string, string> _compressorMethod = MakeCompressedAudio;
 
+		/// <summary>
+		/// Compares timestamps on .wav files and .mp3 files to see if we need to update any .mp3 files.
+		/// Be aware that if you are staging audio files in preparation for publishing, the bookFolderPath
+		/// should be the original book folder files, not the staged files. Otherwise you may get unexpected
+		/// results. (See BL-5437)
+		/// </summary>
 		public static bool IsAnyCompressedAudioMissing(string bookFolderPath, XmlDocument dom)
 		{
 			return !GetTrueForAllAudioSpans(bookFolderPath, dom,
 				(wavpath, mp3path) => !Mp3IsNeeded(wavpath, mp3path));
 		}
-
-
 
 		/// <summary>
 		/// Compress all the existing wav files into mp3s, if they aren't already compressed
