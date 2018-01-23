@@ -311,6 +311,14 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Ninguna</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">None</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
+        <target xml:lang="es-ES">Ninguno</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ninguna</target>
+        </alt-trans>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
@@ -2110,7 +2118,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="EditTab.FrontMatter.MarkTheVideoEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end.</source>
         <note>ID: EditTab.FrontMatter.MarkTheVideoEnd</note>
-        <target xml:lang="es-ES" state="translated">Algo para indicar al lector/observador que esto el final.</target>
+        <target xml:lang="es-ES" state="translated">Algo para indicar al lector/observador que esto es el final.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Algo para indicar al lector/observador que esto el final.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MultipleImageCredit">
         <source xml:lang="en">Images on pages {0} by {1}.</source>
@@ -2352,6 +2363,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esta opción sólo está disponible en la pestaña publicar.</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">This book is temporarily unlocked.</source>
+        <note>ID: EditTab.LockBook.ToolTip</note>
+        <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
+        <target xml:lang="es-ES">Este libro está temporalmente desbloqueado.</target>
       </trans-unit>
       <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book is temporarily unlocked.</source>

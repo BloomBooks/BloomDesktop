@@ -38,23 +38,23 @@
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="tr" state="needs-translation">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</target>
+        <target xml:lang="tr" state="translated">{0}'ın başka bir kopyası zaten çalışıyor. Eğer{0}'ın bu kopyasını bulamıyorsanız, lütfen bilgisayarınızı yeniden başlatın.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="tr" state="needs-translation">There was a problem starting the application which might require that you restart your computer.</target>
+        <target xml:lang="tr" state="translated">Uygulama başlatılırken bilgisayarınızı yeniden başlatmanızı gerektirebilecek bir hata oluştu.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="tr" state="needs-translation">There was a problem starting {0} which might require that you restart your computer.</target>
+        <target xml:lang="tr" state="translated">{0} başlatılırken bilgisayarınızı yeniden başlatmanızı gerektirebilecek bir hata oluştu.</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="tr" state="needs-translation">Waiting for other application to finish...</target>
+        <target xml:lang="tr" state="translated">Diğer uygulamanın tamamlanması bekleniyor...</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
@@ -111,7 +111,7 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="tr" state="needs-translation">{0} will be moved to the Recycle Bin.</target>
+        <target xml:lang="tr" state="translated">{0} Geri dönüşüm kutusuna taşınacak.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -143,7 +143,7 @@
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="tr" state="needs-translation">Art Of Reading</target>
+        <target xml:lang="tr" state="translated">Okuma Sanatı</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera">
         <source xml:lang="en">Camera</source>
@@ -164,7 +164,7 @@
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="tr" state="needs-translation">Download Art Of Reading Installer</target>
+        <target xml:lang="tr" state="translated">Okuma Sanatı Yükleyicisini İndir</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink">
         <source xml:lang="en">Edit...</source>
@@ -195,12 +195,12 @@
       <trans-unit id="ImageToolbox.GenericProblem">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="tr" state="needs-translation">Sorry, something went wrong with the ImageToolbox</target>
+        <target xml:lang="tr" state="translated">Üzgünüm, Resim araç kutusu ile bir şeyler ters gitti</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="tr" state="needs-translation">Get Picture</target>
+        <target xml:lang="tr" state="translated">Resim Al</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
@@ -215,7 +215,7 @@
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="tr" state="needs-translation">Install the Art Of Reading package (this may be very slow)</target>
+        <target xml:lang="tr" state="translated">Okuma sanatı paketini kur (Çok yavaş olabilir)</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages">
         <source xml:lang="en">Found {0} images</source>
@@ -227,22 +227,22 @@
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="tr" state="needs-translation">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</target>
+        <target xml:lang="tr" state="translated">Bu koleksiyonun yeni versiyonun Arapça, Bengal dili, Çince, İngilizce, Fransızca, Endonezya dili, Hintçe, Portekizce, İspanyolca, Tayland dili ve Svahili dilinde  arama yapmanı sağladığını biliyor muydun? Bedava ve indirilebilir.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="tr" state="needs-translation">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</target>
+        <target xml:lang="tr" state="translated">'Okuma Sanatı' Galerisi bu bilgisayara henüz yüklü görünmüyor.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="tr" state="needs-translation">This computer doesn't appear to have any galleries installed yet.</target>
+        <target xml:lang="tr" state="translated">Bu bilgisayara henüz herhangi bir galeri yüklü görünmüyor.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="tr" state="needs-translation">Found no matching images</target>
+        <target xml:lang="tr" state="translated">Eşleşen görüntüler bulunamadı</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles">
         <source xml:lang="en">picture files</source>
@@ -253,7 +253,7 @@
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="tr" state="needs-translation">Problem Getting Image</target>
+        <target xml:lang="tr" state="translated">Görüntü Alma Sorunu</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
@@ -336,7 +336,7 @@
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="tr" state="needs-translation">Lookup Language Code...</target>
+        <target xml:lang="tr" state="translated">Arama dili kodu...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader">
         <source xml:lang="en">Name</source>
@@ -351,7 +351,7 @@
       <trans-unit id="LanguageLookup.UnlistedLanguage">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="tr" state="needs-translation">Unlisted Language</target>
+        <target xml:lang="tr" state="translated">Listelenmemiş Dil</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink">
         <source xml:lang="en">Can't find your language?</source>
@@ -371,7 +371,7 @@
       <trans-unit id="MetadataDisplay.CreatorLabel">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataDisplay.CreatorLabel</note>
-        <target xml:lang="tr" state="needs-translation">Creator</target>
+        <target xml:lang="tr" state="translated">Yaratıcı</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.LicenseInfo">
         <source xml:lang="en">License Info</source>
@@ -394,7 +394,7 @@
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="tr" state="needs-translation">You may adapt and add to this work.</target>
+        <target xml:lang="tr" state="translated">Bu çalışmaya uyarlama ve ekleme yapabilirsiniz.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
@@ -418,7 +418,7 @@
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="tr" state="needs-translation">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</target>
+        <target xml:lang="tr" state="translated">İzine ihtiyaç duymadan bu çalışmayı kopyalıyabilir, değiştirebilir ve dağıtabilirsiniz, reklam amaçlı olsa bile.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
@@ -459,12 +459,12 @@
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="tr" state="needs-translation">Intergovernmental Version</target>
+        <target xml:lang="tr" state="translated">Hükümetler arası Sürüm</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="tr" state="needs-translation">Creator</target>
+        <target xml:lang="tr" state="translated">Yaratıcı</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense">
         <source xml:lang="en">Custom</source>
@@ -494,7 +494,7 @@
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="tr" state="needs-translation">Yes, as long as others share alike</target>
+        <target xml:lang="tr" state="translated">Evet, başkaları da paylaştığı sürüce</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel">
         <source xml:lang="en">Additional Requests</source>
@@ -517,12 +517,12 @@
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="tr" state="needs-translation">This may also hide other buttons which are not needed by the non-advanced user.</target>
+        <target xml:lang="tr" state="translated">Bu gelişmiş olmayan kullanıcıların ihtiyaç duymadığı diğer butonları gizleyebilir.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="tr" state="needs-translation">The button will show up when you hold down the Ctrl and Shift keys together.</target>
+        <target xml:lang="tr" state="translated">Ctrl ve shift tuşlarına birlikte bastığınızda bu buton görünecektir.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel">
         <source xml:lang="en">Settings Protection...</source>
@@ -570,7 +570,7 @@
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="tr" state="needs-translation">Settings Protection</target>
+        <target xml:lang="tr" state="translated">Ayarlar Koruması</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
         <source xml:lang="en">Release Notes</source>
@@ -640,7 +640,7 @@
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="tr" state="needs-translation">Set up keyboards</target>
+        <target xml:lang="tr" state="translated">Klavye ayarla</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
@@ -655,12 +655,12 @@
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="tr" state="needs-translation">Unable to connect to SLDR</target>
+        <target xml:lang="tr" state="translated">SLDR'ye bağlanılamadı</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="tr" state="needs-translation">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</target>
+        <target xml:lang="tr" state="translated">Uygulama bu dil hakkında en son bilgileri almak için SIL Yerel Veri Deposuna bağlanamadı. Eğer bu yazı sistemini oluşturursanız, varsayılan ayarlar yanlış veya tarihi geçmiş olabilir. Yeni bir yazı sistemi oluşturmak istediğinizden emin misiniz?</target>
       </trans-unit>
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>

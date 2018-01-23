@@ -4,76 +4,82 @@
     <body>
       <trans-unit id="android.publish.trouble.tips">
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
-        <target xml:lang="pt-PT" state="needs-translation">Troubleshooting Tips for Android Publishing</target>
+        <target xml:lang="pt-PT" state="translated">Dicas para solução de problemas da publicação Android</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi">
         <source xml:lang="en">Serve on WiFi Network</source>
-        <target xml:lang="pt-PT" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="pt-PT" state="translated">Servir via rede Wi-Fi</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="pt-PT" state="needs-translation">Problem: Android Device is not seeing book advertisements</target>
+        <target xml:lang="pt-PT" state="translated">Problema: o dispositivo Android não está recebendo anúncios de livros</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
-        <target xml:lang="pt-PT" state="needs-translation">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</target>
+        <target xml:lang="pt-PT" state="translated">Ao usar este método, você precisa executar o LeitorBloom. Abra o menu e escolha "Receber do WiFi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Ao usar este método, você precisa executar o Bloom Reader. Abra o menu e escolha "Receber do WiFi".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
         <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
-        <target xml:lang="pt-PT" state="needs-translation">Make sure the device is in the "Receive from WiFi" screen</target>
+        <target xml:lang="pt-PT" state="translated">Verifique se o dispositivo está na tela "Receber WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network">
         <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</target>
+        <target xml:lang="pt-PT" state="translated">Certifique-se de que o computador e o dispositivo estão na mesma rede Wi-Fi. Um computador conectado por cabo ao roteador WiFi ainda pode estar em sua própria rede. É tecnicamente possível conectar redes com fio para estar na mesma sub-rede local que o WiFi, mas os desenvolvedores Bloom não podem ajudá-lo a configurar isso.</target>
         <note>ID: android.publish.wifi.same.network</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</target>
+        <target xml:lang="pt-PT" state="translated">Verifique se o seu computador não tem um firewall que esteja interferindo. O firewall do Windows será exibido quando você começar a compartilhar seu livro pela primeira vez. Se você disse "Não" para isso, você não pode pedir novamente. Se você tiver outros firewalls instalados, tente desativá-los. Bloom compartilha um livro transmitindo-o na rede local via UDP na porta 5913 e LeitorBloom pede um livro através da porta 5915.</target>
         <note>ID: android.publish.wifi.firewalls</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Verifique se o seu computador não tem um firewall que esteja interferindo. O firewall do Windows será exibido quando você começar a compartilhar seu livro pela primeira vez. Se você disse "Não" para isso, você não pode pedir novamente. Se você tiver outros firewalls instalados, tente desativá-los. Bloom compartilha um livro transmitindo-o na rede local via UDP na porta 5913 e Reader Bloom pede um livro através da porta 5915.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb">
         <source xml:lang="en">Send Over USB Cable</source>
-        <target xml:lang="pt-PT" state="needs-translation">Send Over USB Cable</target>
+        <target xml:lang="pt-PT" state="translated">Enviar via cabo USB</target>
         <note>ID: android.publish.usb</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>
-        <target xml:lang="pt-PT" state="needs-translation">Problem: Bloom is not connecting to my device</target>
+        <target xml:lang="pt-PT" state="translated">Problema: Bloom não está se conectando ao meu dispositivo</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-<g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+        <target xml:lang="pt-PT" state="translated">
+<g id="genid-1" ctype="x-html-p">Descobrimos que esse método é problemático para muitos dispositivos. Portanto, considere o método WiFi, mesmo que esteja trabalhando com apenas um dispositivo.</g>
 </target>
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="pt-PT" state="needs-translation">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</target>
+        <target xml:lang="pt-PT" state="translated">Ao usar este método, você não precisa entrar de forma especial para receber livros. Basta executar o LeitorBloom. Os livros devem aparecer automaticamente quando são transferidos.</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
-        <target xml:lang="pt-PT" state="needs-translation">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</target>
+        <target xml:lang="pt-PT" state="translated">Alguns dispositivos Android podem estar em vários modos quando conectados a um computador. Alguns vão te perguntar logo que você conecte o cabo ao computador. Bloom tentará se comunicar com o dispositivo através de um protocolo chamado "MTP". Se você não tem certeza se seu dispositivo está se conectando via MTP, tente pesquisar no Google o nome do seu dispositivo e "MTP".</target>
         <note>ID: android.publish.usb.uses.mtp</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.windows">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="pt-PT" state="needs-translation">The device should be showing up in Windows File Explorer (this feature is Windows-only)</target>
+        <target xml:lang="pt-PT" state="translated">O dispositivo deve ser exibido no Windows File Explorer (esse recurso só é encontrado no Windows)</target>
         <note>ID: android.publish.usb.windows</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Try a different cable, or a different USB port.</target>
+        <target xml:lang="pt-PT" state="translated">Tente um cabo diferente, ou uma porta USB diferente.</target>
         <note>ID: android.publish.usb.cable.or.port</note>
       </trans-unit>
     </body>
