@@ -12,7 +12,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.recording.butnotalk">
         <source xml:lang="en">This book has some recordings, but this audio is not included in the ePUB.</source>
-        <target xml:lang="tr" state="needs-translation">This book has some recordings, but this audio is not included in the ePUB.</target>
+        <target xml:lang="tr" state="translated">Bu kitapta bazı ses kayıtları mevcut, fakat bu ses ePUB içinde yer almıyor.</target>
         <note>ID: epubpreview.recording.butnotalk</note>
       </trans-unit>
       <trans-unit id="epubpreview.preview">
@@ -43,7 +43,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.ontodevice">
         <source xml:lang="en">Getting this book onto your Device</source>
-        <target xml:lang="tr" state="needs-translation">Getting this book onto your Device</target>
+        <target xml:lang="tr" state="translated">Bu kitabı cihazınıza aktarmak</target>
         <note>ID: epubpreview.ontodevice</note>
       </trans-unit>
       <trans-unit id="epubpreview.usingdropbox">
@@ -56,7 +56,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.recommended.reader">
         <source xml:lang="en">Recommended Reader</source>
-        <target xml:lang="tr" state="needs-translation">Recommended Reader</target>
+        <target xml:lang="tr" state="translated">Önerilen Okuyucu</target>
         <note>ID: epubpreview.recommended.reader</note>
       </trans-unit>
       <trans-unit id="epubpreview.gitden.okay">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.make.it.talk">
         <source xml:lang="en">Make it Talk</source>
-        <target xml:lang="tr" state="needs-translation">Make it Talk</target>
+        <target xml:lang="tr" state="translated">Konuşmasını Sağla</target>
         <note>ID: epubpreview.make.it.talk</note>
       </trans-unit>
       <trans-unit id="epubpreview.talking.book.tool">
