@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
         <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
-        <target xml:lang="tr" state="needs-translation">Make sure the device is in the "Receive from WiFi" screen</target>
+        <target xml:lang="tr" state="translated">Cihazın ''Wifi'den al'' ekranında olduğundan emin olun</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network">
