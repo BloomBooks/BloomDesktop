@@ -9,27 +9,27 @@
       </trans-unit>
       <trans-unit id="wall.calendar.use">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="tr" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
+        <target xml:lang="tr" state="translated">Bu şablonu kullanarak, A5 boyutlu, 12 aylık bir takvim hazırlayabilirsiniz; en üstte bir resim ve alıntı, altta da günler. Takvim, dilinizdeki aylar ve günlerin adlarını kullanacaktır.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="tr" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="tr" state="translated">Bu sürümün kısıtlamaları</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="tr" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
+        <target xml:lang="tr" state="translated">Şu anda, diğer dillerin kullanılması için bir "shell" oluşturamazsınız.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="tr" state="needs-translation">Credits</target>
+        <target xml:lang="tr" state="translated">Jenerik</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="tr" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
+        <target xml:lang="tr" state="translated">Bu şablonu başlattığı için Bruce Cox (SIL Cameroon)'a teşekkürler.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

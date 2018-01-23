@@ -39,10 +39,10 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="pbu">که دا کار ونه کړي، نو ستاسو ویروس پروګرام سره د کار کولو وخت دی. لاندې برخه کی د "ورک شوي فایلونه" کوم چې  ‏".exe"‏ کی ختم شوی وي ښکاره شي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، کوم چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <target xml:lang="pbu"> ‏".exe"‏ ختم شوی وي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
         <alt-trans>
-          <target xml:lang="pbu"> ‏".exe"‏ ختم شوی وي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+          <target xml:lang="pbu">که دا کار ونه کړي، نو ستاسو ویروس پروګرام سره د کار کولو وخت دی. لاندې برخه کی د "ورک شوي فایلونه" کوم چې  ‏".exe"‏ کی ختم شوی وي ښکاره شي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، کوم چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">

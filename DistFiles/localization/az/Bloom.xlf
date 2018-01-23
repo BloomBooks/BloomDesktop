@@ -184,6 +184,11 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
         <target xml:lang="az" state="needs-translation">None</target>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
+        <source xml:lang="en">None</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
+        <target xml:lang="az" state="needs-translation">None</target>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
@@ -1479,6 +1484,12 @@
         <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
         <target xml:lang="az" state="needs-translation">This book is temporarily unlocked.</target>
       </trans-unit>
+      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
+        <source xml:lang="en">This book is temporarily unlocked.</source>
+        <note>ID: EditTab.LockBook.ToolTip</note>
+        <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
+        <target xml:lang="az" state="needs-translation">This book is temporarily unlocked.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Monolingual">
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
@@ -1666,6 +1677,42 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="az" state="needs-translation">Picture Intellectual Property Information</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
+        <source xml:lang="en">Background Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
+        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
+        <target xml:lang="az" state="needs-translation">Background Music Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
+        <source xml:lang="en">Choose...</source>
+        <note>ID: EditTab.Toolbox.Music.Choose</note>
+        <target xml:lang="az" state="needs-translation">Choose...</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
+        <source xml:lang="en">Continue music from previous page</source>
+        <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
+        <target xml:lang="az" state="needs-translation">Continue music from previous page</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
+        <source xml:lang="en">Music Tool</source>
+        <note>ID: EditTab.Toolbox.Music.Heading</note>
+        <target xml:lang="az" state="needs-translation">Music Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
+        <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
+        <note>ID: EditTab.Toolbox.Music.Overview</note>
+        <target xml:lang="az" state="needs-translation">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.NewMusic" sil:dynamic="true">
+        <source xml:lang="en">Start new music</source>
+        <note>ID: EditTab.Toolbox.Music.NewMusic</note>
+        <target xml:lang="az" state="needs-translation">Start new music</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.NoMusic" sil:dynamic="true">
+        <source xml:lang="en">No Music</source>
+        <note>ID: EditTab.Toolbox.Music.NoMusic</note>
+        <target xml:lang="az" state="needs-translation">No Music</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom Tool</source>

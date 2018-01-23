@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="tr" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <target xml:lang="tr" state="translated">Yardım menüsüne gidin ve '' Okuyucu Şablonları Oluşturma'' seçeneğini seçin.</target>
         <note>ID: leveled.learn.helpmenu</note>
       </trans-unit>
       <trans-unit id="leveled.vs.decodable">
