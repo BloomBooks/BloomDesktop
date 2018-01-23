@@ -77,50 +77,50 @@
           <target xml:lang="prs">انتظار کشیدن برای‎ {0} دیگر تمام شود...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.AbortButton">
+      <trans-unit id="Common.AbortButton" approved="yes">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="prs" state="translated">&amp; لغو</target>
+        <target xml:lang="prs">&amp; لغو</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
         <target xml:lang="prs">&amp;لغو</target>
       </trans-unit>
-      <trans-unit id="Common.IgnoreButton">
+      <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="prs" state="translated">&amp; رد کردن</target>
+        <target xml:lang="prs">&amp; رد کردن</target>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
         <target xml:lang="prs">نخیر</target>
       </trans-unit>
-      <trans-unit id="Common.NoButton">
+      <trans-unit id="Common.NoButton" approved="yes">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="prs" state="translated">&amp; نخير</target>
+        <target xml:lang="prs">&amp; نخير</target>
       </trans-unit>
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
         <target xml:lang="prs">&amp;تائید</target>
       </trans-unit>
-      <trans-unit id="Common.RetryButton">
+      <trans-unit id="Common.RetryButton" approved="yes">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="prs" state="translated">&amp; دوباره کوشش نمائيد</target>
+        <target xml:lang="prs">&amp; دوباره کوشش نمائيد</target>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
         <target xml:lang="prs">بلی</target>
       </trans-unit>
-      <trans-unit id="Common.YesButton">
+      <trans-unit id="Common.YesButton" approved="yes">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="prs" state="translated">&amp; بلی</target>
+        <target xml:lang="prs">&amp; بلی</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -195,11 +195,11 @@
         <note>ID: ImageToolbox.EditMetadataLink</note>
         <target xml:lang="prs">اصلاح...</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.EnterSearchTerms">
+      <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="prs" state="translated">در خانه بالا، هر آنچیزیکه در جستجوی آن هستید بنویسید، بعداٌ ENTER را فشار دهید.</target>
+        <target xml:lang="prs">در خانه بالا، هر آنچیزیکه در جستجوی آن هستید بنویسید، بعداٌ ENTER را فشار دهید.</target>
         <alt-trans>
           <target xml:lang="prs">این گالری مهارت خوانش است. در خانه بالا، هر آنچیزیکه در جستجوی آن هستید بنویسید، بعداٌ ‏ENTER‏ را فشار دهید. شما میتوانید کلیمات را در انگلیسی و اندونیزیایی تایپ نمائید.</target>
         </alt-trans>
@@ -209,10 +209,10 @@
         <note>ID: ImageToolbox.FileButton</note>
         <target xml:lang="prs">فایل یا دوسیه</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.Galleries">
+      <trans-unit id="ImageToolbox.Galleries" approved="yes">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
-        <target xml:lang="prs" state="translated">گالری ها</target>
+        <target xml:lang="prs">گالری ها</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
@@ -229,10 +229,10 @@
         <note>ID: ImageToolbox.GetPicture</note>
         <target xml:lang="prs">گرفتن تصویر</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.ImageGalleries">
+      <trans-unit id="ImageToolbox.ImageGalleries" approved="yes">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="prs" state="translated">گالری های تصاویر</target>
+        <target xml:lang="prs">گالری های تصاویر</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
@@ -253,11 +253,11 @@
           <target xml:lang="prs">تصاویر ‎{0}‏ یافت شد</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NewMultilingual">
+      <trans-unit id="ImageToolbox.NewMultilingual" approved="yes">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="prs" state="translated">آیا میدانستید که این نسخه جدید این مجموعه است که شما را اجازه میدهد در عربی، بنگالی، چینایی، انگلیسی، فرانسوی، اندونیزیایی، هندی، پرتگالی، هسپانوی، تایلندی، یا سواحلی جستجو کنید؟ این رایگان است و برای دونلود نمودن موجود است.</target>
+        <target xml:lang="prs">آیا میدانستید که این نسخه جدید این مجموعه است که شما را اجازه میدهد در عربی، بنگالی، چینایی، انگلیسی، فرانسوی، اندونیزیایی، هندی، پرتگالی، هسپانوی، تایلندی، یا سواحلی جستجو کنید؟ این رایگان است و برای دونلود نمودن موجود است.</target>
         <alt-trans>
           <target xml:lang="prs">آیا میدانستید که نسخه جدید این مجموعه است که شما را اجازه میدهد در عربی، بنگالی، چینایی، انگلیسی، فرانسوی، اندونیزیایی، هندی، پرتگالی، هسپانوی، تایلندی، یا سواحلی جستجو کنید؟ این رایگان است و برای دونلود نمودن موجود است.</target>
         </alt-trans>
@@ -267,10 +267,10 @@
         <note>ID: ImageToolbox.NoArtOfReading</note>
         <target xml:lang="prs">به نظر نمیرسد که این کمپیوتر تا حال کدام گالری ‎'مهارت خوانش‎'‏ را انستال یا فعال کرده باشد.</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NoGalleries">
+      <trans-unit id="ImageToolbox.NoGalleries" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="prs" state="translated">این کمپیوتر نشان نمیدهد که تا حال در آن گالری جابجا شده باشد.</target>
+        <target xml:lang="prs">این کمپیوتر نشان نمیدهد که تا حال در آن گالری جابجا شده باشد.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
@@ -456,11 +456,11 @@
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
         <target xml:lang="prs">شما این کار را برای اهداف تجارتی استفاده کرده نمیتوانید.</target>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="prs" state="translated">شما میتوانید این کار را بدون اجازه حتی برای هدف تجارتی نیز کاپی، تغییر و توزیع نمایید.</target>
+        <target xml:lang="prs">شما میتوانید این کار را بدون اجازه حتی برای هدف تجارتی نیز کاپی، تغییر و توزیع نمایید.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
@@ -488,10 +488,10 @@
         <note>ID: MetadataEditor.CopyrightHolder</note>
         <target xml:lang="prs">دارنده حق طبع و نشر</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CopyrightYear">
+      <trans-unit id="MetadataEditor.CopyrightYear" approved="yes">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="prs" state="translated">سال حق کاپی</target>
+        <target xml:lang="prs">سال حق کاپی</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
@@ -516,10 +516,10 @@
         <note>ID: MetadataEditor.CustomLicense</note>
         <target xml:lang="prs">دلخواه</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.License">
+      <trans-unit id="MetadataEditor.License" approved="yes">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="prs" state="translated">جواز</target>
+        <target xml:lang="prs">جواز</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -569,11 +569,11 @@
         <note>ID: SettingsProtection.CtrlShiftHint</note>
         <target xml:lang="prs">این سویچ با گرفتن ‏Ctrl‏ و ‏Shift‏ هر دو باهم یکجا اشکار خواهد شد</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.LauncherButtonLabel">
+      <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="prs" state="translated">محافظت از تنظيمات...</target>
+        <target xml:lang="prs">محافظت از تنظيمات...</target>
         <alt-trans>
           <target xml:lang="prs">تنظیمات...</target>
         </alt-trans>
@@ -603,12 +603,18 @@
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
         <target xml:lang="prs">کرکتر ها را نشان دهید</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNotice">
+      <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
-        <target xml:lang="prs" state="translated">مز فابریکه برای این تنظیمات عبارت است از ‎"{0}"‏. اگر شما فراموش کردید، شما همیشه برای ‎"{1}"‏ و ‎"{2}"‏ در گوگل جستجو میتوانید</target>
+        <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از "{0}". اگر شما فراموش کردید، شما همیشه برای "{1}" و "{2}" در گوگل جستجو میتوانید</target>
+        <alt-trans>
+          <target xml:lang="prs">مز فابریکه برای این تنظیمات عبارت است از ‎"{0}"‏. اگر شما فراموش کردید، شما همیشه برای ‎"{1}"‏ و ‎"{2}"‏ در گوگل جستجو میتوانید</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">مز فابریکه برای این تنظیمات عبارت است از "{"{0. اگر شما فراموش کردید، شما همیشه برای "{"{1 و "{"{2 در گوگل جستجو میتوانید</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از "{‎"{0‏. اگر شما فراموش کردید، شما همیشه برای "{‎"{1‏ و "{‎"{2‏ در گوگل جستجو میتوانید.</target>
         </alt-trans>
@@ -700,10 +706,10 @@
           <target xml:lang="prs">کیبورد را انتخاب نمائید که با آن متن‎ {0} را تایپ کنید</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.SetupKeyboards">
+      <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="prs" state="translated">تنظیم کیبورد</target>
+        <target xml:lang="prs">تنظیم کیبورد</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
@@ -725,10 +731,10 @@
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
         <target xml:lang="prs">اپلکیشن نمیتواند‎ که با انبار معلومات محلی ‏SIL‏ وصل شود تا معلومات اخیر را در باره این لسان بدست آرد. اگر شما این سیستم نوشتاری را بسازید، تنظیمات اصلی شاید غلط باشد و یا تاریخ آن تیر باشد. آیا شما مطمئن هستید که میخواهید سیستم نوشتاری جدید بسازید؟</target>
       </trans-unit>
-      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
+      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard" approved="yes">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="prs" state="translated">{0} ({1})[مفقود]</target>
+        <target xml:lang="prs">{0} ({1})[مفقود]</target>
       </trans-unit>
     </body>
   </file>

@@ -184,6 +184,11 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
         <target xml:lang="fr" state="needs-translation">None</target>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
+        <source xml:lang="en">None</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
+        <target xml:lang="fr" state="needs-translation">None</target>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
@@ -1472,6 +1477,12 @@
         <source xml:lang="en">This option is only available in the Publish tab.</source>
         <note>ID: EditTab.LayoutInPublishTabOnlyNotice</note>
         <target xml:lang="fr">Cette option n'est disponible que dans l'onglet publier.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
+        <source xml:lang="en">This book is temporarily unlocked.</source>
+        <note>ID: EditTab.LockBook.ToolTip</note>
+        <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
+        <target xml:lang="fr" state="needs-translation">This book is temporarily unlocked.</target>
       </trans-unit>
       <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
         <source xml:lang="en">This book is temporarily unlocked.</source>
