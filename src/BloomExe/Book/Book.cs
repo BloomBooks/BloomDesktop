@@ -2009,11 +2009,11 @@ namespace Bloom.Book
 			if (upperBounds < 0)
 				upperBounds = 10000;
 
-			return indexOfItemAfterRelocation > GetIndexLastFrontkMatterPage ()
+			return indexOfItemAfterRelocation > GetIndexOfLastFrontMatterPage ()
 				&& indexOfItemAfterRelocation < upperBounds;
 		}
 
-		internal int GetIndexLastFrontkMatterPage()
+		private int GetIndexOfLastFrontMatterPage()
 		{
 			XmlElement lastFrontMatterPage =
 				OurHtmlDom.RawDom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-frontMatter')])[last()]") as XmlElement;
