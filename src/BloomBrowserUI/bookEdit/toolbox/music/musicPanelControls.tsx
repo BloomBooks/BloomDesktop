@@ -10,6 +10,7 @@ interface IMusicState {
     musicVolume: number; // 0-1.0
     audioEnabled: boolean;
     musicName: string;
+    playing: boolean;
 }
 
 export default class MusicPanelControls extends React.Component<{}, IMusicState> {
@@ -24,7 +25,13 @@ export default class MusicPanelControls extends React.Component<{}, IMusicState>
         if (!audioStr) {
             audioStr = ""; // null won't handle split
         }
-        const state = { activeRadioValue: "continueMusic", musicVolume: 1.0, audioEnabled: false, musicName: "" }; // default state
+        const state = {
+            activeRadioValue: "continueMusic",
+            musicVolume: 1.0,
+            audioEnabled: false,
+            musicName: "",
+            playing: false
+        }; // default state
         if (!hasMusicAttr) {
             // No data-music attr at all is our default state, continue from previous page
             // (including possibly no audio, if previous page had none). If audio is set on a previous
@@ -73,7 +80,7 @@ export default class MusicPanelControls extends React.Component<{}, IMusicState>
                 <div className="button-label-wrapper" id="musicOuterWrapper">
                     <div id="musicPlayAndLabelWrapper">
                         <div className="musicButtonWrapper">
-                            <button id="musicPreview" className="music-button ui-button enabled" onClick={() => this.previewMusic()} />
+                            <button id="musicPreview" className={"music-button ui-button enabled" + (this.state.playing ? " playing" : "")} onClick={() => this.previewMusic()} />
                         </div>
                         <div id="musicFilename" >{this.state.musicName}</div>
                     </div>
@@ -101,6 +108,10 @@ export default class MusicPanelControls extends React.Component<{}, IMusicState>
         if (!audioStr) {
             return;
         }
+        if (this.state.playing) {
+            this.pausePlaying();
+            return;
+        }
         var player = $('#musicPlayer');
         var bookSrc = this.getPageFrame().src;
         var index = bookSrc.lastIndexOf('/');
@@ -113,6 +124,14 @@ export default class MusicPanelControls extends React.Component<{}, IMusicState>
         const rawPlayer = document.getElementById('musicPlayer') as HTMLMediaElement;
         rawPlayer.volume = this.getAudioVolume(audioStr);
         rawPlayer.play();
+        player.off("ended").on("ended", () => this.setState({ playing: false }));
+        this.setState({ playing: true });
+    }
+
+    pausePlaying() {
+        const rawPlayer = (document.getElementById('musicPlayer') as HTMLMediaElement);
+        rawPlayer.pause();
+        this.setState({ playing: false });
     }
 
     setRadio(val: string) {
@@ -121,8 +140,7 @@ export default class MusicPanelControls extends React.Component<{}, IMusicState>
         const audioEnabled = val === "newMusic";
         this.setState({ activeRadioValue: val, audioEnabled: audioEnabled, musicName: "" });
         if (!audioEnabled) {
-            const rawPlayer = (document.getElementById('musicPlayer') as HTMLMediaElement);
-            rawPlayer.pause();
+            this.pausePlaying();
         }
         switch (val) {
             case "noMusic":
