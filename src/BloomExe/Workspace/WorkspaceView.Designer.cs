@@ -217,6 +217,8 @@
 			this._uiLanguageMenu.Name = "_uiLanguageMenu";
 			this._uiLanguageMenu.Size = new System.Drawing.Size(56, 19);
 			this._uiLanguageMenu.Text = "English";
+			this._uiLanguageMenu.DropDown.AutoClose = false;
+
 			// 
 			// _helpMenu
 			// 
