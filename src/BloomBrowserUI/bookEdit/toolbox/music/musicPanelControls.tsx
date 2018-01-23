@@ -4,6 +4,7 @@ import { Slider } from "../../../react_components/slider";
 import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
 import { Radio } from "../../../react_components/Radio";
 import axios from 'axios';
+import { ToolBox, ITabModel } from "../toolbox";
 
 interface IMusicState {
     activeRadioValue: string;
@@ -13,6 +14,11 @@ interface IMusicState {
     playing: boolean;
 }
 
+// This react class implements the UI for the music toolbox.
+// Note: this file is included in toolboxBundle.js because webpack.config says to include all
+// tsx files in bookEdit/toolbox.
+// The toolbox is included in the list of tools because of the one line of immediately-executed code
+// which adds an instance of Music to ToolBox.getTabModels().
 export default class MusicPanelControls extends React.Component<{}, IMusicState> {
     constructor() {
         super();
@@ -216,3 +222,50 @@ export default class MusicPanelControls extends React.Component<{}, IMusicState>
         );
     }
 }
+
+class Music implements ITabModel {
+    reactControls: MusicPanelControls;
+    makeRootElements(): JQuery {
+        var parts = $("<h3 data-panelId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'> Music Tool</h3><div data-panelId='musicTool' class='musicBody'/>");
+        this.reactControls = MusicPanelControls.setup(parts[1]);
+        return parts;
+    }
+    isAlwaysEnabled(): boolean {
+        return false;
+    }
+    beginRestoreSettings(settings: string): JQueryPromise<void> {
+        // Nothing to do, so return an already-resolved promise.
+        var result = $.Deferred<void>();
+        result.resolve();
+        return result;
+    }
+    configureElements(container: HTMLElement) {
+    }
+    showTool() {
+        this.updateMarkup();
+    }
+    hideTool() {
+        const rawPlayer = (document.getElementById('musicPlayer') as HTMLMediaElement);
+        rawPlayer.pause();
+    }
+    updateMarkup() {
+        // This isn't exactly updating the markup, but it needs to happen when we switch pages,
+        // just like updating markup. Using this hook does mean it will (unnecessarily) happen
+        // every time the user pauses typing while this tool is active. I don't much expect people
+        // to be editing the book and configuring background music at the same time, so I'm not
+        // too worried. If it becomes a performance problem, we could enhance ITabModel with a
+        // function that is called just when the page switches.
+        this.reactControls.updateStateFromHtml();
+    }
+
+    name(): string {
+        return 'music';
+    }
+    // required for ITabModel interface
+    hasRestoredSettings: boolean;
+    finishTabPaneLocalization(pane: HTMLElement) {
+    }
+}
+
+// Make the one instance of this class and register it with the master toolbox.
+ToolBox.getTabModels().push(new Music());

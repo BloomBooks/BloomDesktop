@@ -35,7 +35,10 @@ module.exports = {
         readerSetupBundle: "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
         bookPreviewBundle: "./bookPreview/bookPreview.ts",
-        toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts", //["./bookEdit/toolbox/toolboxBootstrap.ts"].concat(globule.find("./bookEdit/toolbox/**/*.tsx")),
+        // note that tooboxBootstrap.ts must be last. It's not easy to find in the doc, but apparently
+        // the last thing in the list is exported, and we need stuff in toolboxBootstrap.ts to be
+        // available to other modules.
+        toolboxBundle: globule.find(["./bookEdit/toolbox/**/*.tsx"]).concat(["./bookEdit/toolbox/toolboxBootstrap.ts"]),
         pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle: "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
         pageControlsBundle: "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",

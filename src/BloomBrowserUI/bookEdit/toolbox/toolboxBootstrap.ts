@@ -7,7 +7,6 @@ import DecodableReaderToolboxPanel from './readers/decodableReader/decodableRead
 import LeveledReaderToolboxPanel from './readers/leveledReader/leveledReaderToolboxPanel';
 import { handleBookSettingCheckboxClick } from './bookSettings/bookSettings';
 import PanAndZoom from './panAndZoom/panAndZoom'
-import Music from './music/music'
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
 // reviewslog: is this actually needed? Could these be be directly imported where they are used?
@@ -20,7 +19,6 @@ export { TalkingBookModel }; // one function is called by CSharp; also, exportin
 export { LeveledReaderToolboxPanel }; // just to make sure it gets included in the bundle (and adds an instance of itself to the collection in toolbox.ts)
 export { DecodableReaderToolboxPanel }; // just to make sure it gets included in the bundle (and adds an instance of itself to the collection in toolbox.ts)
 export { PanAndZoom }; // just to make sure it gets included in the bundle (and adds an instance of itself to the collection in toolbox.ts)
-export { Music }; // just to make sure it gets included in the bundle (and adds an instance of itself to the collection in toolbox.ts)
 export { handleBookSettingCheckboxClick }; // called by click handler in jade; also, exporting something from it gets it included in the bundle.
 export { getTheOneToolbox };
 
