@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -61,6 +60,8 @@ namespace Bloom.Workspace
 		public static float DPIOfThisAccount;
 		private ZoomControl _zoomControl;
 		private static LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
+
+		private bool _uiLangMenuIsOpening;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -298,6 +299,7 @@ namespace Bloom.Workspace
 		private void SetupUiLanguageMenu()
 		{
 			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick);
+			_uiLanguageMenu.DropDown.Opening += UiLanguageMenuDropDown_Opening;
 
 			// Removing this for now (BL-5111)
 			//_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
@@ -312,6 +314,28 @@ namespace Bloom.Workspace
 			//	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
 			//	AdjustButtonTextsForLocale();
 			//});
+		}
+
+		private void UiLanguageMenuDropDown_Opening(object sender, EventArgs e)
+		{
+			_uiLangMenuIsOpening = true;
+			_uiLanguageMenu.Click += CloseUiLanguageMenu; // clicking the menu button itself will close the menu
+			_uiLanguageMenu.DropDown.Click += CloseUiLanguageMenu; // clicking a menu item also closes the menu
+		}
+
+		private void CloseUiLanguageMenu(object sender, EventArgs e)
+		{
+			if (_uiLangMenuIsOpening)
+			{
+				_uiLangMenuIsOpening = false;
+				return;
+			}
+			var dropdown = _uiLanguageMenu.DropDown;
+			dropdown.AutoClose = true;
+			_uiLanguageMenu.HideDropDown();
+			dropdown.AutoClose = false;
+			_uiLanguageMenu.Click -= CloseUiLanguageMenu;
+			_uiLanguageMenu.DropDown.Click -= CloseUiLanguageMenu;
 		}
 
 		/// <summary>
