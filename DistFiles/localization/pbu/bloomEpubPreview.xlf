@@ -9,8 +9,16 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.describe</note>
+        <alt-trans>
+          <target xml:lang="pbu">دا ده یو <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> ستاسې د برېښنايي کتاب نسخه. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">دا غږونه لري، چې نوې غوږ نیونکي د لوستلو په وخت ورته غوږ ونیولی شي.</g>
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">دا ده یو <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> ستاسې د برېښنايي کتاب نسخه. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">دا غږونه لري، چې نوې غوږ نیونکي د لوستلو په وخت ورته غوږ ونیولی شي.</g>
       
@@ -55,6 +63,14 @@
           <target xml:lang="pbu">دا پاڼه کاروي د <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB‏ لوستونکی. کتابونه ښایي بیلابیلو لوستونکو ته په مختلفو ډولونو ښکاره شي.
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">دا پاڼه کاروي د <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB‏ لوستونکی. کتابونه ښایي بیلابیلو لوستونکو ته په مختلفو ډولونو ښکاره شي.
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -76,6 +92,14 @@
       
       </target>
         <note>ID: epubpreview.talkingbookpreview</note>
+        <alt-trans>
+          <target xml:lang="pbu">مخلید تر اوسه دلته غږیز کتابونه پلې کولی نشي. تاسو ورته غوږ نیولی شئ د ‏Adobe‏ وړیا نسخی په کارولو سره <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">ډیجیټلي ډولونه</g> د بريښنایي کتاب لوستونکی.
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">مخلید تر اوسه دلته غږیز کتابونه پلې کولی نشي. تاسو ورته غوږ نیولی شئ د ‏Adobe‏ وړیا نسخی په کارولو سره <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">ډیجیټلي ډولونه</g> د بريښنایي کتاب لوستونکی.
       
@@ -104,8 +128,16 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
+        <alt-trans>
+          <target xml:lang="pbu">ښه لاره چې کتابونه خپل مبایل ته واستوئ، د ‏Dropbox‏ نصب کول دي یا همداسی بل کوم خدمت په دواړو خپلو مبایل/ټبلیټ او کمپیوټر کې جمتو کړئ. یواځې په ‏ePUB ‏ ثبتولو زور وکړئ او بیا د ‏Dropbox ‏ پوښتې انتخاب کړئ. د تاسو په مبایل کې، د ‏Dropbox ‏کاریال خلاص کړئ او خپل کتاب انتخاب کړئ. که تاسو لپټاپ استعمالوئ، تاسو وړیا نسخه کارولي شئ <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">شریک یې کړئ</g> هغه پروګرام چې دوسیي ستاسې لپټاپ څخه ستاسو موبایل یا ټبلیټ ته استوي.
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">ښه لاره چې کتابونه خپل مبایل ته واستوئ، د ‏Dropbox‏ نصب کول دي یا همداسی بل کوم خدمت په دواړو خپلو مبایل/ټبلیټ او کمپیوټر کې جمتو کړئ. یواځې په ‏ePUB ‏ ثبتولو زور وکړئ او بیا د ‏Dropbox ‏ پوښتې انتخاب کړئ. د تاسو په مبایل کې، د ‏Dropbox ‏کاریال خلاص کړئ او خپل کتاب انتخاب کړئ. که تاسو لپټاپ استعمالوئ، تاسو وړیا نسخه کارولي شئ <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">شریک یې کړئ</g> هغه پروګرام چې دوسیي ستاسې لپټاپ څخه ستاسو موبایل یا ټبلیټ ته استوي.
       
@@ -144,6 +176,14 @@
           <target xml:lang="pbu">زموږ ازموینه ښکاره کړه <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">د ‏Gitden‏ کتاب</g>اد انډرایډ او ‏IOS‏ (آیفون، او ‏&amp; ‏IPad‏) وسیلو لپاره ښه انتخاب دي.
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">زموږ ازموینه ښکاره کړه <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">د ‏Gitden‏ کتاب</g>اد انډرایډ او ‏IOS‏ (آیفون، او ‏&amp; ‏IPad‏) وسیلو لپاره ښه انتخاب دي.
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -163,8 +203,11 @@
       </trans-unit>
       <trans-unit id="epubpreview.make.it.talk" approved="yes">
         <source xml:lang="en">Make it Talk</source>
-        <target xml:lang="pbu">وئ غږه وئ</target>
+        <target xml:lang="pbu">ويې غږوئ</target>
         <note>ID: epubpreview.make.it.talk</note>
+        <alt-trans>
+          <target xml:lang="pbu">وئ غږه وئ</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.talking.book.tool" approved="yes">
         <source xml:lang="en">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
@@ -175,6 +218,14 @@
       
       </target>
         <note>ID: epubpreview.talking.book.tool</note>
+        <alt-trans>
+          <target xml:lang="pbu">که تاسو غواړئ چې ‏"غږیز کتاب" جوړ کړئ چې نوي لوستونکي یې سره ولولي، له بلوم نه ګټه واخلئ <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">د غږیز کتاب وسیله</g> د غږیز ریکارډونو اضافه کولو لپاره.
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">که تاسو غواړئ چې ‏"غږیز کتاب" جوړ کړئ چې نوي لوستونکي یې سره ولولي، له بلوم نه ګټه واخلئ <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">د غږیز کتاب وسیله</g> د غږیز ریکارډونو اضافه کولو لپاره.
       

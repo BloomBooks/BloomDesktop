@@ -14,21 +14,21 @@
       </trans-unit>
       <trans-unit id="bigbook.printing">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="tr" state="needs-translation">Printing a Big Book</target>
+        <target xml:lang="tr" state="translated">Büyük bir Kitap Yazdır</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="tr" state="needs-translation">To make things more manageable, this template is set at A4 Landscape, with large fonts.
-You can easily produce books that are A3 (twice as large).
-Just take your A4 PDF to a printer and ask them to enlarge it to A3.</target>
+        <target xml:lang="tr" state="translated">İşleri daha yönetilebilir kılmak için, bu şablon büyük yazı tipleriyle A4 manzara olarak ayarlandı.
+Kolayca A3 (iki katı büyüklüğünde) kitaplar üretebilirsin.
+Sadece A4 PDF dosyasını al ve onlardan A3'e büyütmelerini iste.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="tr" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="tr" state="translated">Bu sürümün kısıtlamaları</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen">
@@ -40,9 +40,9 @@ Just take your A4 PDF to a printer and ask them to enlarge it to A3.</target>
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="tr" state="needs-translation">This version includes an "Instructions for Teachers" page that is already filled out, in English.
-If you would like to have instructions in a different language, you can delete that text and type in your own.
-If you send us that text, we can include it in a future version of the template.</target>
+        <target xml:lang="tr" state="translated">Bu versiyon zaten ''Öğretmenler için Talimatlar'' sayfası İngilizce olarak içeriyor.
+Farklı dillerde talimatlar istiyorsanız, metni silebilir ve kendi dilinizde yazabilirsiniz.
+Eğer metni bize gönderirseniz, Şablonun gelecekteki bir versiyonuna ekleyebiliriz.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
     </body>

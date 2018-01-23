@@ -48,8 +48,8 @@
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Temel kitap şablonu kullanma</g>
         </target>
         <note>ID: training.videos.basicbook</note>
       </trans-unit>
@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="training.videos.advanced">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="tr" state="needs-translation">Advanced Topics</target>
+        <target xml:lang="tr" state="translated">İleri düzey Konular</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting">
