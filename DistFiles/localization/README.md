@@ -165,23 +165,48 @@ a normal merge with all that history would probably be okay.)
         git log
     </pre>
 
-4. Verify that the modified xliff files are still valid.  As a minimum, this requires checking
-   that they are well formed XML files.  It might be worth validating against the Xliff 1.2
-   schema as well.  On Linux, these steps can be carried out something like the following:
+4. Verify that the modified xliff files are still valid, and fix any errors that may be found.
+   On Windows, the following command could be used in the git bash shell window:
 
    <pre>
        for f in DistFiles/localization/*/*.xlf; do
-           echo $f
-	   xmllint $f >/dev/null   # checks for being well formed XML
-	   xmllint --schema /path/to/xliff-core-1.2-transitional.xsd $f >/dev/null
-       done
+           echo ==== $f ====
+           lib/dotnet/CheckOrFixXliff.exe --fix "$f"
+       done | tee check-xliff.log
    </pre>
 
-   Fix any errors that are reported.  I'm not sure how to feed this information back to crowdin,
-   however.  Perhaps just uploading the corrected translated xliff file to crowdin would work.
+   On Linux, the shell command is almost the same:
 
-   This won't check for malformed formatting markers ({0}, {1}, etc.).  I don't know of any
-   automatic checks for whether translators mess those up.
+   <pre>
+       for f in DistFiles/localization/*/*.xlf; do
+           echo ==== $f ====
+           /opt/mono4-sil/bin/mono lib/dotnet/CheckOrFixXliff.exe --fix "$f"
+       done | tee check-xliff.log
+   </pre>
+
+   This checks for invalid XML and for malformed formatting markers ({0}, {1}, etc.).  It tries
+   to fix any malformed formatting markers that it finds.  If it does find and fix any, it
+   creates a new file with the same name of the one with the invalid formatting string(s), but
+   with "-fixed" appended to the name.  If any such files are created, they should be renamed to
+   remove the "-fixed", and the commit updated to include the fixed file.  Then the command
+   given above using CheckOrFixXliff.exe should be run again to check that nothing will crash.
+
+   Fix any crashing errors that are (still) reported.  If the XML file is malformed or malformed
+   formatting markers remain that would crash Bloom, the output log file will contain the word
+   "crash" in it.  This can be checked easily by
+
+   <pre>
+       grep crash check-xliff.log
+   </pre>
+
+   Fixing any remaining crashing errors may require hand editing the offending xliff file, or it
+   may require updating the CheckOrFixXliff program by editing its sources in a copy of the
+   l10nsharp repository.  Other errors (missing or extra format markers) probably won't crash
+   the program, and there's no way for a programmer to fix them.  The check-xliff.log file could
+   be passed on to someone in touch with the translators (Chris Weber maybe?).
+
+   I'm not sure how to feed corrected strings back to Crowdin.  Just uploading the corrected
+   translated xliff file to crowdin does not work, at least not cleanly.
 
 5. Force push the modified l10n_master branch back to the master BloomDesktop repository.  The
    form of the command given here ensures that nobody else has modified the branch on github
