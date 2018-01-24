@@ -66,6 +66,7 @@ namespace Bloom.Edit
 
 			server.RegisterEndpointHandler(kApiUrlPart + "lockBook", request =>
 			{
+				_editingModel.SaveNow(); // BL-5421 lock and unlock lose typing
 				_editingModel.CurrentBook.TemporarilyUnlocked = false;
 				request.PostSucceeded();
 				UpdateState(); // because we aren't selecting a new page
@@ -74,6 +75,7 @@ namespace Bloom.Edit
 
 			server.RegisterEndpointHandler(kApiUrlPart + "unlockBook", request =>
 			{
+				_editingModel.SaveNow(); // BL-5421 lock and unlock lose typing
 				_editingModel.CurrentBook.TemporarilyUnlocked = true;
 				request.PostSucceeded();
 				UpdateState(); // because we aren't selecting a new page
