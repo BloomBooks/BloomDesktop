@@ -4,7 +4,7 @@ import * as AudioRecorder from './audioRecording';
 import { theOneAudioRecorder } from './audioRecording';
 
 export default class TalkingBookModel implements ITool {
-    makeRootElements(): JQuery {
+    makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
     beginRestoreSettings(settings: string): JQueryPromise<void> {

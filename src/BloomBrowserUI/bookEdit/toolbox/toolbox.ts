@@ -35,9 +35,13 @@ export interface ITool {
     finishToolLocalization(pane: HTMLElement);
 
     // Implement this if the tool uses React.
-    // It should return a JQuery object containing one h3 followed by one div.
-    // Both should have data-toolId of name() followed by "Tool"
-    makeRootElements(): JQuery;
+    // It should return the main content of the tool, which must be a single div.
+    // (toolbox will construct the h3 element which goes along with it in the accordion
+    // and set its data-toolId attr; this method is however responsible to
+    // localize the content of the div.)
+    // It may be unimplmented for older tools where beginAddTool() already knows
+    // where to find an HTML file for the tool content.
+    makeRootElement(): HTMLDivElement;
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
@@ -116,8 +120,8 @@ export class ToolBox {
 
     // Called from document.ready, initializes the whole toolbox.
     initialize(): void {
-        axios.get("/bloom/api/toolbox/bookTools").then(result => {
-            let toolsToLoad = result.data.split(",");
+        axios.get("/bloom/api/toolbox/enabledTools").then(result => {
+            const toolsToLoad = result.data.split(",");
             // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
             for (var i = toolsToLoad.length - 1; i >= 0; i--) {
                 if (!masterToolList.some(mod => mod.id() === toolsToLoad[i])) {
@@ -159,7 +163,7 @@ export class ToolBox {
                     const toolId = nextToolId + "Tool";
                     beginAddTool(checkBoxId, toolId, false).then(() => loadNextTool());
                 }
-            }
+            };
             loadNextTool();
         });
 
@@ -438,9 +442,22 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
         // new-style tool implemented in React
         const reactToolId = toolId.substring(0, toolId.length - 4); // strip off "Tool"
         // for some reason our version of typescript does not know about find()
-        var tool: ITool = (<any>ToolBox.getMasterToolList()).find(tool => tool.name() === reactToolId);
-        const parts = tool.makeRootElements();
-        loadToolboxTool(parts, toolId, openTool);
+        var tool: ITool = (<any>ToolBox.getMasterToolList()).find(tool => tool.id() === reactToolId);
+        const content = $(tool.makeRootElement());
+        const toolName = tool.id() + "Tool";
+        // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
+        //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
+
+        const toolIdUpper = tool.id()[0].toUpperCase() + tool.id().substring(1, tool.id().length);
+        var i18Id = "EditTab.Toolbox." + toolIdUpper + ".Heading";
+        // Not sure this will always work, but we can do something more complicated...maybe a new method
+        // on ITool...if we need it.
+        var toolLabel = toolIdUpper + " Tool";
+        const header = $("<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>");
+        // must both have this attr and value for removing if disabled.
+        header.attr("data-toolId", toolName);
+        content.attr("data-toolId", toolName);
+        loadToolboxTool(header, content, toolId, openTool);
 
         // api calls for promise, but we don't need one here; just return something
         // that behaves like a promise already fulfilled.
@@ -577,47 +594,47 @@ function resizeToolbox() {
  */
 function loadToolboxToolText(newContent, toolId, openTool: boolean) {
     var parts = $($.parseHTML(newContent, document, true));
-    loadToolboxTool(parts, toolId, openTool);
-}
-function loadToolboxTool(parts: JQuery, toolId, openTool: boolean) {
 
     parts.filter("*[data-i18n]").localize();
     parts.find("*[data-i18n]").localize();
-
-    var toolboxElt = $("#toolbox");
 
     // expect parts to have 2 items, an h3 and a div
     if (parts.length < 2) return;
 
     // get the toolbox tool label
-    var tool = parts.filter("h3").first();
-    if (tool.length < 1) return; // bookSettings currently is empty and doesn't get added.
-
-    var label = tool.text();
+    var header = parts.filter("h3").first();
+    if (header.length < 1) return; // bookSettings currently is empty and doesn't get added.
 
     // get the tool content div
-    var div = parts.filter("div").first();
+    var content = parts.filter("div").first();
+
+    loadToolboxTool(header, content, toolId, openTool);
+}
+function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: boolean) {
+
+    var toolboxElt = $("#toolbox");
+    var label = header.text();
 
     // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
     // so insert before the first one with text alphabetically greater than this (if any).
     if (toolboxElt.children().length === 0) {
         // none yet...this will be the "more" tool which we insert first.
-        toolboxElt.append(tool);
-        toolboxElt.append(div);
+        toolboxElt.append(header);
+        toolboxElt.append(content);
     } else {
         var insertBefore = toolboxElt.children().filter(function () { return $(this).text() > label; }).first();
         if (insertBefore.length === 0) {
             // Nothing is greater, but still insert before "More". Two children represent "More", so before the second last.
             insertBefore = $(toolboxElt.children()[toolboxElt.children.length - 2]);
         }
-        tool.insertBefore(insertBefore);
-        div.insertBefore(insertBefore);
+        header.insertBefore(insertBefore);
+        content.insertBefore(insertBefore);
     }
 
     // if requested, open the tool that was just inserted
     if (openTool && toolbox.toolboxIsShowing()) {
         toolboxElt.accordion("refresh");
-        var id = tool.attr("id");
+        var id = header.attr("id");
         var toolNumber = parseInt(id.substr(id.lastIndexOf("_")), 10);
         toolboxElt.accordion("option", "active", toolNumber); // must pass as integer
     }

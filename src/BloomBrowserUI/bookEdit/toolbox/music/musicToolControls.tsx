@@ -233,11 +233,10 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
 
 class Music implements ITool {
     reactControls: MusicToolControls;
-    makeRootElements(): JQuery {
-        var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
-            + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
-        this.reactControls = MusicToolControls.setup(parts[1]);
-        return parts;
+    makeRootElement(): HTMLDivElement {
+        const root = $("<div class='musicBody'/>").get(0);
+        this.reactControls = MusicToolControls.setup(root);
+        return root as HTMLDivElement;
     }
     isAlwaysEnabled(): boolean {
         return false;

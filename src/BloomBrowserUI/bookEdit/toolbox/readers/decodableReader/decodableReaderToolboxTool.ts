@@ -10,7 +10,7 @@ import theOneLocalizationManager from '../../../../lib/localizationManager/local
 
 
 export default class DecodableReaderToolboxTool implements ITool {
-    makeRootElements(): JQuery {
+    makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
     beginRestoreSettings(settings: string): JQueryPromise<void> {

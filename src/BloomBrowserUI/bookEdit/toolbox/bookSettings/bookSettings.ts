@@ -32,7 +32,7 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
 
 // We need a minimal model to get ourselves loaded
 class BookSettings implements ITool {
-    makeRootElements(): JQuery {
+    makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
