@@ -51,7 +51,7 @@
 			this._topBarControl.Controls.Add(this._toolStrip);
 			this._topBarControl.Location = new System.Drawing.Point(223, 224);
 			this._topBarControl.Name = "_topBarControl";
-			this._topBarControl.Size = new System.Drawing.Size(327, 70);
+			this._topBarControl.Size = new System.Drawing.Size(337, 70);
 			this._topBarControl.TabIndex = 15;
 			// 
 			// _toolStrip
@@ -72,7 +72,7 @@
 			this._toolStrip.Location = new System.Drawing.Point(-13, 0);
 			this._toolStrip.Name = "_toolStrip";
 			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(340, 70);
+			this._toolStrip.Size = new System.Drawing.Size(350, 70);
 			this._toolStrip.TabIndex = 31;
 			this._toolStrip.Text = "_toolStrip";
 			// 
