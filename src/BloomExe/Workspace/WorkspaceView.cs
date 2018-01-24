@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -298,6 +297,9 @@ namespace Bloom.Workspace
 		private void SetupUiLanguageMenu()
 		{
 			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick);
+			_uiLanguageMenu.DropDown.Closing += DropDown_Closing;
+			// one side-effect of the above is if the _uiLanguageMenu dropdown is open, a click on the _helpMenu won't close it
+			_helpMenu.Click += (sender, args) => _uiLanguageMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
 
 			// Removing this for now (BL-5111)
 			//_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
@@ -312,6 +314,29 @@ namespace Bloom.Workspace
 			//	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
 			//	AdjustButtonTextsForLocale();
 			//});
+		}
+
+		private void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+		{
+			// ReSharper disable once SwitchStatementMissingSomeCases
+			switch (e.CloseReason)
+			{
+				case ToolStripDropDownCloseReason.AppFocusChange:
+					// this is usually just hovering over the help menu
+					e.Cancel = true;
+					break;
+				case ToolStripDropDownCloseReason.AppClicked:
+					// "reason" is AppClicked, but is it legit?
+					// Every other time we get AppClicked even if we are just hovering over the help menu.
+					var mousePos = _helpMenu.Owner.PointToClient(MousePosition);
+					if (_helpMenu.Bounds.Contains(mousePos))
+					{
+						e.Cancel = true; // probably a false positive
+					}
+					break;
+				default: // includes ItemClicked, Keyboard, CloseCalled
+					break;
+			}
 		}
 
 		/// <summary>
@@ -569,7 +594,6 @@ namespace Bloom.Workspace
 			}
 		}
 
-
 		private void toolStripMenuItem3_Click(object sender, EventArgs e)
 		{
 			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
@@ -597,11 +621,6 @@ namespace Bloom.Workspace
 		private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
 		{
 			Process.Start(UrlLookup.LookupUrl(UrlType.Support));
-		}
-
-		private void OnHelpButtonClick(object sender, MouseEventArgs e)
-		{
-			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
 		}
 
 		private void _showLogMenuItem_Click(object sender, EventArgs e)
