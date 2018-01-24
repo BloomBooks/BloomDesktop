@@ -38,7 +38,7 @@ export default class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    name() { return 'leveledReader'; }
+    id() { return 'leveledReader'; }
 
     hasRestoredSettings: boolean;
 

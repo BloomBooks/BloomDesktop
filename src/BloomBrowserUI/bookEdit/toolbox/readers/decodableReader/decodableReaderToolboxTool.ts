@@ -105,7 +105,7 @@ export default class DecodableReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    name() { return 'decodableReader'; }
+    id() { return 'decodableReader'; }
 
     hasRestoredSettings: boolean;
 }

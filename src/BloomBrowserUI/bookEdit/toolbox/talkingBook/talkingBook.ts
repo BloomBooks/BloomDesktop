@@ -37,7 +37,7 @@ export default class TalkingBookModel implements ITool {
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
     }
 
-    name() { return "talkingBook"; }
+    id() { return "talkingBook"; }
 
     hasRestoredSettings: boolean;
 

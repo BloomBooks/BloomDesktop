@@ -265,7 +265,7 @@ class Music implements ITool {
         this.reactControls.updateStateFromHtml();
     }
 
-    name(): string {
+    id(): string {
         return "music";
     }
     // required for ITool interface

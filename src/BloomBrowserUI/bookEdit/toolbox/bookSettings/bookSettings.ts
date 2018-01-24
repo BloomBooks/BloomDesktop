@@ -41,7 +41,7 @@ class BookSettings implements ITool {
         result.resolve();
         return result;
     }
-    name(): string {
+    id(): string {
         return "bookSettings";
     }
     hasRestoredSettings: boolean;

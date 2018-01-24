@@ -26,7 +26,7 @@ export interface ITool {
     showTool();
     hideTool();
     updateMarkup();
-    name(): string; // without trailing "Tool"!
+    id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
 
@@ -120,14 +120,14 @@ export class ToolBox {
             let toolsToLoad = result.data.split(",");
             // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
             for (var i = toolsToLoad.length - 1; i >= 0; i--) {
-                if (!masterToolList.some(mod => mod.name() === toolsToLoad[i])) {
+                if (!masterToolList.some(mod => mod.id() === toolsToLoad[i])) {
                     toolsToLoad.splice(i, 1);
                 }
             }
             // add any tools we always show
             for (var j = 0; j < masterToolList.length; j++) {
-                if (masterToolList[j].isAlwaysEnabled() && !toolsToLoad.includes(masterToolList[j].name())) {
-                    toolsToLoad.push(masterToolList[j].name());
+                if (masterToolList[j].isAlwaysEnabled() && !toolsToLoad.includes(masterToolList[j].id())) {
+                    toolsToLoad.push(masterToolList[j].id());
                 }
             }
             // for correct positioning and so we can find check boxes when adding others must load this one first,
@@ -303,7 +303,7 @@ function switchTool(newToolName: string) {
             // whether it should end in "Tool" so what's in the meta.json might have it or not.
             // For robustness we will recognize any tool name that starts with the (no -Tool)
             // name we're looking for.
-            if (newToolName.startsWith(masterToolList[i].name())) {
+            if (newToolName.startsWith(masterToolList[i].id())) {
                 newTool = masterToolList[i];
             }
         }
@@ -321,7 +321,7 @@ function activateTool(newTool: ITool) {
         // If we're activating this tool for the first time, restore its settings.
         if (!newTool.hasRestoredSettings) {
             newTool.hasRestoredSettings = true;
-            var name = newTool.name();
+            var name = newTool.id();
             newTool.beginRestoreSettings(savedSettings).then(() => {
                 newTool.finishToolLocalization(getToolElement(newTool));
                 newTool.showTool();
@@ -336,7 +336,7 @@ function activateTool(newTool: ITool) {
 function getToolElement(tool: ITool): HTMLElement {
     var toolElement = null;
     if (tool) {
-        var toolName = tool.name() + "Tool";
+        var toolName = tool.id() + "Tool";
         $("#toolbox").find("> h3").each(function () {
             if ($(this).attr("data-toolId") === toolName) {
                 toolElement = this;

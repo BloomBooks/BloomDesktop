@@ -143,7 +143,7 @@ export default class PanAndZoom implements ITool {
             this.updateDataAttributes();
         }
     }
-    name(): string {
+    id(): string {
         return "panAndZoom";
     }
     hasRestoredSettings: boolean;
