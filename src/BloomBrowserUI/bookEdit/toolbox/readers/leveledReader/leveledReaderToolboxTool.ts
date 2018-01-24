@@ -4,7 +4,7 @@ import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { ITabModel } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
 
-export default class LeveledReaderToolboxPanel implements ITabModel {
+export default class LeveledReaderToolboxTool implements ITabModel {
     makeRootElements(): JQuery {
         throw new Error("Method not implemented.");
     }
@@ -50,4 +50,4 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
     }
 }
 
-ToolBox.getTabModels().push(new LeveledReaderToolboxPanel());
+ToolBox.getTabModels().push(new LeveledReaderToolboxTool());

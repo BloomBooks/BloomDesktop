@@ -19,7 +19,7 @@ interface IMusicState {
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which adds an instance of Music to ToolBox.getTabModels().
-export default class MusicPanelControls extends React.Component<{}, IMusicState> {
+export default class MusicToolControls extends React.Component<{}, IMusicState> {
     constructor() {
         super();
         this.state = this.getStateFromHtml();
@@ -223,20 +223,20 @@ export default class MusicPanelControls extends React.Component<{}, IMusicState>
         return fileName.split(".")[0];
     }
 
-    public static setup(root): MusicPanelControls {
+    public static setup(root): MusicToolControls {
         return ReactDOM.render(
-            <MusicPanelControls />,
+            <MusicToolControls />,
             root
         );
     }
 }
 
 class Music implements ITabModel {
-    reactControls: MusicPanelControls;
+    reactControls: MusicToolControls;
     makeRootElements(): JQuery {
-        var parts = $("<h3 data-panelId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
-            + "Music Tool</h3><div data-panelId='musicTool' class='musicBody'/>");
-        this.reactControls = MusicPanelControls.setup(parts[1]);
+        var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
+            + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
+        this.reactControls = MusicToolControls.setup(parts[1]);
         return parts;
     }
     isAlwaysEnabled(): boolean {

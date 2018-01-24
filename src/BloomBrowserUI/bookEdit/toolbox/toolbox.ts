@@ -33,7 +33,7 @@ export interface ITabModel {
 
     // Implement this if the tool uses React.
     // It should return a JQuery object containing one h3 followed by one div.
-    // Both should have data-panelId of name() followed by "Tool"
+    // Both should have data-toolId of name() followed by "Tool"
     makeRootElements(): JQuery;
 }
 
@@ -153,8 +153,8 @@ export class ToolBox {
                     // optimize: maybe we can overlap these?
                     const nextToolId = toolsToLoad.pop();
                     const checkBoxId = nextToolId + "Check";
-                    const panelId = nextToolId + "Tool";
-                    beginAddPanel(checkBoxId, panelId, false).then(() => loadNextTool());
+                    const toolId = nextToolId + "Tool";
+                    beginAddTool(checkBoxId, toolId, false).then(() => loadNextTool());
                 }
             }
             loadNextTool();
@@ -178,21 +178,21 @@ var currentTool: ITabModel;
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
  * @param chkbox
  */
-export function showOrHidePanel_click(chkbox) {
+export function showOrHideTool_click(chkbox) {
 
-    var panel = $(chkbox).data("panel");
+    var tool = $(chkbox).data("tool");
 
     if (chkbox.innerHTML === "") {
         chkbox.innerHTML = checkMarkString;
         ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "active\t" + chkbox.id + "\t1");
-        if (panel) {
-            beginAddPanel(chkbox.id, panel, true);
+        if (tool) {
+            beginAddTool(chkbox.id, tool, true);
         }
     }
     else {
         chkbox.innerHTML = "";
         ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "active\t" + chkbox.id + "\t0");
-        $("*[data-panelId]").filter(function () { return $(this).attr("data-panelId") === panel; }).remove();
+        $("*[data-toolId]").filter(function () { return $(this).attr("data-toolId") === tool; }).remove();
     }
 
     resizeToolbox();
@@ -263,12 +263,12 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         var opts = settings;
-        var currentPanel = opts["current"] || "";
+        var currentTool = opts["current"] || "";
 
         // Before we set stage/level, as it initializes them to 1.
-        setCurrentPanel(currentPanel);
+        setCurrentTool(currentTool);
 
-        // Note: the bulk of restoring the settings (everything but which if any panel is active)
+        // Note: the bulk of restoring the settings (everything but which if any tool is active)
         // is done when a tool becomes current.
     });
 }
@@ -321,47 +321,47 @@ function activateTool(newTool: ITabModel) {
             newTool.hasRestoredSettings = true;
             var name = newTool.name();
             newTool.beginRestoreSettings(savedSettings).then(() => {
-                newTool.finishTabPaneLocalization(getPanel(newTool));
+                newTool.finishTabPaneLocalization(getToolElement(newTool));
                 newTool.showTool();
             });
         } else {
-            newTool.finishTabPaneLocalization(getPanel(newTool));
+            newTool.finishTabPaneLocalization(getToolElement(newTool));
             newTool.showTool();
         }
     }
 }
 
-function getPanel(tool): HTMLElement {
-    var panel = null;
+function getToolElement(tool: ITabModel): HTMLElement {
+    var toolElement = null;
     if (tool) {
-        var panelName = tool.name() + "Tool";
+        var toolName = tool.name() + "Tool";
         $("#toolbox").find("> h3").each(function () {
-            if ($(this).attr("data-panelId") === panelName) {
-                panel = this;
+            if ($(this).attr("data-toolId") === toolName) {
+                toolElement = this;
                 return false; // break from the each() loop
             }
             return true; // continue the each() loop
         });
     }
-    return <HTMLElement>panel;
+    return <HTMLElement>toolElement;
 }
 
 /**
- * This function attempts to activate the panel whose "data-panelId" attribute is equal to the value
- * of "currentPanel" (the last panel displayed).
- * @param {String} currentPanel
+ * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
+ * of "currentTool" (the last tool displayed).
+ * @param {String} currentTool
  */
-function setCurrentPanel(currentPanel) {
-    // NOTE: panels without a "data-panelId" attribute (such as the More panel) cannot be the "currentPanel."
+function setCurrentTool(currentTool) {
+    // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     var idx = 0;
     var toolbox = $("#toolbox");
 
     const accordionHeaders = toolbox.find("> h3");
-    if (currentPanel) {
+    if (currentTool) {
 
-        // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
+        // find the index of the tool whose "data-toolId" attribute equals the value of "currentTool"
         accordionHeaders.each(function () {
-            if ($(this).attr("data-panelId") === currentPanel) {
+            if ($(this).attr("data-toolId") === currentTool) {
                 // break from the each() loop
                 return false;
             }
@@ -369,8 +369,8 @@ function setCurrentPanel(currentPanel) {
             return true; // continue the each() loop
         });
     } else {
-        // Leave idx at 0, and update currentPanel to the corresponding ID.
-        currentPanel = toolbox.find("> h3").first().attr("data-panelId");
+        // Leave idx at 0, and update currentTool to the corresponding ID.
+        currentTool = toolbox.find("> h3").first().attr("data-toolId");
     }
     if (idx >= accordionHeaders.length - 1) {
         // don't pick the More... tool, pick whatever happens to be first.
@@ -387,58 +387,58 @@ function setCurrentPanel(currentPanel) {
     // turn animation back on
     toolbox.accordion("option", "animate", ani);
 
-    // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
-    // We do this after we actually set the initial panel, because setting the intial panel may not CHANGE
-    // the active panel (if it's already the one we want, typically the first), so we can't rely on
+    // when a tool is activated, save its data-toolId so state can be restored when Bloom is restarted.
+    // We do this after we actually set the initial tool, because setting the intial tool may not CHANGE
+    // the active tool (if it's already the one we want, typically the first), so we can't rely on
     // the activate event happening in the initial call. Instead, we make SURE to call it for the
-    // panel we are making active.
+    // tool we are making active.
     toolbox.onSafe("accordionactivate.toolbox", function (event, ui) {
         var newToolName = "";
-        if (ui.newHeader.attr("data-panelId")) {
-            newToolName = ui.newHeader.attr("data-panelId").toString();
+        if (ui.newHeader.attr("data-toolId")) {
+            newToolName = ui.newHeader.attr("data-toolId").toString();
         }
         switchTool(newToolName);
     });
-    //alert("switching to " + currentPanel + " which has index " + toolIndex);
-    //setTimeout(e => switchTool(currentPanel), 700);
-    switchTool(currentPanel);
+    //alert("switching to " + currentTool + " which has index " + toolIndex);
+    //setTimeout(e => switchTool(currentTool), 700);
+    switchTool(currentTool);
 }
 
 /**
- * Requests a panel from localhost and loads it into the toolbox.
+ * Requests a tool from localhost and loads it into the toolbox.
  * This is used when the user ticks a previously unticked checkbox of a tool.
  * Normally that job goes to an equivalent c# function. Enhance: remove the c# one.
  */
-// these last three parameters were never used: function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPanel) {
-function beginAddPanel(checkBoxId: string, panelId: string, openTool: boolean): Promise<void> {
+// these last three parameters were never used: function requestTool(checkBoxId, toolId, loadNextCallback, tools, currentTool) {
+function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Promise<void> {
     var chkBox = document.getElementById(checkBoxId);
     if (chkBox) { // always-enabled tools don't have checkboxes.
         chkBox.innerHTML = checkMarkString;
     }
 
     var subpath = {
-        "talkingBookTool": "talkingBook/talkingBookToolboxPanel.html",
-        "decodableReaderTool": "readers/decodableReader/decodableReaderToolboxPanel.html",
-        "leveledReaderTool": "readers/leveledReader/leveledReaderToolboxPanel.html",
-        "bookSettingsTool": "bookSettings/bookSettingsToolboxPanel.html",
-        "toolboxSettingsTool": "toolboxSettingsTool/toolboxSettingsToolboxPanel.html",
-        "panAndZoomTool": "panAndZoom/panAndZoomToolboxPanel.html",
+        "talkingBookTool": "talkingBook/talkingBookToolboxTool.html",
+        "decodableReaderTool": "readers/decodableReader/decodableReaderToolboxTool.html",
+        "leveledReaderTool": "readers/leveledReader/leveledReaderToolboxTool.html",
+        "bookSettingsTool": "bookSettings/bookSettingsToolboxTool.html",
+        "toolboxSettingsTool": "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
+        "panAndZoomTool": "panAndZoom/panAndZoomToolboxTool.html",
         "settingsTool": "settings/settings.html"
         // none for music: done in React
     };
-    const subPathToPremadeHtml = subpath[panelId];
+    const subPathToPremadeHtml = subpath[toolId];
     if (subPathToPremadeHtml) {
         // old-style tool implemented in pug and typescript
         return axios.get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml).then(result => {
-            loadToolboxPanelText(result.data, panelId, openTool);
+            loadToolboxToolText(result.data, toolId, openTool);
         });
     } else {
         // new-style tool implemented in React
-        const toolId = panelId.substring(0, panelId.length - 4); // strip of "Tool"
+        const reactToolId = toolId.substring(0, toolId.length - 4); // strip off "Tool"
         // for some reason our version of typescript does not know about find()
-        var tool: ITabModel = (<any>ToolBox.getTabModels()).find(tool => tool.name() === toolId);
+        var tool: ITabModel = (<any>ToolBox.getTabModels()).find(tool => tool.name() === reactToolId);
         const parts = tool.makeRootElements();
-        loadToolboxPanel(parts, panelId, openTool);
+        loadToolboxTool(parts, toolId, openTool);
 
         // api calls for promise, but we don't need one here; just return something
         // that behaves like a promise already fulfilled.
@@ -569,15 +569,15 @@ function resizeToolbox() {
 }
 
 /**
- * Adds one panel to the toolbox
+ * Adds one tool to the toolbox
  * @param {String} newContent
- * @param {String} panelId
+ * @param {String} toolId
  */
-function loadToolboxPanelText(newContent, panelId, openTool: boolean) {
+function loadToolboxToolText(newContent, toolId, openTool: boolean) {
     var parts = $($.parseHTML(newContent, document, true));
-    loadToolboxPanel(parts, panelId, openTool);
+    loadToolboxTool(parts, toolId, openTool);
 }
-function loadToolboxPanel(parts: JQuery, panelId, openTool: boolean) {
+function loadToolboxTool(parts: JQuery, toolId, openTool: boolean) {
 
     parts.filter("*[data-i18n]").localize();
     parts.find("*[data-i18n]").localize();
@@ -587,16 +587,16 @@ function loadToolboxPanel(parts: JQuery, panelId, openTool: boolean) {
     // expect parts to have 2 items, an h3 and a div
     if (parts.length < 2) return;
 
-    // get the toolbox panel tab/button
+    // get the toolbox tool tab/button
     var tab = parts.filter("h3").first();
     if (tab.length < 1) return; // bookSettings currently is empty and doesn't get added.
 
     var label = tab.text();
 
-    // get the panel content div
+    // get the tool content div
     var div = parts.filter("div").first();
 
-    // Where to insert the new panel? We want to keep them alphabetical except for More...which is always last,
+    // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
     // so insert before the first one with text alphabetically greater than this (if any).
     if (toolboxElt.children().length === 0) {
         // none yet...this will be the "more" tab which we insert first.
@@ -612,7 +612,7 @@ function loadToolboxPanel(parts: JQuery, panelId, openTool: boolean) {
         div.insertBefore(insertBefore);
     }
 
-    // if requested, open the panel that was just inserted
+    // if requested, open the tool that was just inserted
     if (openTool && toolbox.toolboxIsShowing()) {
         toolboxElt.accordion("refresh");
         var id = tab.attr("id");
@@ -629,7 +629,7 @@ function showToolboxChanged(wasShowing: boolean): void {
     } else {
         // starting up for the very first time in this book...no tool is current,
         // so select and properly initialize the first one.
-        var newToolName = $("#toolbox").find(("> h3")).first().attr("data-panelId");
+        var newToolName = $("#toolbox").find(("> h3")).first().attr("data-toolId");
         if (!newToolName) {
             // temporary hack for BL-5272; see notes there.
             // Somehow in a new book this code runs against the document in the wrong iframe

@@ -9,7 +9,7 @@ import { theOneLibSynphony } from './../libSynphony/synphony_lib';
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 
 
-export default class DecodableReaderToolboxPanel implements ITabModel {
+export default class DecodableReaderToolboxTool implements ITabModel {
     makeRootElements(): JQuery {
         throw new Error("Method not implemented.");
     }
@@ -110,5 +110,5 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
     hasRestoredSettings: boolean;
 }
 
-ToolBox.getTabModels().push(new DecodableReaderToolboxPanel());
+ToolBox.getTabModels().push(new DecodableReaderToolboxTool());
 

@@ -343,7 +343,7 @@ export function makeLetterWordList(): void {
  */
 export function resizeWordList(startTimeout: boolean = true): void {
 
-    var div: JQuery = $('body').find('div[data-panelId="decodableReaderTool"]');
+    var div: JQuery = $('body').find('div[data-toolId="decodableReaderTool"]');
     if (div.length === 0) return; // if not found, the tool was closed
 
     var wordList: JQuery = div.find('#wordList');
