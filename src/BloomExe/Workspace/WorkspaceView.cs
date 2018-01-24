@@ -321,14 +321,21 @@ namespace Bloom.Workspace
 		{
 			var items = new List<LanguageItem>();
 			foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+			{
+				if (LocalizationManager.FractionTranslated(lang) == 0.0F)
+					continue;
 				items.Add(CreateLanguageItem(lang));
+			}
 			items.Sort(compareLangItems);
 
+			var tooltipFormat = LocalizationManager.GetString("CollectionTab.UILanguageMenu.ItemTooltip", "{0}% translated, {1}% checked",
+				"Shown when hovering over an item in the UI Language menu.  The {0} and {1} markers are filled in by numbers between 0 and 100.");
 			uiMenuControl.DropDownItems.Clear();
 			foreach (var langItem in items)
 			{
 				var item = uiMenuControl.DropDownItems.Add(langItem.MenuText);
 				item.Tag = langItem;
+				item.ToolTipText = String.Format(tooltipFormat, (int)(langItem.FractionTranslated * 100.0F), (int)(langItem.FractionApproved * 100.0F));
 				item.Click += (sender, args) => UiLanguageMenuItemClickHandler(uiMenuControl, sender as ToolStripItem, finishClickAction);
 				if (langItem.IsoCode == Settings.Default.UserInterfaceLanguage)
 					UpdateMenuTextToShorterNameOfSelection(uiMenuControl, langItem.MenuText);
@@ -369,7 +376,11 @@ namespace Bloom.Workspace
 			// Add an English name suffix if it's not in a Latin script.
 			var menuText = _lookupIsoCode.GetNativeLanguageNameWithEnglishSubtitle(code);
 			var englishName = _lookupIsoCode.GetLocalizedLanguageName(code, "en");
-			return new LanguageItem {EnglishName = englishName, IsoCode = code, MenuText = menuText};
+			return new LanguageItem {EnglishName = englishName, IsoCode = code, MenuText = menuText,
+				FractionTranslated = LocalizationManager.FractionTranslated(code),
+				// If there's some specific language we think deserves better, we could adjust
+				// the approved number here to match the translated number.
+				FractionApproved = LocalizationManager.FractionApproved(code) };
 		}
 
 		public static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, string itemText)
@@ -1024,5 +1035,7 @@ namespace Bloom.Workspace
 		public string IsoCode;
 		public string EnglishName;
 		public string MenuText;
+		public float FractionTranslated;
+		public float FractionApproved;
 	}
 }
