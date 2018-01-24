@@ -10,7 +10,7 @@ import AudioRecording from "../talkingBook/audioRecording";
 
 
 export default class PanAndZoom implements ITool {
-    makeRootElements(): JQuery {
+    makeRootElements(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
     beginRestoreSettings(settings: string): JQueryPromise<void> {

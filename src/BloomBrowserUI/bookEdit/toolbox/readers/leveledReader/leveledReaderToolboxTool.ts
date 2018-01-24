@@ -5,7 +5,7 @@ import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
 
 export default class LeveledReaderToolboxTool implements ITool {
-    makeRootElements(): JQuery {
+    makeRootElements(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
     beginRestoreSettings(opts: string): JQueryPromise<void> {

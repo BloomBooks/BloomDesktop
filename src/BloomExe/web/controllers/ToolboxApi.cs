@@ -19,12 +19,12 @@ namespace BloomTests.web.controllers
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("toolbox/bookTools", HandleRequest, true);
+			server.RegisterEndpointHandler("toolbox/enabledTools", HandleEnabledToolsRequest, true);
 		}
 
 		private Bloom.Book.Book CurrentBook => _bookSelection.CurrentSelection;
 
-		public void HandleRequest(ApiRequest request)
+		public void HandleEnabledToolsRequest(ApiRequest request)
 		{
 			lock (request)
 			{
