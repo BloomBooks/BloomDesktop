@@ -10,8 +10,7 @@ $(document).ready(() => {
         if (!settings.isRecordedAsLockedDown) {
             $(".showOnlyWhenBookWouldNormallyBeLocked").css("display", "none");
             $("input[name='isTemplateBook']").prop("checked", settings.isTemplateBook);
-        }
-        else {
+        } else {
             $(".showOnlyIfBookIsNeverLocked").css("display", "none");
             // enhance: this is just dirt-poor binding of 1 checkbox for now
             $("input[name='unlockShellBook']").prop("checked", settings.unlockShellBook);
@@ -42,14 +41,6 @@ class BookSettings implements ITabModel {
         result.resolve();
         return result;
     }
-    configureElements(container: HTMLElement) {
-    }
-    showTool() {
-    }
-    hideTool() {
-    }
-    updateMarkup() {
-    }
     name(): string {
         return "bookSettings";
     }
@@ -57,8 +48,13 @@ class BookSettings implements ITabModel {
     isAlwaysEnabled(): boolean {
         return true;
     }
-    finishTabPaneLocalization(pane: HTMLElement) {
-    }
+    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
+    configureElements(container: HTMLElement) { }
+    showTool() { }
+    hideTool() { }
+    updateMarkup() { }
+    finishTabPaneLocalization(pane: HTMLElement) { }
+    /* tslint:enable:no-empty */
 }
 
 // Make the one instance of this class and register it with the master toolbox.

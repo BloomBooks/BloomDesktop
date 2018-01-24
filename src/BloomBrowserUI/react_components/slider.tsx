@@ -47,10 +47,10 @@ export class Slider extends React.Component<ISliderProps, ISliderState> {
     }
 
     componentWillReceiveProps(nextProps: ISliderProps) {
-        if (nextProps.enabled != this.props.enabled) {
+        if (nextProps.enabled !== this.props.enabled) {
             this.$slider.slider("option", "disabled", !nextProps.enabled);
         }
-        if (nextProps.value != this.props.value) {
+        if (nextProps.value !== this.props.value) {
             this.$slider.slider("option", "value", nextProps.value);
         }
     }

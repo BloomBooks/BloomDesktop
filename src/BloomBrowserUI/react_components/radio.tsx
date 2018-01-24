@@ -24,7 +24,8 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
     render() {
         return (
             <div className={this.props.wrapClassName}>
-                <input type="radio" className={this.props.inputClassName} name={this.props.group} value={this.props.value} onClick={this.selectRadio} checked={this.props.value === this.props.groupValue} />
+                <input type="radio" className={this.props.inputClassName} name={this.props.group} value={this.props.value}
+                    onClick={this.selectRadio} checked={this.props.value === this.props.groupValue} />
                 <div className={this.props.labelClassName}>
                     {this.getLocalizedContent()}
                 </div>
