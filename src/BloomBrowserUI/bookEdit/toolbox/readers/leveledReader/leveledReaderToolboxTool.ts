@@ -1,10 +1,10 @@
 ﻿/// <reference path="../../toolbox.ts" />
 import { getTheOneReaderToolsModel, DRTState, } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
-import { ITabModel } from "../../toolbox";
+import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
 
-export default class LeveledReaderToolboxTool implements ITabModel {
+export default class LeveledReaderToolboxTool implements ITool {
     makeRootElements(): JQuery {
         throw new Error("Method not implemented.");
     }
@@ -44,10 +44,10 @@ export default class LeveledReaderToolboxTool implements ITabModel {
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
-    finishTabPaneLocalization(paneDOM: HTMLElement) {
+    finishToolLocalization(paneDOM: HTMLElement) {
         // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
         // 'translates' external links to include the current UI language.
     }
 }
 
-ToolBox.getTabModels().push(new LeveledReaderToolboxTool());
+ToolBox.getMasterToolList().push(new LeveledReaderToolboxTool());

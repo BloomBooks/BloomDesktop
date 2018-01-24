@@ -1,9 +1,9 @@
-﻿import { ITabModel } from "../toolbox";
+﻿import { ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from './audioRecording';
 import { theOneAudioRecorder } from './audioRecording';
 
-export default class TalkingBookModel implements ITabModel {
+export default class TalkingBookModel implements ITool {
     makeRootElements(): JQuery {
         throw new Error("Method not implemented.");
     }
@@ -44,7 +44,7 @@ export default class TalkingBookModel implements ITabModel {
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
     // So far unneeded in talkingBook
-    finishTabPaneLocalization(paneDOM: HTMLElement) { }
+    finishToolLocalization(paneDOM: HTMLElement) { }
 }
 
-ToolBox.getTabModels().push(new TalkingBookModel());
+ToolBox.getMasterToolList().push(new TalkingBookModel());

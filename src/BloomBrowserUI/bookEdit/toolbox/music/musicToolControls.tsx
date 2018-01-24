@@ -4,7 +4,7 @@ import { Slider } from "../../../react_components/slider";
 import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
 import { Radio } from "../../../react_components/Radio";
 import axios from "axios";
-import { ToolBox, ITabModel } from "../toolbox";
+import { ToolBox, ITool } from "../toolbox";
 
 interface IMusicState {
     activeRadioValue: string;
@@ -18,7 +18,7 @@ interface IMusicState {
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
-// which adds an instance of Music to ToolBox.getTabModels().
+// which adds an instance of Music to ToolBox.getMasterToolList().
 export default class MusicToolControls extends React.Component<{}, IMusicState> {
     constructor() {
         super();
@@ -231,7 +231,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     }
 }
 
-class Music implements ITabModel {
+class Music implements ITool {
     reactControls: MusicToolControls;
     makeRootElements(): JQuery {
         var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
@@ -260,7 +260,7 @@ class Music implements ITabModel {
         // just like updating markup. Using this hook does mean it will (unnecessarily) happen
         // every time the user pauses typing while this tool is active. I don't much expect people
         // to be editing the book and configuring background music at the same time, so I'm not
-        // too worried. If it becomes a performance problem, we could enhance ITabModel with a
+        // too worried. If it becomes a performance problem, we could enhance ITool with a
         // function that is called just when the page switches.
         this.reactControls.updateStateFromHtml();
     }
@@ -268,13 +268,13 @@ class Music implements ITabModel {
     name(): string {
         return "music";
     }
-    // required for ITabModel interface
+    // required for ITool interface
     hasRestoredSettings: boolean;
     /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
     configureElements(container: HTMLElement) { }
-    finishTabPaneLocalization(pane: HTMLElement) { }
+    finishToolLocalization(pane: HTMLElement) { }
     /* tslint:enable:no-empty */
 }
 
 // Make the one instance of this class and register it with the master toolbox.
-ToolBox.getTabModels().push(new Music());
+ToolBox.getMasterToolList().push(new Music());

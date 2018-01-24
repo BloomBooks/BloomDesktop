@@ -2,14 +2,14 @@
 
 import * as JQuery from "jquery";
 import * as $ from "jquery";
-import { ITabModel } from "../toolbox";
+import { ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 
 
-export default class PanAndZoom implements ITabModel {
+export default class PanAndZoom implements ITool {
     makeRootElements(): JQuery {
         throw new Error("Method not implemented.");
     }
@@ -149,7 +149,7 @@ export default class PanAndZoom implements ITabModel {
     hasRestoredSettings: boolean;
     /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
     configureElements(container: HTMLElement) { }
-    finishTabPaneLocalization(pane: HTMLElement) { }
+    finishToolLocalization(pane: HTMLElement) { }
     /* tslint:enable:no-empty */
 
     zoomAndPanChanged() {
@@ -338,6 +338,6 @@ export default class PanAndZoom implements ITabModel {
 
 }
 
-ToolBox.getTabModels().push(new PanAndZoom());
+ToolBox.getMasterToolList().push(new PanAndZoom());
 
 

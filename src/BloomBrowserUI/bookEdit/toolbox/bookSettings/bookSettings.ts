@@ -1,5 +1,5 @@
 ﻿import axios from "axios";
-import { ITabModel, ToolBox } from "../toolbox";
+import { ITool, ToolBox } from "../toolbox";
 
 $(document).ready(() => {
     // request our model and set the controls
@@ -31,7 +31,7 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
 }
 
 // We need a minimal model to get ourselves loaded
-class BookSettings implements ITabModel {
+class BookSettings implements ITool {
     makeRootElements(): JQuery {
         throw new Error("Method not implemented.");
     }
@@ -53,9 +53,9 @@ class BookSettings implements ITabModel {
     showTool() { }
     hideTool() { }
     updateMarkup() { }
-    finishTabPaneLocalization(pane: HTMLElement) { }
+    finishToolLocalization(pane: HTMLElement) { }
     /* tslint:enable:no-empty */
 }
 
 // Make the one instance of this class and register it with the master toolbox.
-ToolBox.getTabModels().push(new BookSettings());
+ToolBox.getMasterToolList().push(new BookSettings());

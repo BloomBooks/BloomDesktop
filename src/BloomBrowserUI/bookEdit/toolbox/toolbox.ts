@@ -17,7 +17,10 @@ var savedSettings: string;
 
 var keypressTimer: any = null;
 
-export interface ITabModel {
+// Each tool implements this interface and adds an instance of its implementation to the
+// list maintained here. The methods support the different things individual tools
+// can be asked to do by the rest of the system.
+export interface ITool {
     beginRestoreSettings(settings: string): JQueryPromise<void>;
     configureElements(container: HTMLElement);
     showTool();
@@ -29,7 +32,7 @@ export interface ITabModel {
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
-    finishTabPaneLocalization(pane: HTMLElement);
+    finishToolLocalization(pane: HTMLElement);
 
     // Implement this if the tool uses React.
     // It should return a JQuery object containing one h3 followed by one div.
@@ -41,8 +44,8 @@ export interface ITabModel {
 export class ToolBox {
     toolboxIsShowing() { return (<HTMLInputElement>$(parent.window.document).find("#pure-toggle-right").get(0)).checked; }
     configureElementsForTools(container: HTMLElement) {
-        for (var i = 0; i < tabModels.length; i++) {
-            tabModels[i].configureElements(container);
+        for (var i = 0; i < masterToolList.length; i++) {
+            masterToolList[i].configureElements(container);
             // the toolbox itself handles keypresses in order to manage the process
             // of giving each tool a chance to update things when the user stops typing
             // (while maintaining the selection if at all possible).
@@ -109,7 +112,7 @@ export class ToolBox {
         top.document.dispatchEvent(event);
     }
 
-    static getTabModels() { return tabModels; }
+    static getMasterToolList() { return masterToolList; }
 
     // Called from document.ready, initializes the whole toolbox.
     initialize(): void {
@@ -117,14 +120,14 @@ export class ToolBox {
             let toolsToLoad = result.data.split(",");
             // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
             for (var i = toolsToLoad.length - 1; i >= 0; i--) {
-                if (!tabModels.some(mod => mod.name() === toolsToLoad[i])) {
+                if (!masterToolList.some(mod => mod.name() === toolsToLoad[i])) {
                     toolsToLoad.splice(i, 1);
                 }
             }
             // add any tools we always show
-            for (var j = 0; j < tabModels.length; j++) {
-                if (tabModels[j].isAlwaysEnabled() && !toolsToLoad.includes(tabModels[j].name())) {
-                    toolsToLoad.push(tabModels[j].name());
+            for (var j = 0; j < masterToolList.length; j++) {
+                if (masterToolList[j].isAlwaysEnabled() && !toolsToLoad.includes(masterToolList[j].name())) {
+                    toolsToLoad.push(masterToolList[j].name());
                 }
             }
             // for correct positioning and so we can find check boxes when adding others must load this one first,
@@ -169,10 +172,10 @@ export function getTheOneToolbox() {
     return toolbox;
 }
 
-// Array of models, typically one for each tab. The code for each tab inserts an appropriate model
+// Array of ITool objects, typically one for each tool. The code for each tools inserts an appropriate ITool
 // into this array in order to be interact with the overall toolbox code.
-var tabModels: ITabModel[] = [];
-var currentTool: ITabModel;
+var masterToolList: ITool[] = [];
+var currentTool: ITool;
 
 /**
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
@@ -188,8 +191,7 @@ export function showOrHideTool_click(chkbox) {
         if (tool) {
             beginAddTool(chkbox.id, tool, true);
         }
-    }
-    else {
+    } else {
         chkbox.innerHTML = "";
         ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "active\t" + chkbox.id + "\t0");
         $("*[data-toolId]").filter(function () { return $(this).attr("data-toolId") === tool; }).remove();
@@ -296,13 +298,13 @@ function switchTool(newToolName: string) {
     ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "current\t" + newToolName);
     var newTool = null;
     if (newToolName) {
-        for (var i = 0; i < tabModels.length; i++) {
+        for (var i = 0; i < masterToolList.length; i++) {
             // the newToolName comes from meta.json and we've changed our minds a few times about
             // whether it should end in "Tool" so what's in the meta.json might have it or not.
             // For robustness we will recognize any tool name that starts with the (no -Tool)
             // name we're looking for.
-            if (newToolName.startsWith(tabModels[i].name())) {
-                newTool = tabModels[i];
+            if (newToolName.startsWith(masterToolList[i].name())) {
+                newTool = masterToolList[i];
             }
         }
     }
@@ -314,24 +316,24 @@ function switchTool(newToolName: string) {
     }
 }
 
-function activateTool(newTool: ITabModel) {
+function activateTool(newTool: ITool) {
     if (newTool && toolbox.toolboxIsShowing()) {
         // If we're activating this tool for the first time, restore its settings.
         if (!newTool.hasRestoredSettings) {
             newTool.hasRestoredSettings = true;
             var name = newTool.name();
             newTool.beginRestoreSettings(savedSettings).then(() => {
-                newTool.finishTabPaneLocalization(getToolElement(newTool));
+                newTool.finishToolLocalization(getToolElement(newTool));
                 newTool.showTool();
             });
         } else {
-            newTool.finishTabPaneLocalization(getToolElement(newTool));
+            newTool.finishToolLocalization(getToolElement(newTool));
             newTool.showTool();
         }
     }
 }
 
-function getToolElement(tool: ITabModel): HTMLElement {
+function getToolElement(tool: ITool): HTMLElement {
     var toolElement = null;
     if (tool) {
         var toolName = tool.name() + "Tool";
@@ -436,7 +438,7 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
         // new-style tool implemented in React
         const reactToolId = toolId.substring(0, toolId.length - 4); // strip off "Tool"
         // for some reason our version of typescript does not know about find()
-        var tool: ITabModel = (<any>ToolBox.getTabModels()).find(tool => tool.name() === reactToolId);
+        var tool: ITool = (<any>ToolBox.getMasterToolList()).find(tool => tool.name() === reactToolId);
         const parts = tool.makeRootElements();
         loadToolboxTool(parts, toolId, openTool);
 
@@ -587,11 +589,11 @@ function loadToolboxTool(parts: JQuery, toolId, openTool: boolean) {
     // expect parts to have 2 items, an h3 and a div
     if (parts.length < 2) return;
 
-    // get the toolbox tool tab/button
-    var tab = parts.filter("h3").first();
-    if (tab.length < 1) return; // bookSettings currently is empty and doesn't get added.
+    // get the toolbox tool label
+    var tool = parts.filter("h3").first();
+    if (tool.length < 1) return; // bookSettings currently is empty and doesn't get added.
 
-    var label = tab.text();
+    var label = tool.text();
 
     // get the tool content div
     var div = parts.filter("div").first();
@@ -599,8 +601,8 @@ function loadToolboxTool(parts: JQuery, toolId, openTool: boolean) {
     // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
     // so insert before the first one with text alphabetically greater than this (if any).
     if (toolboxElt.children().length === 0) {
-        // none yet...this will be the "more" tab which we insert first.
-        toolboxElt.append(tab);
+        // none yet...this will be the "more" tool which we insert first.
+        toolboxElt.append(tool);
         toolboxElt.append(div);
     } else {
         var insertBefore = toolboxElt.children().filter(function () { return $(this).text() > label; }).first();
@@ -608,16 +610,16 @@ function loadToolboxTool(parts: JQuery, toolId, openTool: boolean) {
             // Nothing is greater, but still insert before "More". Two children represent "More", so before the second last.
             insertBefore = $(toolboxElt.children()[toolboxElt.children.length - 2]);
         }
-        tab.insertBefore(insertBefore);
+        tool.insertBefore(insertBefore);
         div.insertBefore(insertBefore);
     }
 
     // if requested, open the tool that was just inserted
     if (openTool && toolbox.toolboxIsShowing()) {
         toolboxElt.accordion("refresh");
-        var id = tab.attr("id");
-        var tabNumber = parseInt(id.substr(id.lastIndexOf("_")), 10);
-        toolboxElt.accordion("option", "active", tabNumber); // must pass as integer
+        var id = tool.attr("id");
+        var toolNumber = parseInt(id.substr(id.lastIndexOf("_")), 10);
+        toolboxElt.accordion("option", "active", toolNumber); // must pass as integer
     }
 }
 
