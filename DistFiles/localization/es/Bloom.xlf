@@ -5658,7 +5658,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Powered by </source>
         <note>ID: ReaderSetup.PoweredBy</note>
-        <target xml:lang="es-ES">Con tecnología de</target>
+        <target xml:lang="es-ES">Con tecnología de </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Punctuation</source>
