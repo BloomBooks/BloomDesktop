@@ -346,18 +346,47 @@ namespace Bloom.Workspace
 		{
 			var items = new List<LanguageItem>();
 			foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+			{
+				if (ApprovedFraction(lang) == 0.0F)
+					continue;
 				items.Add(CreateLanguageItem(lang));
+			}
 			items.Sort(compareLangItems);
 
+			var tooltipFormat = LocalizationManager.GetString("CollectionTab.UILanguageMenu.ItemTooltip", "{0}% translated",
+				"Shown when hovering over an item in the UI Language menu.  The {0} marker is filled in by a number between 1 and 100.");
 			uiMenuControl.DropDownItems.Clear();
 			foreach (var langItem in items)
 			{
 				var item = uiMenuControl.DropDownItems.Add(langItem.MenuText);
 				item.Tag = langItem;
+				item.ToolTipText = String.Format(tooltipFormat, (int)(langItem.FractionApproved * 100.0F));
 				item.Click += (sender, args) => UiLanguageMenuItemClickHandler(uiMenuControl, sender as ToolStripItem, finishClickAction);
 				if (langItem.IsoCode == Settings.Default.UserInterfaceLanguage)
 					UpdateMenuTextToShorterNameOfSelection(uiMenuControl, langItem.MenuText);
 			}
+		}
+
+		// translations made before Version4.0 as TMX files
+		static readonly string[] _vintageTranslations = new[] {
+			"am", "ar", "bn", "ha", "hi", "id", "km", "lo", "ne", "ru", "rw", "sw", "ta", "te", "th", "zh-CN"
+			// es, fr, and pt have been worked on in Crowdin
+		};
+
+		/// <summary>
+		/// Get either the fraction of translations approved for the language, or for older translations,
+		/// the fraction translated.
+		/// </summary>
+		/// <remarks>
+		/// For Version 4.1, we want to move all of the old translations to Crowdin, have the robot
+		/// approve the existing translations, and then this method will not be needed.
+		/// <remarks>
+		private static float ApprovedFraction(string lang)
+		{
+			var approved = LocalizationManager.FractionApproved(lang);
+			if (approved == 0.0F && _vintageTranslations.Contains(lang))
+				return LocalizationManager.FractionTranslated(lang);
+			return approved;
 		}
 
 		private static int compareLangItems(LanguageItem a, LanguageItem b)
@@ -394,7 +423,8 @@ namespace Bloom.Workspace
 			// Add an English name suffix if it's not in a Latin script.
 			var menuText = _lookupIsoCode.GetNativeLanguageNameWithEnglishSubtitle(code);
 			var englishName = _lookupIsoCode.GetLocalizedLanguageName(code, "en");
-			return new LanguageItem {EnglishName = englishName, IsoCode = code, MenuText = menuText};
+			return new LanguageItem {EnglishName = englishName, IsoCode = code, MenuText = menuText,
+				FractionApproved = ApprovedFraction(code) };
 		}
 
 		public static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, string itemText)
@@ -1043,5 +1073,6 @@ namespace Bloom.Workspace
 		public string IsoCode;
 		public string EnglishName;
 		public string MenuText;
+		public float FractionApproved;
 	}
 }
