@@ -2,17 +2,17 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
   <file original="TrainingVideos-en.md" datatype="html" source-language="en" target-language="id">
     <body>
-      <trans-unit id="training.videos">
+      <trans-unit id="training.videos" approved="yes">
         <source xml:lang="en">Bloom Training Videos</source>
         <target xml:lang="id">Video Pelatihan Bloom</target>
         <note>ID: training.videos</note>
       </trans-unit>
-      <trans-unit id="training.videos.watch">
+      <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
         <target xml:lang="id">Jika Anda sedang terhubung ke internet, Anda dapat menonton video di browser web:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
-      <trans-unit id="training.videos.all">
+      <trans-unit id="training.videos.all" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
@@ -21,12 +21,12 @@
         </target>
         <note>ID: training.videos.all</note>
       </trans-unit>
-      <trans-unit id="training.videos.intro">
+      <trans-unit id="training.videos.intro" approved="yes">
         <source xml:lang="en">Introductory Videos</source>
         <target xml:lang="id">Video Pengantar</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
-      <trans-unit id="training.videos.whofor">
+      <trans-unit id="training.videos.whofor" approved="yes">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
@@ -35,7 +35,7 @@
         </target>
         <note>ID: training.videos.whofor</note>
       </trans-unit>
-      <trans-unit id="training.videos.templates">
+      <trans-unit id="training.videos.templates" approved="yes">
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
@@ -44,7 +44,7 @@
         </target>
         <note>ID: training.videos.templates</note>
       </trans-unit>
-      <trans-unit id="training.videos.basicbook">
+      <trans-unit id="training.videos.basicbook" approved="yes">
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
@@ -53,7 +53,7 @@
         </target>
         <note>ID: training.videos.basicbook</note>
       </trans-unit>
-      <trans-unit id="training.videos.readers">
+      <trans-unit id="training.videos.readers" approved="yes">
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
@@ -62,12 +62,12 @@
         </target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
-      <trans-unit id="training.videos.advanced">
+      <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
         <target xml:lang="id">Topik Tingkat Mahir</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
-      <trans-unit id="training.videos.formatting">
+      <trans-unit id="training.videos.formatting" approved="yes">
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
@@ -76,7 +76,7 @@
         </target>
         <note>ID: training.videos.formatting</note>
       </trans-unit>
-      <trans-unit id="training.videos.custompage">
+      <trans-unit id="training.videos.custompage" approved="yes">
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
@@ -85,7 +85,7 @@
         </target>
         <note>ID: training.videos.custompage</note>
       </trans-unit>
-      <trans-unit id="training.videos.specialcharacters">
+      <trans-unit id="training.videos.specialcharacters" approved="yes">
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
@@ -94,7 +94,7 @@
         </target>
         <note>ID: training.videos.specialcharacters</note>
       </trans-unit>
-      <trans-unit id="training.videos.readertemplates">
+      <trans-unit id="training.videos.readertemplates" approved="yes">
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
@@ -103,17 +103,17 @@
         </target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
-      <trans-unit id="training.videos.offline">
+      <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
         <target xml:lang="id">Menonton Secara Offline</target>
         <note>ID: training.videos.offline</note>
       </trans-unit>
-      <trans-unit id="training.videos.download">
+      <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
         <target xml:lang="id">Jika Anda ingin mengunduh salah satu video untuk ditampilkan dan dibagikan saat koneksi internet tidak tersedia, Anda bisa mengunduh video ke komputer Anda:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
-      <trans-unit id="training.videos.hires">
+      <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en">
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
         <target xml:lang="id">
