@@ -31,10 +31,10 @@
 			this.components = new System.ComponentModel.Container();
 			this._topBarControl = new System.Windows.Forms.Panel();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
+			this._sendReceiveButton = new System.Windows.Forms.ToolStripButton();
 			this._makeBloomPackButton = new System.Windows.Forms.ToolStripButton();
 			this._settingsButton = new System.Windows.Forms.ToolStripButton();
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
-			this._sendReceiveButton = new System.Windows.Forms.ToolStripButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarControl.SuspendLayout();
@@ -47,11 +47,12 @@
 			// _topBarControl
 			// 
 			this._topBarControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._topBarControl.AutoSize = true;
 			this._topBarControl.BackColor = System.Drawing.Color.Cyan;
 			this._topBarControl.Controls.Add(this._toolStrip);
-			this._topBarControl.Location = new System.Drawing.Point(223, 224);
+			this._topBarControl.Location = new System.Drawing.Point(187, 224);
 			this._topBarControl.Name = "_topBarControl";
-			this._topBarControl.Size = new System.Drawing.Size(327, 70);
+			this._topBarControl.Size = new System.Drawing.Size(373, 70);
 			this._topBarControl.TabIndex = 15;
 			// 
 			// _toolStrip
@@ -69,12 +70,26 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._toolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._toolStrip, "WorkspaceView._toolStrip");
-			this._toolStrip.Location = new System.Drawing.Point(-13, 0);
+			this._toolStrip.Location = new System.Drawing.Point(0, 0);
 			this._toolStrip.Name = "_toolStrip";
 			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(340, 70);
+			this._toolStrip.Size = new System.Drawing.Size(373, 70);
 			this._toolStrip.TabIndex = 31;
 			this._toolStrip.Text = "_toolStrip";
+			// 
+			// _sendReceiveButton
+			// 
+			this._sendReceiveButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._sendReceiveButton.Image = global::Bloom.Properties.Resources.sendreceiveToolbarButton;
+			this._sendReceiveButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this._sendReceiveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._sendReceiveButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._sendReceiveButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._sendReceiveButton, "CollectionTab.SendReceive");
+			this._sendReceiveButton.Name = "_sendReceiveButton";
+			this._sendReceiveButton.Size = new System.Drawing.Size(82, 67);
+			this._sendReceiveButton.Text = "Send/Receive";
+			this._sendReceiveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
 			// _makeBloomPackButton
 			// 
@@ -86,7 +101,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._makeBloomPackButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._makeBloomPackButton, "CollectionTab.MakeBloomPackButton");
 			this._makeBloomPackButton.Name = "_makeBloomPackButton";
-			this._makeBloomPackButton.Size = new System.Drawing.Size(106, 43);
+			this._makeBloomPackButton.Size = new System.Drawing.Size(106, 67);
 			this._makeBloomPackButton.Text = "Make Bloom Pack";
 			this._makeBloomPackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._makeBloomPackButton.Click += new System.EventHandler(this.OnMakeBloomPackButton_Click);
@@ -101,7 +116,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._settingsButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._settingsButton, "CollectionTab.SettingsButton");
 			this._settingsButton.Name = "_settingsButton";
-			this._settingsButton.Size = new System.Drawing.Size(53, 43);
+			this._settingsButton.Size = new System.Drawing.Size(53, 67);
 			this._settingsButton.Text = "Settings";
 			this._settingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._settingsButton.Click += new System.EventHandler(this._settingsButton_Click);
@@ -117,24 +132,10 @@
         " from a repository somewhere.");
 			this._L10NSharpExtender.SetLocalizingId(this._openCreateCollectionButton, "CollectionTab.Open/CreateCollectionButton");
 			this._openCreateCollectionButton.Name = "_openCreateCollectionButton";
-			this._openCreateCollectionButton.Size = new System.Drawing.Size(98, 43);
+			this._openCreateCollectionButton.Size = new System.Drawing.Size(98, 67);
 			this._openCreateCollectionButton.Text = "Other Collection";
 			this._openCreateCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._openCreateCollectionButton.Click += new System.EventHandler(this._openCreateCollectionButton_Click);
-			// 
-			// _sendReceiveButton
-			// 
-			this._sendReceiveButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._sendReceiveButton.Image = global::Bloom.Properties.Resources.sendreceiveToolbarButton;
-			this._sendReceiveButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this._sendReceiveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._sendReceiveButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._sendReceiveButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._sendReceiveButton, "CollectionTab.SendReceive");
-			this._sendReceiveButton.Name = "_sendReceiveButton";
-			this._sendReceiveButton.Size = new System.Drawing.Size(82, 43);
-			this._sendReceiveButton.Text = "Send/Receive";
-			this._sendReceiveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
 			// _L10NSharpExtender
 			// 
@@ -175,6 +176,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
 			this.splitContainer1.ResumeLayout(false);
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
         }
 
