@@ -4,38 +4,33 @@ import * as ReactDOM from "react-dom";
 import { ILocalizationProps, LocalizableElement } from "./l10n";
 
 export interface IRadioProps extends ILocalizationProps {
-    wrapClassName: string;
-    inputClassName: string;
-    labelClassName: string;
+    wrapClass: string; // class for a div that wraps the input and label
+    inputClass: string; // class for the input element (the radio button itself)
+    labelClass: string; // class for the label (text next to the radio button)
     group: string; // name property of input, groups radios which switch together
     value: string; // identifies this radio in set
     groupValue: string; // current value of group; this one is checked if it has the group value.
-    change: (string) => void;
+    onSelected: (string) => void; // passed this button's value when it is clicked.
 }
 
-// An radio button that is localizable and automatically handles unselecting others with the same group.
+// A radio button that is localizable. Typically, groupValue is part of the state of the parent,
+// and change sets it. React rendering then automatically turns off all but the selected button.
+// For example, three radio buttons might each have group="color" and suitable styles.
+// One could have value="red", another value="blue", another value="green".
+// All would have groupValue={this.state.color} and change="val=>this.setState({color: val})"
 export class Radio extends LocalizableElement<IRadioProps, {}> {
     constructor(props) {
         super(props);
-
-        // This binding is necessary to make `this` work in the callback
-        this.selectRadio = this.selectRadio.bind(this);
     }
     render() {
         return (
-            <div className={this.props.wrapClassName}>
-                <input type="radio" className={this.props.inputClassName} name={this.props.group} value={this.props.value}
-                    onClick={this.selectRadio} checked={this.props.value === this.props.groupValue} />
-                <div className={this.props.labelClassName}>
+            <div className={this.props.wrapClass}>
+                <input type="radio" className={this.props.inputClass} name={this.props.group} value={this.props.value}
+                    onClick={() => this.props.onSelected(this.props.value)} checked={this.props.value === this.props.groupValue} />
+                <div className={this.props.labelClass}>
                     {this.getLocalizedContent()}
                 </div>
             </div>
         );
-    }
-
-    selectRadio() {
-        // $("input[name='" + this.props.group + "']").prop("checked", false); // turn all off.
-        // $("input[name='" + this.props.group + "' value='" + this.props.value + "']").prop("checked", true); // desired one on
-        this.props.change(this.props.value);
     }
 }

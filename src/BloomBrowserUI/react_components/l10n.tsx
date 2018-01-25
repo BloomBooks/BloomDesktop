@@ -163,7 +163,7 @@ export class Div extends LocalizableElement<ILocalizationProps, ILocalizationSta
 }
 
 export interface ILabelProps extends ILocalizationProps {
-    onClick: () => void; // enhance: make optional; possibly promote to LocalizableElement? possibly pass this as argument?
+    onClick?: () => void; // enhance: possibly promote to LocalizableElement?
 }
 
 export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {

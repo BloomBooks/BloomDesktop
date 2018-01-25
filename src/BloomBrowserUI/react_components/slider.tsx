@@ -8,16 +8,9 @@ export interface ISliderProps {
     enabled: boolean;
 }
 
-export interface ISliderState {
-}
-
-// Note that this component does not do localization; we expect the progress messages
-// to already be localized when they are sent over the websocket.
-export class Slider extends React.Component<ISliderProps, ISliderState> {
+export class Slider extends React.Component<ISliderProps> {
     constructor(props: ISliderProps) {
         super(props);
-        let self = this;
-        this.state = {};
     }
 
     $slider: JQuery; // the root element controlled by jquery.slider(), set in componentDidMount()

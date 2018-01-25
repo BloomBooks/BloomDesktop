@@ -441,7 +441,6 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
     } else {
         // new-style tool implemented in React
         const reactToolId = toolId.substring(0, toolId.length - 4); // strip off "Tool"
-        // for some reason our version of typescript does not know about find()
         var tool: ITool = (<any>ToolBox.getMasterToolList()).find(tool => tool.id() === reactToolId);
         const content = $(tool.makeRootElement());
         const toolName = tool.id() + "Tool";

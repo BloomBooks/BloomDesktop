@@ -75,16 +75,16 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
                     l10nKey="EditTab.Toolbox.Music.Overview">You can set up background music to play"
                         + " with this page when the book is viewed in the Bloom Reader app.</Div>
 
-                <Radio wrapClassName="musicOption" labelClassName="musicLabelWrapper" inputClassName="musicButton"
+                <Radio wrapClass="musicOption" labelClass="musicLabelWrapper" inputClass="musicButton"
                     l10nKey="EditTab.Toolbox.Music.NoMusic" group="music" value="noMusic"
-                    change={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>No Music</Radio>
-                <Radio wrapClassName="musicOption" labelClassName="musicLabelWrapper" inputClassName="musicButton"
+                    onSelected={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>No Music</Radio>
+                <Radio wrapClass="musicOption" labelClass="musicLabelWrapper" inputClass="musicButton"
                     l10nKey="EditTab.Toolbox.Music.ContinueMusic" group="music" value="continueMusic"
-                    change={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>Continue music from previous page</Radio>
+                    onSelected={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>Continue music from previous page</Radio>
                 <div className="musicChooseWrapper">
-                    <Radio wrapClassName="musicOption" labelClassName="musicLabelWrapper" inputClassName="musicButton"
+                    <Radio wrapClass="musicOption" labelClass="musicLabelWrapper" inputClass="musicButton"
                         l10nKey="EditTab.Toolbox.Music.NewMusic" group="music" value="newMusic"
-                        change={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>Start new music</Radio>
+                        onSelected={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>Start new music</Radio>
                     <Label className="musicChooseFile" l10nKey="EditTab.Toolbox.Music.Choose"
                         onClick={() => this.chooseMusicFile()}>Choose...</Label>
                 </div>
@@ -231,7 +231,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     }
 }
 
-class Music implements ITool {
+class MusicTool implements ITool {
     reactControls: MusicToolControls;
     makeRootElement(): HTMLDivElement {
         const root = $("<div class='musicBody'/>").get(0);
@@ -276,4 +276,4 @@ class Music implements ITool {
 }
 
 // Make the one instance of this class and register it with the master toolbox.
-ToolBox.getMasterToolList().push(new Music());
+ToolBox.getMasterToolList().push(new MusicTool());

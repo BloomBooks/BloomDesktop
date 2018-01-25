@@ -29,7 +29,7 @@ namespace Bloom.Edit
 	/// - Create a folder under BloomBrowserUI/bookEdit/toolbox. It's name should match the toolId.
 	/// - Create a file in that folder with extension .tsx to contain the React code of the panel
 	///		- it (or another file) should have a class which implements ITool
-	///			- minimally this must implement name() to return the tool ID
+	///			- minimally this must implement id() to return the tool ID
 	///			- also beginRestoreSettings should return a (possibly already-resolved) promise.
 	///			- create one instance and publish it to get the tool known to the toolbox:
 	///				ToolBox.getTabModels().push(new MyWonderfulTool());
