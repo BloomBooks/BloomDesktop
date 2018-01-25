@@ -81,6 +81,8 @@ namespace Bloom
 			CheckForCorruptUserConfig();
 			// We use crowdin for localizing, and they require a directory per language setup.
 			LocalizationManager.UseLanguageCodeFolders = true;
+			// We want only good localizations in Bloom.
+			LocalizationManager.ReturnOnlyApprovedStrings = true;
 
 #if DEBUG
 			//MessageBox.Show("Attach debugger now");
