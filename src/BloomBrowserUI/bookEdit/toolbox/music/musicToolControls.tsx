@@ -1,10 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Slider } from "../../../react_components/slider";
 import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
 import { Radio } from "../../../react_components/Radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
+import Slider from "rc-slider";
 
 interface IMusicState {
     activeRadioValue: string;
@@ -21,7 +21,7 @@ interface IMusicState {
 // which adds an instance of Music to ToolBox.getMasterToolList().
 export default class MusicToolControls extends React.Component<{}, IMusicState> {
     constructor() {
-        super();
+        super({});
         this.state = this.getStateFromHtml();
     }
 
@@ -102,8 +102,9 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
                     <div id="musicSetVolume">
                         <img className={"speaker-volume" + (this.state.audioEnabled ? "" : " disabled")} src="speaker-volume.svg" />
                         <div className="bgSliderWrapper">
-                            <Slider id="musicVolumeSlider" value={100 * this.state.musicVolume} enabled={this.state.audioEnabled} onChange={
-                                value => this.sliderMoved(value)} />
+                            <Slider className="musicVolumeSlider" value={100 * this.state.musicVolume}
+                                disabled={!this.state.audioEnabled} onChange={
+                                    value => this.sliderMoved(value)} />
                         </div>
                     </div>
                 </div>
