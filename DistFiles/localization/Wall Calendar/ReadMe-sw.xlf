@@ -2,47 +2,47 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="sw">
     <body>
-      <trans-unit id="wall.calendar">
+      <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
         <target xml:lang="sw">Kuhusu Kielelezo cha Kalenda ya Ukuta</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.use">
+      <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
         <target xml:lang="sw">Kwa kutumia kielelezo hiki, unaweza kutengeneza kalenda ya miezi 12 ya A5, iliyo na picha na dondoo kwenye ukurasa wa juu, na siku upande wa chini. Kalenda hii itatumia majina ya miezi na siku katika lugha yako.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.limits">
+      <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
         <target xml:lang="sw">Changamoto za toleo hili</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.noshells">
+      <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
         <target xml:lang="sw">Kwa sasa, huwezi ukatengeneza "sheli" ili kutumika kwa lugha zingine.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.credits">
+      <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
         <target xml:lang="sw">Sifa</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.thanks">
+      <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
         <target xml:lang="sw">Shukrani kwa Bruce Cox (SIL Cameroon) kwa kuanzisha kielelezo hiki.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.feedback">
+      <trans-unit id="wall.calendar.feedback" approved="yes">
         <source xml:lang="en">Feedback</source>
         <target xml:lang="sw">Maoni</target>
         <note>ID: wall.calendar.feedback</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.feedbackvoting">
+      <trans-unit id="wall.calendar.feedbackvoting" approved="yes">
         <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
         <target xml:lang="sw">Tafadhali toa na upige kura kwa <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions/">mapendekezo</g>.</target>
         <note>ID: wall.calendar.feedbackvoting</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.reportbugs">
+      <trans-unit id="wall.calendar.reportbugs" approved="yes">
         <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
         <target xml:lang="sw">Tafadhali toa taarifa ya matatizo kwa <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         <note>ID: wall.calendar.reportbugs</note>
