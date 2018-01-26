@@ -43,7 +43,7 @@ namespace Bloom.MiscUI
 		private readonly string YouTrackUrl;
 		protected string _youTrackProjectKey = "BL";
 
-		private readonly Connection _youTrackConnection = new Connection(UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true), 80, false, "youtrack");
+		private readonly Connection _youTrackConnection = new Connection(UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true), 0 /* BL-5500 don't specify port */, true, "youtrack");
 		private IssueManagement _issueManagement;
 
 		private string _youTrackIssueId = "unknown";
