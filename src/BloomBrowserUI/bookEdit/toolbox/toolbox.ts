@@ -116,7 +116,7 @@ export class ToolBox {
         top.document.dispatchEvent(event);
     }
 
-    static getMasterToolList() { return masterToolList; }
+    static registerTool(tool: ITool) { masterToolList.push(tool); }
 
     // Called from document.ready, initializes the whole toolbox.
     initialize(): void {
@@ -441,7 +441,7 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
     } else {
         // new-style tool implemented in React
         const reactToolId = toolId.substring(0, toolId.length - 4); // strip off "Tool"
-        var tool: ITool = (<any>ToolBox.getMasterToolList()).find(tool => tool.id() === reactToolId);
+        var tool: ITool = (<any>masterToolList).find(tool => tool.id() === reactToolId);
         const content = $(tool.makeRootElement());
         const toolName = tool.id() + "Tool";
         // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"

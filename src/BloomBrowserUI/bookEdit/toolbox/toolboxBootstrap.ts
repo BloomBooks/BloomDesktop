@@ -2,7 +2,7 @@
 import * as $ from "jquery";
 import { getTheOneToolbox, applyToolboxStateToUpdatedPage, showOrHideTool_click, removeToolboxMarkup } from "./toolbox";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
-import TalkingBookModel from "./talkingBook/talkingBook";
+import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
@@ -12,7 +12,7 @@ export { removeToolboxMarkup };
 export { showSetupDialog, initializeReaderSetupDialog, closeSetupDialog } from "./readers/readerSetup/readerSetupDialog";
 export { addWordListChangedListener, beginSaveChangedSettings, makeLetterWordList } from "./readers/readerTools";
 export { loadLongpressInstructions } from "../js/bloomEditing";
-export { TalkingBookModel }; // one function is called by CSharp.
+export { TalkingBookTool }; // one function is called by CSharp.
 
 
 // called by click handler in jade; also, exporting something from it gets it included in the bundle.

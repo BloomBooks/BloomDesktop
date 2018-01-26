@@ -58,4 +58,4 @@ class BookSettings implements ITool {
 }
 
 // Make the one instance of this class and register it with the master toolbox.
-ToolBox.getMasterToolList().push(new BookSettings());
+ToolBox.registerTool(new BookSettings());

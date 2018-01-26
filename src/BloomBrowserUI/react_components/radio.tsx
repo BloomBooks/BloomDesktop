@@ -2,34 +2,89 @@ import axios from "axios";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ILocalizationProps, LocalizableElement } from "./l10n";
+import { ReactElement } from "react";
 
 export interface IRadioProps extends ILocalizationProps {
-    wrapClass: string; // class for a div that wraps the input and label
-    inputClass: string; // class for the input element (the radio button itself)
-    labelClass: string; // class for the label (text next to the radio button)
-    group: string; // name property of input, groups radios which switch together
     value: string; // identifies this radio in set
-    groupValue: string; // current value of group; this one is checked if it has the group value.
-    onSelected: (string) => void; // passed this button's value when it is clicked.
+    className?: string; // class for a div that wraps the input and label, in addition to default "radioButton"
+    inputClass?: string; // class for the input element (the radio button itself), in addition to default "radioInput"
+    labelClass?: string; // class for the label (text next to the radio button), in addition to default "radioLabel"
+    checked?: boolean; // true if button should be checked; usually controlled by containing RadioGroup
+    onSelected?: (string) => void; // passed this button's value when it is clicked; usually used by containing RadioGroup.
 }
 
-// A radio button that is localizable. Typically, groupValue is part of the state of the parent,
-// and change sets it. React rendering then automatically turns off all but the selected button.
-// For example, three radio buttons might each have group="color" and suitable styles.
-// One could have value="red", another value="blue", another value="green".
-// All would have groupValue={this.state.color} and change="val=>this.setState({color: val})"
+// A radio button that is localizable.
 export class Radio extends LocalizableElement<IRadioProps, {}> {
     constructor(props) {
         super(props);
     }
+
+    public static combineClasses(class1: string, class2: string): string {
+        if (class2) {
+            return class1 + " " + class2;
+        }
+        return class1;
+    }
     render() {
         return (
-            <div className={this.props.wrapClass}>
-                <input type="radio" className={this.props.inputClass} name={this.props.group} value={this.props.value}
-                    onClick={() => this.props.onSelected(this.props.value)} checked={this.props.value === this.props.groupValue} />
-                <div className={this.props.labelClass}>
+            <div className={Radio.combineClasses("radioButton", this.props.className)}>
+                <input type="radio" className={Radio.combineClasses("radioInput", this.props.inputClass)}
+                    value={this.props.value} checked={this.props.checked}
+                    onClick={() => this.props.onSelected(this.props.value)} />
+                <div className={Radio.combineClasses("radioLabel", this.props.labelClass)}>
                     {this.getLocalizedContent()}
                 </div>
+            </div>
+        );
+    }
+}
+
+export interface IRadioGroupProps {
+    value: string;
+    className?: string;
+    onChange?: (string) => void;
+}
+
+// A group of radio buttons.
+// Usage:
+// <RadioGroup onChange={val => this.this.setState({color: val} value={this.state.color}>
+//      <Radio i18n="SomeScope.Red" value="red">Red</Radio>
+//      <Radio i18n="SomeScope.Green" value="green">Green</Radio>
+//      <Radio i18n="SomeScope.Blue" value="blue">Blue</Radio>
+// </RadioGroup>
+// Radio children may be nested inside other children and combined with non-radio children.
+export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
+    constructor(props) {
+        super(props);
+    }
+    // This rather tricky function makes a clone of the original children
+    // (re-using leaves that it doesn't need to modify)
+    // replacing <Radio> elements with a clone that has the required
+    // onSelected and checked properties to function in the group.
+    recursiveFixRadio(children: React.ReactNode): React.ReactNode {
+        return React.Children.map(children, child => {
+            let childProps: any = {};
+            const childElt = child as React.ReactElement<any>;
+            if (childElt == null) {
+                return child;
+            }
+            if (childElt.type === Radio) {
+                return React.cloneElement(childElt, {
+                    onSelected: val => this.props.onChange(val),
+                    checked: childElt.props.value === this.props.value
+                });
+            }
+            if (childElt.props) {
+                childProps.children = this.recursiveFixRadio(childElt.props.children);
+                return React.cloneElement(childElt, childProps);
+            }
+            return child;
+        });
+    }
+    render() {
+        return (
+            <div className={Radio.combineClasses("radioGroup", this.props.className)}>
+                {this.recursiveFixRadio(this.props.children)}
             </div>
         );
     }

@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
-import { Radio } from "../../../react_components/Radio";
+import { RadioGroup, Radio } from "../../../react_components/Radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
@@ -74,20 +74,15 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
                 <Div className="musicHelp"
                     l10nKey="EditTab.Toolbox.Music.Overview">You can set up background music to play"
                         + " with this page when the book is viewed in the Bloom Reader app.</Div>
-
-                <Radio wrapClass="musicOption" labelClass="musicLabelWrapper" inputClass="musicButton"
-                    l10nKey="EditTab.Toolbox.Music.NoMusic" group="music" value="noMusic"
-                    onSelected={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>No Music</Radio>
-                <Radio wrapClass="musicOption" labelClass="musicLabelWrapper" inputClass="musicButton"
-                    l10nKey="EditTab.Toolbox.Music.ContinueMusic" group="music" value="continueMusic"
-                    onSelected={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>Continue music from previous page</Radio>
-                <div className="musicChooseWrapper">
-                    <Radio wrapClass="musicOption" labelClass="musicLabelWrapper" inputClass="musicButton"
-                        l10nKey="EditTab.Toolbox.Music.NewMusic" group="music" value="newMusic"
-                        onSelected={val => this.setRadio(val)} groupValue={this.state.activeRadioValue}>Start new music</Radio>
-                    <Label className="musicChooseFile" l10nKey="EditTab.Toolbox.Music.Choose"
-                        onClick={() => this.chooseMusicFile()}>Choose...</Label>
-                </div>
+                <RadioGroup onChange={val => this.setRadio(val)} value={this.state.activeRadioValue}>
+                    <Radio l10nKey="EditTab.Toolbox.Music.NoMusic" value="noMusic">No Music</Radio>
+                    <Radio l10nKey="EditTab.Toolbox.Music.ContinueMusic" value="continueMusic">Continue music from previous page</Radio>
+                    <div className="musicChooseWrapper">
+                        <Radio l10nKey="EditTab.Toolbox.Music.NewMusic" value="newMusic">Start new music</Radio>
+                        <Label className="musicChooseFile" l10nKey="EditTab.Toolbox.Music.Choose"
+                            onClick={() => this.chooseMusicFile()}>Choose...</Label>
+                    </div>
+                </RadioGroup>
 
                 <div className="button-label-wrapper" id="musicOuterWrapper">
                     <div id="musicPlayAndLabelWrapper">
@@ -277,4 +272,4 @@ class MusicTool implements ITool {
 }
 
 // Make the one instance of this class and register it with the master toolbox.
-ToolBox.getMasterToolList().push(new MusicTool());
+ToolBox.registerTool(new MusicTool());

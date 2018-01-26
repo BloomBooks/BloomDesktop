@@ -110,5 +110,5 @@ export default class DecodableReaderToolboxTool implements ITool {
     hasRestoredSettings: boolean;
 }
 
-ToolBox.getMasterToolList().push(new DecodableReaderToolboxTool());
+ToolBox.registerTool(new DecodableReaderToolboxTool());
 

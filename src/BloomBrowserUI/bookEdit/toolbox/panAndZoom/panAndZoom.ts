@@ -338,6 +338,6 @@ export default class PanAndZoom implements ITool {
 
 }
 
-ToolBox.getMasterToolList().push(new PanAndZoom());
+ToolBox.registerTool(new PanAndZoom());
 
 

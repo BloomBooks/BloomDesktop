@@ -50,4 +50,4 @@ export default class LeveledReaderToolboxTool implements ITool {
     }
 }
 
-ToolBox.getMasterToolList().push(new LeveledReaderToolboxTool());
+ToolBox.registerTool(new LeveledReaderToolboxTool());

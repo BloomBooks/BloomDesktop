@@ -3,7 +3,7 @@ import { ToolBox } from "../toolbox";
 import * as AudioRecorder from './audioRecording';
 import { theOneAudioRecorder } from './audioRecording';
 
-export default class TalkingBookModel implements ITool {
+export default class TalkingBookTool implements ITool {
     makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -47,4 +47,4 @@ export default class TalkingBookModel implements ITool {
     finishToolLocalization(paneDOM: HTMLElement) { }
 }
 
-ToolBox.getMasterToolList().push(new TalkingBookModel());
+ToolBox.registerTool(new TalkingBookTool());
