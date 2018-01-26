@@ -45,8 +45,17 @@
           
           
           
+          
            <g id="genid-1" ctype="x-html-em">‏وړاندوینه</g> په یو متن کې، په دې معنی چې لوستونکی اټکل کولي شي چې ورپسې به څه وي. تاسو کولی شئ د تکرار شویو مثالونو په کارولو سره وړاندوینه ډېره کړئ. دلته ځینې مثالونه دي چې تاسې تري کار اخیستي شئ:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
+        <alt-trans>
+          <target xml:lang="pbu">
+          
+          
+          
+          
+           <g id="genid-1" ctype="x-html-em">‏وړاندوینه</g> په یو متن کې، په دې معنی چې لوستونکی اټکل کولي شي چې ورپسې به څه وي. تاسو کولی شئ د تکرار شویو مثالونو په کارولو سره وړاندوینه ډېره کړئ. دلته ځینې مثالونه دي چې تاسې تري کار اخیستي شئ:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">
           
@@ -107,8 +116,26 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
+        <alt-trans>
+          <target xml:lang="pbu">نظم او قافیه – یوه کیسه له یو نمونی سره یا سلسلې سره چې نظم او قافیه هم ورکې وي. لکه:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> نصواري خرس، نصواري خرس، تاسو څه ګورئ؟
+زه یوه سره مرغۍ ګورم چې ماته ګوري
+سره مرغۍ، سره مرغۍ، تاسو څه ګورئ؟
+زه یوه زیړه هیلۍ ګورم چې ماته ګوري.
+زیړه هیلۍ، زیړه هیلۍ، تاسو څه ګورئ؟</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. او ایرک کارل</g>
+        </g>
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">نظم او قافیه – یوه کیسه له یو نمونی سره یا سلسلې سره چې نظم او قافیه هم ورکې وي. لکه:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
@@ -181,8 +208,17 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
+        <alt-trans>
+          <target xml:lang="pbu">لار ښوونې کیسې ته ملاتړ برابروي. لارښوونې په بیلا بیلو لارو کې له کیسو سره په تفاوت تړلي دي <g id="genid-5" ctype="x-html-em">سويې</g> او د مختلفو لوستونکو لپاره (لاندې وګورئ). په یاد ولرئ چې په ډېرو کلتورونو کې چې ډیر چاپ شوي مواد نه لري، مغلق عکسونه ښایي د پوهاوي لپاره ستونزمن وي.
+    
+    
+    
+    
+    </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لار ښوونې کیسې ته ملاتړ برابروي. لارښوونې په بیلا بیلو لارو کې له کیسو سره په تفاوت تړلي دي <g id="genid-5" ctype="x-html-em">سويې</g> او د مختلفو لوستونکو لپاره (لاندې وګورئ). په یاد ولرئ چې په ډېرو کلتورونو کې چې ډیر چاپ شوي مواد نه لري، مغلق عکسونه ښایي د پوهاوي لپاره ستونزمن وي.
     
@@ -214,6 +250,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
         <alt-trans>
@@ -221,10 +258,12 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی کتابونو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
+      
       
       
       </target>
@@ -232,14 +271,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی کتابونو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی کتابونو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
+      
       </target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی لوستونکو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
+          <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی کتابونو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
       </target>
         </alt-trans>
       </trans-unit>
@@ -251,6 +292,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
         <alt-trans>
@@ -258,10 +300,12 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-7" ctype="x-html-strong">لومړني کتابونو</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
+      
       
       
       </target>
@@ -269,14 +313,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-7" ctype="x-html-strong">لومړني کتابونو</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-7" ctype="x-html-strong">لومړني کتابونو</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
+      
       </target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="pbu">لپاره <g id="genid-7" ctype="x-html-strong">لومړني لوستونکي</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
+          <target xml:lang="pbu">لپاره د <g id="genid-7" ctype="x-html-strong">لومړني کتابونو</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
       </target>
         </alt-trans>
       </trans-unit>
@@ -288,6 +334,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.fluent.reader</note>
         <alt-trans>
@@ -295,10 +342,12 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-8" ctype="x-html-strong">روان لوستونکو</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
+      
       
       
       </target>
@@ -306,14 +355,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-8" ctype="x-html-strong">روان لوستونکو</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-8" ctype="x-html-strong">روان لوستونکو</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
+      
       </target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="pbu">لپاره <g id="genid-8" ctype="x-html-strong">روان لوستونکي</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
+          <target xml:lang="pbu">لپاره د <g id="genid-8" ctype="x-html-strong">روان لوستونکو</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
       </target>
         </alt-trans>
       </trans-unit>
@@ -335,6 +386,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
@@ -342,10 +394,12 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-9" ctype="x-html-strong">لومړنی کتابونو</g> کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.
+      
       
       
       </target>
@@ -353,14 +407,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-9" ctype="x-html-strong">لومړنی کتابونو</g> کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-9" ctype="x-html-strong">لومړنی کتابونو</g> کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.
+      
       </target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="pbu">لپاره <g id="genid-9" ctype="x-html-strong">لومړنی لوستونکي</g> کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.
+          <target xml:lang="pbu">لپاره د <g id="genid-9" ctype="x-html-strong">لومړنی کتابونو</g> کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.
       </target>
         </alt-trans>
       </trans-unit>
@@ -372,6 +428,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
         <alt-trans>
@@ -379,10 +436,12 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-10" ctype="x-html-strong">لومړني کتابونو</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
+      
       
       
       </target>
@@ -390,14 +449,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-10" ctype="x-html-strong">لومړني کتابونو</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-10" ctype="x-html-strong">لومړني کتابونو</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
+      
       </target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="pbu">لپاره <g id="genid-10" ctype="x-html-strong">لومړني لوستونکي</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
+          <target xml:lang="pbu">لپاره د <g id="genid-10" ctype="x-html-strong">لومړني کتابونو</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
       </target>
         </alt-trans>
       </trans-unit>
@@ -409,6 +470,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
         <alt-trans>
@@ -416,10 +478,12 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-11" ctype="x-html-strong">روان لوستونکو</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
+      
       
       
       </target>
@@ -427,14 +491,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-11" ctype="x-html-strong">روان لوستونکو</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
       
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-11" ctype="x-html-strong">روان لوستونکو</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
+      
       </target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="pbu">لپاره <g id="genid-11" ctype="x-html-strong">روان لوستونکي</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
+          <target xml:lang="pbu">لپاره د <g id="genid-11" ctype="x-html-strong">روان لوستونکو</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
       </target>
         </alt-trans>
       </trans-unit>

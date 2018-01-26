@@ -220,14 +220,6 @@
           <target xml:lang="prs">متن نوشته/ درخواست متن نوشته</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">None</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="prs">هیچ</target>
-        <alt-trans>
-          <target xml:lang="prs">متن نوشته/ درخواست متن نوشته</target>
-        </alt-trans>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
@@ -770,6 +762,12 @@
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
         <target xml:lang="prs">عنوان گم شده</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
+        <source xml:lang="en">{0}% translated</source>
+        <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
+        <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
+        <target xml:lang="prs" state="translated">{0}% ترجمه شده است</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate" approved="yes">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
@@ -1651,15 +1649,6 @@
         <source xml:lang="en">This option is only available in the Publish tab.</source>
         <note>ID: EditTab.LayoutInPublishTabOnlyNotice</note>
         <target xml:lang="prs">این اختیار فقط در تب نشر موجود است.</target>
-      </trans-unit>
-      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book is temporarily unlocked.</source>
-        <note>ID: EditTab.LockBook.ToolTip</note>
-        <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
-        <target xml:lang="prs">این کتاب به طور موقت باز شده است.</target>
-        <alt-trans>
-          <target xml:lang="prs">این کتاب به طور موقت قفل شده است.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book is temporarily unlocked.</source>

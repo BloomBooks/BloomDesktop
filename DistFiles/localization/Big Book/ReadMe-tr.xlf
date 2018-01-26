@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="bigbook.use">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="tr" state="needs-translation">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</target>
+        <target xml:lang="tr" state="translated">Büyük Kitaplar öğretmenlerin sınıf karşısında okumaları içindir. Daha fazla bilgi için, <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">Scholastic'teki bu PDF</g>'e bakınız.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing">
@@ -33,7 +33,7 @@ Sadece A4 PDF dosyasını al ve onlardan A3'e büyütmelerini iste.</target>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="tr" state="needs-translation">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</target>
+        <target xml:lang="tr" state="translated">Eğer küçük bir ekran kullanıyorsanız, jenerik sayfasını okumak zor olabilir. sayfanın sağ üstündeki +/- yakınlaştırma kontrollerini kullanarak yakınlaştırmayı deneyin böylece düzenleyebilirsiniz.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate">

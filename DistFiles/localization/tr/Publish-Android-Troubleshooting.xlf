@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="android.publish.trouble.tips">
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
-        <target xml:lang="tr" state="needs-translation">Troubleshooting Tips for Android Publishing</target>
+        <target xml:lang="tr" state="translated">Android Yayıcılık İçin Sorun Giderme İp Uçları</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi">
         <source xml:lang="en">Serve on WiFi Network</source>
-        <target xml:lang="tr" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="tr" state="translated">WiFi Ağı Üzerinden Servis Ver</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="tr" state="needs-translation">Problem: Android Device is not seeing book advertisements</target>
+        <target xml:lang="tr" state="translated">Problem: Android Cihaz kitap reklamlarını görmüyor</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
-        <target xml:lang="tr" state="needs-translation">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</target>
+        <target xml:lang="tr" state="translated">Bu yöntemi kullanırken, Bloom okuyucuyu çalıştırmanız gereklidir, menüsünü açın ve "WiFi'dan al" seçeneğini seçin.</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
@@ -29,12 +29,12 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network">
         <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="tr" state="needs-translation">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</target>
+        <target xml:lang="tr" state="translated">Bilgisayarınızla cihazınızın aynı WiFi ağında olduğundan emin olun. Wifi yönlendiricisine kablo ile bağlanmış olan bir bilgisayar hala kendi ağı içerisinde olabilir. Teknik olarak aynı WiFi alt ağında bulunan kablolu ağları bağlamak mümkündür ama Bloom ekibi bu kurulum için size destek sağlayamaz, üzgünüm.</target>
         <note>ID: android.publish.wifi.same.network</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
-        <target xml:lang="tr" state="needs-translation">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</target>
+        <target xml:lang="tr" state="translated">Bilgisayarınızın işleme karışan bir güvenlik duvarı olmadığından emin olun. Windows Güvenlik Duvarı kitabın tanıtımını ilk kez başlattığınızda görünebilir. Eğer ona "Hayır" derseniz size bir daha sormaz. Eğer ek olarak 3. parti güvenlik duvarı yüklediyseniz onları devre dışı bırakın. Bloom bir kitabı yerel ağda port 5913'deki UDP ile tanıtır ve Bloom Okuyucusu kitabı port 5915 ile ister.</target>
         <note>ID: android.publish.wifi.firewalls</note>
       </trans-unit>
       <trans-unit id="android.publish.usb">
@@ -51,24 +51,24 @@
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-<g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+        <target xml:lang="tr" state="translated">
+<g id="genid-1" ctype="x-html-p">Bu yöntemin pek çok cihaz da sorun oluşturduğunu bulduk, yani WiFi yöntemini tek bir cihaz bile kullanıyor olsanız bile değerlendirin.</g>
 </target>
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="tr" state="needs-translation">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</target>
+        <target xml:lang="tr" state="translated">Bu yöntemi kullanırken, kitapları almak için hiç bir özel moda girmenize gerek yoktur. Sadece Bloom Okuyucuyu çalıştırın ve Kitaplar taşındıktan sonra otomatik olarak görüneceklerdir.</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
-        <target xml:lang="tr" state="needs-translation">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</target>
+        <target xml:lang="tr" state="translated">Bazı Android cihazlar bilgisayara bağlandıklarında birden fazla moda sahip olabilirler. Bazıları siz kobloyu bilgisayara bağlar bağlamaz soracaktır. Bloom "MTP" protokolünü kullanarak cihazla konuşmaya çalışır. Eğer cihazınızın MTP kullanarak bağlandığından emin değilseniz, cihazınızın adını + "MPT"'yi google da aramayı deneyin.</target>
         <note>ID: android.publish.usb.uses.mtp</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.windows">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="tr" state="needs-translation">The device should be showing up in Windows File Explorer (this feature is Windows-only)</target>
+        <target xml:lang="tr" state="translated">Cihaz Windows Dosya Gezgini'nde (bu özellik sadece windows içindir) görünmelidir</target>
         <note>ID: android.publish.usb.windows</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port">
