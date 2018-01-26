@@ -4,7 +4,7 @@ import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
 
-export default class LeveledReaderToolboxTool implements ITool {
+export class LeveledReaderToolboxTool implements ITool {
     makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -49,5 +49,3 @@ export default class LeveledReaderToolboxTool implements ITool {
         // 'translates' external links to include the current UI language.
     }
 }
-
-ToolBox.registerTool(new LeveledReaderToolboxTool());

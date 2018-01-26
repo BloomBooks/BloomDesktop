@@ -46,5 +46,3 @@ export default class TalkingBookTool implements ITool {
     // So far unneeded in talkingBook
     finishToolLocalization(paneDOM: HTMLElement) { }
 }
-
-ToolBox.registerTool(new TalkingBookTool());

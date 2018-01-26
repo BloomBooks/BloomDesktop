@@ -9,7 +9,7 @@ import { theOneLibSynphony } from './../libSynphony/synphony_lib';
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 
 
-export default class DecodableReaderToolboxTool implements ITool {
+export class DecodableReaderToolboxTool implements ITool {
     makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -110,5 +110,4 @@ export default class DecodableReaderToolboxTool implements ITool {
     hasRestoredSettings: boolean;
 }
 
-ToolBox.registerTool(new DecodableReaderToolboxTool());
 

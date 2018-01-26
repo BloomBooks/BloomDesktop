@@ -2,6 +2,12 @@
 import * as $ from "jquery";
 import { getTheOneToolbox, applyToolboxStateToUpdatedPage, showOrHideTool_click, removeToolboxMarkup } from "./toolbox";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
+import { ToolBox } from "./toolbox";
+import { BookSettings } from "./bookSettings/bookSettings";
+import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
+import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
+import { MusicTool } from "./music/musicToolControls";
+import { PanAndZoom } from "./panAndZoom/panAndZoom";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 
@@ -35,3 +41,13 @@ export function applyToolboxStateToPage() {
 $(document).ready(function () {
     getTheOneToolbox().initialize();
 });
+
+// Make the one instance of each Toolbox class and register it with the master toolbox.
+// The imports we need to make these calls possible also serve to ensure that each
+// toolbox's code is made part of the bundle.
+ToolBox.registerTool(new BookSettings());
+ToolBox.registerTool(new DecodableReaderToolboxTool());
+ToolBox.registerTool(new LeveledReaderToolboxTool());
+ToolBox.registerTool(new MusicTool());
+ToolBox.registerTool(new PanAndZoom());
+ToolBox.registerTool(new TalkingBookTool());

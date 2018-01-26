@@ -31,8 +31,9 @@ namespace Bloom.Edit
 	///		- it (or another file) should have a class which implements ITool
 	///			- minimally this must implement id() to return the tool ID
 	///			- also beginRestoreSettings should return a (possibly already-resolved) promise.
-	///			- create one instance and publish it to get the tool known to the toolbox:
-	///				ToolBox.getTabModels().push(new MyWonderfulTool());
+	///			- create one instance and publish it to get the tool known to the toolbox and include its
+	///				code in the toolbox bundle: in toolboxBootstrap.ts, add a line like
+	///				ToolBox.registerTool(new MyWonderfulTool());
 	///			- should implement makeRootElements() to create html with one h3 and one div,
 	///				both having attribute data-panelId='{toolId}Tool'. The h3 should have the tool's
 	///				accordion label (with suitable i18n attr).

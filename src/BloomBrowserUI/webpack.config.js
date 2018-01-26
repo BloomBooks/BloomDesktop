@@ -35,19 +35,7 @@ module.exports = {
         readerSetupBundle: "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
         bookPreviewBundle: "./bookPreview/bookPreview.ts",
-        // In general, we want the toolbox bundle to include all the tsx and ts files in the toobox
-        // folder.
-        // But we must exclude some things:
-        // - .d.ts files, because they produce no output, which is an error condition for webpack
-        // - readersetup, because it is the root of another entry point, and webpack won't allow that
-        // - unit tests (**/*Spec.ts) are excluded, we don't need to ship those
-        // - toolboxBootstrap.ts is eliminated from the globule.find results so that we can add it
-        // back in as the last item. It's not easy to find in the doc, but apparently
-        // the last thing in the list is exported, and we need stuff in toolboxBootstrap.ts to be
-        // available to other modules.
-        toolboxBundle: globule.find(["./bookEdit/toolbox/**/*.tsx", "./bookEdit/toolbox/**/*.ts",
-            "!./bookEdit/toolbox/**/*d.ts", "!./bookEdit/toolbox/toolboxBootstrap.ts",
-            "!./bookEdit/toolbox/readers/readerSetup/*.ts", "!./**/*Spec.ts"]).concat(["./bookEdit/toolbox/toolboxBootstrap.ts"]),
+        toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
         pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle: "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
         pageControlsBundle: "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",

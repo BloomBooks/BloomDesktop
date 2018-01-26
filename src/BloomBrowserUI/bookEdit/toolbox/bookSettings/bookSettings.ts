@@ -31,7 +31,7 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
 }
 
 // We need a minimal model to get ourselves loaded
-class BookSettings implements ITool {
+export class BookSettings implements ITool {
     makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -56,6 +56,3 @@ class BookSettings implements ITool {
     finishToolLocalization(pane: HTMLElement) { }
     /* tslint:enable:no-empty */
 }
-
-// Make the one instance of this class and register it with the master toolbox.
-ToolBox.registerTool(new BookSettings());

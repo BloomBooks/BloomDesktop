@@ -9,7 +9,7 @@ import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 
 
-export default class PanAndZoom implements ITool {
+export class PanAndZoom implements ITool {
     makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -337,7 +337,5 @@ export default class PanAndZoom implements ITool {
 
 
 }
-
-ToolBox.registerTool(new PanAndZoom());
 
 

@@ -227,7 +227,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     }
 }
 
-class MusicTool implements ITool {
+export class MusicTool implements ITool {
     reactControls: MusicToolControls;
     makeRootElement(): HTMLDivElement {
         const root = $("<div class='musicBody'/>").get(0);
@@ -270,6 +270,3 @@ class MusicTool implements ITool {
     finishToolLocalization(pane: HTMLElement) { }
     /* tslint:enable:no-empty */
 }
-
-// Make the one instance of this class and register it with the master toolbox.
-ToolBox.registerTool(new MusicTool());
