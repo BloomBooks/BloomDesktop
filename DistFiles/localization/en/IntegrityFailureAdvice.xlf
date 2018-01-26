@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
   <file original="IntegrityFailureAdvice-en.md" datatype="html" source-language="en">
     <body>
@@ -53,9 +53,10 @@
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG">
-        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
+        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
         <target />
         <note>ID: integrity.todo.ideas.AVG</note>
+        <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
