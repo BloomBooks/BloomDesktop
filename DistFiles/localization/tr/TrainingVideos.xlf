@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="training.videos.watch">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="tr" state="needs-translation">If you are connected to the internet now, you can watch videos in your web browser:</target>
+        <target xml:lang="tr" state="translated">Eğer şu anda internete bağlıysanız, web tarayıcınız ile videoları izleyebilirsiniz:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all">
@@ -30,8 +30,8 @@
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Kimin için</g>
         </target>
         <note>ID: training.videos.whofor</note>
       </trans-unit>
@@ -39,8 +39,8 @@
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Şablonları ve Kalıp Kitapları Anlama</g>
         </target>
         <note>ID: training.videos.templates</note>
       </trans-unit>
@@ -57,8 +57,8 @@
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Çözümlenebilir ve Seviyeli Okuyucular Şablonlarını Kullanma (bir kaç video)</g>
         </target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
@@ -98,8 +98,8 @@
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="tr" state="needs-translation">
-          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
+        <target xml:lang="tr" state="translated">
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Çözümlenebilir ve Seviyeli Okuyucu Şablon Seti Oluşturmak (bir kaç video)</g>
         </target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
@@ -110,21 +110,21 @@
       </trans-unit>
       <trans-unit id="training.videos.download">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
-        <target xml:lang="tr" state="needs-translation">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</target>
+        <target xml:lang="tr" state="translated">Bu videolardan herhangi birini internet bağlantısı olmayan ortamlarda göstermek ve paylaşmak için indirmek istiyorsanız videoları bilgisayarınıza indirebilirsiniz:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="tr" state="needs-translation">
+        <target xml:lang="tr" state="translated">
           
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</target>
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Yüksek Çözünürlük</g> (büyük dosyalar)</target>
         <note>ID: training.videos.hires</note>
       </trans-unit>
       <trans-unit id="training.videos.lores">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="tr" state="needs-translation">
+        <target xml:lang="tr" state="translated">
           
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</target>
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Düşük Çözünürlük</g> (Daha küçük dosyalar)</target>
         <note>ID: training.videos.lores</note>
       </trans-unit>
     </body>

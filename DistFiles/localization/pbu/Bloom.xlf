@@ -199,11 +199,6 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
         <target xml:lang="pbu">يو هم نه</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">None</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="pbu">يو هم نه</target>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
@@ -719,6 +714,12 @@
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
         <target xml:lang="pbu">عنوان نشته</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
+        <source xml:lang="en">{0}% translated</source>
+        <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
+        <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
+        <target xml:lang="pbu" state="translated">{0}% ژباړه شوي دي</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate" approved="yes">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
@@ -1544,12 +1545,6 @@
         <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
         <target xml:lang="pbu">دا کتاب په لنډمهالې توګه قفل نه دی.</target>
       </trans-unit>
-      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This book is temporarily unlocked.</source>
-        <note>ID: EditTab.LockBook.ToolTip</note>
-        <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
-        <target xml:lang="pbu">دا کتاب په لنډمهالې توګه قفل نه دی.</target>
-      </trans-unit>
       <trans-unit id="EditTab.Monolingual" approved="yes">
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
@@ -1652,15 +1647,18 @@
       <trans-unit id="EditTab.TextBoxProperties.BordersAndBackground" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
-        <target xml:lang="pbu">څنډې او amp&amp;; شالید</target>
+        <target xml:lang="pbu">څنډې او &amp; شالید</target>
+        <alt-trans>
+          <target xml:lang="pbu">څنډې او amp&amp;; شالید</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">څنډې او amp; بګرونډ</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">څنډې او amp&amp;; شالید</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">څنډې او amp; شالید</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">څنډې او amp; بګرونډ</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" sil:dynamic="true" approved="yes">

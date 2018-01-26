@@ -7,6 +7,9 @@
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
         <target xml:lang="prs">ساخته شده در ‎‏{0}</target>
+        <alt-trans>
+          <target xml:lang="prs">{0}% ترجمه شده است</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>

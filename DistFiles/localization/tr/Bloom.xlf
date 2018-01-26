@@ -190,21 +190,22 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
         <target xml:lang="tr" state="translated">Hiç biri</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
-        <source xml:lang="en">None</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="tr" state="translated">Hiç biri</target>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="tr" state="translated">{0} için Varsayılan Yazı tipi </target>
+        <target xml:lang="tr" state="translated">{0} için Varsayılan Yazı tipi</target>
+        <alt-trans>
+          <target xml:lang="tr">{0} için Varsayılan Yazı tipi </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="tr" state="translated">Ön / Arka madde paketi </target>
+        <target xml:lang="tr" state="translated">Ön / Arka madde paketi</target>
+        <alt-trans>
+          <target xml:lang="tr">Ön / Arka madde paketi </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true">
         <source xml:lang="en">Device</source>
@@ -222,7 +223,10 @@
         <source xml:lang="en">SIL-PNG</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
-        <target xml:lang="tr" state="translated">SIL - PNG </target>
+        <target xml:lang="tr" state="translated">SIL - PNG</target>
+        <alt-trans>
+          <target xml:lang="tr">SIL - PNG </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
@@ -245,7 +249,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="tr" state="translated">Hint - Arap </target>
+        <target xml:lang="tr" state="translated">Hint - Arap</target>
+        <alt-trans>
+          <target xml:lang="tr">Hint - Arap </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true">
         <source xml:lang="en">Armenian</source>
@@ -275,7 +282,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari" sil:dynamic="true">
         <source xml:lang="en">Devanagari</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
-        <target xml:lang="tr" state="needs-translation">Devanagari</target>
+        <target xml:lang="tr" state="translated">Devanagari dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" sil:dynamic="true">
         <source xml:lang="en">Georgian</source>
@@ -285,12 +292,12 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" sil:dynamic="true">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="tr" state="needs-translation">Gujarati</target>
+        <target xml:lang="tr" state="translated">Guceratça</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" sil:dynamic="true">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
-        <target xml:lang="tr" state="needs-translation">Gurmukhi</target>
+        <target xml:lang="tr" state="translated">Gurmukhi dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true">
         <source xml:lang="en">Hebrew</source>
@@ -305,12 +312,12 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" sil:dynamic="true">
         <source xml:lang="en">Khmer</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
-        <target xml:lang="tr" state="needs-translation">Khmer</target>
+        <target xml:lang="tr" state="translated">Kmerce</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" sil:dynamic="true">
         <source xml:lang="en">Lao</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao</note>
-        <target xml:lang="tr" state="needs-translation">Lao</target>
+        <target xml:lang="tr" state="translated">Laoca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" sil:dynamic="true">
         <source xml:lang="en">Lower-Armenian</source>
@@ -320,22 +327,22 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam" sil:dynamic="true">
         <source xml:lang="en">Malayalam</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
-        <target xml:lang="tr" state="needs-translation">Malayalam</target>
+        <target xml:lang="tr" state="translated">Malayalam dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" sil:dynamic="true">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="tr" state="needs-translation">Mongolian</target>
+        <target xml:lang="tr" state="translated">Moğolca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar" sil:dynamic="true">
         <source xml:lang="en">Myanmar</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
-        <target xml:lang="tr" state="needs-translation">Myanmar</target>
+        <target xml:lang="tr" state="translated">Myanmar dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" sil:dynamic="true">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
-        <target xml:lang="tr" state="needs-translation">Oriya</target>
+        <target xml:lang="tr" state="translated">Oriya dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
@@ -350,22 +357,22 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" sil:dynamic="true">
         <source xml:lang="en">Tamil</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
-        <target xml:lang="tr" state="needs-translation">Tamil</target>
+        <target xml:lang="tr" state="translated">Tamilce</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu" sil:dynamic="true">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="tr" state="needs-translation">Telugu</target>
+        <target xml:lang="tr" state="translated">Telugu dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai" sil:dynamic="true">
         <source xml:lang="en">Thai</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
-        <target xml:lang="tr" state="needs-translation">Thai</target>
+        <target xml:lang="tr" state="translated">Taylandca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" sil:dynamic="true">
         <source xml:lang="en">Tibetan</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan</note>
-        <target xml:lang="tr" state="needs-translation">Tibetan</target>
+        <target xml:lang="tr" state="translated">Tibetçe</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian" sil:dynamic="true">
         <source xml:lang="en">Upper-Armenian</source>
@@ -711,6 +718,12 @@
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
         <target xml:lang="tr" state="translated">Başlık Eksik</target>
       </trans-unit>
+      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
+        <source xml:lang="en">{0}% translated</source>
+        <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
+        <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
+        <target xml:lang="tr" state="needs-translation">{0}% translated</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
         <note>ID: CollectionTab.UnableToCheckForUpdate</note>
@@ -961,7 +974,7 @@
         <source xml:lang="en">&amp;Remove</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): &amp;Delete</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Remove</target>
+        <target xml:lang="tr" state="translated">&amp;Kaldır</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
         <source xml:lang="en">This page will be permanently removed.</source>
@@ -1012,7 +1025,7 @@
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
-        <target xml:lang="tr" state="needs-translation">Change Layout</target>
+        <target xml:lang="tr" state="translated">Yerleşimi Değiştir</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
         <source xml:lang="en">or</source>
@@ -1067,7 +1080,7 @@
       <trans-unit id="EditTab.DeleteTextBoxFromImage">
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
-        <target xml:lang="tr" state="needs-translation">Delete Text Box From Image</target>
+        <target xml:lang="tr" state="translated">Resimden Metin Kutusunu Silin</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
         <source xml:lang="en">Bold</source>
@@ -1103,18 +1116,18 @@
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTip</note>
         <note>Button that tells Bloom to duplicate the currently selected page.</note>
-        <target xml:lang="tr" state="needs-translation">Insert a new page which is a duplicate of this one</target>
+        <target xml:lang="tr" state="translated">Bu sayfanın kopyası olan bir sayfa yerleştirin</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled" sil:dynamic="true">
         <source xml:lang="en">This page cannot be duplicated</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTipWhenDisabled</note>
         <note>Button that tells Bloom to duplicate the currently selected page.</note>
-        <target xml:lang="tr" state="needs-translation">This page cannot be duplicated</target>
+        <target xml:lang="tr" state="translated">Bu sayfa çoğaltılamaz</target>
       </trans-unit>
       <trans-unit id="EditTab.Edit">
         <source xml:lang="en">Edit</source>
         <note>ID: EditTab.Edit</note>
-        <target xml:lang="tr" state="needs-translation">Edit</target>
+        <target xml:lang="tr" state="translated">Düzenle</target>
       </trans-unit>
       <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
@@ -1129,12 +1142,12 @@
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable" sil:dynamic="true">
         <source xml:lang="en">This word is not decodable in this stage.</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable</note>
-        <target xml:lang="tr" state="needs-translation">This word is not decodable in this stage.</target>
+        <target xml:lang="tr" state="translated">Bu kelime bu aşamada çözümlenebilir değil.</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
-        <target xml:lang="tr" state="needs-translation">This sentence is too long for this level.</target>
+        <target xml:lang="tr" state="translated">Bu kelime bu seviye için çok uzun.</target>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -1149,7 +1162,7 @@
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.FormatDialog.Alignment</note>
-        <target xml:lang="tr" state="needs-translation">Alignment</target>
+        <target xml:lang="tr" state="translated">Hizalama</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
@@ -1184,7 +1197,7 @@
       <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true">
         <source xml:lang="en">Emphasis</source>
         <note>ID: EditTab.FormatDialog.Emphasis</note>
-        <target xml:lang="tr" state="needs-translation">Emphasis</target>
+        <target xml:lang="tr" state="translated">Vurgulama</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
         <source xml:lang="en">Font</source>
@@ -1199,7 +1212,7 @@
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
-        <target xml:lang="tr" state="needs-translation">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</target>
+        <target xml:lang="tr" state="translated">'{0}' stilini ve '{1}' dilini taşıyan bütün kutuların boyutlarını değiştirir. \nŞu anki boyut {2}pt.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font size</source>
@@ -1214,12 +1227,12 @@
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
-        <target xml:lang="tr" state="needs-translation">Indent</target>
+        <target xml:lang="tr" state="translated">Girintileme</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between lines of text</source>
         <note>ID: EditTab.FormatDialog.LineSpacingToolTip</note>
-        <target xml:lang="tr" state="needs-translation">Change the spacing between lines of text</target>
+        <target xml:lang="tr" state="translated">Metin satırları arasındaki boşluğu değiştir</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.NewStyle" sil:dynamic="true">
         <source xml:lang="en">New style</source>
@@ -1229,7 +1242,7 @@
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing" sil:dynamic="true">
         <source xml:lang="en">Space Between Paragraphs</source>
         <note>ID: EditTab.FormatDialog.ParagraphSpacing</note>
-        <target xml:lang="tr" state="needs-translation">Space Between Paragraphs</target>
+        <target xml:lang="tr" state="translated">Paragraflar Arasındaki Mesafe</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphTab" sil:dynamic="true">
         <source xml:lang="en">Paragraph</source>
@@ -1295,12 +1308,12 @@
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="tr" state="needs-translation">Book title in {lang}</target>
+        <target xml:lang="tr" state="translated">Kitabın {lang} dilindeki başlığı</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
-        <target xml:lang="tr" state="needs-translation">Click to Edit Copyright &amp; License</target>
+        <target xml:lang="tr" state="translated">Telif hakkı &amp; Lisansı Düzenlemek için Tıkla</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
         <source xml:lang="en">Name of the translator, in {lang}</source>
@@ -1311,12 +1324,12 @@
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>
-        <target xml:lang="tr" state="needs-translation">Use this to acknowledge any funding agencies.</target>
+        <target xml:lang="tr" state="translated">Herhangi bir finansman kuruluşunu kabul etmek için bunu kullanın.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
-        <target xml:lang="tr" state="needs-translation">International Standard Book Number. Leave blank if you don't have one of these.</target>
+        <target xml:lang="tr" state="translated">Uluslararası Standart Kitap Numarası. Bunlardan birine sahip değilseniz boş bırakın.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
@@ -1327,7 +1340,7 @@
         <source xml:lang="en">, </source>
         <note>ID: EditTab.FrontMatter.ListSeparator</note>
         <note>This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.</note>
-        <target xml:lang="tr" state="needs-translation">, </target>
+        <target xml:lang="tr" state="translated">, </target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MarkTheBookEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end of the book.</source>
@@ -1337,7 +1350,7 @@
       <trans-unit id="EditTab.FrontMatter.MarkTheVideoEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end.</source>
         <note>ID: EditTab.FrontMatter.MarkTheVideoEnd</note>
-        <target xml:lang="tr" state="needs-translation">Something to tell the reader/viewer that this is the end.</target>
+        <target xml:lang="tr" state="translated">Okuyana/İzleyene bunun son olduğunu söyleyecek bir şey.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MultipleImageCredit">
         <source xml:lang="en">Images on pages {0} by {1}.</source>
@@ -1350,7 +1363,7 @@
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true">
         <source xml:lang="en">Name of Translator, in {lang}</source>
         <note>ID: EditTab.FrontMatter.NameofTranslatorPrompt</note>
-        <target xml:lang="tr" state="needs-translation">Name of Translator, in {lang}</target>
+        <target xml:lang="tr" state="translated">Çevirmenin Adı, {lang} dilindeki</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
@@ -1366,7 +1379,7 @@
         <source xml:lang="en">Adapted from original, {0}.</source>
         <note>ID: EditTab.FrontMatter.OriginalCopyrightSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
-        <target xml:lang="tr" state="needs-translation">Adapted from original, {0}.</target>
+        <target xml:lang="tr" state="translated">Orijinalinden uyarlanan, {0}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalHadNoCopyrightSentence">
         <source xml:lang="en">Adapted from original without a copyright notice.</source>
@@ -1383,7 +1396,10 @@
       <trans-unit id="EditTab.FrontMatter.PasteImageCreditsLink" sil:dynamic="true">
         <source xml:lang="en">Paste Image Credits</source>
         <note>ID: EditTab.FrontMatter.PasteImageCreditsLink</note>
-        <target xml:lang="tr" state="translated">Resim kredisini yapıştır </target>
+        <target xml:lang="tr" state="translated">Resim kredisini yapıştır</target>
+        <alt-trans>
+          <target xml:lang="tr">Resim kredisini yapıştır </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.PasteMissingCredits">
         <source xml:lang="en">Missing credits:</source>
@@ -1442,7 +1458,10 @@
         <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
-        <target xml:lang="tr" state="translated">Resim kredilerini, telif hakkı ve &amp;vamp, Lisans</target>
+        <target xml:lang="tr" state="translated">Resim kredilerini, telif hakkı ve &amp;, Lisans</target>
+        <alt-trans>
+          <target xml:lang="tr">Resim kredilerini, telif hakkı ve &amp;vamp, Lisans</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="tr">Resim kredilerini, telif hakkı ve &amp;vamp, Lisans</target>
         </alt-trans>
@@ -1475,7 +1494,10 @@
       <trans-unit id="EditTab.JpegWarningDialog.WarningText">
         <source xml:lang="en">The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</source>
         <note>ID: EditTab.JpegWarningDialog.WarningText</note>
-        <target xml:lang="tr" state="translated">Seçtiğiniz dosya "JPEG" dosyasıdır. JPEG dosyaları fotoğraflar ve renk resimleri için mükemmeldir. Bununla birlikte, JPEG dosyaları siyah beyaz çizgi sanatı için büyük bir sorundur. Sorunlar şunları içerir: \ n • Bulanıklık ve gri noktalar.\ n • Büyük dosya boyutları, kitabı paylaşmayı zorlaştırıyor.\ n • Birçok büyük JPEG'ler varsa, Bloom'un PDF dosyalarını ouşturacak kadar bellek olmayabilir. \ n Not: JPEG "kayıplı" olduğu için bir JPEG'i PNG, TIFF veya BMP2ye dönüştürmek aslında işleri daha da kötüleştiriyor. Bu siyah beyaz çizgi sanatı ise, bu biçimlerden birinde orjinal tarama almak istiyorsunuz. \ n Lütfen aşağıdakilerden birini seçin ve ardından "Tamam" ı tıklayın:</target>
+        <target xml:lang="tr" state="translated">Seçtiğiniz dosya "JPEG" dosyasıdır. JPEG dosyaları fotoğraflar ve renk resimleri için mükemmeldir. Bununla birlikte, JPEG dosyaları siyah beyaz çizgi sanatı için büyük bir sorundur. Sorunlar şunları içerir:\n• Bulanıklık ve gri noktalar.\n• Büyük dosya boyutları, kitabı paylaşmayı zorlaştırıyor.\n• Birçok büyük JPEG'ler varsa, Bloom'un PDF dosyalarını ouşturacak kadar bellek olmayabilir.\n\nNot: JPEG "kayıplı" olduğu için bir JPEG'i PNG, TIFF veya BMP2ye dönüştürmek aslında işleri daha da kötüleştiriyor. Bu siyah beyaz çizgi sanatı ise, bu biçimlerden birinde orjinal tarama almak istiyorsunuz.\n\nLütfen aşağıdakilerden birini seçin ve ardından "Tamam" ı tıklayın:</target>
+        <alt-trans>
+          <target xml:lang="tr">Seçtiğiniz dosya "JPEG" dosyasıdır. JPEG dosyaları fotoğraflar ve renk resimleri için mükemmeldir. Bununla birlikte, JPEG dosyaları siyah beyaz çizgi sanatı için büyük bir sorundur. Sorunlar şunları içerir: \ n • Bulanıklık ve gri noktalar.\ n • Büyük dosya boyutları, kitabı paylaşmayı zorlaştırıyor.\ n • Birçok büyük JPEG'ler varsa, Bloom'un PDF dosyalarını ouşturacak kadar bellek olmayabilir. \ n Not: JPEG "kayıplı" olduğu için bir JPEG'i PNG, TIFF veya BMP2ye dönüştürmek aslında işleri daha da kötüleştiriyor. Bu siyah beyaz çizgi sanatı ise, bu biçimlerden birinde orjinal tarama almak istiyorsunuz. \ n Lütfen aşağıdakilerden birini seçin ve ardından "Tamam" ı tıklayın:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.WindowTitle">
         <source xml:lang="en">JPEG Warning</source>
@@ -1486,12 +1508,6 @@
         <source xml:lang="en">This option is only available in the Publish tab.</source>
         <note>ID: EditTab.LayoutInPublishTabOnlyNotice</note>
         <target xml:lang="tr" state="translated">Bu seçenek yalnızca yayınla sekmesinde kullanılır.</target>
-      </trans-unit>
-      <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
-        <source xml:lang="en">This book is temporarily unlocked.</source>
-        <note>ID: EditTab.LockBook.ToolTip</note>
-        <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
-        <target xml:lang="tr" state="translated">Bu kitap geçici olarak açıldı.</target>
       </trans-unit>
       <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
         <source xml:lang="en">This book is temporarily unlocked.</source>
@@ -1616,7 +1632,7 @@
         <source xml:lang="en">Include the name of the language using {lang}. For example: "Enter color in {lang}".</source>
         <note>ID: EditTab.TextBoxProperties.IncludeLang</note>
         <note>Becomes visible when "Show on each" option is chosen in combo. Do NOT translate {lang}.</note>
-        <target xml:lang="tr" state="needs-translation">Include the name of the language using {lang}. For example: "Enter color in {lang}".</target>
+        <target xml:lang="tr" state="translated">{lang} kullanarak dilin ismini dahil edin. Örnek olarak: "{lang} içine renk girin".</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.LanguageTab" sil:dynamic="true">
         <source xml:lang="en">Language</source>
@@ -1688,7 +1704,7 @@
       <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog">
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
-        <target xml:lang="tr" state="needs-translation">Picture Intellectual Property Information</target>
+        <target xml:lang="tr" state="translated">Resim Fikri Mülkiyet Bilgisi</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
         <source xml:lang="en">Background Music Tool</source>
@@ -1750,12 +1766,12 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-        <target xml:lang="tr" state="needs-translation">Decodable Reader Tool</target>
+        <target xml:lang="tr" state="translated">Çözümlenebilir Okuyucu Araçları</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
-        <target xml:lang="tr" state="needs-translation">Bloom can handle only the first {0} words.</target>
+        <target xml:lang="tr" state="translated">Bloom sadece ilk {0} kelimeyi halledebilir.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Allowed words in this stage</source>
@@ -1770,7 +1786,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
         <source xml:lang="en">Letters: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters</note>
-        <target xml:lang="tr" state="needs-translation">Letters: {0}</target>
+        <target xml:lang="tr" state="translated">Kelimeler: {0}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.</source>
@@ -1796,7 +1812,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList">
         <source xml:lang="en">Complete Word List</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList</note>
-        <target xml:lang="tr" state="translated">Komple kelime listesi </target>
+        <target xml:lang="tr" state="translated">Komple kelime listesi</target>
+        <alt-trans>
+          <target xml:lang="tr">Komple kelime listesi </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
         <source xml:lang="en">Letters in this stage</source>
@@ -1913,7 +1932,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
         <source xml:lang="en">Predictability</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Predictability</note>
-        <target xml:lang="tr" state="needs-translation">Predictability</target>
+        <target xml:lang="tr" state="translated">Tahmin Edilebilirlik</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
         <source xml:lang="en">Set up Levels</source>
@@ -2542,7 +2561,10 @@
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2</note>
-        <target xml:lang="tr" state="translated">İşleri basitleştirmek ve organize etmek için, Bloom size birinde veya daha fazlasında yapmak için tüm kitapları tutar &amp; ıt; i &gt; Koleksiyonlar &amp; lt; /i &amp; gt;. Yapmanız gereken ilk şey sizin için bir tane hazırlamak.</target>
+        <target xml:lang="tr" state="translated">İşleri basitleştirmek ve organize etmek için, Bloom size birinde veya daha fazlasında yapmak için tüm kitapları tutar &lt;i&gt;Koleksiyonlar&lt;/i&gt;. Yapmanız gereken ilk şey sizin için bir tane hazırlamak.</target>
+        <alt-trans>
+          <target xml:lang="tr">İşleri basitleştirmek ve organize etmek için, Bloom size birinde veya daha fazlasında yapmak için tüm kitapları tutar &amp; ıt; i &gt; Koleksiyonlar &amp; lt; /i &amp; gt;. Yapmanız gereken ilk şey sizin için bir tane hazırlamak.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="tr">İşleri basitleştirmek ve organize etmek için, Bloom size birinde veya daha fazlasında yapmak için tüm kitapları tutar &amp; ıt; i &gt; Koleksiyonlar &amp; lt; /i &amp; gt;. Yapmanız gereken ilk şey sizin için bir tane hazırlamak.</target>
         </alt-trans>
@@ -2607,7 +2629,10 @@
       <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
         <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
         <note>ID: OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus</note>
-        <target xml:lang="tr" state="translated">Bir koleksiyonu sizinle paylaşmak için bir başkası Gönder / Al gönderimini kullandı mı?\ n Koleksiyonlarınızı bilgisayarınıza kopyalamak için bu kırmızı düğmelerden birini kullanın. \ n Daha sonra, çalışmalarınızı onlarla paylaşmak için Gönder / Al'ı kullanın.</target>
+        <target xml:lang="tr" state="translated">Bir koleksiyonu sizinle paylaşmak için bir başkası Gönder / Al gönderimini kullandı mı?\nKoleksiyonlarınızı bilgisayarınıza kopyalamak için bu kırmızı düğmelerden birini kullanın.\nDaha sonra, çalışmalarınızı onlarla paylaşmak için Gönder / Al'ı kullanın.</target>
+        <alt-trans>
+          <target xml:lang="tr">Bir koleksiyonu sizinle paylaşmak için bir başkası Gönder / Al gönderimini kullandı mı?\ n Koleksiyonlarınızı bilgisayarınıza kopyalamak için bu kırmızı düğmelerden birini kullanın. \ n Daha sonra, çalışmalarınızı onlarla paylaşmak için Gönder / Al'ı kullanın.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_">
         <source xml:lang="en">Change user interface language</source>
@@ -2767,7 +2792,7 @@
         <source xml:lang="en">Replacing existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.ReplacingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="tr" state="needs-translation">Replacing existing "{0}"...</target>
+        <target xml:lang="tr" state="translated">Mevcut "{0}"'ın yerine...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook" sil:dynamic="true">
         <source xml:lang="en">Sending "{0}" to your Android device...</source>
@@ -2854,7 +2879,7 @@
         <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
         <note>{0} and {1} are book layout tags.</note>
-        <target xml:lang="tr" state="needs-translation">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</target>
+        <target xml:lang="tr" state="translated">Bu kitabın yerleşimi şu anda "{0}". Bloom Okuyucusu bunu "{1}" kullanarak gösterecektir, bu yüzden metin uygun olmayabilir. Herhangi bir şeyin düzenlemeye ihtiyacı olup olmadığına bakmak için Düzenleme Sekmesine geri gidin ve yerleşimi "{1}" olarak değiştirin.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
         <source xml:lang="en">Bloom Book for Devices</source>
@@ -2923,7 +2948,7 @@
         <source xml:lang="en">InDesign XML Information</source>
         <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
         <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
-        <target xml:lang="tr" state="needs-translation">InDesign XML Information</target>
+        <target xml:lang="tr" state="translated">InDesign XML Bilgisi</target>
       </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
@@ -2995,7 +3020,7 @@
         <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
         <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="tr" state="needs-translation">Compressing PDF &amp; Converting Color to CMYK</target>
+        <target xml:lang="tr" state="translated">PDF'yi sıkıştırma&amp; Rengi CMYK'ye çevirme</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Creating">
         <source xml:lang="en">Creating PDF...</source>
@@ -3032,13 +3057,13 @@
         <source xml:lang="en">Making Page {0} of the PDF</source>
         <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
-        <target xml:lang="tr" state="needs-translation">Making Page {0} of the PDF</target>
+        <target xml:lang="tr" state="translated">PDF'in Sayfa {0} Yapma</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
         <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
         <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
-        <target xml:lang="tr" state="needs-translation">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</target>
+        <target xml:lang="tr" state="translated">CMYK renkleri ile PDF (U.S. Web Coated (SWOP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
         <source xml:lang="en">PDF with RGB color</source>
@@ -3108,7 +3133,7 @@
       <trans-unit id="PublishTab.Upload.Acknowledgments">
         <source xml:lang="en">Acknowledgments</source>
         <note>ID: PublishTab.Upload.Acknowledgments</note>
-        <target xml:lang="tr" state="needs-translation">Acknowledgments</target>
+        <target xml:lang="tr" state="translated">Teşekkürler</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AdditionalRequests">
         <source xml:lang="en">Additional Requests: </source>
@@ -3128,7 +3153,7 @@
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
-        <target xml:lang="tr" state="needs-translation">CC-BY-NC</target>
+        <target xml:lang="tr" state="translated">CC-BY-NC</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
@@ -3174,7 +3199,7 @@
       <trans-unit id="PublishTab.Upload.GiveBack">
         <source xml:lang="en">It’s easy to “give back”</source>
         <note>ID: PublishTab.Upload.GiveBack</note>
-        <target xml:lang="tr" state="needs-translation">It’s easy to “give back”</target>
+        <target xml:lang="tr" state="translated">"geri vermek" kolaydır</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.HelpEachOther">
         <source xml:lang="en">In the Bloom community, we help each other by sharing both new and newly translated books on the Bloom Library.</source>
@@ -3400,7 +3425,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: PublishTab.Upload.UploadProblemNotice</note>
-        <target xml:lang="tr" state="translated">Kitabını yüklerken bir sorun oluştu. Bloom'u yeniden başlatmanız veya teknik yardım almanız gerekiyor.</target>
+        <target xml:lang="tr" state="translated">Kitabınızı yüklerken bir sorun oluştu. Bloom'u yeniden başlatmanız veya teknik yardım almanız gerekiyor.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadProgress">
         <source xml:lang="en">Upload Progress</source>
@@ -3487,12 +3512,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.FileNeedsTxtExtension" sil:dynamic="true">
         <source xml:lang="en">File needs .TXT extension</source>
         <note>ID: ReaderSetup.FileNeedsTxtExtension</note>
-        <target xml:lang="tr" state="needs-translation">File needs .TXT extension</target>
+        <target xml:lang="tr" state="translated">Dosyanın .TXT uzantısına ihtiyacı var</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true">
         <source xml:lang="en">First,</source>
         <note>ID: ReaderSetup.FirstSetupAlphabet</note>
-        <target xml:lang="tr" state="needs-translation">First,</target>
+        <target xml:lang="tr" state="translated">Önce,</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true">
         <source xml:lang="en">Cannot read this format</source>
@@ -3517,7 +3542,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
         <note>ID: ReaderSetup.Letters.Intro</note>
-        <target xml:lang="tr" state="needs-translation">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</target>
+        <target xml:lang="tr" state="translated">Çözümlenebilir okuyucu yapmanıza yardımcı olmak için Bloom'un öğreteceğiniz harfleri ve harf kombinasyonlarını bilmesi gereklidir.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
@@ -3532,12 +3557,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
         <source xml:lang="en">it's</source>
         <note>ID: ReaderSetup.Letters.LetterHelp3</note>
-        <target xml:lang="tr" state="needs-translation">it's</target>
+        <target xml:lang="tr" state="translated">onun</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
         <source xml:lang="en">.</source>
         <note>ID: ReaderSetup.Letters.LetterHelp4</note>
-        <target xml:lang="tr" state="needs-translation">.</target>
+        <target xml:lang="tr" state="translated">.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
         <source xml:lang="en">Level</source>
@@ -3584,7 +3609,10 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true">
         <source xml:lang="en">Powered by </source>
         <note>ID: ReaderSetup.PoweredBy</note>
-        <target xml:lang="tr" state="translated">Destekleyen</target>
+        <target xml:lang="tr" state="translated">Destekleyen </target>
+        <alt-trans>
+          <target xml:lang="tr">Destekleyen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true">
         <source xml:lang="en">Punctuation</source>
@@ -3594,17 +3622,17 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.ReaderLevels</note>
-        <target xml:lang="tr" state="needs-translation">Reader Levels</target>
+        <target xml:lang="tr" state="translated">Okuyucu Seviyeleri</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
         <source xml:lang="en">Remove Level {0}</source>
         <note>ID: ReaderSetup.RemoveLevel</note>
-        <target xml:lang="tr" state="needs-translation">Remove Level {0}</target>
+        <target xml:lang="tr" state="translated">Seviye {0}'ı Kaldır</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
         <source xml:lang="en">Remove Stage {0}</source>
         <note>ID: ReaderSetup.RemoveStage</note>
-        <target xml:lang="tr" state="needs-translation">Remove Stage {0}</target>
+        <target xml:lang="tr" state="translated">Aşama {0}'ı Kaldır</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveWordList" sil:dynamic="true">
         <source xml:lang="en">Remove from this stage</source>
@@ -3629,7 +3657,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true">
         <source xml:lang="en">, the Search Engine for Literacy.</source>
         <note>ID: ReaderSetup.SearchEngine</note>
-        <target xml:lang="tr" state="needs-translation">, the Search Engine for Literacy.</target>
+        <target xml:lang="tr" state="translated">, okuma-yazma arama motoru.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
         <source xml:lang="en">Previous and New Letters</source>
@@ -3644,27 +3672,27 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Words in each Sentence</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <target xml:lang="tr" state="needs-translation">Maximum Words in each Sentence</target>
+        <target xml:lang="tr" state="translated">Her Cümledeki Maksimum Kelime</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="tr" state="needs-translation">Special Sentence-Ending Punctuation</target>
+        <target xml:lang="tr" state="translated">Özel Cümle-Sonu Noktalama İşaretleri</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="tr" state="needs-translation">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</target>
+        <target xml:lang="tr" state="translated">Bloom hangi karakterin dünya dillerinde cümleyi sonlandırdığını zaten biliyor. Diğerlerini eklemek içi, Unicode karakterleri buraya girin. Örnek olarak, Thai dili için Bloom'a normal boşlukların cümleleri ayırmak için kullandığını söylemek için \U0020 girin.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
         <note>ID: ReaderSetup.SetUpDecodableReaderTool</note>
-        <target xml:lang="tr" state="needs-translation">Set up Decodable Reader Tool</target>
+        <target xml:lang="tr" state="translated">Çözümlenebilir Okuyucu Araçlarını Ayarlayın</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Leveled Reader Tool</source>
         <note>ID: ReaderSetup.SetUpLeveledReaderTool</note>
-        <target xml:lang="tr" state="needs-translation">Set up Leveled Reader Tool</target>
+        <target xml:lang="tr" state="translated">Düzleştirilmiş okuma kitabı aracı ayarla</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
         <source xml:lang="en">set up the alphabet for this language.</source>
@@ -3689,7 +3717,10 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
         <source xml:lang="en">Stage </source>
         <note>ID: ReaderSetup.StageLabel</note>
-        <target xml:lang="tr" state="translated">Aşama</target>
+        <target xml:lang="tr" state="translated">Aşama </target>
+        <alt-trans>
+          <target xml:lang="tr">Aşama</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
         <source xml:lang="en">Stages</source>
@@ -3699,7 +3730,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
         <source xml:lang="en">SynPhony</source>
         <note>ID: ReaderSetup.Synphony</note>
-        <target xml:lang="tr" state="needs-translation">SynPhony</target>
+        <target xml:lang="tr" state="translated">SynPhony</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
         <source xml:lang="en">Things to remember for this level:</source>
@@ -3715,12 +3746,12 @@ Do you want to go ahead?</note>
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>
         <note>ID: ReaderSetup.Words.Intro</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): To help you make decodable readers, Bloom can suggest words that fit within the current stage. There are two ways to give words to Bloom:</note>
-        <target xml:lang="tr" state="needs-translation">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</target>
+        <target xml:lang="tr" state="translated">Çözülebilir okuma kitaplar oluşturmanıza yardımcı olmak için, Bloom mevcut aşamada uygun olan kelimeler önerebilir.  Kelimeleri Bloom'a vermek için birkaç yol vardır:</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true">
         <source xml:lang="en">2) Place Text Files in Your</source>
         <note>ID: ReaderSetup.Words.PlaceTextFiles</note>
-        <target xml:lang="tr" state="needs-translation">2) Place Text Files in Your</target>
+        <target xml:lang="tr" state="translated">2) Metin dosyaları burada yerleştirin:</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true">
         <source xml:lang="en">Sample Texts Folder</source>
@@ -3766,7 +3797,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
         <source xml:lang="en">Make Reader Template Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
-        <target xml:lang="tr" state="needs-translation">Make Reader Template Bloom Pack</target>
+        <target xml:lang="tr" state="translated">Okuma kitabı şablon Bloom paketi yap</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.Email">
         <source xml:lang="en">Email Address</source>
@@ -3798,12 +3829,12 @@ Do you want to go ahead?</note>
       <trans-unit id="RegisterDialog.Organization">
         <source xml:lang="en">Organization</source>
         <note>ID: RegisterDialog.Organization</note>
-        <target xml:lang="tr" state="needs-translation">Organization</target>
+        <target xml:lang="tr" state="translated">Organization</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.RegisterButton">
         <source xml:lang="en">&amp;Register</source>
         <note>ID: RegisterDialog.RegisterButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Register</target>
+        <target xml:lang="tr" state="translated">&amp;Kayıt ol</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.Surname">
         <source xml:lang="en">Surname</source>
@@ -3814,7 +3845,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Register {0}</source>
         <note>ID: RegisterDialog.WindowTitle</note>
         <note>Place a {0} where the name of the program goes.</note>
-        <target xml:lang="tr" state="needs-translation">Register {0}</target>
+        <target xml:lang="tr" state="translated">{0}'a Kayıt Ol</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Close">
         <source xml:lang="en">Close</source>
@@ -3835,12 +3866,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReportProblemDialog.IncludeBookButton">
         <source xml:lang="en">Include Book '{0}'</source>
         <note>ID: ReportProblemDialog.IncludeBookButton</note>
-        <target xml:lang="tr" state="needs-translation">Include Book '{0}'</target>
+        <target xml:lang="tr" state="translated">'{0}' Kitabı Dahil</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.IncludeScreenshotButton">
         <source xml:lang="en">Include this screenshot</source>
         <note>ID: ReportProblemDialog.IncludeScreenshotButton</note>
-        <target xml:lang="tr" state="needs-translation">Include this screenshot</target>
+        <target xml:lang="tr" state="translated">Bu ekran görüntüsü dahil</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Name">
         <source xml:lang="en">Name</source>
@@ -3861,7 +3892,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReportProblemDialog.SubmitButton">
         <source xml:lang="en">&amp;Submit</source>
         <note>ID: ReportProblemDialog.SubmitButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Submit</target>
+        <target xml:lang="tr" state="translated">&amp;Gönder</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Submitting">
         <source xml:lang="en">Submitting to server...</source>
@@ -3919,7 +3950,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox">
         <source xml:lang="en">This script is right to left</source>
         <note>ID: ScriptSettingsDialog.RightToLeftScriptCheckBox</note>
-        <target xml:lang="tr" state="needs-translation">This script is right to left</target>
+        <target xml:lang="tr" state="translated">Bu yazı sağdan sola olur</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle">
         <source xml:lang="en">Special Script Settings...</source>
@@ -3929,7 +3960,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox">
         <source xml:lang="en">This script requires taller lines</source>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
-        <target xml:lang="tr" state="needs-translation">This script requires taller lines</target>
+        <target xml:lang="tr" state="translated">Bu yazı uzun satırları gerektirir</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Template</source>
@@ -3950,12 +3981,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="tr" state="needs-translation">Decodable Reader</target>
+        <target xml:lang="tr" state="translated">Çözümlenebilir Okuyucu</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
-        <target xml:lang="tr" state="needs-translation">Leveled Reader</target>
+        <target xml:lang="tr" state="translated">Derecelendirilmiş okuma kitabı</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Multimedia" sil:dynamic="true">
         <source xml:lang="en">Multimedia</source>
@@ -3975,12 +4006,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.The Moon and the Cap" sil:dynamic="true">
         <source xml:lang="en">The Moon and the Cap</source>
         <note>ID: TemplateBooks.BookName.The Moon and the Cap</note>
-        <target xml:lang="tr" state="needs-translation">The Moon and the Cap</target>
+        <target xml:lang="tr" state="translated">The Moon and the Cap</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true">
         <source xml:lang="en">Vaccinations</source>
         <note>ID: TemplateBooks.BookName.Vaccinations</note>
-        <target xml:lang="tr" state="needs-translation">Vaccinations</target>
+        <target xml:lang="tr" state="translated">Aşılama</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true">
         <source xml:lang="en">Wall Calendar</source>
@@ -4000,136 +4031,136 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Page with a picture on top and a large, centered word below.</source>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
-        <target xml:lang="tr" state="needs-translation">Page with a picture on top and a large, centered word below.</target>
+        <target xml:lang="tr" state="translated">Üstte resim ve altta büyük, ortalanmış kelime ile sayfa.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
         <source xml:lang="en">1</source>
         <note>ID: TemplateBooks.PageLabel.1</note>
-        <target xml:lang="tr" state="needs-translation">1</target>
+        <target xml:lang="tr" state="translated">1</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1 Problem" sil:dynamic="true">
         <source xml:lang="en">1 Problem</source>
         <note>ID: TemplateBooks.PageLabel.1 Problem</note>
         <note>This label indicates a page with one arithmetic problem on it.</note>
-        <target xml:lang="tr" state="needs-translation">1 Problem</target>
+        <target xml:lang="tr" state="translated">1 Problem</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.10" sil:dynamic="true">
         <source xml:lang="en">10</source>
         <note>ID: TemplateBooks.PageLabel.10</note>
-        <target xml:lang="tr" state="needs-translation">10</target>
+        <target xml:lang="tr" state="translated">10</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.11" sil:dynamic="true">
         <source xml:lang="en">11</source>
         <note>ID: TemplateBooks.PageLabel.11</note>
-        <target xml:lang="tr" state="needs-translation">11</target>
+        <target xml:lang="tr" state="translated">11</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.12" sil:dynamic="true">
         <source xml:lang="en">12</source>
         <note>ID: TemplateBooks.PageLabel.12</note>
-        <target xml:lang="tr" state="needs-translation">12</target>
+        <target xml:lang="tr" state="translated">12</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.13" sil:dynamic="true">
         <source xml:lang="en">13</source>
         <note>ID: TemplateBooks.PageLabel.13</note>
-        <target xml:lang="tr" state="needs-translation">13</target>
+        <target xml:lang="tr" state="translated">13</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.14" sil:dynamic="true">
         <source xml:lang="en">14</source>
         <note>ID: TemplateBooks.PageLabel.14</note>
-        <target xml:lang="tr" state="needs-translation">14</target>
+        <target xml:lang="tr" state="translated">14</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.15" sil:dynamic="true">
         <source xml:lang="en">15</source>
         <note>ID: TemplateBooks.PageLabel.15</note>
-        <target xml:lang="tr" state="needs-translation">15</target>
+        <target xml:lang="tr" state="translated">15</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.16" sil:dynamic="true">
         <source xml:lang="en">16</source>
         <note>ID: TemplateBooks.PageLabel.16</note>
-        <target xml:lang="tr" state="needs-translation">16</target>
+        <target xml:lang="tr" state="translated">16</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.17" sil:dynamic="true">
         <source xml:lang="en">17</source>
         <note>ID: TemplateBooks.PageLabel.17</note>
-        <target xml:lang="tr" state="needs-translation">17</target>
+        <target xml:lang="tr" state="translated">17</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.18" sil:dynamic="true">
         <source xml:lang="en">18</source>
         <note>ID: TemplateBooks.PageLabel.18</note>
-        <target xml:lang="tr" state="needs-translation">18</target>
+        <target xml:lang="tr" state="translated">18</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.19" sil:dynamic="true">
         <source xml:lang="en">19</source>
         <note>ID: TemplateBooks.PageLabel.19</note>
-        <target xml:lang="tr" state="needs-translation">19</target>
+        <target xml:lang="tr" state="translated">19</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.2" sil:dynamic="true">
         <source xml:lang="en">2</source>
         <note>ID: TemplateBooks.PageLabel.2</note>
-        <target xml:lang="tr" state="needs-translation">2</target>
+        <target xml:lang="tr" state="translated">2</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.2 Problems" sil:dynamic="true">
         <source xml:lang="en">2 Problems</source>
         <note>ID: TemplateBooks.PageLabel.2 Problems</note>
         <note>This label indicates a page with two arithmetic problems on it.</note>
-        <target xml:lang="tr" state="needs-translation">2 Problems</target>
+        <target xml:lang="tr" state="translated">2 Sorun</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.20" sil:dynamic="true">
         <source xml:lang="en">20</source>
         <note>ID: TemplateBooks.PageLabel.20</note>
-        <target xml:lang="tr" state="needs-translation">20</target>
+        <target xml:lang="tr" state="translated">20</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.21" sil:dynamic="true">
         <source xml:lang="en">21</source>
         <note>ID: TemplateBooks.PageLabel.21</note>
-        <target xml:lang="tr" state="needs-translation">21</target>
+        <target xml:lang="tr" state="translated">21</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true">
         <source xml:lang="en">3</source>
         <note>ID: TemplateBooks.PageLabel.3</note>
-        <target xml:lang="tr" state="needs-translation">3</target>
+        <target xml:lang="tr" state="translated">3</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.3 Problems" sil:dynamic="true">
         <source xml:lang="en">3 Problems</source>
         <note>ID: TemplateBooks.PageLabel.3 Problems</note>
         <note>This label indicates a page with three arithmetic problems on it.</note>
-        <target xml:lang="tr" state="needs-translation">3 Problems</target>
+        <target xml:lang="tr" state="translated">3 Sorun</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
         <source xml:lang="en">4</source>
         <note>ID: TemplateBooks.PageLabel.4</note>
-        <target xml:lang="tr" state="needs-translation">4</target>
+        <target xml:lang="tr" state="translated">4</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.4 Problems" sil:dynamic="true">
         <source xml:lang="en">4 Problems</source>
         <note>ID: TemplateBooks.PageLabel.4 Problems</note>
         <note>This label indicates a page with four arithmetic problems on it.</note>
-        <target xml:lang="tr" state="needs-translation">4 Problems</target>
+        <target xml:lang="tr" state="translated">4 Sorun</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true">
         <source xml:lang="en">5</source>
         <note>ID: TemplateBooks.PageLabel.5</note>
-        <target xml:lang="tr" state="needs-translation">5</target>
+        <target xml:lang="tr" state="translated">5</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true">
         <source xml:lang="en">6</source>
         <note>ID: TemplateBooks.PageLabel.6</note>
-        <target xml:lang="tr" state="needs-translation">6</target>
+        <target xml:lang="tr" state="translated">6</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true">
         <source xml:lang="en">7</source>
         <note>ID: TemplateBooks.PageLabel.7</note>
-        <target xml:lang="tr" state="needs-translation">7</target>
+        <target xml:lang="tr" state="translated">7</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.8" sil:dynamic="true">
         <source xml:lang="en">8</source>
         <note>ID: TemplateBooks.PageLabel.8</note>
-        <target xml:lang="tr" state="needs-translation">8</target>
+        <target xml:lang="tr" state="translated">8</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.9" sil:dynamic="true">
         <source xml:lang="en">9</source>
         <note>ID: TemplateBooks.PageLabel.9</note>
-        <target xml:lang="tr" state="needs-translation">9</target>
+        <target xml:lang="tr" state="translated">9</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.About" sil:dynamic="true">
         <source xml:lang="en">About</source>
@@ -4145,17 +4176,17 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
         <source xml:lang="en">Basic Text &amp; Image</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Image</note>
-        <target xml:lang="tr" state="needs-translation">Basic Text &amp; Image</target>
+        <target xml:lang="tr" state="translated">Basit Metin &amp; Görüntü</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
-        <target xml:lang="tr" state="needs-translation">Basic Text &amp; Picture</target>
+        <target xml:lang="tr" state="translated">Basit Metin &amp; Resim</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
-        <target xml:lang="tr" state="needs-translation">Credits Page</target>
+        <target xml:lang="tr" state="translated">Jenerik Sayfası</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
         <source xml:lang="en">Custom</source>
@@ -4195,12 +4226,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Factory" sil:dynamic="true">
         <source xml:lang="en">Factory</source>
         <note>ID: TemplateBooks.PageLabel.Factory</note>
-        <target xml:lang="tr" state="needs-translation">Factory</target>
+        <target xml:lang="tr" state="translated">Fabrika</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">Flyleaf</source>
         <note>ID: TemplateBooks.PageLabel.Flyleaf</note>
-        <target xml:lang="tr" state="needs-translation">Flyleaf</target>
+        <target xml:lang="tr" state="translated">Kitabın başındaki ve sonundaki boş sayfalar</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
@@ -4216,7 +4247,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Image For Thumbnail</source>
         <note>ID: TemplateBooks.PageLabel.Image For Thumbnail</note>
         <note>Caption of first page in books made from Template Starter</note>
-        <target xml:lang="tr" state="needs-translation">Image For Thumbnail</target>
+        <target xml:lang="tr" state="translated">Küçük Resim İçin Görüntü</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
         <source xml:lang="en">Image On Bottom</source>
@@ -4231,12 +4262,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Inside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
-        <target xml:lang="tr" state="needs-translation">Inside Back Cover</target>
+        <target xml:lang="tr" state="translated">Arka Kapak İçinde</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
         <source xml:lang="en">Inside Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Front Cover</note>
-        <target xml:lang="tr" state="needs-translation">Inside Front Cover</target>
+        <target xml:lang="tr" state="translated">Ön Kapak İçinde</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true">
         <source xml:lang="en">Instructions</source>
@@ -4256,12 +4287,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
-        <target xml:lang="tr" state="needs-translation">Just an Image</target>
+        <target xml:lang="tr" state="translated">Sadece Bir Görüntü</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="tr" state="needs-translation">Outside Back Cover</target>
+        <target xml:lang="tr" state="translated">Arka Kapak Dışında</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
@@ -4271,7 +4302,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Picture &amp; Word</source>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
-        <target xml:lang="tr" state="needs-translation">Picture &amp; Word</target>
+        <target xml:lang="tr" state="translated">Resim &amp; Kelime</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
         <source xml:lang="en">Picture in Middle</source>
@@ -4292,7 +4323,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
         <note>ID: TemplateBooks.PageLabel.SIL-Cameroon</note>
-        <target xml:lang="tr" state="needs-translation">SIL-Cameroon</target>
+        <target xml:lang="tr" state="translated">SIL-Kamerun</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
@@ -4312,7 +4343,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
         <source xml:lang="en">Title Page</source>
         <note>ID: TemplateBooks.PageLabel.Title Page</note>
-        <target xml:lang="tr" state="needs-translation">Title Page</target>
+        <target xml:lang="tr" state="translated">Giriş Sayfası</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
@@ -4323,7 +4354,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Setup</source>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
-        <target xml:lang="tr" state="needs-translation">Setup</target>
+        <target xml:lang="tr" state="translated">Kurulum</target>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true">
         <source xml:lang="en">Agriculture</source>
@@ -4347,7 +4378,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Community Living</source>
         <note>ID: Topics.Community Living</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="tr" state="needs-translation">Community Living</target>
+        <target xml:lang="tr" state="translated">Topluluk Yaşayan</target>
       </trans-unit>
       <trans-unit id="Topics.Culture" sil:dynamic="true">
         <source xml:lang="en">Culture</source>
