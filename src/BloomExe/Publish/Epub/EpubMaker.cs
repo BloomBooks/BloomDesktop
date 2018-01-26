@@ -492,6 +492,7 @@ namespace Bloom.Publish.Epub
 			{
 				RemoveRegularStylesheets(pageDom);
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost());
+				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"Device-XMatter.css").ToLocalhost());
 			}
 			else
 			{
