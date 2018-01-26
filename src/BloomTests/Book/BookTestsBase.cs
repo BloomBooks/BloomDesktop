@@ -76,6 +76,7 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("baseEPUB.css")).Returns("../notareallocation/baseEPUB.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("Device-XMatter.css")).Returns("../notareallocation/Device-XMatter.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("customBookStyles.css")).Returns(Path.Combine(_tempFolder.Path, "customBookStyles.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("settingsCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "settingsCollectionStyles.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("customCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "customCollectionStyles.css"));
