@@ -75,9 +75,14 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
                 });
             }
             if (childElt.props) {
+                // If it's an element OTHER than a Radio, we'll process it recursively, in case it
+                // contains Radio children which need our modifications.
+                // This allows other, non Radio elements to be in the RadioGroup, and to contain Radio children.
                 childProps.children = this.recursiveFixRadio(childElt.props.children);
                 return React.cloneElement(childElt, childProps);
             }
+            // And if it's an element but somehow has no props at all (if this is even possible),
+            // then it has no children so we can safely leave it unchanged.
             return child;
         });
     }
