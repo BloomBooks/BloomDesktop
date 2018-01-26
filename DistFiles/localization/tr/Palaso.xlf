@@ -6,12 +6,12 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="tr" state="needs-translation">Built on {0}</target>
+        <target xml:lang="tr" state="translated">{0} üzerine kurulu</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="tr" state="translated">Güncellemeler Yok</target>
+        <target xml:lang="tr" state="translated">Güncelleme Yok</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
@@ -60,22 +60,22 @@
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="tr" state="needs-translation">Waiting for other {0} to finish...</target>
+        <target xml:lang="tr" state="translated">Diğer {0}'ın bitmesi bekleniyor...</target>
       </trans-unit>
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Abort</target>
+        <target xml:lang="tr" state="translated">&amp;İptal Et</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="tr" state="translated">&amp;İptal Et</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Ignore</target>
+        <target xml:lang="tr" state="translated">&amp;Yoksay</target>
       </trans-unit>
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
@@ -85,17 +85,17 @@
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;No</target>
+        <target xml:lang="tr" state="translated">&amp;Hayır</target>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;OK</target>
+        <target xml:lang="tr" state="translated">&amp;Tamam</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Retry</target>
+        <target xml:lang="tr" state="translated">&amp;Yeniden Dene</target>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
@@ -105,7 +105,7 @@
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Yes</target>
+        <target xml:lang="tr" state="translated">&amp;Evet</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -117,7 +117,7 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="tr" state="needs-translation">{0} will be moved to the Recycle Bin.</target>
+        <target xml:lang="tr" state="translated">{0} Geri Dönüşüm Kutusuna taşınacak.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
         <source xml:lang="en">Confirm Delete</source>
@@ -127,18 +127,18 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="tr" state="translated">&amp;İptal Et</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Delete</target>
+        <target xml:lang="tr" state="translated">&amp;Sil</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to {1}</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="tr" state="needs-translation">Found {0} images with names close to {1}</target>
+        <target xml:lang="tr" state="translated">{1}'e benzer ismi olan {0} görüntü bulundu</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>
@@ -154,7 +154,7 @@
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="tr" state="needs-translation">Use {0}</target>
+        <target xml:lang="tr" state="translated">{0} Kullan</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
@@ -210,7 +210,7 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="tr" state="needs-translation">Image Toolbox</target>
+        <target xml:lang="tr" state="translated">Görüntü Araç Kutusu</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
@@ -221,7 +221,7 @@
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="tr" state="needs-translation">Found {0} images</target>
+        <target xml:lang="tr" state="translated">{0} görüntü bulundu</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
@@ -263,7 +263,7 @@
       <trans-unit id="ImageToolbox.PromptForMissingMetadata">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="tr" state="needs-translation">This image does not know:\n\nWho created it?\nWho can use it?</target>
+        <target xml:lang="tr" state="translated">Bu görüntü şunları bilmiyor:\n\nOnu kim oluşturdu?\nOnu kim kullanabilir?</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner">
         <source xml:lang="en">Scanner</source>
@@ -273,18 +273,18 @@
       <trans-unit id="ImageToolbox.SearchArtOfReading">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="tr" state="needs-translation">Search the Art of Reading Gallery</target>
+        <target xml:lang="tr" state="translated">Okuma Sanatı Galerisi'nde arama yapın</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage">
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="tr" state="needs-translation">The search box is currently set to {0}</target>
+        <target xml:lang="tr" state="translated">Arama kutusu şu anda {0}'a ayarlı</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="tr" state="needs-translation">Set up metadata...</target>
+        <target xml:lang="tr" state="translated">Metadata verilerini ayarla...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader">
         <source xml:lang="en">Other Names</source>
@@ -294,23 +294,23 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="tr" state="needs-translation">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</target>
+        <target xml:lang="tr" state="translated">Bu liste tüm ISO-639 dillerini içermeli, ethnologue.com tarafından bilinen tüm alternatif isimler dahil.\n\nEğer gerekirse, bundan sonra sizin için seçilecek "Listelenmemiş Diller" seçeneğini kullanın.</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="tr" state="needs-translation">Ethnologue.com</target>
+        <target xml:lang="tr" state="translated">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="tr" state="needs-translation">About Language 639-3 Codes &amp; How To Apply For New Ones</target>
+        <target xml:lang="tr" state="translated">Dil 639-3 Kodları Hakkında &amp; Yeniler İçin Nasıl Uygulanır</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="tr" state="needs-translation">About The ISO Language Registry</target>
+        <target xml:lang="tr" state="translated">ISO Dil Kaydı Hakkında</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader">
         <source xml:lang="en">Code</source>
@@ -331,7 +331,7 @@
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="tr" state="needs-translation">You can change how the language name will be displayed here:</target>
+        <target xml:lang="tr" state="translated">Dil isminin burada nasıl görüneceğini değiştirebilirsiniz:</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
         <source xml:lang="en">Lookup Language Code...</source>
@@ -361,12 +361,12 @@
       <trans-unit id="MemoryWarning">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="tr" state="needs-translation">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</target>
+        <target xml:lang="tr" state="translated">Maalesef, {0}'ın hafızası azalmaya başladı ve yavaşlayabilir yada başka problemler yaşayabilir. Uygun olduğunda çıkıp yeniden başlatmanızı öneririz.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Creator">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="tr" state="needs-translation">Creator: {0}</target>
+        <target xml:lang="tr" state="translated">Yaratıcı: {0}</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel">
         <source xml:lang="en">Creator</source>
@@ -376,13 +376,13 @@
       <trans-unit id="MetadataDisplay.LicenseInfo">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="tr" state="needs-translation">License Info</target>
+        <target xml:lang="tr" state="translated">Lisans Bilgisi</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="tr" state="needs-translation">You must keep the copyright and credits for authors, illustrators, etc.</target>
+        <target xml:lang="tr" state="translated">Yazarlar, çizerler vb. için telif hakkını ve jeneriği tutmak zorundasınız.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
@@ -400,13 +400,13 @@
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="tr" state="needs-translation">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</target>
+        <target xml:lang="tr" state="translated">Bu çalışmaya uyarlama ve ekleme yapabilirsiniz fakat sonucu sadece bu lisans ya da buna benzer bir tane ile dağıtabilirsiniz.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="tr" state="needs-translation">You may not make changes or build upon this work without permission.</target>
+        <target xml:lang="tr" state="translated">İzin olmaksızın bu çalışma üzerinde katkı ya da değişiklik yapamazsınız.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
@@ -439,7 +439,7 @@
       <trans-unit id="MetadataEditor.AllowDerivatives">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="tr" state="needs-translation">Allow modifications of your work?</target>
+        <target xml:lang="tr" state="translated">Çalışmanızda değişikliklere izin verilsin mi?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder">
         <source xml:lang="en">Copyright Holder</source>
@@ -484,7 +484,7 @@
       <trans-unit id="MetadataEditor.TitleWithCredit">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="tr" state="needs-translation">Credit, Copyright, and License</target>
+        <target xml:lang="tr" state="translated">Jenerik, Telif Hakkı ve Lisans</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
@@ -512,7 +512,7 @@
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="tr" state="needs-translation">Not Enforceable</target>
+        <target xml:lang="tr" state="translated">Uygulanabilir Değil</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
@@ -528,7 +528,7 @@
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="tr" state="needs-translation">Settings Protection...</target>
+        <target xml:lang="tr" state="translated">Ayarlar Koruması...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
         <source xml:lang="en">Hide the button that opens settings.</source>
@@ -538,17 +538,17 @@
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="tr" state="needs-translation">Factory Password</target>
+        <target xml:lang="tr" state="translated">Fabrika Şifresi</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="tr" state="needs-translation">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</target>
+        <target xml:lang="tr" state="translated">Bu aracın sizin için çalışmamasına neden olabilecek kazayla yapılan değişiklikleri engellemek için bu ayarlar kilitlenmiştir.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="tr" state="needs-translation">Settings Protection Password</target>
+        <target xml:lang="tr" state="translated">Ayarlar Koruma Şifresi</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
         <source xml:lang="en">Show Characters</source>
@@ -560,12 +560,12 @@
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
-        <target xml:lang="tr" state="needs-translation">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</target>
+        <target xml:lang="tr" state="translated">Bu ayarlar için fabrika şifresi "{0}"dır. Eğer unutursanız, her zaman "{1}" ve "{2}" için google da arama yapabilirsiniz</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="tr" state="needs-translation">Require the factory password to get into settings.</target>
+        <target xml:lang="tr" state="translated">Ayarlara girmek için fabrika şifresi gereklidir.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
         <source xml:lang="en">Settings Protection</source>
@@ -580,32 +580,32 @@
       <trans-unit id="WSFontControl.Font">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Font:</target>
+        <target xml:lang="tr" state="translated">&amp;Yazı tipi:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="tr" state="needs-translation">(The selected font is not available on this machine. Using default.)</target>
+        <target xml:lang="tr" state="translated">(Seçili yazı tipi bu makine için kullanılabilir değil. Varsayılan kullanılıyor.)</target>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="tr" state="needs-translation">This is a &amp;right to left writing system.</target>
+        <target xml:lang="tr" state="translated">Bu &amp;sağdan sola yazma sistemi.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Size:</target>
+        <target xml:lang="tr" state="translated">&amp;Boyut:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Test Area:</target>
+        <target xml:lang="tr" state="translated">&amp;Test Alanı:</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="tr" state="needs-translation">If the keyboard you need is not listed, click the appropriate link below to set it up</target>
+        <target xml:lang="tr" state="translated">Eğer ihtiyacınız olan klavye listelenmemiş ise kurmak için aşağıdaki uygun bağlantıyı tıklayın</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
         <source xml:lang="en">Windows keyboard settings</source>
@@ -625,17 +625,17 @@
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="tr" state="needs-translation">Keyman Configuration</target>
+        <target xml:lang="tr" state="translated">Keyman Yapılandırması</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="tr" state="needs-translation">Keyman 5.0 or later is not Installed.</target>
+        <target xml:lang="tr" state="translated">Keyman 5.0 yada üstü yüklenmemiş.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="tr" state="needs-translation">Select the &amp;keyboard with which to type {0} text</target>
+        <target xml:lang="tr" state="translated">{0} metnini yazabilen &amp;klavyeyi seçin</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
@@ -645,7 +645,7 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="tr" state="needs-translation">&amp;Test Area (Use this area to type something to test out your keyboard.)</target>
+        <target xml:lang="tr" state="translated">&amp;Test Alanı (Klavyeniz ile bir şeyler yazmayı test etmek için bu alanı kullanın.)</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
@@ -665,7 +665,7 @@
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="tr" state="needs-translation">[Missing] {0} ({1})</target>
+        <target xml:lang="tr" state="translated">[Missing] {0} ({1})</target>
       </trans-unit>
     </body>
   </file>

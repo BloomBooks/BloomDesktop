@@ -49,12 +49,12 @@
       </trans-unit>
       <trans-unit id="leveled.reader.level">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="tr" state="needs-translation">Leveled Reader Level</target>
+        <target xml:lang="tr" state="translated">Derecelendirilmiş okuma kitabı aşaması</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="tr" state="needs-translation">Decodable Stage</target>
+        <target xml:lang="tr" state="translated">Çözümlenebilir Aşaması</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>

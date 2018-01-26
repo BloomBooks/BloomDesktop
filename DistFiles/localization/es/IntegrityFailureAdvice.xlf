@@ -61,10 +61,11 @@
           <target xml:lang="es-ES">Antivirus Norton:<g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instrucciones de Symantec</g>.  </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
-        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="es-ES">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instrucciones de AVG</g>.</target>
+      <trans-unit id="integrity.todo.ideas.AVG">
+        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
+        <target xml:lang="es-ES" state="translated">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instrucciones de AVG</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
+        <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
         <alt-trans>
           <target xml:lang="es-ES">AVG:<g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instrucciones de AVG</g>.  </target>
         </alt-trans>
