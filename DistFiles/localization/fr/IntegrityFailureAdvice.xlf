@@ -53,9 +53,10 @@
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG">
-        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="fr" state="needs-translation">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</target>
+        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
+        <target xml:lang="fr" state="needs-translation">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
+        <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
