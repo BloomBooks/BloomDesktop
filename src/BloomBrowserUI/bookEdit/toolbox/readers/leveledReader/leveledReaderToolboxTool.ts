@@ -3,6 +3,7 @@ import { getTheOneReaderToolsModel, DRTState, } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
+import axios from "axios";
 
 export class LeveledReaderToolboxTool implements ITool {
     makeRootElement(): HTMLDivElement {
@@ -11,7 +12,16 @@ export class LeveledReaderToolboxTool implements ITool {
     beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts['leveledReaderState']) {
-                getTheOneReaderToolsModel().setLevelNumber(parseInt(opts['leveledReaderState']));
+                // The true passed here prevents re-saving the state we just read.
+                // One non-obvious implication is that simply opening a level-4 book
+                // will not switch the default level for new books to 4. That only
+                // happens when you CHANGE the level in the toolbox.
+                getTheOneReaderToolsModel().setLevelNumber(parseInt(opts['leveledReaderState'], 10), true);
+            } else {
+                axios.get("/bloom/api/readers/io/defaultLevel").then(result => {
+                    // Presumably a brand new book. We'd better save the settings we come up with in it.
+                    getTheOneReaderToolsModel().setLevelNumber(parseInt(result.data, 10));
+                });
             }
         });
     }

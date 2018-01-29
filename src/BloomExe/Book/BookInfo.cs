@@ -518,11 +518,6 @@ namespace Bloom.Book
 			{
 				throw new ApplicationException("meta.json of this book may be corrupt");
 			}
-			if (result.Tools != null)
-			{
-				foreach (var tool in result.Tools.Where(t => t is UnknownTool).ToArray())
-					result.Tools.Remove(tool);
-			}
 			return result;
 		}
 

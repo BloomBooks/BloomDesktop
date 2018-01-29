@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using Amazon.Runtime.Internal.Util;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Properties;
 using L10NSharp;
 using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
@@ -174,6 +175,48 @@ namespace Bloom.Api
 						default:
 							request.Failed("Http verb not handled");
 							break;
+					}
+					break;
+				case "defaultLevel":
+					if (request.HttpMethod == HttpMethods.Get)
+					{
+						request.ReplyWithText(Settings.Default.CurrentLevel.ToString());
+					}
+					else
+					{
+						int level;
+						if (int.TryParse(request.RequiredParam("level"), out level))
+						{
+							Settings.Default.CurrentLevel = level;
+							Settings.Default.Save();
+						}
+						else
+						{
+							// Don't think any sort of runtime failure is worthwhile here.
+							Debug.Fail("could not parse level number");
+						}
+						request.PostSucceeded(); // technically it didn't if we didn't parse the number
+					}
+					break;
+				case "defaultStage":
+					if (request.HttpMethod == HttpMethods.Get)
+					{
+						request.ReplyWithText(Settings.Default.CurrentStage.ToString());
+					}
+					else
+					{
+						int stage;
+						if (int.TryParse(request.RequiredParam("stage"), out stage))
+						{
+							Settings.Default.CurrentStage = stage;
+							Settings.Default.Save();
+						}
+						else
+						{
+							// Don't think any sort of runtime failure is worthwhile here.
+							Debug.Fail("could not parse stage number");
+						}
+						request.PostSucceeded(); // technically it didn't if we didn't parse the number
 					}
 					break;
 				default:

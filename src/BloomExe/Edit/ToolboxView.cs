@@ -21,12 +21,8 @@ namespace Bloom.Edit
 	/// Thus, unlike other View classes in Bloom, ToolboxView does not inherit from a Control class,
 	/// nor are there ever any instances; all methods are currently static.
 	/// Currently necessary steps to add a new tool:
-	/// - Create a subclass of ToolboxTool.
-	///		- Give it a static constant string StaticToolId
-	///		- override ToolId to return StaticToolId
-	/// - Add a case to ToolboxTool.CreateFromToolId() and GetToolboxToolFromJsonObject().
 	/// - Add the tool's folder to ToolboxView.GetToolboxServerDirectories().
-	/// - Create a folder under BloomBrowserUI/bookEdit/toolbox. It's name should match the toolId.
+	/// - Create a folder under BloomBrowserUI/bookEdit/toolbox. It's name should match the toolId (see below).
 	/// - Create a file in that folder with extension .tsx to contain the React code of the panel
 	///		- it (or another file) should have a class which implements ITool
 	///			- minimally this must implement id() to return the tool ID
@@ -34,34 +30,14 @@ namespace Bloom.Edit
 	///			- create one instance and publish it to get the tool known to the toolbox and include its
 	///				code in the toolbox bundle: in toolboxBootstrap.ts, add a line like
 	///				ToolBox.registerTool(new MyWonderfulTool());
-	///			- should implement makeRootElements() to create html with one h3 and one div,
-	///				both having attribute data-panelId='{toolId}Tool'. The h3 should have the tool's
-	///				accordion label (with suitable i18n attr).
-	///			- the div will be passed to ReactDOM.render() as the root element.
+	///			- should implement makeRootElement() to create one div, the react root.
+	///				- the returned root should already have been passed passed to ReactDOM.render().
+	///			- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}.Heading,
+	///				where UCToolId is the capitalized version of your tool Id, e.g., "Music".
+	///				We currently assume the default English value of this will be UCToolId Tool, e.g., "Music Tool"
 	/// </summary>
 	public class ToolboxView
 	{
-		private static string[] _idsOfToolsThisVersionKnowsAbout;
-
-		// We could just list them (and used to), but this version makes it unnecessary to remember to add
-		// new ones to the list.
-		private static string[] IdsOfToolsThisVersionKnowsAbout
-		{
-			get
-			{
-				if (_idsOfToolsThisVersionKnowsAbout == null)
-				{
-					_idsOfToolsThisVersionKnowsAbout = typeof(ToolboxTool).Assembly.GetTypes()
-						.Where(t => t.IsSubclassOf(typeof(ToolboxTool)))
-						.Where(t => t != typeof(UnknownTool))
-						.Select(t => t.GetField("StaticToolId").GetValue(null))
-						.Cast<string>()
-						.ToArray();
-				}
-				return _idsOfToolsThisVersionKnowsAbout;
-			}
-		}
-
 		public static void RegisterWithServer(EnhancedImageServer server)
 		{
 			server.RegisterEndpointHandler("toolbox/settings", HandleSettings, false);
@@ -108,18 +84,6 @@ namespace Bloom.Edit
 			return TempFileUtils.CreateHtml5StringFromXml(domForToolbox.RawDom);
 		}
 
-		private static List<ToolboxTool> GetPossibleTools(Book.Book book, string[] idsOfToolsThisVersionKnowsAbout)
-		{
-			var toolsThatHaveDataInBookInfo =
-				book.BookInfo.Tools.Where(t => idsOfToolsThisVersionKnowsAbout.Contains(t.ToolId)).ToList();
-			var toolsToDisplay = toolsThatHaveDataInBookInfo;
-			toolsToDisplay.AddRange(
-				idsOfToolsThisVersionKnowsAbout.Except(
-					toolsThatHaveDataInBookInfo.Select(t => t.ToolId)).Select(ToolboxTool.CreateFromToolId));
-			return toolsToDisplay.ToList();
-		}
-
-
 		private static void HandleSettings(ApiRequest request)
 		{
 			if(request.HttpMethod != HttpMethods.Get)
@@ -130,18 +94,10 @@ namespace Bloom.Edit
 				{"current", request.CurrentBook.BookInfo.CurrentTool}
 			};
 
-			foreach (var tool in GetPossibleTools(request.CurrentBook, IdsOfToolsThisVersionKnowsAbout))
+			foreach (var tool in request.CurrentBook.BookInfo.Tools)
 			{
 				if (!String.IsNullOrEmpty(tool.State))
 					settings.Add(tool.StateName, tool.State);
-				else
-				{
-					var defaultState = tool.DefaultState();
-					if (!string.IsNullOrEmpty(defaultState))
-					{
-						settings.Add(tool.StateName, defaultState);
-					}
-				}
 			}
 
 			request.ReplyWithJson(settings);
@@ -192,7 +148,6 @@ namespace Bloom.Edit
 			if (item != null)
 			{
 				item.State = state;
-				item.SaveDefaultState();
 			}
 		}
 

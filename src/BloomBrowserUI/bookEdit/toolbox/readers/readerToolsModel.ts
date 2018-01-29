@@ -114,21 +114,24 @@ export class ReaderToolsModel {
         this.setStageNumber(this.stageNumber - 1);
     }
 
-    setStageNumber(stage: number): void {
+    setStageNumber(stage: number, skipSave?: boolean): void {
+        // this much needs to be done immediately; otherwise, the result of
+        // different routines calling setStageNumber is unpredictable, depending on
+        // when the different asyncGetText() calls complete.
+        var stages = this.synphony.getStages();
+        if (stage < 1 || stage > stages.length) {
+            return;
+        }
+
+        this.stageNumber = stage;
+        this.updateStageLabel();
+        this.updateStageButtonsAvalibility();
 
         theOneLocalizationManager.asyncGetText("Common.Loading", "Loading...", "").then((loadingMessage) => {
             // this may result in a need to resize the word list
             this.previousHeight = 0;
             $("#letterList").html(loadingMessage);
             $("#wordList").html(loadingMessage);
-            var stages = this.synphony.getStages();
-            if (stage < 1 || stage > stages.length) {
-                return;
-            }
-
-            this.stageNumber = stage;
-            this.updateStageLabel();
-            this.updateStageButtonsAvalibility();
 
             // OK, now let that changed number and the "loading" messages
             // make it to the user's screen, then start doing the work.
@@ -157,7 +160,12 @@ export class ReaderToolsModel {
                     }
                 }, 0);
 
-                this.saveState();
+                if (!skipSave) {
+                    this.saveState();
+                    // When we're actually changing the stage number is the only time we want
+                    // to update the default.
+                    axios.post("/bloom/api/readers/io/defaultStage?stage=" + this.stageNumber);
+                }
 
                 if (this.readyToDoMarkup()) {
                     this.doMarkup();
@@ -188,7 +196,7 @@ export class ReaderToolsModel {
         this.setLevelNumber(this.levelNumber - 1);
     }
 
-    setLevelNumber(val: number): void {
+    setLevelNumber(val: number, skipSave?: boolean): void {
 
         var levels = this.synphony.getLevels();
         if (val < 1 || val > levels.length) {
@@ -198,7 +206,12 @@ export class ReaderToolsModel {
         this.updateLevelLabel();
         this.enableLevelButtons();
         this.updateLevelLimits();
-        this.saveState();
+        if (!skipSave) {
+            this.saveState();
+            // When we're actually changing the level is the only time we want
+            // to update the default.
+            axios.post("/bloom/api/readers/io/defaultLevel?level=" + this.levelNumber);
+        }
         this.doMarkup();
     }
 
@@ -229,11 +242,13 @@ export class ReaderToolsModel {
         this.setSort(SortType.alphabetic);
     }
 
-    setSort(sortType: string): void {
+    setSort(sortType: string, skipSave?: boolean): void {
         this.sort = sortType;
         this.updateSortStatus();
         this.updateWordList();
-        this.saveState();
+        if (!skipSave) {
+            this.saveState();
+        }
     }
 
     updateSortStatus(): void {
@@ -970,7 +985,7 @@ export class ReaderToolsModel {
             if (this.synphony) {
                 this.synphony.loadFromLangData(theOneLanguageDataInstance);
             } else {
-                console.warn("ReaderToolsModel.AddWordsFromFile() - this.synphony is null, fileContents starts: " + fileContents.substr(0,24));
+                console.warn("ReaderToolsModel.AddWordsFromFile() - this.synphony is null, fileContents starts: " + fileContents.substr(0, 24));
             }
         }
         // handle sample texts files that are just a set of space-delimited words
@@ -1180,8 +1195,11 @@ export class ReaderToolsModel {
         var state = new DRTState();
 
         if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
-        this.setStageNumber(state.stage);
-        this.setLevelNumber(state.level);
+        // when restoring state we do NOT want to save the results; things are presumably unchanged,
+        // and saving the state of a new book from a template can override system defaults we have
+        // not yet applied to the book.
+        this.setStageNumber(state.stage, true);
+        this.setLevelNumber(state.level, true);
     }
 
     getAllowedWordsLists(): void {

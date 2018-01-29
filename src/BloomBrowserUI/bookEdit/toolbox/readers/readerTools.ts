@@ -173,6 +173,7 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     axios.get('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
     axios.get('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
+        console.log("done synphony init");
         result.resolve();
     });
     return result;
