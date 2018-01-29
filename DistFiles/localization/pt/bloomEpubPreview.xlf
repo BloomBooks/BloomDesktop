@@ -68,6 +68,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
         <alt-trans>
@@ -80,6 +81,19 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Uma maneira prática de obter livros para o seu telefone é configurar o Dropbox ou serviço similar no seu computador e seu celular/tablet. Apenas clique em salvar ePUB e escolha sua pasta Dropbox. Em seu telefone, abra o app Dropbox e selecione o seu livro. Se você estiver usando um laptop, você também pode tentar o programa gratuito de <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/"> ShareIt</g> para enviar arquivos de seu laptop para um telefone ou tablet.       
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -106,14 +120,6 @@
         <alt-trans>
           <target xml:lang="pt-PT">Uma maneira prática de obter livros para o seu telefone é configurar o Dropbox ou serviço similar no seu computador e seu celular/tablet. Apenas clique em salvar ePUB e escolha sua pasta Dropbox. Em seu telefone, abra o app Dropbox e selecione o seu livro. Se você estiver usando um laptop, você também pode tentar o programa gratuito de <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/"> ShareIt</g> para enviar arquivos de seu laptop para um telefone ou tablet.       
       
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Uma maneira prática de obter livros para o seu telefone é configurar o Dropbox ou serviço similar no seu computador e seu celular/tablet. Apenas clique em salvar ePUB e escolha sua pasta Dropbox. Em seu telefone, abra o app Dropbox e selecione o seu livro. Se você estiver usando um laptop, você também pode tentar o programa gratuito de <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/"> ShareIt</g> para enviar arquivos de seu laptop para um telefone ou tablet.       
       
       
       
@@ -139,6 +145,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.gitden.okay</note>
         <alt-trans>
@@ -151,6 +158,19 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Nossos testes mostram que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm"> Gitden leitor</g> deve ser uma boa escolha para Android e IOS (IPhone &amp; IPad) dispositivos.       
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -177,14 +197,6 @@
         <alt-trans>
           <target xml:lang="pt-PT">Nossos testes mostram que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm"> Gitden leitor</g> deve ser uma boa escolha para Android e IOS (IPhone &amp; IPad) dispositivos.       
       
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Nossos testes mostram que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm"> Gitden leitor</g> deve ser uma boa escolha para Android e IOS (IPhone &amp; IPad) dispositivos.       
       
       
       
@@ -193,9 +205,10 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.gitden.limits">
-        <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</source>
+        <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Read aloud (TTS)" feature. Then it will show you the audio controls.</source>
         <target xml:lang="pt-PT" state="translated">Para ouvir este Áudio Livro com o Gitden em seu telefone ou dispositivo, você deve desligar a função "texto para voz". Em seguida, os controles de áudio serão exibidos.</target>
         <note>ID: epubpreview.gitden.limits</note>
+        <note>OLD TEXT (Gitden's wording changed): To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</note>
       </trans-unit>
       <trans-unit id="epubpreview.make.it.talk">
         <source xml:lang="en">Make it Talk</source>
@@ -206,6 +219,7 @@
         <source xml:lang="en">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
       </source>
         <target xml:lang="pt-PT" state="translated">Se você quiser criar um " Áudio Livro" que os leitores possam ouvir durante a leitura, use <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Ferramenta de Áudio Livro</g> para adicionar gravações.      
+      
       
       
       
@@ -227,6 +241,19 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Se você quiser criar um " Áudio Livro" que os leitores possam ouvir durante a leitura, use <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Ferramenta de Áudio Livro</g> para adicionar gravações.      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -253,14 +280,6 @@
         <alt-trans>
           <target xml:lang="pt-PT">Se você quiser criar um " Áudio Livro" que os leitores possam ouvir durante a leitura, use <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Ferramenta de Áudio Livro</g> para adicionar gravações.      
       
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Se você quiser criar um " Áudio Livro" que os leitores possam ouvir durante a leitura, use <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Ferramenta de Áudio Livro</g> para adicionar gravações.      
       
       
       

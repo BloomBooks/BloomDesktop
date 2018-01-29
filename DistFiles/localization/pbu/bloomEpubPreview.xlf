@@ -11,6 +11,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.describe</note>
         <alt-trans>
@@ -19,6 +20,15 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">دا ده یو <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> ستاسې د برېښنايي کتاب نسخه. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">دا غږونه لري، چې نوې غوږ نیونکي د لوستلو په وخت ورته غوږ ونیولی شي.</g>
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -37,10 +47,6 @@
         <alt-trans>
           <target xml:lang="pbu">دا ده یو <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> ستاسې د برېښنايي کتاب نسخه. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">دا غږونه لري، چې نوې غوږ نیونکي د لوستلو په وخت ورته غوږ ونیولی شي.</g>
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">دا ده یو <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> ستاسې د برېښنايي کتاب نسخه. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">دا غږونه لري، چې نوې غوږ نیونکي د لوستلو په وخت ورته غوږ ونیولی شي.</g>
       </target>
         </alt-trans>
       </trans-unit>
@@ -139,6 +145,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
         <alt-trans>
@@ -147,6 +154,15 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">ښه لاره چې کتابونه خپل مبایل ته واستوئ، د ‏Dropbox‏ نصب کول دي یا همداسی بل کوم خدمت په دواړو خپلو مبایل/ټبلیټ او کمپیوټر کې جمتو کړئ. یواځې په ‏ePUB ‏ ثبتولو زور وکړئ او بیا د ‏Dropbox ‏ پوښتې انتخاب کړئ. د تاسو په مبایل کې، د ‏Dropbox ‏کاریال خلاص کړئ او خپل کتاب انتخاب کړئ. که تاسو لپټاپ استعمالوئ، تاسو وړیا نسخه کارولي شئ <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">شریک یې کړئ</g> هغه پروګرام چې دوسیي ستاسې لپټاپ څخه ستاسو موبایل یا ټبلیټ ته استوي.
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -165,10 +181,6 @@
         <alt-trans>
           <target xml:lang="pbu">ښه لاره چې کتابونه خپل مبایل ته واستوئ، د ‏Dropbox‏ نصب کول دي یا همداسی بل کوم خدمت په دواړو خپلو مبایل/ټبلیټ او کمپیوټر کې جمتو کړئ. یواځې په ‏ePUB ‏ ثبتولو زور وکړئ او بیا د ‏Dropbox ‏ پوښتې انتخاب کړئ. د تاسو په مبایل کې، د ‏Dropbox ‏کاریال خلاص کړئ او خپل کتاب انتخاب کړئ. که تاسو لپټاپ استعمالوئ، تاسو وړیا نسخه کارولي شئ <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">شریک یې کړئ</g> هغه پروګرام چې دوسیي ستاسې لپټاپ څخه ستاسو موبایل یا ټبلیټ ته استوي.
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">ښه لاره چې کتابونه خپل مبایل ته واستوئ، د ‏Dropbox‏ نصب کول دي یا همداسی بل کوم خدمت په دواړو خپلو مبایل/ټبلیټ او کمپیوټر کې جمتو کړئ. یواځې په ‏ePUB ‏ ثبتولو زور وکړئ او بیا د ‏Dropbox ‏ پوښتې انتخاب کړئ. د تاسو په مبایل کې، د ‏Dropbox ‏کاریال خلاص کړئ او خپل کتاب انتخاب کړئ. که تاسو لپټاپ استعمالوئ، تاسو وړیا نسخه کارولي شئ <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">شریک یې کړئ</g> هغه پروګرام چې دوسیي ستاسې لپټاپ څخه ستاسو موبایل یا ټبلیټ ته استوي.
       </target>
         </alt-trans>
       </trans-unit>
@@ -210,10 +222,11 @@
       </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.gitden.limits" approved="yes">
-        <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</source>
-        <target xml:lang="pbu">دې غږیز کتاب ته د غوږ نیولو لپاره په مبایل یا ټبلیټ کې ‏Gitden‏ کارول، تاسو به د ‏Gitden‏ "متن نه وینا ته" غیر فعال کړئ. بیا به هغه تاسو ته غږیز کنټرولونه ښکاره کړي.</target>
+      <trans-unit id="epubpreview.gitden.limits">
+        <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Read aloud (TTS)" feature. Then it will show you the audio controls.</source>
+        <target xml:lang="pbu" state="translated">دې غږیز کتاب ته د غوږ نیولو لپاره په مبایل یا ټبلیټ کې ‏Gitden‏ کارول، تاسو به د ‏Gitden‏ "متن نه وینا ته" غیر فعال کړئ. بیا به هغه تاسو ته غږیز کنټرولونه ښکاره کړي.</target>
         <note>ID: epubpreview.gitden.limits</note>
+        <note>OLD TEXT (Gitden's wording changed): To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</note>
       </trans-unit>
       <trans-unit id="epubpreview.make.it.talk" approved="yes">
         <source xml:lang="en">Make it Talk</source>
