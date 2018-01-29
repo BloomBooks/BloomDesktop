@@ -1,8 +1,9 @@
 @import "../../../templates/common-mixins.less";
-@textColor: @bloom-buff;// #0C8597;
+//@import "../../../node_modules/rc-slider/assets/index.css";
+@textColor: @bloom-buff;// #D2D2D2;
 @toolboxBackgroundColor: @DarkBackgroundColor;
 @buttonColumnWidth: 40px;
-
+@disabledColor: #7a7a7a; // matches apparent color of dimmed speaker icon
 
 .musicBody{
     padding-left: 10px;
@@ -31,10 +32,25 @@
         background-image: url(audio/play_enabled.svg);
         height:25px;
         width:25px;
+
+        &.playing {background-image: url(pause-blue.svg)}
     }
-    .speaker-volume {height:30px;width:30px;}
-    .musicOption {margin-top:20px;}
-    .bgLabelWrapper {display:inline-block; max-width: 120px;}
+    .speaker-volume {
+        height:23px;
+        width:23px;
+        position: relative;
+
+        &.disabled ::after {
+            content:"";
+            background-color: @toolboxBackgroundColor;
+            opacity: 60%;
+            top:0;bottom:0;left:0;right:0;
+            position: absolute;
+            z-index: 1;
+        }
+    }
+    .radioButton {margin-top:20px;}
+    .radioLabel {display:inline-block; max-width: 120px;}
     #musicFilename {
         // The combination of these makes us have just one line of filename,
         // adjacent to the Play button, with ellipsis if it is truncated.
@@ -48,7 +64,7 @@
         display:flex;
         align-items: center;
     }
-    .musicButton {vertical-align: top}
+    .radioInput {vertical-align: top}
     .musicChooseFile {text-decoration: @textColor underline; margin-left: 10px;}
     #musicVolumePercent {text-align: center;margin-left: 10px;}
     #musicVolumeSlider {
@@ -58,8 +74,9 @@
     #musicSetVolume {display:flex;}
     .bgSliderWrapper {
         flex-grow: 1; // only grow item, so takes as much space as it can
-        margin-top: 12px;
-        margin-left: 15px;
+        margin-top: 5px;
+        margin-left: 8px;
+        margin-right: 15px
     }
     .ui-slider-horizontal .ui-slider-handle {
         // found by experiment things to tweak from default to make a small circular white handle.
@@ -78,6 +95,7 @@
     #musicOuterWrapper {
         margin-left:5px; // needed to make the nested controls line up visually with the radio buttons
     }
+    .musicChooseFile, .musicChooseWrapper .radioButton {display:inline-block;}
 
     .button-label-wrapper {margin-top: 10px;}
     .musicButtonWrapper {display:inline-block;min-width: 30px; margin-top:9px;}

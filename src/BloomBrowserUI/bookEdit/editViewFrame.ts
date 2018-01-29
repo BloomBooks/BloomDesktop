@@ -1,15 +1,15 @@
-import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
-import 'jquery-ui/jquery-ui-1.10.3.custom.min.js'; //for dialog()
+import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
-export function SayHello() { alert('Hello from editViewFrame'); }
+export function SayHello() { alert("Hello from editViewFrame"); }
 
 // These functions should be available for calling by non-module code (such as C# directly)
 // using the FrameExports object (see more details in bloomFrames.ts)
-import { getToolboxFrameExports } from './js/bloomFrames';
+import { getToolboxFrameExports } from "./js/bloomFrames";
 export { getToolboxFrameExports };
-import { getPageFrameExports } from './js/bloomFrames';
+import { getPageFrameExports } from "./js/bloomFrames";
 export { getPageFrameExports };
-import { showAddPageDialog } from '../pageChooser/launch-page-chooser';
+import { showAddPageDialog } from "../pageChooser/launch-page-chooser";
 export { showAddPageDialog };
 
 //Called by c# using FrameExports.handleUndo()
@@ -46,7 +46,7 @@ export function switchContentPage(newSource: string) {
 // (so that it can be dragged anywhere in the gecko window). The dialog() function behaves strangely (e.g., draggable doesn't work)
 // if the jquery wrapper for the element is created in a different frame than the parent of the dialog element.
 export function showDialog(dialogContents: string, options: any): JQuery {
-    var dialogElement = $(dialogContents).appendTo($('body'));
+    var dialogElement = $(dialogContents).appendTo($("body"));
     dialogElement.dialog(options);
     return dialogElement;
 }
@@ -54,10 +54,10 @@ export function showDialog(dialogContents: string, options: any): JQuery {
 // This allows closing a dialog opened in the outer frame window. Apparently a dialog must be closed by
 // code in the window that opened it.
 export function closeDialog(id: string) {
-    $('#' + id).dialog('close');
+    $("#" + id).dialog("close");
 }
 
-export function toolboxIsShowing() { return (<HTMLInputElement>$(document).find('#pure-toggle-right').get(0)).checked; }
+export function toolboxIsShowing() { return (<HTMLInputElement>$(document).find("#pure-toggle-right").get(0)).checked; }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
 // (The value passed to the task function will be the value from getToolboxFrameExports(). Unfortunately we
@@ -78,17 +78,17 @@ export function doWhenToolboxLoaded(task: (toolboxFrameExports: any) => any) {
 export function canUndo(): string {
     // See comments on handleUndo()
     var contentWindow = getPageFrameExports();
-    if (contentWindow && (<any>contentWindow).origamiCanUndo()) { return 'yes'; }
+    if (contentWindow && (<any>contentWindow).origamiCanUndo()) { return "yes"; }
     var toolboxWindow = getToolboxFrameExports();
-    if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
-        return 'yes';
+    if (toolboxWindow && (<any>toolboxWindow).canUndo && (<any>toolboxWindow).canUndo()) {
+        return "yes";
     }
     if (contentWindow && contentWindow.ckeditorCanUndo()) {
-        return 'yes';
+        return "yes";
     }
     return "fail"; //go ask the browser
 }
 
 //noinspection JSUnusedGlobalSymbols
 // method called from EditingModel.cs
-// for 'templatesJSON', see property EditingModel.GetJsonTemplatePageObject
+// for "templatesJSON", see property EditingModel.GetJsonTemplatePageObject

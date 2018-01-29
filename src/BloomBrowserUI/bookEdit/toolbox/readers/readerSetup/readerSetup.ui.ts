@@ -460,9 +460,9 @@ function addNewLevel(): void {
 
 function tabBeforeActivate(ui): void {
 
-    var panelId: string = ui['newPanel'][0].id;
+    var toolId: string = ui['newPanel'][0].id;
 
-    if (panelId === 'dlstabs-2') { // Decodable Stages tab
+    if (toolId === 'dlstabs-2') { // Decodable Stages tab
 
         var allLetters: string[] = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value.trim()).split(' ');
         var tbody: JQuery = $('#stages-table').find('tbody');

@@ -1,14 +1,21 @@
-﻿import { ITabModel } from "../toolbox";
+﻿import { ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from './audioRecording';
 import { theOneAudioRecorder } from './audioRecording';
 
-export default class TalkingBookModel implements ITabModel {
+export default class TalkingBookTool implements ITool {
+    makeRootElement(): HTMLDivElement {
+        throw new Error("Method not implemented.");
+    }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();
         result.resolve();
         return result;
+    }
+
+    isAlwaysEnabled(): boolean {
+        return true;
     }
 
     configureElements(container: HTMLElement) { }
@@ -30,14 +37,12 @@ export default class TalkingBookModel implements ITabModel {
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
     }
 
-    name() { return "talkingBook"; }
+    id() { return "talkingBook"; }
 
     hasRestoredSettings: boolean;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
     // So far unneeded in talkingBook
-    finishTabPaneLocalization(paneDOM: HTMLElement) { }
+    finishToolLocalization(paneDOM: HTMLElement) { }
 }
-
-ToolBox.getTabModels().push(new TalkingBookModel());

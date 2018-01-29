@@ -1,10 +1,13 @@
 ﻿/// <reference path="../../toolbox.ts" />
 import { getTheOneReaderToolsModel, DRTState, } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
-import { ITabModel } from "../../toolbox";
+import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
 
-export default class LeveledReaderToolboxPanel implements ITabModel {
+export class LeveledReaderToolboxTool implements ITool {
+    makeRootElement(): HTMLDivElement {
+        throw new Error("Method not implemented.");
+    }
     beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts['leveledReaderState']) {
@@ -14,6 +17,9 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
     }
 
     configureElements(container: HTMLElement) { }
+    isAlwaysEnabled(): boolean {
+        return false;
+    }
 
     showTool() {
         // change markup based on visible options
@@ -32,16 +38,14 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    name() { return 'leveledReader'; }
+    id() { return 'leveledReader'; }
 
     hasRestoredSettings: boolean;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
-    finishTabPaneLocalization(paneDOM: HTMLElement) {
+    finishToolLocalization(paneDOM: HTMLElement) {
         // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
         // 'translates' external links to include the current UI language.
     }
 }
-
-ToolBox.getTabModels().push(new LeveledReaderToolboxPanel());

@@ -42,15 +42,6 @@ namespace Bloom.Edit
 		public bool Enabled { get; set; }
 
 		/// <summary>
-		/// Override in tools that don't have an Enabled checkbox but are always enabled.
-		/// </summary>
-		[JsonIgnore]
-		public virtual bool AlwaysEnabled
-		{
-			get { return false; }
-		}
-
-		/// <summary>
 		/// Different tools may use this arbitrarily. Currently decodable and leveled readers use it to store
 		/// the stage or level a book belongs to (at least the one last active when editing it).
 		/// </summary>

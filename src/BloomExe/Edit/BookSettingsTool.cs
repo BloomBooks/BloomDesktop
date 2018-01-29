@@ -11,10 +11,5 @@
 			if (toolbox == null)
 				return;
 		}
-
-		public override bool AlwaysEnabled
-		{
-			get { return true; }
-		}
 	}
 }

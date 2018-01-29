@@ -3,13 +3,16 @@
 
 import { DRTState, getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
-import { ITabModel } from "../../toolbox";
+import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
 import { theOneLibSynphony } from './../libSynphony/synphony_lib';
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 
 
-export default class DecodableReaderToolboxPanel implements ITabModel {
+export class DecodableReaderToolboxTool implements ITool {
+    makeRootElement(): HTMLDivElement {
+        throw new Error("Method not implemented.");
+    }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
             if (settings['decodableReaderState']) {
@@ -27,6 +30,9 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
                 }
             }
         });
+    }
+    isAlwaysEnabled(): boolean {
+        return false;
     }
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
@@ -56,7 +62,7 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
-    finishTabPaneLocalization(paneDOM: HTMLElement) {
+    finishToolLocalization(paneDOM: HTMLElement) {
         // DRT has sort buttons with tooltips that are HTML 'i' elements with 'title' attributes.
         // Update those 'title' attributes from localizationManager.
 
@@ -99,10 +105,9 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    name() { return 'decodableReader'; }
+    id() { return 'decodableReader'; }
 
     hasRestoredSettings: boolean;
 }
 
-ToolBox.getTabModels().push(new DecodableReaderToolboxPanel());
 

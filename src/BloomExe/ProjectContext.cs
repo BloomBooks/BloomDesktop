@@ -19,11 +19,11 @@ using Bloom.Api;
 using Bloom.Publish.Android;
 using Bloom.web;
 using Bloom.web.controllers;
+using BloomTests.web.controllers;
 //using Chorus;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using Bloom.web.controllers;
 
 namespace Bloom
 {
@@ -119,6 +119,7 @@ namespace Bloom
 							typeof(KeyboardingConfigApi),
 							typeof(ImageApi),
 							typeof(MusicApi),
+							typeof(ToolboxApi),
 							typeof(BrandingApi)
 						}.Contains(t));
 
@@ -293,6 +294,7 @@ namespace Bloom
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 			_scope.Resolve<BrandingApi>().RegisterWithServer(server);
 			_scope.Resolve<MusicApi>().RegisterWithServer(server);
+			_scope.Resolve<ToolboxApi>().RegisterWithServer(server);
 		}
 
 

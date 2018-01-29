@@ -1,6 +1,6 @@
 /*
  * The methods here are refugees that had been encamped with DecodableReader
- * (which becaues DecodableReaderToolboxPanel), but which are used just as much for the
+ * (which becaues DecodableReaderToolboxTool), but which are used just as much for the
  * leveled reader.
  * Note that that these methods just get the dialog created and in the right home and able
  * to respond to Help, OK, and Cancel, whereas the
