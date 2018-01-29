@@ -100,8 +100,18 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
 <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: دا کتابونه به وروسته د راتلونکی فولیو(Folio) د ځانګړتیاوو په کارولو سره ګډ شي. يادونه: چې بلوم 3.9 تر اوسه تاسو ته داسې لار نه ده درښودلې چې يوه پاڼه بايد په اوتومات ډول په نوي کتابونو کې شامل شي؛ لیکوال باید د اضافې مخ ډیالوګ (Add Page dialog) څخه هر یو اضافه کړي.</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="pbu">
+          
+          
+          
+          
+          
+<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: دا کتابونه به وروسته د راتلونکی فولیو(Folio) د ځانګړتیاوو په کارولو سره ګډ شي. يادونه: چې بلوم 3.9 تر اوسه تاسو ته داسې لار نه ده درښودلې چې يوه پاڼه بايد په اوتومات ډول په نوي کتابونو کې شامل شي؛ لیکوال باید د اضافې مخ ډیالوګ (Add Page dialog) څخه هر یو اضافه کړي.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">
           
@@ -137,8 +147,18 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
 <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: که تاسو نه غواړئ چې ستاسو د نمونو پاڼی د اضافې مخ ډیالوګ (Add Page Dialogue) کې ښکاره شي، تاسو کولی شئ دا بلوم ته د کتاب نمونه کی د فایل جوړولو له لاری چي د NotForAddPage.txt په نوم یادیږي جوړ کړئ.</target>
         <note>ID: template.starter.nametonotaddpage</note>
+        <alt-trans>
+          <target xml:lang="pbu">
+          
+          
+          
+          
+          
+<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: که تاسو نه غواړئ چې ستاسو د نمونو پاڼی د اضافې مخ ډیالوګ (Add Page Dialogue) کې ښکاره شي، تاسو کولی شئ دا بلوم ته د کتاب نمونه کی د فایل جوړولو له لاری چي د NotForAddPage.txt په نوم یادیږي جوړ کړئ.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">
           
@@ -174,8 +194,18 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
 <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: خلک به ونشي کولی ستاسو لیبلونه او شریحي نورو ملی ژبو ته وژباړي. که دا ستونزه وي، مهرباني وکړئ د بلوم ټیم سره اړیکه ونیسئ.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="pbu">
+          
+          
+          
+          
+          
+<g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: خلک به ونشي کولی ستاسو لیبلونه او شریحي نورو ملی ژبو ته وژباړي. که دا ستونزه وي، مهرباني وکړئ د بلوم ټیم سره اړیکه ونیسئ.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">
           
@@ -211,8 +241,18 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
 <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: که تاسو غواړئ د پاڼه اضافه کړئ(Add Page) پرده هم د پاڼې لنډ تفصیل چمتو کړئ، تاسو به د بلوم څخه ووځئ او د نموني Html په Notepad کې ایډیت کړئ، لکه څنګه چې: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
+        <alt-trans>
+          <target xml:lang="pbu">
+          
+          
+          
+          
+          
+<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: که تاسو غواړئ د پاڼه اضافه کړئ(Add Page) پرده هم د پاڼې لنډ تفصیل چمتو کړئ، تاسو به د بلوم څخه ووځئ او د نموني Html په Notepad کې ایډیت کړئ، لکه څنګه چې: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">
           
