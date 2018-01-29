@@ -66,6 +66,9 @@
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
         <target xml:lang="fr" state="translated">‎&amp;amp‎;Annuler</target>
+        <alt-trans>
+          <target xml:lang="fr">‎&amp;amp‎;Annuler</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -76,6 +79,9 @@
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
         <target xml:lang="fr" state="translated">‎&amp;amp‎;Ignorer</target>
+        <alt-trans>
+          <target xml:lang="fr">‎&amp;amp‎;Ignorer</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>

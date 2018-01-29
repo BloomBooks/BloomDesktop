@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="fr">
     <body>
@@ -705,6 +705,9 @@
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
         <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
         <target xml:lang="fr" state="translated">‎{0}% traduit</target>
+        <alt-trans>
+          <target xml:lang="fr">‎{0‎}‎% traduit</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate" approved="yes">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
@@ -898,6 +901,9 @@
         <note>Seen when the book's main template page file is missing.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
         <target xml:lang="fr" state="translated">Impossible de trouver ‎{0}</target>
+        <alt-trans>
+          <target xml:lang="fr">Impossible de trouver ‎{0‎}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
@@ -1344,6 +1350,9 @@
         <note xml:lang="en">OLD TEXT (early 4.1, remove quotation marks): "Images on pages {0} by {1}."</note>
         <note>New string in Bloom 4.1</note>
         <target xml:lang="fr" state="translated">Images sur les pages ‎{0} par ‎{1}.</target>
+        <alt-trans>
+          <target xml:lang="fr">Images sur les pages ‎{0‎} par ‎{1‎}.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name of Translator, in {lang}</source>
@@ -1400,6 +1409,9 @@
         <note xml:lang="en">OLD TEXT (early 4.1, remove quotation marks): "Image on page {0} by {1}."</note>
         <note>New string in Bloom 4.1</note>
         <target xml:lang="fr" state="translated">Image sur le page ‎{0} par ‎{1}.</target>
+        <alt-trans>
+          <target xml:lang="fr">Image sur le page ‎{0‎} par ‎{1‎}.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
@@ -1591,6 +1603,9 @@
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
         <target xml:lang="fr" state="translated">Bordures ‎&amp;amp Fond</target>
+        <alt-trans>
+          <target xml:lang="fr">Bordures ‎&amp;amp Fond</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" sil:dynamic="true">
         <source xml:lang="en">Hint Bubbles</source>
@@ -2490,7 +2505,7 @@
       <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional" approved="yes">
         <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
         <note>ID: NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional</note>
-        <target xml:lang="fr">Ceux-ci sont facultatifs. Bloom les mettra aux emplacements appropriés sur la première de couverture de vos livres.</target>
+        <target xml:lang="fr">Ceux-ci sont facultatifs. Bloom les mettra aux emplacements appropriés sur la page de titre de vos livres.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.Province">
         <source xml:lang="en">Province</source>
@@ -2663,6 +2678,9 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
         <note>{0} is a file path</note>
         <target xml:lang="fr" state="translated">Enregistrement comme ‎{0}</target>
+        <alt-trans>
+          <target xml:lang="fr">Enregistrement comme ‎{0‎}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -2712,6 +2730,9 @@
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
         <target xml:lang="fr" state="translated">Connecté à ‎{0} via USB ...</target>
+        <alt-trans>
+          <target xml:lang="fr">Connecté à ‎{0‎} via USB ...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
@@ -2766,6 +2787,9 @@
         <note>ID: PublishTab.Android.Usb.Progress.SendingBook</note>
         <note>{0} is a book title</note>
         <target xml:lang="fr" state="translated">Envoyer "‎{0}" à votre appareil Android ...</target>
+        <alt-trans>
+          <target xml:lang="fr">Envoyer "‎{0‎}" à votre appareil Android ...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.Stopped" sil:dynamic="true">
         <source xml:lang="en">Stopped</source>
@@ -2803,12 +2827,18 @@
         <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
         <target xml:lang="fr" state="translated">Fin de l'envoi de "‎{0}" à l'appareil ‎{1}</target>
+        <alt-trans>
+          <target xml:lang="fr">Fin de l'envoi de "‎{0‎}" à l'appareil ‎{1‎}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Sending" sil:dynamic="true">
         <source xml:lang="en">Sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
         <target xml:lang="fr" state="translated">Envoi de "‎{0}" à l'appareil ‎{1}</target>
+        <alt-trans>
+          <target xml:lang="fr">Envoi de "‎{0‎}" à l'appareil ‎{1‎}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped" sil:dynamic="true">
         <source xml:lang="en">Stopped Advertising.</source>
@@ -2847,6 +2877,9 @@
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
         <note>{0} and {1} are book layout tags.</note>
         <target xml:lang="fr" state="translated">La conception actuelle de ce livre est "‎{0}". Étant donné que Bloom Reader l'affichera en utilisant "‎{1}", le texte pourrait ne pas convenir. Pour voir si quelque chose doit être ajusté, revenez à l'onglet Modifier et modifiez le design en "‎{1}".</target>
+        <alt-trans>
+          <target xml:lang="fr">La conception actuelle de ce livre est "‎{0‎}". Étant donné que Bloom Reader l'affichera en utilisant "‎{1‎}", le texte pourrait ne pas convenir. Pour voir si quelque chose doit être ajusté, revenez à l'onglet Modifier et modifiez le design en "‎{1‎}".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
         <source xml:lang="en">Bloom Book for Devices</source>
