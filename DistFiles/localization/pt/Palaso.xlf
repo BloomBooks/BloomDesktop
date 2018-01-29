@@ -108,7 +108,7 @@
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp; Sim</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Sim</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -135,15 +135,15 @@
           <target xml:lang="pt-PT">&amp; Cancelar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="pt-PT" state="translated">&amp; Deletar</target>
+        <target xml:lang="pt-PT">&amp;Deletar</target>
         <alt-trans>
-          <target xml:lang="pt-PT">&amp; Excluir</target>
+          <target xml:lang="pt-PT">&amp; Deletar</target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="pt-PT">&amp;Deletar</target>
+          <target xml:lang="pt-PT">&amp; Excluir</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
