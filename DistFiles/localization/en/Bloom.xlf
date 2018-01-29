@@ -954,6 +954,56 @@
         <source xml:lang="en">Create a new style</source>
         <note>ID: EditTab.FormatDialog.CreateStyle</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.BigWords-style" sil:dynamic="true">
+        <source xml:lang="en">Big Words</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
+        <note>Appears in most templates</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
+        <source xml:lang="en">Cover Default</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Cover-Default-style</note>
+        <note>A default style for various fields usually on the Front Cover</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Credits-Page-style" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Credits-Page-style</note>
+        <note>Used on the Credits page of most Front/Back Matter packs</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
+        <source xml:lang="en">Equation</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
+        <note>Used on the Arithmetic template</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading1-style" sil:dynamic="true">
+        <source xml:lang="en">Heading 1</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Heading1-style</note>
+        <note>Used on the Arithmetic template</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading2-style" sil:dynamic="true">
+        <source xml:lang="en">Heading 2</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Heading2-style</note>
+        <note>A default style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.normal-style" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.normal-style</note>
+        <note>Appears in most templates</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
+        <note>Multimedia template</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
+        <source xml:lang="en">Title On Cover</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
+        <note>Used on the Front Cover page of most Front/Back Matter packs</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style" sil:dynamic="true">
+        <source xml:lang="en">Title On Title Page</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
+        <note>Used on the Title Page of most Front/Back Matter packs</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true">
         <source xml:lang="en">Don't see what you need?</source>
         <note>ID: EditTab.FormatDialog.DontSeeNeed</note>
