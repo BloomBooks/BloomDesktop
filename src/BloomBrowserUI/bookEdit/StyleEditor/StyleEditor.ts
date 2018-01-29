@@ -208,14 +208,14 @@ export default class StyleEditor {
             var rules: CSSRuleList = (<any>sheet).cssRules;
             if (rules) {
                 for (var j = 0; j < rules.length; j++) {
-                    var index = rules[j].cssText.indexOf('{');
+                    var index = rules[j].cssText.indexOf("{");
                     if (index === -1) {
                         continue;
                     }
                     var label = rules[j].cssText.substring(0, index).trim();
-                    var index2 = label.lastIndexOf('-style');
-                    if (index2 !== -1 && index2 === label.length - '-style'.length) { // ends in -style
-                        var index3 = label.lastIndexOf('.');
+                    var index2 = label.lastIndexOf("-style");
+                    if (index2 !== -1 && index2 === label.length - "-style".length) { // ends in -style
+                        var index3 = label.lastIndexOf(".");
                         var name = label.substring(index3 + 1, index2);
                         if (result.indexOf(name) === -1) {
                             result.push(name);
@@ -462,14 +462,14 @@ export default class StyleEditor {
         return ['0.7', '0.8', '1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
     }
 
-    getWordSpaceOptions() {
-        return [theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'),
-        theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
-        theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
+    getWordSpaceOptions(): string[] {
+        return [theOneLocalizationManager.getText("EditTab.FormatDialog.WordSpacingNormal", "Normal"),
+        theOneLocalizationManager.getText("EditTab.FormatDialog.WordSpacingWide", "Wide"),
+        theOneLocalizationManager.getText("EditTab.FormatDialog.WordSpacingExtraWide", "Extra Wide")];
     }
 
     getParagraphSpaceOptions() {
-        return ['0', '0.5', '0.75', '1', '1.25'];
+        return ["0", "0.5", "0.75", "1", "1.25"];
     }
 
     // Returns an object giving the current selection for each format control.
@@ -787,12 +787,12 @@ export default class StyleEditor {
     }
 
     setupSelectControls(fonts, current, styleName) {
-        this.populateSelect(fonts, current.fontName, 'font-select', 25);
-        this.populateSelect(this.getPointSizes(), current.ptSize, 'size-select', 99);
-        this.populateSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select');
-        this.populateSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select');
         this.populateSelect(this.styles, styleName, 'styleSelect');
-        this.populateSelect(this.getParagraphSpaceOptions(), current.paraSpacing, 'para-spacing-select');
+        this.populateSelect(fonts, current.fontName, "font-select", 25);
+        this.populateSelect(this.getPointSizes(), current.ptSize, "size-select", 99);
+        this.populateSelect(this.getLineSpaceOptions(), current.lineHeight, "line-height-select");
+        this.populateSelect(this.getWordSpaceOptions(), current.wordSpacing, "word-space-select");
+        this.populateSelect(this.getParagraphSpaceOptions(), current.paraSpacing, "para-spacing-select");
     }
 
     getButtonIds() {
@@ -967,15 +967,16 @@ export default class StyleEditor {
         this.styleStateChange('initial'); // go back to initial state so user knows it worked
     }
 
-    populateSelect(items: string[], current, id, maxlength?) {
+    populateSelect(items: string[], current, id, maxlength?: number) {
         // Rather than selectively call this method for only those select elements which need
         // to be initialized, we call it for all of them. That makes the calling code a little simpler.
+
         // So if the element doesn't exist, exit quickly.
-        if (!$('#' + id)) {
+        if (!$("#" + id)) {
             return;
         }
 
-        var options = '';
+        var options = "";
         if (current && items.indexOf(current.toString()) === -1) {
             //we have a custom point size, so make that an option in addition to the standard ones
             items.push(current.toString());
@@ -984,9 +985,9 @@ export default class StyleEditor {
         items.sort((a: string, b: string) => Number(a) - Number(b));
 
         for (var i = 0; i < items.length; i++) {
-            var selected: string = '';
+            var selected: string = "";
             if (current.toString() === items[i]) { // toString() is necessary to match point size string
-                selected = ' selected';
+                selected = " selected";
             }
             var text = items[i];
             text = text.replace(/-/g, ' '); //show users a space instead of dashes
@@ -998,7 +999,7 @@ export default class StyleEditor {
             }
             options += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
         }
-        $('#' + id).html(options);
+        $("#" + id).html(options);
     }
 
     changeBold() {
