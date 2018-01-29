@@ -21,6 +21,28 @@ import { EditableDivUtils } from '../js/editableDivUtils';
 declare function GetSettings(): any; //c# injects this
 declare function WebFxTabPane(element: HTMLElement, useCookie: boolean, callback: any): any; // from tabpane, from a <script> tag
 
+// Class provides a convenient way to group a style id and display name
+class FormattingStyle {
+    public styleId: string;
+    public englishDisplayName: string;
+    public localizedName: string;
+
+    constructor(namestr: string, displayStr: string) {
+        this.styleId = namestr;
+        this.englishDisplayName = displayStr;
+        this.localizedName = null;
+    }
+
+    public hasStyleId(name: string): boolean {
+        return this.styleId.toLowerCase() == name.toLowerCase();
+    }
+
+    public getLocalizedName(): string {
+        // null-coalesce operator would be handy here.
+        return this.localizedName == null ? this.englishDisplayName : this.localizedName;
+    }
+}
+
 export default class StyleEditor {
 
     private _previousBox: Element;
@@ -28,7 +50,7 @@ export default class StyleEditor {
     private MIN_FONT_SIZE: number = 7;
     private boxBeingEdited: HTMLElement;
     private ignoreControlChanges: boolean;
-    private styles: string[];
+    private styles: FormattingStyle[];
     private authorMode: boolean; // true if authoring (rather than translating)
     private xmatterMode: boolean; // true if we are in xmatter (and shouldn't change fixed style names)
 
@@ -200,9 +222,8 @@ export default class StyleEditor {
     // Only the last class in a sequence is used; this lets us predefine
     // styles like DIV.bloom-editing.Heading1 and make their selectors specific enough to work,
     // but not impossible to override with a custom definition.
-    // N.B. these are not the final user-visible versions of style names, but the internal version.
-    getFormattingStyles(): string[] {
-        var result = [];
+    getFormattingStyles(): FormattingStyle[] {
+        var styles: FormattingStyle[] = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
             var sheet = <StyleSheet>(<any>document.styleSheets[i]);
             var rules: CSSRuleList = (<any>sheet).cssRules;
@@ -216,9 +237,11 @@ export default class StyleEditor {
                     var index2 = label.lastIndexOf("-style");
                     if (index2 !== -1 && index2 === label.length - "-style".length) { // ends in -style
                         var index3 = label.lastIndexOf(".");
-                        var name = label.substring(index3 + 1, index2);
-                        if (result.indexOf(name) === -1) {
-                            result.push(name);
+                        var styleId = label.substring(index3 + 1, index2);
+                        // Get the English display name if one is defined for this style
+                        var displayName = this.getDisplayName(styleId);
+                        if (styles.every(style => !style.hasStyleId(styleId))) {
+                            styles.push(new FormattingStyle(styleId, displayName));
                         }
                     }
                 }
@@ -227,10 +250,50 @@ export default class StyleEditor {
         // 'normal' is the standard initial style for at least origami pages.
         // But our default template doesn't define it; by default it just has default properties.
         // Make sure it's available to choose again.
-        if (result.indexOf('normal') === -1) {
-            result.push('normal'); // This will be capitalized before presenting it to the user.
+        if (styles.every(style => !style.hasStyleId("normal"))) {
+            styles.push(new FormattingStyle("normal", "Normal"));
         }
-        return result;
+        return styles;
+    }
+
+    // Gets the English Display name for the default styles that are used in Bloom code
+    // We were thinking of using a custom css property in the style css definition,
+    // but we would have needed this switch to deal with existing books anyway, so...
+    // we'll just use the switch.
+    // Changes here should be reflected in the Bloom.xlf file too.
+    getDisplayName(ruleId: string): string {
+        var displayName: string = null;
+        switch (ruleId) {
+            case "BigWords":
+                displayName = "Big Words";
+                break;
+            case "Cover-Default":
+                displayName = "Cover Default";
+                break;
+            case "Credits-Page":
+                displayName = "Credits Page";
+                break;
+            case "Heading1":
+                displayName = "Heading 1";
+                break;
+            case "Heading2":
+                displayName = "Heading 2";
+                break;
+            case "normal":
+                displayName = "Normal";
+                break;
+            case "Title-On-Cover":
+                displayName = "Title On Cover";
+                break;
+            case "Title-On-Title-Page":
+                displayName = "Title On Title Page";
+                break;
+            case "Equation": // If the id is the same as the English, just fall through to default.
+            default:
+                displayName = ruleId;
+                break;
+        }
+        return displayName;
     }
 
     // Get the existing rule for the specified style.
@@ -468,6 +531,44 @@ export default class StyleEditor {
         theOneLocalizationManager.getText("EditTab.FormatDialog.WordSpacingExtraWide", "Extra Wide")];
     }
 
+    // We need to get localized versions of all the default styles and not return until we get them all.
+    // "all" function from http://hermanradtke.com/2011/05/12/managing-multiple-jquery-promises.html
+    all(promises: JQueryPromise<string>[]): JQueryPromise<any> {
+        var deferred = $.Deferred();
+        var fulfilled = 0;
+        var length = promises.length;
+        var results = [];
+
+        if (length === 0) {
+            deferred.resolve(results);
+        } else {
+            promises.forEach((promise: JQueryPromise<string>, i) => {
+                promise.then((value) => {
+                    results[i] = value;
+                    fulfilled++;
+                    if (fulfilled === length) {
+                        deferred.resolve(results);
+                    }
+                });
+            });
+        }
+        return deferred.promise();
+    };
+
+    // Collects all the style name promises to use in an async version of populateSelect()
+    getStylePromises(styles: FormattingStyle[]): JQueryPromise<string>[] {
+        var results: string[] = [];
+        var promises: JQueryPromise<string>[] = [];
+
+        styles.forEach(formattingStyle => {
+            var completeStyleName = "EditTab.FormatDialog.DefaultStyles." + formattingStyle.styleId + "-style";
+            promises.push(
+                theOneLocalizationManager.asyncGetText(completeStyleName, formattingStyle.englishDisplayName, "") as JQueryPromise<string>
+            );
+        });
+        return promises;
+    }
+
     getParagraphSpaceOptions() {
         return ["0", "0.5", "0.75", "1", "1.25"];
     }
@@ -666,12 +767,9 @@ export default class StyleEditor {
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
 
                 editor.styles = editor.getFormattingStyles();
-                if (editor.styles.indexOf(styleName) === -1) {
-                    editor.styles.push(styleName);
+                if (editor.styles.every(style => !style.hasStyleId(styleName))) {
+                    editor.styles.push(new FormattingStyle(styleName, styleName));
                 }
-                editor.styles.sort(function (a: string, b: string) {
-                    return a.toLowerCase().localeCompare(b.toLowerCase());
-                });
 
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $('body').append(html);
@@ -787,12 +885,12 @@ export default class StyleEditor {
     }
 
     setupSelectControls(fonts, current, styleName) {
-        this.populateSelect(this.styles, styleName, 'styleSelect');
-        this.populateSelect(fonts, current.fontName, "font-select", 25);
-        this.populateSelect(this.getPointSizes(), current.ptSize, "size-select", 99);
-        this.populateSelect(this.getLineSpaceOptions(), current.lineHeight, "line-height-select");
-        this.populateSelect(this.getWordSpaceOptions(), current.wordSpacing, "word-space-select");
-        this.populateSelect(this.getParagraphSpaceOptions(), current.paraSpacing, "para-spacing-select");
+        this.populateSelect(fonts, current.fontName, "font-select", false, 25);
+        this.populateSelect(this.getPointSizes(), current.ptSize, "size-select", true, 99);
+        this.populateSelect(this.getLineSpaceOptions(), current.lineHeight, "line-height-select", true);
+        this.populateSelect(this.getWordSpaceOptions(), current.wordSpacing, "word-space-select", false);
+        this.asyncPopulateSelect("styleSelect", this.styles, this.getStylePromises(this.styles), styleName, "normal");
+        this.populateSelect(this.getParagraphSpaceOptions(), current.paraSpacing, "para-spacing-select", true);
     }
 
     getButtonIds() {
@@ -926,12 +1024,7 @@ export default class StyleEditor {
     // did the user type the name of an existing style?
     inputStyleExists(): boolean {
         var typedStyle = $('#style-select-input').val();
-        for (var i = 0; i < this.styles.length; i++) {
-            if (typedStyle.toLocaleLowerCase() === this.styles[i].toLocaleLowerCase()) {
-                return true;
-            }
-        }
-        return false;
+        return this.styles.some(style => style.hasStyleId(typedStyle))
     }
 
     // Make a new style. Initialize to all current values. Caller should ensure it is a valid new style.
@@ -945,7 +1038,7 @@ export default class StyleEditor {
         var newState = new Option(typedStyle, typedStyle, true, true);
         $('#styleSelect').append(newState).trigger('change');
         // Ensure we know this style in the future.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4438.
-        this.styles.push(typedStyle);
+        this.styles.push(new FormattingStyle(typedStyle, typedStyle));
 
         // This control has been hidden, but the user could show it again.
         // And showing it does not run the duplicate style check, since we expect it to be empty
@@ -967,7 +1060,58 @@ export default class StyleEditor {
         this.styleStateChange('initial'); // go back to initial state so user knows it worked
     }
 
-    populateSelect(items: string[], current, id, maxlength?: number) {
+    asyncPopulateSelect(selectId: string, styles: FormattingStyle[],
+        localizedNamePromises: JQueryPromise<string>[], current: string, defaultChoice: string) {
+        // So if the element doesn't exist, exit quickly.
+        if (!$("#" + selectId)) {
+            return;
+        }
+        if (!current) {
+            current = defaultChoice;
+        }
+
+        // Inside of here we use the "all" function to ensure that nothing happens until all
+        // of the promises return.
+        $.when(this.all(localizedNamePromises)).then((allPromiseResults: string[]) => {
+            var options = "";
+            allPromiseResults.forEach((result, i) => {
+                styles[i].localizedName = result;
+            });
+            var sortedStyles = this.sortByLocalizedName(styles);
+            for (var i = 0; i < sortedStyles.length; i++) {
+                var selected: string = "";
+                if (current === sortedStyles[i].styleId) {
+                    selected = " selected";
+                }
+                options += '<option value="' + sortedStyles[i].styleId + '"' + selected + '>' +
+                    sortedStyles[i].getLocalizedName() + '</option>';
+            }
+            $("#" + selectId).html(options);
+        });
+    }
+
+    sortByLocalizedName(styles: FormattingStyle[]): FormattingStyle[] {
+        return styles.sort(
+            (s1: FormattingStyle, s2: FormattingStyle) => {
+                if (s1.getLocalizedName() > s2.getLocalizedName()) {
+                    return 1;
+                }
+                if (s1.getLocalizedName() < s2.getLocalizedName()) {
+                    return -1;
+                }
+                return 0;
+            });
+    }
+
+    stringSort(items: string[]): string[] {
+        return items.sort((a: string, b: string) => {
+            if (a > b) { return 1; }
+            if (a < b) { return -1; }
+            return 0;
+        });
+    }
+
+    populateSelect(items: string[], current, id, useNumericSort: boolean, maxlength?: number) {
         // Rather than selectively call this method for only those select elements which need
         // to be initialized, we call it for all of them. That makes the calling code a little simpler.
 
@@ -981,23 +1125,26 @@ export default class StyleEditor {
             //we have a custom point size, so make that an option in addition to the standard ones
             items.push(current.toString());
         }
+        var sortedItems: string[];
+        if (useNumericSort) {
+            sortedItems = items.sort((a: string, b: string) => { return Number(a) - Number(b) });
+        } else {
+            sortedItems = this.stringSort(items);
+        }
+        if (!current) {
+            current = items[0];
+        }
 
-        items.sort((a: string, b: string) => Number(a) - Number(b));
-
-        for (var i = 0; i < items.length; i++) {
+        for (var i = 0; i < sortedItems.length; i++) {
             var selected: string = "";
-            if (current.toString() === items[i]) { // toString() is necessary to match point size string
+            if (current.toString() === sortedItems[i]) { // toString() is necessary to match point size string
                 selected = " selected";
             }
-            var text = items[i];
-            text = text.replace(/-/g, ' '); //show users a space instead of dashes
-            if (text === 'normal') {
-                text = 'Normal'; // capitalize for user
-            }
+            var text = sortedItems[i];
             if (maxlength && text.length > maxlength) {
                 text = text.substring(0, maxlength) + '...';
             }
-            options += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
+            options += '<option value="' + sortedItems[i] + '"' + selected + '>' + text + '</option>';
         }
         $("#" + id).html(options);
     }
