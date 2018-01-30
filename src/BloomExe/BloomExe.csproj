@@ -299,8 +299,6 @@
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
     <Compile Include="Collection\BrandingProject.cs" />
-    <Compile Include="Edit\MusicTool.cs" />
-    <Compile Include="Edit\PanAndZoomTool.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
     <Compile Include="Edit\PageControlsApi.cs" />
     <Compile Include="Publish\Android\usb\AndroidDeviceUsbConnection.cs" />
@@ -316,11 +314,8 @@
     <Compile Include="CLI\GetUsedFontsCommand.cs" />
     <Compile Include="CLI\UploadCommand.cs" />
     <Compile Include="CLI\HydrateBookCommand.cs" />
-    <Compile Include="Edit\BookSettingsTool.cs" />
-    <Compile Include="Edit\ToolboxTool.cs" />
-    <Compile Include="Edit\DecodableReaderTool.cs" />
-    <Compile Include="Edit\LeveledReaderTool.cs" />
-    <Compile Include="Edit\TalkingBookTool.cs" />
+    <Compile Include="Edit\ToolboxToolState.cs" />
+    <Compile Include="Edit\DecodableReaderToolSettings.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
     <Compile Include="MiscUI\TroubleShooterDialog.cs">

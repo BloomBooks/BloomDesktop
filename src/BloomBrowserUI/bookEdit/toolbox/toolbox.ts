@@ -20,6 +20,7 @@ var keypressTimer: any = null;
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
 // can be asked to do by the rest of the system.
+// See TooboxView.cs class comment for a summary of how to add a new tool.
 export interface ITool {
     beginRestoreSettings(settings: string): JQueryPromise<void>;
     configureElements(container: HTMLElement);
@@ -412,8 +413,8 @@ function setCurrentTool(currentTool) {
 
 /**
  * Requests a tool from localhost and loads it into the toolbox.
- * This is used when the user ticks a previously unticked checkbox of a tool.
- * Normally that job goes to an equivalent c# function. Enhance: remove the c# one.
+ * This is used when the user ticks a previously unticked checkbox of a tool, or as part of
+ * initializing the toolbox for those that are already checked.
  */
 // these last three parameters were never used: function requestTool(checkBoxId, toolId, loadNextCallback, tools, currentTool) {
 function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Promise<void> {

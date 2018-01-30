@@ -14,17 +14,16 @@ using SIL.IO;
 namespace Bloom.Edit
 {
 	/// <summary>
-	/// This class represents one tool in the Toolbox accordion which can show to the right of the
-	/// page when the user expands it. There is a subclass for each tool.
+	/// This class represents the state of one tool in the Toolbox accordion which can show to the right of the
+	/// page when the user expands it.
 	/// These objects are serialized as part of the meta.json file representing the state of a book.
 	/// The State field is persisted in this way; it is also passed in to the JavaScript that manages
 	/// the toolbox. New fields and properties should be kept non-public or marked with an
 	/// appropriate attribute if they should NOT be persisted in JSON.
-	/// New subclasses will typically require a new case in CreateFromToolId and also in GetToolboxToolFromJsonObject.
 	/// Note that the values of the Name field are used in the json and therefore cannot readily be changed.
 	/// (Migration would handle a change going forward, but older Blooms would lose the data at best.)
 	/// </summary>
-	public abstract class ToolboxTool
+	public class ToolboxToolState
 	{
 		/// <summary>
 		/// This is the id used to identify the tool in the meta.json file that accompanies the book.
@@ -36,7 +35,7 @@ namespace Bloom.Edit
 		/// existing tools should be changed only with care and for very good reason.
 		/// </summary>
 		[JsonProperty("name")]
-		public abstract string ToolId { get; }
+		public string ToolId { get; private set; }
 
 		[JsonProperty("enabled")]
 		public bool Enabled { get; set; }
@@ -48,27 +47,9 @@ namespace Bloom.Edit
 		[JsonProperty("state")]
 		public string State { get; set; }
 
-		public virtual void SaveDefaultState()
+		public static ToolboxToolState CreateFromToolId(string toolId)
 		{
-		}
-
-		public virtual string DefaultState()
-		{
-			return null;
-		}
-
-		public static ToolboxTool CreateFromToolId(string toolId)
-		{
-			switch (toolId)
-			{
-				case DecodableReaderTool.StaticToolId: return new DecodableReaderTool();
-				case LeveledReaderTool.StaticToolId: return new LeveledReaderTool();
-				case TalkingBookTool.StaticToolId: return new TalkingBookTool();
-				case BookSettingsTool.StaticToolId: return new BookSettingsTool();
-				case PanAndZoomTool.StaticToolId: return new PanAndZoomTool();
-				case MusicTool.StaticToolId: return new MusicTool();
-			}
-			throw new ArgumentException("Unexpected tool name "+toolId);
+			return new ToolboxToolState() {ToolId = toolId};
 		}
 
 		/// <summary>
@@ -87,54 +68,21 @@ namespace Bloom.Edit
 
 		public static object GetToolboxToolFromJsonObject(JObject item)
 		{
-			switch ((string) item["name"])
-			{
-				//enhance: we don't really want to "register" our panels in several places like this
-				case DecodableReaderTool.StaticToolId:
-					return item.ToObject<DecodableReaderTool>();
-				case LeveledReaderTool.StaticToolId:
-					return item.ToObject<LeveledReaderTool>();
-				case TalkingBookTool.StaticToolId:
-					return item.ToObject<TalkingBookTool>();
-				case BookSettingsTool.StaticToolId:
-					return item.ToObject<BookSettingsTool>();
-				case PanAndZoomTool.StaticToolId:
-					return item.ToObject<PanAndZoomTool>();
-				case MusicTool.StaticToolId:
-					return item.ToObject<MusicTool>();
-				default: // this version doesn't know about that tool
-					return new UnknownTool();
-			}
-
-			// At this point we are either encountering a meta.json that has been modified by hand,
-			// or more likely one from a more recent Bloom that has an additional tool.
-			// We will ignore the unknown tool (see BookMetaData.FromString()). Here in the
-			// deserialize process, however, we have to return something.
-			// Enhance: in theory, we could keep at least the tool's state and enabled status
-			// in case this book moves back to a version of Bloom that has the tool. But we'd
-			// have to carefully ignore Unknown tools in many places. Hopefully YAGNI.
-			return new UnknownTool();
+			return item.ToObject<ToolboxToolState>();
 		}
 	}
 
 	/// <summary>
-	/// This gives us something to return if we encounter an unknown tool name when deserializing.
-	/// </summary>
-	public class UnknownTool : ToolboxTool
-	{
-		public override string ToolId { get { return "unknownTool"; } }
-	}
-
-	/// <summary>
 	/// This class is used as the ItemConverterType for the Tools property of BookMetaData.
-	/// It allows us to deserialize a sequence of polymorphic tools, creating the
+	/// It originally allowed us to deserialize a sequence of polymorphic tools, creating the
 	/// right subclass for each based on the name.
+	/// Now we just have one class ToolboxTool...it may be possible to get rid of it altogether.
 	/// </summary>
 	public class ToolboxToolConverter : JsonConverter
 	{
 		public override bool CanConvert(Type objectType)
 		{
-			return typeof(ToolboxTool).IsAssignableFrom(objectType);
+			return typeof(ToolboxToolState).IsAssignableFrom(objectType);
 		}
 
 		// Default writing is fine.
@@ -147,7 +95,7 @@ namespace Bloom.Edit
 			Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			JObject item = JObject.Load(reader);
-			return ToolboxTool.GetToolboxToolFromJsonObject(item);
+			return ToolboxToolState.GetToolboxToolFromJsonObject(item);
 		}
 
 		// We don't need a real implementation of this because returning false from CanWrite

@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using Amazon.Runtime.Internal.Util;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Properties;
 using L10NSharp;
 using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
@@ -96,7 +97,7 @@ namespace Bloom.Api
 						request.ReplyWithJson(GetReaderSettings(request.CurrentCollectionSettings));
 					else
 					{
-						var path = DecodableReaderTool.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
+						var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
 						var content = request.RequiredPostJson();
 						RobustFile.WriteAllText(path, content, Encoding.UTF8);
 						request.PostSucceeded();
@@ -176,6 +177,48 @@ namespace Bloom.Api
 							break;
 					}
 					break;
+				case "defaultLevel":
+					if (request.HttpMethod == HttpMethods.Get)
+					{
+						request.ReplyWithText(Settings.Default.CurrentLevel.ToString());
+					}
+					else
+					{
+						int level;
+						if (int.TryParse(request.RequiredParam("level"), out level))
+						{
+							Settings.Default.CurrentLevel = level;
+							Settings.Default.Save();
+						}
+						else
+						{
+							// Don't think any sort of runtime failure is worthwhile here.
+							Debug.Fail("could not parse level number");
+						}
+						request.PostSucceeded(); // technically it didn't if we didn't parse the number
+					}
+					break;
+				case "defaultStage":
+					if (request.HttpMethod == HttpMethods.Get)
+					{
+						request.ReplyWithText(Settings.Default.CurrentStage.ToString());
+					}
+					else
+					{
+						int stage;
+						if (int.TryParse(request.RequiredParam("stage"), out stage))
+						{
+							Settings.Default.CurrentStage = stage;
+							Settings.Default.Save();
+						}
+						else
+						{
+							// Don't think any sort of runtime failure is worthwhile here.
+							Debug.Fail("could not parse stage number");
+						}
+						request.PostSucceeded(); // technically it didn't if we didn't parse the number
+					}
+					break;
 				default:
 					request.Failed("Don't understand '" + lastSegment + "' in " + request.LocalPath());
 					break;
@@ -228,7 +271,7 @@ namespace Bloom.Api
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = String.Format(DecodableReaderTool.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -293,7 +336,7 @@ namespace Bloom.Api
 
 		private static string GetReaderSettings(CollectionSettings currentCollectionSettings)
 		{
-			var settingsPath = DecodableReaderTool.GetReaderToolsSettingsFilePath(currentCollectionSettings);
+			var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(currentCollectionSettings);
 
 			// if file exists, return current settings
 			if (RobustFile.Exists(settingsPath))
@@ -379,7 +422,7 @@ namespace Bloom.Api
 			if (jsonString.Contains("\"LangID\":\"\""))
 				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
 
-			var fileName = String.Format(DecodableReaderTool.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 			RobustFile.WriteAllText(fileName, jsonString, Encoding.UTF8);

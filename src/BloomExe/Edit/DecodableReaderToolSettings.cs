@@ -8,11 +8,12 @@ using SIL.IO;
 
 namespace Bloom.Edit
 {
-	class DecodableReaderTool : ToolboxTool
+	/// <summary>
+	/// This class is a remnant of an earlier model in which each tool had a C# subclass of ToolboxTool.
+	/// A few static methods relating to DecodableReader Settings are all that remain.
+	/// </summary>
+	static class DecodableReaderToolSettings
 	{
-		public const string StaticToolId = "decodableReader"; // Avoid changing value; see ToolboxTool.JsonToolId
-		public override string ToolId { get { return StaticToolId; } }
-
 		internal static void CopyReaderToolsSettingsToWhereTheyBelong(string newlyAddedFolderOfThePack)
 		{
 			var destFolder = ProjectContext.GetBloomAppDataFolder();
@@ -43,7 +44,7 @@ namespace Bloom.Edit
 		public static string GetReaderToolsSettingsFilePath(CollectionSettings collectionSettings)
 		{
 			return Path.Combine(Path.GetDirectoryName(collectionSettings.SettingsFilePath),
-				DecodableReaderTool.ReaderToolsSettingsPrefix + collectionSettings.Language1Iso639Code + ".json");
+				DecodableReaderToolSettings.ReaderToolsSettingsPrefix + collectionSettings.Language1Iso639Code + ".json");
 		}
 
 		/// <summary>
@@ -70,34 +71,5 @@ namespace Bloom.Edit
 		/// See the API handler for more remarks on it.
 		/// </remarks>
 		public const string kSynphonyLanguageDataFileNameFormat = "ReaderToolsWords-{0}.json";
-
-		private const string StagePrefix = "stage:";
-
-		public override void SaveDefaultState()
-		{
-			base.SaveDefaultState();
-			// We expect the state to be something like "stage:6;sort:byLength"
-			// Enhance: someday we'd like to make the state json.
-			if (State == null)
-				return;
-
-			var stageString = State.Split(';')[0].Split(':')[1];
-			int stage;
-			if (Int32.TryParse(stageString, out stage))
-			{
-				Settings.Default.CurrentStage = stage;
-				Settings.Default.Save();
-			}
-		}
-
-		public override string DefaultState()
-		{
-			// Currently we are not saving and restoring the sort method.
-			// However the default MUST provide one, since the JS is definitely expecting
-			// a string with two settings separated by semi-colon; so we just put the
-			// general default here. Unfortunately that duplicates knowledge that
-			// must be elsewhere also but I'm not sure how to avoid it.
-			return StagePrefix + Settings.Default.CurrentStage + @";sort:alphabetic";
-		}
 	}
 }

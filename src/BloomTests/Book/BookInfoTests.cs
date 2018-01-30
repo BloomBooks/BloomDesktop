@@ -120,7 +120,7 @@ namespace BloomTests.Book
 				BookletMakingIsAppropriate = false, PageCount=7,
 				LanguageTableReferences = new [] {new ParseDotComObjectPointer() { ClassName = "Language", ObjectId = "23456" }},
 				Uploader = new ParseDotComObjectPointer() { ClassName="User", ObjectId = "12345"},
-				Tools = new List<ToolboxTool>(new [] {new DecodableReaderTool()}),
+				Tools = new List<ToolboxToolState>(new [] {new DecodableReaderToolSettings()}),
 				AllowUploadingToBloomLibrary = false
 			};
 			var result = meta.WebDataJson;

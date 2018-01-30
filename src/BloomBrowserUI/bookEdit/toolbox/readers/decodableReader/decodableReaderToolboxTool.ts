@@ -7,6 +7,7 @@ import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
 import { theOneLibSynphony } from './../libSynphony/synphony_lib';
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
+import axios from "axios";
 
 
 export class DecodableReaderToolboxTool implements ITool {
@@ -22,12 +23,22 @@ export class DecodableReaderToolboxTool implements ITool {
                     var parts = decState.split(";");
                     var stage = parseInt(parts[0].substring("stage:".length));
                     var sort = parts[1].substring("sort:".length);
-                    getTheOneReaderToolsModel().setSort(sort);
-                    getTheOneReaderToolsModel().setStageNumber(stage);
+                    // The true's passed here prevent re-saving the state we just read.
+                    // One non-obvious implication is that simply opening a stage-4 book
+                    // will not switch the default stage for new books to 4. That only
+                    // happens when you CHANGE the stage in the toolbox.
+                    getTheOneReaderToolsModel().setSort(sort, true);
+                    getTheOneReaderToolsModel().setStageNumber(stage, true);
+                    console.log("set stage in beginRestoreSettings to " + stage);
                 } else {
                     // old state
-                    getTheOneReaderToolsModel().setStageNumber(parseInt(decState));
+                    getTheOneReaderToolsModel().setStageNumber(parseInt(decState, 10), true);
                 }
+            } else {
+                axios.get("/bloom/api/readers/io/defaultStage").then(result => {
+                    // Presumably a brand new book. We'd better save the settings we come up with in it.
+                    getTheOneReaderToolsModel().setStageNumber(parseInt(result.data, 10));
+                });
             }
         });
     }
