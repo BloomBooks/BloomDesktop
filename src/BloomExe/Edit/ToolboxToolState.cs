@@ -14,7 +14,7 @@ using SIL.IO;
 namespace Bloom.Edit
 {
 	/// <summary>
-	/// This class represents one tool in the Toolbox accordion which can show to the right of the
+	/// This class represents the state of one tool in the Toolbox accordion which can show to the right of the
 	/// page when the user expands it.
 	/// These objects are serialized as part of the meta.json file representing the state of a book.
 	/// The State field is persisted in this way; it is also passed in to the JavaScript that manages
@@ -23,7 +23,7 @@ namespace Bloom.Edit
 	/// Note that the values of the Name field are used in the json and therefore cannot readily be changed.
 	/// (Migration would handle a change going forward, but older Blooms would lose the data at best.)
 	/// </summary>
-	public class ToolboxTool
+	public class ToolboxToolState
 	{
 		/// <summary>
 		/// This is the id used to identify the tool in the meta.json file that accompanies the book.
@@ -47,9 +47,9 @@ namespace Bloom.Edit
 		[JsonProperty("state")]
 		public string State { get; set; }
 
-		public static ToolboxTool CreateFromToolId(string toolId)
+		public static ToolboxToolState CreateFromToolId(string toolId)
 		{
-			return new ToolboxTool() {ToolId = toolId};
+			return new ToolboxToolState() {ToolId = toolId};
 		}
 
 		/// <summary>
@@ -68,7 +68,7 @@ namespace Bloom.Edit
 
 		public static object GetToolboxToolFromJsonObject(JObject item)
 		{
-			return item.ToObject<ToolboxTool>();
+			return item.ToObject<ToolboxToolState>();
 		}
 	}
 
@@ -82,7 +82,7 @@ namespace Bloom.Edit
 	{
 		public override bool CanConvert(Type objectType)
 		{
-			return typeof(ToolboxTool).IsAssignableFrom(objectType);
+			return typeof(ToolboxToolState).IsAssignableFrom(objectType);
 		}
 
 		// Default writing is fine.
@@ -95,7 +95,7 @@ namespace Bloom.Edit
 			Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			JObject item = JObject.Load(reader);
-			return ToolboxTool.GetToolboxToolFromJsonObject(item);
+			return ToolboxToolState.GetToolboxToolFromJsonObject(item);
 		}
 
 		// We don't need a real implementation of this because returning false from CanWrite

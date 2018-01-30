@@ -390,12 +390,12 @@ namespace Bloom.Book
 			}
 		}
 
-		public List<ToolboxTool> Tools
+		public List<ToolboxToolState> Tools
 		{
 			get
 			{
 				if (MetaData.Tools == null)
-					MetaData.Tools = new List<ToolboxTool>();
+					MetaData.Tools = new List<ToolboxToolState>();
 				return MetaData.Tools;
 			}
 			set { MetaData.Tools = value; }
@@ -762,7 +762,7 @@ namespace Bloom.Book
 		[DefaultValue(true)]
 		public bool BookletMakingIsAppropriate { get; set; }
 
-		public ToolboxTool LeveledReaderTool => Tools?.SingleOrDefault(t => t.ToolId == "leveledReader");
+		public ToolboxToolState LeveledReaderTool => Tools?.SingleOrDefault(t => t.ToolId == "leveledReader");
 
 		public int LeveledReaderLevel
 		{
@@ -804,7 +804,7 @@ namespace Bloom.Book
 		/// <summary>These panels are being displayed in the toolbox for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
 		[JsonProperty("tools",ItemConverterType = typeof(ToolboxToolConverter))]
-		public List<ToolboxTool> Tools { get; set; }
+		public List<ToolboxToolState> Tools { get; set; }
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
 		public string CurrentTool { get; set; }

@@ -22,7 +22,7 @@ namespace Bloom.Edit
 	/// nor are there ever any instances; all methods are currently static.
 	/// Currently necessary steps to add a new tool:
 	/// - Add the tool's folder to ToolboxView.GetToolboxServerDirectories().
-	/// - Create a folder under BloomBrowserUI/bookEdit/toolbox. It's name should match the toolId (see below).
+	/// - Create a folder under BloomBrowserUI/bookEdit/toolbox. Its name should match the toolId (see below).
 	/// - Create a file in that folder with extension .tsx to contain the React code of the panel
 	///		- it (or another file) should have a class which implements ITool
 	///			- minimally this must implement id() to return the tool ID
@@ -35,6 +35,7 @@ namespace Bloom.Edit
 	///			- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}.Heading,
 	///				where UCToolId is the capitalized version of your tool Id, e.g., "Music".
 	///				We currently assume the default English value of this will be UCToolId Tool, e.g., "Music Tool"
+	///				(This supports localization of the tool's accordion tab label.)
 	/// </summary>
 	public class ToolboxView
 	{
@@ -52,7 +53,7 @@ namespace Bloom.Edit
 		/// <param name="newlyAddedFolderOfThePack"></param>
 		internal static void CopyToolSettingsForBloomPack(string newlyAddedFolderOfThePack)
 		{
-			DecodableReaderTool.CopyReaderToolsSettingsToWhereTheyBelong(newlyAddedFolderOfThePack);
+			DecodableReaderToolSettings.CopyReaderToolsSettingsToWhereTheyBelong(newlyAddedFolderOfThePack);
 		}
 
 		/// <summary>
@@ -61,7 +62,7 @@ namespace Bloom.Edit
 		/// <param name="settings"></param>
 		public static void SetupToolboxForCollection(CollectionSettings settings)
 		{
-			DecodableReaderTool.CopyRelevantNewReaderSettings(settings);
+			DecodableReaderToolSettings.CopyRelevantNewReaderSettings(settings);
 		}
 
 		public static IEnumerable<string> GetToolboxServerDirectories()
@@ -158,7 +159,7 @@ namespace Bloom.Edit
 
 			if (item == null)
 			{
-				item = ToolboxTool.CreateFromToolId(toolName);
+				item = ToolboxToolState.CreateFromToolId(toolName);
 				tools.Add(item);
 			}
 			item.Enabled = enabled;

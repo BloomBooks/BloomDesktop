@@ -10,9 +10,9 @@ namespace Bloom.Edit
 {
 	/// <summary>
 	/// This class is a remnant of an earlier model in which each tool had a C# subclass of ToolboxTool.
-	/// A few static methods relating to DecodableReader are all that remain.
+	/// A few static methods relating to DecodableReader Settings are all that remain.
 	/// </summary>
-	static class DecodableReaderTool
+	static class DecodableReaderToolSettings
 	{
 		internal static void CopyReaderToolsSettingsToWhereTheyBelong(string newlyAddedFolderOfThePack)
 		{
@@ -44,7 +44,7 @@ namespace Bloom.Edit
 		public static string GetReaderToolsSettingsFilePath(CollectionSettings collectionSettings)
 		{
 			return Path.Combine(Path.GetDirectoryName(collectionSettings.SettingsFilePath),
-				DecodableReaderTool.ReaderToolsSettingsPrefix + collectionSettings.Language1Iso639Code + ".json");
+				DecodableReaderToolSettings.ReaderToolsSettingsPrefix + collectionSettings.Language1Iso639Code + ".json");
 		}
 
 		/// <summary>

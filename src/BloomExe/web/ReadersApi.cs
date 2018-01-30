@@ -97,7 +97,7 @@ namespace Bloom.Api
 						request.ReplyWithJson(GetReaderSettings(request.CurrentCollectionSettings));
 					else
 					{
-						var path = DecodableReaderTool.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
+						var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
 						var content = request.RequiredPostJson();
 						RobustFile.WriteAllText(path, content, Encoding.UTF8);
 						request.PostSucceeded();
@@ -271,7 +271,7 @@ namespace Bloom.Api
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = String.Format(DecodableReaderTool.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -336,7 +336,7 @@ namespace Bloom.Api
 
 		private static string GetReaderSettings(CollectionSettings currentCollectionSettings)
 		{
-			var settingsPath = DecodableReaderTool.GetReaderToolsSettingsFilePath(currentCollectionSettings);
+			var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(currentCollectionSettings);
 
 			// if file exists, return current settings
 			if (RobustFile.Exists(settingsPath))
@@ -422,7 +422,7 @@ namespace Bloom.Api
 			if (jsonString.Contains("\"LangID\":\"\""))
 				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
 
-			var fileName = String.Format(DecodableReaderTool.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 			RobustFile.WriteAllText(fileName, jsonString, Encoding.UTF8);

@@ -426,7 +426,7 @@ namespace Bloom.MiscUI
 				return false;
 			foreach (var tool in Book.BookInfo.Tools)
 			{
-				if (tool is Bloom.Edit.DecodableReaderTool || tool.ToolId == "leveledReader")
+				if (tool is Bloom.Edit.DecodableReaderToolSettings || tool.ToolId == "leveledReader")
 					return true;
 			}
 			return false;
