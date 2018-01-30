@@ -1,0 +1,30 @@
+<svg width="39" height="27" viewBox="0 0 39 27" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>pan and zoom</title>
+<desc>Created using Figma</desc>
+<g id="Canvas" transform="translate(-475 242)">
+<g id="pan and zoom">
+<g id="Group">
+<g id="Rectangle">
+<mask id="mask0_outline_ins">
+<use xlink:href="#path0_fill" fill="white" transform="translate(494.778 -242)"/>
+</mask>
+<g mask="url(#mask0_outline_ins)">
+<use xlink:href="#path1_stroke_2x" transform="translate(494.778 -242)" fill="#FFFFFF"/>
+</g>
+</g>
+<g id="Rectangle">
+<use xlink:href="#path2_stroke" transform="translate(476 -234.255)" fill="#FFFFFF"/>
+</g>
+<g id="Vector">
+<use xlink:href="#path3_stroke" transform="translate(496.987 -234.255)" fill="#FFFFFF"/>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<path id="path0_fill" d="M 0 0L 18.7778 0L 18.7778 21.6667L 0 21.6667L 0 0Z"/>
+<path id="path1_stroke_2x" d="M 0 0L 0 -2L -2 -2L -2 0L 0 0ZM 18.7778 0L 20.7778 0L 20.7778 -2L 18.7778 -2L 18.7778 0ZM 18.7778 21.6667L 18.7778 23.6667L 20.7778 23.6667L 20.7778 21.6667L 18.7778 21.6667ZM 0 21.6667L -2 21.6667L -2 23.6667L 0 23.6667L 0 21.6667ZM 0 2L 18.7778 2L 18.7778 -2L 0 -2L 0 2ZM 16.7778 0L 16.7778 21.6667L 20.7778 21.6667L 20.7778 0L 16.7778 0ZM 18.7778 19.6667L 0 19.6667L 0 23.6667L 18.7778 23.6667L 18.7778 19.6667ZM 2 21.6667L 2 0L -2 0L -2 21.6667L 2 21.6667Z"/>
+<path id="path2_stroke" d="M 28.719 18.2553L 28.719 19.2553L 29.719 19.2553L 29.719 18.2553L 28.719 18.2553ZM 0 18.2553L -1 18.2553L -1 19.2553L 0 19.2553L 0 18.2553ZM 0 0L 0 -1L -1 -1L -1 0L 0 0ZM 28.719 17.2553L 0 17.2553L 0 19.2553L 28.719 19.2553L 28.719 17.2553ZM 1 18.2553L 1 0L -1 0L -1 18.2553L 1 18.2553ZM 0 1L 17.9493 1L 17.9493 -1L 0 -1L 0 1ZM 27.719 9.12766L 27.719 18.2553L 29.719 18.2553L 29.719 9.12766L 27.719 9.12766Z"/>
+<path id="path3_stroke" d="M 7.73203 0L 8.73203 0L 8.73203 -1L 7.73203 -1L 7.73203 0ZM 0 1L 2.57734 1L 2.57734 -1L 0 -1L 0 1ZM 5.15468 1L 7.73203 1L 7.73203 -1L 5.15468 -1L 5.15468 1ZM 6.73203 0L 6.73203 2.39716L 8.73203 2.39716L 8.73203 0L 6.73203 0ZM 6.73203 4.79433L 6.73203 7.19149L 8.73203 7.19149L 8.73203 4.79433L 6.73203 4.79433Z"/>
+</defs>
+</svg>
