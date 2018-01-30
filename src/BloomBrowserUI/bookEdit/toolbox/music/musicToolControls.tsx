@@ -72,8 +72,8 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         return (
             <div className="musicBody">
                 <Div className="musicHelp"
-                    l10nKey="EditTab.Toolbox.Music.Overview">You can set up background music to play"
-                        + " with this page when the book is viewed in the Bloom Reader app.</Div>
+                    l10nKey="EditTab.Toolbox.Music.Overview">You can set up background music to play
+                    with this page when the book is viewed in the Bloom Reader app.</Div>
                 <RadioGroup onChange={val => this.setRadio(val)} value={this.state.activeRadioValue}>
                     <Radio l10nKey="EditTab.Toolbox.Music.NoMusic" value="noMusic">No Music</Radio>
                     <Radio l10nKey="EditTab.Toolbox.Music.ContinueMusic" value="continueMusic">Continue music from previous page</Radio>
@@ -84,7 +84,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
                     </div>
                 </RadioGroup>
 
-                <div className="button-label-wrapper" id="musicOuterWrapper">
+                <div className={"button-label-wrapper" + (this.state.audioEnabled ? "" : " disabled")} id="musicOuterWrapper">
                     <div id="musicPlayAndLabelWrapper">
                         <div className="musicButtonWrapper">
                             <button id="musicPreview" className={"music-button ui-button enabled" + (this.state.playing ? " playing" : "")}
@@ -95,7 +95,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
                     <div id="musicVolumePercent" style={{ visibility: this.state.audioEnabled ? "visible" : "hidden" }}
                     >{Math.round(100 * this.state.musicVolume)}%</div>
                     <div id="musicSetVolume">
-                        <img className={"speaker-volume" + (this.state.audioEnabled ? "" : " disabled")} src="speaker-volume.svg" />
+                        <img className="speaker-volume" src="speaker-volume.svg" />
                         <div className="bgSliderWrapper">
                             <Slider className="musicVolumeSlider" value={100 * this.state.musicVolume}
                                 disabled={!this.state.audioEnabled} onChange={

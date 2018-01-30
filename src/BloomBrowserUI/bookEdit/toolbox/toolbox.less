@@ -77,13 +77,14 @@ div.checkbox-label {
 }
 
 .ui-accordion h3[data-toolId="decodableReaderTool"] span.ui-accordion-header-icon,
-.ui-accordion h3[data-toolId="leveledReaderTool"] span.ui-accordion-header-icon {
+.ui-accordion h3[data-toolId="leveledReaderTool"] span.ui-accordion-header-icon,
+.ui-accordion h3[data-toolId="musicTool"] span.ui-accordion-header-icon {
     background-size: 16px 16px;
     background-position: 0 0;
     display: inline-block;
 }
 
-.ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon {
+.ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon, {
     background-size: 12px 16px;
     background-position: 2px 0;
     display: inline-block;
@@ -99,6 +100,10 @@ div.checkbox-label {
 
 .ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon {
     background-image:url('/bloom/images/microphone-white.svg') !important;
+}
+
+.ui-accordion h3[data-toolId="musicTool"] span.ui-accordion-header-icon {
+    background-image:url('/bloom/images/music-notes-white.svg') !important;
 }
 
 // Dialogs launched from the toolbox need to be in front of everything,
