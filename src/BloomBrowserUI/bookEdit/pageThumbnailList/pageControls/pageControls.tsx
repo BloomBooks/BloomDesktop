@@ -78,7 +78,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
 
     render() {
         return (
-            <div>
+            <div id="pageControlsRoot">
                 <div>
                     <BloomButton
                         l10nKey="EditTab.AddPageDialog.AddPageButton"
