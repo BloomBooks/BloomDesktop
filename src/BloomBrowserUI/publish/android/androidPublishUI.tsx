@@ -107,7 +107,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
 
         return (
-            <div>
+            <div id="androidPublishReactRoot">
                 <H1 className="media-heading" l10nKey="PublishTab.Android.Media"
                     l10nComment="A heading in the Publish to Android screen.">
                     Media
