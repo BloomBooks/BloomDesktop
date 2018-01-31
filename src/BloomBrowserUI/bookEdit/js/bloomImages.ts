@@ -246,17 +246,20 @@ function UpdateOverlay(container, img) {
 
         var buttonModifier = GetButtonModifier(container);
 
-        $(container).prepend("<button class='editMetadataButton imageButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
+        $(container).prepend("<button class='editMetadataButton imageButton imgMetadataProblem " + buttonModifier + "' title='" +
+            theOneLocalizationManager.getText("EditTab.Image.MissingInfo", "Image is missing information on Credits, Copyright, or License") +
+            "'></button>");
     }
 }
 
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
-// TODO: internationalize
 function SetAlternateTextOnImages(element) {
     if (GetRawImageUrl(element).length > 0) { //don't show this on the empty license image when we don't know the license yet
         var nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
-        $(element).attr('alt', 'This picture, ' + nameWithoutQueryString + ', is missing or was loading too slowly.');
+        var msg = theOneLocalizationManager.getText("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.",
+                    nameWithoutQueryString);
+        $(element).attr('alt', msg);
     } else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'
     }
