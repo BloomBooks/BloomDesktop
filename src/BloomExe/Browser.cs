@@ -475,7 +475,9 @@ namespace Bloom
 				string.Format("{0} in {1}:{2}", e.Message, file, line));
 		}
 
-		public Boolean SuppressJavaScriptErrors { get; set; }
+		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
+		// browser instance(s) get the messages when something goes wrong in one of them.
+		public static Boolean SuppressJavaScriptErrors { get; set; }
 
 		private void OnConsoleMessage(object sender, ConsoleMessageEventArgs e)
 		{
