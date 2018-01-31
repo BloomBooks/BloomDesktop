@@ -39,16 +39,19 @@ namespace Bloom.Publish
 		private AndroidView _androidControl;
 		private NavigationIsolator _isolator;
 		private BloomWebSocketServer _webSocketServer;
+		private PublishToAndroidApi _publishApi;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator, BloomWebSocketServer webSocketServer)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator, BloomWebSocketServer webSocketServer,
+			PublishToAndroidApi publishApi)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
 			_webSocketServer = webSocketServer;
+			_publishApi = publishApi;
 
 			InitializeComponent();
 
