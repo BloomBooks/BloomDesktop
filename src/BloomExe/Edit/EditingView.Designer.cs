@@ -197,6 +197,7 @@
 			this._duplicatePageButton.Text = "Duplicate\r\n   Page";
 			this._duplicatePageButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._duplicatePageButton.TextDropShadow = false;
+			this._duplicatePageButton.TextWordWrap = true;
 			this._betterToolTip1.SetToolTip(this._duplicatePageButton, "Insert a new page which is a duplicate of this one");
 			this._betterToolTip1.SetToolTipWhenDisabled(this._duplicatePageButton, "This page cannot be duplicated");
 			this._duplicatePageButton.UseVisualStyleBackColor = false;
@@ -239,6 +240,7 @@
 			this._deletePageButton.Text = "Remove\r\n  Page";
 			this._deletePageButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._deletePageButton.TextDropShadow = false;
+			this._deletePageButton.TextWordWrap = true;
 			this._betterToolTip1.SetToolTip(this._deletePageButton, "Remove this page from the book");
 			this._betterToolTip1.SetToolTipWhenDisabled(this._deletePageButton, "This page cannot be removed");
 			this._deletePageButton.UseVisualStyleBackColor = false;
