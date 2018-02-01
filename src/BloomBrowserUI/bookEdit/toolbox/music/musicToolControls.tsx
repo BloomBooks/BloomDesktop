@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
-import { RadioGroup, Radio } from "../../../react_components/Radio";
+import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
