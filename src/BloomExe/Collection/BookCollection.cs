@@ -130,7 +130,12 @@ namespace Bloom.Collection
 				// so filter on the whole path.
 				if (folder.FullName.ToLowerInvariant().Contains("xmatter"))
 					continue;
-				if(RobustFile.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
+				// Note: this used to be .bloom-ignore. We believe that is no longer used.
+				// It was changed because files starting with dot are normally invisible,
+				// which could make it hard to see why a book is skipped, and also because
+				// we were having trouble finding a way to get a file called .bloom-ignore
+				// included in the filesThatMightBeNeededInOutput list in gulpfile.js.
+				if (RobustFile.Exists(Path.Combine(folder.FullName, "BloomIgnore.txt")))
 					continue;
 				AddBookInfo(folder.FullName);
 			}
