@@ -1,0 +1,1 @@
+This file exists as a flag to prevent the multi-media template being shown in a source collection
