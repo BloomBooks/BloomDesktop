@@ -649,7 +649,7 @@ function AddXMatterLabelAfterPageLabel(container) {
             theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel.FrontBackMatter", "Front/Back Matter", "")
                 .done(function (frontBackTranslation) {
                     $(pageLabel).attr("data-after-content", xMatterLabelTranslation + " " + frontBackTranslation);
-                })
+                });
         });
 }
 

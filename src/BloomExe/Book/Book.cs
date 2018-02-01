@@ -872,6 +872,7 @@ namespace Bloom.Book
 			var licenseMetadata = GetLicenseMetadata();
 			BringXmatterHtmlUpToDate(bookDOM);
 			RepairBrokenSmallCoverCredits(bookDOM);
+			RepairPageLabelLocalization(bookDOM);
 
 			progress.WriteStatus("Gathering Data...");
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -926,6 +927,42 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Prior to Bloom 4.0 there was an attempt at localizing Page labels and the translation
+		/// for several languages was done, but was not showing up. It turns out this was due to an
+		/// incomplete implementation. Hopefully the implementation is complete now, but for older
+		/// books that were not built with the proper attribute on the page label DIV we now insert it
+		/// so that page labels can be localized properly.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5313
+		/// </remarks>
+		internal static void RepairPageLabelLocalization(HtmlDom bookDOM)
+		{
+			if (bookDOM?.Body == null)
+				return;     // must be a test running...
+
+			const string i18nPrefix = "TemplateBooks.PageLabel.";
+			const string i18nAttr = "data-i18n";
+			var prefixLength = i18nPrefix.Length;
+
+			var pageLabelNodes = bookDOM.Body.SelectNodes("//div[@id]/div[@class='pageLabel']");
+			foreach (XmlElement pageLabelElt in pageLabelNodes)
+			{
+				// If we already have a data-i18n attribute with the right contents, skip this one.
+				var i18nValue = pageLabelElt.GetOptionalStringAttribute(i18nAttr, i18nPrefix);
+				if (i18nValue.StartsWith(i18nPrefix) && i18nValue.Length > prefixLength)
+				{
+					// As best we can tell, this already has the right localization attribute contents.
+					continue;
+				}
+				// Need to fix this one up with the right attribute and contents
+				var englishContents = pageLabelElt.InnerText.Trim();
+				i18nValue = i18nPrefix + englishContents;
+				pageLabelElt.SetAttribute(i18nAttr, i18nValue);
+			}
+		}
+
+		/// <summary>
 		/// A bug in the initial release of Bloom 3.8 resulted in the nested editable divs being stored
 		/// for the smallCoverCredits data under the general language tag "*".  (The bug was actually in
 		/// the pug mixins for xmatter.)  The manifestation experienced by users was having the front page
@@ -937,9 +974,9 @@ namespace Bloom.Book
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4591.
 		/// </remarks>
-		internal void RepairBrokenSmallCoverCredits(HtmlDom bookDOM)
+		internal static void RepairBrokenSmallCoverCredits(HtmlDom bookDOM)
 		{
-			if (bookDOM == null || bookDOM.Body == null)
+			if (bookDOM?.Body == null)
 				return;		// must be a test running...
 			var dataDiv = bookDOM.Body.SelectSingleNode("div[@id='bloomDataDiv']");
 			if (dataDiv == null)

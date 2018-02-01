@@ -64,7 +64,7 @@ mixin page-required(englishLabel, englishDescription)
 		block
 
 mixin page-label-english(englishLabel, englishDescription)
-	.pageLabel(lang='en')=englishLabel
+	.pageLabel(lang='en', data-i18n='TemplateBooks.PageLabel.'+englishLabel)=englishLabel
 	.pageDescription(lang='en')=englishDescription
 
 //- Example Usage with placeholder and bubble:
