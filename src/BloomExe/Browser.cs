@@ -481,6 +481,15 @@ namespace Bloom
 		{
 			if(e.Message.StartsWith("[JavaScript Warning"))
 				return;
+#if !DEBUG
+			// We don't want developers to miss any JS errors.
+			// (Eventually, with a better version of gecko, we may be able to filter exceptions that have already been caught.)
+			// Here we will put special cases, as specific as possible, for JS errors we've decided we don't want
+			// Len or other testers to report.
+			// This is an attempt, based on the log in BL-4444, to eliminate an error in Gecko that happens when Bloom is first run on a non-English OS.
+			if (e.Message.Contains("TypeError: window.arguments is undefined\" {file: \"chrome://global/content/alerts/alert.js\" line: 41}"))
+				return;
+#endif
 			if (e.Message.StartsWith("[JavaScript Error"))
 			{
 				// BL-4737 Don't report websocket errors, but do send them to the Debug console.
