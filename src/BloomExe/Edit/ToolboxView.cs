@@ -36,6 +36,12 @@ namespace Bloom.Edit
 	///				where UCToolId is the capitalized version of your tool Id, e.g., "Music".
 	///				We currently assume the default English value of this will be UCToolId Tool, e.g., "Music Tool"
 	///				(This supports localization of the tool's accordion tab label.)
+	/// - In some toolbox less file (typically a new one for your tool, but could be toolbox.less)
+	///		you need to create a rule like
+	///			.ui-accordion h3[data-toolId="panAndZoomTool"] span.ui-accordion-header-icon {
+	///				background-image:url('/bloom/images/pan and zoom.svg') !important;
+	///			}
+	///		which specifies the icon for your tool. (And create the icon in the BloomBrowserUI/images folder).
 	/// </summary>
 	public class ToolboxView
 	{

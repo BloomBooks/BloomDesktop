@@ -24,10 +24,6 @@
         margin-bottom:5px;
     }
 
-    .disabled {
-        opacity: 0.4;
-    }
-
     #musicPreview {
         background-image: url(audio/play_enabled.svg);
         height:25px;
@@ -39,15 +35,6 @@
         height:23px;
         width:23px;
         position: relative;
-
-        &.disabled ::after {
-            content:"";
-            background-color: @toolboxBackgroundColor;
-            opacity: 60%;
-            top:0;bottom:0;left:0;right:0;
-            position: absolute;
-            z-index: 1;
-        }
     }
     .radioButton {margin-top:20px;}
     .radioLabel {display:inline-block; max-width: 120px;}
@@ -94,9 +81,18 @@
     }
     #musicOuterWrapper {
         margin-left:5px; // needed to make the nested controls line up visually with the radio buttons
+
+        &.disabled {
+            opacity: 0.3;
+        }
+
     }
     .musicChooseFile, .musicChooseWrapper .radioButton {display:inline-block;}
 
     .button-label-wrapper {margin-top: 10px;}
     .musicButtonWrapper {display:inline-block;min-width: 30px; margin-top:9px;}
+}
+
+.ui-accordion h3[data-toolId="musicTool"] span.ui-accordion-header-icon {
+    background-image:url('/bloom/images/music-notes-white.svg') !important;
 }
