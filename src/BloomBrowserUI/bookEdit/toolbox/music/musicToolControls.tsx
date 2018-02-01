@@ -25,8 +25,10 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         this.state = this.getStateFromHtml();
     }
 
+    addedListenerToPlayer: boolean;
+
     getStateFromHtml(): IMusicState {
-        let audioStr = this.getPage().find(".bloom-page").attr("data-music");
+        let audioStr = this.getBloomPageAttr("data-music");
         let hasMusicAttr = typeof (audioStr) === typeof (""); // may be false or undefined if missing
         if (!audioStr) {
             audioStr = ""; // null won't handle split
@@ -113,8 +115,12 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         );
     }
 
+    getPlayer(): HTMLMediaElement {
+        return document.getElementById("musicPlayer") as HTMLMediaElement;
+    }
+
     previewMusic() {
-        let audioStr = this.getPage().find(".bloom-page").attr("data-music");
+        let audioStr = this.getBloomPageAttr("data-music");
         if (!audioStr) {
             return;
         }
@@ -122,7 +128,11 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
             this.pausePlaying();
             return;
         }
-        var player = $("#musicPlayer");
+        var player = this.getPlayer();
+        if (!this.addedListenerToPlayer) {
+            player.addEventListener("ended", () => this.setState({ playing: false }));
+            this.addedListenerToPlayer = true;
+        }
         var bookSrc = this.getPageFrame().src;
         var index = bookSrc.lastIndexOf("/");
         var bookFolderUrl = bookSrc.substring(0, index + 1);
@@ -130,17 +140,14 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         // The ?nocache argument is ignored, except that it ensures each time we do this,
         // src is a different URL, so the player treats it as a new sound to play.
         // Without this it may not play if it hasn't changed.
-        player.attr("src", musicUrl + "?nocache=" + new Date().getTime());
-        const rawPlayer = document.getElementById("musicPlayer") as HTMLMediaElement;
-        rawPlayer.volume = this.getAudioVolume(audioStr);
-        rawPlayer.play();
-        player.off("ended").on("ended", () => this.setState({ playing: false }));
+        player.setAttribute("src", musicUrl + "?nocache=" + new Date().getTime());
+        player.volume = this.getAudioVolume(audioStr);
+        player.play();
         this.setState({ playing: true });
     }
 
     pausePlaying() {
-        const rawPlayer = (document.getElementById("musicPlayer") as HTMLMediaElement);
-        rawPlayer.pause();
+        this.getPlayer().pause();
         this.setState({ playing: false });
     }
 
@@ -154,10 +161,10 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         }
         switch (val) {
             case "noMusic":
-                this.getPage().find(".bloom-page").attr("data-music", "");
+                this.setBloomPageAttr("data-music", "");
                 break;
             case "continueMusic":
-                this.getPage().find(".bloom-page").removeAttr("data-music");
+                this.getBloomPage().removeAttribute("data-music");
                 break;
             // choosing the third button doesn't change anything, until you actually choose a file.
         }
@@ -168,7 +175,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     // is used at all. If anything goes wrong, or we're not specifying new music for this page,
     // we just set it to 100%.
     getAudioVolume(audioStr: string): number {
-        const audioVolumeStr = this.getPage().find(".bloom-page").attr("data-musicvolume");
+        const audioVolumeStr = this.getBloomPageAttr("data-musicvolume");
         let audioVolume: number = 1.0;
         if (audioStr && audioVolumeStr) {
             try {
@@ -189,18 +196,34 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     }
 
     // The body of the editable page, a root for searching for document content.
-    public getPage(): JQuery {
+    public getPage(): HTMLElement {
         var page = this.getPageFrame();
         if (!page) return null;
-        return $(page.contentWindow.document.body);
+        return page.contentWindow.document.body;
+    }
+
+    public getBloomPage(): HTMLElement {
+        var page = this.getPage();
+        if (!page) return null;
+        return page.querySelector(".bloom-page") as HTMLElement;
+    }
+
+    public getBloomPageAttr(name: string): string {
+        var page = this.getBloomPage();
+        if (page == null) return null;
+        return page.getAttribute(name);
+    }
+
+    public setBloomPageAttr(name: string, val: string): void {
+        var page = this.getBloomPage();
+        if (page == null) return;
+        page.setAttribute(name, val);
     }
 
     // Position is a number between 0 and 100
     sliderMoved(position: number): void {
-        //$("#musicVolumePercent").text(position + "%");
-        this.getPage().find(".bloom-page").attr("data-musicvolume", position / 100);
-        const rawPlayer = (document.getElementById("musicPlayer") as HTMLMediaElement);
-        rawPlayer.volume = position / 100;
+        this.setBloomPageAttr("data-musicvolume", (position / 100).toString());
+        this.getPlayer().volume = position / 100;
         this.setState((prevState, props) => { return { musicVolume: position / 100 }; });
     }
 
@@ -210,7 +233,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
             if (!fileName) {
                 return;
             }
-            this.getPage().find(".bloom-page").attr("data-music", fileName);
+            this.setBloomPageAttr("data-music", fileName);
             this.setState({ activeRadioValue: "newMusic", audioEnabled: true, musicName: this.getDisplayNameOfMusicFile(fileName) });
         });
     }
@@ -230,7 +253,8 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
 export class MusicTool implements ITool {
     reactControls: MusicToolControls;
     makeRootElement(): HTMLDivElement {
-        const root = $("<div class='musicBody'/>").get(0);
+        const root = document.createElement("div");
+        root.setAttribute("class", "musicBody");
         this.reactControls = MusicToolControls.setup(root);
         return root as HTMLDivElement;
     }
