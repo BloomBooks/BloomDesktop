@@ -25,10 +25,14 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         this.state = this.getStateFromHtml();
     }
 
+    // duplicates information in HtmlDom.cs
+    musicAttrName = "data-backgroundaudio";
+    musicVolumeName = this.musicAttrName + "volume";
+
     addedListenerToPlayer: boolean;
 
     getStateFromHtml(): IMusicState {
-        let audioStr = this.getBloomPageAttr("data-music");
+        let audioStr = this.getBloomPageAttr(this.musicAttrName);
         let hasMusicAttr = typeof (audioStr) === typeof (""); // may be false or undefined if missing
         if (!audioStr) {
             audioStr = ""; // null won't handle split
@@ -41,7 +45,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
             playing: false
         }; // default state
         if (!hasMusicAttr) {
-            // No data-music attr at all is our default state, continue from previous page
+            // No data-backgroundAudio attr at all is our default state, continue from previous page
             // (including possibly no audio, if previous page had none). If audio is set on a previous
             // page, it can flow over into this one.
         } else if (audioStr) {
@@ -120,7 +124,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     }
 
     previewMusic() {
-        let audioStr = this.getBloomPageAttr("data-music");
+        let audioStr = this.getBloomPageAttr(this.musicAttrName);
         if (!audioStr) {
             return;
         }
@@ -128,15 +132,15 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
             this.pausePlaying();
             return;
         }
-        var player = this.getPlayer();
+        const player = this.getPlayer();
         if (!this.addedListenerToPlayer) {
             player.addEventListener("ended", () => this.setState({ playing: false }));
             this.addedListenerToPlayer = true;
         }
-        var bookSrc = this.getPageFrame().src;
-        var index = bookSrc.lastIndexOf("/");
-        var bookFolderUrl = bookSrc.substring(0, index + 1);
-        var musicUrl = encodeURI(bookFolderUrl + "audio/" + audioStr);
+        const bookSrc = this.getPageFrame().src;
+        const index = bookSrc.lastIndexOf("/");
+        const bookFolderUrl = bookSrc.substring(0, index + 1);
+        const musicUrl = encodeURI(bookFolderUrl + "audio/" + audioStr);
         // The ?nocache argument is ignored, except that it ensures each time we do this,
         // src is a different URL, so the player treats it as a new sound to play.
         // Without this it may not play if it hasn't changed.
@@ -161,21 +165,21 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         }
         switch (val) {
             case "noMusic":
-                this.setBloomPageAttr("data-music", "");
+                this.setBloomPageAttr(this.musicAttrName, "");
                 break;
             case "continueMusic":
-                this.getBloomPage().removeAttribute("data-music");
+                this.getBloomPage().removeAttribute(this.musicAttrName);
                 break;
             // choosing the third button doesn't change anything, until you actually choose a file.
         }
     }
 
-    // Get the audio volume. The value of the data-music attr, which is passed in,
-    // is not the source of the volume, but does determine whether data-musicvolume
+    // Get the audio volume. The value of the data-backgroundAudio attr, which is passed in,
+    // is not the source of the volume, but does determine whether data-backgroundAudioVolume
     // is used at all. If anything goes wrong, or we're not specifying new music for this page,
     // we just set it to 100%.
     getAudioVolume(audioStr: string): number {
-        const audioVolumeStr = this.getBloomPageAttr("data-musicvolume");
+        const audioVolumeStr = this.getBloomPageAttr(this.musicVolumeName);
         let audioVolume: number = 1.0;
         if (audioStr && audioVolumeStr) {
             try {
@@ -197,43 +201,43 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
 
     // The body of the editable page, a root for searching for document content.
     public getPage(): HTMLElement {
-        var page = this.getPageFrame();
+        const page = this.getPageFrame();
         if (!page) return null;
         return page.contentWindow.document.body;
     }
 
     public getBloomPage(): HTMLElement {
-        var page = this.getPage();
+        const page = this.getPage();
         if (!page) return null;
         return page.querySelector(".bloom-page") as HTMLElement;
     }
 
     public getBloomPageAttr(name: string): string {
-        var page = this.getBloomPage();
+        const page = this.getBloomPage();
         if (page == null) return null;
         return page.getAttribute(name);
     }
 
     public setBloomPageAttr(name: string, val: string): void {
-        var page = this.getBloomPage();
+        const page = this.getBloomPage();
         if (page == null) return;
         page.setAttribute(name, val);
     }
 
     // Position is a number between 0 and 100
     sliderMoved(position: number): void {
-        this.setBloomPageAttr("data-musicvolume", (position / 100).toString());
+        this.setBloomPageAttr(this.musicVolumeName, (position / 100).toString());
         this.getPlayer().volume = position / 100;
         this.setState((prevState, props) => { return { musicVolume: position / 100 }; });
     }
 
     chooseMusicFile() {
         axios.get("/bloom/api/music/ui/chooseFile").then(result => {
-            var fileName = result.data;
+            const fileName = result.data;
             if (!fileName) {
                 return;
             }
-            this.setBloomPageAttr("data-music", fileName);
+            this.setBloomPageAttr(this.musicAttrName, fileName);
             this.setState({ activeRadioValue: "newMusic", audioEnabled: true, musicName: this.getDisplayNameOfMusicFile(fileName) });
         });
     }
@@ -263,7 +267,7 @@ export class MusicTool implements ITool {
     }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
-        var result = $.Deferred<void>();
+        const result = $.Deferred<void>();
         result.resolve();
         return result;
     }

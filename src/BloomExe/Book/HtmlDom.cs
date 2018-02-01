@@ -1016,6 +1016,10 @@ namespace Bloom.Book
 			editedPageDiv.SetAttribute("class", editedPageDiv.GetAttribute("class").Replace(" bloom-templateMode", ""));
 		}
 
+		// duplicates information in musicToolsControl.tsx
+		public const string musicAttrName = "data-backgroundaudio";
+		public const string musicVolumeName = musicAttrName + "volume";
+
 		public static void ProcessPageAfterEditing(XmlElement destinationPageDiv, XmlElement edittedPageDiv)
 		{
 			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
@@ -1049,24 +1053,24 @@ namespace Bloom.Book
 			// currently redundant, everything should work if we just copied all attributes.
 			// (But, it IS imporant to DELETE any old versions of these attributes if the edited page div
 			// does NOT have them.)
-			var music = edittedPageDiv.Attributes["data-music"]?.Value;
-			var musicVolume = edittedPageDiv.Attributes["data-musicvolume"]?.Value;
+			var music = edittedPageDiv.Attributes[musicAttrName]?.Value;
+			var musicVolume = edittedPageDiv.Attributes[musicVolumeName]?.Value;
 			if (music != null)
 			{
-				destinationPageDiv.SetAttribute("data-music", music);
+				destinationPageDiv.SetAttribute(musicAttrName, music);
 				if (musicVolume != null)
 				{
-					destinationPageDiv.SetAttribute("data-musicvolume", musicVolume);
+					destinationPageDiv.SetAttribute(musicVolumeName, musicVolume);
 				}
 				else
 				{
-					destinationPageDiv.RemoveAttribute("data-musicvolume");
+					destinationPageDiv.RemoveAttribute(musicVolumeName);
 				}
 			}
 			else
 			{
-				destinationPageDiv.RemoveAttribute("data-music");
-				destinationPageDiv.RemoveAttribute("data-musicvolume");
+				destinationPageDiv.RemoveAttribute(musicAttrName);
+				destinationPageDiv.RemoveAttribute(musicVolumeName);
 			}
 
 			// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
