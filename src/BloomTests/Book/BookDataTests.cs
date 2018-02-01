@@ -183,14 +183,15 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom(@"<html><head></head><body>
 				<div id='bloomDataDiv'>
-					<div data-book-attributes='frontCover' data-music='audio/SoundTrack1.mp3' data-musicvolume='0.17'></div>
+					<div data-book-attributes='frontCover' " + HtmlDom.musicAttrName + "='audio/SoundTrack1.mp3' " + HtmlDom.musicVolumeName + @"='0.17'></div>
 				</div>
 				<div id='firstPage' class='bloom-page' data-book-attributes='frontCover'>1st page</div>
 				</body></html>");
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(dom.RawDom)
-				.HasSpecifiedNumberOfMatchesForXpath("//div[@id='firstPage' and @data-book-attributes='frontCover' and @data-music='audio/SoundTrack1.mp3' and @data-musicvolume='0.17']", 1);
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@id='firstPage' and @data-book-attributes='frontCover' and @"
+					+ HtmlDom.musicAttrName + "='audio/SoundTrack1.mp3' and @" + HtmlDom.musicVolumeName + "='0.17']", 1);
 		}
 
 		[Test]
