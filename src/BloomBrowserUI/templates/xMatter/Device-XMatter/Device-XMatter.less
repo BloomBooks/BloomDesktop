@@ -8,14 +8,14 @@ div.bloom-page.coverColor {
     //background-color: white !important;
 }
 
-.theEndPage{
-    .marginBox{
+.theEndPage {
+    // temporarily disabled. See note in Device-XMatter.pug. Remember to re-enable in baseEPUB.less as well (if desired).
+    /*.marginBox {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
     }
-
     [data-book="end-of-book-label"]{
         width: 100%;
         font-size: 3em;
@@ -24,5 +24,15 @@ div.bloom-page.coverColor {
         // put in the middle, pushing branding to bottom
         margin-bottom: auto;
         margin-top: auto;
+    }*/
+    // Due to the absence of the above, we need a new rule to get the branding on the bottom
+    .marginBox {
+        display: block;
+        img {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
     }
 }
