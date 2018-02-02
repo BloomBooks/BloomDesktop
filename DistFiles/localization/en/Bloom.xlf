@@ -1200,6 +1200,11 @@
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.AltMsg" sil:dynamic="true">
+        <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
+        <note>ID: EditTab.Image.AltMsg</note>
+        <note>The {0} is replaced by the filename of the picture.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
@@ -1220,6 +1225,10 @@
         <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
+        <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
+        <note>ID: EditTab.Image.MissingInfo</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
         <source xml:lang="en">Paste Image</source>
