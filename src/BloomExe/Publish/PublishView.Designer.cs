@@ -18,6 +18,10 @@ namespace Bloom.Publish
             if (disposing && (components != null))
             {
                 components.Dispose();
+	            if (_publishApi != null)
+	            {
+		            _publishApi.Stop();
+	            }
             }
             base.Dispose(disposing);
         }

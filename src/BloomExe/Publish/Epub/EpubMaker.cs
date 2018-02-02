@@ -495,9 +495,10 @@ namespace Bloom.Publish.Epub
 			pageDom.RemoveModeStyleSheets();
 			if(Unpaginated)
 			{
+				// Do not add any stylesheets that are not originally written specifically for ePUB use.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5495.
 				RemoveRegularStylesheets(pageDom);
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost());
-				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"Device-XMatter.css").ToLocalhost());
 			}
 			else
 			{

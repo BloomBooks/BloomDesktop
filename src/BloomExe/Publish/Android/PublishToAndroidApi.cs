@@ -191,11 +191,7 @@ namespace Bloom.Publish.Android
 
 			server.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
 			{
-#if !__MonoCS__
-				_usbPublisher.Stop();
-#endif
-				_wifiPublisher.Stop();
-				SetState("stopped");
+				Stop();
 				request.PostSucceeded();
 			}, true);
 
@@ -204,6 +200,15 @@ namespace Bloom.Publish.Android
 				PortableClipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
 			}, true);
+		}
+
+		public void Stop()
+		{
+#if !__MonoCS__
+			_usbPublisher.Stop();
+#endif
+			_wifiPublisher.Stop();
+			SetState("stopped");
 		}
 
 		private void SetState(string state)
