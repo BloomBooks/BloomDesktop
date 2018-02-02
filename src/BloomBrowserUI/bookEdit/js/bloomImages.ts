@@ -243,20 +243,33 @@ function UpdateOverlay(container, img) {
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
     var copyright = $(img).attr('data-copyright');
     if (!copyright || copyright.length === 0) {
-
-        var buttonModifier = GetButtonModifier(container);
-
-        $(container).prepend("<button class='editMetadataButton imageButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
+        var buttonClasses = `editMetadataButton imageButton imgMetadataProblem ${GetButtonModifier(container)}`;
+        var englishText = "Image is missing information on Credits, Copyright, or License";
+        theOneLocalizationManager.asyncGetText("EditTab.Image.MissingInfo", englishText, "tooltip text")
+            .done(translation => {
+                var title = translation.replace(/'/g, "&apos;");
+                $(container).prepend(`<button class='${buttonClasses}' title='${title}'></button>`);
+                })
+            .fail(() => {
+                $(container).prepend(`<button class='${buttonClasses}' title='${englishText}'></button>`);
+             });
     }
 }
 
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
-// TODO: internationalize
 function SetAlternateTextOnImages(element) {
     if (GetRawImageUrl(element).length > 0) { //don't show this on the empty license image when we don't know the license yet
+        var englishText = "This picture, {0}, is missing or was loading too slowly.";
         var nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
-        $(element).attr('alt', 'This picture, ' + nameWithoutQueryString + ', is missing or was loading too slowly.');
+        theOneLocalizationManager.asyncGetText("EditTab.Image.AltMsg", englishText,
+                "message displayed when the picture image cannot be displayed", nameWithoutQueryString)
+            .done(translation => {
+                $(element).attr('alt', translation);
+            })
+            .fail(() => {
+                $(element).attr("alt", theOneLocalizationManager.simpleDotNetFormat(englishText, [nameWithoutQueryString]));
+            });
     } else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'
     }
