@@ -263,9 +263,9 @@ gulp.task('createXliffFiles', function() {
             var xliffFile = getXliffFilename(file.path);
             var cmd = "";
             if (IsLinux)
-                cmd = "/opt/mono4-sil/bin/mono ../../lib/dotnet/HtmlXliff.exe --extract";
+                cmd = "/opt/mono4-sil/bin/mono ../../lib/dotnet/HtmlXliff.exe --extract --preserve";
             else
-                cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract";
+                cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract --preserve";
             cmd = cmd + " -o \"" + xliffFile + "\"";
             cmd = cmd + " \"" + file.path + "\"";
             console.log("Extracting " + xliffFile + " from " + file.path);
