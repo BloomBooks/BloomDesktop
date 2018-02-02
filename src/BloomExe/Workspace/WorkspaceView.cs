@@ -375,7 +375,13 @@ namespace Bloom.Workspace
 
 		private static int compareLangItems(LanguageItem a, LanguageItem b)
 		{
-			return string.Compare(a.EnglishName, b.EnglishName, StringComparison.Ordinal);
+			var aText = a.MenuText;
+			if (!LanguageLookupModelExtensions.IsLatinChar(aText[0]))
+				aText = a.EnglishName;
+			var bText = b.MenuText;
+			if (!LanguageLookupModelExtensions.IsLatinChar(bText[0]))
+				bText = b.EnglishName;
+			return string.Compare(aText.ToLowerInvariant(), bText.ToLowerInvariant(), StringComparison.Ordinal);
 		}
 
 		private static void UiLanguageMenuItemClickHandler(ToolStripDropDownButton toolStripButton, ToolStripItem item, Action finishClickAction)

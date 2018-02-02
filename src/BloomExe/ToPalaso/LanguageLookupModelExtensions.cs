@@ -259,7 +259,7 @@ namespace Bloom.ToPalaso
 		/// <summary>
 		/// Return true for ASCII, Latin-1, Latin Ext. A, Latin Ext. B, IPA Extensions, and Spacing Modifier Letters.
 		/// </summary>
-		private static bool IsLatinChar(char test)
+		public static bool IsLatinChar(char test)
 		{
 			return ((int)test <= 0x02FF);
 		}
