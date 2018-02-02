@@ -53,6 +53,8 @@ namespace Bloom.Publish.Android.wifi
 			_thread.Start();
 		}
 
+		public bool Paused { get; set; }
+
 		private void Work()
 		{
 			_progress.Message(id:"beginAdvertising", message:"Advertising book to Bloom Readers on local network...");
@@ -60,8 +62,11 @@ namespace Bloom.Publish.Android.wifi
 			{
 				while (true)
 				{
-					UpdateAdvertisementBasedOnCurrentIpAddress();
-					_client.BeginSend(_sendBytes, _sendBytes.Length, _endPoint, SendCallback, _client);
+					if (!Paused)
+					{
+						UpdateAdvertisementBasedOnCurrentIpAddress();
+						_client.BeginSend(_sendBytes, _sendBytes.Length, _endPoint, SendCallback, _client);
+					}
 					Thread.Sleep(1000);
 				}
 			}

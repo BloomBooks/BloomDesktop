@@ -34,15 +34,18 @@ namespace Bloom.Publish
 		private EpubView _epubPreviewControl;
 		private AndroidView _androidControl;
 		private NavigationIsolator _isolator;
+		private PublishToAndroidApi _publishApi;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator,
+			PublishToAndroidApi publishApi)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
+			_publishApi = publishApi;
 
 			InitializeComponent();
 
@@ -130,6 +133,8 @@ namespace Bloom.Publish
 			// In particular, it is part of the solution to BL-4901 that the AndroidView,
 			// if it is active, is removed (hence deactivated) and disposed.
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
+			// This is only supposed to be active in one mode of PublishView.
+			Browser.SuppressJavaScriptErrors = false;
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -396,6 +401,9 @@ namespace Bloom.Publish
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
 		{
+			// This is only supposed to be active in one mode of PublishView.
+			Browser.SuppressJavaScriptErrors = false;
+
 			if (displayMode != PublishModel.DisplayModes.Upload && _publishControl != null)
 			{
 				Controls.Remove(_publishControl);
@@ -495,9 +503,13 @@ namespace Bloom.Publish
 					_epubPreviewControl.BackColor = saveBackGround; // keep own color.
 														// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
 					_epubPreviewControl.BringToFront();
-						Cursor = Cursors.Default;
+					Cursor = Cursors.Default;
 
-						break;
+					// We rather mangled the Readium code in the process of cutting away its own navigation
+					// and other controls. It produces all kinds of JavaScript errors, but it seems to do
+					// what we want. So just suppress the toasts for all of them.
+					Browser.SuppressJavaScriptErrors = true;
+					break;
 				}
 				case PublishModel.DisplayModes.Android:
 				{

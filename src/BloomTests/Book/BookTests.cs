@@ -1733,7 +1733,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='mix']");
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='es']");
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']", 1);
-			book.RepairBrokenSmallCoverCredits(book.OurHtmlDom);
+			Bloom.Book.Book.RepairBrokenSmallCoverCredits(book.OurHtmlDom);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits']", 2);
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='*']");
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='en']", 1);
@@ -1743,6 +1743,70 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']", 1);
 			var div = book.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']");
 			Assert.AreEqual("Stephen McConnel", div.InnerText.Trim());
+		}
+
+		[Test]
+		public void RepairPageLabelLocalization_Works()
+		{
+			_bookDom = new HtmlDom(@"
+			<html><head></head>
+				<body>
+					<!-- bare pageLabel, xmatter, no l18n attribute -->
+					<div class='bloom-page frontCover bloom-frontMatter' id='guid1'>
+						<div lang='en' class='pageLabel'>
+							Front Cover
+						</div>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+					</div>
+					<!-- old l18n attribute in pageLabel, needs to be replaced -->
+					<div class='bloom-page' id='guid2'>
+						<div class='pageLabel' data-i18n='EditTab.ThumbnailCaptions.Custom' lang='en'>
+							Custom
+						</div>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+					</div>
+					<div class='bloom-page' id='guid3'>
+						<!-- proper pageLabel, preserve it -->
+						<div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Picture' lang='en'>
+							Possibly already translated text
+						</div>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+					</div>
+					<div class='bloom-page outsideBackCover bloom-backMatter' id='guid4'>
+						<!-- no l18n attribute on back cover xmatter pageLabel -->
+						<div lang='en' class='pageLabel'>
+							Outside Back Cover
+						</div>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+					</div>
+				</body>
+			</html>");
+			var book = CreateBook();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid1']/div[@class='pageLabel' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='guid1']/div[@data-i18n]");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid1']/div[@class='pageLabel' and contains(text(),'Front Cover')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid2']/div[@class='pageLabel' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid2']/div[@data-i18n='EditTab.ThumbnailCaptions.Custom']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid2']/div[@class='pageLabel' and contains(text(),'Custom')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid3']/div[@class='pageLabel' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid3']/div[@data-i18n='TemplateBooks.PageLabel.Basic Text & Picture']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid3']/div[@class='pageLabel' and contains(text(),'Possibly already translated text')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid4']/div[@class='pageLabel' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='guid4']/div[@data-i18n]");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid4']/div[@class='pageLabel' and contains(text(),'Outside Back Cover')]", 1);
+			Bloom.Book.Book.RepairPageLabelLocalization(book.OurHtmlDom);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid1']/div[@class='pageLabel' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid1']/div[@data-i18n='TemplateBooks.PageLabel.Front Cover']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid1']/div[@class='pageLabel' and contains(text(),'Front Cover')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid2']/div[@class='pageLabel' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid2']/div[@data-i18n='TemplateBooks.PageLabel.Custom']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid2']/div[@class='pageLabel' and contains(text(),'Custom')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid3']/div[@class='pageLabel' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid3']/div[@data-i18n='TemplateBooks.PageLabel.Basic Text & Picture']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid3']/div[@class='pageLabel' and contains(text(),'Possibly already translated text')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid4']/div[@class='pageLabel' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid4']/div[@data-i18n='TemplateBooks.PageLabel.Outside Back Cover']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='guid4']/div[@class='pageLabel' and contains(text(),'Outside Back Cover')]", 1);
 		}
 
 		[Test]

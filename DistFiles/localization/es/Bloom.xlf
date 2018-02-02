@@ -1702,11 +1702,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Cortar (tCtrl+X)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.DeletePageButton">
+      <trans-unit id="EditTab.DeletePageButton" approved="yes">
         <source xml:lang="en">Remove Page</source>
         <note>ID: EditTab.DeletePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Remove\n  Page</note>
-        <target xml:lang="es-ES" state="translated">Eliminar página</target>
+        <target xml:lang="es-ES">Eliminar página</target>
         <alt-trans>
           <target xml:lang="es-ES">Eliminar\n página</target>
         </alt-trans>
@@ -1758,11 +1758,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
         <target xml:lang="es-ES">Subrayado</target>
       </trans-unit>
-      <trans-unit id="EditTab.DuplicatePageButton">
+      <trans-unit id="EditTab.DuplicatePageButton" approved="yes">
         <source xml:lang="en">Duplicate Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Duplicate\n  Page</note>
-        <target xml:lang="es-ES" state="translated">Duplicar página</target>
+        <target xml:lang="es-ES">Duplicar página</target>
         <alt-trans>
           <target xml:lang="es-ES">Duplicar\n  Página</target>
         </alt-trans>
