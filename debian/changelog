@@ -1,3 +1,10 @@
+bloom-desktop (4.0.0) stable; urgency=medium
+
+  * Rename the package to bloom-desktop for official release.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Mon, 05 Feb 2018 10:22:58 -0700
+
 bloom-desktop-beta (4.0.0) stable; urgency=medium
 
   * Rename the package to bloom-desktop-beta.
