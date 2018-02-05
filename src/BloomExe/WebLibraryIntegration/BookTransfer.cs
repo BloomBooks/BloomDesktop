@@ -108,7 +108,7 @@ namespace Bloom.WebLibraryIntegration
 			string url = "unknown";
 			try
 			{
-				GetUrlAndTitle(bucket,s3OrderKey, ref url, ref title);
+				GetUrlAndTitle(bucket, s3OrderKey, ref url, ref title);
 				if (_progressDialog != null)
 					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
 				// downloading the metadata is considered step 1.
@@ -132,17 +132,24 @@ namespace Bloom.WebLibraryIntegration
 				catch (Exception)
 				{
 				}
+				var showSendReport = true;
 				var message = LocalizationManager.GetString("Download.ProblemNotice",
 					"There was a problem downloading your book. You may need to restart Bloom or get technical help.");
 				// BL-1233, we've seen what appear to be timeout exceptions, can't confirm the actual Exception subclass though.
 				// It's likely that S3 wraps the original TimeoutException from .net with its own AmazonServiceException.
 				if (e is TimeoutException || e.InnerException is TimeoutException)
+				{
 					message = LocalizationManager.GetString("Download.TimeoutProblemNotice",
-					"There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
-				if (e is AmazonServiceException || e is WebException) // Network problems, not an internal error, less alarming message called for
+						"There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
+					showSendReport = false;
+				}
+				if (e is AmazonServiceException || e is WebException || e is IOException) // Network problems, not an internal error, less alarming message called for
+				{
 					message = LocalizationManager.GetString("Download.GenericNetworkProblemNotice",
 						"There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
-				DisplayProblem(e, message);
+					showSendReport = false;
+				}
+				DisplayProblem(e, message, showSendReport);
 				return "";
 			}
 		}
@@ -163,9 +170,9 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private static void DisplayProblem(Exception e, string message)
+		private static void DisplayProblem(Exception e, string message, bool showSendReport = true)
 		{
-			var action = new Action(() => SIL.Reporting.ErrorReport.NotifyUserOfProblem(e, message));
+			var action = new Action(() => NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, message, null, e, showSendReport));
 				var shellWindow = ShellWindow;
 				if (shellWindow != null)
 					shellWindow.Invoke(action);

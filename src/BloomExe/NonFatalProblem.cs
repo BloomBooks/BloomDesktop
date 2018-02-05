@@ -31,9 +31,10 @@ namespace Bloom
 		/// <param name="shortUserLevelMessage">Simple message that fits in small toast notification</param>
 		/// <param name="moreDetails">Info adds information about the problem, which we get if they report the problem</param>
 		/// <param name="exception"></param>
+		/// <param name="showSendReport">Set to 'false' to eliminate yellow screens and "Report" links on toasts</param>
 		public static void Report(ModalIf modalThreshold, PassiveIf passiveThreshold, string shortUserLevelMessage = null,
 			string moreDetails = null,
-			Exception exception = null)
+			Exception exception = null, bool showSendReport = true)
 		{
 			s_expectedByUnitTest?.ProblemWasReported();
 
@@ -78,7 +79,15 @@ namespace Bloom
 				{
 					try
 					{
-						SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage);
+						if (showSendReport)
+						{
+							SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage);
+						}
+						else
+						{
+							var form = Application.OpenForms.Cast<Form>().Last();
+							MessageBox.Show(form, fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+						}
 					}
 					catch(Exception)
 					{
@@ -93,7 +102,7 @@ namespace Bloom
 				var passive = (ModalIf) ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
 				if(!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
 				{
-					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage);
+					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage, showSendReport);
 				}
 			}
 			catch(Exception errorWhileReporting)
@@ -108,22 +117,27 @@ namespace Bloom
 			}
 		}
 
-		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage)
+		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage, bool showSendReport = true)
 		{
 			var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
 			if (formForSynchronizing.InvokeRequired)
 			{
 				formForSynchronizing.BeginInvoke(new Action(() =>
 				{
-					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage);
+					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage, showSendReport);
 				}));
 				return;
 			}
 			var toast = new ToastNotifier();
-			toast.ToastClicked +=
-				(s, e) => { SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage); };
+			var callToAction = string.Empty;
+			if (showSendReport)
+			{
+				toast.ToastClicked +=
+					(s, e) => { ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage); };
+				callToAction = "Report";
+			}
 			toast.Image.Image = ToastNotifier.WarningBitmap;
-			toast.Show(shortUserLevelMessage, "Report", 5);
+			toast.Show(shortUserLevelMessage, callToAction, 5);
 		}
 
 		private static IEnumerable<string> Matches(ModalIf threshold)
