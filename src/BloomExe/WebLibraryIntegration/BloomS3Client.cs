@@ -486,9 +486,15 @@ namespace Bloom.WebLibraryIntegration
 			using(var tempDestination = new TemporaryFolder("BDS_" + Guid.NewGuid()))
 			{
 				var tempDirectory = Path.Combine(tempDestination.FolderPath, bookFolderName);
+				float progressStep = 1.0F;
+				float progress = 0.0F;
 				if(downloadProgress != null)
-					downloadProgress.Invoke((Action) (() => { downloadProgress.ProgressRangeMaximum = totalItems; }));
-				int booksDownloaded = 0;
+					downloadProgress.Invoke((Action) (() => {
+						// We cannot change ProgressRangeMaximum here because the worker thread is already active.
+						// So we calculate a step value instead.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5443.
+						progressStep = (float)(downloadProgress.ProgressRangeMaximum - downloadProgress.Progress) / (float)totalItems;
+						progress = (float)downloadProgress.Progress;
+					}));
 				using(var transferUtility = new TransferUtility(_amazonS3))
 				{
 					for(int i = 0; i < matching.S3Objects.Count; ++i)
@@ -507,9 +513,11 @@ namespace Bloom.WebLibraryIntegration
 							FilePath = Path.Combine(tempDestination.FolderPath, filepath)
 						};
 						transferUtility.Download(req);
-						++booksDownloaded;
 						if(downloadProgress != null)
-							downloadProgress.Invoke((Action) (() => { downloadProgress.Progress = booksDownloaded; }));
+							downloadProgress.Invoke((Action) (() => {
+								progress += progressStep;
+								downloadProgress.Progress = (int)progress;
+							}));
 					}
 					var destinationPath = Path.Combine(pathToDestinationParentDirectory, bookFolderName);
 
