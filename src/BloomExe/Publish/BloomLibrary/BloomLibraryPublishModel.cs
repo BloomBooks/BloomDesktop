@@ -51,6 +51,8 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal string Copyright => Book.BookInfo.Copyright;
 
+		internal bool HasOriginalCopyrightInfoInSourceCollection => Book.HasOriginalCopyrightInfoInSourceCollection;
+
 		internal bool IsTemplate => Book.BookInfo.IsSuitableForMakingShells;
 
 		internal string Summary
@@ -110,7 +112,9 @@ namespace Bloom.Publish.BloomLibrary
 		/// </summary>
 		internal bool MetadataIsReadyToPublish =>
 		    // Copyright info is not required if the book has been put in the public domain
-		    (IsBookPublicDomain || !string.IsNullOrWhiteSpace(Copyright)) &&
+			// Also, (BL-5563) if there is an original copyright and we're publishing from a source collection,
+			// we don't need to have a copyright.
+		    (IsBookPublicDomain || !string.IsNullOrWhiteSpace(Copyright) || HasOriginalCopyrightInfoInSourceCollection) &&
 		    !string.IsNullOrWhiteSpace(Title);
 
 		internal bool LoggedIn => _transferrer.LoggedIn;

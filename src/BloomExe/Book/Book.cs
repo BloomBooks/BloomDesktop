@@ -1178,6 +1178,15 @@ namespace Bloom.Book
 			}
 		}
 
+		public bool HasOriginalCopyrightInfoInSourceCollection
+		{
+			get
+			{
+				var x = OurHtmlDom.SafeSelectNodes("//div[contains(@id, 'bloomDataDiv')]/div[contains(@data-book, 'originalCopyright') and string-length(translate(normalize-space(text()), ' ', '')) > 0]");
+				return x.Count > 0 && _collectionSettings.IsSourceCollection;
+			}
+		}
+
 		public bool HasSourceTranslations
 		{
 			get
