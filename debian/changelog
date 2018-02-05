@@ -1,3 +1,10 @@
+bloom-desktop-beta (4.1.0) stable; urgency=medium
+
+  * Renamed package to -beta for official beta release
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Mon, 05 Feb 2018 10:41:26 -0700
+
 bloom-desktop-betainternal (4.1.0) stable; urgency=medium
 
   * Renamed package to -betainternal in preparation for beta release
