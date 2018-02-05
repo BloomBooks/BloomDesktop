@@ -112,12 +112,14 @@ namespace Bloom.web.controllers
 			if (missingCredits.Count > 0)
 			{
 				var missing = LocalizationManager.GetString("EditTab.FrontMatter.PasteMissingCredits", "Missing credits:");
+				var missingImage = LocalizationManager.GetString("EditTab.FrontMatter.ImageCreditMissing", " {0} (page {1})",
+					"The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.");
 				total.AppendFormat("<p>{0}", missing);
 				for (var i = 0; i < missingCredits.Count; ++i)
 				{
 					if (i > 0)
 						total.Append(",");
-					total.AppendFormat(" {0}", missingCredits[i]);
+					total.AppendFormat(missingImage, missingCredits[i], imageNameToPages[missingCredits[i]].First());
 				}
 				total.AppendFormat("</p>{0}", System.Environment.NewLine);
 			}
