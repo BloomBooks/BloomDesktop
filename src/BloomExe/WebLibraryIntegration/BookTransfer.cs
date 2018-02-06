@@ -112,6 +112,8 @@ namespace Bloom.WebLibraryIntegration
 				if (_progressDialog != null)
 					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
 				// downloading the metadata is considered step 1.
+				// uncomment line below to simulate bad internet connection
+				// throw new WebException();
 				var destinationPath = DownloadBook(bucket, url, destPath);
 				LastBookDownloadedPath = destinationPath;
 
