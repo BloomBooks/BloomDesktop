@@ -11,6 +11,7 @@ using System.Windows.Media;
 using Bloom.MiscUI;
 using DesktopAnalytics;
 using SIL.Reporting;
+using SIL.Windows.Forms.Progress;
 
 namespace Bloom
 {
@@ -75,7 +76,14 @@ namespace Bloom
 
 				Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
 
-				if(Matches(modalThreshold).Any(s => channel.Contains(s)))
+				var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
+				if (formForSynchronizing is ProgressDialog)
+				{
+					// targetting ProgressDialog doesn't work so well for toasts
+					modalThreshold = ModalIf.All;
+				}
+
+				if (Matches(modalThreshold).Any(s => channel.Contains(s)))
 				{
 					try
 					{
@@ -85,8 +93,12 @@ namespace Bloom
 						}
 						else
 						{
-							var form = Application.OpenForms.Cast<Form>().Last();
-							MessageBox.Show(form, fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+							if (formForSynchronizing is ProgressDialog)
+							{
+								MessageBox.Show(fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+							} else {
+								MessageBox.Show(formForSynchronizing, fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+							}
 						}
 					}
 					catch(Exception)
