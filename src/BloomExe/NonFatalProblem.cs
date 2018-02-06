@@ -11,6 +11,7 @@ using System.Windows.Media;
 using Bloom.MiscUI;
 using DesktopAnalytics;
 using SIL.Reporting;
+using SIL.Windows.Forms.Progress;
 
 namespace Bloom
 {
@@ -75,7 +76,17 @@ namespace Bloom
 
 				Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
 
-				if(Matches(modalThreshold).Any(s => channel.Contains(s)))
+				//just convert from PassiveIf to ModalIf so that we don't have to duplicate code
+				var passive = (ModalIf)ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
+				var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
+				if (formForSynchronizing is ProgressDialog)
+				{
+					// Targetting ProgressDialog doesn't work so well for toasts, since the dialog tends
+					// to disappear immediately and the user never sees the toast.
+					modalThreshold = passive;
+				}
+
+				if (Matches(modalThreshold).Any(s => channel.Contains(s)))
 				{
 					try
 					{
@@ -85,8 +96,15 @@ namespace Bloom
 						}
 						else
 						{
-							var form = Application.OpenForms.Cast<Form>().Last();
-							MessageBox.Show(form, fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+							// We don't want any notification (MessageBox or toast) targetting a ProgressDialog,
+							// since the dialog seems to disappear quickly and leave us hanging... and not able to show.
+							// We'll keep the form if it's not a ProgressDialog in order to center our message properly.
+							if (formForSynchronizing is ProgressDialog)
+							{
+								MessageBox.Show(fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+							} else {
+								MessageBox.Show(formForSynchronizing, fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+							}
 						}
 					}
 					catch(Exception)
@@ -98,8 +116,6 @@ namespace Bloom
 					return;
 				}
 
-				//just convert from PassiveIf to ModalIf so that we don't have to duplicate code
-				var passive = (ModalIf) ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
 				if(!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
 				{
 					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage, showSendReport);
