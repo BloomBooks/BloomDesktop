@@ -369,7 +369,7 @@ namespace BloomTests.Publish
 			while (_epub.GetEntry("content/" + (i+1) + ".xhtml") != null)
 				i++;
 			var lastPage = GetZipContent(_epub, "content/"+ i + ".xhtml");
-			AssertThatXmlIn.String(lastPage).HasAtLeastOneMatchForXpath("//div[@data-book='end-of-book-label']");
+			AssertThatXmlIn.String(lastPage).HasAtLeastOneMatchForXpath("//div[contains(@class, 'theEndPage')]");
 		}
 
 		[Test]
