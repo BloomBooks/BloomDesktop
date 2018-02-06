@@ -1410,13 +1410,22 @@ namespace Bloom.Edit
 				var zoomString = Settings.Default.PageZoom;
 				if (String.IsNullOrWhiteSpace(zoomString))
 					return 100;
-				if (zoomString.Contains(L10NCultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator))
+				// This value may have been stored as floating point with the invariant culture, not the current culture.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5579.
+				if (zoomString.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
 				{
 					float zoomFloat;
-					if (float.TryParse(zoomString, out zoomFloat))
-						return (int)Math.Round(zoomFloat * 10F) * 10;
+					if (float.TryParse(zoomString, NumberStyles.Float, CultureInfo.InvariantCulture, out zoomFloat))
+					{
+						int zoom = (int)Math.Round(zoomFloat * 10F) * 10;
+						if (zoom < 30 || zoom > 1000)
+							return 100;
+						return zoom;
+					}
 					else
+					{
 						return 100;
+					}
 				}
 				int zoomInt;
 				if (int.TryParse(zoomString, System.Globalization.NumberStyles.Integer, CultureInfo.InvariantCulture, out zoomInt))
@@ -1424,8 +1433,9 @@ namespace Bloom.Edit
 					// we can't go below 30 (30%), so those must be old floating point values that rounded to an integer.
 					if (zoomInt < 30)
 						return zoomInt * 100;
-					else
-						return zoomInt;
+					else if (zoomInt > 1000)
+						return 100;
+					return zoomInt;
 				}
 				else
 				{

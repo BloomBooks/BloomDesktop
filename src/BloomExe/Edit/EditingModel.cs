@@ -680,7 +680,10 @@ namespace Bloom.Edit
 			if (pageDiv != null)
 			{
 				var outerDiv = InsertContainingScalingDiv(body, pageDiv);
-				outerDiv.SetAttribute("style", string.Format("transform: scale({0}); transform-origin: left top;", pageZoom));
+				// The HTML expects floating point values in the invariant culture, not the current culture.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5579.
+				var zoomString = pageZoom.ToString(System.Globalization.CultureInfo.InvariantCulture);
+				outerDiv.SetAttribute("style", string.Format("transform: scale({0}); transform-origin: left top;", zoomString));
 			}
 			CheckForBL2634("set page zoom");
 		}
