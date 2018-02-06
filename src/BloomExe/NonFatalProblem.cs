@@ -85,8 +85,7 @@ namespace Bloom
 						}
 						else
 						{
-							var form = Application.OpenForms.Cast<Form>().Last();
-							MessageBox.Show(form, fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+							MessageBox.Show(fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
 						}
 					}
 					catch(Exception)
