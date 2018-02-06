@@ -135,6 +135,18 @@ namespace Bloom.Publish.PDF
 				{
 					gsversion = gsversion.Substring(2);
 					float version;
+					if (float.TryParse(gsversion, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out version))
+					{
+						if (version < 9.21F)
+							continue;
+						var prog = Path.Combine(versionDir, "bin", baseName + "c.exe");
+						if (File.Exists(prog))
+							return prog;
+						prog = Path.Combine(versionDir, "bin", baseName + ".exe");
+						if (File.Exists(prog))
+							return prog;
+					}
+					// In case it does get stored on the system in a culture-specific way.
 					if (float.TryParse(gsversion, out version))
 					{
 						if (version < 9.21F)
