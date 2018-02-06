@@ -126,18 +126,20 @@ namespace Bloom.Publish.PDF
 			}
 			if (!Directory.Exists(baseDir))
 				return null;
+			// gs9.18 works on Linux.  gs9.16 fails on Windows.  See BL-5295.
+			// We know gs9.21 works on Windows.
+			const float kMinVersion = 9.21F;
 			foreach (var versionDir in Directory.GetDirectories(baseDir))
 			{
-				// gs9.18 works on Linux.  gs9.16 fails on Windows.  See BL-5295.
-				// We know gs9.21 works on Windows.
 				var gsversion = Path.GetFileName(versionDir);
 				if (gsversion != null && gsversion.StartsWith("gs") && gsversion.Length > 2)
 				{
 					gsversion = gsversion.Substring(2);
 					float version;
-					if (float.TryParse(gsversion, out version))
+					if (float.TryParse(gsversion, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out version) ||
+						float.TryParse(gsversion, out version))		// In case it does get stored on the system in a culture-specific way.
 					{
-						if (version < 9.21F)
+						if (version < kMinVersion)
 							continue;
 						var prog = Path.Combine(versionDir, "bin", baseName + "c.exe");
 						if (File.Exists(prog))

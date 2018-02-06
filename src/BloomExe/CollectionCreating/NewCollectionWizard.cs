@@ -184,6 +184,8 @@ namespace Bloom.CollectionCreating
 			_collectionInfo.Language1LineHeight = new decimal(0);
 			if (_fontDetails.ExtraLineHeight)
 			{
+				// The LineHeight settings from the LanguageFontDetails control are in the current culture,
+				// so we don't need to specify a culture in the TryParse.
 				double height;
 				if (double.TryParse(_fontDetails.LineHeight, out height))
 					_collectionInfo.Language1LineHeight = new decimal(height);
