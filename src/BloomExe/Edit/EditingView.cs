@@ -1400,16 +1400,20 @@ namespace Bloom.Edit
 							"To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.");
 		}
 
+		const int kMinimumZoom =  30;
+		const int kMaximumZoom = 300;	// is 300% a good limit?
+
 		// The zoom factor that is shown in the top right of the toolbar (a percent).
 		public int Zoom
 		{
 			// Whatever the user may have saved (e.g., from earlier use of ctrl-wheel), we'll make this an expected multiple-of-10 percent.
 			get
 			{
-				// we used to store floating point numbers, but we now store integer percentages (30%-990% or more?).
+				// we used to store floating point numbers, but we now store integer percentages (30%-300% or more?).
 				var zoomString = Settings.Default.PageZoom;
 				if (String.IsNullOrWhiteSpace(zoomString))
 					return 100;
+				int zoomInt;
 				// This value may have been stored as floating point with the invariant culture, not the current culture.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5579.
 				if (zoomString.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
@@ -1417,24 +1421,23 @@ namespace Bloom.Edit
 					float zoomFloat;
 					if (float.TryParse(zoomString, NumberStyles.Float, CultureInfo.InvariantCulture, out zoomFloat))
 					{
-						int zoom = (int)Math.Round(zoomFloat * 10F) * 10;
-						if (zoom < 30 || zoom > 1000)
-							return 100;
-						return zoom;
+						zoomInt = (int)Math.Round(zoomFloat * 10F) * 10;
+						if (zoomInt < kMinimumZoom || zoomInt > kMaximumZoom)
+							return 100;		// bad antique value - normalize to real size.
+						return zoomInt;
 					}
 					else
 					{
 						return 100;
 					}
 				}
-				int zoomInt;
 				if (int.TryParse(zoomString, System.Globalization.NumberStyles.Integer, CultureInfo.InvariantCulture, out zoomInt))
 				{
 					// we can't go below 30 (30%), so those must be old floating point values that rounded to an integer.
-					if (zoomInt < 30)
-						return zoomInt * 100;
-					else if (zoomInt > 1000)
-						return 100;
+					if (zoomInt < kMinimumZoom)
+						zoomInt = zoomInt * 100;
+					if (zoomInt > kMaximumZoom)
+						return kMaximumZoom;
 					return zoomInt;
 				}
 				else
