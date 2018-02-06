@@ -430,7 +430,7 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
         "bookSettingsTool": "bookSettings/bookSettingsToolboxTool.html",
         "toolboxSettingsTool": "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
         "panAndZoomTool": "panAndZoom/panAndZoomToolboxTool.html",
-        "settingsTool": "settings/settings.html"
+        "settingsTool": "settings/Settings.html"
         // none for music: done in React
     };
     const subPathToPremadeHtml = subpath[toolId];
