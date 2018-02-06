@@ -39,19 +39,21 @@ div.bloom-editable {
 .pictureAndWordPage {
      .bloom-content1 {font-size:400%;}
      .bloom-content2, .bloom-content3 {font-size:200%;}
-     .bloom-translationGroup {
+    .bloom-translationGroup {
         text-align: center;
-        padding-top: 10px;//don't express in em's!
+        padding-top: 10px; //don't express in em's!
     }
 }
 
-.bloom-backgroundImage{
-    height:300px; // REVIEW What should this be?
+.bloom-backgroundImage {
+    height: 300px; // REVIEW What should this be?
 }
 
 // Format the End Page properly, as close as we can come to the Edit view
 // without flex display, which readers haven't implemented.  (BL-5495)
-.theEndPage{
+.theEndPage {
+    /* see note in Device-XMatter.less about why this is commented out for now
+
     [data-book="end-of-book-label"]{
         width: 100%;
         font-size: 3em;
@@ -66,5 +68,13 @@ div.bloom-editable {
         // place the image(s) at the bottom of the page
         position: fixed;
         bottom: 10px;
+    }*/
+    /* the marginBox in epub land has no height, presumably on purpose? So I (jh) give up getting this to the bottom of the screen*/
+    .marginBox {
+        img {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
     }
 }

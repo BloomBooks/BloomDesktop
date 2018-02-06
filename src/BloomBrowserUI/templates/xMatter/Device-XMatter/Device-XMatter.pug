@@ -44,13 +44,17 @@ html
 		//- days (was a version 1-ish feature that never got used, and atrophied).
 		//- When we do have it, that would save typing it in for each book in the Local Language... and ideally it would also overwrite
 		//- the national language here, since typically someone would enter the vernacular and delete the national language.
-		+field("auto")(data-book="end-of-book-label",data-default-languages="V N1", data-hint="Something to tell the reader/viewer that this is the end of the book.")
-			+editable("en")
-				p The End
-			+editable("fr")
-				p FIN
-			+editable("es")
-				p Fin
+
+		//- disabled for now, until we provide a way to (1) enter a new lang without switching to device xmatter
+		//- and (2) save the result in a data-collection variable, so that you don't have to do it for every single book.
+		//- +field("auto")(data-book="end-of-book-label",data-default-languages="V N1", data-hint="Something to tell the reader/viewer that this is the end of the book.")
+		//-	+editable("en")
+		//-		p The End
+		//-	+editable("fr")
+		//-		p FIN
+		//-	+editable("es")
+		//-		p Fin
+
 		+field-back-cover-branding
 
 
