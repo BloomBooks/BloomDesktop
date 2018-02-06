@@ -222,8 +222,14 @@ export default class BloomSourceBubbles {
             // selections being copied into updated qtips.
             updateHash: false
         };
-        if (divForBubble.find('nav li').length > 0) {
+        var tabs = divForBubble.find('nav li');
+        if (tabs.length > 0) {
             divForBubble.easytabs(opts);
+            // Don't start by displaying the hint if a translation is available.
+            // See https://issues.bloomlibrary.org/youtrack/issue/BL-5420.
+            if (!selectIso && tabs.length > 1 && tabs.first().attr("id") == "hint") {
+                selectIso = tabs.first().next().attr("id");
+            }
             if (selectIso) {
                 // Somehow easytabs.select is NOT deselecting the item it selected by default.
                 // This might be a consequence of the way we mangled it to select content by
