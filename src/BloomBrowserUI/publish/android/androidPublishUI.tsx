@@ -119,13 +119,14 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                             Thumbnail Color
                         </Div>
                     </div>
-                    <div className="tc-outer-wrapper" onClick={
+                    <div className="tc-outer-wrapper" tabIndex={0} onClick={
                         (event) => {
                             self.setState({ colorsVisible: !this.state.colorsVisible });
                             axios.get("/bloom/api/publish/android/backColor").then(result =>
                                 this.setState({ backColor: result.data })
                             );
-                        }}>
+                        }}
+                        onBlur={() => { self.setState({ colorsVisible: false }); }}>
                         <div className="tc-image-wrapper">
                             <img className="tc-image"
                                 // the api ignores the color parameter, but it
