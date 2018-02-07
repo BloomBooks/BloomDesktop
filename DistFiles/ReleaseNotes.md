@@ -52,8 +52,11 @@ Reading for testing:
     - Bloom now shows page numbers on the page, in the Edit Tab.
     - Left vs. right margins are now shown as they will on the printed book.
     - We have **reduced the time it takes to change pages**. This is still slow for large books like the picture dictionaries some folks are building.
-- Misc
+- UI Localizations
+    - Added Dari & Northern Pashto
+    - Updated Spanish
     - Localization (translating the Bloom user interface) has moved from something you could do inside Bloom to something you do on the web, using crowdin.com. Use [this link](https://crwd.in/sil-bloom) to **sign up as a translator**. Each project must have at least one translator and one proofreader. Our policy is to require one of them to be a native speaker. Once a proofreader has "approved" a given string, it will flow into a future release of Bloom.
+- OTHER
     - When Bloom is first run after your computer starts, there was a delay caused by .net. This could cause people to think Bloom wasn't running, so they would try and run it again. Bloom will now show a simple splash screen instantly to indicate that it is coming. Currently on Windows, this feature is lost if you pin a running Bloom to the Windows taskbar. Instead, pin the icon from the desktop.
     - Changed "Vernacular" to "Local Language"
     - We removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes an understanding of what it is that they do.
