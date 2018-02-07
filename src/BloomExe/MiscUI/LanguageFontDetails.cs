@@ -49,17 +49,14 @@ namespace Bloom.MiscUI
 			_lineSpacingCombo.Items.Clear();
 			_lineSpacingCombo.Items.Add(defaultText);
 			_lineSpacingCombo.SelectedIndex = 0;
-			// We display the font size choices to an accuracy of 0.1 in the current culture.
 			var fontSize = 1.0;
 			while (fontSize < 2.1)
 			{
 				_lineSpacingCombo.Items.Add(fontSize.ToString("0.0"));
 				fontSize += 0.1;
 			}
-			fontSize = 2.5;
-			_lineSpacingCombo.Items.Add(fontSize.ToString("0.0"));
-			fontSize = 3.0;
-			_lineSpacingCombo.Items.Add(fontSize.ToString("0.0"));
+			_lineSpacingCombo.Items.Add("2.5");
+			_lineSpacingCombo.Items.Add("3.0");
 
 			// Make the combo box just wide enough to show its content.
 			using (var g = _lineSpacingCombo.CreateGraphics())
