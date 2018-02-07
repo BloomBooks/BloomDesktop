@@ -1216,6 +1216,66 @@
         <note>ID: EditTab.FormatDialog.CreateStyle</note>
         <target xml:lang="pbu">نوی طرحه/بڼه جوړ کړئ</target>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.BigWords-style" sil:dynamic="true">
+        <source xml:lang="en">Big Words</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
+        <note>Appears in most templates</note>
+        <target xml:lang="pbu" state="needs-translation">Big Words</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
+        <source xml:lang="en">Cover Default</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Cover-Default-style</note>
+        <note>A default style for various fields usually on the Front Cover</note>
+        <target xml:lang="pbu" state="needs-translation">Cover Default</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Credits-Page-style" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Credits-Page-style</note>
+        <note>Used on the Credits page of most Front/Back Matter packs</note>
+        <target xml:lang="pbu" state="needs-translation">Credits Page</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
+        <source xml:lang="en">Equation</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
+        <note>Used on the Arithmetic template</note>
+        <target xml:lang="pbu" state="needs-translation">Equation</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading1-style" sil:dynamic="true">
+        <source xml:lang="en">Heading 1</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Heading1-style</note>
+        <note>Used on the Arithmetic template</note>
+        <target xml:lang="pbu" state="needs-translation">Heading 1</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading2-style" sil:dynamic="true">
+        <source xml:lang="en">Heading 2</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Heading2-style</note>
+        <note>A default style</note>
+        <target xml:lang="pbu" state="needs-translation">Heading 2</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.normal-style" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.normal-style</note>
+        <note>Appears in most templates</note>
+        <target xml:lang="pbu" state="needs-translation">Normal</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
+        <note>Multimedia template</note>
+        <target xml:lang="pbu" state="needs-translation">Quiz</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
+        <source xml:lang="en">Title On Cover</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
+        <note>Used on the Front Cover page of most Front/Back Matter packs</note>
+        <target xml:lang="pbu" state="needs-translation">Title On Cover</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style" sil:dynamic="true">
+        <source xml:lang="en">Title On Title Page</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
+        <note>Used on the Title Page of most Front/Back Matter packs</note>
+        <target xml:lang="pbu" state="needs-translation">Title On Title Page</target>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
         <note>ID: EditTab.FormatDialog.DontSeeNeed</note>
@@ -1361,6 +1421,12 @@
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
         <target xml:lang="pbu">د کتاب نړیواله معیاري شمېره. که تاسو یې نه لرئ خالي یې پریږدئ.</target>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.ImageCreditMissing">
+        <source xml:lang="en"> {0} (page {1})</source>
+        <note>ID: EditTab.FrontMatter.MissingCredit</note>
+        <note>The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.</note>
+        <target xml:lang="pbu" state="needs-translation"> {0} (page {1})</target>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
         <note>ID: EditTab.FrontMatter.InsideFrontCoverTextPrompt</note>
@@ -1473,6 +1539,12 @@
           <target xml:lang="pbu">د دې لپاره چې د مخکي نه په نورو ژبو تیار شوي کتابونه (‏shellbook) خلاص کړئ، په ښي لوري کې وسیله بکس ته لاړشئ، د (ګیر) نښه پیدا کړئ، او بیا ‎'تغیرونو ته مخکي نه په نورو ژبو تیار شوي کتابونو (‏shellbook‏) کې اجازه ورکړئ‎'‏ باندې زور وکړئ.</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="EditTab.Image.AltMsg" sil:dynamic="true">
+        <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
+        <note>ID: EditTab.Image.AltMsg</note>
+        <note>The {0} is replaced by the filename of the picture.</note>
+        <target xml:lang="pbu" state="needs-translation">This picture, {0}, is missing or was loading too slowly.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
@@ -1498,6 +1570,11 @@
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
         <target xml:lang="pbu">د انځور اعتبار، چاپ حق، او جواز تصحیح کړئ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
+        <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
+        <note>ID: EditTab.Image.MissingInfo</note>
+        <target xml:lang="pbu" state="needs-translation">Image is missing information on Credits, Copyright, or License</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image</source>
@@ -1550,6 +1627,12 @@
         <note>ID: EditTab.Monolingual</note>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
         <target xml:lang="pbu">یوه ژبه</target>
+      </trans-unit>
+      <trans-unit id="EditTab.NeverLocked">
+        <source xml:lang="en">Books are never locked in a Source Collection.</source>
+        <note>ID: EditTab.NeverLocked</note>
+        <note>Button in a state that indicates books in this collection are always unlocked.</note>
+        <target xml:lang="pbu" state="needs-translation">Books are never locked in a Source Collection.</target>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName" approved="yes">
         <source xml:lang="en">Book</source>
@@ -3007,10 +3090,10 @@
         <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
         <target xml:lang="pbu">اعلانول بند شول.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</source>
+      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1" sil:dynamic="true">
+        <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
-        <target xml:lang="pbu">په Android کې، بلوم کتاب وچلوي، مینو پرانیزئ او د 'Wifi له لاری کتابونه ترلاسه کړئ' خوښ کړئ.</target>
+        <target xml:lang="pbu" state="translated">په Android کې، بلوم کتاب وچلوي، مینو پرانیزئ او د 'Wifi له لاری کتابونه ترلاسه کړئ' خوښ کړئ.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
