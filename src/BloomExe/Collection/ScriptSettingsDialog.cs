@@ -27,9 +27,10 @@ namespace Bloom.Collection
 				_lineSpacingCombo.Items.Add(fontSize.ToString("0.0"));
 				fontSize += 0.1;
 			}
-
-			_lineSpacingCombo.Items.Add("2.5");
-			_lineSpacingCombo.Items.Add("3.0");
+			fontSize = 2.5;
+			_lineSpacingCombo.Items.Add(fontSize.ToString("0.0"));
+			fontSize = 3.0;
+			_lineSpacingCombo.Items.Add(fontSize.ToString("0.0"));
 
 			// size the combo box
 			using (var g = _lineSpacingCombo.CreateGraphics())
