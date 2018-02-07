@@ -53,7 +53,7 @@
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG">
-        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
+        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
         <target />
         <note>ID: integrity.todo.ideas.AVG</note>
       </trans-unit>
