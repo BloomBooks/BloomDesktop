@@ -789,7 +789,7 @@ namespace Bloom.Publish.Epub
 						if(match.Success)
 						{
 							double percent;
-							if(Double.TryParse(match.Groups[1].Value, out percent))
+							if(Double.TryParse(match.Groups[1].Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out percent))
 							{
 								mulitplier *= percent/100;
 							}
