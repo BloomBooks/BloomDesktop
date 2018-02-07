@@ -408,7 +408,7 @@ namespace Bloom.Collection
 				sb.AppendLine(" direction: rtl;");
 
 			if (lineHeight > 0)
-				sb.AppendLine(" line-height: " + lineHeight + ";");
+				sb.AppendLine(" line-height: " + lineHeight.ToString(CultureInfo.InvariantCulture) + ";");
 
 			sb.AppendLine("}");
 		}
