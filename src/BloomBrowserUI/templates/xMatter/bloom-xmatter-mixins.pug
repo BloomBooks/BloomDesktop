@@ -111,7 +111,7 @@ mixin standard-cover-contents
 			// because it is never empty
 			.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
 				+field-prototypeDeclaredExplicity("V")
-					+editable(kLanguageForPrototypeOnly).Cover-Default-style(data-book='smallCoverCredits')
+					+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
 			.bottomRow
 				.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
 				+chooser-topic.coverBottomBookTopic
