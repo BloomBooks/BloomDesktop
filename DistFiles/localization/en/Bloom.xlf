@@ -1273,6 +1273,11 @@
         <note>ID: EditTab.Monolingual</note>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       </trans-unit>
+      <trans-unit id="EditTab.NeverLocked">
+        <source xml:lang="en">Books are never locked in a Source Collection.</source>
+        <note>ID: EditTab.NeverLocked</note>
+        <note>Button in a state that indicates books in this collection are always unlocked.</note>
+      </trans-unit>
       <trans-unit id="EditTab.NewBookName">
         <source xml:lang="en">Book</source>
         <note>ID: EditTab.NewBookName</note>

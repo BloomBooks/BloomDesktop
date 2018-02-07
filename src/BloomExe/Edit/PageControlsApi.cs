@@ -119,6 +119,9 @@ namespace Bloom.Edit
 		{
 			get
 			{
+
+				if (_editingModel.CurrentBook.CollectionSettings.IsSourceCollection)
+					return "NoLocking";
 				return !_editingModel.CurrentBook.RecordedAsLockedDown
 					? "OriginalBookMode"
 					: _editingModel.CurrentBook.LockedDown
