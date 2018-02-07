@@ -1,33 +1,44 @@
-﻿## 4.2 (preliminary plan)
-Preliminary Plan:
-- Edit Tab
-    - Add an Image Credits field which Bloom will automatically fill and keep up to date.
-    - Allow you to choose what front/back matter fields to show, and in what languages.
-    - Allow you to choose background music and levels.
-    - Allow you to specify pan/zoom effects of a page.
+﻿## 4.3 (Preliminary)
 - Collections Tab
     - Provide a way to create anthologies of multiple books, with an automated Table of Contents.
 
-## 4.1 (alpha)
-
-Reading for testing:
-
+## 4.2 (alpha)
 - Edit Tab
-    - Enhance the "Paste Image Credits" function to include page numbers.
+    - Allow you to choose background music and levels.
+    - Allow you to specify pan/zoom effects of a page.
 
-Still to do for this version:
+Planned:
 - Edit Tab
-    - Organize all page-related buttons together in lower left corner.
-    - Move "unlock" button there, where it will be easier to find.
+    - Add an Image Credits field which Bloom will automatically fill and keep up to date.
+    - Allow you to choose what front/back matter fields to show, and in what languages.
+
 - Settings
     - Allow you to change how you spell national and regional language. [Request](https://community.software.sil.org/t/option-to-use-national-language-for-filenames/211)
 - Publish Tab
     - Add "Fold & Cut" booklet layout for printing A5 books on A3 paper.
 
+- Bloom Library
+    - Sort numbered books in a numerically, rather than alphabetically
 
-## 4.0 (beta)
+## 4.1 (beta)
+
+Reading for testing:
+
+- Edit Tab
+    - Enhance the "Paste Image Credits" function to include page numbers.
+    - Allow "Change Layout" to be reached even in Device layout
+    - Organize all page-related buttons together in lower left corner.
+        - Move the unlocking button to a more obvious location
+    - Move "unlock" button there, where it will be easier to find.
+- Art Of Reading
+    - AOR 3.3 offers the new, more permissive BY-SA Creative Commons License
+- Bloom Reader
+    - You can add a "Bloom Reader Quiz" page (requires Bloom Enterprise subscription)
+    - You can add bookshelves and sub-bookshelves (requires Bloom Enterprise subscription)
+
+## 4.0 (current release)
 - Publish Tab
-    - Publish Book to **[Bloom Reader](https://play.google.com/store/search?q=bloom%20reader&c=apps)** Android app. On the Play store, you'll see a "beta" and an "alpha" version. The beta works with 4.0. The alpha works with Bloom 4.1, which is also in alpha (the progression is alpha --> beta --> release).
+    - Publish Book to **[Bloom Reader](https://play.google.com/store/search?q=bloom%20reader&c=apps)** Android app, which can get from the Play store or another user who has it installed.
     - **PDFs are now automatically compressed**, so they are often a small fraction of their previous size.
     - When you save a PDF, you can now choose CMYK coloring to satisfy some print shops.
 - Collection Tab
@@ -37,17 +48,17 @@ Still to do for this version:
     - Added a custom branding pack choice for ToMasewalTlahtol of Mexico.
 - Edit Tab
     - You can now add moveable text blocks on top of images. Use this for comic books or kids’ books that fill the page with an image and then put text on top of it. This feature is still pretty rough, so **we've left it rather hidden**. Right-click on an image to add a moveable and resizable text block.
-    - We've added new zoom control in the upper left. We've removed CTRL-Mouse wheel zooming (sorry) because it appears that some people were doing it accidentally and then getting very confused.
+    - We've added a new zoom control in the upper left. We've removed CTRL-Mouse wheel zooming (sorry) because it appears that some people were doing it accidentally and then getting very confused.
     - Bloom now shows page numbers on the page, in the Edit Tab.
     - Left vs. right margins are now shown as they will on the printed book.
     - We have **reduced the time it takes to change pages**. This is still slow for large books like the picture dictionaries some folks are building.
 - Misc
-    - Localization (translating the Bloom user interface) has moved from something you could do inside Bloom to something you do on the web, using crowdin.com. Use [this link](https://crwd.in/sil-bloom) to **sign up as a translator**. If you are a native speaker, please tell us so that we can make you a proofreader too.
+    - Localization (translating the Bloom user interface) has moved from something you could do inside Bloom to something you do on the web, using crowdin.com. Use [this link](https://crwd.in/sil-bloom) to **sign up as a translator**. Each project must have at least one translator and one proofreader. Our policy is to require one of them to be a native speaker. Once a proofreader has "approved" a given string, it will flow into a future release of Bloom.
     - When Bloom is first run after your computer starts, there was a delay caused by .net. This could cause people to think Bloom wasn't running, so they would try and run it again. Bloom will now show a simple splash screen instantly to indicate that it is coming. Currently on Windows, this feature is lost if you pin a running Bloom to the Windows taskbar. Instead, pin the icon from the desktop.
     - Changed "Vernacular" to "Local Language"
     - We removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes an understanding of what it is that they do.
 
-## 3.9 (current release)
+## 3.9
 - Custom Templates
     - &#x2b50; We've created a "Template Starter" template that lets you make a book full of template pages that you and others can reuse.
 - Collection Setup

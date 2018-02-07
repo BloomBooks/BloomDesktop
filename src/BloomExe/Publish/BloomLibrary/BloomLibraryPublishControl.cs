@@ -122,7 +122,8 @@ namespace Bloom.Publish.BloomLibrary
 			}
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			// Copyright info is not required if the book has been put in the public domain
-			if (!_model.IsBookPublicDomain)
+			// or if we are publishing from a source collection and we have original copyright info
+			if (!_model.IsBookPublicDomain && !_model.HasOriginalCopyrightInfoInSourceCollection)
 				RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 

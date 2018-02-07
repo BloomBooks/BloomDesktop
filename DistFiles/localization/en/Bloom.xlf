@@ -1114,6 +1114,11 @@
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.ImageCreditMissing">
+        <source xml:lang="en"> {0} (page {1})</source>
+        <note>ID: EditTab.FrontMatter.MissingCredit</note>
+        <note>The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
         <note>ID: EditTab.FrontMatter.InsideFrontCoverTextPrompt</note>
@@ -1267,6 +1272,11 @@
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NeverLocked">
+        <source xml:lang="en">Books are never locked in a Source Collection.</source>
+        <note>ID: EditTab.NeverLocked</note>
+        <note>Button in a state that indicates books in this collection are always unlocked.</note>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName">
         <source xml:lang="en">Book</source>

@@ -142,6 +142,18 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                                     l10nTipEnglishEnabled="This book is temporarily unlocked.">
                                 </BloomButton>
                             }
+                            {this.state.lockState === "NoLocking" &&
+                                <BloomButton
+                                    l10nKey="EditTab.NeverLocked"
+                                    l10nComment=
+                                    "Button in a state that indicates books in this collection are always unlocked."
+                                    enabled={false}
+                                    clickEndpoint="edit/pageControls/lockBook"
+                                    disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/unlockedPage.svg"
+                                    hasText={false}
+                                    l10nTipEnglishEnabled="Books are never locked in a Source Collection.">
+                                </BloomButton>
+                            }
                         </span>
                     }
                 </div>
