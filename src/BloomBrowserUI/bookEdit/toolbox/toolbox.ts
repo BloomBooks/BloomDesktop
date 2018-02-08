@@ -121,6 +121,12 @@ export class ToolBox {
 
     // Called from document.ready, initializes the whole toolbox.
     initialize(): void {
+        // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
+        // toolbox one. Nothing outside toolbox imports it directly, so it must be some indirect link.
+        // It's important that this function is only hooked up to the real toolbox instance.
+        $(parent.window.document).ready(function () {
+            $(parent.window.document).find("#pure-toggle-right").change(function () { showToolboxChanged(!this.checked); });
+        });
         axios.get("/bloom/api/toolbox/enabledTools").then(result => {
             const toolsToLoad = result.data.split(",");
             // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
@@ -650,18 +656,14 @@ function showToolboxChanged(wasShowing: boolean): void {
         // so select and properly initialize the first one.
         var newToolName = $("#toolbox").find(("> h3")).first().attr("data-toolId");
         if (!newToolName) {
-            // temporary hack for BL-5272; see notes there.
-            // Somehow in a new book this code runs against the document in the wrong iframe
-            // and fails to find the #toolbox div; then we get a null and end up saving
-            // current tool as "undefined" with various bad results. Until we have time
-            // to clean things up, we just hard code that in this situation we default to
+            // This should never happen; we're just being defensive.
+            // At one point (BL-5330) this code could run against the document in the wrong iframe
+            // and fail to find the #toolbox div; then we get a null and end up saving
+            // current tool as "undefined" with various bad results. Just in case it happens again
+            // somehow, we hard code that in this situation we default to
             // the talking book tool.
             newToolName = "talkingBookTool";
         }
         switchTool(newToolName);
     }
 }
-
-$(parent.window.document).ready(function () {
-    $(parent.window.document).find("#pure-toggle-right").change(function () { showToolboxChanged(!this.checked); });
-});
