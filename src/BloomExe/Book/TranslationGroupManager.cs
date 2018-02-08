@@ -145,10 +145,14 @@ namespace Bloom.Book
 				var dataDefaultLanguages = HtmlDom.GetAttributeValue(group, "data-default-languages").Split(new char[] { ',', ' ' },
 					StringSplitOptions.RemoveEmptyEntries);
 
+				XmlElement lastVisibleElement = null;
+				string lastVisibleElementOrderClass = "";
+
 				//nb: we don't necessarily care that a div is editable or not
 				foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div"))
 				{
 					HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");
+					HtmlDom.RemoveClassesBeginingWith(e, "bloom-last-visible");
 					var lang = e.GetAttribute("lang");
 
 					//These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.
@@ -174,9 +178,21 @@ namespace Bloom.Book
 					if (ShouldNormallyShowEditable(lang, dataDefaultLanguages, contentLanguageIso2, contentLanguageIso3, settings))
 					{
 						HtmlDom.AddClass(e, "bloom-visibility-code-on");
+						if (String.CompareOrdinal(orderClass, lastVisibleElementOrderClass) > 0 )
+						{
+							// We want to find the element that looks as though it's last, though lexically in the HTML it may not be.
+							// (Note that this isn't necessarily bloom-content1 for mono, 2 for bi, and 3 for tri.
+							// Specific blocks can be configured to show only one language even though the general setting is bi or tri.)
+							lastVisibleElement = e;
+							lastVisibleElementOrderClass = orderClass;
+						}
 					}
 
 					UpdateRightToLeftSetting(settings, e, lang);
+				}
+				if (lastVisibleElement != null)
+				{
+					HtmlDom.AddClass(lastVisibleElement, "bloom-last-visible");
 				}
 			}
 		}

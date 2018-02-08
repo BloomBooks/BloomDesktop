@@ -447,19 +447,27 @@ h2 {
         height: ~"calc(100% - 2px)";
         width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
     }
-    /* This is in order to divide up the whole section in equal parts.
-        I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
-    &.bloom-bilingual{
+    /* other rules normally make bloom-editable divs height: 100%. That won't work for a bilingual or trilingual block.
+    We could make them all the same size by making them all height:auto and flex-grow:1, but that leaves the
+    left-over white space divided between them and isn't usually desirable. So we make them auto, but allow the
+    last one to fill the left-over space.
+    It's annoying that we have to make bloom artificially add this bloom-last-visible class. It would almost be doable
+    with :nth-last(1 of bloom-visibility-code-on. But (a) FF hasn't yet implemented the 'of' feature, and (b)
+    that would get the lexically last element with that code, but the visual order is determined by other classes
+    bloom adds, like bloom-content1. I thought about making .bloom-bilingual bloom-content2 and .bloomtrilingual bloom: content 3
+    do the flex-grow thing, but sometimes in a bi- or tri-lingual book we only have one language showing.
+    A particularly important case is text-over-picture, where the visible border doesn't match up with the drag size
+    if the single-language block doesn't fill the parent. So it's best to have Bloom figure out which block is
+    the visually last visible one and put this extra class on it. */
+    &.bloom-bilingual, &.bloom-trilingual {
         .bloom-editable {
             // tempting: hard to get right with all the different page layouts in the new customizable world  height:46%;
             height: auto;
+
+            &.bloom-last-visible {
+                flex-grow: 1;
+            }
         }
-    }
-    &.bloom-trilingual{
-      .bloom-editable {
-          // tempting: hard to get right with all the different page layouts in the new customizable world height:28%;
-          height: auto;
-      }
     }
 
     .split-pane-component {
