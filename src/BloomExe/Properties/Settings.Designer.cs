@@ -397,5 +397,18 @@ namespace Bloom.Properties {
                 this["CurrentLevel"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string CurrentBookPath {
+            get {
+                return ((string)(this["CurrentBookPath"]));
+            }
+            set {
+                this["CurrentBookPath"] = value;
+            }
+        }
     }
 }

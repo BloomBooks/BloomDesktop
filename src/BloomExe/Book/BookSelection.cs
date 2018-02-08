@@ -1,4 +1,5 @@
 ﻿using System;
+using Bloom.Properties;
 
 namespace Bloom.Book
 {
@@ -18,6 +19,8 @@ namespace Bloom.Book
 		   _currentSelection = book;
 
 			InvokeSelectionChanged(aboutToEdit);
+			Settings.Default.CurrentBookPath = book?.FolderPath ?? "";
+			Settings.Default.Save();
 		}
 
 		public Book CurrentSelection

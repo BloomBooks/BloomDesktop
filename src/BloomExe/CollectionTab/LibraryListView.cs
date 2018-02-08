@@ -535,7 +535,20 @@ namespace Bloom.CollectionTab
 				bloomLibrayLink.Size = GetSizeForLabel(bloomLibrayLink.Text, bloomLibrayLink.Font);
 				bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
 				flowLayoutPanel.Controls.Add(bloomLibrayLink);
-				return true;
+				loadedAtLeastOneBook = true;
+			}
+			// We could look for it in the main loop, but it seems safer to let the collection be fully constructed before
+			// we start trying to select things in it.
+			if (_bookSelection.CurrentSelection == null && !string.IsNullOrEmpty(Settings.Default.CurrentBookPath))
+			{
+				foreach (var bookInfo in collection.GetBookInfos())
+				{
+					if (bookInfo.FolderPath == Settings.Default.CurrentBookPath)
+					{
+						_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo, true));
+						break;
+					}
+				}
 			}
 			return loadedAtLeastOneBook;
 		}
