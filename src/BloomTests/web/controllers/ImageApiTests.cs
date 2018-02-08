@@ -12,12 +12,14 @@ namespace BloomTests.web.controllers
 	{
 		private BookSelection _selection;
 		private ImageApi _apiObject;
+		private Dictionary<string, List<string>> _creditsToFormat;
 
 		[SetUp]
 		public void Setup()
 		{
 			_selection = new BookSelection();
 			_apiObject = new ImageApi(_selection);
+			_creditsToFormat = new Dictionary<string, List<string>>();
 		}
 
 		[TearDown]
@@ -25,6 +27,7 @@ namespace BloomTests.web.controllers
 		{
 			_selection = null;
 			_apiObject = null;
+			_creditsToFormat = null;
 		}
 
 		[Test]
@@ -86,6 +89,7 @@ namespace BloomTests.web.controllers
 			</div>
 			<div class=""bloom-imageContainer bloom-backgroundImage"" style=""background-image:url('AOR_aa017m.png')""/>
 			<div class=""bloom-translationGroup""></div>
+			<div class=""bloom-imageContainer bloom-backgroundImage"" style=""background-image:url('AOR_aa013m.png')""/>
 		</div>
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""3"">
@@ -136,6 +140,7 @@ namespace BloomTests.web.controllers
 				<img data-license=""cc-by-nd"" data-creator=""Cathy Marlett"" data-copyright=""Copyright, SIL International 2009."" src=""AOR_EAG00864.png""/>
 			</div>
 			<div class=""bloom-translationGroup""></div>
+			<div class=""bloom-imageContainer bloom-backgroundImage"" style=""background-image:url('AOR_aa018.png')""/>
 		</div>
 	</div>
 <!-- Is this what the page numbering system does with backMatter? No change in pagenum from here on out. -->
@@ -165,6 +170,7 @@ namespace BloomTests.web.controllers
 			var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(dom.SelectSingleNode("//body"));
 			Assert.AreEqual(7, imageNameToPages.Keys.Count, "Should be a total of 7 unique images");
 			Assert.AreEqual("Front Cover", imageNameToPages["AOR_aa013m.png"].First(), "Should include xmatter pics");
+			Assert.AreEqual("2", imageNameToPages["AOR_aa013m.png"].Last(), "Numbered pages should be after front matter");
 			Assert.IsFalse(imageNameToPages.ContainsKey("title-page.svg"), "Branding images get filtered out");
 			Assert.IsFalse(imageNameToPages.ContainsKey("credits-page.png"), "Branding images get filtered out");
 			Assert.IsFalse(imageNameToPages.ContainsKey("back-cover-outside.svg"), "Branding images get filtered out");
@@ -182,7 +188,8 @@ namespace BloomTests.web.controllers
 			Assert.AreEqual("10", aorEag.Last(), "Should sort '10' after '5'");
 			Assert.IsTrue(aorEag.Contains("5"), "'5' should be there in the middle");
 			var backCvr = imageNameToPages["AOR_aa018.png"];
-			Assert.AreEqual("Outside Back Cover", backCvr.First(), "Back cover non-branding image should report Outside Back Cover");
+			Assert.AreEqual("10", backCvr.First(), "Page 10 image should report before back matter");
+			Assert.AreEqual("Outside Back Cover", backCvr.Last(), "Back cover non-branding image should report Outside Back Cover");
 		}
 
 		[Test]
@@ -297,6 +304,62 @@ namespace BloomTests.web.controllers
 			Assert.AreEqual(new SortedSet<string> { "১", "২" }, moonAndCap, "Should return Bengali page numbers");
 			Assert.AreEqual("বাইরের পিছনে কভার", imageNameToPages["AOR_aa010.png"].First(),
 				"If pageLabel is translated, we should get the translated value.");
+		}
+
+		[Test]
+		public void CollectFormattedCredits_SingleCredit_Works()
+		{
+			_creditsToFormat.Add("my credit", new List<string> {"Front Cover", "2"});
+			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+			Assert.That(results.Count(), Is.EqualTo(1));
+			Assert.That(results.First(), Is.EqualTo("Images by my credit."), "Single credit should have non-page format.");
+		}
+
+		[Test]
+		public void CollectFormattedCredits_MultipleCredits_Works()
+		{
+			_creditsToFormat.Add("my credit", new List<string> { "Front Cover", "2" });
+			_creditsToFormat.Add("next credit", new List<string> { "2", "4", "Outside Back Cover" });
+			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+			Assert.That(results.Count(), Is.EqualTo(2));
+			Assert.That(results.First(), Is.EqualTo("Images on pages Front Cover, 2 by my credit."));
+			Assert.That(results.Last(), Is.EqualTo("Images on pages 2, 4, Outside Back Cover by next credit."));
+		}
+
+		[Test]
+		public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash()
+		{
+			_creditsToFormat.Add("my credit", new List<string> { "2" });
+			_creditsToFormat.Add("next credit", new List<string> { "2", "3", "4", "Outside Back Cover" });
+			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+			Assert.That(results.Count(), Is.EqualTo(2));
+			Assert.That(results.First(), Is.EqualTo("Image on page 2 by my credit."));
+			// This is an en-dash, not a hyphen!
+			Assert.That(results.Last(), Is.EqualTo("Images on pages 2–4, Outside Back Cover by next credit."));
+		}
+
+		[Test]
+		public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash2()
+		{
+			_creditsToFormat.Add("abc credit", new List<string> { "5", "7", "8", "9", "10", "12" });
+			_creditsToFormat.Add("some credit", new List<string> { "6" });
+			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+			Assert.That(results.Count(), Is.EqualTo(2));
+			// This is an en-dash, not a hyphen!
+			Assert.That(results.First(), Is.EqualTo("Images on pages 5, 7–10, 12 by abc credit."));
+			Assert.That(results.Last(), Is.EqualTo("Image on page 6 by some credit."));
+		}
+
+		[Test]
+		public void CollectFormattedCredits_MultipleCredits_WorksWithEnDash3()
+		{
+			_creditsToFormat.Add("some credit", new List<string> { "1" });
+			_creditsToFormat.Add("abc credit", new List<string> { "5", "7", "8", "9", "10" });
+			var results = ImageApi.CollectFormattedCredits(_creditsToFormat);
+			Assert.That(results.Count(), Is.EqualTo(2));
+			// This is an en-dash, not a hyphen!
+			Assert.That(results.First(), Is.EqualTo("Image on page 1 by some credit."));
+			Assert.That(results.Last(), Is.EqualTo("Images on pages 5, 7–10 by abc credit."));
 		}
 	}
 }
