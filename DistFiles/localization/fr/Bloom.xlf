@@ -1460,6 +1460,13 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
         <target xml:lang="fr">Lorsque vous créer un livre à partir d'un livre canevas, utilisez ce champ pour indiquer le nom du traducteur.</target>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookSingleCredit">
+        <source xml:lang="en">Images by {0}.</source>
+        <note>ID: EditTab.FrontMatter.BookSingleCredit</note>
+        <note>Used on the Title page of a book when "Paste Image Credits" is clicked and all the images in the book are by one illustrator. Put {0} in the translation where the image credits should go. For example in English, 'Images by {0}.' comes out like 'Images by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
+        <note>New string in Bloom 4.1</note>
+        <target xml:lang="fr" state="needs-translation">Images by {0}.</target>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
@@ -1491,7 +1498,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en"> {0} (page {1})</source>
         <note>ID: EditTab.FrontMatter.MissingCredit</note>
         <note>The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.</note>
-        <target xml:lang="fr" state="needs-translation"> {0} (page {1})</target>
+        <target xml:lang="fr" state="translated"> {0} (page {1})</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
@@ -1627,7 +1634,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
         <note>ID: EditTab.Image.AltMsg</note>
         <note>The {0} is replaced by the filename of the picture.</note>
-        <target xml:lang="fr" state="translated">Cette image, {0}, est manquante ou a été chargée très lentement.</target>
+        <target xml:lang="fr" state="translated">Cette image, {0}, est manquante ou son téléchargement a été trop lent.</target>
+        <alt-trans>
+          <target xml:lang="fr">Cette image, {0}, est manquante ou a été chargée très lentement.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
@@ -1664,7 +1674,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
         <note>ID: EditTab.Image.MissingInfo</note>
-        <target xml:lang="fr" state="translated">L'image contient des informations manquantes du crédit, du droit d'auteur, ou sur la licence</target>
+        <target xml:lang="fr" state="translated">Il manque à cette image le crédit, le copyright ou sur la licence</target>
+        <alt-trans>
+          <target xml:lang="fr">L'image contient des informations manquantes du crédit, du droit d'auteur, ou sur la licence</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image</source>
@@ -1728,7 +1741,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
         <note>ID: EditTab.NeverLocked</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
-        <target xml:lang="fr" state="needs-translation">Books are never locked in a Source Collection.</target>
+        <target xml:lang="fr" state="translated">Les livres ne sont jamais en lecture seule dans une Collection Source.</target>
+        <alt-trans>
+          <target xml:lang="fr">Livres ne sont jamais enfermés dans une Collection Source.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName" approved="yes">
         <source xml:lang="en">Book</source>
@@ -1859,7 +1875,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Include the name of the language using {lang}. For example: "Enter color in {lang}".</source>
         <note>ID: EditTab.TextBoxProperties.IncludeLang</note>
         <note>Becomes visible when "Show on each" option is chosen in combo. Do NOT translate {lang}.</note>
-        <target xml:lang="fr" state="translated">Mettez le nom de la langue au moyen de {lang}. Par exemple‎ : "Entrez la couleur en {lang}".</target>
+        <target xml:lang="fr" state="translated">Mettez le nom de la langue en {lang}. Par exemple‎ : "Entrez la couleur en {lang}".</target>
+        <alt-trans>
+          <target xml:lang="fr">Mettez le nom de la langue au moyen de {lang}. Par exemple‎ : "Entrez la couleur en {lang}".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Incluez le nom de la langue en utilisant {lang}. Par exemple‎: "Entrez la couleur dans {lang}".</target>
         </alt-trans>
@@ -2049,7 +2068,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</note>
-        <target xml:lang="fr" state="translated">Ceci est un rapport généré pour les étapes de déchiffrement de base pour {0}. Vous pouvez modifier ce fichier à votre convenance, mais Bloom ne prendra pas en compte vos modifications. Ceci est un rapport.</target>
+        <target xml:lang="fr" state="translated">Ceci est un rapport généré pour le niveau de déchiffrement pour {0}. Vous pouvez modifier ce fichier à votre convenance, mais Bloom n'en tiendra pas compte. Ce n'est qu'un rapport.</target>
+        <alt-trans>
+          <target xml:lang="fr">Ceci est un rapport généré pour les étapes de déchiffrement de base pour {0}. Vous pouvez modifier ce fichier à votre convenance, mais Bloom ne prendra pas en compte vos modifications. Ceci est un rapport.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords" approved="yes">
         <source xml:lang="en">New Decodable Words: {0}</source>
@@ -2335,7 +2357,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
-        <target xml:lang="fr" state="needs-translation">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</target>
+        <target xml:lang="fr" state="translated">Ce livre est en mode traduire uniquement. Si vous souhaitez apporter d’autres modifications, cliquez ici pour le déverrouiller temporairement.</target>
+        <alt-trans>
+          <target xml:lang="fr">Ce livre est en mode traduire uniquement. Si vous souhaitez apporter d’autres modifications, cliquez ici pour débloquer temporairement le livre.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -2352,7 +2377,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
         <note xml:lang="en">OLD TEXT (before 3.9, shorter wording): Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</note>
-        <target xml:lang="fr" state="translated">Impossible de faire démarrer le listener HTTP de Bloom, utilisé pour communiquer avec le navigateur Firefox intégré à Bloom. Si cela se produit, même après le redémarrage de votre ordinateur, vérifiez que votre ordinateur n'est pas doté d'un pare-feu avec un trop haut niveau de protection. Avant d'utiliser Bloom, il peut être nécessaire de désinstaller des pare-feu avec un haut niveau de protection.</target>
+        <target xml:lang="fr" state="translated">Bloom n’a pu faire démarrer les écouteurs HTTP qu’il utilise pour s'adresser au navigateur Firefox qu'il comporte. Si cela se produit, même si vous venez juste de redémarrer votre ordinateur, demandez alors à quelqu'un de vérifier si vous avez un pare-feu trop sensible installé. Il faudra peut-être le désinstaller avant de pouvoir utiliser Bloom.</target>
+        <alt-trans>
+          <target xml:lang="fr">Impossible de faire démarrer le listener HTTP de Bloom, utilisé pour communiquer avec le navigateur Firefox intégré à Bloom. Si cela se produit, même après le redémarrage de votre ordinateur, vérifiez que votre ordinateur n'est pas doté d'un pare-feu avec un trop haut niveau de protection. Avant d'utiliser Bloom, il peut être nécessaire de désinstaller des pare-feu avec un haut niveau de protection.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.CouldNotSavePage" approved="yes">
         <source xml:lang="en">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
@@ -2434,7 +2462,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.</source>
         <note>ID: Errors.XMatterNotFound</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</note>
-        <target xml:lang="fr" state="translated">Ce livre a demandé le pack autour de la couverture nommé '{0}', mais Bloom n'a pu le trouver sur cet ordinateur. Pour obtenir '{0}', vous pouvez installer un pack Bloom, ou sélectionner un autre pack autour de la couverture dans les paramètres de création de livre.</target>
+        <target xml:lang="fr" state="translated">Ce livre a demandé la couverture intitulée '{0}', mais cette version de Bloom n'en dispose pas et Bloom n'a pu le trouver sur cet ordinateur. Cette collection a été modifiée de façon à utiliser la couverture par défaut.</target>
+        <alt-trans>
+          <target xml:lang="fr">Ce livre a demandé le pack autour de la couverture nommé '{0}', mais Bloom n'a pu le trouver sur cet ordinateur. Pour obtenir '{0}', vous pouvez installer un pack Bloom, ou sélectionner un autre pack autour de la couverture dans les paramètres de création de livre.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.XMatterProblemLabel">
         <source xml:lang="en">Front/Back Matter Problem</source>
@@ -2768,7 +2799,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="fr" state="translated">Une collection de livres canevas ou modèles dans une ou plusieurs langues de communication courante. Il est possible de télécharger ces livres canevas sur BloomLibrary.org. Il est également possible de créer un pack Bloom et de le partager avec d'autres utilisateurs pour leur permettre de créer des livres en langue vernaculaire à partir de vos livres canevas.</target>
+        <target xml:lang="fr" state="translated">Une collection de livres canevas ou modèles dans une ou plusieurs langues véhiculaires. Il est possible de télécharger ces livres canevas sur BloomLibrary.org. Vous pouvez également créer un pack Bloom et le partager avec d'autres utilisateurs afin qu'à partir de vos livres canevas, ils puissent rédiger des livres en langue vernaculaire.</target>
+        <alt-trans>
+          <target xml:lang="fr">Une collection de livres canevas ou modèles dans une ou plusieurs langues de communication courante. Il est possible de télécharger ces livres canevas sur BloomLibrary.org. Il est également possible de créer un pack Bloom et de le partager avec d'autres utilisateurs pour leur permettre de créer des livres en langue vernaculaire à partir de vos livres canevas.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
         <source xml:lang="en">Local Language Collection</source>
@@ -2917,7 +2951,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Adobe Color Profile License Agreement</source>
         <note>ID: PublishTab.AdobeEulaTitle</note>
         <note>dialog title for license agreement</note>
-        <target xml:lang="fr" state="translated">Contrat de licence Adobe Color Profile</target>
+        <target xml:lang="fr" state="translated">Licence Adobe Color Profile</target>
+        <alt-trans>
+          <target xml:lang="fr">Contrat de licence Adobe Color Profile</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
@@ -2950,7 +2987,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
         <source xml:lang="en">Serve on WiFi Network</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-        <target xml:lang="fr" state="translated">Servir sur réseau WiFi</target>
+        <target xml:lang="fr" state="translated">Partager sur le réseau WiFi</target>
+        <alt-trans>
+          <target xml:lang="fr">Servir sur réseau WiFi</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Control</source>
@@ -2967,7 +3007,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.File.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="fr" state="translated">Package "{0}" à employer pour Bloom Reader...</target>
+        <target xml:lang="fr" state="translated">Package "{0}" à employer sur Bloom Reader...</target>
+        <alt-trans>
+          <target xml:lang="fr">Package "{0}" à employer pour Bloom Reader...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.Saving" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Saving as {0}</source>
@@ -3059,13 +3102,19 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Looking for an Android device connected by USB cable and set up for MTP...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
         <note>This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.</note>
-        <target xml:lang="fr" state="translated">Vous cherchez un appareil Android connecté au câble USB et configuré pour MTP ...</target>
+        <target xml:lang="fr" state="translated">Recherche en cours d'un appareil Android connecté au câble USB et configuré pour MTP...</target>
+        <alt-trans>
+          <target xml:lang="fr">Vous cherchez un appareil Android connecté au câble USB et configuré pour MTP ...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" sil:dynamic="true">
         <source xml:lang="en">Looking for an existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
         <note>{0} is a book title</note>
-        <target xml:lang="fr" state="translated">Vous recherchez le livre existant « {0} » ...</target>
+        <target xml:lang="fr" state="translated">Recherche en cours d'un livre existant "{0}"...</target>
+        <alt-trans>
+          <target xml:lang="fr">Vous recherchez le livre existant « {0} » ...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Vous recherchez le livre existant "{0}" ...</target>
         </alt-trans>
@@ -3082,25 +3131,37 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound" sil:dynamic="true">
         <source xml:lang="en">No device found. Still looking...</source>
         <note>ID: PublishTab.Android.Usb.Progress.NoDeviceFound</note>
-        <target xml:lang="fr" state="translated">Appareil non trouvé. Nous continuons à chercher ...</target>
+        <target xml:lang="fr" state="translated">Appareil non trouvé. Recherche en cours ...</target>
+        <alt-trans>
+          <target xml:lang="fr">Appareil non trouvé. Nous continuons à chercher ...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook" sil:dynamic="true">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="fr" state="translated">Package "{0}" à employer pour Bloom Reader...</target>
+        <target xml:lang="fr" state="translated">Package "{0}" à employer sur Bloom Reader...</target>
+        <alt-trans>
+          <target xml:lang="fr">Package "{0}" à employer pour Bloom Reader...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.ReplacingBook" sil:dynamic="true">
         <source xml:lang="en">Replacing existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.ReplacingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="fr" state="translated">Remplaçant l’actuel « {0} »...</target>
+        <target xml:lang="fr" state="translated">Remplacement en cours de l’actuel "{0}"...</target>
+        <alt-trans>
+          <target xml:lang="fr">Remplaçant l’actuel « {0} »...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook" sil:dynamic="true">
         <source xml:lang="en">Sending "{0}" to your Android device...</source>
         <note>ID: PublishTab.Android.Usb.Progress.SendingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="fr" state="translated">Envoyer "‎{0}" à votre appareil Android ...</target>
+        <target xml:lang="fr" state="translated">Envoie en cours "‎{0}" vers votre appareil Android ...</target>
+        <alt-trans>
+          <target xml:lang="fr">Envoyer "‎{0}" à votre appareil Android ...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Envoyer "‎{0‎}" à votre appareil Android ...</target>
         </alt-trans>
