@@ -72,25 +72,25 @@
         <note>ID: Common.CancelButton</note>
         <target xml:lang="tr" state="translated">&amp;İptal Et</target>
       </trans-unit>
-      <trans-unit id="Common.IgnoreButton">
+      <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="tr" state="translated">&amp;Yoksay</target>
+        <target xml:lang="tr">&amp;Yoksay</target>
       </trans-unit>
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
         <target xml:lang="tr" state="translated">Hayır</target>
       </trans-unit>
-      <trans-unit id="Common.NoButton">
+      <trans-unit id="Common.NoButton" approved="yes">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="tr" state="translated">&amp;Hayır</target>
+        <target xml:lang="tr">&amp;Hayır</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="tr" state="translated">&amp;Tamam</target>
+        <target xml:lang="tr">&amp;Tamam</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
@@ -129,10 +129,10 @@
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
         <target xml:lang="tr" state="translated">&amp;İptal Et</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="tr" state="translated">&amp;Sil</target>
+        <target xml:lang="tr">&amp;Sil</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to {1}</source>
@@ -577,10 +577,10 @@
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
         <target xml:lang="tr" state="translated">Sürüm Notları</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.Font">
+      <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="tr" state="translated">&amp;Yazı tipi:</target>
+        <target xml:lang="tr">&amp;Yazı tipi:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>

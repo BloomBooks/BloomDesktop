@@ -779,26 +779,26 @@
         <note>ID: Common.Cancel</note>
         <target xml:lang="tr" state="translated">İptal</target>
       </trans-unit>
-      <trans-unit id="Common.CancelButton">
+      <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="tr" state="translated">&amp;İptal</target>
+        <target xml:lang="tr">&amp;İptal</target>
       </trans-unit>
-      <trans-unit id="Common.Finish">
+      <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="tr" state="translated">&amp;Bitir</target>
+        <target xml:lang="tr">&amp;Bitir</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
         <target xml:lang="tr" state="translated">Yardım</target>
       </trans-unit>
-      <trans-unit id="Common.HelpButton">
+      <trans-unit id="Common.HelpButton" approved="yes">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
-        <target xml:lang="tr" state="translated">&amp;Yardım</target>
+        <target xml:lang="tr">&amp;Yardım</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">
         <source xml:lang="en">Loading...</source>
@@ -806,11 +806,11 @@
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
         <target xml:lang="tr" state="translated">Yükleniyor...</target>
       </trans-unit>
-      <trans-unit id="Common.Next">
+      <trans-unit id="Common.Next" approved="yes">
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="tr" state="translated">&amp;İleri</target>
+        <target xml:lang="tr">&amp;İleri</target>
       </trans-unit>
       <trans-unit id="Common.NextButton">
         <source xml:lang="en">Next</source>
@@ -823,10 +823,10 @@
         <note>ID: Common.OK</note>
         <target xml:lang="tr" state="translated">TAMAM</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="tr" state="translated">&amp;Tamam</target>
+        <target xml:lang="tr">&amp;Tamam</target>
       </trans-unit>
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
@@ -970,11 +970,11 @@
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): Really Delete Page?</note>
         <target xml:lang="tr" state="translated">Sayfa Gerçekten Kaldırılsın mı?</target>
       </trans-unit>
-      <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton" approved="yes">
         <source xml:lang="en">&amp;Remove</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): &amp;Delete</note>
-        <target xml:lang="tr" state="translated">&amp;Kaldır</target>
+        <target xml:lang="tr">&amp;Kaldır</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
         <source xml:lang="en">This page will be permanently removed.</source>
@@ -1363,6 +1363,13 @@
         <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
         <target xml:lang="tr" state="translated">Kabul üzerinden bir kitap oluştururken, bu çeviriyi kimin yaptığını söylemek için bu kutuyu kullanın.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookSingleCredit">
+        <source xml:lang="en">Images by {0}.</source>
+        <note>ID: EditTab.FrontMatter.BookSingleCredit</note>
+        <note>Used on the Title page of a book when "Paste Image Credits" is clicked and all the images in the book are by one illustrator. Put {0} in the translation where the image credits should go. For example in English, 'Images by {0}.' comes out like 'Images by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
+        <note>New string in Bloom 4.1</note>
+        <target xml:lang="tr" state="needs-translation">Images by {0}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
         <source xml:lang="en">Book title in {lang}</source>
@@ -2484,10 +2491,10 @@
         <note>ID: LoginDialog.ForgotPassword</note>
         <target xml:lang="tr" state="translated">Şifremi Unuttum</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.LoginButton">
+      <trans-unit id="LoginDialog.LoginButton" approved="yes">
         <source xml:lang="en">&amp;Login</source>
         <note>ID: LoginDialog.LoginButton</note>
-        <target xml:lang="tr" state="translated">&amp;Giriş</target>
+        <target xml:lang="tr">&amp;Giriş</target>
       </trans-unit>
       <trans-unit id="LoginDialog.Password">
         <source xml:lang="en">Password</source>
@@ -3187,10 +3194,10 @@
         <note>explanation that file was not saved displayed in a message box</note>
         <target xml:lang="tr" state="translated">PDF dosyası kaydedilemedi çünkü "Baskı için PDF" üretmenize izin vermemeyi seçtiniz.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PrintButton">
+      <trans-unit id="PublishTab.PrintButton" approved="yes">
         <source xml:lang="en">&amp;Print...</source>
         <note>ID: PublishTab.PrintButton</note>
-        <target xml:lang="tr" state="translated">&amp;Yazdır...</target>
+        <target xml:lang="tr">&amp;Yazdır...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
@@ -3914,10 +3921,10 @@ Do you want to go ahead?</note>
         <note>ID: RegisterDialog.Organization</note>
         <target xml:lang="tr" state="translated">Organization</target>
       </trans-unit>
-      <trans-unit id="RegisterDialog.RegisterButton">
+      <trans-unit id="RegisterDialog.RegisterButton" approved="yes">
         <source xml:lang="en">&amp;Register</source>
         <note>ID: RegisterDialog.RegisterButton</note>
-        <target xml:lang="tr" state="translated">&amp;Kayıt ol</target>
+        <target xml:lang="tr">&amp;Kayıt ol</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.Surname">
         <source xml:lang="en">Surname</source>

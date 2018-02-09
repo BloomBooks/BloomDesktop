@@ -1592,6 +1592,13 @@
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
         <target xml:lang="pt-PT" state="translated">Quando você faz um livro de um shell, use esta caixa para contar quem fez a tradução.</target>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookSingleCredit">
+        <source xml:lang="en">Images by {0}.</source>
+        <note>ID: EditTab.FrontMatter.BookSingleCredit</note>
+        <note>Used on the Title page of a book when "Paste Image Credits" is clicked and all the images in the book are by one illustrator. Put {0} in the translation where the image credits should go. For example in English, 'Images by {0}.' comes out like 'Images by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
+        <note>New string in Bloom 4.1</note>
+        <target xml:lang="pt-PT" state="needs-translation">Images by {0}.</target>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>

@@ -1900,61 +1900,61 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Big Words</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="es-ES" state="needs-translation">Big Words</target>
+        <target xml:lang="es-ES" state="translated">Palabras Grandes</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
         <source xml:lang="en">Cover Default</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Cover-Default-style</note>
         <note>A default style for various fields usually on the Front Cover</note>
-        <target xml:lang="es-ES" state="needs-translation">Cover Default</target>
+        <target xml:lang="es-ES" state="translated">Tapa predeterminada</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Credits-Page-style" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Credits-Page-style</note>
         <note>Used on the Credits page of most Front/Back Matter packs</note>
-        <target xml:lang="es-ES" state="needs-translation">Credits Page</target>
+        <target xml:lang="es-ES" state="translated">Página de créditos</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
         <source xml:lang="en">Equation</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="es-ES" state="needs-translation">Equation</target>
+        <target xml:lang="es-ES" state="translated">Ecuación</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading1-style" sil:dynamic="true">
         <source xml:lang="en">Heading 1</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading1-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="es-ES" state="needs-translation">Heading 1</target>
+        <target xml:lang="es-ES" state="translated">Encabezado 1</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading2-style" sil:dynamic="true">
         <source xml:lang="en">Heading 2</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading2-style</note>
         <note>A default style</note>
-        <target xml:lang="es-ES" state="needs-translation">Heading 2</target>
+        <target xml:lang="es-ES" state="translated">Encabezado 2</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.normal-style" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.normal-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="es-ES" state="needs-translation">Normal</target>
+        <target xml:lang="es-ES" state="translated">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Multimedia template</note>
-        <target xml:lang="es-ES" state="needs-translation">Quiz</target>
+        <target xml:lang="es-ES" state="translated">Prueba</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
         <note>Used on the Front Cover page of most Front/Back Matter packs</note>
-        <target xml:lang="es-ES" state="needs-translation">Title On Cover</target>
+        <target xml:lang="es-ES" state="translated">Título en la tapa</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style" sil:dynamic="true">
         <source xml:lang="en">Title On Title Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
         <note>Used on the Title Page of most Front/Back Matter packs</note>
-        <target xml:lang="es-ES" state="needs-translation">Title On Title Page</target>
+        <target xml:lang="es-ES" state="translated">Título en la portada</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
@@ -2122,6 +2122,13 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Cuando haces un libro desde un shell, utilice este cuadro para decir quién hizo la traducción.</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookSingleCredit">
+        <source xml:lang="en">Images by {0}.</source>
+        <note>ID: EditTab.FrontMatter.BookSingleCredit</note>
+        <note>Used on the Title page of a book when "Paste Image Credits" is clicked and all the images in the book are by one illustrator. Put {0} in the translation where the image credits should go. For example in English, 'Images by {0}.' comes out like 'Images by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
+        <note>New string in Bloom 4.1</note>
+        <target xml:lang="es-ES" state="needs-translation">Images by {0}.</target>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
@@ -2171,7 +2178,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en"> {0} (page {1})</source>
         <note>ID: EditTab.FrontMatter.MissingCredit</note>
         <note>The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.</note>
-        <target xml:lang="es-ES" state="needs-translation"> {0} (page {1})</target>
+        <target xml:lang="es-ES" state="translated"> {0} (página {1})</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
@@ -2346,7 +2353,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
         <note>ID: EditTab.Image.AltMsg</note>
         <note>The {0} is replaced by the filename of the picture.</note>
-        <target xml:lang="es-ES" state="needs-translation">This picture, {0}, is missing or was loading too slowly.</target>
+        <target xml:lang="es-ES" state="translated">Falta la imagen {0} o está cargando demasiadamente lento.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
@@ -2392,7 +2399,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
         <note>ID: EditTab.Image.MissingInfo</note>
-        <target xml:lang="es-ES" state="needs-translation">Image is missing information on Credits, Copyright, or License</target>
+        <target xml:lang="es-ES" state="translated">La imagen falta información sobre créditos, derechos de autor o licencia.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image</source>
@@ -2474,7 +2481,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
         <note>ID: EditTab.NeverLocked</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
-        <target xml:lang="es-ES" state="needs-translation">Books are never locked in a Source Collection.</target>
+        <target xml:lang="es-ES" state="translated">Los libros en una Colección de Fuente nunca son bloquedos.</target>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName" approved="yes">
         <source xml:lang="en">Book</source>
