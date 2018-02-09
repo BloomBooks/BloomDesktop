@@ -1290,5 +1290,19 @@ namespace Bloom.Book
 			foreach (var directory in Directory.GetDirectories(sourceDir))
 				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
 		}
+
+		/// <summary>
+		/// Copy the collection level style files to the given folder.
+		/// </summary>
+		public static void CopyCollectionStyles(string bookDir, string targetDir)
+		{
+			var collectionDir = Path.GetDirectoryName(bookDir);
+			var settings = Path.Combine(collectionDir, "settingsCollectionStyles.css");
+			if (File.Exists(settings))
+				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"));
+			var custom = Path.Combine(collectionDir, "customCollectionStyles.css");
+			if (File.Exists(custom))
+				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"));
+		}
 	}
 }
