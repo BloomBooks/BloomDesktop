@@ -208,7 +208,7 @@ namespace Bloom.WebLibraryIntegration
 			using (var progressDialog = new ProgressDialog())
 			{
 				_progressDialog = new ProgressDialogWrapper(progressDialog);
-				progressDialog.CanCancel = false; // one day we may allow this...
+				progressDialog.CanCancel = true;
 				progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
 				progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
 				if (IsUrlOrder(order))
@@ -226,7 +226,6 @@ namespace Bloom.WebLibraryIntegration
 				BackgroundWorker worker = new BackgroundWorker();
 				worker.DoWork += OnDoDownload;
 				progressDialog.BackgroundWorker = worker;
-				//dlg.CancelRequested += new EventHandler(OnCancelRequested);
 				progressDialog.ShowDialog(); // hidden automatically when task completes
 				if (progressDialog.ProgressStateResult != null &&
 					progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
