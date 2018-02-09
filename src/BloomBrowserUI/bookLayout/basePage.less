@@ -447,19 +447,14 @@ h2 {
         height: ~"calc(100% - 2px)";
         width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
     }
-    /* This is in order to divide up the whole section in equal parts.
-        I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
-    &.bloom-bilingual{
+    /* other rules normally make bloom-editable divs height: 100%. That won't work for a bilingual or trilingual block. 
+    This rule makes them start out the size they need to be, then whatever space is left over is divided between them. 
+    */ 
+    &.bloom-bilingual, &.bloom-trilingual { 
         .bloom-editable {
-            // tempting: hard to get right with all the different page layouts in the new customizable world  height:46%;
             height: auto;
+            flex-grow: 1; 
         }
-    }
-    &.bloom-trilingual{
-      .bloom-editable {
-          // tempting: hard to get right with all the different page layouts in the new customizable world height:28%;
-          height: auto;
-      }
     }
 
     .split-pane-component {
