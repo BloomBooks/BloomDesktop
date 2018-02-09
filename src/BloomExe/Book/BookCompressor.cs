@@ -62,8 +62,12 @@ namespace Bloom.Book
 			bookInfo.XMatterNameOverride = "Device";
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress());
+			modifiedBook.AdjustCollectionStylesToBookFolder();
 			modifiedBook.Save();
 			modifiedBook.Storage.UpdateSupportFiles();
+			// Copy the possibly modified stylesheets after UpdateSupportFiles so that they don't
+			// get replaced by the factory versions.
+			BookStorage.CopyCollectionStyles(book.FolderPath, tempFolderPath);
 			return modifiedBook;
 		}
 

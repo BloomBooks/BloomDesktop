@@ -101,7 +101,6 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
     }
 
     render() {
-        let self = this;
         let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5",
             "#B2CC7D", "#F8B576", "#D29FEF", "#ABB8C3", "#C1EF93", "#FFD4D4", "#FFAAD4"];
 
@@ -119,34 +118,35 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                             Thumbnail Color
                         </Div>
                     </div>
-                    <div className="tc-outer-wrapper" onClick={
+                    <div className="tc-outer-wrapper" tabIndex={0} onClick={
                         (event) => {
-                            self.setState({ colorsVisible: !this.state.colorsVisible });
+                            this.setState({ colorsVisible: !this.state.colorsVisible });
                             axios.get("/bloom/api/publish/android/backColor").then(result =>
                                 this.setState({ backColor: result.data })
                             );
-                        }}>
+                        }}
+                        onBlur={() => { this.setState({ colorsVisible: false }); }}>
                         <div className="tc-image-wrapper">
                             <img className="tc-image"
                                 // the api ignores the color parameter, but it
                                 // causes this to re-request the img whenever the backcolor changes
-                                src={"/bloom/api/publish/android/thumbnail?color=" + self.state.backColor}></img>
+                                src={"/bloom/api/publish/android/thumbnail?color=" + this.state.backColor}></img>
                         </div>
                         <div className="tc-menu-arrow">
-                            <div className="tc-pulldown-wrapper" style={{ visibility: (self.state.colorsVisible ? "visible" : "hidden") }}>
+                            <div className="tc-pulldown-wrapper" style={{ visibility: (this.state.colorsVisible ? "visible" : "hidden") }}>
                                 {colors.map((color, i) =>
                                     <div className="tc-color-option" key={i} style={{ backgroundColor: color }} data-color={color} onClick={
                                         (event) => {
                                             const newColor = event.currentTarget.getAttribute("data-color");
-                                            self.reportColorChange(newColor);
+                                            this.reportColorChange(newColor);
                                         }}>
                                     </div>)}
                                 <div className="tc-hex-wrapper" onClick={(event) => event.stopPropagation()}>
                                     <div className="tc-hex-leadin">#</div>
                                     <div className="tc-hex-value">
                                         <ContentEditable content={this.state.backColor.substring(1)} onChange={(newContent => {
-                                            self.reportColorChange("#" + newContent);
-                                        })} onEnterKeyPressed={() => self.setState({ colorsVisible: false })} />
+                                            this.reportColorChange("#" + newContent);
+                                        })} onEnterKeyPressed={() => this.setState({ colorsVisible: false })} />
                                     </div>
                                 </div>
                             </div>
@@ -191,7 +191,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     <select className={`method-shared method-root ${this.state.method}-method-option`}
                         disabled={this.state.stateId !== "stopped"} value={this.state.method} onChange={
                             (event) => {
-                                self.setState({ method: event.target.value });
+                                this.setState({ method: event.target.value });
                                 axios.post("/bloom/api/publish/android/method", event.target.value,
                                     { headers: { "Content-Type": "text/plain" } });
                             }}>

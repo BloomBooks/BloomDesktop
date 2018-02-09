@@ -750,6 +750,23 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// For Bloom Reader books (and ePUBs), we need to copy the collection level settings files
+		/// to go with the book.  Since these end up in the zip file with the book files, the link
+		/// references to them need to be adjusted to use the current directory, not the parent
+		/// directory (which won't really exist).
+		/// </summary>
+		public void AdjustCollectionStylesToBookFolder()
+		{
+			foreach (XmlElement styleLink in OurHtmlDom.SafeSelectNodes("/html/head/link[@rel='stylesheet']"))
+			{
+				if (styleLink.Attributes["href"].Value == "../settingsCollectionStyles.css")
+					styleLink.Attributes["href"].Value = "settingsCollectionStyles.css";
+				else if (styleLink.Attributes["href"].Value == "../customCollectionStyles.css")
+					styleLink.Attributes["href"].Value = "customCollectionStyles.css";
+			}
+		}
+
 		class GuidAndPath
 		{
 			public string Guid; // replacement guid

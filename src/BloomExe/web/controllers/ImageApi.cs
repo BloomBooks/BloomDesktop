@@ -9,7 +9,6 @@ using System.Text;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.Collection;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -35,7 +34,8 @@ namespace Bloom.web.controllers
 
 		private static IEnumerable<string> GetImageFilesToNotPasteCreditsFor()
 		{
-			var imageFiles = new HashSet<string> {"license.png", "placeholder.png"};
+			// Handles all except placeholder images. They can show up with digits after them, so we do them differently.
+			var imageFiles = new HashSet<string> { "license.png" };
 			var brandingDirectory = FileLocator.GetDirectoryDistributedWithApplication("branding");
 			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
 			{
@@ -58,16 +58,16 @@ namespace Bloom.web.controllers
 		}
 
 		/// <summary>
-		/// Returns a Dictionary keyed on image name that references a sorted set of page numbers where that image is used.
+		/// Returns a Dictionary keyed on image name that references an ordered set of page numbers where that image is used.
 		/// We use string for the page numbers both for non-decimal numeral systems and because xmatter images will be
 		/// referenced by page label (e.g. 'Front Cover').
 		/// Public for testing.
 		/// </summary>
 		/// <param name="domBody"></param>
 		/// <returns></returns>
-		public Dictionary<string, SortedSet<string>> GetFilteredImageNameToPagesDictionary(XmlNode domBody)
+		public Dictionary<string, List<string>> GetFilteredImageNameToPagesDictionary(XmlNode domBody)
 		{
-			var result = new Dictionary<string, SortedSet<string>>();
+			var result = new Dictionary<string, List<string>>();
 			result.AddRange(GetWhichImagesAreUsedOnWhichPages(domBody).Where(kvp => !DoNotPasteCreditsImages(kvp.Key)));
 			return result;
 		}
@@ -84,7 +84,7 @@ namespace Bloom.web.controllers
 				langs = request.CurrentCollectionSettings.LicenseDescriptionLanguagePriorities;
 			else
 				langs = new List<string> { "en" };		// emergency fall back -- probably never used.
-			var credits = new Dictionary<string, SortedSet<string>>();
+			var credits = new Dictionary<string, List<string>>();
 			var missingCredits = new List<string>();
 			foreach (var kvp in imageNameToPages)
 			{
@@ -105,7 +105,7 @@ namespace Bloom.web.controllers
 			}
 			var collectedCredits = CollectFormattedCredits(credits);
 			var total = collectedCredits.Aggregate(new StringBuilder(), (all,credit) => {
-				all.AppendFormat("<p>{0}</p>{1}", credit, System.Environment.NewLine);
+				all.AppendFormat("<p>{0}</p>{1}", credit, Environment.NewLine);
 				return all;
 			});
 			// Notify the user of images with missing credits.
@@ -126,16 +126,30 @@ namespace Bloom.web.controllers
 			request.ReplyWithText(total.ToString());
 		}
 
-		private IEnumerable<string> CollectFormattedCredits(Dictionary<string, SortedSet<string>> credits)
+		/// <summary>
+		/// Internal for testing.
+		/// </summary>
+		/// <param name="credits"></param>
+		/// <returns></returns>
+		internal static IEnumerable<string> CollectFormattedCredits(Dictionary<string, List<string>> credits)
 		{
 			// Dictionary Key is metadata.MinimalCredits, Value is the list of pages that have images this credits string applies to.
 			// Generate a formatted credit string like:
 			//   Image on page 2 by John Doe, Copyright John Doe, 2016, CC-BY-NC. or
-			//   Images on pages 1, 3, 4 by Art of Reading, Copyright SIL International 2017, CC-BY-SA.
+			//   Images on pages 1, 3-4 by Art of Reading, Copyright SIL International 2017, CC-BY-SA.
 			// The goal is to return one string for each credit source listing the pages that apply.
+			if (credits.Keys.Count == 1)
+			{
+				// If all the images are credited to the same illustrator, don't bother listing page numbers.
+				// Like: Images by John Doe, Copyright John Doe, 2016, CC-BY-NC.
+				var bookSingleCredit = LocalizationManager.GetString("EditTab.FrontMatter.BookSingleCredit", "Images by {0}.");
+				var key = credits.Keys.First();
+				yield return string.Format(bookSingleCredit, key);
+				yield break;
+			}
 			var singleCredit = LocalizationManager.GetString("EditTab.FrontMatter.SingleImageCredit", "Image on page {0} by {1}.");
 			var multipleCredit = LocalizationManager.GetString("EditTab.FrontMatter.MultipleImageCredit", "Images on pages {0} by {1}.");
-			foreach (var kvp in credits.OrderBy(kvp => kvp.Value.First())) // sort by the earliest page number
+			foreach (var kvp in credits) // we assume here that credits is built in page order
 			{
 				var pages = kvp.Value.ToList();
 				var credit = kvp.Key;
@@ -147,38 +161,76 @@ namespace Bloom.web.controllers
 				else
 				{
 					// use multipleCredit format
-					var sb = new StringBuilder();
-					for (var i = 0; i < pages.Count; i++)
-					{
-						if (i < pages.Count - 1)
-						{
-							sb.Append(pages[i] + ", ");
-						}
-						else
-						{
-							sb.Append(pages[i]);
-						}
-					}
-					yield return string.Format(multipleCredit, sb, credit);
+					var mpr = CreateMultiplePageReference(pages);
+					yield return string.Format(multipleCredit, mpr, credit);
 				}
 			}
 		}
 
-		private static void BuildCreditsDictionary(Dictionary<string, SortedSet<string>> credits, string credit,
-				SortedSet<string> setOfPageUsages)
+		private static string CreateMultiplePageReference(List<string> pages)
+		{
+			const string ndash = "\u2013";
+			const string commaSpace = ", ";
+			bool workingOnDash = false;
+			var sb = new StringBuilder();
+			sb.Append(pages[0]);
+			int previousPage;
+			if (!Int32.TryParse(pages[0], out previousPage))
+				previousPage = -1;
+			for (var i = 1; i < pages.Count; i++)
+			{
+				var thisPage = pages[i];
+				if (PageShouldBeGroupedWithPreviousPage(previousPage, thisPage))
+				{
+					if (!workingOnDash)
+					{
+						workingOnDash = true;
+						sb.Append(ndash);
+					}
+				}
+				else
+				{
+					if (workingOnDash)
+					{
+						sb.Append(previousPage.ToString());
+						workingOnDash = false;
+					}
+					sb.Append(commaSpace + thisPage);
+				}
+				if (!Int32.TryParse(thisPage, out previousPage))
+					previousPage = -1;
+			}
+			if (workingOnDash)
+			{
+				sb.Append(previousPage.ToString());
+			}
+			return sb.ToString();
+		}
+
+		private static bool PageShouldBeGroupedWithPreviousPage(int prevPage, string page)
+		{
+			int nextPageNum;
+			if (!Int32.TryParse(page, out nextPageNum))
+			{
+				return false;
+			}
+			return nextPageNum == prevPage + 1;
+		}
+
+		private static void BuildCreditsDictionary(Dictionary<string, List<string>> credits, string credit, List<string> listOfPageUsages)
 		{
 			// need to see if 'credit' string is already in dict
-			// if not, add it along with the associated 'SortedSet<int> setOfPageUsages'
-			// if yes, aggregate the new SortedSet<int> pages with what's already on file in the dict.
-			SortedSet<string> oldPagesList;
+			// if not, add it along with the associated 'List<string> listOfPageUsages'
+			// if yes, aggregate the new List<string> pages with what's already on file in the dict.
+			List<string> oldPagesList;
 			if (credits.TryGetValue(credit, out oldPagesList))
 			{
-				oldPagesList.AddRange(setOfPageUsages);
+				oldPagesList.AddRange(listOfPageUsages);
 				credits[credit] = oldPagesList;
 			}
 			else
 			{
-				credits.Add(credit, setOfPageUsages);
+				credits.Add(credit, listOfPageUsages);
 			}
 		}
 
@@ -191,36 +243,34 @@ namespace Bloom.web.controllers
 		{
 			// returns 'true' if 'name' is among the list of ones we don't want to paste image credits for
 			// includes CC license image, placeholder and branding images
-			return _doNotPasteArray.Contains(name.ToLowerInvariant());
+			return _doNotPasteArray.Contains(name.ToLowerInvariant()) || name.ToLowerInvariant().StartsWith("placeholder");
 		}
 
 		/// <summary>
-		/// Returns a Dictionary&lt;string, SortedSet&lt;string&gt;&gt; that contains each image name and a sorted set of page
-		/// numbers that contain that image (with no duplicates).
-		/// We use a sorted set of strings in order to handle other numeral systems.
+		/// Returns a Dictionary that contains each image name as a key and a list of page
+		/// numbers that contain that image (with no duplicates and in order of occurrence).
 		/// </summary>
 		/// <param name="domBody"></param>
-		public static Dictionary<string, SortedSet<string>> GetWhichImagesAreUsedOnWhichPages(XmlNode domBody)
+		public static Dictionary<string, List<string>> GetWhichImagesAreUsedOnWhichPages(XmlNode domBody)
 		{
-			var imageNameToPages = new Dictionary<string, SortedSet<string>>();
+			var imageNameToPages = new Dictionary<string, List<string>>();
 			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(domBody as XmlElement))
 			{
 				var name = HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded;
 				var pageNum = GetPageNumberForImageElement(img);
 				if (string.IsNullOrWhiteSpace(pageNum))
 					continue; // This image is on a page with no pagenumber or something is drastically wrong.
-				SortedSet<string> currentSet;
-				if (imageNameToPages.TryGetValue(name, out currentSet))
+				List<string> currentList;
+				if (imageNameToPages.TryGetValue(name, out currentList))
 				{
-					if (currentSet.Contains(pageNum))
+					if (currentList.Contains(pageNum))
 						continue; // already got this image on this page
 
-					currentSet.Add(pageNum);
+					currentList.Add(pageNum);
 				}
 				else
 				{
-					var comparer = new NaturalSortComparer<string>();
-					imageNameToPages.Add(name, new SortedSet<string>(comparer) { pageNum });
+					imageNameToPages.Add(name, new List<string> { pageNum });
 				}
 			}
 			return imageNameToPages;
