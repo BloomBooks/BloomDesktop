@@ -1832,18 +1832,13 @@
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
         <target xml:lang="tr" state="translated">Müzik Yok</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom Tool</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
-        <target xml:lang="tr" state="translated">Kaydırma ve Yakınlaştırma Aracı</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
         <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
         <target xml:lang="tr" state="translated">Kaydırma ve yakınlaştırma denetimlerini etkinleştirmek için bir resim seçin</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom</source>
+        <source xml:lang="en">Pan and Zoom Tool</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
         <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
         <target xml:lang="tr" state="translated">Kaydırma ve Yakınlaştırma</target>
@@ -1852,6 +1847,29 @@
         <source xml:lang="en">Preview</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
         <target xml:lang="tr" state="translated">Önizleme</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Music" sil:dynamic="true">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
+        <note>The label of a checkbox controlling whether music plays during preview.</note>
+        <target xml:lang="tr" state="needs-translation">Background Music</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
+        <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
+        <target xml:lang="tr" state="needs-translation">Pan and Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
+        <source xml:lang="en">Voice</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voide</note>
+        <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
+        <target xml:lang="tr" state="needs-translation">Voice</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom this page</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <target xml:lang="tr" state="needs-translation">Pan and Zoom this page</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -4123,6 +4141,12 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
         <target xml:lang="tr" state="translated">Üstte resim ve altta büyük, ortalanmış kelime ile sayfa.</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true">
+        <source xml:lang="en">For use with Landscape orientation.</source>
+        <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
+        <note>New string in Bloom 4.2</note>
+        <target xml:lang="tr" state="needs-translation">For use with Landscape orientation.</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
         <source xml:lang="en">1</source>
         <note>ID: TemplateBooks.PageLabel.1</note>
@@ -4403,6 +4427,12 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
         <target xml:lang="tr" state="translated">Alttaki resim</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true">
+        <source xml:lang="en">Picture on Left</source>
+        <note>ID: TemplateBooks.PageLabel.Picture on Left</note>
+        <note>New string in Bloom 4.2</note>
+        <target xml:lang="tr" state="needs-translation">Picture on Left</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>

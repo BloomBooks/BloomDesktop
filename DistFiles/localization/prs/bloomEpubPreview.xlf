@@ -14,6 +14,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.describe</note>
         <alt-trans>
@@ -25,6 +26,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">این است یک  <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (کتاب-الکترونیکی) نسخه کتاب شما. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">دارای صوت است، تا خوانندگان جدید در هنگام خواندن گوش هم کنند.</g>
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -49,13 +62,6 @@
         <alt-trans>
           <target xml:lang="prs">این است یک  <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (کتاب-الکترونیکی) نسخه کتاب شما. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">دارای صوت است، تا خوانندگان جدید در هنگام خواندن گوش هم کنند.</g>
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">این است یک  <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (کتاب-الکترونیکی) نسخه کتاب شما. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">دارای صوت است، تا خوانندگان جدید در هنگام خواندن گوش هم کنند.</g>
       
       
       
@@ -89,6 +95,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.readium</note>
         <alt-trans>
@@ -100,6 +107,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">این صفحه استعمال میکند <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">خواننده</g> خواننده ‏ePUB‏. کتاب ها بالای خواننده های مختلف، مختلف معلوم خواهند شد.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -124,13 +143,6 @@
         <alt-trans>
           <target xml:lang="prs">این صفحه استعمال میکند <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">خواننده</g> خواننده ‏ePUB‏. کتاب ها بالای خواننده های مختلف، مختلف معلوم خواهند شد.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">این صفحه استعمال میکند <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">خواننده</g> خواننده ‏ePUB‏. کتاب ها بالای خواننده های مختلف، مختلف معلوم خواهند شد.
       
       
       
@@ -141,6 +153,7 @@
         <source xml:lang="en">The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> e-book reader.
       </source>
         <target xml:lang="prs">نمایشگر در اینجا تا حال کتاب های گفتاری را باز نموده نمیتواند. شما میتوانید با استفاده ‏Adobe's Free‏ به آن گوش دهید <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">ضمایم دیجیتلی</g> خواننده کتاب-الکترونیکی.
+      
       
       
       
@@ -160,6 +173,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">نمایشگر در اینجا تا حال کتاب های گفتاری را باز نموده نمیتواند. شما میتوانید با استفاده ‏Adobe's Free‏ به آن گوش دهید <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">ضمایم دیجیتلی</g> خواننده کتاب-الکترونیکی.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -184,13 +209,6 @@
         <alt-trans>
           <target xml:lang="prs">نمایشگر در اینجا تا حال کتاب های گفتاری را باز نموده نمیتواند. شما میتوانید با استفاده ‏Adobe's Free‏ به آن گوش دهید <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">ضمایم دیجیتلی</g> خواننده کتاب-الکترونیکی.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">نمایشگر در اینجا تا حال کتاب های گفتاری را باز نموده نمیتواند. شما میتوانید با استفاده ‏Adobe's Free‏ به آن گوش دهید <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">ضمایم دیجیتلی</g> خواننده کتاب-الکترونیکی.
       
       
       
@@ -214,6 +232,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
         <alt-trans>
@@ -225,6 +244,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">راه اسان که کتاب را در مبایل تان قرار دهید، نتظیم دراپ بکس(Dropbox) و یا خدمات مشابه بالای کمپیوتر و تبلیت/مبایل است. فقط ثبت ‏ePUB‏ را کلیک نموده و بعدا فولدر دراپ بکس (Dropbox) را انتخاب نمائید. در مبایل تان درخواست دراپ بکس (Dropbox) را باز نموده و کتاب تان را انتخاب نمائید. اگر شما لپتاپ را استعمال میکنید، شما آنرا رایگان گرفته میتوانید. <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">آنرا شریک سازید</g> برنامه که فایل ها را از لپتاب به موبایل یا تبلیت ارسال کند.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -249,13 +280,6 @@
         <alt-trans>
           <target xml:lang="prs">راه اسان که کتاب را در مبایل تان قرار دهید، نتظیم دراپ بکس(Dropbox) و یا خدمات مشابه بالای کمپیوتر و تبلیت/مبایل است. فقط ثبت ‏ePUB‏ را کلیک نموده و بعدا فولدر دراپ بکس (Dropbox) را انتخاب نمائید. در مبایل تان درخواست دراپ بکس (Dropbox) را باز نموده و کتاب تان را انتخاب نمائید. اگر شما لپتاپ را استعمال میکنید، شما آنرا رایگان گرفته میتوانید. <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">آنرا شریک سازید</g> برنامه که فایل ها را از لپتاب به موبایل یا تبلیت ارسال کند.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">راه اسان که کتاب را در مبایل تان قرار دهید، نتظیم دراپ بکس(Dropbox) و یا خدمات مشابه بالای کمپیوتر و تبلیت/مبایل است. فقط ثبت ‏ePUB‏ را کلیک نموده و بعدا فولدر دراپ بکس (Dropbox) را انتخاب نمائید. در مبایل تان درخواست دراپ بکس (Dropbox) را باز نموده و کتاب تان را انتخاب نمائید. اگر شما لپتاپ را استعمال میکنید، شما آنرا رایگان گرفته میتوانید. <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">آنرا شریک سازید</g> برنامه که فایل ها را از لپتاب به موبایل یا تبلیت ارسال کند.
       
       
       
@@ -282,6 +306,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.gitden.okay</note>
         <alt-trans>
@@ -293,6 +318,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">ازمایش کردن ما نشان میدهد <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">خواننده ‏ګیتدن (Gitden Reader)</g>انتخاب خوب برای اندرواید و آلات ‏IOS‏ (آیفون و ‏ &amp; ؛ آیپد) است.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -317,13 +354,6 @@
         <alt-trans>
           <target xml:lang="prs">ازمایش کردن ما نشان میدهد <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">خواننده ‏ګیتدن (Gitden Reader)</g>انتخاب خوب برای اندرواید و آلات ‏IOS‏ (آیفون و ‏ &amp; ؛ آیپد) است.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">ازمایش کردن ما نشان میدهد <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">خواننده ‏ګیتدن (Gitden Reader)</g>انتخاب خوب برای اندرواید و آلات ‏IOS‏ (آیفون و ‏ &amp; ؛ آیپد) است.
       
       
       
@@ -353,6 +383,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talking.book.tool</note>
         <alt-trans>
@@ -364,6 +395,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">اگر شما میخواهید که خوانندگان جدید یکجا با کتاب گفتاری بخوانند بلوم را اسستعمال نمایید <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">وصیله کتاب گفتاری</g> اضافه نمودن ریکاردهای صوتی.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -388,13 +431,6 @@
         <alt-trans>
           <target xml:lang="prs">اگر شما میخواهید که خوانندگان جدید یکجا با کتاب گفتاری بخوانند بلوم را اسستعمال نمایید <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">وصیله کتاب گفتاری</g> اضافه نمودن ریکاردهای صوتی.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">اگر شما میخواهید که خوانندگان جدید یکجا با کتاب گفتاری بخوانند بلوم را اسستعمال نمایید <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">وصیله کتاب گفتاری</g> اضافه نمودن ریکاردهای صوتی.
       
       
       

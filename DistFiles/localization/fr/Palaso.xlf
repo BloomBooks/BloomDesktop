@@ -81,13 +81,7 @@
       <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="fr">‎&amp;Ignorer</target>
-        <alt-trans>
-          <target xml:lang="fr">‎&amp;amp‎;Ignorer</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">‎&amp;amp‎;Ignorer</target>
-        </alt-trans>
+        <target xml:lang="fr">&amp;Ignorer</target>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
