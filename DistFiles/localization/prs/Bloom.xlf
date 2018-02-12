@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="prs">
     <body>
@@ -91,7 +91,7 @@
       <trans-unit id="BloomPackInstallDialog.UnableToReplace" approved="yes">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="prs">بلوم نتواست که کاپی موجود ‎'{0}'‏ را از میان بردارد. اگر بلوم درحالت اجرا باشد آنرا خاموش نمائید و دوباره کوشش نمائید. یا بعد از دوباره فعال کردن کمپیوترتان دوباره کوشش کنید.</target>
+        <target xml:lang="prs">بلوم نتواست که کاپی موجود '{‎'{0‏ را از میان بردارد. اگر بلوم درحالت اجرا باشد آنرا خاموش نمائید و دوباره کوشش نمائید. یا بعد از دوباره فعال کردن کمپیوترتان دوباره کوشش کنید.</target>
         <alt-trans>
           <target xml:lang="prs">بلوم نتواست که کاپی موجود ‎'{0}'‏ را از میان بردارد. اگر بلوم درحالت اجرا باشد آنرا خاموش نمائید و دوباره کوشش نمائید. یا بعد از دوباره فعال کردن کمپیوترتان دوباره کوشش کنید.</target>
         </alt-trans>
@@ -114,7 +114,7 @@
       <trans-unit id="BookEditor.ForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.ForText</note>
-        <target xml:lang="prs">این فارمت با تمام خانه های متن با ستایل ‎'{0}'‏ است.</target>
+        <target xml:lang="prs">این فارمت با تمام خانه های متن با ستایل '{‎0}'‏ است.</target>
         <alt-trans>
           <target xml:lang="prs">این فارمت با تمام خانه های متن با ستایل ‎'{0}'‏ است.</target>
         </alt-trans>
@@ -122,7 +122,7 @@
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="prs">این فارمت کردن برای تمام خانه های متن ‎{0}‏ است با ستایل ‎'{1}'‏.</target>
+        <target xml:lang="prs">این فارمت کردن برای تمام خانه های متن {‎{0‏ است با ستایل '{‎'{1‏.</target>
         <alt-trans>
           <target xml:lang="prs">این فارمت کردن برای تمام خانه های متن ‎{0}‏ است با ستایل ‎'{1}'‏.</target>
         </alt-trans>
@@ -185,7 +185,7 @@
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="prs">بلوم نوع خط اصلی را از ‎"{0}"‏ به ‏"Andika New Basic"‏ تغیر میدهد.</target>
+        <target xml:lang="prs">بلوم نوع خط اصلی را از "{‎"{0‏ به ‏"Andika New Basic"‏ تغیر میدهد.</target>
         <alt-trans>
           <target xml:lang="prs">بلوم نوع خط اصلی را از ‎"{0}"‏ به ‏"Andika New Basic"‏ تغیر میدهد.</target>
         </alt-trans>
@@ -1250,7 +1250,7 @@
       <trans-unit id="EditTab.FontMissing" approved="yes">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
         <note>ID: EditTab.FontMissing</note>
-        <target xml:lang="prs">خط فعلی انتخاب شده ‎'{0}'‏ است، اما در این کمپیوتر نصب نیست. خط دیگر استعمال خواهد شد.</target>
+        <target xml:lang="prs">خط فعلی انتخاب شده '{‎0}'‏ است، اما در این کمپیوتر نصب نیست. خط دیگر استعمال خواهد شد.</target>
         <alt-trans>
           <target xml:lang="prs">خط فعلی انتخاب شده ‎'{0}'‏ است، اما در این کمپیوتر نصب نیست. خط دیگر استعمال خواهد شد.</target>
         </alt-trans>
@@ -1581,7 +1581,7 @@
         <source xml:lang="en">Adapted from original, {0}.</source>
         <note>ID: EditTab.FrontMatter.OriginalCopyrightSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
-        <target xml:lang="prs">گرفته شده از اصلی، ‎{0}‏.</target>
+        <target xml:lang="prs">گرفته شده از اصلی، {‎0}‏.</target>
         <alt-trans>
           <target xml:lang="prs">گرفته شده از اصلی، ‎{0}‏.</target>
         </alt-trans>
@@ -1596,7 +1596,7 @@
         <source xml:lang="en">Licensed under {0}.</source>
         <note>ID: EditTab.FrontMatter.OriginalLicenseSentence</note>
         <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
-        <target xml:lang="prs">جواز شده تحت ‎{0}‏.</target>
+        <target xml:lang="prs">جواز شده تحت {‎0}‏.</target>
         <alt-trans>
           <target xml:lang="prs">جواز شده تحت ‎{0}‏.</target>
         </alt-trans>
@@ -1749,9 +1749,9 @@
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
         <target xml:lang="prs">یک لسان</target>
       </trans-unit>
-      <trans-unit id="EditTab.NeverLocked">
+      <trans-unit id="EditTab.NeverLocked.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
-        <note>ID: EditTab.NeverLocked</note>
+        <note>ID: EditTab.NeverLocked.ToolTip</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
         <target xml:lang="prs" state="needs-translation">Books are never locked in a Source Collection.</target>
       </trans-unit>
@@ -1985,26 +1985,44 @@
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
         <target xml:lang="prs">میوزیک جدید را آغاز کنید</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Pan and Zoom Tool</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
-        <target xml:lang="prs">ابزار پن و زوم</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
         <target xml:lang="prs">یک تصویر را انتخاب نموده تا کنترول کنندۀ پن و زوم فعال گردد</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Pan and Zoom</source>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom Tool</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
         <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
-        <target xml:lang="prs">پن و زوم</target>
+        <target xml:lang="prs" state="translated">پن و زوم</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Preview</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
         <target xml:lang="prs">نشان دادن</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Music" sil:dynamic="true">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
+        <note>The label of a checkbox controlling whether music plays during preview.</note>
+        <target xml:lang="prs" state="needs-translation">Background Music</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
+        <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
+        <target xml:lang="prs" state="needs-translation">Pan and Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
+        <source xml:lang="en">Voice</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voide</note>
+        <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
+        <target xml:lang="prs" state="needs-translation">Voice</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom this page</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <target xml:lang="prs" state="needs-translation">Pan and Zoom this page</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -2017,7 +2035,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
-        <target xml:lang="prs">بلوم تنها میتواند کلیمات اول ‎{0}‏ را استعمال کند.</target>
+        <target xml:lang="prs">بلوم تنها میتواند کلیمات اول {‎0}‏ را استعمال کند.</target>
         <alt-trans>
           <target xml:lang="prs">بلوم تنها میتواند کلیمات اول ‎{0}‏ را استعمال کند.</target>
         </alt-trans>
@@ -4489,6 +4507,12 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
         <target xml:lang="prs">صفحه با تصویر در بالا و با کلیمه بزرگ، و مرکزی در پائین.</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true">
+        <source xml:lang="en">For use with Landscape orientation.</source>
+        <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
+        <note>New string in Bloom 4.2</note>
+        <target xml:lang="prs" state="needs-translation">For use with Landscape orientation.</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1</source>
         <note>ID: TemplateBooks.PageLabel.1</note>
@@ -4784,6 +4808,12 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
         <target xml:lang="prs">تصویر در پائین</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true">
+        <source xml:lang="en">Picture on Left</source>
+        <note>ID: TemplateBooks.PageLabel.Picture on Left</note>
+        <note>New string in Bloom 4.2</note>
+        <target xml:lang="prs" state="needs-translation">Picture on Left</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz</source>

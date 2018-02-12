@@ -46,11 +46,18 @@
         <target xml:lang="fr">
           
           
+          
 La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
           <target xml:lang="fr">
           
+          
+La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
 La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
         </alt-trans>
         <alt-trans>
@@ -85,18 +92,6 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
         <alt-trans>
           <target xml:lang="fr">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut présumer la suite de l'histoire. Il est possible de rendre un texte plus prévisible par le biais de certaines techniques. Parmi ces techniques :</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           
@@ -159,8 +154,31 @@ c'est la fête à la grenouille</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
+        <alt-trans>
+          <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> 
+Il pleut, il mouille
+c'est la fête à la grenouille</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author"/>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
@@ -248,26 +266,6 @@ Il y longtemps que je t'aime</g>
       
       </target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les rimes - il s'agit de créer une histoire comportant des rimes, comme par exemple :
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">A la claire fontaine,
-M'en allant promener,
-J'ai trouvé l'eau si belle,
-Que je m'y suis baignée.
-Il y longtemps que je t'aime</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Jamais je ne t'oublierais.</g>
-        </g>
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations">
         <source xml:lang="en">Illustration Support</source>
@@ -293,8 +291,25 @@ Il y longtemps que je t'aime</g>
     
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
+        <alt-trans>
+          <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des différents types de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des différents types de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
     
@@ -352,18 +367,6 @@ Il y longtemps que je t'aime</g>
     
     </target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les illustrations permettent de mieux comprendre l'histoire. Les illustrations sont en lien direct avec l'histoire, à différents <g id="genid-5" ctype="x-html-em">niveaux</g> et pour différents types de lecteurs (cf. ci-dessous). Il est important de garder à l'esprit que des illustrations complexes peuvent se révéler difficiles à comprendre pour certaines cultures peu habituées à ce type de support.
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
@@ -381,8 +384,25 @@ Il y longtemps que je t'aime</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à la trame de l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à la trame de l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
       
@@ -440,18 +460,6 @@ Il y longtemps que je t'aime</g>
       
       </target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut que le lecteur soit capable de comprendre l'histoire en regardant les illustrations. A ce niveau, les illustrations doivent être simples.
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
@@ -466,8 +474,22 @@ Il y longtemps que je t'aime</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. A mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. A mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
       
@@ -522,26 +544,20 @@ Il y longtemps que je t'aime</g>
       
       </target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les nouveaux lecteurs</g> les illustrations doivent permettre de comprendre l'histoire. Lorsque les textes sont plus longs, les lecteurs s'appuient moins sur les illustrations et comprennent de plus en plus l'histoire grâce au texte écrit. Les illustrations peuvent être plus complexes.
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
         <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       
+      
       </target>
         <note>ID: leveled.reader.fluent.reader</note>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       </target>
@@ -588,18 +604,6 @@ Il y longtemps que je t'aime</g>
       
       </target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice">
         <source xml:lang="en">Choice of Topic</source>
@@ -622,8 +626,14 @@ Il y longtemps que je t'aime</g>
       </source>
         <target xml:lang="fr" state="translated">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Ceux-ci doivent être connus du lecteur et faciles à comprendre.      
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Ceux-ci doivent être connus du lecteur et faciles à comprendre.      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Ceux-ci doivent être connus du lecteur et faciles à comprendre.      
       </target>
@@ -661,19 +671,6 @@ Il y longtemps que je t'aime</g>
       
       </target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs débutants</g> le livre doit porter sur un sujet concret, ne traiter qu'une seule idée ou qu'un seul thème connu par le lecteur, et être facile à comprendre.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
@@ -689,8 +686,23 @@ Il y longtemps que je t'aime</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, l'histoire portera sur un concept familier, mais sera développée davantage.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, l'histoire portera sur un concept familier, mais sera développée davantage.      
       
@@ -736,18 +748,6 @@ Il y longtemps que je t'aime</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les nouveaux lecteurs</g>, il convient également de choisir une histoire portant sur un concept familier, mais de la développer davantage.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les nouveaux lecteurs</g>, il convient également de choisir une histoire portant sur un concept familier, mais de la développer davantage.
       
       
       
