@@ -7,7 +7,7 @@ import { BookSettings } from "./bookSettings/bookSettings";
 import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
 import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
 import { MusicTool } from "./music/musicToolControls";
-import { PanAndZoom } from "./panAndZoom/panAndZoom";
+import { PanAndZoomTool } from "./panAndZoom/panZoomToolControls";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 
@@ -49,5 +49,5 @@ ToolBox.registerTool(new BookSettings());
 ToolBox.registerTool(new DecodableReaderToolboxTool());
 ToolBox.registerTool(new LeveledReaderToolboxTool());
 ToolBox.registerTool(new MusicTool());
-ToolBox.registerTool(new PanAndZoom());
+ToolBox.registerTool(new PanAndZoomTool());
 ToolBox.registerTool(new TalkingBookTool());

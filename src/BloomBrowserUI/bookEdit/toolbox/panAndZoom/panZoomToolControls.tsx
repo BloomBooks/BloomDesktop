@@ -1,20 +1,37 @@
-﻿// This class supports specifying Pan/Zoom animation
-
-import * as JQuery from "jquery";
-import * as $ from "jquery";
-import { ITool } from "../toolbox";
-import { ToolBox } from "../toolbox";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
+import { RadioGroup, Radio } from "../../../react_components/Radio";
+import axios from "axios";
+import { ToolBox, ITool } from "../toolbox";
+import Slider from "rc-slider";
+// These are for Pan and Zoom:
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
+import { Checkbox } from "../../../react_components/Checkbox";
 
+// The toolbox is included in the list of tools because of the one line of immediately-executed code
+// which adds an instance of PanAndZoom to ToolBox.getMasterToolList().
+export class PanAndZoomTool implements ITool {
+    rootControl: PanAndZoomControl;
 
-export class PanAndZoom implements ITool {
     makeRootElement(): HTMLDivElement {
-        throw new Error("Method not implemented.");
+        const root = document.createElement("div");
+        root.setAttribute("class", "ui-panAndZoomBody");
+        this.rootControl = this.setup(root, {
+            onPreviewClick: () => this.previewPanAndZoom(),
+            onPanAndZoomChanged: (checked) => this.panAndZoomChanged(checked)
+        });
+        const initState = this.getStateFromHtml();
+        this.rootControl.setState(initState);
+        if (initState.wantChoosePictureMessage) {
+            this.setupObserver();
+        }
+        return root as HTMLDivElement;
     }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
-        // Nothing to do, so return an already-resolved promise.
+        //Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();
         result.resolve();
         return result;
@@ -22,41 +39,33 @@ export class PanAndZoom implements ITool {
     isAlwaysEnabled(): boolean {
         return false;
     }
-    showTool() {
-        $("input[name='panAndZoom']").change(() => this.zoomAndPanChanged());
-        $("#panAndZoom-play-wrapper").click(() => this.previewPanAndZoom());
-        this.updateMarkup();
-    }
-    hideTool() {
-        const page = this.getPage();
-        page.find("#animationStart").remove();
-        page.find("#animationEnd").remove();
-        // enhance: if more than one image...do what??
-        const firstImage = page.find(".bloom-imageContainer").first();
-        if (!firstImage.length) {
-            return;
-        }
-        firstImage.removeClass("bloom-hideImageButtons");
-        page.find(".ui-audioCurrent").removeClass("ui-audioCurrent");
-    }
+
+    // required for ITool interface
+    hasRestoredSettings: boolean;
+    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
+    configureElements(container: HTMLElement) { }
+    finishToolLocalization(pane: HTMLElement) { }
+    /* tslint:enable:no-empty */
+
     updateMarkup() {
+        // This isn't exactly updating the markup, but it needs to happen when we switch pages,
+        // just like updating markup. Using this hook does mean it will (unnecessarily) happen
+        // every time the user pauses typing while this tool is active. I don't much expect people
+        // to be editing the book and configuring background music at the same time, so I'm not
+        // too worried. If it becomes a performance problem, we could enhance ITool with a
+        // function that is called just when the page switches.
+        const newState = this.getStateFromHtml();
+        if (newState.wantChoosePictureMessage) {
+            this.setupObserver();
+        }
+        this.rootControl.setState(newState);
+        if (!newState.panAndZoomChecked || newState.wantChoosePictureMessage) {
+            return;
+        }
+
         const page = this.getPage();
         // enhance: if more than one image...do what??
         const firstImage = page.find(".bloom-imageContainer").first();
-        $("#panAndZoom-choose-img").hide();
-        if (!firstImage.length || firstImage.attr("data-disabled-initialrect")) {
-            $("input[name='panAndZoom']").prop("checked", false);
-            return; // enhance: possibly give some indication why we can't animate?
-        }
-        if (firstImage.find("img").attr("src") === "placeHolder.png") {
-            $("#panAndZoom-choose-img").show();
-            new MutationObserver(() => this.updateMarkup()).observe(firstImage.find("img")[0],
-                { attributes: true, attributeFilter: ["src"] });
-            return;
-        }
-        $("input[name='panAndZoom']").prop("checked", true);
-        // enhance: should we do something special to keep the image-setting buttons available
-        // when the image is our placeholder?
         firstImage.addClass("bloom-hideImageButtons");
         page.find("#animationStart").remove();
         page.find("#animationEnd").remove();
@@ -143,25 +152,42 @@ export class PanAndZoom implements ITool {
             this.updateDataAttributes();
         }
     }
+    showTool() {
+        this.updateMarkup();
+    }
+    hideTool() {
+        const page = this.getPage();
+        page.find("#animationStart").remove();
+        page.find("#animationEnd").remove();
+        // enhance: if more than one image...do what??
+        const firstImage = page.find(".bloom-imageContainer").first();
+        if (!firstImage.length) {
+            return;
+        }
+        firstImage.removeClass("bloom-hideImageButtons");
+        page.find(".ui-audioCurrent").removeClass("ui-audioCurrent");
+    }
+
     id(): string {
         return "panAndZoom";
     }
-    hasRestoredSettings: boolean;
-    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
-    configureElements(container: HTMLElement) { }
-    finishToolLocalization(pane: HTMLElement) { }
-    /* tslint:enable:no-empty */
 
-    zoomAndPanChanged() {
+    public setup(root, props: IPanAndZoomProps): PanAndZoomControl {
+        return ReactDOM.render(
+            <PanAndZoomControl {...props} />,
+            root
+        );
+    }
+
+
+
+    panAndZoomChanged(checked: boolean) {
         const page = this.getPage();
         const firstImage = page.find(".bloom-imageContainer").first();
         if (!firstImage.length) {
-            // Just turn it back off if there's nothing to animate
-            $("input[name='panAndZoom']").prop("checked", false);
             return;
         }
-        const zoomAndPanEnabled = $("input[name='panAndZoom']").prop("checked");
-        if (zoomAndPanEnabled) {
+        if (checked) {
             if (!firstImage.attr("data-initialrect")) {
                 // see if we can restore a backup state
                 firstImage.attr("data-initialrect", firstImage.attr("data-disabled-initialrect"));
@@ -176,6 +202,22 @@ export class PanAndZoom implements ITool {
             }
             this.hideTool();
         }
+    }
+
+    observer: MutationObserver;
+
+    updateChoosePictureState(): void {
+        // If they once choose a picture, there's no going back to a placeholder (on this page).
+        this.rootControl.setState({ wantChoosePictureMessage: false });
+        this.observer.disconnect();
+        this.updateMarkup(); // one effect is to show the rectangles.
+    }
+
+    setupObserver(): void {
+        // Arrange to update things when they DO choose an image.
+        this.observer = new MutationObserver(() => this.updateChoosePictureState());
+        this.observer.observe(this.getPage().find(".bloom-imageContainer").first().find("img")[0],
+            { attributes: true, attributeFilter: ["src"] });
     }
 
     updateDataAttributes(): void {
@@ -195,8 +237,6 @@ export class PanAndZoom implements ITool {
         image.attr("data-finalrect", "" + endRect.position().left / fullWidth / scale + " " + endRect.position().top / fullHeight / scale
             + " " + endRect.width() / fullWidth + " " + endRect.height() / fullHeight);
     }
-
-    private wrapperClassName = "bloom-ui-animationWrapper";
 
     // This code shares various aspects with BloomPlayer. But I don't see a good way to share them, and many aspects are very different.
     // - This code is simpler because there is only ever one pan-and-zoom-animation-capable image in a document
@@ -222,6 +262,7 @@ export class PanAndZoom implements ITool {
         if (duration < 0.5) {
             duration = 4;
         }
+
         const scale = EditableDivUtils.getPageScale();
         // Make a div that wraps a div that will move and be clipped which wraps a clone of firstImage
         const wrapDiv = getPageFrameExports().makeElement("<div class='" + this.wrapperClassName
@@ -271,21 +312,20 @@ export class PanAndZoom implements ITool {
         const finalTransform = "scale3d(" + finalScaleWidth + ", " + finalScaleHeight
             + ", 1.0) translate3d(-" + finalX + "px, -" + finalY + "px, 0px)";
         //Insert the keyframe animation rule with the dynamic begin and end set
-        (<CSSStyleSheet>stylesheet).insertRule("@keyframes " + movePicName
+        (stylesheet as CSSStyleSheet).insertRule("@keyframes " + movePicName
             + " { from{ transform-origin: 0px 0px; transform: " + initialTransform
             + "; } to{ transform-origin: 0px 0px; transform: " + finalTransform + "; } }", 0);
 
         //Insert the css for the imageView div that utilizes the newly created animation
         // We make the animation longer than the narration by the transition time so
         // the old animation continues during the fade.
-        (<CSSStyleSheet>stylesheet).insertRule("." + animateStyleName
+        (stylesheet as CSSStyleSheet).insertRule("." + animateStyleName
             + " { transform-origin: 0px 0px; transform: "
             + initialTransform
             + "; animation-name: " + movePicName + "; animation-duration: "
             + duration
             + "s; animation-fill-mode: forwards; "
             + "animation-timing-function: linear;}", 1);
-
         movingDiv.attr("class", "bloom-animate bloom-pausable " + animateStyleName);
         // At this point the wrapDiv becomes visible and the animation starts.
         //wrapDiv.show(); mysteriously fails
@@ -301,21 +341,9 @@ export class PanAndZoom implements ITool {
         }, (duration + 1) * 1000);
     }
 
-
-    // N.B. Apparently when the window is shutting down, it is still possible to return from this
-    // function with window[kSocketName] undefined.
-    // private getWebSocket(): WebSocket {
-    //     if (!window.top[kSocketName]) {
-    //         //currently we use a different port for this websocket, and it's the main port + 1
-    //         const websocketPort = parseInt(window.location.port, 10) + 1;
-    //         //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-    //         window.top[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
-    //     }
-    //     return window.top[kSocketName];
-    // }
-
+    private wrapperClassName = "bloom-ui-animationWrapper";
     public getPageFrame(): HTMLIFrameElement {
-        return <HTMLIFrameElement>parent.window.document.getElementById("page");
+        return parent.window.document.getElementById("page") as HTMLIFrameElement;
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -325,17 +353,72 @@ export class PanAndZoom implements ITool {
         return $(page.contentWindow.document.body);
     }
 
-
-
-    private fireCSharpEvent(eventName, eventData): void {
-        // Note: other implementations of fireCSharpEvent have 'view':'window', but the TS compiler does
-        // not like this. It seems to work fine without it, and I don't know why we had it, so I am just
-        // leaving it out.
-        var event = new MessageEvent(eventName, { "bubbles": true, "cancelable": true, "data": eventData });
-        top.document.dispatchEvent(event);
+    getStateFromHtml(): IPanAndZoomState {
+        const page = this.getPage();
+        // enhance: if more than one image...do what??
+        const firstImage = page.find(".bloom-imageContainer").first();
+        let wantChoosePictureMessage = false;
+        let panAndZoomChecked = true;
+        if (!firstImage.length) {
+            // no place to put an image, we can't be enabled.
+            // leave choose picture hidden, there's no way to choose an image on this page.
+            panAndZoomChecked = false;
+        } else {
+            if (firstImage.attr("data-disabled-initialrect")) {
+                // At some point on this page the check box has been explicitly turned off
+                panAndZoomChecked = false;
+            }
+            if (firstImage.find("img").attr("src") === "placeHolder.png") {
+                // it's a placeholder, show the message, we need to let them choose it before
+                // we hide those controls to show ours.
+                wantChoosePictureMessage = true;
+            }
+        }
+        return { wantChoosePictureMessage: wantChoosePictureMessage, panAndZoomChecked: panAndZoomChecked };
     }
-
-
 }
 
+interface IPanAndZoomState {
+    wantChoosePictureMessage: boolean;
+    panAndZoomChecked: boolean;
+}
 
+interface IPanAndZoomProps {
+    onPreviewClick: () => void;
+    onPanAndZoomChanged: (boolean) => void;
+}
+
+// This react class implements the UI for the pan and zoom toolbox.
+export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAndZoomState> {
+    constructor(props) {
+        super(props);
+        // This state won't last long, client sets it immediately. But must have something.
+        // To minimize flash we start with both off.
+        this.state = { wantChoosePictureMessage: false, panAndZoomChecked: false };
+    }
+
+    onPanAndZoomChanged(checked: boolean): void {
+        this.setState({ panAndZoomChecked: checked });
+        this.props.onPanAndZoomChanged(checked);
+    }
+
+    public render() {
+        return (
+            <div className="ui-panAndZoomBody">
+                <Checkbox name="panAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.Heading"
+                    onCheckChanged={(checked) => this.onPanAndZoomChanged(checked)}
+                    checked={this.state.panAndZoomChecked}>Pan and Zoom</Checkbox>
+                <div className="button-label-wrapper" id="panAndZoom-play-wrapper">
+                    <div className="button-wrapper" onClick={() => this.props.onPreviewClick()}>
+                        <button id="panAndZoom-preview" className="ui-panAndZoom-button ui-button enabled" />
+                        <Div className="panAndZoom-label"
+                            l10nKey="EditTab.Toolbox.PanAndZoom.Preview">Preview</Div>
+                    </div>
+                    <Div className={"panAndZoom-message" + (this.state.wantChoosePictureMessage ? "" : " hidden")}
+                        l10nKey="EditTab.Toolbox.PanAndZoom.ChooseImage">Choose an image to activate the
+                        Pan and Zoom controls.</Div>
+                </div>
+            </div>
+        );
+    }
+}

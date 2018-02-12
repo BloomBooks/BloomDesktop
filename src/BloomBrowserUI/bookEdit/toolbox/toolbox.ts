@@ -435,7 +435,6 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
         "leveledReaderTool": "readers/leveledReader/leveledReaderToolboxTool.html",
         "bookSettingsTool": "bookSettings/bookSettingsToolboxTool.html",
         "toolboxSettingsTool": "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
-        "panAndZoomTool": "panAndZoom/panAndZoomToolboxTool.html",
         "settingsTool": "settings/Settings.html"
         // none for music: done in React
     };
