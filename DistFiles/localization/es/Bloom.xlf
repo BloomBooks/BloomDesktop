@@ -2477,9 +2477,9 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
         <target xml:lang="es-ES">Un idioma</target>
       </trans-unit>
-      <trans-unit id="EditTab.NeverLocked">
+      <trans-unit id="EditTab.NeverLocked.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
-        <note>ID: EditTab.NeverLocked</note>
+        <note>ID: EditTab.NeverLocked.ToolTip</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
         <target xml:lang="es-ES" state="translated">Los libros en una Colección de Fuente nunca son bloquedos.</target>
       </trans-unit>

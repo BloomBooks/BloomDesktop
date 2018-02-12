@@ -1824,9 +1824,9 @@
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
         <target xml:lang="pt-PT" state="translated">Um idioma</target>
       </trans-unit>
-      <trans-unit id="EditTab.NeverLocked">
+      <trans-unit id="EditTab.NeverLocked.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
-        <note>ID: EditTab.NeverLocked</note>
+        <note>ID: EditTab.NeverLocked.ToolTip</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
         <target xml:lang="pt-PT" state="needs-translation">Books are never locked in a Source Collection.</target>
       </trans-unit>
