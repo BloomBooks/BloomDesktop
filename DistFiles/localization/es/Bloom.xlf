@@ -2127,7 +2127,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.FrontMatter.BookSingleCredit</note>
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked and all the images in the book are by one illustrator. Put {0} in the translation where the image credits should go. For example in English, 'Images by {0}.' comes out like 'Images by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="es-ES" state="needs-translation">Images by {0}.</target>
+        <target xml:lang="es-ES" state="translated">Imágenes por {0}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book title in {lang}</source>
@@ -2477,9 +2477,9 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
         <target xml:lang="es-ES">Un idioma</target>
       </trans-unit>
-      <trans-unit id="EditTab.NeverLocked">
+      <trans-unit id="EditTab.NeverLocked.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
-        <note>ID: EditTab.NeverLocked</note>
+        <note>ID: EditTab.NeverLocked.ToolTip</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
         <target xml:lang="es-ES" state="translated">Los libros en una Colección de Fuente nunca son bloquedos.</target>
       </trans-unit>
@@ -2785,14 +2785,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
         <target xml:lang="es-ES">Sin música</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Pan and Zoom Tool</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
-        <target xml:lang="es-ES">Herramienta de Panorámica y Zoom</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Herramienta de Mano y Zoom</target>
-        </alt-trans>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
@@ -2801,11 +2793,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Elija una imagen para activar los controles de Mano y Zoom</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Pan and Zoom</source>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom Tool</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
         <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
-        <target xml:lang="es-ES">Panorámica y Zoom</target>
+        <target xml:lang="es-ES" state="translated">Panorámica y Zoom</target>
         <alt-trans>
           <target xml:lang="es-ES">Mano y Zoom</target>
         </alt-trans>
@@ -2814,6 +2806,29 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Preview</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
         <target xml:lang="es-ES">Vista previa</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Music" sil:dynamic="true">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
+        <note>The label of a checkbox controlling whether music plays during preview.</note>
+        <target xml:lang="es-ES" state="needs-translation">Background Music</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
+        <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
+        <target xml:lang="es-ES" state="needs-translation">Pan and Zoom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
+        <source xml:lang="en">Voice</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voide</note>
+        <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
+        <target xml:lang="es-ES" state="needs-translation">Voice</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom this page</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <target xml:lang="es-ES" state="needs-translation">Pan and Zoom this page</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -6435,6 +6450,12 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Página con una imagen en la parte superior y una palabra grande, centrada debajo</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true">
+        <source xml:lang="en">For use with Landscape orientation.</source>
+        <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
+        <note>New string in Bloom 4.2</note>
+        <target xml:lang="es-ES" state="needs-translation">For use with Landscape orientation.</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1</source>
         <note>ID: TemplateBooks.PageLabel.1</note>
@@ -6796,6 +6817,12 @@ Desea seguir?</target>
         <alt-trans>
           <target xml:lang="es-ES">Imagen de fondo</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true">
+        <source xml:lang="en">Picture on Left</source>
+        <note>ID: TemplateBooks.PageLabel.Picture on Left</note>
+        <note>New string in Bloom 4.2</note>
+        <target xml:lang="es-ES" state="needs-translation">Picture on Left</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz</source>
