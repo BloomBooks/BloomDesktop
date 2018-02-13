@@ -6,8 +6,10 @@ interface ICheckboxProps extends ILocalizationProps {
     id?: string;
     name: string;
     checked: boolean;
-    onCheckChanged: (boolean) => void;
+    onCheckChanged?: (boolean) => void;
     className?: string;
+    disabled?: boolean;
+    wrapClassName?: string;
 }
 
 // A checkbox that is localizable.
@@ -21,7 +23,7 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
     }
     render() {
         return (
-            <div>
+            <div className={this.props.wrapClassName}>
                 <input id={this.props.id} type="checkbox" className={this.props.className} name={this.props.name}
                     checked={this.props.checked} onChange={(event) => this.props.onCheckChanged(event.target.checked)}
                     ref={(input) => this.input = input} />

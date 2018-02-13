@@ -10,6 +10,7 @@ import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 import { Checkbox } from "../../../react_components/Checkbox";
+import { MusicToolControls } from "../music/musicToolControls";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -376,15 +377,28 @@ export class PanAndZoomTool implements ITool {
         // At this point the wrapDiv becomes visible and the animation starts.
         //wrapDiv.show(); mysteriously fails
         wrapDiv.setAttribute("style", wrapDiv.getAttribute("style").replace("visibility: hidden; ", ""));
-        // Play the audio during animation
-        const audio = new AudioRecording();
-        audio.setupForListen();
-        audio.listen();
+        if (this.rootControl.state.previewVoice) {
+            // Play the audio during animation
+            const audio = new AudioRecording();
+            audio.setupForListen();
+            audio.listen();
+        }
+        if (this.rootControl.state.previewMusic) {
+            MusicToolControls.previewBackgroundMusic(this.getPlayer(),
+                // Enhance: implement pause, by adding playing to state.
+                () => false,
+                (playing) => undefined);
+        }
         window.setTimeout(() => {
             this.removeElt(animationElement);
             this.removeElt(wrapDiv);
             this.removeCurrentAudioMarkup();
+            this.getPlayer().pause();
         }, (duration + 1) * 1000);
+    }
+
+    getPlayer(): HTMLMediaElement {
+        return document.getElementById("pzMusicPlayer") as HTMLMediaElement;
     }
 
     private wrapperClassName = "bloom-ui-animationWrapper";
@@ -399,7 +413,7 @@ export class PanAndZoomTool implements ITool {
         return page.contentWindow.document;
     }
 
-    getStateFromHtml(): IPanAndZoomState {
+    getStateFromHtml(): IPanAndZoomHtmlState {
         const page = this.getPage();
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
@@ -425,9 +439,14 @@ export class PanAndZoomTool implements ITool {
     }
 }
 
-interface IPanAndZoomState {
+interface IPanAndZoomHtmlState {
     haveImageContainerButNoImage: boolean;
     panAndZoomChecked: boolean;
+}
+
+interface IPanAndZoomState extends IPanAndZoomHtmlState {
+    previewVoice: boolean;
+    previewMusic: boolean;
 }
 
 interface IPanAndZoomProps {
@@ -439,9 +458,12 @@ interface IPanAndZoomProps {
 export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAndZoomState> {
     constructor(props) {
         super(props);
-        // This state won't last long, client sets it immediately. But must have something.
+        // This state won't last long, client sets the first two immediately. But must have something.
         // To minimize flash we start with both off.
-        this.state = { haveImageContainerButNoImage: false, panAndZoomChecked: false };
+        this.state = {
+            haveImageContainerButNoImage: false, panAndZoomChecked: false,
+            previewVoice: true, previewMusic: true
+        };
     }
 
     onPanAndZoomChanged(checked: boolean): void {
@@ -452,19 +474,31 @@ export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAnd
     public render() {
         return (
             <div className="ui-panAndZoomBody">
-                <Checkbox id="panAndZoom" name="panAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.Heading"
+                <Checkbox id="panAndZoom" name="panAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.ThisPage"
                     onCheckChanged={(checked) => this.onPanAndZoomChanged(checked)}
-                    checked={this.state.panAndZoomChecked}>Pan and Zoom</Checkbox>
+                    checked={this.state.panAndZoomChecked}>Pan and Zoom this page</Checkbox>
                 <div className="button-label-wrapper" id="panAndZoom-play-wrapper">
-                    <div className="button-wrapper" onClick={() => this.props.onPreviewClick()}>
-                        <button id="panAndZoom-preview" className="ui-panAndZoom-button ui-button enabled" />
-                        <Div className="panAndZoom-label"
-                            l10nKey="EditTab.Toolbox.PanAndZoom.Preview">Preview</Div>
+                    <div className="button-wrapper">
+                        <button id="panAndZoom-preview" className="ui-panAndZoom-button ui-button enabled"
+                            onClick={() => this.props.onPreviewClick()} />
+                        <div className="previewSettingsWrapper">
+                            <Div className="panAndZoom-label"
+                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview">Preview</Div>
+                            <Checkbox name="previewPanAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom"
+                                checked={true}>Pan and Zoom</Checkbox>
+                            <Checkbox name="previewVoice" l10nKey="EditTab.Toolbox.PanAndZoom.Preview.Voice"
+                                onCheckChanged={(checked) => this.setState({ previewVoice: checked })}
+                                checked={this.state.previewVoice}>Voice</Checkbox>
+                            <Checkbox name="previewMusic" l10nKey="EditTab.Toolbox.PanAndZoom.Preview.Music"
+                                onCheckChanged={(checked) => this.setState({ previewMusic: checked })}
+                                checked={this.state.previewMusic}>Background Music</Checkbox>
+                        </div>
                     </div>
                     <Div className={"panAndZoom-message" + (this.state.haveImageContainerButNoImage ? "" : " hidden")}
                         l10nKey="EditTab.Toolbox.PanAndZoom.ChooseImage">Choose an image to activate the
                         Pan and Zoom controls.</Div>
                 </div>
+                <audio id="pzMusicPlayer" preload="none" />
             </div>
         );
     }
