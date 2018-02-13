@@ -154,8 +154,8 @@ public class HydrateParameters
 					break;
 				case "shellbook":
 					_preset = PresetOption.Shellbook;
-					SizeAndOrientation = "A5Portrait";
-					XMatter = "Traditional";
+					SizeAndOrientation = "Device16x9Portrait";
+					XMatter = "Device";
 					break;
 				default:
 					throw new ArgumentException("{0} is not a valid preset. Valid values are 'app' and 'shellbook'.", value);
