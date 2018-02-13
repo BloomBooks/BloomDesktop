@@ -1469,7 +1469,7 @@
         <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom</source>
+        <source xml:lang="en">Pan and Zoom Tool</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
         <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
       </trans-unit>
