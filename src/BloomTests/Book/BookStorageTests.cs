@@ -319,8 +319,8 @@ namespace BloomTests.Book
 		[Test]
 		public void PathToExistingHtml_WorksWithFullHtmlName()
 		{
-			var filenameOnly = "BigBook";
-			var fullFilename = "BigBook.html";
+			var filenameOnly = "Big Book";
+			var fullFilename = "Big Book.html";
 			var storage = GetInitialStorageWithDifferentFileName(filenameOnly);
 			var oldFullPath = Path.Combine(storage.FolderPath, filenameOnly + ".htm");
 			var newFullPath = Path.Combine(storage.FolderPath, fullFilename);
