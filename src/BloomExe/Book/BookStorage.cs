@@ -625,7 +625,7 @@ namespace Bloom.Book
 			}
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
-			// BL-3572 when the only file in the directory is "BigBook.html", it matches both filters in Windows (tho' not in Linux?)
+			// BL-3572 when the only file in the directory is "Big Book.html", it matches both filters in Windows (tho' not in Linux?)
 			// so Union works better here. (And we'll change the name of the book too.)
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm").Union(Directory.GetFiles(folderPath, "*.html")));
 			var decoyMarkers = new string[] {"configuration",
