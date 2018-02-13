@@ -28,7 +28,10 @@ BODY {
     height: 100%; // and not bigger!
 }
 
-#pageGrid {
+// Do NOT try applying these properties to the #pageGrid itself.
+// Dragging goes haywire when that div itself is scrolled.
+// See BL-5618.
+.pageGridWrapper {
     flex: 1 1 auto;
     overflow-y: auto; // so it will scroll, if it needs to, instead of growing
 }
