@@ -19,20 +19,23 @@ interface IMusicState {
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which adds an instance of Music to ToolBox.getMasterToolList().
-export default class MusicToolControls extends React.Component<{}, IMusicState> {
+export class MusicToolControls extends React.Component<{}, IMusicState> {
     constructor() {
         super({});
         this.state = this.getStateFromHtml();
     }
 
     // duplicates information in HtmlDom.cs
-    musicAttrName = "data-backgroundaudio";
-    musicVolumeName = this.musicAttrName + "volume";
+    // The names of the attributes (of the main page div) which store the background
+    // audio file name (relative to the audio folder) and the volume (a fraction
+    // of full volume).
+    static musicAttrName = "data-backgroundaudio";
+    static musicVolumeAttrName = MusicToolControls.musicAttrName + "volume";
 
     addedListenerToPlayer: boolean;
 
     getStateFromHtml(): IMusicState {
-        let audioStr = this.getBloomPageAttr(this.musicAttrName);
+        let audioStr = MusicToolControls.getBloomPageAttr(MusicToolControls.musicAttrName);
         let hasMusicAttr = typeof (audioStr) === typeof (""); // may be false or undefined if missing
         if (!audioStr) {
             audioStr = ""; // null won't handle split
@@ -52,7 +55,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
             // If we have a non-empty music attr, we're setting new music right here.
             state.activeRadioValue = "newMusic";
             state.audioEnabled = true;
-            state.musicVolume = this.getAudioVolume(audioStr);
+            state.musicVolume = MusicToolControls.getAudioVolume(audioStr);
             state.musicName = this.getDisplayNameOfMusicFile(audioStr);
         } else {
             // If we have the attribute, but the value is empty, we're explicitly turning it off.
@@ -124,18 +127,29 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     }
 
     previewMusic() {
-        let audioStr = this.getBloomPageAttr(this.musicAttrName);
-        if (!audioStr) {
-            return;
-        }
-        if (this.state.playing) {
-            this.pausePlaying();
-            return;
-        }
         const player = this.getPlayer();
         if (!this.addedListenerToPlayer) {
             player.addEventListener("ended", () => this.setState({ playing: false }));
             this.addedListenerToPlayer = true;
+        }
+        MusicToolControls.previewBackgroundMusic(player,
+            () => this.state.playing,
+            (playing) => this.setState({ playing: playing }));
+    }
+
+    public static previewBackgroundMusic(player: HTMLMediaElement,
+        currentlyPlaying: () => boolean, // caller function for testing whether already playing
+        setPlayState: (boolean) => void) { // call-back function for changing playing state
+        // automatic indentation is weird here. This is the start of the body of previewBackgroundMusic,
+        // not of setPlayState, which is just a function parameter.
+        let audioStr = this.getBloomPageAttr(this.musicAttrName);
+        if (!audioStr) {
+            return;
+        }
+        if (currentlyPlaying()) {
+            player.pause();
+            setPlayState(false);
+            return;
         }
         const bookSrc = this.getPageFrame().src;
         const index = bookSrc.lastIndexOf("/");
@@ -147,7 +161,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         player.setAttribute("src", musicUrl + "?nocache=" + new Date().getTime());
         player.volume = this.getAudioVolume(audioStr);
         player.play();
-        this.setState({ playing: true });
+        setPlayState(true);
     }
 
     pausePlaying() {
@@ -165,10 +179,10 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
         }
         switch (val) {
             case "noMusic":
-                this.setBloomPageAttr(this.musicAttrName, "");
+                MusicToolControls.setBloomPageAttr(MusicToolControls.musicAttrName, "");
                 break;
             case "continueMusic":
-                this.getBloomPage().removeAttribute(this.musicAttrName);
+                MusicToolControls.getBloomPage().removeAttribute(MusicToolControls.musicAttrName);
                 break;
             // choosing the third button doesn't change anything, until you actually choose a file.
         }
@@ -178,8 +192,8 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     // is not the source of the volume, but does determine whether data-backgroundAudioVolume
     // is used at all. If anything goes wrong, or we're not specifying new music for this page,
     // we just set it to 100%.
-    getAudioVolume(audioStr: string): number {
-        const audioVolumeStr = this.getBloomPageAttr(this.musicVolumeName);
+    static getAudioVolume(audioStr: string): number {
+        const audioVolumeStr = this.getBloomPageAttr(this.musicVolumeAttrName);
         let audioVolume: number = 1.0;
         if (audioStr && audioVolumeStr) {
             try {
@@ -195,30 +209,30 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
     }
 
 
-    public getPageFrame(): HTMLIFrameElement {
+    public static getPageFrame(): HTMLIFrameElement {
         return parent.window.document.getElementById("page") as HTMLIFrameElement;
     }
 
     // The body of the editable page, a root for searching for document content.
-    public getPage(): HTMLElement {
+    public static getPage(): HTMLElement {
         const page = this.getPageFrame();
         if (!page) return null;
         return page.contentWindow.document.body;
     }
 
-    public getBloomPage(): HTMLElement {
+    public static getBloomPage(): HTMLElement {
         const page = this.getPage();
         if (!page) return null;
         return page.querySelector(".bloom-page") as HTMLElement;
     }
 
-    public getBloomPageAttr(name: string): string {
+    public static getBloomPageAttr(name: string): string {
         const page = this.getBloomPage();
         if (page == null) return null;
         return page.getAttribute(name);
     }
 
-    public setBloomPageAttr(name: string, val: string): void {
+    public static setBloomPageAttr(name: string, val: string): void {
         const page = this.getBloomPage();
         if (page == null) return;
         page.setAttribute(name, val);
@@ -226,7 +240,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
 
     // Position is a number between 0 and 100
     sliderMoved(position: number): void {
-        this.setBloomPageAttr(this.musicVolumeName, (position / 100).toString());
+        MusicToolControls.setBloomPageAttr(MusicToolControls.musicVolumeAttrName, (position / 100).toString());
         this.getPlayer().volume = position / 100;
         this.setState((prevState, props) => { return { musicVolume: position / 100 }; });
     }
@@ -237,7 +251,7 @@ export default class MusicToolControls extends React.Component<{}, IMusicState> 
             if (!fileName) {
                 return;
             }
-            this.setBloomPageAttr(this.musicAttrName, fileName);
+            MusicToolControls.setBloomPageAttr(MusicToolControls.musicAttrName, fileName);
             this.setState({ activeRadioValue: "newMusic", audioEnabled: true, musicName: this.getDisplayNameOfMusicFile(fileName) });
         });
     }
