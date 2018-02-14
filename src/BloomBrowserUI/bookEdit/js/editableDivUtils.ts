@@ -146,6 +146,7 @@ export class EditableDivUtils {
     }
 
     static pasteImageCredits() {
+        var activeElement = document.activeElement;
         axios.get('/bloom/api/image/imageCreditsForWholeBook').then(result => {
             var data = result.data;
             if (!data)
@@ -156,11 +157,26 @@ export class EditableDivUtils {
             // class div element, which in turn is owned by a qtip class element.  The editable
             // div element to which the qtip bubble is attached has an aria-describedby attribute
             // that refers to the div.qtip's id.
-            var bubble = document.activeElement.parentElement.parentElement;
+            var bubble = activeElement.parentElement.parentElement;
             var query = '[aria-describedby="' + bubble.getAttribute('id') + '"]';
+            var artists = null;
             var credits = document.querySelectorAll(query);
             if (credits.length > 0) {
-                var artists = credits[0];
+                artists = credits[0];
+            } else {
+                if (activeElement.getAttribute("data-book")=="originalContributions" &&
+                    activeElement.getAttribute("contenteditable")=="true" &&
+                    activeElement.getAttribute("role")=="textbox" &&
+                    activeElement.getAttribute("aria-label")=="false") {
+                    // If we're coming from a tab in a source-bubble instead of a pure
+                    // hint-bubble, then the activeElement is the actual text-box we
+                    // want to insert into.  I don't know why it isn't the <a> element.
+                    // It must be some difference in how source bubbles and hint bubbles
+                    // work.
+                    artists = activeElement;
+                }
+            }
+            if (artists!==null) {
                 // We found where to insert the credits.  If there's a better way to add this
                 // information, I'd be happy to learn what it is.  data is a string consisting
                 // of one or more <p> elements properly terminated by </p> and separated by
