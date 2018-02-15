@@ -784,9 +784,10 @@ namespace Bloom
 			// BL-513: Navigating to "about:blank" is causing the Pages panel to not be updated for a new book on Linux.
 			if (url == "about:blank")
 			{
-				//This doc, is visible for a bit when we open the edit tab. So it is showing a dark grey to be less visible
-				NavigateRawHtml("<!DOCTYPE html><html><head></head><body style='background-color: #363333'></body></html>");
-				return;
+				// Creating a temp file every time we need this seems excessive, and it turns out to
+				// be fragile as well.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5598.
+				url = FileLocator.GetFileDistributedWithApplication("BloomBlankPage.htm");
+				cleanupFileAfterNavigating = false;
 			}
 
 			if (InvokeRequired)
