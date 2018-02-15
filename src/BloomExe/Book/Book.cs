@@ -1044,7 +1044,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
+		public void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
 		{
 			var helper = new XMatterHelper(bookDOM, BookInfo.XMatterNameOverride ?? CollectionSettings.XMatterPackName, _storage.GetFileLocator());
 

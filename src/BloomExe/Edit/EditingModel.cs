@@ -449,7 +449,24 @@ namespace Bloom.Edit
 		public void SetLayout(Layout layout)
 		{
 			SaveNow();
+			var changedOrientation = CurrentBook.GetLayout().SizeAndOrientation.IsLandScape !=
+			                         layout.SizeAndOrientation.IsLandScape;
 			CurrentBook.SetLayout(layout);
+			if (changedOrientation)
+			{
+				// We need to update the xmatter, since this process selects images to display based on orientation.
+				CurrentBook.BringBookUpToDate(new NullProgress());
+				// That wrecks everything. In particular guids stored in Page objects are obsolete.
+				// Simulate switching to collection mode, force discarding everything problematic, and reinitialize.
+				_view.OnVisibleChanged(false);
+				_currentlyDisplayedBook = null;
+				_previouslySelectedPage = null;
+				_view.OnVisibleChanged(true);
+				return;
+				// That wrecks our regular notion of current page...somehow the page guid may get changed.
+				//var page = CurrentBook.GetPageByIndex(CurrentBook.UserPrefs.MostRecentPage);
+				//_pageSelection.ReplaceCurrentPage(page);
+			}
 			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 

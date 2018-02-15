@@ -629,7 +629,7 @@ namespace Bloom.Publish.Epub
 				return null;
 			// Images are always directly in the folder
 			var srcPath = Path.Combine(Book.FolderPath, filename);
-			if (srcPath == BrandingApi.kApiBrandingImage)
+			if (srcPath == BrandingApi.kApiBrandingImage) // don't think this will ever happen, now
 			{
 				isBrandingFile = true;
 				return FindBrandingImageIfPossible(url.NotEncoded);
@@ -653,7 +653,7 @@ namespace Bloom.Publish.Epub
 				var file = parsedQuery["id"];
 				if (!String.IsNullOrEmpty(file))
 				{
-					var path = Bloom.Api.BrandingApi.FindBrandingImageFileIfPossible(Book.CollectionSettings.BrandingProjectKey, file);
+					var path = Bloom.Api.BrandingApi.FindBrandingImageFileIfPossible(Book.CollectionSettings.BrandingProjectKey, file, Book.GetLayout());
 					if (!String.IsNullOrEmpty(path) && RobustFile.Exists(path))
 						return path;
 				}
