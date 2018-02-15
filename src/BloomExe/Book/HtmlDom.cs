@@ -621,19 +621,24 @@ namespace Bloom.Book
 			XmlDomExtensions.RemoveStyleSheetIfFound(RawDom, path);
 		}
 
-		public void UpdatePageToTemplate(HtmlDom pageDom, XmlElement templatePageDiv, string pageId)
+		public bool UpdatePageToTemplate(HtmlDom pageDom, XmlElement templatePageDiv, string pageId, bool allowDataLoss = true)
 		{
 			var pageDiv = pageDom.SafeSelectNodes("//body/div[@id='" + pageId + "']").Cast<XmlElement>().FirstOrDefault();
 			if(pageDiv != null)
 			{
 				var idAttr = templatePageDiv.Attributes["id"];
 				var templateId = idAttr == null ? "" : idAttr.Value;
-				var oldLineage = MigrateEditableData(pageDiv, templatePageDiv, templateId);
+				bool didChange;
+				var oldLineage = MigrateEditableData(pageDiv, templatePageDiv, templateId, allowDataLoss, out didChange);
+				if (!didChange)
+					return false;
 				var props = new Dictionary<string, string>();
 				props["newLayout"] = templateId;
 				props["oldLineage"] = oldLineage;
 				Analytics.Track("Change Page Layout", props);
+				return true;
 			}
+			return false;
 		}
 
 		/// <summary>
@@ -645,8 +650,23 @@ namespace Bloom.Book
 		/// <param name="lineage"></param>
 		/// <param name="originalTemplateGuid"></param>
 		/// <param name="updateTo"></param>
-		internal string MigrateEditableData(XmlElement page, XmlElement template, string lineage)
+		internal string MigrateEditableData(XmlElement page, XmlElement template, string lineage, bool allowDataLoss, out bool didChange)
 		{
+			var textXPath = ".//div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and not(contains(@class, 'box-header-off'))]";
+			var imageXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]";
+			if (!allowDataLoss)
+			{
+				var oldTextCount = page.SafeSelectNodes(textXPath).Count;
+				var newTextCount = template.SafeSelectNodes(textXPath).Count;
+				var oldImageCount = page.SafeSelectNodes(imageXpath).Count;
+				var newImageCount = template.SafeSelectNodes(imageXpath).Count;
+				if (newTextCount < oldTextCount || newImageCount < oldImageCount)
+				{
+					didChange = false;
+					return null;
+				}
+			}
+
 			var newPage = (XmlElement) page.OwnerDocument.ImportNode(template, true);
 			page.ParentNode.ReplaceChild(newPage, page);
 			newPage.SetAttribute("id", page.Attributes["id"].Value);
@@ -677,9 +697,10 @@ namespace Bloom.Book
 			// migrate text (between visible translation groups!)
 			// enhance: I wish there was a better way to detect invisible translation groups than just knowing about one class
 			// that currently hides them.
-			MigrateChildren(page, ".//div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and not(contains(@class, 'box-header-off'))]", newPage);
+			MigrateChildren(page, textXPath, newPage);
 			// migrate images
-			MigrateChildren(page, ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]", newPage);
+			MigrateChildren(page, imageXpath, newPage);
+			didChange = true;
 			return oldLineage;
 		}
 

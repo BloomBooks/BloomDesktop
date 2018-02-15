@@ -57,15 +57,8 @@ namespace Bloom.web.controllers
 			var templatePage = GetPageTemplateAndUserStyles(request);
 			if (templatePage != null)
 			{
-				var pageToChange = /*PageChangingLayout ??*/ _pageSelection.CurrentSelection;
-				var book = _pageSelection.CurrentSelection.Book;
-				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, pageToChange.Id);
-				// The Page objects are cached in the page list and may be used if we issue another
-				// change layout command. We must update their lineage so the right "current layout"
-				// will be shown if the user changes the layout of the same page again.
-				var pageChanged = pageToChange as Page;
-				if (pageChanged != null)
-					pageChanged.UpdateLineage(new[] { templatePage.Id });
+				var pageToChange = _pageSelection.CurrentSelection;
+				pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
 
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
 				request.PostSucceeded();
