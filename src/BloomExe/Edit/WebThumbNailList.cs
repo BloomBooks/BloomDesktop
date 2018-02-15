@@ -326,7 +326,16 @@ namespace Bloom.Edit
 			body.Attributes.Append(intervalAttrib);
 
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
-			_verticalScrollDistance = _browser.VerticalScrollDistance;
+			// Save the scroll position of the thumbnail list to restore in WebBrowser_DocumentCompleted.
+			// Note that the position we want is NOT _browser.VerticalScrollDistance (as in previous code),
+			// since the actual list of pages is no longer the whole content of this browser; the
+			// page controls are at the bottom and don't scroll. So we need the scroll position of
+			// the element that overflows and scrolls.
+			// it's awkward that we have to convert to a string and back, but the current version of
+			// RunJavaScript does not support returning anything but strings.
+			// (The TryParse is probably not necessary...in an early version of this code I was getting
+			// nulls back sometimes, it may no longer be possible.)
+			int.TryParse(_browser.RunJavaScript("document.getElementById('pageGridWrapper').scrollTop.toString()"), out _verticalScrollDistance);
 			_baseForRelativePaths = dom.BaseForRelativePaths;
 			_browser.Navigate(dom, source:"pagelist");
 			return result;
@@ -387,7 +396,7 @@ namespace Bloom.Edit
 		{
 			AddThumbnailListeners();
 			SelectPage(_selectedPage);
-			_browser.VerticalScrollDistance = _verticalScrollDistance;
+			_browser.RunJavaScript("document.getElementById('pageGridWrapper').scrollTop =" + _verticalScrollDistance);
 		}
 
 		private void AddThumbnailListeners()
