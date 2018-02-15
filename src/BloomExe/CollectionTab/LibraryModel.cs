@@ -337,6 +337,41 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		public void ChangeLayoutForAllContentPagesInAllBooks()
+		{
+			using (var dlg = new ProgressDialogBackground())
+			{
+				dlg.ShowAndDoWork((progress, args) => ChangeLayoutForAllContentPagesInAllBooks(progress));
+			}
+		}
+
+		public void ChangeLayoutForAllContentPagesInAllBooks(IProgress progress)
+		{
+			var templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath("c:/projects/bloomdesktop4.1/output/browser/templates/template books/basic book/basic book.html");
+			if (templateBook == null)
+			{
+				progress.WriteMessage("Could not find template page.");
+				return;
+			}
+			var pageDictionary = templateBook.GetTemplatePagesIdDictionary();
+			IPage page = null;
+			if (!pageDictionary.TryGetValue("7b192144-527c-417c-a2cb-1fb5e78bf38a", out page))
+			{
+				progress.WriteMessage("Could not find template page.");
+				return;
+			}
+
+			int i = 0;
+			foreach (var bookInfo in TheOneEditableCollection.GetBookInfos())
+			{
+				i++;
+				var book = _bookServer.GetBookFromBookInfo(bookInfo);
+				progress.WriteMessage("Processing " + book.TitleBestForUserDisplay + " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
+
+				book.ChangeLayoutForAllContentPages(page);
+			}
+		}
+
 		public void DoChecksOfAllBooks()
 		{
 			using (var dlg = new ProgressDialogBackground())

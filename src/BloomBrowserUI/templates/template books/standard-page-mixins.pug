@@ -28,6 +28,22 @@ mixin stack
    .split-pane.horizontal-percent
       block
       .split-pane-resize-shim
+		 
+mixin left
+   .split-pane-component.position-left
+      .split-pane-component-inner(min-height="60px 150px 250px" min-width="60px 150px" style="position: relative;")
+         block
+   .split-pane-divider.vertical-divider
+   
+mixin right
+   .split-pane-component.position-right
+      .split-pane-component-inner(min-height="60px 150px 250px" min-width="60px 150px" style="position: relative;")
+         block 
+
+mixin stackLeftRight
+   .split-pane.vertical-percent
+      block
+      .split-pane-resize-shim
 
 mixin standardPage-JustText
    +page-choice('Just Text').customPage#a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb
@@ -79,3 +95,9 @@ mixin include-standard-pages
        +lower(50)
          +field("auto").bloom-trailingElement.BigWords-style
    +standardPage-Custom
+   +page-splittable-choice-custom('Picture on Left')#7b192144-527c-417c-a2cb-1fb5e78bf38a
+     +stackLeftRight
+       +left
+         +imagex
+       +right
+         +fieldx

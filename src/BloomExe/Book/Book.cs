@@ -1174,6 +1174,23 @@ namespace Bloom.Book
 			UpdateEditableAreasOfElement(pageDom);
 		}
 
+		public void UpdatePageToTemplateAndUpdateLineage(IPage pageToChange, IPage templatePage)
+		{
+			UpdatePageToTemplate(OurHtmlDom, templatePage, pageToChange.Id);
+			// The Page objects are cached in the page list and may be used if we issue another
+			// change layout command. We must update their lineage so the right "current layout"
+			// will be shown if the user changes the layout of the same page again.
+			var pageChanged = pageToChange as Page;
+			pageChanged?.UpdateLineage(new[] { templatePage.Id });
+		}
+
+		public void ChangeLayoutForAllContentPages(IPage templatePage)
+		{
+			foreach (var page in _pageSelection.CurrentSelection.Book.GetPages())
+				if (!page.IsXMatter)
+					UpdatePageToTemplateAndUpdateLineage(page, templatePage);
+		}
+
 		private static void UpdateDivInsidePage(int zeroBasedCount, XmlElement templateElement, XmlElement targetPage, IProgress progress)
 		{
 			XmlElement targetElement = targetPage.SelectSingleNode("div/div[" + (zeroBasedCount + 1).ToString(CultureInfo.InvariantCulture) + "]") as XmlElement;
