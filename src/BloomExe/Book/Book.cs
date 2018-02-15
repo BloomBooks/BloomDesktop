@@ -1454,11 +1454,11 @@ namespace Bloom.Book
 
 			if (MultilingualContentLanguage2 != null)
 			{
-				languagesOfBook += ", " + _collectionSettings.GetLanguageName(MultilingualContentLanguage2, codeOfNationalLanguage);
+				languagesOfBook += ", " + _collectionSettings.GetLanguage2Name(codeOfNationalLanguage);
 			}
 			if (MultilingualContentLanguage3 != null)
 			{
-				languagesOfBook += ", " + _collectionSettings.GetLanguageName(MultilingualContentLanguage3, codeOfNationalLanguage);
+				languagesOfBook += ", " + _collectionSettings.GetLanguage3Name(codeOfNationalLanguage);
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);

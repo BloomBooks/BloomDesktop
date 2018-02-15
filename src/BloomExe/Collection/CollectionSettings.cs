@@ -36,6 +36,8 @@ namespace Bloom.Collection
 		private const int kCurrentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
 		public const string kDefaultXmatterName = "Traditional";
 		private string _language1Iso639Code;
+		private string _language2Iso639Code;
+		private string _language3Iso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 
 		public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
@@ -178,10 +180,28 @@ namespace Bloom.Collection
 				Language1Name = GetLanguage1Name_NoCache(Language2Iso639Code);
 			}
 		}
+		public virtual string Language2Iso639Code
+		{
+			get { return _language2Iso639Code; }
+			set
+			{
+				_language2Iso639Code = value;
+				Language2Name = GetLanguage2Name_NoCache(_language2Iso639Code);
+			}
+		}
+		public virtual string Language3Iso639Code
+		{
+			get { return _language3Iso639Code; }
+			set
+			{
+				_language3Iso639Code = value;
+				Language3Name = GetLanguage3Name_NoCache(Language2Iso639Code);
+			}
+		}
 
-		public virtual string Language2Iso639Code { get; set; }
-		public virtual string Language3Iso639Code { get; set; }
 		public virtual string Language1Name { get; set; }
+		public virtual string Language2Name { get; set; }
+		public virtual string Language3Name { get; set; }
 
 		public virtual bool IsLanguage1Rtl { get; set; }
 		public virtual bool IsLanguage2Rtl { get; set; }
@@ -298,8 +318,18 @@ namespace Bloom.Collection
 
 		public string GetLanguage2Name(string inLanguage)
 		{
+			if(!string.IsNullOrEmpty(Language2Iso639Code) && !string.IsNullOrEmpty(Language2Name))
+				return Language2Name;
+			return GetLanguage2Name_NoCache(inLanguage);
+		}
+
+		private string GetLanguage2Name_NoCache(string inLanguage)
+		{
 			try
 			{
+				if (string.IsNullOrEmpty(Language2Iso639Code))
+					return string.Empty;
+
 				//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
 				//So, we'd rather have GetBestLanguageMatch()
 
@@ -325,6 +355,12 @@ namespace Bloom.Collection
 
 		public string GetLanguage3Name(string inLanguage)
 		{
+			if (!string.IsNullOrEmpty(Language3Iso639Code) && !string.IsNullOrEmpty(Language3Name))
+				return Language3Name;
+			return GetLanguage3Name_NoCache(inLanguage);
+		}
+		private string GetLanguage3Name_NoCache(string inLanguage)
+		{
 			try
 			{
 				if (string.IsNullOrEmpty(Language3Iso639Code))
@@ -347,6 +383,8 @@ namespace Bloom.Collection
 			XElement library = new XElement("Collection");
 			library.Add(new XAttribute("version", "0.2"));
 			library.Add(new XElement("Language1Name", Language1Name));
+			library.Add(new XElement("Language2Name", Language2Name));
+			library.Add(new XElement("Language3Name", Language3Name));
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
 			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
 			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
@@ -442,6 +480,8 @@ namespace Bloom.Collection
 				BrandingProjectKey = GetValue(library, "BrandingProjectName", "Default");
 
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
+				Language2Name = GetValue(library, "Language2Name", GetLanguage2Name_NoCache(Language2Iso639Code));
+				Language3Name = GetValue(library, "Language3Name", GetLanguage3Name_NoCache(Language2Iso639Code));
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
 				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
 				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
@@ -554,7 +594,7 @@ namespace Bloom.Collection
 				DefaultLanguage3FontName = newFont;
 				if (!String.IsNullOrEmpty(Language3Iso639Code) && !safeLanguages.Contains(Language3Iso639Code))
 				{
-					msg += String.Format(basicMessage, GetLanguage3Name(Language3Iso639Code)) + Environment.NewLine;
+					msg += String.Format(basicMessage, GetLanguage3Name(Language2Iso639Code)) + Environment.NewLine;
 				}
 			}
 			// Only notify the user if the change involves a language that is not known to be okay with
