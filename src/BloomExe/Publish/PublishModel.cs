@@ -169,6 +169,14 @@ namespace Bloom.Publish
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom.RawDom, PageLayout);
+
+			if (BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape !=
+			    PageLayout.SizeAndOrientation.IsLandScape)
+			{
+				// Need to update the xmatter in the print dom...it may use different images.
+				// Make sure we do this AFTER setting PageOrientation in Dom.
+				BookSelection.CurrentSelection.BringXmatterHtmlUpToDate(dom);
+			}
 			PageLayout.UpdatePageSplitMode(dom.RawDom);
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
