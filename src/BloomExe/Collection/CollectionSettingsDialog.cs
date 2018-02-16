@@ -113,8 +113,6 @@ namespace Bloom.Collection
 
 		private void _language1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			//at this point, we don't let them customize the national languages
-
 			var potentiallyCustomName = _collectionSettings.IsSourceCollection ? null: _collectionSettings.Language1Name;
 
 			var l = ChangeLanguage(_collectionSettings.Language1Iso639Code, potentiallyCustomName);
@@ -128,20 +126,24 @@ namespace Bloom.Collection
 		}
 		private void _language2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var l = ChangeLanguage(_collectionSettings.Language2Iso639Code);
+			var potentiallyCustomName = _collectionSettings.IsSourceCollection ? null: _collectionSettings.Language2Name;
+			var l = ChangeLanguage(_collectionSettings.Language2Iso639Code, potentiallyCustomName);
 			if (l != null)
 			{
 				_collectionSettings.Language2Iso639Code = l.LanguageTag;
+				_collectionSettings.Language2Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
 		}
 
 		private void _language3ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var l = ChangeLanguage(_collectionSettings.Language3Iso639Code);
+			var potentiallyCustomName = _collectionSettings.IsSourceCollection ? null: _collectionSettings.Language3Name;
+			var l = ChangeLanguage(_collectionSettings.Language3Iso639Code, potentiallyCustomName);
 			if (l != null)
 			{
 				_collectionSettings.Language3Iso639Code = l.LanguageTag;
+				_collectionSettings.Language3Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
 		}
