@@ -1,0 +1,70 @@
+@import "../../../templates/common-mixins.less";
+@textColor: @bloom-buff;// #0C8597;
+@toolboxBackgroundColor: @DarkBackgroundColor;
+@buttonColumnWidth: 40px;
+
+
+.ui-decodableReaderBody{
+    padding-left: 15px;
+    padding-right: 15px;
+    *, a{color: @textColor;}
+    background-color: @toolboxBackgroundColor;
+
+    background-position: center;
+
+    .ui-decodableReader-button {
+            height:@buttonColumnWidth;
+            width: @buttonColumnWidth;
+            border:none;
+            background-size:contain;
+            background-color:transparent;
+            background-repeat:no-repeat;
+            display:inline-block;
+            margin-bottom:5px;
+    }
+    
+    .ui-Decodable-Reader-div-red{
+        margin-left: 6px;
+        color: red;
+    }
+
+    .ui-Decodable-Reader-div-none{
+        margin-left: 6px;
+        display: none;
+    }    
+    
+    .ui-Decodable-Reader-sect1 {
+        margin-left: 6px;
+    }
+
+    .ui-Decodable-Reader-sect2 {
+        margin-left: 6px;
+    }
+
+    .ui-Decodable-Reader-td1 {
+        white-space: nowrap; 
+        padding-right: 0;
+    }
+
+    .decodableReader-label {
+        display:inline-block;
+        max-width:100px;
+    }
+
+    .disabled {
+            opacity: 0.4;
+    }
+
+    #decodableReader-preview {
+            background-image: url(audio/play_enabled.svg);
+            height:45px;
+            width:45px;
+    }
+
+    .button-label-wrapper {margin-top: 10px;}
+    .button-wrapper {display:inline-block;min-width: 60px;}
+}
+
+.ui-accordion h3[data-toolId="decodableReaderTool"] span.ui-accordion-header-icon {
+        background-image:url('/bloom/images/keys-white.png') !important;
+    }
