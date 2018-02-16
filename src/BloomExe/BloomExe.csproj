@@ -298,6 +298,7 @@
     <Compile Include="Book\BloomReaderFileMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
+    <Compile Include="CLI\ChangeLayoutCommand.cs" />
     <Compile Include="Collection\BrandingProject.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
     <Compile Include="Edit\PageControlsApi.cs" />

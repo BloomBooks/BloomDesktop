@@ -841,7 +841,8 @@ namespace Bloom.Book
 			var classesToDrop = new[] { "imageWholePage","imageOnTop","imageInMiddle","imageOnBottom","textWholePage","pictureAndWordPage" };
             HtmlDom.MergeClassesIntoNewPage(page, newPage, classesToDrop);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, layoutOfThisBook);
-			OurHtmlDom.MigrateEditableData(page, newPage, lineage.Replace(originalTemplateGuid, updateTo.Guid));
+			bool dummy;
+			OurHtmlDom.MigrateEditableData(page, newPage, lineage.Replace(originalTemplateGuid, updateTo.Guid), true, out dummy);
 		}
 
 		private object _updateLock = new object();
@@ -1167,11 +1168,35 @@ namespace Bloom.Book
 			UpdateMultilingualSettings(bookDom);
 		}
 
-		public void UpdatePageToTemplate(HtmlDom pageDom, IPage templatePage, string pageId)
+		// Returns true if it updated something.
+		public bool UpdatePageToTemplate(HtmlDom pageDom, IPage templatePage, string pageId, bool allowDataLoss = true)
 		{
-			OurHtmlDom.UpdatePageToTemplate(pageDom, templatePage.GetDivNodeForThisPage(), pageId);
+			if (!OurHtmlDom.UpdatePageToTemplate(pageDom, templatePage.GetDivNodeForThisPage(), pageId, allowDataLoss))
+				return false;
 			AddMissingStylesFromTemplatePage(templatePage);
 			UpdateEditableAreasOfElement(pageDom);
+			return true;
+		}
+
+		// returns true if it updated something
+		public bool UpdatePageToTemplateAndUpdateLineage(IPage pageToChange, IPage templatePage, bool allowDataLoss = true)
+		{
+			if (!UpdatePageToTemplate(OurHtmlDom, templatePage, pageToChange.Id, allowDataLoss))
+				return false;
+			// The Page objects are cached in the page list and may be used if we issue another
+			// change layout command. We must update their lineage so the right "current layout"
+			// will be shown if the user changes the layout of the same page again.
+			var pageChanged = pageToChange as Page;
+			pageChanged?.UpdateLineage(new[] { templatePage.Id });
+			return true;
+		}
+
+		public void ChangeLayoutForAllContentPages(IPage templatePage)
+		{
+			foreach (var page in GetPages())
+				if (!page.IsXMatter)
+					UpdatePageToTemplateAndUpdateLineage(page, templatePage, allowDataLoss: false);
+			Save();
 		}
 
 		private static void UpdateDivInsidePage(int zeroBasedCount, XmlElement templateElement, XmlElement targetPage, IProgress progress)
