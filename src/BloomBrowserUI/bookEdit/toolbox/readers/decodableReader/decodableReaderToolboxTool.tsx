@@ -173,6 +173,9 @@ export class DecodableReaderControl extends React.Component<{}, IDecodableReader
         this.state = { start: 1 };
     }
     //H3 data-i18n="DecodableReader"
+    /*
+
+ */
     public render() {
         return (
             <div className="ui-DecodableReaderBody">
