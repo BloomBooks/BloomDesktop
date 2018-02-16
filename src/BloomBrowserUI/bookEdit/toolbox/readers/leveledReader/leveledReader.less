@@ -1,0 +1,81 @@
+@import "../../../templates/common-mixins.less";
+@textColor: @bloom-buff;// #0C8597;
+@toolboxBackgroundColor: @DarkBackgroundColor;
+@buttonColumnWidth: 40px;
+
+
+.ui-leveledReaderBody{
+    padding-left: 15px;
+    padding-right: 15px;
+    *, a{color: @textColor;}
+    background-color: @toolboxBackgroundColor;
+
+    background-position: center;
+
+    .ui-leveledReader-button {
+            height:@buttonColumnWidth;
+            width: @buttonColumnWidth;
+            border:none;
+            background-size:contain;
+            background-color:transparent;
+            background-repeat:no-repeat;
+            display:inline-block;
+            margin-bottom:5px;
+    }
+
+    .ui-leveledReader-div {
+        clear: both; 
+        margin-left: 8px;
+    }
+
+    .ui-leveledReader-div2 {
+        display: inline-block; 
+        position: relative; 
+        float: right; 
+        margin: 10px 14px;
+    }
+
+    .ui-leveled-Reader-table{
+        margin-left: 6px;
+    }
+
+    .ui-leveled-Reader-div-none{
+        margin-left: 6px;
+        display: none;
+    }    
+    
+    .ui-leveled-Reader-sect1 {
+        margin-left: 6px;
+    }
+
+    .ui-leveled-Reader-sect2 {
+        margin-left: 6px;
+    }
+
+    .ui-leveled-Reader-td1 {
+        white-space: nowrap; 
+        padding-right: 0;
+    }
+
+    .leveledReader-label {
+        display:inline-block;
+        max-width:100px;
+    }
+
+    .disabled {
+            opacity: 0.4;
+    }
+
+    #leveledReader-preview {
+            background-image: url(audio/play_enabled.svg);
+            height:45px;
+            width:45px;
+    }
+
+    .button-label-wrapper {margin-top: 10px;}
+    .button-wrapper {display:inline-block;min-width: 60px;}
+}
+
+.ui-accordion h3[data-toolId="leveledReaderTool"] span.ui-accordion-header-icon {
+        background-image:url('/bloom/images/steps-white.png') !important;
+    }

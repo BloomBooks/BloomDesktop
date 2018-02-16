@@ -299,7 +299,8 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         var opts = settings;
-        var currentTool = opts["current"] || "";
+        const currentStr = "current";
+        var currentTool = opts[currentStr] || "";
 
         // Before we set stage/level, as it initializes them to 1.
         setCurrentTool(currentTool);
@@ -454,8 +455,8 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
 
     var subpath = {
         "talkingBookTool": "talkingBook/talkingBookToolboxTool.html",
-        "decodableReaderTool": "readers/decodableReader/decodableReaderToolboxTool.html",
-        "leveledReaderTool": "readers/leveledReader/leveledReaderToolboxTool.html",
+        //"decodableReaderTool": "readers/decodableReader/decodableReaderToolboxTool.html",
+        //"leveledReaderTool": "readers/leveledReader/leveledReaderToolboxTool.html",
         "bookSettingsTool": "bookSettings/bookSettingsToolboxTool.html",
         "toolboxSettingsTool": "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
         "settingsTool": "settings/Settings.html"
