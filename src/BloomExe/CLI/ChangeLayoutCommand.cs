@@ -63,12 +63,12 @@ namespace Bloom.CLI
 		{
 			if (!File.Exists(bookPath))
 			{
-				progress.WriteMessage("Could not find template book " + bookPath);
+				MessageBox.Show("Could not find template book " + bookPath);
 				return;
 			}
 			if (!File.Exists(collectionPath))
 			{
-				progress.WriteMessage("Could not find collection file " + collectionPath);
+				MessageBox.Show("Could not find collection file " + collectionPath);
 				return;
 			}
 			var problems = new StringBuilder();
@@ -87,7 +87,7 @@ namespace Bloom.CLI
 			IPage page = null;
 			if (!pageDictionary.TryGetValue(pageGuid, out page))
 			{
-				progress.WriteMessage("Could not find template page " + pageGuid);
+				MessageBox.Show("Could not find template page " + pageGuid);
 				return;
 			}
 

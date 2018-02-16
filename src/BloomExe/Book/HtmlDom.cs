@@ -693,6 +693,9 @@ namespace Bloom.Book
 				newPage.SetAttribute("class", newPage.Attributes["class"].Value + " " + sideMatch.Value);
 			}
 
+			// preserve the page size and orientation of the old page
+			newPage.SetAttribute("class", TransferOrientation(classes, newPage.Attributes["class"].Value));
+
 			//the leading '.'s here are needed because newPage is an element in a larger DOM, and we only want to search in this page
 			// migrate text (between visible translation groups!)
 			// enhance: I wish there was a better way to detect invisible translation groups than just knowing about one class
@@ -702,6 +705,25 @@ namespace Bloom.Book
 			MigrateChildren(page, imageXpath, newPage);
 			didChange = true;
 			return oldLineage;
+		}
+
+		internal static string TransferOrientation(string classes, string newClasses)
+		{
+			var soRegex = new Regex(@"\b\S*(Portrait|Landscape)\b");
+			var oldMatch = soRegex.Match(classes);
+			if (oldMatch.Success)
+			{
+				var newMatch = soRegex.Match(newClasses);
+				if (newMatch.Success)
+				{
+					newClasses = soRegex.Replace(newClasses, oldMatch.Value);
+				}
+				else
+				{
+					newClasses = newClasses + " " + oldMatch.Value;
+				}
+			}
+			return newClasses;
 		}
 
 		/// <summary>

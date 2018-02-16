@@ -402,7 +402,7 @@ namespace BloomTests.Book
 		public void UpdatePageToTemplate_UpdatesPage()
 		{
 			// Makes a book with two pages. The second (with one image and one translationGroup) is the one we will update to the template.
-			SetDom(@"<div class='bloom-page' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='prevPage'>
+			SetDom(@"<div class='bloom-page DeviceLandscape' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='prevPage'>
 			   <div class='marginBox'>
 					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
@@ -412,7 +412,7 @@ namespace BloomTests.Book
 					</div>
 				</div>
 			</div>
-<div class='bloom-page side-left' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
+<div class='DeviceLandscape bloom-page side-left' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
 			   <div class='marginBox'>
 					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
@@ -477,7 +477,7 @@ namespace BloomTests.Book
 			book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, "thePage");
 
 			var newPage = (XmlElement)dom.SafeSelectNodes(".//div[@id='thePage']")[0];
-			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("A5Portrait bloom-page numberedPage customPage bloom-combinedPage side-left bloom-monolingual"));
+			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("DeviceLandscape bloom-page numberedPage customPage bloom-combinedPage side-left bloom-monolingual"));
 			Assert.That(newPage.Attributes["data-pagelineage"].Value, Is.EqualTo("newTemplate"));
 			// We kept the image
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//img[@data-license='cc-by-nc-sa' and @data-copyright='Copyright © 2012, LASI' and @src='erjwx3bl.q3c.png']", 1); // the one in the first page has slightly different attrs
@@ -487,6 +487,15 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-translationGroup')]", 3);
 			// The English and French should both have ended up with this, also the inserted empty div for xyz.
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-editable') and contains(@class, ' FancyNew-style')]", 3);
+		}
+
+		[TestCase("A5Landscape", "A5Portrait", "A5Landscape")]
+		[TestCase("DeviceLandscape", "A5Portrait bloom-page", "DeviceLandscape bloom-page")]
+		[TestCase("Device9x16Portrait bloom-page", "somethingElse A5Landscape bloom-page another-style", "somethingElse Device9x16Portrait bloom-page another-style")]
+		[TestCase("A5Landscape bloom-page somethingElse", "bloom-page", "bloom-page A5Landscape")]
+		public void TransferOrientation(string oldClasses, string newClasses, string expectedClasses)
+		{
+			Assert.That(HtmlDom.TransferOrientation(oldClasses, newClasses), Is.EqualTo(expectedClasses));
 		}
 
 		[Test]
