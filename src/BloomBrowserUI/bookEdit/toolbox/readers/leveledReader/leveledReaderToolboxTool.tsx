@@ -23,31 +23,19 @@ export class LeveledReaderToolboxTool implements ITool {
         return root as HTMLDivElement;
     }
 
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
+    beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
-            const leveledReaderStr = "LeveledReaderState";
-            if (settings[leveledReaderStr]) {
-                var state = new DRTState();
-                var decState = settings[leveledReaderStr];
-                if (decState.startsWith("stage:")) {
-                    var parts = decState.split(";");
-                    var stage = parseInt(parts[0].substring("stage:".length), 10);
-                    var sort = parts[1].substring("sort:".length);
-                    // The true's passed here prevent re-saving the state we just read.
-                    // One non-obvious implication is that simply opening a stage-4 book
-                    // will not switch the default stage for new books to 4. That only
-                    // happens when you CHANGE the stage in the toolbox.
-                    getTheOneReaderToolsModel().setSort(sort, true);
-                    getTheOneReaderToolsModel().setStageNumber(stage, true);
-                    console.log("set stage in beginRestoreSettings to " + stage);
-                } else {
-                    // old state
-                    getTheOneReaderToolsModel().setStageNumber(parseInt(decState, 10), true);
-                }
+            const leveledReaderStr = "leveledReaderState";
+            if (opts[leveledReaderStr]) {
+                // The true passed here prevents re-saving the state we just read.
+                // One non-obvious implication is that simply opening a level-4 book
+                // will not switch the default level for new books to 4. That only
+                // happens when you CHANGE the level in the toolbox.
+                getTheOneReaderToolsModel().setLevelNumber(parseInt(opts[leveledReaderStr], 10), true);
             } else {
-                axios.get("/bloom/api/readers/io/defaultStage").then(result => {
+                axios.get("/bloom/api/readers/io/defaultLevel").then(result => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
-                    getTheOneReaderToolsModel().setStageNumber(parseInt(result.data, 10));
+                    getTheOneReaderToolsModel().setLevelNumber(parseInt(result.data, 10));
                 });
             }
         });
@@ -56,6 +44,37 @@ export class LeveledReaderToolboxTool implements ITool {
     isAlwaysEnabled(): boolean {
         return false;
     }
+
+    showTool() {
+        // change markup based on visible options
+        getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!getTheOneReaderToolsModel().setMarkupType(2)) getTheOneReaderToolsModel().doMarkup();
+    }
+
+    hideTool() {
+        getTheOneReaderToolsModel().setMarkupType(0);
+    }
+
+    updateMarkup() {
+        // Most cases don't require setMarkupType(), but when switching pages
+        // it will have been set to 0 by hideTool() on the old page.
+        getTheOneReaderToolsModel().setMarkupType(2);
+        getTheOneReaderToolsModel().doMarkup();
+    }
+
+    // required for ITool interface
+    hasRestoredSettings: boolean;
+    /* tslint:disable:no-empty */
+    // We need these to implement the interface, but don't need them to do anything.
+    configureElements(container: HTMLElement) {
+        this.setupReaderKeyAndFocusHandlers(container);
+    }
+    // Some things were impossible to do i18n on via the jade/pug
+    // This gives us a hook to finish up the more difficult spots
+    finishToolLocalization(pane: HTMLElement) { }
+    // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
+    // 'translates' external links to include the current UI language.
+    /* tslint:enable:no-empty */
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         const bloomEditStr = ".bloom-editable";
@@ -82,40 +101,9 @@ export class LeveledReaderToolboxTool implements ITool {
             }
         });
     }
-    // required for ITool interface
-    hasRestoredSettings: boolean;
-    /* tslint:disable:no-empty */
-    // We need these to implement the interface, but don't need them to do anything.
-    configureElements(container: HTMLElement) {
-        this.setupReaderKeyAndFocusHandlers(container);
-    }
-    // Some things were impossible to do i18n on via the jade/pug
-    // This gives us a hook to finish up the more difficult spots
-    finishToolLocalization(pane: HTMLElement) { }
-    // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
-    // 'translates' external links to include the current UI language.
-    /* tslint:enable:no-empty */
-
-    updateMarkup() {
-        const newState = this.getStateFromHtml();
-        // Most cases don't require setMarkupType(), but when switching pages
-        // it will have been set to 0 by hideTool() on the old page.
-        getTheOneReaderToolsModel().setMarkupType(1);
-        getTheOneReaderToolsModel().doMarkup();
-    }
-
-    showTool() {
-        // change markup based on visible options
-        getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!getTheOneReaderToolsModel().setMarkupType(1)) getTheOneReaderToolsModel().doMarkup();
-    }
-
-    hideTool() {
-        getTheOneReaderToolsModel().setMarkupType(0);
-    }
 
     id() {
-        return "LeveledReader";
+        return "leveledReader";
     }
 
     //Do we need from here down?
