@@ -1,28 +1,27 @@
 ﻿## 4.3 (Preliminary)
 - Collections Tab
     - Provide a way to create anthologies of multiple books, with an automated Table of Contents.
-
-## 4.2 (alpha)
-- Edit Tab
-    - Allow you to choose background music and levels.
-    - Allow you to specify pan/zoom effects of a page.
-
-Planned:
 - Edit Tab
     - Add an Image Credits field which Bloom will automatically fill and keep up to date.
     - Allow you to choose what front/back matter fields to show, and in what languages.
-
-- Settings
-    - Allow you to change how you spell national and regional language. [Request](https://community.software.sil.org/t/option-to-use-national-language-for-filenames/211)
 - Publish Tab
     - Add "Fold & Cut" booklet layout for printing A5 books on A3 paper.
-
 - Bloom Library
     - Sort numbered books in a numerically, rather than alphabetically
 
+## 4.2 (alpha)
+- Edit Tab
+    - New "Music Tool" allow you to choose background music and levels.
+    - New "Pan and Zoom Tool" allows you to specify pan/zoom effects of a page.
+- (Planned)
+    - Add CC0 (Public Domain) license choice.     [See original feature request](https://community.software.sil.org/t/cc0-creative-commons/610/2)
+
+
 ## 4.1 (beta)
 
-Reading for testing:
+- Settings
+    - You can now customize how Language 2 and Language 3 are displayed, just like you previously could for Language 1.
+    [See original feature request](https://community.software.sil.org/t/option-to-use-national-language-for-filenames/211)
 
 - Edit Tab
     - Enhance the "Paste Image Credits" function to include page numbers.
@@ -30,6 +29,8 @@ Reading for testing:
     - Organize all page-related buttons together in lower left corner.
         - Move the unlocking button to a more obvious location
     - Move "unlock" button there, where it will be easier to find.
+- Publish
+    - Bloom now ships with the mp3 encoder, no need to install that separately anymore if you are making talking books.
 - Art Of Reading
     - AOR 3.3 offers the new, more permissive BY-SA Creative Commons License
 - Bloom Reader
