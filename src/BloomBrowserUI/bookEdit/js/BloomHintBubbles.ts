@@ -107,6 +107,7 @@ export default class BloomHintBubbles {
         // Don't use the corresponding svg from artwork here. Somehow it causes about a 4 second delay (on a fast workstation)
         headers.prepend("<li id='hint'><a class='sourceTextTab' href='#hint'><img src='/bloom/images/information-licenseCC0.png'/></a></li>");
         var nav = $(headers.parent());
+        var whatToSay = whatToSay + this.getPossibleHyperlink(elementWithBubbleAttributes, elementThatHasSourceBubble, whatToSay);
         // This is bizarre. We modified "jquery.easytabs.js" to target @lang attributes, rather than ids.
         // This allows us to have multiple source bubbles each with the same languages, whereas
         // it would be invalid to have duplicate ids. Here, to make the inserted div the tab that
@@ -123,7 +124,10 @@ export default class BloomHintBubbles {
             let preferredLangs: Array<string> = (<any>result.data).langs;
             whatToSay = this.getHintContent(elementThatHasSourceBubble, elementWithBubbleAttributes, preferredLangs);
             if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+            var hyperlink = this.getPossibleHyperlink(elementWithBubbleAttributes, elementThatHasSourceBubble, whatToSay);
             content.find("p").text(whatToSay);
+            if (hyperlink.length > 0)
+                content.find("p").append(hyperlink);
         });
     }
 
@@ -311,20 +315,25 @@ export default class BloomHintBubbles {
 
                 whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
             }
-            // Handle a second line in the bubble which links to something like a javascript function
-            var linkText = source.attr('data-link-text');
-            var linkTarget = source.attr('data-link-target');
-            if (linkText && linkTarget) {
-                linkText = theOneLocalizationManager.getLocalizedHint(linkText, target);
-                if (linkTarget.indexOf('(') > 0)
-                    linkTarget = 'javascript:' + linkTarget + ';';
-                whatToSay = whatToSay + "<br><a href='" + linkTarget + "'>" + linkText + "</a>";
-            }
+            whatToSay = whatToSay + this.getPossibleHyperlink(source, target, whatToSay);
             if (onFocusOnly) {
                 shouldShowAlways = false;
             }
             this.makeHintBubbleCore(target, whatToSay, shouldShowAlways);
         }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
+    }
+
+    // Handle a second line in the bubble which links to something like a javascript function
+    private static getPossibleHyperlink(bubbleSource: JQuery, target: JQuery, whatToSay: string): string {
+        var linkText = bubbleSource.attr('data-link-text');
+        var linkTarget = bubbleSource.attr('data-link-target');
+        if (linkText && linkTarget) {
+            linkText = theOneLocalizationManager.getLocalizedHint(linkText, target);
+            if (linkTarget.indexOf('(') > 0)
+                linkTarget = 'javascript:' + linkTarget + ';';
+            return "<br><a href='" + linkTarget + "'>" + linkText + "</a>";
+        }
+        return "";
     }
 
     private static makeHintBubbleCore(target: JQuery, whatToSay: string, shouldShowAlways: boolean) {

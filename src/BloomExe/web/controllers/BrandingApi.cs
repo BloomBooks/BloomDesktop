@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using Bloom.Book;
 using Bloom.Collection;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -43,7 +44,7 @@ namespace Bloom.Api
 				}
 #endif
 				var fileName = request.RequiredFileNameOrPath("id");
-				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectKey, fileName.NotEncoded);
+				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectKey, fileName.NotEncoded, request.CurrentBook.GetLayout());
 
 				// And this is perfectly normal, to not have a branding image at all, for a particular page:
 				if (string.IsNullOrEmpty(path))
@@ -63,11 +64,25 @@ namespace Bloom.Api
 		/// <remarks>
 		/// This method is used by EpubMaker as well as here in BrandingApi.
 		/// </remarks>
-		public static string FindBrandingImageFileIfPossible(string branding, string filename)
+		public static string FindBrandingImageFileIfPossible(string branding, string filename, Layout layout)
 		{
+			string path;
+			if (layout.SizeAndOrientation.IsLandScape)
+			{
+				// we will first try to find a landscape-specific image
+				var ext = Path.GetExtension(filename);
+				var filenameNoExt = Path.ChangeExtension(filename, null);
+				var landscapeFileName = Path.ChangeExtension(filenameNoExt + "-landscape", ext);
+				path = BloomFileLocator.GetOptionalBrandingFile(branding, landscapeFileName);
+				if (!string.IsNullOrEmpty(path))
+					return path;
+				path = BloomFileLocator.GetOptionalBrandingFile(branding, Path.ChangeExtension(landscapeFileName, "png"));
+				if (!string.IsNullOrEmpty(path))
+					return path;
+			}
 			// Note: in Bloom 3.7, our Firefox, when making PDFs, would render svg's as blurry. This was fixed in Bloom 3.8 with
 			// a new Firefox. So SVGs are requested by the html...
-			var path = BloomFileLocator.GetOptionalBrandingFile(branding, filename);
+			path = BloomFileLocator.GetOptionalBrandingFile(branding, filename);
 
 			// ... but if there is no SVG, we can actually send back a PNG instead, and that works fine:
 			if(string.IsNullOrEmpty(path))

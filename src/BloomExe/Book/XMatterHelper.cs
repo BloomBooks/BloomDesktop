@@ -157,7 +157,7 @@ namespace Bloom.Book
 				//give a new id, else thumbnail caches get messed up becuase every book has, for example, the same id for the cover.
 				newPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
 
-				CleanupBrandingImages(newPageDiv, branding, bookFolderPath);
+				CleanupBrandingImages(newPageDiv, branding, bookFolderPath, layout);
 
 				if (IsBackMatterPage(xmatterPage))
 				{
@@ -197,7 +197,7 @@ namespace Bloom.Book
 			InjectFlyleafIfNeeded(layout);
 		}
 
-		private void CleanupBrandingImages(XmlElement newPageDiv, string branding, string bookFolderPath)
+		private void CleanupBrandingImages(XmlElement newPageDiv, string branding, string bookFolderPath, Layout layout)
 		{
 			if (branding == null)
 				return; // in testing.
@@ -210,7 +210,7 @@ namespace Bloom.Book
 				if (src == null || !src.StartsWith(prefix))
 					continue;
 				var fileName = src.Substring(prefix.Length);
-				var pathToRealImage = BrandingApi.FindBrandingImageFileIfPossible(branding, fileName);
+				var pathToRealImage = BrandingApi.FindBrandingImageFileIfPossible(branding, fileName, layout);
 				if (string.IsNullOrEmpty(pathToRealImage))
 				{
 					// If the book folder contains this file already, it's obsolete, from some previous branding choice.
@@ -237,11 +237,13 @@ namespace Bloom.Book
 					imageElt.ParentNode.RemoveChild(imageElt);
 				} else
 				{
-					fileName = Path.GetFileName(pathToRealImage); // May have changed extension
-					RobustFile.Copy(pathToRealImage, Path.Combine(bookFolderPath, fileName), true);
+					// We want to use the original name in the book folder...for one thing, works with
+					// deletion code above...but the correct extension for the file we actually found.
+					var destFileName = Path.ChangeExtension(Path.GetFileName(fileName), Path.GetExtension(pathToRealImage));
+					RobustFile.Copy(pathToRealImage, Path.Combine(bookFolderPath, destFileName), true);
 					// Point the <img> element at the local file...which should be available since we
 					// just copied it there.
-					imageElt.SetAttribute("src", fileName);
+					imageElt.SetAttribute("src", destFileName);
 				}
 			}
 		}

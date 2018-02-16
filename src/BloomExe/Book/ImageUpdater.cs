@@ -64,8 +64,8 @@ namespace Bloom.Book
 			{
 				if (ExcludedFiles.Contains(path.ToLowerInvariant()))
 					continue;
-				var imageInfo = GetImageInfoSafelyFromFilePath(folderPath, path);
-				if (imageInfo != null && ImageHasMetadata(imageInfo) && ImageIsFromOfficialCollection(imageInfo.Metadata))
+				var metaData = Metadata.FromFile(path);
+				if (metaData != null && ImageIsFromOfficialCollection(metaData))
 					continue;
 
 				yield return path;
