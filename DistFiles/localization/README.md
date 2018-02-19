@@ -166,7 +166,8 @@ a normal merge with all that history would probably be okay.)
     </pre>
 
 4. Verify that the modified xliff files are still valid, and fix any errors that may be found.
-   On Windows, the following command could be used in the git bash shell window:
+   If you execute build/getDependencies-Windows.sh to get all the artifacts from TeamCity, then
+   on Windows, the following command could be used in the git bash shell window:
 
    <pre>
        for f in DistFiles/localization/*/*.xlf; do
@@ -192,11 +193,11 @@ a normal merge with all that history would probably be okay.)
    given above using CheckOrFixXliff.exe should be run again to check that nothing will crash.
 
    Fix any crashing errors that are (still) reported.  If the XML file is malformed or malformed
-   formatting markers remain that would crash Bloom, the output log file will contain the word
-   "crash" in it.  This can be checked easily by
+   formatting markers remain that would crash Bloom, the output log file will contain the words
+   "crash" or "invalid" in it.  This can be checked easily by
 
    <pre>
-       grep crash check-xliff.log
+       grep '\(crash\|invalid\)' check-xliff.log
    </pre>
 
    Fixing any remaining crashing errors may require hand editing the offending xliff file, or it
