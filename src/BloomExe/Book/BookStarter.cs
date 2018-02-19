@@ -144,6 +144,15 @@ namespace Bloom.Book
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
+			// BL-4586 Some old books ended up with background-image urls containing XML img tags
+			// in the HTML-encoded string. This happened because the coverImage data-book element
+			// contained an img tag instead of a bare filename.
+			// Normally such a thing would get fixed on loading the book, but if the "old book" in question
+			// is a shell downloaded from BloomLibrary.org, Bloom is not allowed to modify the book,
+			// so if such a thing exists in this copied book here we will strip it out and replace it with the
+			// filename in the img src attribute.
+			Book.RemoveImgTagInDataDiv(storage.Dom);
+
 			bookData.RemoveAllForms("ISBN");//ISBN number of the original doesn't apply to derivatives
 
 			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, Layout.A5Portrait, _fileLocator);
