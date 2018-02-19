@@ -335,6 +335,13 @@ export default class AudioRecording {
         this.playCurrentInternal();
     }
 
+    // This is currently used in Pan and Zoom, which removes all the current
+    // audio markup afterwards. If we use it in this tool, we need to do more,
+    // such as setting the current state of controls.
+    public stopListen(): void {
+        (<HTMLMediaElement>document.getElementById('player')).pause();
+    }
+
     private playEnded(): void {
         if (this.playingAll) {
             var current: JQuery = this.getPage().find('.ui-audioCurrent');
