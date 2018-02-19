@@ -163,8 +163,8 @@ export class PanAndZoomTool implements ITool {
     }
     hideTool() {
         const page = this.getPage();
-        page.getElementById("animationStart").remove();
-        page.getElementById("animationEnd").remove();
+        this.removeElt(page.getElementById("animationStart"));
+        this.removeElt(page.getElementById("animationEnd"));
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
         if (!firstImage) {
