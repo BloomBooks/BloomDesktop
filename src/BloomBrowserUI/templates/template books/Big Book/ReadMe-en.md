@@ -1,5 +1,5 @@
 # About Big Books {i18n="bigbook.title"}
-Big Books are designed for teachers to hold and read in front of a class. For more information, see this [PDF from Scholastic](http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf). {i18n="bigbook.use"}
+Big Books are designed for teachers to hold and read in front of a class. For more information, see this [PDF from Scholastic](http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf). {i18n="bigbook.use"}
 # Printing a Big Book {i18n="bigbook.printing"}
 To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
