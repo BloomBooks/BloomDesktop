@@ -1460,10 +1460,6 @@
         <source xml:lang="en">No Music</source>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.PanAndZoomTool" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom Tool</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
         <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
@@ -1476,6 +1472,25 @@
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
         <source xml:lang="en">Preview</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Music" sil:dynamic="true">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
+        <note>The label of a checkbox controlling whether music plays during preview.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
+          <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
+        <source xml:lang="en">Voice</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voide</note>
+        <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">Pan and Zoom this page</source>
+        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
