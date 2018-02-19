@@ -144,7 +144,7 @@ export default class AudioRecording {
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
-        page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
+        page.find('.ui-audioCurrent').removeClass('ui-audioCurrent').removeClass("disableHighlight");
         var socket = this.getWebSocket();
         if (socket) {
             socket.removeEventListener("message", this.listenerFunction);
@@ -199,9 +199,25 @@ export default class AudioRecording {
         return (prev.length === 0) ? null : prev[0];
     }
 
-    private setCurrentSpan(current: JQuery, changeTo: JQuery): void {
-        if (current)
-            current.removeClass('ui-audioCurrent');
+    // Generally we set the current span, we want to highlight it. But during
+    // listening to the whole page, especially in a Pan and Zoom preview, we
+    // prefer not to highlight the current span unless it actually has audio.
+    // This is achieved by passing checking true.
+    private setCurrentSpan(current: JQuery, changeTo: JQuery, checking?: boolean): void {
+        if (current) {
+            current.removeClass('ui-audioCurrent').removeClass("disableHighlight");
+        }
+        if (checking) {
+            changeTo.addClass('disableHighlight'); // prevents highlight showing at once
+            axios.get("/bloom/api/audio/checkForSegment?id=" + changeTo[0].id).then(response => {
+                if (response.data === "exists") {
+                    changeTo.removeClass("disableHighlight");
+                }
+            }).catch(error => {
+                toastr.error("Error checking on audio file " + error.statusText);
+                //server couldn't find it, so just leave it unhighlighted
+            });
+        }
         changeTo.addClass('ui-audioCurrent');
         this.idOfCurrentSentence = changeTo.attr("id");
         this.updatePlayerStatus();
@@ -313,7 +329,7 @@ export default class AudioRecording {
         var original: JQuery = this.getPage().find('.ui-audioCurrent');
         var audioElts = this.getAudioElements();
         var first = audioElts.eq(0);
-        this.setCurrentSpan(original, first);
+        this.setCurrentSpan(original, first, true);
         this.playingAll = true;
         this.setStatus('listen', Status.Active);
         this.playCurrentInternal();
@@ -325,7 +341,7 @@ export default class AudioRecording {
             var audioElts = this.getAudioElements();
             var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
-                this.setCurrentSpan(current, next);
+                this.setCurrentSpan(current, next, true);
                 this.setStatus('listen', Status.Active); // gets returned to enabled by setCurrentSpan
                 this.playCurrentInternal();
                 return;
