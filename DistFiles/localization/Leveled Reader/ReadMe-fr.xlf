@@ -70,8 +70,11 @@
       </trans-unit>
       <trans-unit id="leveled.reader.level">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="fr" state="translated">Niveau des livres de difficulté graduée</target>
+        <target xml:lang="fr" state="translated">Niveau des livres par niveau</target>
         <note>ID: leveled.reader.level</note>
+        <alt-trans>
+          <target xml:lang="fr">Niveau des livres de difficulté graduée</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Niveau de livre gradué</target>
         </alt-trans>
