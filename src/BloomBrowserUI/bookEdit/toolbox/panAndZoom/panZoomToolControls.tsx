@@ -415,14 +415,22 @@ export class PanAndZoomTool implements ITool {
 
     getStateFromHtml(): IPanAndZoomHtmlState {
         const page = this.getPage();
+        const pageClass = MusicToolControls.getBloomPageAttr("class");
+        const xmatter = pageClass.indexOf("bloom-frontMatter") >= 0 || pageClass.indexOf("bloom-backMatter") >= 0;
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
         let wantChoosePictureMessage = false;
         let panAndZoomChecked = true;
-        if (!firstImage) {
-            // no place to put an image, we can't be enabled.
-            // leave choose picture hidden, there's no way to choose an image on this page.
+        let panAndZoomPossible = true;
+        if (!firstImage || xmatter) {
+            // if there's no place to put an image, we can't be enabled.
+            // And we don't support Pan and Zoom in xmatter (BL-5427),
+            // in part because we use background-image there and haven't fully supported
+            // panning and zooming that; but mainly just don't think it makes
+            // sense. In either case, leave choose picture hidden, there's no way
+            // to choose an image on this page, or (in xmatter) it wouldn't help.
             panAndZoomChecked = false;
+            panAndZoomPossible = false;
         } else {
             if (firstImage.getAttribute("data-disabled-initialrect")) {
                 // At some point on this page the check box has been explicitly turned off
@@ -435,13 +443,18 @@ export class PanAndZoomTool implements ITool {
                 wantChoosePictureMessage = true;
             }
         }
-        return { haveImageContainerButNoImage: wantChoosePictureMessage, panAndZoomChecked: panAndZoomChecked };
+        return {
+            haveImageContainerButNoImage: wantChoosePictureMessage,
+            panAndZoomChecked: panAndZoomChecked,
+            panAndZoomPossible: panAndZoomPossible
+        };
     }
 }
 
 interface IPanAndZoomHtmlState {
     haveImageContainerButNoImage: boolean;
     panAndZoomChecked: boolean;
+    panAndZoomPossible: boolean;
 }
 
 interface IPanAndZoomState extends IPanAndZoomHtmlState {
@@ -461,7 +474,7 @@ export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAnd
         // This state won't last long, client sets the first two immediately. But must have something.
         // To minimize flash we start with both off.
         this.state = {
-            haveImageContainerButNoImage: false, panAndZoomChecked: false,
+            haveImageContainerButNoImage: false, panAndZoomChecked: false, panAndZoomPossible: true,
             previewVoice: true, previewMusic: true
         };
     }
@@ -473,7 +486,7 @@ export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAnd
 
     public render() {
         return (
-            <div className="ui-panAndZoomBody">
+            <div className={"ui-panAndZoomBody" + (this.state.panAndZoomPossible ? "" : " disabled")}>
                 <Checkbox id="panAndZoom" name="panAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.ThisPage"
                     onCheckChanged={(checked) => this.onPanAndZoomChanged(checked)}
                     checked={this.state.panAndZoomChecked}>Pan and Zoom this page</Checkbox>
