@@ -456,8 +456,9 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
         const toolIdUpper = tool.id()[0].toUpperCase() + tool.id().substring(1, tool.id().length);
         var i18Id = "EditTab.Toolbox." + toolIdUpper + ".Heading";
         // Not sure this will always work, but we can do something more complicated...maybe a new method
-        // on ITool...if we need it.
-        var toolLabel = toolIdUpper + " Tool";
+        // on ITool...if we need it. Note that this is just a way to come up with the English,
+        // we don't do it to localizations. But in English, the code value beats the xlf one.
+        var toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim() + " Tool";
         const header = $("<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>");
         // must both have this attr and value for removing if disabled.
         header.attr("data-toolId", toolName);
