@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="fr">
     <body>
@@ -3243,7 +3243,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="fr">Envoi de "‎{0‎}" à l'appareil ‎{1‎}</target>
+        <target xml:lang="fr">Envoi de "‎{0}" à l'appareil ‎{1}</target>
         <alt-trans>
           <target xml:lang="fr">Envoi de "‎{0}" à l'appareil ‎{1}</target>
         </alt-trans>
