@@ -17,6 +17,10 @@ import { MusicToolControls } from "../music/musicToolControls";
 // ToolBox.registerTool(new PanAndZoomTool());.
 export class PanAndZoomTool implements ITool {
     rootControl: PanAndZoomControl;
+    animationStyleElement: HTMLStyleElement;
+    animationWrapDiv: HTMLElement;
+    narrationPlayer: AudioRecording;
+    stopPreviewTimeout: number;
 
     makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
@@ -296,6 +300,26 @@ export class PanAndZoomTool implements ITool {
         if (!firstImage || !(document.getElementById("panAndZoom") as HTMLInputElement).checked) {
             return;
         }
+        let wasPlaying: boolean = this.rootControl.state.playing;
+        // A 'functional' mode of using setState is recommended when the new state is a function
+        // of the old state, like this:
+        // this.rootControl.setState((oldState) => {
+        //     return ({ playing: !oldState.playing });
+        // });
+        // But then, what do we do to determine whether to turn on or off? If we can't trust the
+        // current state, we'd have to wait until the function we pass to setState is called.
+        // But in theory, that could be just one of a series of calls before things stabilize.
+        // There's probably a React function that notifies us of state change that we could
+        // use. But it seems unnecessarily complicated. I don't think the user can click fast
+        // enough for state not to have updated before the next click.
+        this.rootControl.setState({ playing: !wasPlaying });
+        if (wasPlaying) {
+            // In case we start it again before the old timeout expires, we don't
+            // want it to stop in the middle.
+            window.clearTimeout(this.stopPreviewTimeout);
+            this.cleanupAnimation();
+            return;
+        }
         var duration = 0;
         $(page).find(".bloom-editable.bloom-content1").find("span.audio-sentence").each((index, span) => {
             var spanDuration = parseFloat($(span).attr("data-duration"));
@@ -310,30 +334,29 @@ export class PanAndZoomTool implements ITool {
         const scale = EditableDivUtils.getPageScale();
         // Make a div that wraps a div that will move and be clipped which wraps a clone of firstImage
         // Enhance: when we change the signature of makeElement, we can get rid of the vestiges of JQuery here.
-        const wrapDiv = getPageFrameExports().makeElement("<div class='" + this.wrapperClassName
+        this.animationWrapDiv = getPageFrameExports().makeElement("<div class='" + this.wrapperClassName
             + " bloom-animationWrapper' style='visibility: hidden; background-color:white; "
             + "height:" + this.getHeight(firstImage) * scale + "px; width:" + this.getWidth(firstImage) * scale + "px; "
             + "position: absolute;"
             + "left:" + firstImage.getBoundingClientRect().left + "px; "
             + "top: " + firstImage.getBoundingClientRect().top + "px; "
             + "'><div id='bloom-movingDiv'></div></div>", $(pageDoc.body))[0] as HTMLElement;
-        const movingDiv = wrapDiv.firstElementChild;
+        const movingDiv = this.animationWrapDiv.firstElementChild;
         var picToAnimate = firstImage.cloneNode(true) as HTMLElement;
         // don't use getElementById here; the elements we want to remove are NOT yet
         // in the document, but the ones they are clones of (which we want to keep) are.
         picToAnimate.querySelector("#animationStart").remove();
         picToAnimate.querySelector("#animationEnd").remove();
         movingDiv.appendChild(picToAnimate);
-        page.documentElement.appendChild(wrapDiv);
-        // Todo: it needs to be the page's document.
-        const animationElement = pageDoc.createElement("style");
-        animationElement.setAttribute("type", "text/css");
-        animationElement.setAttribute("id", "animationSheet");
-        animationElement.innerText = ".bloom-ui-animationWrapper {overflow: hidden; translateZ(0)} "
+        page.documentElement.appendChild(this.animationWrapDiv);
+        this.animationStyleElement = pageDoc.createElement("style");
+        this.animationStyleElement.setAttribute("type", "text/css");
+        this.animationStyleElement.setAttribute("id", "animationSheet");
+        this.animationStyleElement.innerText = ".bloom-ui-animationWrapper {overflow: hidden; translateZ(0)} "
             + ".bloom-animate {height: 100%; width: 100%; "
             + "background-repeat: no-repeat; background-size: contain}";
-        pageDoc.body.appendChild(animationElement);
-        const stylesheet = animationElement.sheet;
+        pageDoc.body.appendChild(this.animationStyleElement);
+        const stylesheet = this.animationStyleElement.sheet;
         const initialRectStr = firstImage.getAttribute("data-initialrect");
         const initialRect = initialRectStr.split(" ");
         const initialScaleWidth = 1 / parseFloat(initialRect[2]) * scale;
@@ -342,8 +365,8 @@ export class PanAndZoomTool implements ITool {
         const finalRect = finalRectStr.split(" ");
         const finalScaleWidth = 1 / parseFloat(finalRect[2]) * scale;
         const finalScaleHeight = 1 / parseFloat(finalRect[3]) * scale;
-        const wrapDivWidth = this.getWidth(wrapDiv);
-        const wrapDivHeight = this.getHeight(wrapDiv);
+        const wrapDivWidth = this.getWidth(this.animationWrapDiv);
+        const wrapDivHeight = this.getHeight(this.animationWrapDiv);
         const initialX = parseFloat(initialRect[0]) * wrapDivWidth / scale;
         const initialY = parseFloat(initialRect[1]) * wrapDivHeight / scale;
         const finalX = parseFloat(finalRect[0]) * wrapDivWidth / scale;
@@ -376,12 +399,12 @@ export class PanAndZoomTool implements ITool {
         movingDiv.setAttribute("class", "bloom-animate bloom-pausable " + animateStyleName);
         // At this point the wrapDiv becomes visible and the animation starts.
         //wrapDiv.show(); mysteriously fails
-        wrapDiv.setAttribute("style", wrapDiv.getAttribute("style").replace("visibility: hidden; ", ""));
+        this.animationWrapDiv.setAttribute("style", this.animationWrapDiv.getAttribute("style").replace("visibility: hidden; ", ""));
         if (this.rootControl.state.previewVoice) {
             // Play the audio during animation
-            const audio = new AudioRecording();
-            audio.setupForListen();
-            audio.listen();
+            this.narrationPlayer = new AudioRecording();
+            this.narrationPlayer.setupForListen();
+            this.narrationPlayer.listen();
         }
         if (this.rootControl.state.previewMusic) {
             MusicToolControls.previewBackgroundMusic(this.getPlayer(),
@@ -389,12 +412,25 @@ export class PanAndZoomTool implements ITool {
                 () => false,
                 (playing) => undefined);
         }
-        window.setTimeout(() => {
-            this.removeElt(animationElement);
-            this.removeElt(wrapDiv);
-            this.removeCurrentAudioMarkup();
-            this.getPlayer().pause();
+        this.stopPreviewTimeout = window.setTimeout(() => {
+            this.cleanupAnimation();
+            this.rootControl.setState({ playing: false });
         }, (duration + 1) * 1000);
+    }
+
+    cleanupAnimation() {
+        // stop the animation itself by removing the root elements it adds.
+        this.removeElt(this.animationStyleElement);
+        this.animationStyleElement = null;
+        this.removeElt(this.animationWrapDiv);
+        this.animationWrapDiv = null;
+        // stop narration if any.
+        if (this.narrationPlayer) {
+            this.narrationPlayer.stopListen();
+        }
+        this.removeCurrentAudioMarkup();
+        // stop background music
+        this.getPlayer().pause();
     }
 
     getPlayer(): HTMLMediaElement {
@@ -460,6 +496,7 @@ interface IPanAndZoomHtmlState {
 interface IPanAndZoomState extends IPanAndZoomHtmlState {
     previewVoice: boolean;
     previewMusic: boolean;
+    playing: boolean;
 }
 
 interface IPanAndZoomProps {
@@ -475,7 +512,7 @@ export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAnd
         // To minimize flash we start with both off.
         this.state = {
             haveImageContainerButNoImage: false, panAndZoomChecked: false, panAndZoomPossible: true,
-            previewVoice: true, previewMusic: true
+            previewVoice: true, previewMusic: true, playing: false
         };
     }
 
@@ -492,7 +529,8 @@ export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAnd
                     checked={this.state.panAndZoomChecked}>Pan and Zoom this page</Checkbox>
                 <div className="button-label-wrapper" id="panAndZoom-play-wrapper">
                     <div className="button-wrapper">
-                        <button id="panAndZoom-preview" className="ui-panAndZoom-button ui-button enabled"
+                        <button id="panAndZoom-preview"
+                            className={"ui-panAndZoom-button ui-button enabled" + (this.state.playing ? " playing" : "")}
                             onClick={() => this.props.onPreviewClick()} />
                         <div className="previewSettingsWrapper">
                             <Div className="panAndZoom-label"
