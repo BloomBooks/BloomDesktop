@@ -534,8 +534,9 @@
         <note>ID: CollectionTab.Progress</note>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
-        <source xml:lang="en">Restart to Update</source>
+        <source xml:lang="en">Restart Bloom to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
+        <note>Restart the Bloom program, not Windows</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
         <source xml:lang="en">Sample Shells</source>
