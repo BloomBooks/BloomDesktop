@@ -3,6 +3,11 @@
 ///<reference path="../../typings/toastr/toastr.d.ts"/>
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 
+// This is one of the root files for our webpack build, the root from which
+// pageThumbnailListBundle.js is built. Currently, contrary to our usual practice,
+// this bundle is one of two loaded by pageThumbnailList.pug. It is imported last,
+// so things it exports are accessible from outside the bundle using FrameExports.
+
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import * as toastr from "toastr";
