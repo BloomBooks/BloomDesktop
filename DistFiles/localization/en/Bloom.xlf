@@ -1431,11 +1431,6 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
-        <source xml:lang="en">Background Music Tool</source>
-        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
-        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
@@ -1485,12 +1480,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
         <source xml:lang="en">Voice</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voide</note>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voice</note>
         <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom this page</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <note>ID: EditTab.Toolbox.PanAndZoom.ThisPage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
