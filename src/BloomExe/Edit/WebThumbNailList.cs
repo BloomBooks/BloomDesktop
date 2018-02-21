@@ -335,7 +335,7 @@ namespace Bloom.Edit
 			// RunJavaScript does not support returning anything but strings.
 			// (The TryParse is probably not necessary...in an early version of this code I was getting
 			// nulls back sometimes, it may no longer be possible.)
-			int.TryParse(_browser.RunJavaScript("document.getElementById('pageGridWrapper').scrollTop.toString()"), out _verticalScrollDistance);
+			int.TryParse(_browser.RunJavaScript("(document.getElementById('pageGridWrapper')) ? document.getElementById('pageGridWrapper').scrollTop.toString() : '0'"), out _verticalScrollDistance);
 			_baseForRelativePaths = dom.BaseForRelativePaths;
 			_browser.Navigate(dom, source:"pagelist");
 			return result;
