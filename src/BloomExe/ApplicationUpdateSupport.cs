@@ -133,7 +133,7 @@ namespace Bloom
 
 				string version = Path.GetFileName(newInstallDir).Substring("app-".Length); // version folders always start with this
 				var msg = String.Format(LocalizationManager.GetString("CollectionTab.UpdateInstalled", "Update for {0} is ready", "Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom."), version);
-				var action = String.Format(LocalizationManager.GetString("CollectionTab.RestartToUpdate", "Restart Bloom to Update", "Restart the Bloom program, not Windows));
+				var action = String.Format(LocalizationManager.GetString("CollectionTab.RestartToUpdate", "Restart Bloom to Update", "Restart the Bloom program, not Windows"));
 				// Unfortunately, there's no good time to dispose of this object...according to its own comments
 				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
 				var notifier = new ToastNotifier();
