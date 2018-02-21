@@ -94,10 +94,21 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
     reportColorChange(newColor: string) {
         axios.post("/bloom/api/publish/android/backColor", newColor,
             { headers: { "Content-Type": "text/plain" } }).then(
-            //wait until it's set because once the state changes, a
-            // new image gets requested and we want that to happen
-            // only after the server has registered this change.
-            () => this.setState({ backColor: newColor }));
+                //wait until it's set because once the state changes, a
+                // new image gets requested and we want that to happen
+                // only after the server has registered this change.
+                () => this.setState({ backColor: newColor }));
+    }
+
+    somethingFocused(e) {
+        let test = e.target;
+        while (test) {
+            if (test.getAttribute("class") === "tc-outer-wrapper") {
+                return; // inside the menu, don't close it.
+            }
+            test = test.parentElement;
+        }
+        this.setState({ colorsVisible: false });
     }
 
     render() {
@@ -106,7 +117,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
 
         return (
-            <div id="androidPublishReactRoot">
+            <div id="androidPublishReactRoot" onFocus={(e) => this.somethingFocused(e)} onClick={(e) => this.somethingFocused(e)}>
                 <H1 className="media-heading" l10nKey="PublishTab.Android.Media"
                     l10nComment="A heading in the Publish to Android screen.">
                     Media
@@ -125,7 +136,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                                 this.setState({ backColor: result.data })
                             );
                         }}
-                        onBlur={() => { this.setState({ colorsVisible: false }); }}>
+                    >
                         <div className="tc-image-wrapper">
                             <img className="tc-image"
                                 // the api ignores the color parameter, but it

@@ -1023,7 +1023,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private static void RemoveImgTagInDataDiv(HtmlDom bookDom)
+		internal static void RemoveImgTagInDataDiv(HtmlDom bookDom)
 		{
 			// BL-4586 Some old books ended up with background-image urls containing XML img tags
 			// in the HTML-encoded string. This happened because the coverImage data-book element

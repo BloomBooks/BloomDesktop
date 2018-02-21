@@ -58,6 +58,12 @@ module.exports = {
         //makes a single entry point module's epxorts accessible via Exports.
         //Note that if you include more than one entry point js in the frame, the second one will overwrite the Exports var
         // (see the other way of doing this, below, if that becomes necessary for some reason)
+        // (JT: later: I think what the above means is that the root pug file for a browser control (or an iframe within it)
+        // should not import more than commonBundle.js and then, after it, the one root bundle for that frame,
+        // one of the bundles specified in the entry: block above. If you do import more than one, only the exports
+        // from the LAST one will be accessible in FrameExports, since each bundle will set FrameExports and the
+        // last one will win. I can't find the 'other way' of doing things if you need both lots of exports;
+        // the preferred solution would be to reorganize the code so that each frame has only one root bundle.)
         library: "FrameExports"
     },
 

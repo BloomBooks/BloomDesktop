@@ -18,5 +18,13 @@ html
 		#menuIconHolder.menuHolder
 			span#menu.ui-icon.ui-icon-triangle-1-s menu
 		+script('/bloom/commonBundle.js')
-		+script('/bloom/pageThumbnailListBundle.js')
 		+script('/bloom/pageControlsBundle.js')
+		//- Must be loaded AFTER pageControlsBundle.js. We are violating our usual practice
+		//- here of only having one root bundle per page. Anything pageControlsBundle.js
+		//- exports will NOT be accessible through FrameExports, as usual, because
+		//- pageThumbnailListBundle.js will overwrite it. That's OK because
+		//- pageControlsBundle.js is built from pageControls.tsx which doesn't export anything.
+		//- If it ever does export anything we need to access from C# or some other Iframe,
+		//- we should reorganize this page to have a single bundle.
+		+script('/bloom/pageThumbnailListBundle.js')
+
