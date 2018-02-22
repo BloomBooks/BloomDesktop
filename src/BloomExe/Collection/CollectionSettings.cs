@@ -816,17 +816,7 @@ namespace Bloom.Collection
 					if (fullLangTag == null)
 						continue;
 					var language = fullLangTag.Split('-')[0]; // Generally insert corresponding language for longer culture
-					// We also need to special case Spanish and Portuguese because the Crowdin setup added the country code.
-					// See https://issues.bloomlibrary.org/youtrack/issue/BL-5473.
-					if (language == "es")
-					{
-						language = "es-ES";		// This is what Crowdin has given us.
-					}
-					else if (language == "pt")
-					{
-						language = "pt-PT";		// This is what Crowdin has given us.
-					}
-					else if (language == "zh")
+					if (language == "zh")
 					{
 						language = "zh-CN"; // Insert this instead for Chinese
 					}
