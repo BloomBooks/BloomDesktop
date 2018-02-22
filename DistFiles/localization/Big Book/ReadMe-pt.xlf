@@ -8,8 +8,8 @@
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use">
-        <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="pt-PT" state="translated">Os livros grandes são desenhado para que os professores possam exibi-los e lê-los na frente de uma classe. Para obter mais informações, consulte este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF da Scholastic</g>.</target>
+        <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
+        <target xml:lang="pt-PT" state="translated">Os livros grandes são desenhado para que os professores possam exibi-los e lê-los na frente de uma classe. Para obter mais informações, consulte este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF da Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing">
