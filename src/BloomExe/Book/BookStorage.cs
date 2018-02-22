@@ -269,7 +269,16 @@ namespace Bloom.Book
 
 		private string GetBackupFilePath()
 		{
-			return Path.Combine(Path.GetDirectoryName(PathToExistingHtml), "bookhtml.bak");
+			try
+			{
+				return Path.Combine(Path.GetDirectoryName(PathToExistingHtml), "bookhtml.bak");
+			}
+			catch (Exception ex)
+			{
+				// Following up BL-5636, which involves a "Path is not of a legal form" here, we'd like to see
+				// the exact path that has the problem.
+				throw new ArgumentException("Failed to get backup file path for " + PathToExistingHtml, ex);
+			}
 		}
 
 		/// <summary>
