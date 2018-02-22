@@ -8,8 +8,8 @@
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
-        <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="id">Buku Besar dirancang bagi guru untuk dipegang dan dibaca di depan kelas. Untuk informasi lebih lanjut, lihat ini <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF dari Scholastic</g>.</target>
+        <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
+        <target xml:lang="id">Buku Besar dirancang bagi guru untuk dipegang dan dibaca di depan kelas. Untuk informasi lebih lanjut, lihat ini <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF dari Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
