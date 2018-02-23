@@ -13,7 +13,7 @@ export class LeveledReaderToolboxTool implements ITool {
     rootControl: LeveledReaderControl;
     makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        root.setAttribute("class", "ui-LeveledReaderBody");
+        root.setAttribute("class", "ui-leveledReaderBody");
         this.rootControl = ReactDOM.render(
             <LeveledReaderControl />,
             root
@@ -139,12 +139,12 @@ export class LeveledReaderToolboxTool implements ITool {
         return { start: level };
     }
 
-    public setup(root): LeveledReaderControl {
-        return ReactDOM.render(
-            <LeveledReaderControl />,
-            root
-        );
-    }
+    // public setup(root): LeveledReaderControl {
+    //     return ReactDOM.render(
+    //         <LeveledReaderControl />,
+    //         root
+    //     );
+    // }
 
 }
 
@@ -160,152 +160,147 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
         // To minimize flash we start with both off.
         this.state = { start: 1 };
     }
-    //H3 data-i18n="LeveledReader"
+    //H3 data-i18n="LeveledReader" l10nKey="EditTab.Toolbox.LeveledReader.Heading"
+    /* className="ui-LeveledReaderBody"
+    */
     public render() {
         return (
-            <div className="ui-LeveledReaderBody">
-                <H3 data-i18n="EditTab.Toolbox.LeveledReaderTool"
-                    data-order="20"
-                    data-toolId="leveledReaderTool"
-                    l10nKey="EditTab.Toolbox.LeveledReader.Heading">
-                    Leveled Reader Tool</H3>
-                <div data-toolId="leveledReaderTool">
-                    <div id="setupStages">
-                        <img id="leveled-edit" src="/bloom/images/edit-white.png" />
-                        <span className="setup noSelect">
-                            <a data-i18n="EditTab.Toolbox.LeveledReaderTool.SetUpLevels"
-                                href="javascript:window.FrameExports.showSetupDialog('levels');">
-                                Set up Levels
+            <div className="ui-leveledReaderBody">
+                <div id="setupStages">
+                    <img id="leveled-edit" src="/bloom/images/edit-white.png" />
+                    <span className="setup noSelect">
+                        <a data-i18n="EditTab.Toolbox.LeveledReaderTool.SetUpLevels"
+                            href="javascript:window.FrameExports.showSetupDialog('levels');">
+                            Set up Levels
                             </a>
-                        </span>
-                    </div>
-                    <div className="stageLine clear noSelect">
-                        <span className="scroll-button ui-icon ui-icon-triangle-1-w" id="decLevel" />
-                        <span className="stageLabel stageLine noSelect">
-                            <span data-i18n="EditTab.Toolbox.LeveledReaderTool.Level">Level</span>
-                            <span id="levelNumber">1</span>
-                            <span className="ofStage" data-i18n="EditTab.Toolbox.LeveledReaderTool.LevelOf">of</span>
-                            <span className="ofStage" id="numberOfLevels">2</span>
-                        </span>
-                        <span className="scroll-button ui-icon ui-icon-triangle-1-e" id="incLevel" />
-                    </div>
-                    <table className="statistics clear ui-leveled-Reader-table">
-                        <tr>
-                            <td className="section" data-i18n="EditTab.Toolbox.LeveledReaderTool.WordCounts">
-                                Word Counts
+                    </span>
+                </div>
+                <div className="stageLine clear noSelect">
+                    <span className="scroll-button ui-icon ui-icon-triangle-1-w" id="decLevel" />
+                    <span className="stageLabel stageLine noSelect">
+                        <span data-i18n="EditTab.Toolbox.LeveledReaderTool.Level">Level</span>
+                        <span id="levelNumber">1</span>
+                        <span className="ofStage" data-i18n="EditTab.Toolbox.LeveledReaderTool.LevelOf">of</span>
+                        <span className="ofStage" id="numberOfLevels">2</span>
+                    </span>
+                    <span className="scroll-button ui-icon ui-icon-triangle-1-e" id="incLevel" />
+                </div>
+                <table className="statistics clear ui-leveled-Reader-table">
+                    <tr>
+                        <td className="section" data-i18n="EditTab.Toolbox.LeveledReaderTool.WordCounts">
+                            Word Counts
                             </td>
-                        </tr>
-                        <tr>
-                            <td
-                                className="tableTitle thisPageSection"
-                                data-i18n="EditTab.Toolbox.LeveledReaderTool.ThisPage">
-                                This Page
+                    </tr>
+                    <tr>
+                        <td
+                            className="tableTitle thisPageSection"
+                            data-i18n="EditTab.Toolbox.LeveledReaderTool.ThisPage">
+                            This Page
                             </td>
-                        </tr>
-                        <tr>
-                            <td className="statistics-label" />
-                            <td className="statistics-max" data-i18n="EditTab.Toolbox.LeveledReaderTool.Max">Max</td>
-                            <td className="statistics-actual" data-i18n="EditTab.Toolbox.LeveledReaderTool.Actual">
-                                Actual
+                    </tr>
+                    <tr>
+                        <td className="statistics-label" />
+                        <td className="statistics-max" data-i18n="EditTab.Toolbox.LeveledReaderTool.Max">Max</td>
+                        <td className="statistics-actual" data-i18n="EditTab.Toolbox.LeveledReaderTool.Actual">
+                            Actual
                             </td>
-                        </tr>
-                        <tr>
-                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.PerPage">
-                                per page </td>
-                            <td className="statistics-max" id="maxWordsPerPage" />
-                            <td className="statistics-actual" id="actualWordsPerPage">-</td>
-                        </tr>
-                        <tr>
-                            <td
-                                className="statistics-label"
-                                data-i18n="EditTab.Toolbox.LeveledReaderTool.PerSentence">
-                                longest sentence
+                    </tr>
+                    <tr>
+                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.PerPage">
+                            per page </td>
+                        <td className="statistics-max" id="maxWordsPerPage" />
+                        <td className="statistics-actual" id="actualWordsPerPage">-</td>
+                    </tr>
+                    <tr>
+                        <td
+                            className="statistics-label"
+                            data-i18n="EditTab.Toolbox.LeveledReaderTool.PerSentence">
+                            longest sentence
                             </td>
-                            <td className="statistics-max" id="maxWordsPerSentence" />
-                            <td className="statistics-actual" id="actualWordsPerSentence">-</td>
-                        </tr>
-                    </table>
-                    <table className="statistics clear ui-leveled-Reader-table">
-                        <tr>
-                            <td className="tableTitle" data-i18n="EditTab.Toolbox.LeveledReaderTool.ThisBook">
-                                This Book
+                        <td className="statistics-max" id="maxWordsPerSentence" />
+                        <td className="statistics-actual" id="actualWordsPerSentence">-</td>
+                    </tr>
+                </table>
+                <table className="statistics clear ui-leveled-Reader-table">
+                    <tr>
+                        <td className="tableTitle" data-i18n="EditTab.Toolbox.LeveledReaderTool.ThisBook">
+                            This Book
                             </td>
-                        </tr>
-                        <tr>
-                            <td className="statistics-label" />
-                            <td className="statistics-max" data-i18n="EditTab.Toolbox.LeveledReaderTool.Max">Max</td>
-                            <td className="statistics-actual" data-i18n="EditTab.Toolbox.LeveledReaderTool.Actual">
-                                Actual
+                    </tr>
+                    <tr>
+                        <td className="statistics-label" />
+                        <td className="statistics-max" data-i18n="EditTab.Toolbox.LeveledReaderTool.Max">Max</td>
+                        <td className="statistics-actual" data-i18n="EditTab.Toolbox.LeveledReaderTool.Actual">
+                            Actual
                             </td>
-                        </tr>
-                        <tr>
-                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Total">
-                                total
+                    </tr>
+                    <tr>
+                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Total">
+                            total
                             </td>
-                            <td className="statistics-max" id="maxWordsPerBook" />
-                            <td className="statistics-actual" id="actualWordCount">-</td>
-                        </tr>
-                        <tr>
-                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.PerPage">
-                                per page
+                        <td className="statistics-max" id="maxWordsPerBook" />
+                        <td className="statistics-actual" id="actualWordCount">-</td>
+                    </tr>
+                    <tr>
+                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.PerPage">
+                            per page
                             </td>
-                            <td className="statistics-max" id="maxWordsPerPageBook" />
-                            <td className="statistics-actual" id="actualWordsPerPageBook">-</td>
-                        </tr>
-                        <tr>
-                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Unique">
-                                unique
+                        <td className="statistics-max" id="maxWordsPerPageBook" />
+                        <td className="statistics-actual" id="actualWordsPerPageBook">-</td>
+                    </tr>
+                    <tr>
+                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Unique">
+                            unique
                             </td>
-                            <td className="statistics-max" id="maxUniqueWordsPerBook" />
-                            <td className="statistics-actual" id="actualUniqueWords">-</td>
-                        </tr>
-                        <tr>
-                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Average">
-                                avg per sentence
+                        <td className="statistics-max" id="maxUniqueWordsPerBook" />
+                        <td className="statistics-actual" id="actualUniqueWords">-</td>
+                    </tr>
+                    <tr>
+                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Average">
+                            avg per sentence
                             </td>
-                            <td className="statistics-max" id="maxAverageWordsPerSentence" />
-                            <td className="statistics-actual" id="actualAverageWordsPerSentence">-</td>
-                        </tr>
-                    </table>
-                    <div className="ui-leveledReader-div2" />
-                    <div className="section ui-leveledReader-div">
-                        <span data-i18n="EditTab.Toolbox.LeveledReaderTool.FoThisLevel">For this Level</span>
-                        <ul id="thingsToRemember" />
-                    </div>
-                    <div className="section ui-leveledReader-div" id="keepInMindLinks">
-                        <span data-i18n="EditTab.Toolbox.LeveledReaderTool.KeepInMind">Keep in mind</span>
-                        <ul>
-                            <li>
-                                <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Vocabulary"
-                                    href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Vocabulary">
-                                    Vocabulary
+                        <td className="statistics-max" id="maxAverageWordsPerSentence" />
+                        <td className="statistics-actual" id="actualAverageWordsPerSentence">-</td>
+                    </tr>
+                </table>
+                <div className="ui-leveledReader-div2" />
+                <div className="section ui-leveledReader-div">
+                    <span data-i18n="EditTab.Toolbox.LeveledReaderTool.FoThisLevel">For this Level</span>
+                    <ul id="thingsToRemember" />
+                </div>
+                <div className="section ui-leveledReader-div" id="keepInMindLinks">
+                    <span data-i18n="EditTab.Toolbox.LeveledReaderTool.KeepInMind">Keep in mind</span>
+                    <ul>
+                        <li>
+                            <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Vocabulary"
+                                href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Vocabulary">
+                                Vocabulary
                                 </a>
-                            </li>
-                            <li>
-                                <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Formatting"
-                                    href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Formatting">
-                                    Formatting
+                        </li>
+                        <li>
+                            <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Formatting"
+                                href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Formatting">
+                                Formatting
                                 </a>
-                            </li>
-                            <li>
-                                <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Predictability">
-                                    Predictability
+                        </li>
+                        <li>
+                            <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Predictability">
+                                Predictability
                                 </a>
-                            </li>
-                            <li>
-                                <a data-i18n="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport"
-                                    href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=IllustrationSupport">
-                                    Illustration Support
+                        </li>
+                        <li>
+                            <a data-i18n="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport"
+                                href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=IllustrationSupport">
+                                Illustration Support
                                 </a>
-                            </li>
-                            <li>
-                                <a data-i18n="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic"
-                                    href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=ChoiceOfTopic">
-                                    Choice of Topic
+                        </li>
+                        <li>
+                            <a data-i18n="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic"
+                                href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=ChoiceOfTopic">
+                                Choice of Topic
                                 </a>
-                            </li>
-                        </ul>
-                    </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         );
