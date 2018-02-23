@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="ar">صُمِمَت الكتب الكبيرة ليتمكن المدرسون من حملها وقراءتها أمام فصل دراسي.للحصول على مزيد من المعلومات، يمكنك الاطلاع على ملف PDF من Scholastic.</target>
+        <target xml:lang="ar">صُمِمَت الكتب الكبيرة ليتمكن المدرسون من حملها وقراءتها أمام فصل دراسي.للحصول على مزيد من المعلومات، يمكنك الاطلاع على ملف <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF من Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
