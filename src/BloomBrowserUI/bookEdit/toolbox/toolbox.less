@@ -24,7 +24,7 @@ div.toolboxRoot {
     }
 }
 
-.ui-accordion-header { -moz-user-select: none; }
+.ui-accordion-header { -moz-user-select: none; user-select: none;}
 span.scroll-button { color: white; float: left; }
 div.ui-accordion { padding-left: 0; padding-right: 0; }
 div.ui-accordion-content { padding-left: 3px !important; padding-right: 0 !important; }
@@ -50,7 +50,7 @@ div.checkbox {
     width: 11px !important;
     height: 11px !important;
     border: 1px solid white;
-    display: inline-block;
+    display: block;
     position: relative;
     float: left;
     margin: 2px 6px 6px;
@@ -59,12 +59,14 @@ div.checkbox {
     line-height: 4px;
     cursor: pointer;
     -moz-user-select: none;
+    user-select: none;
 }
 
 div.checkbox-label {
     position: relative;
     float: left;
     -moz-user-select: none;
+    user-select: none;
     cursor: default;
 }
 
@@ -103,14 +105,6 @@ div.checkbox-label {
 // in the tool's own less file. If your tool shouldn't have an icon you need a similar
 // rule to force it not to have a background image, since otherwise the one at
 // position 0,0 in the accordion image collection is used.
-.ui-accordion h3[data-toolId="decodableReaderTool"] span.ui-accordion-header-icon {
-    background-image:url('/bloom/images/keys-white.png') !important;
-}
-
-.ui-accordion h3[data-toolId="leveledReaderTool"] span.ui-accordion-header-icon {
-    background-image:url('/bloom/images/steps-white.png') !important;
-}
-
 .ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon {
     background-image:url('/bloom/images/microphone-white.svg') !important;
 }
