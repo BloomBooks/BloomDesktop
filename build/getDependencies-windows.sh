@@ -166,7 +166,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoWin32masterNostrongnameContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"SIL.BuildTasks.dll"=>"build/", "SIL.BuildTasks.AWS.dll"=>"build/", "AWSSDK.Core.dll"=>"build/", "AWSSDK.S3.dll"=>"build/", ""=>"", "DialogAdapters.dll"=>"lib/dotnet/", "irrKlang.NET4.dll"=>"lib/dotnet/", "Newtonsoft.Json.dll"=>"lib/dotnet/", "SIL.Core.dll"=>"lib/dotnet/", "SIL.Core.Desktop.dll"=>"lib/dotnet/", "SIL.Media.dll"=>"lib/dotnet/", "SIL.TestUtilities.dll"=>"lib/dotnet/", "SIL.Windows.Forms.dll"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.dll"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.dll"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.dll"=>"lib/dotnet/", "SIL.WritingSystems.dll"=>"lib/dotnet/", "taglib-sharp.dll"=>"lib/dotnet/"}
+#     paths: {"SIL.BuildTasks.dll"=>"build/", "SIL.BuildTasks.AWS.dll"=>"build/", "AWSSDK.Core.dll"=>"build/", "AWSSDK.S3.dll"=>"build/", ""=>"", "irrKlang.NET4.dll"=>"lib/dotnet/", "Newtonsoft.Json.dll"=>"lib/dotnet/", "SIL.Core.dll"=>"lib/dotnet/", "SIL.Core.Desktop.dll"=>"lib/dotnet/", "SIL.Media.dll"=>"lib/dotnet/", "SIL.TestUtilities.dll"=>"lib/dotnet/", "SIL.Windows.Forms.dll"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.dll"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.dll"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.dll"=>"lib/dotnet/", "SIL.WritingSystems.dll"=>"lib/dotnet/", "taglib-sharp.dll"=>"lib/dotnet/"}
 #     VCS: https://github.com/sillsdev/libpalaso.git []
 
 # make sure output directories exist
@@ -244,7 +244,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_Palaso
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.BuildTasks.AWS.dll ../build/SIL.BuildTasks.AWS.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/AWSSDK.Core.dll ../build/AWSSDK.Core.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/AWSSDK.S3.dll ../build/AWSSDK.S3.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/DialogAdapters.dll ../lib/dotnet/DialogAdapters.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/irrKlang.NET4.dll ../lib/dotnet/irrKlang.NET4.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/Newtonsoft.Json.dll ../lib/dotnet/Newtonsoft.Json.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.Core.dll ../lib/dotnet/SIL.Core.dll
