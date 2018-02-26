@@ -186,82 +186,90 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
                     <span className="scroll-button ui-icon ui-icon-triangle-1-e" id="incLevel" />
                 </div>
                 <table className="statistics clear ui-leveled-Reader-table">
-                    <tr>
-                        <td className="section" data-i18n="EditTab.Toolbox.LeveledReaderTool.WordCounts">
-                            Word Counts
+                    <thead>
+                        <tr>
+                            <td className="section" data-i18n="EditTab.Toolbox.LeveledReaderTool.WordCounts">
+                                Word Counts
                             </td>
-                    </tr>
-                    <tr>
-                        <td
-                            className="tableTitle thisPageSection"
-                            data-i18n="EditTab.Toolbox.LeveledReaderTool.ThisPage">
-                            This Page
-                            </td>
-                    </tr>
-                    <tr>
-                        <td className="statistics-label" />
-                        <td className="statistics-max" data-i18n="EditTab.Toolbox.LeveledReaderTool.Max">Max</td>
-                        <td className="statistics-actual" data-i18n="EditTab.Toolbox.LeveledReaderTool.Actual">
-                            Actual
-                            </td>
-                    </tr>
-                    <tr>
-                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.PerPage">
-                            per page </td>
-                        <td className="statistics-max" id="maxWordsPerPage" />
-                        <td className="statistics-actual" id="actualWordsPerPage">-</td>
-                    </tr>
-                    <tr>
-                        <td
-                            className="statistics-label"
-                            data-i18n="EditTab.Toolbox.LeveledReaderTool.PerSentence">
-                            longest sentence
-                            </td>
-                        <td className="statistics-max" id="maxWordsPerSentence" />
-                        <td className="statistics-actual" id="actualWordsPerSentence">-</td>
-                    </tr>
+                        </tr>
+                        <tr>
+                            <td
+                                className="tableTitle thisPageSection"
+                                data-i18n="EditTab.Toolbox.LeveledReaderTool.ThisPage">
+                                This Page
+                                </td>
+                        </tr>
+                        <tr>
+                            <td className="statistics-label" />
+                            <td className="statistics-max" data-i18n="EditTab.Toolbox.LeveledReaderTool.Max">Max</td>
+                            <td className="statistics-actual" data-i18n="EditTab.Toolbox.LeveledReaderTool.Actual">
+                                Actual
+                                </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.PerPage">
+                                per page </td>
+                            <td className="statistics-max" id="maxWordsPerPage" />
+                            <td className="statistics-actual" id="actualWordsPerPage">-</td>
+                        </tr>
+                        <tr>
+                            <td
+                                className="statistics-label"
+                                data-i18n="EditTab.Toolbox.LeveledReaderTool.PerSentence">
+                                longest sentence
+                                </td>
+                            <td className="statistics-max" id="maxWordsPerSentence" />
+                            <td className="statistics-actual" id="actualWordsPerSentence">-</td>
+                        </tr>
+                    </tbody>
                 </table>
                 <table className="statistics clear ui-leveled-Reader-table">
-                    <tr>
-                        <td className="tableTitle" data-i18n="EditTab.Toolbox.LeveledReaderTool.ThisBook">
-                            This Book
+                    <thead>
+                        <tr>
+                            <td className="tableTitle" data-i18n="EditTab.Toolbox.LeveledReaderTool.ThisBook">
+                                This Book
                             </td>
-                    </tr>
-                    <tr>
-                        <td className="statistics-label" />
-                        <td className="statistics-max" data-i18n="EditTab.Toolbox.LeveledReaderTool.Max">Max</td>
-                        <td className="statistics-actual" data-i18n="EditTab.Toolbox.LeveledReaderTool.Actual">
-                            Actual
+                        </tr>
+                        <tr>
+                            <td className="statistics-label" />
+                            <td className="statistics-max" data-i18n="EditTab.Toolbox.LeveledReaderTool.Max">Max</td>
+                            <td className="statistics-actual" data-i18n="EditTab.Toolbox.LeveledReaderTool.Actual">
+                                Actual
                             </td>
-                    </tr>
-                    <tr>
-                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Total">
-                            total
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Total">
+                                total
                             </td>
-                        <td className="statistics-max" id="maxWordsPerBook" />
-                        <td className="statistics-actual" id="actualWordCount">-</td>
-                    </tr>
-                    <tr>
-                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.PerPage">
-                            per page
+                            <td className="statistics-max" id="maxWordsPerBook" />
+                            <td className="statistics-actual" id="actualWordCount">-</td>
+                        </tr>
+                        <tr>
+                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.PerPage">
+                                per page
                             </td>
-                        <td className="statistics-max" id="maxWordsPerPageBook" />
-                        <td className="statistics-actual" id="actualWordsPerPageBook">-</td>
-                    </tr>
-                    <tr>
-                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Unique">
-                            unique
+                            <td className="statistics-max" id="maxWordsPerPageBook" />
+                            <td className="statistics-actual" id="actualWordsPerPageBook">-</td>
+                        </tr>
+                        <tr>
+                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Unique">
+                                unique
                             </td>
-                        <td className="statistics-max" id="maxUniqueWordsPerBook" />
-                        <td className="statistics-actual" id="actualUniqueWords">-</td>
-                    </tr>
-                    <tr>
-                        <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Average">
-                            avg per sentence
+                            <td className="statistics-max" id="maxUniqueWordsPerBook" />
+                            <td className="statistics-actual" id="actualUniqueWords">-</td>
+                        </tr>
+                        <tr>
+                            <td className="statistics-label" data-i18n="EditTab.Toolbox.LeveledReaderTool.Average">
+                                avg per sentence
                             </td>
-                        <td className="statistics-max" id="maxAverageWordsPerSentence" />
-                        <td className="statistics-actual" id="actualAverageWordsPerSentence">-</td>
-                    </tr>
+                            <td className="statistics-max" id="maxAverageWordsPerSentence" />
+                            <td className="statistics-actual" id="actualAverageWordsPerSentence">-</td>
+                        </tr>
+                    </tbody>
                 </table>
                 <div className="ui-leveledReader-div2" />
                 <div className="section ui-leveledReader-div">
