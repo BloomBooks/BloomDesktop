@@ -91,7 +91,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
 
     public render() {
         return (
-            <div className="musicBody">
+            <div>
                 <Div className="musicHelp"
                     l10nKey="EditTab.Toolbox.Music.Overview">You can set up background music to play
                     with this page when the book is viewed in the Bloom Reader app.</Div>

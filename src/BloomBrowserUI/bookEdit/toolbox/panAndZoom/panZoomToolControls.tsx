@@ -807,7 +807,7 @@ export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAnd
 
     public render() {
         return (
-            <div className={"ui-panAndZoomBody" + (this.state.panAndZoomPossible ? "" : " disabled")}>
+            <div className={(this.state.panAndZoomPossible ? "" : " disabled")}>
                 <Checkbox id="panAndZoom" name="panAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.ThisPage"
                     onCheckChanged={(checked) => this.onPanAndZoomChanged(checked)}
                     checked={this.state.panAndZoomChecked}>Pan and Zoom this page</Checkbox>

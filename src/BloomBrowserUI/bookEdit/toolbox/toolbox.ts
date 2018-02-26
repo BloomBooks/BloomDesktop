@@ -645,14 +645,17 @@ function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: bool
     var toolboxElt = $("#toolbox");
     var label = header.text();
 
-    // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
-    // so insert before the first one with text alphabetically greater than this (if any).
-    if (toolboxElt.children().length === 0) {
+    // Where to insert the new tool? We want to keep them alphabetical except for More...
+    // which is always last. The toolboxElt children come in pairs of h3 and div,
+    // so insert before the first h3 child with text alphabetically greater than this (if any).
+    // Earlier we were getting a problem with multiple React accordion children because the div children
+    // gave unpredictable results for the text() function below, so now we filter children for just the headers.
+    if (toolboxElt.children("h3").length === 0) {
         // none yet...this will be the "more" tool which we insert first.
         toolboxElt.append(header);
         toolboxElt.append(content);
     } else {
-        var insertBefore = toolboxElt.children().filter(function () { return $(this).text() > label; }).first();
+        var insertBefore = toolboxElt.children("h3").filter(function () { return $(this).text() > label; }).first();
         if (insertBefore.length === 0) {
             // Nothing is greater, but still insert before "More". Two children represent "More", so before the second last.
             insertBefore = $(toolboxElt.children()[toolboxElt.children.length - 2]);
