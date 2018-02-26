@@ -184,7 +184,7 @@ export class DecodableReaderControl extends React.Component<{}, IDecodableReader
  */
     public render() {
         return (
-            <div className="ui-decodableReaderBody">
+            <div>
                 <div id="setupStages" >
                     <img id="decodable-edit" src="/bloom/images/edit-white.png" />
                     <span className="setup noSelect">
