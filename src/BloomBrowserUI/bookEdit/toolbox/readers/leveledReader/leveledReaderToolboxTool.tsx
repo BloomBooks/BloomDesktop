@@ -165,7 +165,7 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
     */
     public render() {
         return (
-            <div className="ui-leveledReaderBody">
+            <div>
                 <div id="setupStages">
                     <img id="leveled-edit" src="/bloom/images/edit-white.png" />
                     <span className="setup noSelect">
