@@ -1451,6 +1451,14 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReader.Heading" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader Tool</source>
+        <note>ID: EditTab.Toolbox.DecodableReader.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReader.Heading" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader Tool</source>
+        <note>ID: EditTab.Toolbox.LeveledReader.Heading</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
