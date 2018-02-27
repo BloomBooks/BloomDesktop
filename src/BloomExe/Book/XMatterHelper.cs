@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
+using Bloom.ImageProcessing;
 using Bloom.Publish;
 using L10NSharp;
 using SIL.Extensions;
@@ -197,6 +198,8 @@ namespace Bloom.Book
 			InjectFlyleafIfNeeded(layout);
 		}
 
+		public bool TemporaryDom { get; set; }
+
 		private void CleanupBrandingImages(XmlElement newPageDiv, string branding, string bookFolderPath, Layout layout)
 		{
 			if (branding == null)
@@ -213,12 +216,15 @@ namespace Bloom.Book
 				var pathToRealImage = BrandingApi.FindBrandingImageFileIfPossible(branding, fileName, layout);
 				if (string.IsNullOrEmpty(pathToRealImage))
 				{
-					// If the book folder contains this file already, it's obsolete, from some previous branding choice.
-					// Get rid of it to save space. We might also have an obsolete file with a png extension; get rid of
-					// that too.
-					var destFileName = Path.Combine(bookFolderPath, fileName);
-					RobustFile.Delete(destFileName);
-					RobustFile.Delete(Path.ChangeExtension(destFileName, ".png"));
+					if (!TemporaryDom)
+					{
+						// If the book folder contains this file already, it's obsolete, from some previous branding choice.
+						// Get rid of it to save space. We might also have an obsolete file with a png extension; get rid of
+						// that too. Of course, if this is just for a temporary DOM, we don't want to mess with the real folder.
+						var destFileName = Path.Combine(bookFolderPath, fileName);
+						RobustFile.Delete(destFileName);
+						RobustFile.Delete(Path.ChangeExtension(destFileName, ".png"));
+					}
 					// At this point the <img> element has src api/branding/something not in the current branding.
 					// So it's not actually going to produce an image in Bloom itself. We could change it, as
 					// in the following block, so that it points to a non-existent file in the book folder,
@@ -237,13 +243,27 @@ namespace Bloom.Book
 					imageElt.ParentNode.RemoveChild(imageElt);
 				} else
 				{
-					// We want to use the original name in the book folder...for one thing, works with
-					// deletion code above...but the correct extension for the file we actually found.
-					var destFileName = Path.ChangeExtension(Path.GetFileName(fileName), Path.GetExtension(pathToRealImage));
-					RobustFile.Copy(pathToRealImage, Path.Combine(bookFolderPath, destFileName), true);
-					// Point the <img> element at the local file...which should be available since we
-					// just copied it there.
-					imageElt.SetAttribute("src", destFileName);
+					if (TemporaryDom)
+					{
+						// for a temporary DOM we don't care if the path is absolute and to something outside the book folder.
+						// It just has to work. And we don't want to modify the book folder. It does need to go through the
+						// image server, otherwise we'll get cross-domain problems. And we need the marker that prevents
+						// creating screen-only quality images.
+						imageElt.SetAttribute("src", (EnhancedImageServer.OriginalImageMarker + "/" + pathToRealImage).ToLocalhost());
+					}
+					else
+					{
+						// We want to actually copy it into the book folder, where things will work right
+						// even if someone just opens the HTML file in a context where our image server isn't
+						// running at all.
+						// We want to use the original name in the book folder...for one thing, works with
+						// deletion code above...but the correct extension for the file we actually found.
+						var destFileName = Path.ChangeExtension(Path.GetFileName(fileName), Path.GetExtension(pathToRealImage));
+						RobustFile.Copy(pathToRealImage, Path.Combine(bookFolderPath, destFileName), true);
+						// Point the <img> element at the local file...which should be available since we
+						// just copied it there.
+						imageElt.SetAttribute("src", destFileName);
+					}
 				}
 			}
 		}

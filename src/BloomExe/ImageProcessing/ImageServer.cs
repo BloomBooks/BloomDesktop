@@ -26,7 +26,7 @@ namespace Bloom.ImageProcessing
 	/// </summary>
 	public class ImageServer : ServerBase
 	{
-		protected const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for simulated pages and PDF creation)
+		public const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for simulated pages and PDF creation)
 		private RuntimeImageProcessor _cache;
 		private bool _useCache;
 
@@ -75,8 +75,8 @@ namespace Bloom.ImageProcessing
 
 				if (!RobustFile.Exists(imageFile))
 				{
-					// We didn't find the file here, and don't want to use the following else if or we could errantly 
-					// find it in the browser root. For example, this outer if (imageFile.StartsWith...) was added because 
+					// We didn't find the file here, and don't want to use the following else if or we could errantly
+					// find it in the browser root. For example, this outer if (imageFile.StartsWith...) was added because
 					// we were accidentally finding license.png in a template book. See BL-4290.
 					return false;
 				}
