@@ -3374,6 +3374,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
+        <source xml:lang="en">Bloom Reader Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
