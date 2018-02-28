@@ -2,6 +2,12 @@ files:
   - source: /DistFiles/localization/en/*.xlf
     translation: /DistFiles/localization/%two_letters_code%/%original_file_name%
     update_option: update_as_unapproved
+    language_mapping:
+        two_letters_code:
+            zh-CN: zh-CN
   - source: /DistFiles/localization/*/ReadMe-en.xlf
     translation: /%original_path%/ReadMe-%two_letters_code%.xlf
     update_option: update_as_unapproved
+    language_mapping:
+        two_letters_code:
+            zh-CN: zh-CN
