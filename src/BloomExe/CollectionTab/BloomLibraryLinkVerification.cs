@@ -20,9 +20,11 @@ namespace Bloom.CollectionTab
 			// Set localized message
 			var msg = "Note: The Bloom Library contains shell books, whereas ";
 			msg += "your current collection is a \"source collection\", meaning it is for making shell books, ";
-			msg += "not for translating them into the local language." + Environment.NewLine + Environment.NewLine;
-			msg += "When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.";
-			_message.Text = LocalizationManager.GetString("CollectionTab.bloomLibraryLinkVerification", msg, "get this clicking on BloomLibrary.org link in source collection");
+			msg += "not for translating them into the local language.";
+			var part1 = LocalizationManager.GetString("CollectionTab.BloomLibraryLinkVerification.Part1", msg, "get this clicking on BloomLibrary.org link in source collection");
+			msg = "When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.";
+			var part2 = LocalizationManager.GetString("CollectionTab.BloomLibraryLinkVerification.Part2", msg, "get this clicking on BloomLibrary.org link in source collection");
+			_message.Text = part1 + Environment.NewLine + Environment.NewLine + part2;
 
 			// Set information icon
 			// Review: Could use a larger image here...

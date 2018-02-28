@@ -175,7 +175,7 @@ namespace Bloom.Publish
 			{
 				// Need to update the xmatter in the print dom...it may use different images.
 				// Make sure we do this AFTER setting PageOrientation in Dom.
-				BookSelection.CurrentSelection.BringXmatterHtmlUpToDate(dom);
+				BookSelection.CurrentSelection.UpdateBrandingForCurrentOrientation(dom);
 			}
 			PageLayout.UpdatePageSplitMode(dom.RawDom);
 
