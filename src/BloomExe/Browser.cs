@@ -20,7 +20,6 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using L10NSharp;
-using SIL.Xml;
 
 namespace Bloom
 {
@@ -889,7 +888,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// What's going on here: the browser is just /editting displaying a copy of one page of the document.
+		/// What's going on here: the browser is just editing/displaying a copy of one page of the document.
 		/// So we need to copy any changes back to the real DOM.
 		/// </summary>
 		private void LoadPageDomFromBrowser()
@@ -906,9 +905,7 @@ namespace Bloom
 				else
 				{
 					// Assume _editDom corresponds to a frame called 'page' in the root. This may eventually need to be more configurable.
-					if (_browser.Window == null || _browser.Window.Document == null)
-						return;
-					var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
+					var frameElement = _browser.Window?.Document?.GetElementById("page") as GeckoIFrameElement;
 					if (frameElement == null)
 						return;
 					// contentDocument = frameElement.ContentDocument; unreliable in Gecko45

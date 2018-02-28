@@ -350,6 +350,8 @@ function SetupElements(container) {
     });
 
     //Convert Standard Format Markers in the pasted text to html spans
+    // Also (see BL-5575), if the parent div has .bloom-userCannotModifyStyles,
+    // only allow plain text paste.
     $(container).find("div.bloom-editable").on("paste", function (e) {
         var theEvent = e.originalEvent as ClipboardEvent;
         if (!theEvent.clipboardData)
@@ -359,6 +361,12 @@ function SetupElements(container) {
         if (s == null || s === "")
             return;
 
+        if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
+            e.preventDefault();
+            document.execCommand("insertText", false, s);
+            //NB: odd that this doesn't work?! document.execCommand("paste", false, s);
+            return;
+        }
         var re = new RegExp("\\\\v\\s(\\d+)", "g");
         var matches = re.exec(s);
         if (matches == null) {
@@ -725,11 +733,12 @@ export function bootstrap() {
     }
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
-    // but skip any element with class="bloom-userCannotModifyStyles"
+    // but skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
     var complicatedFind = ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true'],";
     complicatedFind += ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']";
     $("div.bloom-page").find(complicatedFind).each(function () {
-        if ($(this).hasClass("bloom-userCannotModifyStyles"))
+        if ($(this).hasClass("bloom-userCannotModifyStyles") ||
+            $(this).parent().hasClass("bloom-userCannotModifyStyles"))
             return; // equivalent to 'continue'
 
         if ($(this).css("cursor") === "not-allowed")
