@@ -1044,9 +1044,19 @@ namespace Bloom.Book
 			}
 		}
 
+		public void UpdateBrandingForCurrentOrientation(HtmlDom bookDOM)
+		{
+			BringXmatterHtmlUpToDate(bookDOM);
+			bookDOM.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
+		}
+
 		public void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
 		{
 			var helper = new XMatterHelper(bookDOM, BookInfo.XMatterNameOverride ?? CollectionSettings.XMatterPackName, _storage.GetFileLocator());
+			// If it's not the real book DOM we won't copy branding images into the real book folder, for fear
+			// of messing up the real book, if the temporary one is in a different orientation.
+			if (bookDOM != OurHtmlDom)
+				helper.TemporaryDom = true;
 
 			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
 			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
@@ -1060,7 +1070,7 @@ namespace Bloom.Book
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, _collectionSettings.BrandingProjectKey, _storage.FolderPath);
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
-			TranslationGroupManager.PrepareDataBookTranslationGroups(RawDom, dataBookLangs);
+			TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
 		}
 
 
