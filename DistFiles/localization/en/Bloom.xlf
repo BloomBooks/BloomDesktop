@@ -400,6 +400,16 @@
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1">
+        <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
+        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
+        <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
+        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
