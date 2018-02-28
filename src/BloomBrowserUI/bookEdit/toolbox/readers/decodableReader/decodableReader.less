@@ -1,5 +1,6 @@
 @import "../../../../templates/common-mixins.less";
-@textColor: @bloom-buff;// #0C8597;
+@textColor: @bloom-buff; // #0C8597;
+@textColor1: @bloom-lightblue;// #B0DEE4;
 @toolboxBackgroundColor: @DarkBackgroundColor;
 @buttonColumnWidth: 40px;
 
@@ -42,18 +43,36 @@
     }
 
     .ui-Decodable-Reader-td1 {
-        white-space: nowrap; 
-        padding-right: 0;
+        display:inline-block;
+        max-width:100px;        
     }
 
     .decodableReader-label {
-        display:inline-block;
-        max-width:100px;
+        white-space: nowrap; 
+        padding-right: 0;
     }
 
     .disabled {
             opacity: 0.4;
     }
+    
+    #letters-in-this-stage { 
+        margin-left: 6px; 
+        *, a{color: @textColor1;}
+    } 
+
+    #sample-words-this-stage { 
+        color: @textColor1;
+    } 
+
+    #stageNumber { 
+        padding-left:5px; 
+        padding-right:5px; 
+    } 
+ 
+    #numberOfStages { 
+        padding-left:5px; 
+    } 
 
     #decodableReader-preview {
             background-image: url(audio/play_enabled.svg);

@@ -173,15 +173,6 @@ export class DecodableReaderControl extends React.Component<{}, IDecodableReader
         this.state = { start: 1 };
     }
     //H3 data-i18n="DecodableReader"   l10nKey="EditTab.Toolbox.DecodableReader.Heading"
-    /*
-        // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
-        //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
-        <Checkbox id="panAndZoom" name="panAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.ThisPage"
-         onCheckChanged={(checked) => this.onPanAndZoomChanged(checked)}
-        checked={this.state.panAndZoomChecked}>Pan and Zoom this page</Checkbox>
-         <div className={"ui-DecodableReaderBody" + (this.state.panAndZoomPossible ? "" : " disabled")}>
-         className="ui-DecodableReaderBody"
- */
     public render() {
         return (
             <div>
