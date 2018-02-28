@@ -207,7 +207,10 @@ export default class AudioRecording {
         if (current) {
             current.removeClass('ui-audioCurrent').removeClass("disableHighlight");
         }
-        if (checking) {
+        // We might be changing to nothing (changeTo[0] is null) when doing a whole-page
+        // preview (possibly from Pan and Zoom) and there is no text or it has never
+        // been marked up by the talking book tool.
+        if (checking && changeTo[0]) {
             changeTo.addClass('disableHighlight'); // prevents highlight showing at once
             axios.get("/bloom/api/audio/checkForSegment?id=" + changeTo[0].id).then(response => {
                 if (response.data === "exists") {
