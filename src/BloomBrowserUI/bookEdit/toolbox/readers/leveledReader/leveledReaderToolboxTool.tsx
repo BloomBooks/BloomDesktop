@@ -160,8 +160,9 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
         // To minimize flash we start with both off.
         this.state = { start: 1 };
     }
-    //H3 data-i18n="LeveledReader" l10nKey="EditTab.Toolbox.LeveledReader.Heading"
-    /* className="ui-LeveledReaderBody"
+    /*
+                            For this Level</span>
+                    <ul id="thingsToRemember" />
     */
     public render() {
         return (
@@ -188,7 +189,7 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
                 <table className="statistics clear ui-leveled-Reader-table">
                     <thead>
                         <tr>
-                            <td className="section" data-i18n="EditTab.Toolbox.LeveledReaderTool.WordCounts">
+                            <td className="section ui-leveled-Reader-sect1" data-i18n="EditTab.Toolbox.LeveledReaderTool.WordCounts">
                                 Word Counts
                             </td>
                         </tr>
@@ -273,11 +274,13 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
                 </table>
                 <div className="ui-leveledReader-div2" />
                 <div className="section ui-leveledReader-div">
-                    <span data-i18n="EditTab.Toolbox.LeveledReaderTool.FoThisLevel">For this Level</span>
-                    <ul id="thingsToRemember" />
+                    <span data-i18n="EditTab.Toolbox.LeveledReaderTool.FoThisLevel"
+                        className="ui-leveled-Reader-sect1">For this Level</span>
+                    <ul />
                 </div>
                 <div className="section ui-leveledReader-div" id="keepInMindLinks">
-                    <span data-i18n="EditTab.Toolbox.LeveledReaderTool.KeepInMind">Keep in mind</span>
+                    <span data-i18n="EditTab.Toolbox.LeveledReaderTool.KeepInMind"
+                        className="ui-leveled-Reader-sect1">Keep in mind</span>
                     <ul>
                         <li>
                             <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Vocabulary"
@@ -292,7 +295,8 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
                                 </a>
                         </li>
                         <li>
-                            <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Predictability">
+                            <a data-i18n="EditTab.Toolbox.LeveledReaderTool.Predictability"
+                                href="api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=Predictability">
                                 Predictability
                                 </a>
                         </li>
