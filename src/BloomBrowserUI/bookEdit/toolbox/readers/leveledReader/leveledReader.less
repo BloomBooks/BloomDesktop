@@ -1,5 +1,6 @@
 @import "../../../../templates/common-mixins.less";
 @textColor: @bloom-buff;// #0C8597;
+@textColor1: @bloom-lightblue;// #B0DEE4;
 @toolboxBackgroundColor: @DarkBackgroundColor;
 @buttonColumnWidth: 40px;
 
@@ -35,10 +36,6 @@
         //float: right; 
     }
 
-    .ui-leveled-Reader-table{
-        margin-left: 6px;
-    }
-
     .ui-leveled-Reader-div-none{
         margin-left: 6px;
         display: none;
@@ -46,15 +43,21 @@
     
     .ui-leveled-Reader-sect1 {
         margin-left: 6px;
+        color: @textColor1;
     }
 
-    .ui-leveled-Reader-sect2 {
+    .ui-leveledReader-div {
         margin-left: 6px;
+        color: @textColor1;
     }
 
     .ui-leveled-Reader-td1 {
         white-space: nowrap; 
         padding-right: 0;
+    }
+
+    .ui-leveled-Reader-table {
+        margin-left: 6px; 
     }
 
     .leveledReader-label {
@@ -72,7 +75,7 @@
             width:45px;
     }
 
-    #leveledNumber { 
+    #levelNumber { 
         padding-left:5px; 
         padding-right:5px; 
     } 
