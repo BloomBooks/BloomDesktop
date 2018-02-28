@@ -378,9 +378,9 @@ export class PanAndZoomTool implements ITool {
         // performance over scale/transform. (https://www.kirupa.com/html5/ken_burns_effect_css.htm)
         // May also help with blurring of material originally hidden.
         const initialTransform = "scale3d(" + initialScaleWidth + ", " + initialScaleHeight
-            + ", 1.0) translate3d(-" + initialX + "px, -" + initialY + "px, 0px)";
+            + ", 1.0) translate3d(" + (-initialX) + "px, " + (-initialY) + "px, 0px)";
         const finalTransform = "scale3d(" + finalScaleWidth + ", " + finalScaleHeight
-            + ", 1.0) translate3d(-" + finalX + "px, -" + finalY + "px, 0px)";
+            + ", 1.0) translate3d(" + (-finalX) + "px, " + (-finalY) + "px, 0px)";
         //Insert the keyframe animation rule with the dynamic begin and end set
         (stylesheet as CSSStyleSheet).insertRule("@keyframes " + movePicName
             + " { from{ transform-origin: 0px 0px; transform: " + initialTransform
