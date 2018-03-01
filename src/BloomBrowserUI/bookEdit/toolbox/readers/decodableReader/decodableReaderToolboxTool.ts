@@ -79,20 +79,27 @@ export class DecodableReaderToolboxTool implements ITool {
 
         var doc = paneDOM.ownerDocument;
         theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortAlphabetically', 'Sort alphabetically', "")
-            .done(function (result) {
-                $(doc.getElementById('sortAlphabetic')).find('i').attr('title', result);
+            .done(result => {
+                this.setTitleOfI(paneDOM, "sortAlphabetic", result);
             });
 
         theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByWordLength', 'Sort by word length', "")
-            .done(function (result) {
-                $(doc.getElementById('sortLength')).find('i').attr('title', result);
+            .done(result => {
+                this.setTitleOfI(paneDOM, "sortLength", result);
             });
 
         theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByFrequency', 'Sort by frequency', "")
-            .done(function (result) {
+            .done(result => {
                 // there are actually two here, but JQuery nicely just does it
-                $(doc.getElementById('sortFrequency')).find('i').attr('title', result);
+                this.setTitleOfI(paneDOM, "sortFrequency", result);
             });
+    }
+
+    setTitleOfI(paneDOM: HTMLElement, rootId: string, val: string) {
+        // Apparently in some cases asyncGetText may return before the document is ready.
+        $(paneDOM.ownerDocument).ready(() => {
+            $(paneDOM.ownerDocument).find("#" + rootId).find("i").attr("title", val);
+        });
     }
 
     configureElements(container: HTMLElement) {

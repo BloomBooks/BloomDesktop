@@ -396,7 +396,9 @@ namespace Bloom.Edit
 		{
 			AddThumbnailListeners();
 			SelectPage(_selectedPage);
-			_browser.RunJavaScript("document.getElementById('pageGridWrapper').scrollTop =" + _verticalScrollDistance);
+			// Since we always put this element in and the document is supposed to be completed I don't see how this can not find it,
+			// but it happens, so adding defensive code...
+			_browser.RunJavaScript("if (document.getElementById('pageGridWrapper')) {document.getElementById('pageGridWrapper').scrollTop =" + _verticalScrollDistance + ";}");
 		}
 
 		private void AddThumbnailListeners()
