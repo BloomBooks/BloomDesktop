@@ -235,8 +235,13 @@ export class PanAndZoomTool implements ITool {
         // in the first image container. We want to update our UI if this changes from
         // placeholder to a 'real' image. This will need to be enhanced if we support
         // images done with background-image.
-        this.observer.observe(this.getFirstImage().getElementsByTagName("img")[0],
-            { attributes: true, attributeFilter: ["src"] });
+        const images = this.getFirstImage().getElementsByTagName("img");
+        // I'm not sure how images can be an empty list...possibly while the page is shutting down??
+        // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
+        if (images.length > 0) {
+            this.observer.observe(this.getFirstImage().getElementsByTagName("img")[0],
+                { attributes: true, attributeFilter: ["src"] });
+        }
     }
 
     // https://github.com/nefe/You-Dont-Need-jQuery says this is eqivalent to $(el).height() which
@@ -297,7 +302,8 @@ export class PanAndZoomTool implements ITool {
         const page = this.getPage();
         const pageDoc = this.getPageFrame().contentWindow.document;
         const firstImage = this.getFirstImage();
-        if (!firstImage || !(document.getElementById("panAndZoom") as HTMLInputElement).checked) {
+        if (!firstImage || !(document.getElementById("panAndZoom") as HTMLInputElement).checked
+            || this.rootControl.state.haveImageContainerButNoImage) {
             return;
         }
         let wasPlaying: boolean = this.rootControl.state.playing;
@@ -473,7 +479,12 @@ export class PanAndZoomTool implements ITool {
                 panAndZoomChecked = false;
             }
             // Enhance this if we need to support background-image approach.
-            if (firstImage.getElementsByTagName("img")[0].getAttribute("src") === "placeHolder.png") {
+            var images = firstImage.getElementsByTagName("img");
+            // I'm not quite sure how we can have no images in an image container
+            // in a non-xmatter page, but I've seen JS errors caused by it, so
+            // programming defensively. Since I don't know what causes this
+            // I'm not sure whether we want the choose picture message in this state.
+            if (images.length === 0 || images[0].getAttribute("src") === "placeHolder.png") {
                 // it's a placeholder, show the message, we need to let them choose it before
                 // we hide those controls to show ours.
                 wantChoosePictureMessage = true;
