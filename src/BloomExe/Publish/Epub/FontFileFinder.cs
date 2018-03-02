@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing.Text;
 using System.IO;
+using Bloom.web;
 #if __MonoCS__
 using SharpFont;				// Linux only (interface to libfreetype.so.6)
 #else
@@ -17,7 +18,7 @@ namespace Bloom.Publish.Epub
 	/// The dictionary and method could be static, but then, we would miss the chance to find any new fonts added since
 	/// the last operation that needed this information.
 	/// </summary>
-	class FontFileFinder
+	class FontFileFinder: IFontFinder
 	{
 		private Dictionary<string, FontGroup> FontNameToFiles { get; set; }
 
@@ -43,12 +44,25 @@ namespace Bloom.Publish.Epub
 				yield return group.Normal;
 		}
 
+		public HashSet<string> FontsWeCantInstall { get; private set; }
+
+		public bool NoteFontsWeCantInstall { get; set; }
+
 		public FontGroup GetGroupForFont(string fontName)
 		{
 		// Review Linux: very likely something here is not portable.
 			if (FontNameToFiles == null)
-			{
-				FontNameToFiles = new Dictionary<string, FontGroup>();
+				InitializeFontData();
+			FontGroup result;
+			FontNameToFiles.TryGetValue(fontName, out result);
+			return result;
+		}
+
+		private void InitializeFontData()
+		{
+			FontNameToFiles = new Dictionary<string, FontGroup>();
+			if (NoteFontsWeCantInstall)
+				FontsWeCantInstall = new HashSet<string>();
 #if __MonoCS__
 				using (var lib = new SharpFont.Library())
 				{
@@ -63,6 +77,8 @@ namespace Bloom.Publish.Epub
 								if ((embeddingTypes & EmbeddingTypes.RestrictedLicense) == EmbeddingTypes.RestrictedLicense ||
 									(embeddingTypes & EmbeddingTypes.BitmapOnly) == EmbeddingTypes.BitmapOnly)
 								{
+									if (NoteFontsWeCantInstall)
+										FontsWeCantInstall.Add(face.FamilyName);
 									continue;
 								}
 								var name = face.FamilyName;
@@ -82,64 +98,73 @@ namespace Bloom.Publish.Epub
 					}
 				}
 #else
-				foreach (var fontFile in Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)))
+			foreach (var fontFile in Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)))
+			{
+				// ePUB only understands these types, so skip anything else.
+				switch (Path.GetExtension(fontFile).ToLowerInvariant())
 				{
-					// ePUB only understands these types, so skip anything else.
-					switch (Path.GetExtension(fontFile))
-					{
-						case ".ttf":
-						case ".otf":
-						case ".woff":
-							break;
-						default:
-							continue;
-					}
-					GlyphTypeface gtf;
-					try
-					{
-						gtf = new GlyphTypeface(new Uri("file:///" + fontFile));
-					}
-					catch (Exception)
-					{
-						continue; // file is somehow corrupt or not really a font file? Just ignore it.
-					}
-					switch (gtf.EmbeddingRights)
-					{
-						case FontEmbeddingRight.Editable:
-						case FontEmbeddingRight.EditableButNoSubsetting:
-						case FontEmbeddingRight.Installable:
-						case FontEmbeddingRight.InstallableButNoSubsetting:
-						case FontEmbeddingRight.PreviewAndPrint:
-						case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
-							break;
-						default:
-							continue; // not allowed to embed (enhance: warn user?)
-					}
-
-					var fc = new PrivateFontCollection();
-					try
-					{
-						fc.AddFontFile(fontFile);
-					}
-					catch (FileNotFoundException)
-					{
-						continue; // not sure how this can happen but I've seen it.
-					}
-					var name = fc.Families[0].Name;
-					// If you care about bold, italic, etc, you can filter here.
-					FontGroup files;
-					if (!FontNameToFiles.TryGetValue(name, out files))
-					{
-						files = new FontGroup();
-						FontNameToFiles[name] = files;
-					}
-					files.Add(gtf, fontFile);
+					case ".ttf":
+					case ".otf":
+					case ".woff":
+						break;
+					default:
+						continue;
 				}
-#endif
+				GlyphTypeface gtf;
+				try
+				{
+					gtf = new GlyphTypeface(new Uri("file:///" + fontFile));
+				}
+				catch (Exception)
+				{
+					continue; // file is somehow corrupt or not really a font file? Just ignore it.
+				}
+				switch (gtf.EmbeddingRights)
+				{
+					case FontEmbeddingRight.Editable:
+					case FontEmbeddingRight.EditableButNoSubsetting:
+					case FontEmbeddingRight.Installable:
+					case FontEmbeddingRight.InstallableButNoSubsetting:
+					case FontEmbeddingRight.PreviewAndPrint:
+					case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
+						break;
+					default:
+						if (NoteFontsWeCantInstall)
+						{
+							string name1 = GetFontNameFromFile(fontFile);
+							if (name1 != null)
+								FontsWeCantInstall.Add(name1);
+						}
+						continue; // not allowed to embed
+				}
+
+				string name = GetFontNameFromFile(fontFile);
+				if (name == null)
+					continue; // not sure how this can happen but I've seen it.
+				// If you care about bold, italic, etc, you can filter here.
+				FontGroup files;
+				if (!FontNameToFiles.TryGetValue(name, out files))
+				{
+					files = new FontGroup();
+					FontNameToFiles[name] = files;
+				}
+				files.Add(gtf, fontFile);
 			}
-			FontGroup result;
-			FontNameToFiles.TryGetValue(fontName, out result);
-			return result;
+#endif
+		}
+
+		private static string GetFontNameFromFile(string fontFile)
+		{
+			var fc = new PrivateFontCollection();
+			try
+			{
+				fc.AddFontFile(fontFile);
+			}
+			catch (FileNotFoundException)
+			{
+				return null;
+			}
+			return fc.Families[0].Name;
 		}
 
 #if __MonoCS__
@@ -167,5 +192,14 @@ namespace Bloom.Publish.Epub
 			return fontFiles;
 		}
 #endif
+	}
+
+	// its public interface (for purposes of test stubbing)
+	interface IFontFinder
+	{
+		IEnumerable<string> GetFilesForFont(string fontName);
+		bool NoteFontsWeCantInstall { get; set; }
+		HashSet<string> FontsWeCantInstall { get; }
+		FontGroup GetGroupForFont(string fontName);
 	}
 }

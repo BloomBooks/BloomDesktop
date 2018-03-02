@@ -7,7 +7,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using Bloom.Publish.Epub;
+using Bloom.web;
 using BloomTemp;
+using L10NSharp;
+using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
 
@@ -22,7 +26,8 @@ namespace Bloom.Book
 	{
 		public const string QuestionFileName = "questions.json";
 
-		public static Book PrepareBookForBloomReader(Book book, BookServer bookServer, TemporaryFolder temp, Color backColor)
+		public static Book PrepareBookForBloomReader(Book book, BookServer bookServer, TemporaryFolder temp, Color backColor,
+			IWebSocketProgress progress)
 		{
 			var modifiedBook = BookCompressor.MakeDeviceXmatterTempBook(book, bookServer, temp.FolderPath);
 
@@ -51,9 +56,84 @@ namespace Bloom.Book
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
+			EmbedFonts(modifiedBook, progress, new FontFileFinder());
+
 			modifiedBook.Save();
 
 			return modifiedBook;
+		}
+
+		/// <summary>
+		/// Given a book, typically one in a temporary folder made just for exporting (or testing),
+		/// examine the CSS files and determine what fonts should be necessary. (Enhance: we could actually
+		/// load the book into a DOM and find out what font IS used for each block.)
+		/// Copy the font file for the normal style of that font family from the system font folder,
+		/// if permitted; or post a warning in progress if we can't embed it.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="progress"></param>
+		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
+		public static void EmbedFonts(Book book, IWebSocketProgress progress, IFontFinder fontFileFinder)
+		{
+			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
+			// The 'false' here says to ignore all but the first font face in CSS's ordered lists of desired font faces.
+			// If someone is publishing an Epub, they should have that font showing. For one thing, this makes it easier
+			// for us to not embed fonts we don't want/ need.For another, it makes it less likely that an epub will look
+			// different or have glyph errors when shown on a machine that does have that primary font.
+			var fontsWanted = EpubMaker.GetFontsUsed(book.FolderPath, false).ToList();
+			fontsWanted.Remove(defaultFont);
+			fontFileFinder.NoteFontsWeCantInstall = true;
+			var filesToEmbed = new List<string>();
+			foreach (var font in fontsWanted)
+			{
+				var fontFiles = fontFileFinder.GetFilesForFont(font);
+				if (fontFiles.Count() > 0)
+				{
+					filesToEmbed.AddRange(fontFiles);
+					progress.MessageWithoutLocalizing(string.Format(LocalizationManager.GetString("CheckFontOK",
+						"Checking {0} font: License OK for embedding."), font));
+					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
+					var size = new FileInfo(fontFiles.First()).Length;
+					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
+					progress.MessageWithoutLocalizing("<span style='color:blue'>" + string.Format(LocalizationManager.GetString("Embedding",
+						                                   "Embedding font {0} at a cost of {1} megs"), font, sizeToReport) + "</span>");
+					continue;
+				}
+				if (fontFileFinder.FontsWeCantInstall.Contains(font))
+				{
+					progress.ErrorWithoutLocalizing(string.Format(LocalizationManager.GetString("LicenseForbids",
+						"Checking {0} font: License does not permit embedding."), font));
+				}
+				else
+				{
+					progress.ErrorWithoutLocalizing(string.Format(LocalizationManager.GetString("NoFontFound",
+						"Checking {0} font: No font found to embed."), font));
+				}
+				progress.ErrorWithoutLocalizing(string.Format(LocalizationManager.GetString("SubstitutingAndika",
+					"Substituting \"{0}\" for \"{1}\""), defaultFont, font));
+			}
+			foreach (var file in filesToEmbed)
+			{
+				// Enhance: do we need to worry about problem characters in font file names?
+				var dest = Path.Combine(book.FolderPath, Path.GetFileName(file));
+				RobustFile.Copy(file, dest);
+			}
+			var sb = new StringBuilder();
+			foreach (var font in fontsWanted)
+			{
+				var group = fontFileFinder.GetGroupForFont(font);
+				if (group != null)
+				{
+					EpubMaker.AddFontFace(sb, font, "normal", "normal", group.Normal);
+				}
+				// We don't need (or want) a rule to use Andika instead.
+				// The reader typically WILL use Andika, because we have a rule making it the default font
+				// for the whole body of the document, and BloomReader always has it available.
+				// However, it's possible that although we aren't allowed to embed the desired font,
+				// the device actually has it installed. In that case, we want to use it.
+			}
+			RobustFile.WriteAllText(Path.Combine(book.FolderPath, "fonts.css"), sb.ToString());
+			book.OurHtmlDom.AddStyleSheet("fonts.css");
 		}
 
 		/// <summary>

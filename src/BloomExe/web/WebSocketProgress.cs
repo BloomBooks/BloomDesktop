@@ -8,7 +8,7 @@ namespace Bloom.web
 	/// <summary>
 	/// Sends localized messages to a websocket, intended for html display
 	/// </summary>
-	public class WebSocketProgress
+	public class WebSocketProgress: IWebSocketProgress
 	{
 		private readonly BloomWebSocketServer _bloomWebSocketServer;
 		public string _l10IdPrefix;
@@ -90,6 +90,26 @@ namespace Bloom.web
 		{
 			ErrorWithoutLocalizing(exception.Message);
 			ErrorWithoutLocalizing(exception.StackTrace);
+		}
+	}
+
+	// Useful where we want to substitute a test stub. Currently I'm only including the methods we actually want to
+	// use that way.
+	public interface IWebSocketProgress
+	{
+		void MessageWithoutLocalizing(string message, params object[] args);
+		void ErrorWithoutLocalizing(string message, params object[] args);
+	}
+
+	// Passing one of these where we don't need the progress report saves recipients handling nulls
+	public class NullWebSocketProgress : IWebSocketProgress
+	{
+		public void MessageWithoutLocalizing(string message, params object[] args)
+		{
+		}
+
+		public void ErrorWithoutLocalizing(string message, params object[] args)
+		{
 		}
 	}
 }
