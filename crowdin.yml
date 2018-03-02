@@ -5,9 +5,11 @@ files:
     language_mapping:
         two_letters_code:
             zh-CN: zh-CN
+            zh: zh-CN
   - source: /DistFiles/localization/*/ReadMe-en.xlf
     translation: /%original_path%/ReadMe-%two_letters_code%.xlf
     update_option: update_as_unapproved
     language_mapping:
         two_letters_code:
             zh-CN: zh-CN
+            zh: zh-CN
