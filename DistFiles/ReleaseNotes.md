@@ -30,11 +30,11 @@
         - Move the unlocking button to a more obvious location
     - Move "unlock" button there, where it will be easier to find.
 - Publish
-    - Bloom now ships with the mp3 encoder, no need to install that separately anymore if you are making talking books.
+    - Bloom now ships with the mp3 encoder ("LAME"), so you do not need to install that separately anymore in order to make talking books.
 - Art Of Reading
     - AOR 3.3 offers the new, more permissive BY-SA Creative Commons License
 - Bloom Reader
-    - You can add a "Bloom Reader Quiz" page (requires Bloom Enterprise subscription)
+    - From "Add Page", you can add a "Bloom Reader Quiz" page (one works with books published with a Bloom Enterprise subscription)
     - You can add bookshelves and sub-bookshelves (requires Bloom Enterprise subscription)
 
 ## 4.0 (current release)

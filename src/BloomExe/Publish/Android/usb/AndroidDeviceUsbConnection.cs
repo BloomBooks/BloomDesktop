@@ -75,7 +75,16 @@ namespace Bloom.Publish.Android.usb
 			if (_device == null || _bloomFolderPath == null)
 				throw new InvalidOperationException("Must connect before calling BookExists");
 
-			return _device.GetObjectFromPath(Path.Combine(_bloomFolderPath, fileName)) != null;
+			try
+			{
+				return _device.GetObjectFromPath(Path.Combine(_bloomFolderPath, fileName)) != null;
+			}
+			catch
+			{
+				// At least with our current uses of this method, it is safe to return false
+				// if we can't make a successful check. This prevents nasty messages for the user. (BL-5548)
+				return false;
+			}
 		}
 
 		public void SendBook(string bloomdPath)

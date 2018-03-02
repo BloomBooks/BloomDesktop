@@ -88,6 +88,10 @@ namespace Bloom.Api
 			if(string.IsNullOrEmpty(path))
 				path = BloomFileLocator.GetOptionalBrandingFile(branding, Path.ChangeExtension(filename, "png"));
 
+			// ... and if there is no PNG, look for a "jpg":
+			if (string.IsNullOrEmpty(path))
+				path = BloomFileLocator.GetOptionalBrandingFile(branding, Path.ChangeExtension(filename, "jpg"));
+
 			return path;
 		}
 
