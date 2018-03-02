@@ -1,15 +1,13 @@
 files:
   - source: /DistFiles/localization/en/*.xlf
-    translation: /DistFiles/localization/%locale%/%original_file_name%
+    translation: /DistFiles/localization/%two_letters_code%/%original_file_name%
     languages_mapping:
-      locale:
-        es-ES: es
-        pt-PT: pt
+      two_letters_code:
+        zh-CN: zh-CN
     update_option: update_as_unapproved
   - source: /DistFiles/localization/*/ReadMe-en.xlf
-    translation: /%original_path%/ReadMe-%locale%.xlf
+    translation: /%original_path%/ReadMe-%two_letters_code%.xlf
     languages_mapping:
-      locale:
-        es-ES: es
-        pt-PT: pt
+      two_letters_code:
+        zh-CN: zh-CN
     update_option: update_as_unapproved
