@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Windows.Media;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
