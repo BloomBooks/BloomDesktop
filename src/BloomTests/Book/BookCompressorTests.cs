@@ -3,15 +3,19 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Windows.Media;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Publish.Epub;
+using Bloom.web;
 using ICSharpCode.SharpZipLib.Zip;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
+using Color = System.Drawing.Color;
 
 namespace BloomTests.Book
 {
@@ -40,7 +44,7 @@ namespace BloomTests.Book
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 				Assert.AreEqual(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
@@ -680,6 +684,135 @@ namespace BloomTests.Book
 				});
 		}
 
+		class StubProgress : IWebSocketProgress
+		{
+			public List<string> MessagesNotLocalized = new List<string>();
+			public void MessageWithoutLocalizing(string message, params object[] args)
+			{
+				MessagesNotLocalized.Add(message);
+			}
+			public List<string> ErrorsNotLocalized = new List<string>();
+			public void ErrorWithoutLocalizing(string message, params object[] args)
+			{
+				ErrorsNotLocalized.Add(message);
+			}
+
+			public void MessageWithParams(string id, string comment, string message, params object[] parameters)
+			{
+				MessagesNotLocalized.Add(string.Format(message, parameters));
+			}
+
+			public void ErrorWithParams(string id, string comment, string message, params object[] parameters)
+			{
+				ErrorsNotLocalized.Add(string.Format(message, parameters));
+			}
+
+			public void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters)
+			{
+				MessagesNotLocalized.Add("<span style='color:" + color + "'>" + string.Format(message, parameters) + "</span>");
+			}
+		}
+
+		class StubFontFinder : IFontFinder {
+			public StubFontFinder()
+			{
+				FontsWeCantInstall = new HashSet<string>();
+			}
+			public Dictionary<string, string[]> FilesForFont = new Dictionary<string, string[]>();
+			public IEnumerable<string> GetFilesForFont(string fontName)
+			{
+				string[] result;
+				FilesForFont.TryGetValue(fontName, out result);
+				if (result == null)
+					result = new string[0];
+				return result;
+			}
+
+			public bool NoteFontsWeCantInstall { get; set; }
+			public HashSet<string> FontsWeCantInstall { get; }
+			public Dictionary<string, FontGroup> FontGroups = new Dictionary<string, FontGroup>();
+			public FontGroup GetGroupForFont(string fontName)
+			{
+				FontGroup result;
+				FontGroups.TryGetValue(fontName, out result);
+				return result;
+			}
+		}
+
+		[Test]
+		public void EmbedFonts_EmbedsExpectedFontsAndReportsOthers()
+		{
+			var bookHtml = @"<html><head>
+						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
+						<link rel='stylesheet' href='Traditional-XMatter.css' type='text/css'></link>
+						<link rel='stylesheet' href='CustomBookStyles.css' type='text/css'></link>
+						<style type='text/css' title='userModifiedStyles'>
+							/*<![CDATA[*/
+							.Times-style[lang='tpi'] { font-family: Times New Roman ! important; font-size: 12pt  }
+							/*]]>*/
+						</style>
+					</head><body>
+					<div class='bloom-page' id='guid1'></div>
+			</body></html>";
+			var testBook = CreateBookWithPhysicalFile(bookHtml, bringBookUpToDate: false);
+			var fontFileFinder = new StubFontFinder();
+			using (var tempFontFolder = new TemporaryFolder("EmbedFonts_EmbedsExpectedFontsAndReportsOthers"))
+			{
+				fontFileFinder.NoteFontsWeCantInstall = true;
+
+				// Font called for in HTML
+				var timesNewRomanFileName = "Times New Roman R.ttf";
+				var tnrPath = Path.Combine(tempFontFolder.Path, timesNewRomanFileName);
+				File.WriteAllText(tnrPath, "This is phony TNR");
+
+				// Font called for in custom styles CSS
+				var calibreFileName = "Calibre R.ttf";
+				var calibrePath = Path.Combine(tempFontFolder.Path, calibreFileName);
+				File.WriteAllBytes(calibrePath, new byte[200008]); // we want something with a size greater than zero in megs
+
+				fontFileFinder.FilesForFont["Times New Roman"] = new[] { tnrPath };
+				fontFileFinder.FilesForFont["Calibre"] = new [] { calibrePath };
+				fontFileFinder.FontsWeCantInstall.Add("NotAllowed");
+				// And "NotFound" just doesn't get a mention anywhere.
+
+				var stubProgress = new StubProgress();
+
+				var customStylesPath = Path.Combine(testBook.FolderPath, "CustomBookStyles.css");
+				File.WriteAllText(customStylesPath, ".someStyle {font-family:Calibre} .otherStyle {font-family: NotFound} .yetAnother {font-family:NotAllowed}");
+
+				var tnrGroup = new FontGroup();
+				tnrGroup.Normal = tnrPath;
+				fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
+				var calibreGroup = new FontGroup();
+				calibreGroup.Normal = calibrePath;
+				fontFileFinder.FontGroups["Calibre"] = calibreGroup;
+
+				BloomReaderFileMaker.EmbedFonts(testBook, stubProgress, fontFileFinder);
+
+				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, timesNewRomanFileName)));
+				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Times New Roman font: License OK for embedding."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("<span style='color:blue'>Embedding font Times New Roman at a cost of 0.0 megs</span>"));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Calibre font: License OK for embedding."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("<span style='color:blue'>Embedding font Calibre at a cost of 0.2 megs</span>"));
+
+				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Checking NotAllowed font: License does not permit embedding."));
+				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Substituting \"Andika New Basic\" for \"NotAllowed\""));
+				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Checking NotFound font: No font found to embed."));
+				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Substituting \"Andika New Basic\" for \"NotFound\""));
+
+				var fontSourceRulesPath = Path.Combine(testBook.FolderPath, "fonts.css");
+				var fontSource = RobustFile.ReadAllText(fontSourceRulesPath);
+				// We'd also be OK with these in the opposite order.
+				Assert.That(fontSource, Is.EqualTo("@font-face {font-family:'Times New Roman'; font-weight:normal; font-style:normal; src:url(Times New Roman R.ttf) format('opentype');}"
+					+ Environment.NewLine
+					+ "@font-face {font-family:'Calibre'; font-weight:normal; font-style:normal; src:url(Calibre R.ttf) format('opentype');}"
+					+ Environment.NewLine));
+				AssertThatXmlIn.Dom(testBook.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='fonts.css']", 1);
+			}
+
+		}
+
 		private void TestHtmlAfterCompression(string originalBookHtml, Action<string> actionsOnFolderBeforeCompressing = null,
 			Action<string> assertionsOnResultingHtmlString = null,
 			Action<ZipFile> assertionsOnZipArchive = null,
@@ -692,7 +825,7 @@ namespace BloomTests.Book
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 				var zip = new ZipFile(bloomdTempFile.Path);
 				assertionsOnZipArchive?.Invoke(zip);
 				var newHtml = GetEntryContents(zip, bookFileName);
@@ -703,7 +836,7 @@ namespace BloomTests.Book
 					using (var extraTempFile =
 						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.ExtensionForDeviceBloomBook))
 					{
-						BookCompressor.CompressBookForDevice(extraTempFile.Path, testBook, _bookServer, Color.Azure);
+						BookCompressor.CompressBookForDevice(extraTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 						zip = new ZipFile(extraTempFile.Path);
 						assertionsOnRepeat(zip);
 					}
