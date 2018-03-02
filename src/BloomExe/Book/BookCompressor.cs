@@ -12,6 +12,7 @@ using System.Drawing.Imaging;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.web;
 using BloomTemp;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
@@ -29,11 +30,11 @@ namespace Bloom.Book
 		// these files (if encountered) won't be included in the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder" };
 
-		public static void CompressBookForDevice(string outputPath, Book book, BookServer bookServer, Color backColor)
+		public static void CompressBookForDevice(string outputPath, Book book, BookServer bookServer, Color backColor, IWebSocketProgress progress)
 		{
 			using(var temp = new TemporaryFolder())
 			{
-				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp, backColor);
+				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp, backColor, progress);
 				// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 				// 64dp in Bloom Reader.
 

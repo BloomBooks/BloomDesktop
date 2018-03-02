@@ -263,7 +263,7 @@ namespace Bloom.Publish.Android
 				// wifi or usb...make the .bloomd in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
-					BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, bookServer, backColor);
+					BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, bookServer, backColor, progress);
 					sendAction(publishedFileName, bloomdTempFile.Path);
 					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
@@ -273,7 +273,7 @@ namespace Bloom.Publish.Android
 			{
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
-				BookCompressor.CompressBookForDevice(destFileName, book, bookServer, backColor);
+				BookCompressor.CompressBookForDevice(destFileName, book, bookServer, backColor, progress);
 			}
 
 		}
