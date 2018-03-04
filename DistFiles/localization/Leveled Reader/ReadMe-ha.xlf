@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="ha">
     <body>
       <trans-unit id="leveled.definition" approved="yes">
@@ -47,14 +47,14 @@
         <target xml:lang="ha">To yaya za a fitar da matakan mai karatu <g id="genid-5" ctype="x-html-em">Matakai</g> da za su dace da <g id="genid-6" ctype="x-html-em">matakan</g> maikaratu? Waɗannan abubuwa biyu suna taimakawa junansu, kuma Bloom zai baka damar tsara <g id="genid-7" ctype="x-html-em">matakin farko</g> da <g id="genid-8" ctype="x-html-em">matakin maikaratu</g> don littafin da kake rubutu. Akasari litattafai a mataki na 1 da mai yiwuwa mataki na 2 an so a rubuta su da <g id="genid-9" ctype="x-html-em">matakin karɓa</g> a cikin zuciya. Litattafai a matakin farko ko na biyu suma an so a yi taka-tsan-tsan da su game da <g id="genid-10" ctype="x-html-em">karɓuwa</g> (watau amfani da haruffan da mai karatu ya koya). Tsarin litattafai zai iya kasancewa kamar haka:</target>
         <note>ID: leveled.and.decodable</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.level" approved="yes">
+      <trans-unit id="leveled.reader.level">
         <source xml:lang="en">Leveled Reader Level</source>
-	<target />
+        <target xml:lang="ha" state="needs-translation">Leveled Reader Level</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="ha">Matakin karɓa </target>
+        <target xml:lang="ha">Matakin karɓa</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>

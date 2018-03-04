@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="leveledReaderInfo-en.html" datatype="html" source-language="en" target-language="ar">
     <body>
       <trans-unit id="leveled.reader.vocabulary" approved="yes">
@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="ar">في المستويات الأولى، احرص على استخدام كلمات بسيطة وشائعة لدى الأطفال. واحرص أيضاً على استخدام كلمات ذات مقطع واحد، إذا كانت لغتك تسمح بذلك. ومع تقدم مستويات الأطفال، سيكون بإمكانك بدء استخدام كلمات تحتوي على عدد مقاطع أكبر. ويمكنك بدء استخدام كلمات أقل شيوعاً. من المفترض أن يتمكن الأطفال من تخمين معاني هذه الكلمات الأقل شيوعاً من سياق الكلمات والجمل المحيطة، ومن الرسوم التوضيحية أيضاً. </target>
+        <target xml:lang="ar">في المستويات الأولى، احرص على استخدام كلمات بسيطة وشائعة لدى الأطفال. واحرص أيضاً على استخدام كلمات ذات مقطع واحد، إذا كانت لغتك تسمح بذلك. ومع تقدم مستويات الأطفال، سيكون بإمكانك بدء استخدام كلمات تحتوي على عدد مقاطع أكبر. ويمكنك بدء استخدام كلمات أقل شيوعاً. من المفترض أن يتمكن الأطفال من تخمين معاني هذه الكلمات الأقل شيوعاً من سياق الكلمات والجمل المحيطة، ومن الرسوم التوضيحية أيضاً.</target>
         <note>ID: leveled.reader.start.simple</note>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting" approved="yes">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
-        <target xml:lang="ar">لزيادة حجم الخط والمسافات بين الأسطر والمسافات بين الكلمات في Bloom، انقر داخل مربع النص وعلى الرمز الرمادي "cog" أسفل الجانب الأيسر. وإذا قمت بذلك ثم أنشأت نموذج لكتاب، ستتبع الكتب التي تُنشأ باستخدام هذا النموذج إعدادات الخط نفسها. </target>
+        <target xml:lang="ar">لزيادة حجم الخط والمسافات بين الأسطر والمسافات بين الكلمات في Bloom، انقر داخل مربع النص وعلى الرمز الرمادي "cog" أسفل الجانب الأيسر. وإذا قمت بذلك ثم أنشأت نموذج لكتاب، ستتبع الكتب التي تُنشأ باستخدام هذا النموذج إعدادات الخط نفسها.</target>
         <note>ID: leveled.reader.increase.sizes</note>
       </trans-unit>
       <trans-unit id="leveled.reader.predictability" approved="yes">
@@ -33,9 +33,9 @@
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
-        <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="ar"> <g id="genid-1" ctype="x-html-em">إمكانية التنبؤ</g> في النص تعني أنه يمكن للقارئ تخمين ما سيظهر بعد ذلك. ويمكنك زيادة مستوى إمكانية التنبؤ باستخدام أنماط متكررة. وفيما يلي بعض الأنماط التي يمكنك استخدامها:</target>
+        <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
+        <target xml:lang="ar">
+           <g id="genid-1" ctype="x-html-em">إمكانية التنبؤ</g> في النص تعني أنه يمكن للقارئ تخمين ما سيظهر بعد ذلك. ويمكنك زيادة مستوى إمكانية التنبؤ باستخدام أنماط متكررة. وفيما يلي بعض الأنماط التي يمكنك استخدامها:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repetition" approved="yes">
@@ -55,14 +55,11 @@
       </trans-unit>
       <trans-unit id="leveled.reader.rhyme" approved="yes">
         <source xml:lang="en">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry"><g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
 I see a red bird looking at me.
 Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
-Yellow Duck, Yellow Duck, What do you see?</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g>
-        </g>
+Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
         <target xml:lang="ar">السجع - خلق قصة ذات نمط أو تسلسل يتضمن سجعًا. مثل:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
@@ -73,6 +70,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
 جيم: جمل في الصحراء، مثل سفينة فوق الماء</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- من أغاني الأطفال الشائعة بهذا النمط</g>
         </g>
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
       </trans-unit>
@@ -85,6 +83,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
         <target xml:lang="ar">تشكل الرسوم أهمية كبيرة في دعم القصة. ويجب أن تكون الرسوم ذات صلة بالقصة بطرق مختلفة <g id="genid-5" ctype="x-html-em">ومستويات مختلفة</g> وأنواع مختلفة من القراء (راجع أدناه). لا تنس أنه في الكثير من الثقافات التي لم تعتاد على توافر مواد مطبوعة، قد يصعب استيعاب الصور المعقَّدة.
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
       </trans-unit>
@@ -92,6 +91,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <target xml:lang="ar">بالنسبة إلى <g id="genid-6" ctype="x-html-strong">القارئ الناشئ</g> يجب أن تتطابق الصور تماماً مع حبكة القصة. يجب أن يتمكن القارئ من التنبؤ بمسار القصة من خلال النظر إلى الصور فقط. ولذلك يجب أن تكون الرسوم في هذا المستوى بسيطة.
+      
       </target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
       </trans-unit>
@@ -99,6 +99,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <target xml:lang="ar">بالنسبة إلى <g id="genid-7" ctype="x-html-strong">القارئ المبتدئ</g> يجب أن تكون الصور مفيدة لدعم واستيعاب حبكة القصة. عندما يزيد حجم النص، يقل اعتماد القارئ على الصور ويزيد اعتماده على النص لاستيعاب المعنى. يمكن أن تكون الرسوم أكثر تعقيداً.
+      
       </target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
       </trans-unit>
@@ -106,6 +107,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
         <target xml:lang="ar">بالنسبة إلى <g id="genid-8" ctype="x-html-strong">القارئ الفصيح</g> يجب ألا تدعم الصور حبكة القصة كثيرا أو حتى تنعدم إضافتها. يعتمد القارئ في الاستيعاب على النص بشكل أكبر من اعتماده على الصور. يمكن أن تكون الرسوم أكثر تعقيدًا من نمط القارئ المبتدئ.
+      
       </target>
         <note>ID: leveled.reader.fluent.reader</note>
       </trans-unit>
@@ -123,6 +125,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
       </source>
         <target xml:lang="ar">بالنسبة إلى <g id="genid-9" ctype="x-html-strong">القارئ الناشئ</g> يجب أن يكون المحتوى ملموساً في الواقع، وأن يركز على فكرة واحدة أو موضوع واحد، وأن تكون لدى القارئ خلفية عن هذه الفكرة لبسهل عليهم استيعابها.
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
       </trans-unit>
@@ -130,6 +133,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
         <target xml:lang="ar">بالنسبة إلى <g id="genid-10" ctype="x-html-strong">القارئ المبتدئ</g>، ابتكر قصة تتمحور حول موضوع شائع، ولكن مع تناول تفاصيل بعمق أكبر.
+      
       </target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
       </trans-unit>
@@ -137,6 +141,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
         <target xml:lang="ar">بالنسبة إلى <g id="genid-11" ctype="x-html-strong">القارئ الفصيح</g> يمكن أن تمتد المفاهيم إلى ما دون الشائع، حاول أن تتسم هذه المفاهيم بالتنوع ، وأن تكون مجرَّدة.
+      
       </target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
       </trans-unit>

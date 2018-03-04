@@ -790,6 +790,18 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Conseguir más libros de fuente en BloomLibrary.org</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1">
+        <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
+        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+        <target xml:lang="es-ES" state="translated">Nota: La Biblioteca Bloom contiene libros prediseñados, pero su colleción actual es una "Colección de Libros Fuente", que es para crear libros prediseñados, no para traducirlos a un idioma local.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
+        <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
+        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+        <target xml:lang="es-ES" state="translated">Después de crear un libro prediseñado, lo puede cargar a la Biblioteca Bloom desde la pestaña "Publicar".</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
@@ -1085,8 +1097,9 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate" approved="yes">
-        <source xml:lang="en">Restart to Update</source>
+        <source xml:lang="en">Restart Bloom to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
+        <note>Restart the Bloom program, not Windows</note>
         <target xml:lang="es-ES">Reiniciar para actualizar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
@@ -2740,12 +2753,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Background Music Tool</source>
-        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
-        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
-        <target xml:lang="es-ES">Herramienta de música de fondo</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
@@ -2811,24 +2818,24 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Background Music</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
         <note>The label of a checkbox controlling whether music plays during preview.</note>
-        <target xml:lang="es-ES" state="needs-translation">Background Music</target>
+        <target xml:lang="es-ES" state="translated">Música de fondo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
         <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
-        <target xml:lang="es-ES" state="needs-translation">Pan and Zoom</target>
+        <target xml:lang="es-ES" state="translated">Panorámica y Zoom</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
         <source xml:lang="en">Voice</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voide</note>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voice</note>
         <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
-        <target xml:lang="es-ES" state="needs-translation">Voice</target>
+        <target xml:lang="es-ES" state="translated">Narración de voz</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom this page</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
-        <target xml:lang="es-ES" state="needs-translation">Pan and Zoom this page</target>
+        <note>ID: EditTab.Toolbox.PanAndZoom.ThisPage</note>
+        <target xml:lang="es-ES" state="translated">Usar Panorámica y Zoom en esta página</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -4277,6 +4284,30 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: PublishTab.Android.CopyToClipboard</note>
         <target xml:lang="es-ES">Copiar al portapapeles</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
+        <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="es-ES" state="needs-translation">Checking {0} font: License OK for embedding.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true">
+        <source xml:lang="en">Embedding font {0} at a cost of {1} megs</source>
+        <note>ID: PublishTab.Android.File.Progress.Embedding</note>
+        <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
+        <target xml:lang="es-ES" state="needs-translation">Embedding font {0} at a cost of {1} megs</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: License does not permit embedding.</source>
+        <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="es-ES" state="needs-translation">Checking {0} font: License does not permit embedding.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: No font found to embed.</source>
+        <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="es-ES" state="needs-translation">Checking {0} font: No font found to embed.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.File.Progress.PackagingBook</note>
@@ -4291,6 +4322,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
         <note>{0} is a file path</note>
         <target xml:lang="es-ES">Guardando como {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
+        <source xml:lang="en">Substituting "{0}" for "{1}"</source>
+        <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
+        <note>{0} and {1} are font names</note>
+        <target xml:lang="es-ES" state="needs-translation">Substituting "{0}" for "{1}"</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -6454,7 +6491,7 @@ Desea seguir?</target>
         <source xml:lang="en">For use with Landscape orientation.</source>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="es-ES" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="es-ES" state="translated">Para uso con orientación horizontal.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1</source>
@@ -6614,6 +6651,11 @@ Desea seguir?</target>
         <alt-trans>
           <target xml:lang="es-ES">Texto Básico e imagen</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
+        <source xml:lang="en">Bloom Reader Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
+        <target xml:lang="es-ES" state="translated">Prueba sobre el LectorBloom</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
@@ -6822,7 +6864,7 @@ Desea seguir?</target>
         <source xml:lang="en">Picture on Left</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="es-ES" state="needs-translation">Picture on Left</target>
+        <target xml:lang="es-ES" state="translated">Imagen a la izquierda</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz</source>
