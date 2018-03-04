@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="TrainingVideos-en.md" datatype="html" source-language="en" target-language="ar">
     <body>
       <trans-unit id="training.videos" approved="yes">
@@ -114,16 +114,16 @@
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
-        <source xml:lang="en">
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
+        <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
         <target xml:lang="ar">
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">دقة عالية</g> (ملفات كبيرة)</target>
         <note>ID: training.videos.hires</note>
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
-        <source xml:lang="en">
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
+        <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
         <target xml:lang="ar">
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">دقة منخفضة</g> (ملفات صغيرة)</target>
         <note>ID: training.videos.lores</note>
       </trans-unit>
