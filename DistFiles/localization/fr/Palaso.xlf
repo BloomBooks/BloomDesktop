@@ -17,17 +17,26 @@
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="fr">Au sujet de {0}</target>
+        <target xml:lang="fr">À propos de {0}</target>
+        <alt-trans>
+          <target xml:lang="fr">Au sujet de {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="fr">Vérifier les mises à jour</target>
+        <target xml:lang="fr">Rechercher des mises à jour</target>
+        <alt-trans>
+          <target xml:lang="fr">Vérifier les mises à jour</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="fr">Notes de version</target>
+        <target xml:lang="fr">Notes de publication</target>
+        <alt-trans>
+          <target xml:lang="fr">Notes de version</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -65,7 +74,13 @@
       <trans-unit id="Common.AbortButton" approved="yes">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="fr">‎&amp;Annuler</target>
+        <target xml:lang="fr">Abandonner</target>
+        <alt-trans>
+          <target xml:lang="fr">‎&amp;Abandonner</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">‎&amp;Annuler</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">‎&amp;amp‎;Annuler</target>
         </alt-trans>
@@ -144,7 +159,10 @@
         <source xml:lang="en">Found {0} images with names close to {1}</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="fr">Aucune image {0} trouvé dont le nom ressemble à {1}</target>
+        <target xml:lang="fr">{0} image(s) trouvée(s) dont le nom ressemble à {1}</target>
+        <alt-trans>
+          <target xml:lang="fr">Aucune image {0} trouvé dont le nom ressemble à {1}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
@@ -205,11 +223,17 @@
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
         <target xml:lang="fr">Désolé, la boîte à outils image a rencontré un problème</target>
+        <alt-trans>
+          <target xml:lang="fr">Désolé, la boîte à outils a rencontré un problème</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="fr">Sélectionner une illustration</target>
+        <target xml:lang="fr">Sélectionner une image</target>
+        <alt-trans>
+          <target xml:lang="fr">Sélectionner une illustration</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries" approved="yes">
         <source xml:lang="en">Image Galleries</source>
@@ -257,12 +281,18 @@
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="fr">fichiers illustration</target>
+        <target xml:lang="fr">fichiers image</target>
+        <alt-trans>
+          <target xml:lang="fr">fichiers illustration</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="fr">Un problème est survenu pour trouver l'image</target>
+        <target xml:lang="fr">Un problème est survenu en chargant l'image</target>
+        <alt-trans>
+          <target xml:lang="fr">Un problème est survenu pour trouver l'image</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>

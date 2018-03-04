@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="zh-CN">
     <body>
       <trans-unit id="bigbook.title" approved="yes">
@@ -44,21 +44,6 @@ If you send us that text, we can include it in a future version of the template.
 如果您需要其他语言的说明，可以删除原文本然后用自己的语言输入。
 如果您可以把用自己语言写成的文本发给我们，我们将会把它收入该模板未来的版本中。</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
-      </trans-unit>
-      <trans-unit id="bigbook.feedback" approved="yes">
-        <source xml:lang="en">Feedback</source>
-        <target xml:lang="zh-CN">反馈</target>
-        <note>ID: bigbook.feedback</note>
-      </trans-unit>
-      <trans-unit id="bigbook.feedbackvoting" approved="yes">
-        <source xml:lang="en">Please give and vote on <g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="zh-CN">请提<g id="genid-2" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">建议</g>并参与投票</target>
-        <note>ID: bigbook.feedbackvoting</note>
-      </trans-unit>
-      <trans-unit id="bigbook.reportsbugs" approved="yes">
-        <source xml:lang="en">Please report problems to <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="zh-CN">请报告问题<g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>。</target>
-        <note>ID: bigbook.reportsbugs</note>
       </trans-unit>
     </body>
   </file>
