@@ -512,6 +512,18 @@
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
         <target xml:lang="tr" state="translated">BloomLibrary.org'dan daha fazla kaynak kitaplar alın</target>
       </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1">
+        <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
+        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+        <target xml:lang="tr" state="needs-translation">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
+        <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
+        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+        <target xml:lang="tr" state="needs-translation">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
@@ -678,8 +690,9 @@
         <target xml:lang="tr" state="translated">({0}% tamamlandı)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
-        <source xml:lang="en">Restart to Update</source>
+        <source xml:lang="en">Restart Bloom to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
+        <note>Restart the Bloom program, not Windows</note>
         <target xml:lang="tr" state="translated">Güncelleştirmeyi Yeniden Başlat</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
@@ -790,10 +803,10 @@
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
         <target xml:lang="tr">&amp;Bitir</target>
       </trans-unit>
-      <trans-unit id="Common.Help" sil:dynamic="true">
+      <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
-        <target xml:lang="tr" state="translated">Yardım</target>
+        <target xml:lang="tr">Yardım</target>
       </trans-unit>
       <trans-unit id="Common.HelpButton" approved="yes">
         <source xml:lang="en">&amp;Help</source>
@@ -1796,12 +1809,6 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="tr" state="translated">Resim Fikri Mülkiyet Bilgisi</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
-        <source xml:lang="en">Background Music Tool</source>
-        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
-        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
-        <target xml:lang="tr" state="translated">Arkaplan Müzik Aracı</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
@@ -1862,13 +1869,13 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
         <source xml:lang="en">Voice</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voide</note>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voice</note>
         <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
         <target xml:lang="tr" state="needs-translation">Voice</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom this page</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
+        <note>ID: EditTab.Toolbox.PanAndZoom.ThisPage</note>
         <target xml:lang="tr" state="needs-translation">Pan and Zoom this page</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
@@ -2324,10 +2331,10 @@
         <note>ID: HelpMenu.DocumentationMenuItem</note>
         <target xml:lang="tr" state="translated">Dökümentasyon</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.Help Menu">
+      <trans-unit id="HelpMenu.Help Menu" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: HelpMenu.Help Menu</note>
-        <target xml:lang="tr" state="translated">Yardım</target>
+        <target xml:lang="tr">Yardım</target>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu_ToolTip_">
         <source xml:lang="en">Get Help</source>
@@ -2799,6 +2806,30 @@
         <note>ID: PublishTab.Android.CopyToClipboard</note>
         <target xml:lang="tr" state="translated">Panoya Kopyala</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
+        <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="tr" state="needs-translation">Checking {0} font: License OK for embedding.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true">
+        <source xml:lang="en">Embedding font {0} at a cost of {1} megs</source>
+        <note>ID: PublishTab.Android.File.Progress.Embedding</note>
+        <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
+        <target xml:lang="tr" state="needs-translation">Embedding font {0} at a cost of {1} megs</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: License does not permit embedding.</source>
+        <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="tr" state="needs-translation">Checking {0} font: License does not permit embedding.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: No font found to embed.</source>
+        <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="tr" state="needs-translation">Checking {0} font: No font found to embed.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.File.Progress.PackagingBook</note>
@@ -2810,6 +2841,12 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
         <note>{0} is a file path</note>
         <target xml:lang="tr" state="translated">{0} olarak kaydediliyor</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
+        <source xml:lang="en">Substituting "{0}" for "{1}"</source>
+        <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
+        <note>{0} and {1} are font names</note>
+        <target xml:lang="tr" state="needs-translation">Substituting "{0}" for "{1}"</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -4296,6 +4333,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
         <target xml:lang="tr" state="translated">Basit Metin &amp; Resim</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
+        <source xml:lang="en">Bloom Reader Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
+        <target xml:lang="tr" state="needs-translation">Bloom Reader Quiz</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>

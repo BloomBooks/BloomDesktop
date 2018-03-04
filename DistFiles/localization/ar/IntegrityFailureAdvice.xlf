@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="IntegrityFailureAdvice-en.md" datatype="html" source-language="en" target-language="ar">
     <body>
       <trans-unit id="integrity.title" approved="yes">
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="ar">ربما قام مشرف الكمبيوتر بقفل الكمبيوتر لمنع القيام بأنشطة سيئة، وأدى ذلك إلى تعذر Bloom عن وضع الملفات في المكان المناسب.</target>
+        <target xml:lang="ar">ربما قام مشرف الكمبيوتر بقفل الكمبيوتر لمنع القيام بأنشطة سيئة، وأدى ذلك إلى تعذر Bloom عن وضع الملفات في المكان المناسب. </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
@@ -47,28 +47,35 @@
         <target xml:lang="ar">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">الإرشادات</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Norton" approved="yes">
-        <target xml:lang="ar">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">الإرشادات من Symantec</g>.</target>
+      <trans-unit id="integrity.todo.ideas.Norton">
+        <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
+        <target xml:lang="ar" state="needs-translation">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</target>
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
-        <target xml:lang="ar">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">الإرشادات من AVG</g>.</target>
+      <trans-unit id="integrity.todo.ideas.AVG">
+        <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
+        <target xml:lang="ar" state="needs-translation">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
+        <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Others" approved="yes">
-        <target xml:lang="ar">أخرى: ابحث في Google عن "سجل القائمة البيضاء وضع اسم مكافح الفيروسات الخاص بك"</target>
+      <trans-unit id="integrity.todo.ideas.Others">
+        <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
+        <target xml:lang="ar" state="needs-translation">Others: Google for "whitelist directory name-of-your-antivirus"</target>
         <note>ID: integrity.todo.ideas.Others</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
-        <target xml:lang="ar">يمكنك تشغيل أداة تثبيت Bloom مرة أخرى، لمعرفة ما إذا كانت تعمل على نحو جيد هذه المرة أم لا.</target>
+      <trans-unit id="integrity.todo.ideas.Restart">
+        <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
+        <target xml:lang="ar" state="needs-translation">Run the Bloom installer again, and see if it starts up OK this time.</target>
         <note>ID: integrity.todo.ideas.Restart</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
-        <target xml:lang="ar">ويمكنك أيضًا محاولة استرداد الجزء الذي أخذه مكافح الفيروسات من Bloom. بالنسبة إلى AVG، عليك البحث عن قائمة "الخيارات" في AVG، والنقر على "مخزن الفيروسات"، والنقر على ملف Bloom في المخزن، والنقر بعد ذلك على "استرداد". للحصول على دليل مرئي، يمكنك الاطلاع على <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">هذه الصورة</g>.</target>
+      <trans-unit id="integrity.todo.ideas.Retrieve">
+        <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
+        <target xml:lang="ar" state="needs-translation">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
       </trans-unit>
-      <trans-unit id="integrity.missing" approved="yes">
-        <target xml:lang="ar">الملفات المفقودة</target>
+      <trans-unit id="integrity.missing">
+        <source xml:lang="en">Missing Files</source>
+        <target xml:lang="ar" state="needs-translation">Missing Files</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>

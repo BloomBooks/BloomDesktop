@@ -14,12 +14,6 @@
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
         <target xml:lang="es-ES">Los Libros Grandes están diseñados para que los profesores puedan mostrarlos y leerlos en frente de los estudiantes. Para obtener más información, lea este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Los Libros Grandes están diseñados para que los profesores pueden mostrarlos y leerlos en frente de los estudiantes. Para obtener más información, lea este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Scholastic</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Los Libros Grandes están diseñados para que los profesores pueden mostrarlos y leerlos en frente de los estudiantes. Para obtener más información, lea <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Scholastic</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
