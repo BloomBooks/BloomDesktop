@@ -608,6 +608,18 @@
           <target xml:lang="pt-PT">Obter mais de livros de fonte (origem) em BloomLibrary.org</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1">
+        <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
+        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+        <target xml:lang="pt-PT" state="needs-translation">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
+        <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
+        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+        <target xml:lang="pt-PT" state="needs-translation">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
@@ -807,8 +819,9 @@
         <target xml:lang="pt-PT" state="translated">({0}% completo)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
-        <source xml:lang="en">Restart to Update</source>
+        <source xml:lang="en">Restart Bloom to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
+        <note>Restart the Bloom program, not Windows</note>
         <target xml:lang="pt-PT" state="translated">Reinicie para atualizar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
@@ -1412,61 +1425,64 @@
         <source xml:lang="en">Big Words</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="pt-PT" state="needs-translation">Big Words</target>
+        <target xml:lang="pt-PT" state="translated">Palavras grandes</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
         <source xml:lang="en">Cover Default</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Cover-Default-style</note>
         <note>A default style for various fields usually on the Front Cover</note>
-        <target xml:lang="pt-PT" state="needs-translation">Cover Default</target>
+        <target xml:lang="pt-PT" state="translated">Capa padrão</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Credits-Page-style" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Credits-Page-style</note>
         <note>Used on the Credits page of most Front/Back Matter packs</note>
-        <target xml:lang="pt-PT" state="needs-translation">Credits Page</target>
+        <target xml:lang="pt-PT" state="translated">Página de créditos</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
         <source xml:lang="en">Equation</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="pt-PT" state="needs-translation">Equation</target>
+        <target xml:lang="pt-PT" state="translated">Equação</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading1-style" sil:dynamic="true">
         <source xml:lang="en">Heading 1</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading1-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="pt-PT" state="needs-translation">Heading 1</target>
+        <target xml:lang="pt-PT" state="translated">Cabeçalho 1</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading2-style" sil:dynamic="true">
         <source xml:lang="en">Heading 2</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading2-style</note>
         <note>A default style</note>
-        <target xml:lang="pt-PT" state="needs-translation">Heading 2</target>
+        <target xml:lang="pt-PT" state="translated">Cabeçalho 2</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.normal-style" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.normal-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="pt-PT" state="needs-translation">Normal</target>
+        <target xml:lang="pt-PT" state="translated">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Multimedia template</note>
-        <target xml:lang="pt-PT" state="needs-translation">Quiz</target>
+        <target xml:lang="pt-PT" state="translated">Questionário</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
         <note>Used on the Front Cover page of most Front/Back Matter packs</note>
-        <target xml:lang="pt-PT" state="needs-translation">Title On Cover</target>
+        <target xml:lang="pt-PT" state="translated">Título na capa</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style" sil:dynamic="true">
         <source xml:lang="en">Title On Title Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
         <note>Used on the Title Page of most Front/Back Matter packs</note>
-        <target xml:lang="pt-PT" state="needs-translation">Title On Title Page</target>
+        <target xml:lang="pt-PT" state="translated">Título na folha de rosto</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Título na página de título</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true">
         <source xml:lang="en">Don't see what you need?</source>
@@ -1597,7 +1613,7 @@
         <note>ID: EditTab.FrontMatter.BookSingleCredit</note>
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked and all the images in the book are by one illustrator. Put {0} in the translation where the image credits should go. For example in English, 'Images by {0}.' comes out like 'Images by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="pt-PT" state="needs-translation">Images by {0}.</target>
+        <target xml:lang="pt-PT" state="translated">Imagens por {0}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
         <source xml:lang="en">Book title in {lang}</source>
@@ -1630,7 +1646,7 @@
         <source xml:lang="en"> {0} (page {1})</source>
         <note>ID: EditTab.FrontMatter.MissingCredit</note>
         <note>The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.</note>
-        <target xml:lang="pt-PT" state="needs-translation"> {0} (page {1})</target>
+        <target xml:lang="pt-PT" state="translated"> {0} (página {1})</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
@@ -1736,7 +1752,7 @@
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
         <note>ID: EditTab.Image.AltMsg</note>
         <note>The {0} is replaced by the filename of the picture.</note>
-        <target xml:lang="pt-PT" state="needs-translation">This picture, {0}, is missing or was loading too slowly.</target>
+        <target xml:lang="pt-PT" state="translated">Falta esta imagem, {0}, ou estava carregando muito lento.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
         <source xml:lang="en">Change Image</source>
@@ -1770,7 +1786,7 @@
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
         <note>ID: EditTab.Image.MissingInfo</note>
-        <target xml:lang="pt-PT" state="needs-translation">Image is missing information on Credits, Copyright, or License</target>
+        <target xml:lang="pt-PT" state="translated">Esta imagem está faltando informações sobre créditos, direitos autorais, ou licença</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
         <source xml:lang="en">Paste Image</source>
@@ -1828,7 +1844,7 @@
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
         <note>ID: EditTab.NeverLocked.ToolTip</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Books are never locked in a Source Collection.</target>
+        <target xml:lang="pt-PT" state="translated">Os libros nunca estão bloqueados em uma coleçõ de fonte.</target>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName">
         <source xml:lang="en">Book</source>
@@ -2021,12 +2037,6 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="pt-PT" state="translated">Informação de propriedade intelectual da imagem</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.MusicTool" sil:dynamic="true">
-        <source xml:lang="en">Background Music Tool</source>
-        <note>ID: EditTab.Toolbox.Music.MusicTool</note>
-        <note>Background Audio is the technical term, but music is a more familiar word than audio, and that is the main intent.</note>
-        <target xml:lang="pt-PT" state="translated">Ferramenta de música de fundo</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
@@ -2080,24 +2090,24 @@
         <source xml:lang="en">Background Music</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
         <note>The label of a checkbox controlling whether music plays during preview.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Background Music</target>
+        <target xml:lang="pt-PT" state="translated">Música de fundo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
         <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
-        <target xml:lang="pt-PT" state="needs-translation">Pan and Zoom</target>
+        <target xml:lang="pt-PT" state="translated">Panorâmica e zoom</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
         <source xml:lang="en">Voice</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voide</note>
+        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voice</note>
         <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Voice</target>
+        <target xml:lang="pt-PT" state="translated">Narração</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
         <source xml:lang="en">Pan and Zoom this page</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.PanAndZoomTool</note>
-        <target xml:lang="pt-PT" state="needs-translation">Pan and Zoom this page</target>
+        <note>ID: EditTab.Toolbox.PanAndZoom.ThisPage</note>
+        <target xml:lang="pt-PT" state="translated">Usar Panorâmica e Zoom nesta página</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -2555,10 +2565,10 @@
         <note>ID: HelpMenu.DocumentationMenuItem</note>
         <target xml:lang="pt-PT" state="translated">Documentação</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.Help Menu">
+      <trans-unit id="HelpMenu.Help Menu" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: HelpMenu.Help Menu</note>
-        <target xml:lang="pt-PT" state="translated">Ajuda</target>
+        <target xml:lang="pt-PT">Ajuda</target>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu_ToolTip_">
         <source xml:lang="en">Get Help</source>
@@ -2865,7 +2875,10 @@
       <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
         <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
         <note>ID: NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional</note>
-        <target xml:lang="pt-PT" state="translated">Estes são opcionais. Bloom vai colocá-los nos lugares corretos na página de título dos livros que você criar.</target>
+        <target xml:lang="pt-PT" state="translated">Estes são opcionais. Bloom vai colocá-los nos lugares corretos na folha de rosto dos livros que você criar.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Estes são opcionais. Bloom vai colocá-los nos lugares corretos na página de título dos livros que você criar.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.Province">
         <source xml:lang="en">Province</source>
@@ -3030,6 +3043,30 @@
         <note>ID: PublishTab.Android.CopyToClipboard</note>
         <target xml:lang="pt-PT" state="translated">Copiar para Àrea de Transferência</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
+        <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="pt-PT" state="needs-translation">Checking {0} font: License OK for embedding.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true">
+        <source xml:lang="en">Embedding font {0} at a cost of {1} megs</source>
+        <note>ID: PublishTab.Android.File.Progress.Embedding</note>
+        <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
+        <target xml:lang="pt-PT" state="needs-translation">Embedding font {0} at a cost of {1} megs</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: License does not permit embedding.</source>
+        <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="pt-PT" state="needs-translation">Checking {0} font: License does not permit embedding.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
+        <source xml:lang="en">Checking {0} font: No font found to embed.</source>
+        <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
+        <note>{0} is a font name</note>
+        <target xml:lang="pt-PT" state="needs-translation">Checking {0} font: No font found to embed.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.File.Progress.PackagingBook</note>
@@ -3044,6 +3081,12 @@
         <note>ID: PublishTab.Android.File.Progress.Saving</note>
         <note>{0} is a file path</note>
         <target xml:lang="pt-PT" state="translated">Salvando como {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
+        <source xml:lang="en">Substituting "{0}" for "{1}"</source>
+        <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
+        <note>{0} and {1} are font names</note>
+        <target xml:lang="pt-PT" state="needs-translation">Substituting "{0}" for "{1}"</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -3196,6 +3239,9 @@
         <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
         <target xml:lang="pt-PT" state="translated">Erminou o envio de "{0}" para o dispositivo {1}</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">O envio de "{0}" para o dispositivo {1} esta concluído</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Sending" sil:dynamic="true">
         <source xml:lang="en">Sending "{0}" to device {1}</source>
@@ -3279,6 +3325,9 @@
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Upload</note>
         <target xml:lang="pt-PT" state="translated">Carregar</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Compartilhe (carregar) na web</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
         <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
@@ -4405,7 +4454,7 @@ Deseja continuar?</target>
         <source xml:lang="en">For use with Landscape orientation.</source>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="pt-PT" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="pt-PT" state="translated">Para uso com orientação horizontal.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1</source>
@@ -4557,6 +4606,11 @@ Deseja continuar?</target>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
         <target xml:lang="pt-PT" state="translated">Texto Básico e Imagem</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
+        <source xml:lang="en">Bloom Reader Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom Reader Quiz</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
@@ -4692,7 +4746,7 @@ Deseja continuar?</target>
         <source xml:lang="en">Picture on Left</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="pt-PT" state="needs-translation">Picture on Left</target>
+        <target xml:lang="pt-PT" state="translated">Imagem à esquerda</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>
@@ -4723,7 +4777,10 @@ Deseja continuar?</target>
       <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
         <source xml:lang="en">Title Page</source>
         <note>ID: TemplateBooks.PageLabel.Title Page</note>
-        <target xml:lang="pt-PT" state="translated">Página título</target>
+        <target xml:lang="pt-PT" state="translated">Folha de rosto</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Página título</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
