@@ -160,10 +160,6 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
         // To minimize flash we start with both off.
         this.state = { start: 1 };
     }
-    /*
-                            For this Level</span>
-                    <ul id="thingsToRemember" />
-    */
     public render() {
         return (
             <div>
@@ -276,7 +272,7 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
                 <div className="section ui-leveledReader-div">
                     <span data-i18n="EditTab.Toolbox.LeveledReaderTool.FoThisLevel"
                         className="ui-leveled-Reader-sect1">For this Level</span>
-                    <ul />
+                    <ul id="thingsToRemember" />
                 </div>
                 <div className="section ui-leveledReader-div" id="keepInMindLinks">
                     <span data-i18n="EditTab.Toolbox.LeveledReaderTool.KeepInMind"
