@@ -172,7 +172,6 @@ export class DecodableReaderControl extends React.Component<{}, IDecodableReader
         // To minimize flash we start with both off.
         this.state = { start: 1 };
     }
-    //H3 data-i18n="DecodableReader"   l10nKey="EditTab.Toolbox.DecodableReader.Heading"
     public render() {
         return (
             <div>
@@ -206,34 +205,36 @@ export class DecodableReaderControl extends React.Component<{}, IDecodableReader
                 </div>
                 <div className="section clear ui-Decodable-Reader-sect1">
                     <table>
-                        <tr>
-                            <td className="ui-Decodable-Reader-td1">
-                                <span
-                                    data-i18n="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage"
-                                    id="sample-words-this-stage">
-                                    Sample words in this stage
+                        <thead>
+                            <tr>
+                                <td className="ui-Decodable-Reader-td1">
+                                    <span
+                                        data-i18n="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage"
+                                        id="sample-words-this-stage">
+                                        Sample words in this stage
                                     </span>
-                                <span
-                                    data-i18n="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
-                                    id="allowed-words-this-stage">
-                                    Allowed words in this stage
+                                    <span
+                                        data-i18n="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
+                                        id="allowed-words-this-stage">
+                                        Allowed words in this stage
                                     </span>
-                            </td>
-                            <td className="ui-Decodable-Reader-td1">
-                                <div className="sortBlock clear">
-                                    <div className="sortItem rightBorder sortIconSelected" id="sortAlphabetic">
-                                        <i className="fa fa-sort-alpha-asc" title="Sort alphabetically" />
+                                </td>
+                                <td className="ui-Decodable-Reader-td1">
+                                    <div className="sortBlock clear">
+                                        <div className="sortItem rightBorder sortIconSelected" id="sortAlphabetic">
+                                            <i className="fa fa-sort-alpha-asc" title="Sort alphabetically" />
+                                        </div>
+                                        <div className="sortItem rightBorder" id="sortLength">
+                                            <i className="fa fa-sort-amount-asc" title="Sort by word length" />
+                                        </div>
+                                        <div className="sortItem" id="sortFrequency">
+                                            <i className="fa fa-long-arrow-up" title="Sort by frequency" />
+                                            <i className="fa fa-facebook" id="sortFrequency2" title="Sort by frequency" />
+                                        </div>
                                     </div>
-                                    <div className="sortItem rightBorder" id="sortLength">
-                                        <i className="fa fa-sort-amount-asc" title="Sort by word length" />
-                                    </div>
-                                    <div className="sortItem" id="sortFrequency">
-                                        <i className="fa fa-long-arrow-up" title="Sort by frequency" />
-                                        <i className="fa fa-facebook" id="sortFrequency2" title="Sort by frequency" />
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        </thead>
                     </table>
                 </div>
                 <div className="tableHolder clear">
