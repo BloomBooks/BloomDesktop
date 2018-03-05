@@ -165,8 +165,9 @@ export default class AudioRecording {
 
     // We only do recording in editable divs in the main content language.
     // This should NOT restrict to ones that already contain audio-sentence spans.
+    // BL-5575 But we don't (at this time) want to record comprehension questions.
     private getRecordableDivs(): JQuery {
-        return this.getPage().find('div.bloom-editable.bloom-content1');
+        return this.getPage().find(':not(.bloom-noAudio) > div.bloom-editable.bloom-content1');
     }
 
     private getAudioElements(): JQuery {
@@ -480,6 +481,11 @@ export default class AudioRecording {
 
     public updateMarkupAndControlsToCurrentText() {
         var editable = this.getRecordableDivs();
+        if (editable.length === 0) {
+            // no editable text on this page.
+            this.changeStateAndSetExpected('');
+            return;
+        }
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
