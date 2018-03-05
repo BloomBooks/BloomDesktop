@@ -299,8 +299,7 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         var opts = settings;
-        const currentStr = "current";
-        var currentTool = opts[currentStr] || "";
+        var currentTool = opts["current"] || "";
 
         // Before we set stage/level, as it initializes them to 1.
         setCurrentTool(currentTool);
@@ -455,12 +454,10 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
 
     var subpath = {
         "talkingBookTool": "talkingBook/talkingBookToolboxTool.html",
-        //"decodableReaderTool": "readers/decodableReader/decodableReaderToolboxTool.html",
-        //"leveledReaderTool": "readers/leveledReader/leveledReaderToolboxTool.html",
         "bookSettingsTool": "bookSettings/bookSettingsToolboxTool.html",
         "toolboxSettingsTool": "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
         "settingsTool": "settings/Settings.html"
-        // none for music: done in React
+        // Tools done in React are not included here.
     };
     const subPathToPremadeHtml = subpath[toolId];
     if (subPathToPremadeHtml) {
