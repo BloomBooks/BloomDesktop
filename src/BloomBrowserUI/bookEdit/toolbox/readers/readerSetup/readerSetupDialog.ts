@@ -63,8 +63,7 @@ export function showSetupDialog(showWhat) {
                         modal: true,
                         buttons: (<any>{
                                 Help: {
-                                        // For consistency, I would have made this 'Common.Help', but we already had 'HelpMenu.Help Menu' translated
-                                        text: theOneLocalizationManager.getText('HelpMenu.Help Menu', 'Help'),
+                                        text: theOneLocalizationManager.getText('Common.Help', 'Help'),
                                         class: 'left-button',
                                         click: function () {
                                                 settingsFrameWindow().postMessage('Help', '*');
@@ -130,7 +129,7 @@ function getSettingsDialogLocalizedStrings() {
         var pairs = {};
         pairs['ReaderSetup.SetUpDecodableReaderTool'] = 'Set up Decodable Reader Tool';
         pairs['ReaderSetup.SetUpLeveledReaderTool'] = 'Set up Leveled Reader Tool';
-        pairs['HelpMenu.Help Menu'] = 'Help';
+        pairs['Common.Help'] = 'Help';
         pairs['Common.OK'] = 'OK';
         pairs['Common.Cancel'] = 'Cancel';
         return pairs;

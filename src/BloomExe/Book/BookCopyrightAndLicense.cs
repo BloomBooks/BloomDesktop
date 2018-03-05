@@ -50,7 +50,7 @@ namespace Bloom.Book
 			var metadata = new Metadata();
 			if (!copyright.Empty)
 			{
-				metadata.CopyrightNotice = WebUtility.HtmlDecode(copyright.GetFirstAlternative());
+				metadata.CopyrightNotice = DecodeMultiTextBase(copyright);
 			}
 
 			if (string.IsNullOrWhiteSpace(licenseUrl))
@@ -59,7 +59,7 @@ namespace Bloom.Book
 				//custom licenses live in this field, so if we have notes (and no URL) it is a custom one.
 				if (!licenseNotes.Empty)
 				{
-					metadata.License = new CustomLicense {RightsStatement = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative())};
+					metadata.License = new CustomLicense { RightsStatement = DecodeMultiTextBase(licenseNotes) };
 				}
 				else
 				{
@@ -89,11 +89,15 @@ namespace Bloom.Book
 				//are there notes that go along with that?
 				if (!licenseNotes.Empty)
 				{
-					var s = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative());
-					metadata.License.RightsStatement = HtmlDom.ConvertHtmlBreaksToNewLines(s);
+					metadata.License.RightsStatement = DecodeMultiTextBase(licenseNotes);
 				}
 			}
 			return metadata;
+		}
+
+		private static string DecodeMultiTextBase(MultiTextBase multistring)
+		{
+			return HtmlDom.ConvertHtmlBreaksToNewLines(WebUtility.HtmlDecode(multistring.GetFirstAlternative()));
 		}
 
 		private static string GetLicenseUrl(HtmlDom dom)
@@ -136,7 +140,7 @@ namespace Bloom.Book
 		/// </summary>
 		public static void SetMetadata(Metadata metadata, HtmlDom dom, string bookFolderPath, CollectionSettings collectionSettings)
 		{
-			dom.SetBookSetting("copyright","*",metadata.CopyrightNotice);
+			dom.SetBookSetting("copyright","*", ConvertNewLinesToHtmlBreaks(metadata.CopyrightNotice));
 			dom.SetBookSetting("licenseUrl","*",metadata.License.Url);
 			// This is for backwards compatibility. The book may have  licenseUrl in 'en' created by an earlier version of Bloom.
 			// For backwards compatibiilty, GetMetaData will read that if it doesn't find a '*' license first. So now that we're
