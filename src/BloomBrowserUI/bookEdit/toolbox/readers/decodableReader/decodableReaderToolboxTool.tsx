@@ -2,14 +2,16 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { DRTState, getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
-import { H3, Div, IUILanguageAwareProps, Label } from "../../../../react_components/l10n";
+import { H3, Div, Span, IUILanguageAwareProps, Label } from "../../../../react_components/l10n";
+import Link from "../../../../react_components/link";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { ToolBox, ITool } from "../../toolbox";
+import { EditTool } from "../../../toolbox/editTool";
 import axios from "axios";
 
 //There is a line in toolboxBootstrap.ts which causes this to be included in the master toolbox
 //It adds an instance of DecodableReaderToolboxTool to ToolBox.getMasterToolList().
-export class DecodableReaderToolboxTool implements ITool {
+export class DecodableReaderToolboxTool extends EditTool {
     rootControl: DecodableReaderControl;
     makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
@@ -18,17 +20,16 @@ export class DecodableReaderToolboxTool implements ITool {
             <DecodableReaderControl />,
             root
         );
-        const initialState = this.getStateFromHtml();
-        this.rootControl.setState(initialState);
+        this.rootControl.setState(this.getStateFromHtml());
         return root as HTMLDivElement;
     }
 
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
-            const leveledReaderStr = "decodableReaderState";
-            if (settings[leveledReaderStr]) {
+            const decodableReaderStr = "decodableReaderState";
+            if (settings[decodableReaderStr]) {
                 var state = new DRTState();
-                var decState = settings[leveledReaderStr];
+                var decState = settings[decodableReaderStr];
                 if (decState.startsWith("stage:")) {
                     var parts = decState.split(";");
                     var stage = parseInt(parts[0].substring("stage:".length), 10);
@@ -51,10 +52,6 @@ export class DecodableReaderToolboxTool implements ITool {
                 });
             }
         });
-    }
-
-    isAlwaysEnabled(): boolean {
-        return false;
     }
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
@@ -90,10 +87,6 @@ export class DecodableReaderToolboxTool implements ITool {
         this.setupReaderKeyAndFocusHandlers(container);
     }
     // Some things were impossible to do i18n on via the jade/pug
-    // This gives us a hook to finish up the more difficult spots
-    finishToolLocalization(pane: HTMLElement) { }
-    // Unneeded in Decodable Reader, since Bloom.web.ExternalLinkController
-    // 'translates' external links to include the current UI language.
     /* tslint:enable:no-empty */
 
     updateMarkup() {
@@ -118,46 +111,10 @@ export class DecodableReaderToolboxTool implements ITool {
         return "decodableReader";
     }
 
-    //Do we need from here down?
-
-    observer: MutationObserver;
-    updateDecodableReaderState(): void {
-        this.rootControl.setState({ start: 1 });
-        this.observer.disconnect();
-        this.updateMarkup(); // one effect is to show the rectangles.
-    }
-    updateDataAttributes(): void {
-        const page = this.getPage();
-    }
-    private wrapperClassName = "bloom-ui-animationWrapper";
-    public getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById("page") as HTMLIFrameElement;
-    }
-
-    // The document object of the editable page, a root for searching for document content.
-    public getPage(): HTMLDocument {
-        var page = this.getPageFrame();
-        if (!page) return null;
-        return page.contentWindow.document;
-    }
-
-    setupObserver(): void {
-        // Arrange to update things when they DO change the Level.
-        this.observer = new MutationObserver(() => this.updateDecodableReaderState());
-    }
-
     getStateFromHtml(): IDecodableReaderState {
         let level = 1;
         return { start: level };
     }
-
-    // public setup(root): DecodableReaderControl {
-    //     return ReactDOM.render(
-    //         <DecodableReaderControl />,
-    //         root
-    //     );
-    // }
-
 }
 
 interface IDecodableReaderState {
@@ -172,86 +129,89 @@ export class DecodableReaderControl extends React.Component<{}, IDecodableReader
         // To minimize flash we start with both off.
         this.state = { start: 1 };
     }
-    //H3 data-i18n="DecodableReader"   l10nKey="EditTab.Toolbox.DecodableReader.Heading"
     public render() {
         return (
             <div>
                 <div id="setupStages" >
                     <img id="decodable-edit" src="/bloom/images/edit-white.png" />
                     <span className="setup noSelect">
-                        <a data-i18n="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
-                            href="javascript:window.FrameExports.showSetupDialog('stages');">
+                        <Link l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
+                            id="showSetupDialog-stages" href="javascript:window.FrameExports.showSetupDialog('stages');">
                             Set up Stages
-                            </a>
+                            </Link>
                     </span>
                 </div>
                 <div className="stageLine clear noSelect">
                     <span className="scroll-button ui-icon ui-icon-triangle-1-w" id="decStage" />
                     <span className="stageLabel stageLine noSelect ui-Decodable-Reader-span1">
-                        <span data-i18n="EditTab.Toolbox.DecodableReaderTool.Stage"> Stage </span>
+                        <Span l10nKey="EditTab.Toolbox.DecodableReaderTool.Stage"> Stage </Span>
                         <span id="stageNumber"> 1 </span>
-                        <span className="ofStage ui-Decodable-Reader-span1"
-                            data-i18n="EditTab.Toolbox.DecodableReaderTool.StageOf"> of </span>
+                        <Span className="ofStage ui-Decodable-Reader-span1"
+                            l10nKey="EditTab.Toolbox.DecodableReaderTool.StageOf"> of </Span>
                         <span className="ofStage ui-Decodable-Reader-span1" id="numberOfStages"> 2 </span>
                     </span>
                     <span className="scroll-button ui-icon ui-icon-triangle-1-e" id="incStage" />
                 </div>
-                <div className="section clear ui-Decodable-Reader-sect1" id="letters-in-this-stage">
-                    <span data-i18n="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
+                <div className="section clear ui-Decodable-Reader-letters-words" id="letters-in-this-stage">
+                    <Span l10nKey="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
                         Letters in this stage
-                        </span>
+                        </Span>
                 </div>
                 <div className="tableHolder clear" id="lettersTable">
                     <div className="letterList" id="letterList" />
                 </div>
-                <div className="section clear ui-Decodable-Reader-sect1">
+                <div className="section clear ui-Decodable-Reader-letters-words">
                     <table>
-                        <tr>
-                            <td className="ui-Decodable-Reader-td1">
-                                <span
-                                    data-i18n="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage"
-                                    id="sample-words-this-stage">
-                                    Sample words in this stage
-                                    </span>
-                                <span
-                                    data-i18n="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
-                                    id="allowed-words-this-stage">
-                                    Allowed words in this stage
-                                    </span>
-                            </td>
-                            <td className="ui-Decodable-Reader-td1">
-                                <div className="sortBlock clear">
-                                    <div className="sortItem rightBorder sortIconSelected" id="sortAlphabetic">
-                                        <i className="fa fa-sort-alpha-asc" title="Sort alphabetically" />
+                        <thead>
+                            <tr>
+                                <td className="ui-Decodable-Reader-words">
+                                    <Span
+                                        l10nKey="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage"
+                                        className="sample-words-this-stage">
+                                        Sample words in this stage
+                                    </Span>
+                                    <Span
+                                        l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
+                                        className="allowed-words-this-stage">
+                                        Allowed words in this stage
+                                    </Span>
+                                </td>
+                                <td className="ui-Decodable-Reader-td1">
+                                    <div className="sortBlock clear">
+                                        <div className="sortItem rightBorder sortIconSelected" id="sortAlphabetic">
+                                            <i className="fa fa-sort-alpha-asc" title="Sort alphabetically" />
+                                        </div>
+                                        <div className="sortItem rightBorder" id="sortLength">
+                                            <i className="fa fa-sort-amount-asc" title="Sort by word length" />
+                                        </div>
+                                        <div className="sortItem" id="sortFrequency">
+                                            <i className="fa fa-long-arrow-up" title="Sort by frequency" />
+                                            <i className="fa fa-facebook" id="sortFrequency2" title="Sort by frequency" />
+                                        </div>
                                     </div>
-                                    <div className="sortItem rightBorder" id="sortLength">
-                                        <i className="fa fa-sort-amount-asc" title="Sort by word length" />
-                                    </div>
-                                    <div className="sortItem" id="sortFrequency">
-                                        <i className="fa fa-long-arrow-up" title="Sort by frequency" />
-                                        <i className="fa fa-facebook" id="sortFrequency2" title="Sort by frequency" />
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        </thead>
                     </table>
                 </div>
                 <div className="tableHolder clear">
                     <div className="wordList" id="wordList" />
                 </div>
                 <div className="clear" id="make-letter-word-list-div">
-                    <a data-i18n="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
+                    <Link l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
                         href="javascript:FrameExports.makeLetterWordList();"
                         id="make-letter-word-list">
                         Generate a letter and word list report
-                        </a>
+                        </Link>
                 </div>
-                <div className="clear ui-Decodable-Reader-div-red" id="allowed-word-list-truncated" />
-                <div className="clear ui-Decodable-Reader-div-none" id="hiddenWordListForDecodableReader">
-                    <label data-i18n="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
-                        id="allowed_word_list_truncated_text">
+                <div className="clear ui-Decodable-Reader-letters-words ui-Decodable-Reader-red-font"
+                    id="allowed-word-list-truncated" />
+                <div className="clear ui-Decodable-Reader-letters-words ui-Decodable-Reader-no-display"
+                    id="hiddenWordListForDecodableReader">
+                    <Label l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
+                        className="allowed_word_list_truncated_text">
                         Bloom can handle only the first {0} words.
-                        </label>
+                        </Label>
                 </div>
             </div>
         );

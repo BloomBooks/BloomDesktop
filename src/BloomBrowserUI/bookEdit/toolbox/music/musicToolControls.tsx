@@ -6,6 +6,7 @@ import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
+import { EditTool } from "../../toolbox/editTool";
 import "./music.less";
 
 interface IMusicState {
@@ -325,22 +326,13 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 }
 
-export class MusicTool implements ITool {
+export class MusicTool extends EditTool {
     reactControls: MusicToolControls;
     makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "musicBody");
         this.reactControls = MusicToolControls.setup(root);
         return root as HTMLDivElement;
-    }
-    isAlwaysEnabled(): boolean {
-        return false;
-    }
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
-        // Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
     }
     showTool() {
         this.updateMarkup();
@@ -362,10 +354,4 @@ export class MusicTool implements ITool {
     id(): string {
         return "music";
     }
-    // required for ITool interface
-    hasRestoredSettings: boolean;
-    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
-    configureElements(container: HTMLElement) { }
-    finishToolLocalization(pane: HTMLElement) { }
-    /* tslint:enable:no-empty */
 }

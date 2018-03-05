@@ -152,6 +152,25 @@ export class P extends LocalizableElement<ILocalizationProps, ILocalizationState
     }
 }
 
+export class Span extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+    render() {
+        return (
+            <span className={this.getClassName()}>
+                {this.getLocalizedContent()}
+            </span>
+        );
+    }
+}
+
+export class Td extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+    render() {
+        return (
+            <td className={this.getClassName()}>
+                {this.getLocalizedContent()}
+            </td>
+        );
+    }
+}
 export class Div extends LocalizableElement<ILocalizationProps, ILocalizationState> {
     render() {
         return (

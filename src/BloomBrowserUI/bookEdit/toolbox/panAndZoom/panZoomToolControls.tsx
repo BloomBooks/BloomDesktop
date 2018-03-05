@@ -11,12 +11,13 @@ import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 import { Checkbox } from "../../../react_components/checkbox";
 import { MusicToolControls } from "../music/musicToolControls";
+import { EditTool } from "../../toolbox/editTool";
 import "./panAndZoom.less";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
 // ToolBox.registerTool(new PanAndZoomTool());.
-export class PanAndZoomTool implements ITool {
+export class PanAndZoomTool extends EditTool {
     rootControl: PanAndZoomControl;
     animationStyleElement: HTMLStyleElement;
     animationWrapDiv: HTMLElement;
@@ -48,16 +49,6 @@ export class PanAndZoomTool implements ITool {
         result.resolve();
         return result;
     }
-    isAlwaysEnabled(): boolean {
-        return false;
-    }
-
-    // required for ITool interface
-    hasRestoredSettings: boolean;
-    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
-    configureElements(container: HTMLElement) { }
-    finishToolLocalization(pane: HTMLElement) { }
-    /* tslint:enable:no-empty */
 
     updateMarkup() {
         // This isn't exactly updating the markup, but it needs to happen when we switch pages,
