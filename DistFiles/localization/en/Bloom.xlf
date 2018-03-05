@@ -1529,10 +1529,6 @@
         <source xml:lang="en">Pan and Zoom this page</source>
         <note>ID: EditTab.Toolbox.PanAndZoom.ThisPage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
-        <source xml:lang="en">Decodable Reader Tool</source>
-        <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
@@ -1605,10 +1601,6 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
-        <source xml:lang="en">Leveled Reader Tool</source>
-        <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
         <source xml:lang="en">Actual</source>

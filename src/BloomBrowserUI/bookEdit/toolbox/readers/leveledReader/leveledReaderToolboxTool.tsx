@@ -5,11 +5,12 @@ import { DRTState, getTheOneReaderToolsModel, MarkupType } from "../readerToolsM
 import { H3, Div, IUILanguageAwareProps, Label } from "../../../../react_components/l10n";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { ToolBox, ITool } from "../../toolbox";
+import { EditTool } from "../../../toolbox/editTool";
 import axios from "axios";
 
 //There is a line in toolboxBootstrap.ts which causes this to be included in the master toolbox
 //It adds and instance of LeveledReaderToolboxTool to ToolBox.getMasterToolList().
-export class LeveledReaderToolboxTool implements ITool {
+export class LeveledReaderToolboxTool extends EditTool {
     rootControl: LeveledReaderControl;
     makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
@@ -18,8 +19,7 @@ export class LeveledReaderToolboxTool implements ITool {
             <LeveledReaderControl />,
             root
         );
-        const initialState = this.getStateFromHtml();
-        this.rootControl.setState(initialState);
+        this.rootControl.setState(this.getStateFromHtml());
         return root as HTMLDivElement;
     }
 
@@ -41,10 +41,6 @@ export class LeveledReaderToolboxTool implements ITool {
         });
     }
 
-    isAlwaysEnabled(): boolean {
-        return false;
-    }
-
     showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
@@ -62,18 +58,11 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    // required for ITool interface
-    hasRestoredSettings: boolean;
     /* tslint:disable:no-empty */
     // We need these to implement the interface, but don't need them to do anything.
     configureElements(container: HTMLElement) {
         this.setupReaderKeyAndFocusHandlers(container);
     }
-    // Some things were impossible to do i18n on via the jade/pug
-    // This gives us a hook to finish up the more difficult spots
-    finishToolLocalization(pane: HTMLElement) { }
-    // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
-    // 'translates' external links to include the current UI language.
     /* tslint:enable:no-empty */
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
@@ -160,10 +149,6 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
         // To minimize flash we start with both off.
         this.state = { start: 1 };
     }
-    /*
-                            For this Level</span>
-                    <ul id="thingsToRemember" />
-    */
     public render() {
         return (
             <div>
@@ -276,7 +261,7 @@ export class LeveledReaderControl extends React.Component<{}, ILeveledReaderStat
                 <div className="section ui-leveledReader-div">
                     <span data-i18n="EditTab.Toolbox.LeveledReaderTool.FoThisLevel"
                         className="ui-leveled-Reader-sect1">For this Level</span>
-                    <ul />
+                    <ul id="thingsToRemember" />
                 </div>
                 <div className="section ui-leveledReader-div" id="keepInMindLinks">
                     <span data-i18n="EditTab.Toolbox.LeveledReaderTool.KeepInMind"

@@ -299,8 +299,7 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         var opts = settings;
-        const currentStr = "current";
-        var currentTool = opts[currentStr] || "";
+        var currentTool = opts["current"] || "";
 
         // Before we set stage/level, as it initializes them to 1.
         setCurrentTool(currentTool);
@@ -455,12 +454,10 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
 
     var subpath = {
         "talkingBookTool": "talkingBook/talkingBookToolboxTool.html",
-        //"decodableReaderTool": "readers/decodableReader/decodableReaderToolboxTool.html",
-        //"leveledReaderTool": "readers/leveledReader/leveledReaderToolboxTool.html",
         "bookSettingsTool": "bookSettings/bookSettingsToolboxTool.html",
         "toolboxSettingsTool": "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
         "settingsTool": "settings/Settings.html"
-        // none for music: done in React
+        // Tools done in React are not included here.
     };
     const subPathToPremadeHtml = subpath[toolId];
     if (subPathToPremadeHtml) {
@@ -642,23 +639,23 @@ function loadToolboxToolText(newContent, toolId, openTool: boolean) {
 }
 function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: boolean) {
 
-    var toolboxElt = $("#toolbox");
+    var toolboxElement = $("#toolbox");
     var label = header.text();
 
     // Where to insert the new tool? We want to keep them alphabetical except for More...
-    // which is always last. The toolboxElt children come in pairs of h3 and div,
+    // which is always last. The toolboxElement children come in pairs of h3 and div,
     // so insert before the first h3 child with text alphabetically greater than this (if any).
     // Earlier we were getting a problem with multiple React accordion children because the div children
     // gave unpredictable results for the text() function below, so now we filter children for just the headers.
-    if (toolboxElt.children("h3").length === 0) {
+    if (toolboxElement.children("h3").length === 0) {
         // none yet...this will be the "more" tool which we insert first.
-        toolboxElt.append(header);
-        toolboxElt.append(content);
+        toolboxElement.append(header);
+        toolboxElement.append(content);
     } else {
-        var insertBefore = toolboxElt.children("h3").filter(function () { return $(this).text() > label; }).first();
+        var insertBefore = toolboxElement.children("h3").filter(function () { return $(this).text() > label; }).first();
         if (insertBefore.length === 0) {
             // Nothing is greater, but still insert before "More". Two children represent "More", so before the second last.
-            insertBefore = $(toolboxElt.children()[toolboxElt.children.length - 2]);
+            insertBefore = $(toolboxElement.children()[toolboxElement.children.length - 2]);
         }
         header.insertBefore(insertBefore);
         content.insertBefore(insertBefore);
@@ -666,10 +663,10 @@ function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: bool
 
     // if requested, open the tool that was just inserted
     if (openTool && toolbox.toolboxIsShowing()) {
-        toolboxElt.accordion("refresh");
+        toolboxElement.accordion("refresh");
         var id = header.attr("id");
         var toolNumber = parseInt(id.substr(id.lastIndexOf("_")), 10);
-        toolboxElt.accordion("option", "active", toolNumber); // must pass as integer
+        toolboxElement.accordion("option", "active", toolNumber); // must pass as integer
     }
 }
 

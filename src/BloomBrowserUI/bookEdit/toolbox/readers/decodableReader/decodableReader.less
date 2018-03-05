@@ -1,13 +1,15 @@
 @import "../../../../templates/common-mixins.less";
-@textColor: @bloom-buff; // #0C8597;
-@textColor1: @bloom-lightblue;// #B0DEE4;
+@textColor: @bloom-beige;
+@headingColor: @bloom-lightblue;
 @toolboxBackgroundColor: @DarkBackgroundColor;
 @buttonColumnWidth: 40px;
-
+@marginWidth: 6px;
+@bodyPaddingSize: 15px;
+@stagePaddingSize: 5px;
 
 .ui-decodableReaderBody{
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: @paddingSize;
+    padding-right: @paddingSize;
     *, a{color: @textColor;}
     background-color: @toolboxBackgroundColor;
 
@@ -23,56 +25,50 @@
             display:inline-block;
             margin-bottom:5px;
     }
-    
-    .ui-Decodable-Reader-div-red{
-        margin-left: 6px;
+
+    .ui-Decodable-Reader-red-font {
         color: red;
     }
 
-    .ui-Decodable-Reader-div-none{
-        margin-left: 6px;
+    .ui-Decodable-Reader-no-display {
         display: none;
-    }    
-    
-    .ui-Decodable-Reader-sect1 {
-        margin-left: 6px;
     }
 
-    .ui-Decodable-Reader-sect2 {
-        margin-left: 6px;
+    .ui-Decodable-Reader-letters-words {
+        margin-left: @marginWidth;
     }
 
-    .ui-Decodable-Reader-td1 {
+    .ui-Decodable-Reader-words {
         display:inline-block;
-        max-width:100px;        
+        max-width:100px;
     }
 
     .decodableReader-label {
-        white-space: nowrap; 
+        white-space: nowrap;
         padding-right: 0;
     }
 
     .disabled {
             opacity: 0.4;
     }
-    
-    #letters-in-this-stage { 
-        margin-left: 6px; 
-        *, a{color: @textColor1;}
-    } 
 
-    #sample-words-this-stage { 
-        color: @textColor1;
-    } 
+    #letters-in-this-stage {
+        margin-left: @marginWidth;
+        *, a{color: @headingColor;}
+    }
 
-    #stageNumber { 
-        padding-left:5px; 
-        padding-right:5px; 
-    } 
- 
-    #numberOfStages { 
-        padding-left:5px; 
-    } 
+    #sample-words-this-stage {
+        color: @headingColor;
+    }
+
+    #stageNumber {
+        padding-left: @stagePaddingSize;
+        padding-right: @stagePaddingSize;
+    }
+
+    #numberOfStages {
+        padding-left: @stagePaddingSize;
+    }
 
     #decodableReader-preview {
             background-image: url(audio/play_enabled.svg);
