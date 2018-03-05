@@ -243,7 +243,7 @@ namespace Bloom.Publish.Android.wifi
 				// This method is called on a background thread in response to receiving a request from Bloom Reader.
 				// Exceptions somehow get discarded, so there is no point in letting them propagate further.
 				_progress.Error(id: "Failed",
-					message: "Sending the book failed. Possibly the device was disconnected? If you can't see a "
+					message: "There was an error while sending the book. Possibly the device was disconnected? If you can't see a "
 					         + "reason for this the following may be helpful to report to the developers:");
 				_progress.Exception(e);
 			}
