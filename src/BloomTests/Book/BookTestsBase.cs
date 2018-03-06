@@ -108,7 +108,7 @@ namespace BloomTests.Book
 		}
 
 		[TearDown]
-		public void TearDown()
+		public virtual void TearDown()
 		{
 			if (_testFolder != null)
 			{
@@ -185,7 +185,12 @@ namespace BloomTests.Book
 		private XmlDocument GetThreePageDom()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml(@"<html><head></head><body>
+			dom.LoadXml(ThreePageHtml);
+			return dom;
+		}
+
+		protected const string ThreePageHtml =
+			@"<html><head></head><body>
 				<div class='bloom-page numberedPage' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>
@@ -211,9 +216,7 @@ namespace BloomTests.Book
 
 					</p>
 				</div>
-				</body></html>");
-			return dom;
-		}
+				</body></html>";
 
 		protected void SetDom(string bodyContents, string headContents = "")
 		{

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Windows.Forms;
+using Bloom.web;
 using Fleck;
 using SIL.Reporting;
 
@@ -17,8 +18,10 @@ namespace Bloom.Api
 	///
 	/// Alternatively, you could have multiple instances of this class, each with its own "port" parameter, and intended for use by a single, simple end point.
 	/// That is the case as this is introduced in Bloom 3.6, for getting the peak level of the audio coming from a microphone.
+	/// 
+	/// The IBloomWebSocketServer interface allows tests to use a spy to see what messages have been sent.
 	/// </summary>
-	public class BloomWebSocketServer : IDisposable
+	public class BloomWebSocketServer : IBloomWebSocketServer, IDisposable
 	{
 		//Note, in normal web apps, you'd have any number of clients opening sockets to this single server. It would be 1 to n. In Bloom, where there is
 		//only a single client, we think more in terms of 1 to 1.  However there's nothing preventing multiple parts of the Bloom client from opening their

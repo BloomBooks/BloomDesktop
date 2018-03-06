@@ -10,8 +10,8 @@ namespace Bloom.web
 	/// </summary>
 	public class WebSocketProgress
 	{
-		private readonly BloomWebSocketServer _bloomWebSocketServer;
-		public string _l10IdPrefix;
+		private readonly IBloomWebSocketServer _bloomWebSocketServer;
+		private string _l10IdPrefix;
 
 		/// <summary>
 		/// Get a new WebSocketProgress that will prefix each localization id with the given string
@@ -26,7 +26,7 @@ namespace Bloom.web
 			};
 		}
 
-		public WebSocketProgress(BloomWebSocketServer bloomWebSocketServer)
+		public WebSocketProgress(IBloomWebSocketServer bloomWebSocketServer)
 		{
 			_bloomWebSocketServer = bloomWebSocketServer;
 		}
