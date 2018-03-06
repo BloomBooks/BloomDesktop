@@ -5,7 +5,7 @@ using L10NSharp;
 
 namespace Bloom.CollectionTab
 {
-	public partial class BloomLibraryLinkVerification : Form
+	public partial class BloomLibraryLinkVerification : SIL.Windows.Forms.Miscellaneous.FormUsingPortableClipboard
 	{
 		public BloomLibraryLinkVerification()
 		{
@@ -29,6 +29,8 @@ namespace Bloom.CollectionTab
 			// Set information icon
 			// Review: Could use a larger image here...
 			_infoIcon.Image = SystemIcons.Information.ToBitmap();
+			if (SIL.PlatformUtilities.Platform.IsUnix)
+				UsePortableClipboard = true;	// (in case user tries to copy from message text)
 		}
 
 		internal DialogResult GetVerification(IWin32Window owner)

@@ -491,6 +491,8 @@ namespace Bloom.Workspace
 																	{
 																		using (var dlg = _settingsDialogFactory())
 																		{
+																			if (SIL.PlatformUtilities.Platform.IsUnix)
+																				dlg.UsePortableClipboard = true;
 																			return dlg.ShowDialog();
 																		}
 																	});
@@ -673,6 +675,8 @@ namespace Bloom.Workspace
 		{
 			using (var dlg = new RegistrationDialog(true))
 			{
+				if (SIL.PlatformUtilities.Platform.IsUnix)
+					dlg.UsePortableClipboard = true;
 				dlg.ShowDialog();
 			}
 		}
@@ -777,6 +781,8 @@ namespace Bloom.Workspace
 			using (var dlg = _problemReportDialogFactory(this))
 			{
 				dlg.SetDefaultIncludeBookSetting(true);
+				if (SIL.PlatformUtilities.Platform.IsUnix)
+					dlg.UsePortableClipboard = true;
 				dlg.ShowDialog();
 			}
 		}

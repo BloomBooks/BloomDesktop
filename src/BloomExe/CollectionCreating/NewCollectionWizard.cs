@@ -15,7 +15,7 @@ using SIL.Reporting;
 
 namespace Bloom.CollectionCreating
 {
-	public partial class NewCollectionWizard : Form
+	public partial class NewCollectionWizard : SIL.Windows.Forms.Miscellaneous.FormUsingPortableClipboard
 	{
 		public Action UiLanguageChanged;
 
@@ -28,6 +28,8 @@ namespace Bloom.CollectionCreating
 			{
 				dlg.UiLanguageChanged = uiLanguageChangedAction;
 				dlg.ShowInTaskbar = showNewCollectionWizard;//if we're at this stage, there isn't a bloom icon there already.
+				if (SIL.PlatformUtilities.Platform.IsUnix)
+					dlg.UsePortableClipboard = true;
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
 					return null;

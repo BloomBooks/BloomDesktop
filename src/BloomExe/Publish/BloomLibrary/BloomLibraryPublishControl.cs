@@ -36,6 +36,8 @@ namespace Bloom.Publish.BloomLibrary
 			_model = model;
 			_parentView = parentView;
 			_loginDialog = dialog;
+			if (SIL.PlatformUtilities.Platform.IsUnix)
+				_loginDialog.UsePortableClipboard = true;
 			InitializeComponent();
 			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
 			_titleLabel.Text = _model.Title;

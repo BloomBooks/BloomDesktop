@@ -15,7 +15,7 @@ using SIL.Windows.Forms.PortableSettingsProvider;
 
 namespace Bloom
 {
-	public partial class Shell : Form
+	public partial class Shell : SIL.Windows.Forms.Miscellaneous.FormUsingPortableClipboard
 	{
 		private readonly CollectionSettings _collectionSettings;
 		private readonly LibraryClosing _libraryClosingEvent;
@@ -83,6 +83,8 @@ namespace Bloom
 			this.Controls.Add(this._workspaceView);
 
 			SetWindowText(null);
+			if (SIL.PlatformUtilities.Platform.IsUnix)
+				UsePortableClipboard = true;
 		}
 
 		protected override void OnHandleCreated(EventArgs e)

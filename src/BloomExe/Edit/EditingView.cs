@@ -279,6 +279,8 @@ namespace Bloom.Edit
 				using(var dlg = new SIL.Windows.Forms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
 				{
 					dlg.ShowCreator = false;
+					if (SIL.PlatformUtilities.Platform.IsUnix)
+						dlg.UsePortableClipboard = true;
 					if(DialogResult.OK == dlg.ShowDialog())
 					{
 						Logger.WriteEvent("For BL-3166 Investigation");
@@ -998,6 +1000,8 @@ namespace Bloom.Edit
 			{
 				using(var jpegDialog = new JpegWarningDialog())
 				{
+					if (SIL.PlatformUtilities.Platform.IsUnix)
+						jpegDialog.UsePortableClipboard = true;	// (in case user tries to copy from message text)
 					return jpegDialog.ShowDialog() == DialogResult.Cancel;
 				}
 			}
