@@ -802,11 +802,12 @@ namespace BloomTests.Book
 
 				var fontSourceRulesPath = Path.Combine(testBook.FolderPath, "fonts.css");
 				var fontSource = RobustFile.ReadAllText(fontSourceRulesPath);
-				// We'd also be OK with these in the opposite order.
-				Assert.That(fontSource, Is.EqualTo("@font-face {font-family:'Times New Roman'; font-weight:normal; font-style:normal; src:url(Times New Roman R.ttf) format('opentype');}"
-					+ Environment.NewLine
-					+ "@font-face {font-family:'Calibre'; font-weight:normal; font-style:normal; src:url(Calibre R.ttf) format('opentype');}"
-					+ Environment.NewLine));
+				// We're OK with these in either order.
+				string lineTimes = "@font-face {font-family:'Times New Roman'; font-weight:normal; font-style:normal; src:url(Times New Roman R.ttf) format('opentype');}"
+					+ Environment.NewLine;
+				string lineCalibre = "@font-face {font-family:'Calibre'; font-weight:normal; font-style:normal; src:url(Calibre R.ttf) format('opentype');}"
+					+ Environment.NewLine;
+				Assert.That(fontSource, Is.EqualTo(lineTimes + lineCalibre).Or.EqualTo(lineCalibre + lineTimes));
 				AssertThatXmlIn.Dom(testBook.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='fonts.css']", 1);
 			}
 
