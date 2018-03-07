@@ -493,7 +493,6 @@ namespace Bloom.Publish
 					_pdfViewer.Visible = false;
 					Cursor = Cursors.WaitCursor;
 					_epubPreviewControl = ElectronicPublishView.SetupEpubControl(_epubPreviewControl, _isolator, () => _saveButton.Enabled = _model.EpubMaker.ReadyToSave());
-					_saveButton.Enabled = _model.EpubMaker.ReadyToSave();
 					_epubPreviewControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 							_pdfViewer.Width, _pdfViewer.Height);
 					_epubPreviewControl.Dock = _pdfViewer.Dock;
