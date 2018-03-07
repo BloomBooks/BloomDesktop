@@ -14,7 +14,7 @@
    viewBox="0 0 171.62762 41.682133"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
    sodipodi:docname="back-cover-outside.svg">
   <defs
      id="defs4" />
@@ -25,17 +25,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="272.43719"
-     inkscape:cy="-208.2445"
+     inkscape:zoom="1.979899"
+     inkscape:cx="-21.071264"
+     inkscape:cy="-139.87385"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="in"
-     inkscape:window-width="1839"
-     inkscape:window-height="1177"
-     inkscape:window-x="1192"
-     inkscape:window-y="468"
+     inkscape:window-width="1920"
+     inkscape:window-height="1137"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -46,11 +46,18 @@
     <sodipodi:guide
        position="97.459749,-1.3823014"
        orientation="0,1"
-       id="guide4248" />
+       id="guide4248"
+       inkscape:locked="false" />
     <sodipodi:guide
        position="163.3722,76.651983"
        orientation="0,1"
-       id="guide4292" />
+       id="guide4292"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="171.8471,0.87890626"
+       orientation="0,1"
+       id="guide35"
+       inkscape:locked="false" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -60,7 +67,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -193,5 +200,13 @@
          inkscape:connector-curvature="0"
          id="path7165" />
     </g>
+    <path
+       id="path4626"
+       overflow="visible"
+       d="m 342.47971,1038.4277 c -1.56124,0 -2.83295,1.2716 -2.83295,2.8328 0,1.5613 1.27171,2.8331 2.83295,2.8331 1.56123,0 2.83294,-1.2718 2.83294,-2.8331 0,-1.5612 -1.27171,-2.8328 -2.83294,-2.8328 z m 0,0.5665 c 1.25501,0 2.26635,1.0114 2.26635,2.2663 0,1.2551 -1.01134,2.2665 -2.26635,2.2665 -1.25504,0 -2.26636,-1.0114 -2.26636,-2.2665 0,-1.2549 1.01132,-2.2663 2.26636,-2.2663 z m -0.99152,0.8499 v 2.833 h 0.59313 v -1.0181 h 0.4515 l 0.54003,1.0181 h 0.62856 v -0.027 l -0.62856,-1.1598 c 0.0567,-0.028 0.14697,-0.059 0.20362,-0.115 0.0851,-0.057 0.11158,-0.1114 0.16821,-0.1682 0.0567,-0.084 0.0868,-0.1452 0.1151,-0.2302 0.0284,-0.084 0.0265,-0.1699 0.0265,-0.2833 0,-0.1415 -0.0319,-0.2585 -0.0886,-0.3718 -0.0284,-0.084 -0.10983,-0.1629 -0.19478,-0.2478 -0.11334,-0.085 -0.20361,-0.1487 -0.34526,-0.1771 -0.11334,-0.028 -0.25495,-0.053 -0.42493,-0.053 z m 0.61969,0.5135 h 0.46035 c 0.14165,0 0.25142,0.021 0.33641,0.1067 0.0851,0.084 0.11511,0.177 0.11511,0.3187 0,0.057 0.002,0.1115 -0.0265,0.1681 -0.0284,0.057 -0.0602,0.1138 -0.0886,0.1418 -0.0284,0.028 -0.0851,0.052 -0.14165,0.079 -0.0567,0.028 -0.10982,0.035 -0.19476,0.035 h -0.46036 z"
+       style="line-height:normal;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';text-indent:0;text-align:start;text-transform:none;overflow:visible;fill:#4d4d4d;fill-opacity:1;stroke-width:0.28329432;enable-background:accumulate"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="157.6214"
+       inkscape:export-ydpi="157.6214" />
   </g>
 </svg>
