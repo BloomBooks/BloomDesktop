@@ -26,6 +26,9 @@ namespace Bloom.Publish
 		/// </summary>
 		public static bool IsAnyCompressedAudioMissing(string bookFolderPath, XmlDocument dom)
 		{
+			if (!LameEncoder.IsAvailable())
+				return true;
+
 			return !GetTrueForAllAudioSpans(bookFolderPath, dom,
 				(wavpath, mp3path) => !Mp3IsNeeded(wavpath, mp3path));
 		}
