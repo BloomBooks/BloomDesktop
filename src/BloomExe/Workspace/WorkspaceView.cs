@@ -185,6 +185,9 @@ namespace Bloom.Workspace
 			// of stretching the width to match localization. But height and spacing we must control exactly,
 			// or it goes into an overflow mode that is very ugly.
 			_zoomWrapper.Margin = Padding.Empty;
+			// Provide access for javascript to adjust this control via the EditingView and EditingModel.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-5584.
+			_editingView.SetZoomControl(_zoomControl);
 		}
 
 		private int TabButtonSectionWidth
