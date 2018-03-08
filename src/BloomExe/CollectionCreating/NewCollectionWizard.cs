@@ -15,7 +15,7 @@ using SIL.Reporting;
 
 namespace Bloom.CollectionCreating
 {
-	public partial class NewCollectionWizard : Form
+	public partial class NewCollectionWizard : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
 		public Action UiLanguageChanged;
 

@@ -5,7 +5,7 @@ using L10NSharp;
 
 namespace Bloom.CollectionTab
 {
-	public partial class BloomLibraryLinkVerification : Form
+	public partial class BloomLibraryLinkVerification : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
 		public BloomLibraryLinkVerification()
 		{
