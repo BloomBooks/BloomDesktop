@@ -478,18 +478,7 @@ namespace Bloom.Edit
 			Logger.WriteEvent("Changing Content Languages");
 			string l2 = null;
 			string l3 = null;
-			foreach (var language in _contentLanguages)
-			{
-				if (language.Locked)
-					continue; //that's the vernacular
-				if(language.Selected && l2==null)
-					l2 = language.Iso639Code;
-				else if(language.Selected)
-				{
-					l3 = language.Iso639Code;
-					break;
-				}
-			}
+			GetMultilingualContentLanguages(out l2, out l3);
 
 			//Reload to display these changes
 			SaveNow();
@@ -500,6 +489,24 @@ namespace Bloom.Edit
 
 			Logger.WriteEvent("ChangingContentLanguages");
 			Analytics.Track("Change Content Languages");
+		}
+
+		private void GetMultilingualContentLanguages(out string lang2iso, out string lang3iso)
+		{
+			lang2iso = null;
+			lang3iso = null;
+			foreach (var language in _contentLanguages)
+			{
+				if (language.Locked)
+					continue; //that's the vernacular (language1)
+				if(language.Selected && lang2iso==null)
+					lang2iso = language.Iso639Code;
+				else if(language.Selected)
+				{
+					lang3iso = language.Iso639Code;
+					break;
+				}
+			}
 		}
 
 		public int NumberOfDisplayedLanguages
@@ -547,6 +554,11 @@ namespace Bloom.Edit
 		{
 			if(_currentlyDisplayedBook != CurrentBook)
 			{
+				// Reset the book's languages in case the user changed the collection's languages.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5444.
+				string lang2iso, lang3iso;
+				GetMultilingualContentLanguages(out lang2iso, out lang3iso);
+				CurrentBook.SetMultilingualContentLanguages(lang2iso, lang3iso);
 				CurrentBook.PrepareForEditing();
 			}
 
