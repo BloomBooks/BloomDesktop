@@ -101,7 +101,11 @@ export class ToolBox {
                     console.log("skipping markup on arrow key");
                     return;
                 }
-                handleKeydown();
+                handleKeyboardInput();
+            }).on("compositionend", function(argument) {
+                // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
+                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
+                handleKeyboardInput();
             });
         }
     }
@@ -483,7 +487,7 @@ class TrivialPromise implements Promise<void> {
     }
 }
 
-function handleKeydown(): void {
+function handleKeyboardInput(): void {
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
@@ -511,7 +515,7 @@ function handleKeydown(): void {
         }
 
         // If longpress is currently engaged trying to determine what, if anything, it needs
-        // to do, we postpone the markup. Inexplicably, longpress and handleKeydown
+        // to do, we postpone the markup. Inexplicably, longpress and handleKeyboardInput (formerly handleKeydown)
         // started interfering again even after the fix for BL-3900 (see comments for
         // that elsewhere in this file). This code was added for BL-5215.
         // It would be great if we didn't have settle for using window.top,
