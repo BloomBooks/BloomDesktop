@@ -702,6 +702,10 @@ export function setZoom(newScale: string) {
     fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
 }
 
+// This is used to keep wheel zooming messages from happening too fast.
+// The program will crash otherwise, at least on Linux.
+var wheelZoomOkay : boolean = true;
+
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
@@ -711,6 +715,29 @@ export function bootstrap() {
     $.fn.reverse = function () {
         return this.pushStack(this.get().reverse(), arguments);
     };
+
+    // Attach a function to implement zooming on mouse wheel with ctrl
+    $("body").on("wheel", function (e) {
+        var theEvent = e.originalEvent as WheelEvent;
+        if (!theEvent.ctrlKey) return;
+        var command : string = null;
+        if (theEvent.deltaY < 0) {
+            command = "/bloom/api/edit/pageControls/zoomMinus";
+        } else if (theEvent.deltaY > 0) {
+            command = "/bloom/api/edit/pageControls/zoomPlus";
+        }
+        if (command != null && wheelZoomOkay) {
+            wheelZoomOkay = false;
+            axios.post(command).then(() => {
+                wheelZoomOkay = true;
+            }).catch(() => {
+                wheelZoomOkay = true;
+            });
+        }
+        // Setting the zoom is all we want to do in this context.
+        e.preventDefault();
+        e.cancelBubble = true;
+    });
 
     /* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok
             //if this browser doesn't have endsWith built in, add it

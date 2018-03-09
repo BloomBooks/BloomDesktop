@@ -45,6 +45,7 @@ namespace Bloom.Edit
 		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
 		private BloomWebSocketServer _webSocketServer;
+		private ZoomControl _zoomControl;
 
 		public delegate EditingView Factory(); //autofac uses this
 
@@ -1377,9 +1378,6 @@ namespace Bloom.Edit
 							"To unlock this shellbook, click the lock icon in the lower left corner.");
 		}
 
-		const int kMinimumZoom =  30;
-		const int kMaximumZoom = 300;	// is 300% a good limit?
-
 		// The zoom factor that is shown in the top right of the toolbar (a percent).
 		public int Zoom
 		{
@@ -1399,7 +1397,7 @@ namespace Bloom.Edit
 					if (float.TryParse(zoomString, NumberStyles.Float, CultureInfo.InvariantCulture, out zoomFloat))
 					{
 						zoomInt = (int)Math.Round(zoomFloat * 10F) * 10;
-						if (zoomInt < kMinimumZoom || zoomInt > kMaximumZoom)
+						if (zoomInt < ZoomControl.kMinimumZoom || zoomInt > ZoomControl.kMaximumZoom)
 							return 100;		// bad antique value - normalize to real size.
 						return zoomInt;
 					}
@@ -1411,10 +1409,10 @@ namespace Bloom.Edit
 				if (int.TryParse(zoomString, System.Globalization.NumberStyles.Integer, CultureInfo.InvariantCulture, out zoomInt))
 				{
 					// we can't go below 30 (30%), so those must be old floating point values that rounded to an integer.
-					if (zoomInt < kMinimumZoom)
+					if (zoomInt < ZoomControl.kMinimumZoom)
 						zoomInt = zoomInt * 100;
-					if (zoomInt > kMaximumZoom)
-						return kMaximumZoom;
+					if (zoomInt > ZoomControl.kMaximumZoom)
+						return ZoomControl.kMaximumZoom;
 					return zoomInt;
 				}
 				else
@@ -1432,6 +1430,22 @@ namespace Bloom.Edit
 								(value / 100.0).ToString() + ");}");
 				}
 			}
+		}
+
+		public void AdjustPageZoom(int delta)
+		{
+			var currentZoom = _zoomControl.Zoom;
+			if (delta < 0 && currentZoom <= Bloom.Workspace.ZoomControl.kMinimumZoom ||
+				delta > 0 && currentZoom >= Bloom.Workspace.ZoomControl.kMaximumZoom)
+			{
+				return;
+			}
+			_zoomControl.Zoom = currentZoom + delta;
+		}
+
+		internal void SetZoomControl(ZoomControl zoomCtl)
+		{
+			_zoomControl = zoomCtl;
 		}
 	}
 }

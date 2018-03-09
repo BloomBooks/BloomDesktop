@@ -6,6 +6,9 @@ namespace Bloom.Workspace
 {
 	public partial class ZoomControl : UserControl
 	{
+		public const int kMinimumZoom =  30;	// 30% - 300% matches FireFox
+		public const int kMaximumZoom = 300;
+
 		private int _zoom;
 
 		public ZoomControl()
@@ -24,7 +27,7 @@ namespace Bloom.Workspace
 			get { return _zoom; }
 			set
 			{
-				var newValue = Math.Max(value, 30);
+				var newValue = Math.Min(Math.Max(value, kMinimumZoom), kMaximumZoom);
 				if (newValue == _zoom)
 					return;
 				_zoom = newValue;

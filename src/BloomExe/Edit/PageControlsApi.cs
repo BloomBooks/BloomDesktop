@@ -87,6 +87,18 @@ namespace Bloom.Edit
 				SendCleanupState();
 				request.PostSucceeded();
 			}, true);
+
+			server.RegisterEndpointHandler(kApiUrlPart + "zoomMinus", request =>
+			{
+				_editingModel.AdjustPageZoom(-10);
+				request.PostSucceeded();
+			}, true);
+
+			server.RegisterEndpointHandler(kApiUrlPart + "zoomPlus", request =>
+			{
+				_editingModel.AdjustPageZoom(10);
+				request.PostSucceeded();
+			}, true);
 		}
 
 		private void SendCleanupState()
