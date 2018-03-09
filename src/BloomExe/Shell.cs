@@ -15,7 +15,7 @@ using SIL.Windows.Forms.PortableSettingsProvider;
 
 namespace Bloom
 {
-	public partial class Shell : Form
+	public partial class Shell : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
 		private readonly CollectionSettings _collectionSettings;
 		private readonly LibraryClosing _libraryClosingEvent;

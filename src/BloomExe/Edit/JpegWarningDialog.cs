@@ -7,7 +7,7 @@ using L10NSharp;
 
 namespace Bloom.Edit
 {
-	public partial class JpegWarningDialog : Form
+	public partial class JpegWarningDialog : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
 		public JpegWarningDialog()
 		{

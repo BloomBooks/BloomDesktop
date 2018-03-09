@@ -217,6 +217,23 @@ namespace Bloom
 			};
 		}
 
+		//private string GetDomSelectionText()
+		//{
+		//	// It took me a whole afternoon to figure out the following 5 lines of javascript!
+		//	// This only gets the text -- no HTML markup is included.  It appears that mozilla
+		//	// uses the GTK clipboard internally on Linux which is what PortableClipboard uses,
+		//	// so we don't need this function.  But in case we ever do need to get the DOM
+		//	// selection text in C# code, I'm leaving this method here, commented out.
+		//	var selectionText = RunJavaScript(
+		//		"var root = window.parent || window;" +
+		//		"var frame = root.document.getElementById('page');" +
+		//		"var frameWindow = frame.contentWindow;" +
+		//		"var frameDocument = frameWindow.document;" +
+		//		"frameDocument.getSelection().toString();"
+		//	);
+		//	return selectionText;
+		//}
+
 		public void SaveHTML(string path)
 		{
 			if (InvokeRequired)

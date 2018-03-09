@@ -20,7 +20,7 @@ namespace Bloom.WebLibraryIntegration
 	/// We may at some point consider embedding a part of the web site itself in a Gecko window instead for login;
 	/// but in the current state of my (JohnT's) knowledge, it was easier to do a plain C# version.
 	/// </summary>
-	public partial class LoginDialog : Form
+	public partial class LoginDialog : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
 		private BloomParseClient _client;
 		private int _originalHeight;
