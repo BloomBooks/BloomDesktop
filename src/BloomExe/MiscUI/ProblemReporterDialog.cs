@@ -27,7 +27,7 @@ namespace Bloom.MiscUI
 	/// It can try to send directly via internet. If this fails, it can make a single
 	/// zip file and direct the user to email that to us.
 	/// </summary>
-	public partial class ProblemReporterDialog : Form
+	public partial class ProblemReporterDialog : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
 		private string _shortErrorHtml = "";
 		public delegate ProblemReporterDialog Factory(Control targetOfScreenshot);//autofac uses this

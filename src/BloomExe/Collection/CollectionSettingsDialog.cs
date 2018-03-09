@@ -16,7 +16,7 @@ using Bloom.MiscUI;
 
 namespace Bloom.Collection
 {
-	public partial class CollectionSettingsDialog : Form
+	public partial class CollectionSettingsDialog : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
 		public delegate CollectionSettingsDialog Factory();//autofac uses this
 

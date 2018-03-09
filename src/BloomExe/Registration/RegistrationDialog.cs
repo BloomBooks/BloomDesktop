@@ -8,7 +8,7 @@ using L10NSharp;
 
 namespace Bloom.Registration
 {
-	public partial class RegistrationDialog : Form
+	public partial class RegistrationDialog : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
 		private readonly bool _registrationIsOptional;
 		private bool _hadEmailAlready;
