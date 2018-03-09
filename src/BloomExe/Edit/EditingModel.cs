@@ -1306,5 +1306,10 @@ namespace Bloom.Edit
 			var pageForPasting = new Page(templateBook, _pageDivFromCopyPage, "not used", "not used", x => _pageDivFromCopyPage);
 			OnInsertPage(pageForPasting, new PageInsertEventArgs(false)); // false => don't need analytics on use of template pages
 		}
+
+		public void AdjustPageZoom(int delta)
+		{
+			_view.AdjustPageZoom(delta);
+		}
 	}
 }
