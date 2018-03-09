@@ -721,10 +721,11 @@ export function bootstrap() {
         var theEvent = e.originalEvent as WheelEvent;
         if (!theEvent.ctrlKey) return;
         var command : string = null;
+        // Note the direction of the zoom is opposite the direction of the scroll.
         if (theEvent.deltaY < 0) {
-            command = "/bloom/api/edit/pageControls/zoomMinus";
-        } else if (theEvent.deltaY > 0) {
             command = "/bloom/api/edit/pageControls/zoomPlus";
+        } else if (theEvent.deltaY > 0) {
+            command = "/bloom/api/edit/pageControls/zoomMinus";
         }
         if (command != null && wheelZoomOkay) {
             wheelZoomOkay = false;
