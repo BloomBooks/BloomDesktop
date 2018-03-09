@@ -166,8 +166,14 @@ export default class AudioRecording {
     // We only do recording in editable divs in the main content language.
     // This should NOT restrict to ones that already contain audio-sentence spans.
     // BL-5575 But we don't (at this time) want to record comprehension questions.
+    // And BL-5457: Check that we actually have recordable text in the divs we return.
     private getRecordableDivs(): JQuery {
-        return this.getPage().find(':not(.bloom-noAudio) > div.bloom-editable.bloom-content1');
+        var $this = this;
+        var divs = this.getPage().find(':not(.bloom-noAudio) > div.bloom-editable.bloom-content1');
+        return divs.filter(function (idx, elt) {
+            return theOneLibSynphony.stringToSentences(elt.innerHTML).reduce(
+                (prevValue: boolean, fragment) => { return prevValue || $this.isRecordable(fragment); }, false);
+        });
     }
 
     private getAudioElements(): JQuery {
