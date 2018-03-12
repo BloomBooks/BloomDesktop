@@ -131,6 +131,23 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
+
+			server.RegisterEndpointHandler(kApiUrlPart + "photoStoryMode", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					// this is temporary, just trying to get support for full screen pan & zoom out quickly in 4.2
+					request.ReplyWithText(request.CurrentBook.UsePhotoStoryModeInBloomReader.ToString()
+						.ToLowerInvariant());  // "false", not "False"
+				}
+				else // post
+				{
+					request.CurrentBook.UsePhotoStoryModeInBloomReader = bool.Parse(request.RequiredPostString());
+					request.PostSucceeded();
+				}
+			}, true);
+			
+
 			server.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>
 			{
 				var coverImage = request.CurrentBook.GetCoverImagePath();

@@ -56,6 +56,7 @@ namespace Bloom.Book
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
+			modifiedBook.UpdateBodyWithBookFeatures(book);
 			EmbedFonts(modifiedBook, progress, new FontFileFinder());
 
 			modifiedBook.Save();
