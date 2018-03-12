@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom;
 using Bloom.Book;
@@ -14,7 +15,8 @@ using SIL.IO;
 namespace BloomTests.Publish
 {
 	[TestFixture]
-	class UsbPublisherTests : BookTestsBase
+	[Apartment(ApartmentState.STA)] // otherwise the 2 tests can collide
+	public class UsbPublisherTests : BookTestsBase
 	{
 		private static BookSelection s_bookSelection;
 		private BookServer _bookServer;
@@ -47,8 +49,8 @@ namespace BloomTests.Publish
 
 		public override void TearDown()
 		{
-			_spy.Reset();
 			base.TearDown();
+			_spy.Reset();
 		}
 
 		private WebSocketProgress CreateWebSocketProgress()

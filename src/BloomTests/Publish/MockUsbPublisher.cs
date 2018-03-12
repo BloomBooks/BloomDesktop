@@ -8,7 +8,7 @@ using Bloom.web;
 
 namespace BloomTests.Publish
 {
-	class MockUsbPublisher : UsbPublisher
+	public class MockUsbPublisher : UsbPublisher
 	{
 		const int HR_ERROR_DISK_FULL = unchecked((int)0x80070070);
 
