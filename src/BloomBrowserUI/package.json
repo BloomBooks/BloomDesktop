@@ -12,8 +12,7 @@
     "scripts": {
         "test": "karma start --browsers Firefox",
         "testWithChromeContinuous": "karma start --browsers Chrome",
-        "teamcitytest":
-            "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
+        "teamcitytest": "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
         "build": "gulp",
         "gitClean": "git clean -X --dry-run --exclude='!node_modules'",
         "gitCleanForReal": "git clean -fX --exclude='!node_modules'"
@@ -66,7 +65,7 @@
         "gulp-copy": "0.0.2",
         "gulp-debug": "^2.1.2",
         "gulp-flatten": "^0.3.1",
-        "gulp-less": "^3.0.5",
+        "gulp-less": "^4.0.0",
         "gulp-shell": "^0.5.2",
         "gulp-sourcemaps": "^1.6.0",
         "gulp-tap": "^1.0.1",
@@ -84,7 +83,8 @@
         "karma-sourcemap-loader": "^0.3.7",
         "karma-spec-reporter": "0.0.23",
         "karma-teamcity-reporter": "^1.0.0",
-        "less-loader": "^2.2.2",
+        "less": "^3.0.1",
+        "less-loader": "^4.1.0",
         "markdown-it": "^8.4.0",
         "markdown-it-attrs": "^1.1.0",
         "markdown-it-container": "^2.0.0",
