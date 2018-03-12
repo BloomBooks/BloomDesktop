@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿#if !__MonoCS__
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -99,3 +100,4 @@ namespace BloomTests.Publish
 		}
 	}
 }
+#endif
