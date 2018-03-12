@@ -616,6 +616,7 @@
     <Compile Include="web\controllers\BookSettingsApi.cs" />
     <Compile Include="web\controllers\BrandingApi.cs" />
     <Compile Include="web\BloomHttpListenerContext.cs" />
+    <Compile Include="web\IBloomWebSocketServer.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersApi.cs" />

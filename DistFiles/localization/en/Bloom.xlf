@@ -2229,6 +2229,11 @@
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
+        <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
+        <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
+        <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader</note>
