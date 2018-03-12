@@ -16,16 +16,18 @@
         // MATCHING MEDIA CONSTRAINT
         //
         &[@{dataFeature}*="allMedia"],
-        &[@{dataFeature}*="print"][class*="print"],
-        &[@{dataFeature}*="bloomReader"][class*="bloomReader"],
-        &[@{dataFeature}*="epub"][class*="epub"],
-        &[@{dataFeature}*="video"][class*="video"] {
+        &[@{dataFeature}*="print"][data-media*="print"],
+        &[@{dataFeature}*="bloomReader"][data-media*="bloomReader"],
+        &[@{dataFeature}*="epub"][data-media*="epub"],
+        &[@{dataFeature}*="video"][data-media*="video"] {
             //
             // MATCHING ORIENTATION CONSTRAINT
             //
             &[@{dataFeature}*="allOrientations"],
-            &[@{dataFeature}*="landscape"][class*="Device16x9Landscape"],
-            &[@{dataFeature}*="portrait"][class*="Device16x9Portrait"] {
+            &[@{dataFeature}*="landscape"]
+                .bloom-page[class*="Device16x9Landscape"],
+            &[@{dataFeature}*="portrait"]
+                .bloom-page[class*="Device16x9Portrait"] {
                 @rules();
             }
         }

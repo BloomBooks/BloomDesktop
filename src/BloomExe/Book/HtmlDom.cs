@@ -1584,5 +1584,16 @@ namespace Bloom.Book
 			var rightSideRemainder = languageIsRightToLeft ? 1 : 0;
 			AddClassIfMissing(pageDiv, indexOfPageZeroBased % 2 == rightSideRemainder ? "side-right" : "side-left");
 		}
+
+		/// <summary>
+		/// Sets an attribute that css can use, kind of like media queries; those we can't actually control or set
+		/// to things like "bloomreader", so we basically do our own on the body element. Envisionsed choices include
+		/// print, bloomReader, epub, video.
+		/// </summary>
+		/// <param name="media"></param>
+		public void SetMedia(string media)
+		{
+			Body.SetAttribute("data-media", media);
+		}
 	}
 }
