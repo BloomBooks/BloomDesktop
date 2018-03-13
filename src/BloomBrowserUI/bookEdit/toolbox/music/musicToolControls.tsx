@@ -8,7 +8,7 @@ import Slider from "rc-slider";
 
 interface IMusicState {
     activeRadioValue: string;
-    musicVolume: number; // 0-1.0
+    volumeSliderPosition: number; // 1..100
     audioEnabled: boolean;
     musicName: string;
     playing: boolean;
@@ -31,18 +31,21 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // of full volume).
     static musicAttrName = "data-backgroundaudio";
     static musicVolumeAttrName = MusicToolControls.musicAttrName + "volume";
+    static kDefaultVolumeFraction = 0.5;
 
     addedListenerToPlayer: boolean;
 
     getStateFromHtml(): IMusicState {
-        let audioStr = MusicToolControls.getBloomPageAttr(MusicToolControls.musicAttrName);
-        let hasMusicAttr = typeof (audioStr) === typeof (""); // may be false or undefined if missing
-        if (!audioStr) {
-            audioStr = ""; // null won't handle split
+        let audioFileName = MusicToolControls.getBloomPageAttr(MusicToolControls.musicAttrName);
+        let hasMusicAttr = typeof (audioFileName) === typeof (""); // may be false or undefined if missing
+        if (!audioFileName) {
+            audioFileName = ""; // null won't handle split
         }
         const state = {
             activeRadioValue: "continueMusic",
-            musicVolume: 1.0,
+            volumeSliderPosition: Math.round(
+                MusicToolControls.kDefaultVolumeFraction * 100
+            ),
             audioEnabled: false,
             musicName: "",
             playing: false
@@ -51,12 +54,17 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
             // No data-backgroundAudio attr at all is our default state, continue from previous page
             // (including possibly no audio, if previous page had none). If audio is set on a previous
             // page, it can flow over into this one.
-        } else if (audioStr) {
+        } else if (audioFileName) {
             // If we have a non-empty music attr, we're setting new music right here.
             state.activeRadioValue = "newMusic";
             state.audioEnabled = true;
-            state.musicVolume = MusicToolControls.getAudioVolume(audioStr);
-            state.musicName = this.getDisplayNameOfMusicFile(audioStr);
+            const volume = MusicToolControls.getPlayerVolumeFromAttributeOnPage(
+                audioFileName
+            );
+            state.volumeSliderPosition = MusicToolControls.convertVolumeToSliderPosition(
+                volume
+            );
+            state.musicName = this.getDisplayNameOfMusicFile(audioFileName);
         } else {
             // If we have the attribute, but the value is empty, we're explicitly turning it off.
             state.activeRadioValue = "noMusic";
@@ -100,13 +108,15 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                                 onClick={() => this.previewMusic()} />
                         </div>
                         <div id="musicFilename" >{this.state.musicName}</div>
+                        {this.state.volumeSliderPosition}%
                     </div>
-                    <div id="musicVolumePercent" style={{ visibility: this.state.audioEnabled ? "visible" : "hidden" }}
-                    >{Math.round(100 * this.state.musicVolume)}%</div>
+                    <div id="musicVolumePercent" style={{ visibility: this.state.audioEnabled ? "visible" : "hidden" }}>
+                        {this.state.volumeSliderPosition}%
+                    </div>
                     <div id="musicSetVolume">
                         <img className="speaker-volume" src="speaker-volume.svg" />
                         <div className="bgSliderWrapper">
-                            <Slider className="musicVolumeSlider" value={100 * this.state.musicVolume}
+                            <Slider className="musicVolumeSlider" value={this.state.volumeSliderPosition}
                                 disabled={!this.state.audioEnabled} onChange={
                                     value => this.sliderMoved(value)} />
                         </div>
@@ -142,8 +152,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         setPlayState: (boolean) => void) { // call-back function for changing playing state
         // automatic indentation is weird here. This is the start of the body of previewBackgroundMusic,
         // not of setPlayState, which is just a function parameter.
-        let audioStr = this.getBloomPageAttr(this.musicAttrName);
-        if (!audioStr) {
+        let audioFileName = this.getBloomPageAttr(this.musicAttrName);
+        if (!audioFileName) {
             return;
         }
         if (currentlyPlaying()) {
@@ -154,12 +164,12 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         const bookSrc = this.getPageFrame().src;
         const index = bookSrc.lastIndexOf("/");
         const bookFolderUrl = bookSrc.substring(0, index + 1);
-        const musicUrl = encodeURI(bookFolderUrl + "audio/" + audioStr);
+        const musicUrl = encodeURI(bookFolderUrl + "audio/" + audioFileName);
         // The ?nocache argument is ignored, except that it ensures each time we do this,
         // src is a different URL, so the player treats it as a new sound to play.
         // Without this it may not play if it hasn't changed.
         player.setAttribute("src", musicUrl + "?nocache=" + new Date().getTime());
-        player.volume = this.getAudioVolume(audioStr);
+        player.volume = this.getPlayerVolumeFromAttributeOnPage(audioFileName);
         player.play();
         setPlayState(true);
     }
@@ -188,24 +198,53 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         }
     }
 
-    // Get the audio volume. The value of the data-backgroundAudio attr, which is passed in,
-    // is not the source of the volume, but does determine whether data-backgroundAudioVolume
+    // Get the audio volume. The value of audioFileName is checked to determine whether data-backgroundAudioVolume
     // is used at all. If anything goes wrong, or we're not specifying new music for this page,
-    // we just set it to 100%.
-    static getAudioVolume(audioStr: string): number {
+    // we return the default volume.
+    static getPlayerVolumeFromAttributeOnPage(audioFileName: string): number {
         const audioVolumeStr = this.getBloomPageAttr(this.musicVolumeAttrName);
-        let audioVolume: number = 1.0;
-        if (audioStr && audioVolumeStr) {
+        let audioVolumeFraction: number =
+            MusicToolControls.kDefaultVolumeFraction;
+        if (audioFileName && audioVolumeStr) {
             try {
-                audioVolume = parseFloat(audioVolumeStr);
+                audioVolumeFraction = parseFloat(audioVolumeStr);
             } catch (e) {
-                audioVolume = 1.0;
+                audioVolumeFraction = 1.0;
             }
-            if (isNaN(audioVolume) || audioVolume > 1.0 || audioVolume < 0.0) {
-                audioVolume = 1.0;
+            if (
+                isNaN(audioVolumeFraction) ||
+                audioVolumeFraction > 1.0 ||
+                audioVolumeFraction < 0.0
+            ) {
+                audioVolumeFraction = MusicToolControls.kDefaultVolumeFraction;
             }
         }
-        return audioVolume;
+        return audioVolumeFraction;
+    }
+
+    // Instead of a linear progression, we make the slider be very insensitive on the left,
+    // so that you have more control at the low volumes that are likely for background music.
+    // We are using 3 but 2 is also ok. Using 3 because the effect feels right to me (subjectively,
+    // with a very small sample size).
+    static kLowEndVolumeSensitivity: number = 3;
+
+    // Position is always 0 to 100, and resulting volume is always 0.0 to 1.0, via a non-linear function
+    static convertSliderPositionToVolume(position1To100: number): number {
+        return Math.pow(
+            position1To100 / 100,
+            MusicToolControls.kLowEndVolumeSensitivity
+        );
+    }
+
+    // Volume is always 0.0 to 1.0, and the resulting position is always 0 to 100
+    // In between is a non-linear function.
+    static convertVolumeToSliderPosition(volumeFraction: number): number {
+        return Math.round(
+            Math.pow(
+                volumeFraction,
+                1 / MusicToolControls.kLowEndVolumeSensitivity
+            ) * 100
+        );
     }
 
 
@@ -238,11 +277,18 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         page.setAttribute(name, val);
     }
 
-    // Position is a number between 0 and 100
-    sliderMoved(position: number): void {
-        MusicToolControls.setBloomPageAttr(MusicToolControls.musicVolumeAttrName, (position / 100).toString());
-        this.getPlayer().volume = position / 100;
-        this.setState((prevState, props) => { return { musicVolume: position / 100 }; });
+    sliderMoved(position1to100: number): void {
+        const volume = MusicToolControls.convertSliderPositionToVolume(
+            position1to100
+        );
+        MusicToolControls.setBloomPageAttr(
+            MusicToolControls.musicVolumeAttrName,
+            volume.toString()
+        );
+        this.getPlayer().volume = volume;
+        this.setState((prevState, props) => {
+            return { volumeSliderPosition: position1to100 };
+        });
     }
 
     chooseMusicFile() {
