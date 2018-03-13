@@ -24,10 +24,8 @@
             // MATCHING ORIENTATION CONSTRAINT
             //
             &[@{dataFeature}*="allOrientations"],
-            &[@{dataFeature}*="landscape"]
-                .bloom-page[class*="Device16x9Landscape"],
-            &[@{dataFeature}*="portrait"]
-                .bloom-page[class*="Device16x9Portrait"] {
+            &[@{dataFeature}*="landscape"] .bloom-page[class*="Landscape"],
+            &[@{dataFeature}*="portrait"] .bloom-page[class*="Portrait"] {
                 @rules();
             }
         }

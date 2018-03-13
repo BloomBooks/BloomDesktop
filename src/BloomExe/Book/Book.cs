@@ -387,7 +387,7 @@ namespace Bloom.Book
 			dom = _storage.MakeDomRelocatable(dom);
 			// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 			dom.RawDom.PreserveWhitespace = true;
-			var newBody = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
+			var newBody = dom.RawDom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
 			// copy over any attributes on body (we store a form of the book feature flags there so that css can get at them)
 			 foreach (XmlAttribute attr in originalBody.Attributes)
