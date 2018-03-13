@@ -4,6 +4,7 @@ import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
 import BloomButton from "../../react_components/bloomButton";
 import ContentEditable from "../../react_components/ContentEditable";
+import { Checkbox } from "../../react_components/checkbox";
 import Option from "../../react_components/option";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
@@ -18,6 +19,7 @@ interface IComponentState {
     stateId: string;
     backColor: string;
     colorsVisible: boolean;
+    photoStoryMode: boolean;
 }
 // This is a screen of controls that gives the user instructions and controls
 // for pushing a book to a connected Android device running Bloom Reader.
@@ -27,7 +29,13 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         super(props);
 
         this.isLinux = this.getIsLinuxFromUrl();
-        this.state = { stateId: "stopped", method: "wifi", backColor: "#FFFFFF", colorsVisible: false };
+        this.state = {
+            stateId: "stopped",
+            method: "wifi",
+            backColor: "#FFFFFF",
+            colorsVisible: false,
+            photoStoryMode: false
+        };
 
         // enhance: For some reason setting the callback to "this.handleUpdate" calls handleUpdate()
         // with "this" set to the button, not this overall control.
@@ -46,9 +54,13 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
             this.setState({ method: result.data });
         });
 
-        axios.get("/bloom/api/publish/android/backColor").then(result =>
-            this.setState({ backColor: result.data })
-        );
+        axios
+            .get("/bloom/api/publish/android/backColor")
+            .then(result => this.setState({ backColor: result.data }));
+
+        axios
+            .get("/bloom/api/publish/android/photoStoryMode")
+            .then(result => this.setState({ photoStoryMode: result.data }));
     }
 
     public componentDidMount() {
@@ -163,9 +175,30 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                             </div>
                         </div>
                     </div>
+                    <Checkbox
+                        id="photoStoryModeCheckbox"
+                        wrapClassName="photoStoryModeCheckbox"
+                        name="photoStoryMode"
+                        l10nKey="PublishTab.Android.photoStoryMode"
+                        l10nComment="Do not translate this yet, it's a temporary thing we are testing"
+                        checked={this.state.photoStoryMode}
+                        onCheckChanged={checked => {
+                            this.setState({ photoStoryMode: checked });
+                            axios.post(
+                                "/bloom/api/publish/android/photoStoryMode",
+                                checked,
+                                { headers: { "Content-Type": "text/plain" } }
+                            );
+                        }}
+                    >
+                        "Photo Story" mode when device is in landscape (for pan
+                        and zoom, music, etc.)
+                    </Checkbox>
                 </div>
-                <H1 l10nKey="PublishTab.Android.Method"
-                    l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser.">
+                <H1
+                    l10nKey="PublishTab.Android.Method"
+                    l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser."
+                >
                     Method Choices
                 </H1>
                 {/* This wrapper, with some really tricky CSS, serves to make a select where the options have both text

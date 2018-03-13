@@ -1036,6 +1036,23 @@ namespace Bloom.Book
 		}
 		*/
 
+		/// <summary>
+		///  See BLoom Book File Format: Book Features
+		///  https://docs.google.com/document/d/16M8Fvt1SLYgUX5UbWy3q9s2_ab0Ni39mVumtIYzxKm4/edit#heading=h.pdn1blelp3ds
+		/// </summary>
+		/// <remarks>Currently, this is only setting the values on the body element, where it can be read by BloomReader
+		/// and CSS. We plan to make the standard "data-div" be "official" registry of feature settings.
+		/// We will still be echoing them on the body, though, because CSS could never get at them in the data-div.  </remarks>
+		/// <param name="dom"></param>
+		/// <param name="featureName"></param>
+		/// <param name="orientationConstraint"></param>
+		/// <param name="mediaConstraint"></param>
+		public  void SetBookFeature(string featureName, string orientationConstraint, string mediaConstraint)
+		{
+			Debug.Assert(featureName == featureName.ToLowerInvariant(),"HTML requires attribute names to be all lower case (feature)");
+			Body.SetAttribute("data-bf" +featureName, orientationConstraint +";"+mediaConstraint);
+		}
+
 		public static void MakeEditableDomShowAsTemplate(HtmlDom dom)
 		{
 			var label = dom.SelectSingleNode("//div[contains(@class,'pageLabel')]");
@@ -1566,6 +1583,17 @@ namespace Bloom.Book
 			RemoveClassesBeginingWith(pageDiv, "side-");
 			var rightSideRemainder = languageIsRightToLeft ? 1 : 0;
 			AddClassIfMissing(pageDiv, indexOfPageZeroBased % 2 == rightSideRemainder ? "side-right" : "side-left");
+		}
+
+		/// <summary>
+		/// Sets an attribute that css can use, kind of like media queries; those we can't actually control or set
+		/// to things like "bloomreader", so we basically do our own on the body element. Envisionsed choices include
+		/// print, bloomReader, epub, video.
+		/// </summary>
+		/// <param name="media"></param>
+		public void SetMedia(string media)
+		{
+			Body.SetAttribute("data-media", media);
 		}
 	}
 }

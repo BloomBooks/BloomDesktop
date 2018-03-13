@@ -61,7 +61,7 @@ namespace Bloom.web.controllers
 			{
 				Multiselect = false,
 				CheckFileExists = true,
-				Filter = String.Format("{0} (*.mp3;*.wav)|*.mp3;*.wav", soundFiles)
+				Filter = String.Format("{0} (*.mp3;*.ogg;*.wav)|*.mp3;*.ogg;*.wav", soundFiles)
 			};
 			var result = dlg.ShowDialog();
 			if (result == DialogResult.OK)

@@ -381,14 +381,22 @@ namespace Bloom.Book
 		public HtmlDom GetHtmlDomWithJustOnePage(XmlElement divNodeForThisPage)
 		{
 			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
+			var originalBody = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
+
 			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
 			dom = _storage.MakeDomRelocatable(dom);
 			// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 			dom.RawDom.PreserveWhitespace = true;
-			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
+			var newBody = dom.RawDom.SelectSingleNodeHonoringDefaultNS("/html/body");
+
+			// copy over any attributes on body (we store a form of the book feature flags there so that css can get at them)
+			 foreach (XmlAttribute attr in originalBody.Attributes)
+			 {
+				 newBody.Attributes.Append(attr);
+			 }
 
 			var pageDom = dom.RawDom.ImportNode(divNodeForThisPage, true);
-			body.AppendChild(pageDom);
+			newBody.AppendChild(pageDom);
 
 //                BookStorage.HideAllTextAreasThatShouldNotShow(dom, iso639CodeToLeaveVisible, Page.GetPageSelectorXPath(dom));
 
@@ -1638,6 +1646,10 @@ namespace Bloom.Book
 			}
 		}
 
+		// this is temporary, just trying to get support for full screen pan & zoom out quickly in 4.2
+		// so for now, we don't even remember it between loads of the book
+		public bool UsePhotoStoryModeInBloomReader;
+
 		/// <summary>
 		/// Make stuff readonly, which isn't doable via css, surprisingly
 		/// </summary>
@@ -2625,5 +2637,34 @@ namespace Bloom.Book
 				imgContainer.SetAttribute("data-duration", duration.ToString());
 			}
 		}
+
+		/// <summary>
+		/// Eventually-accurate summary: keep book features on the datdiv. This copies those down to the body element
+		/// so that css can read them.
+		/// Currently-accurate summary: copy features from the supplied book to the body element.
+		/// </summary>
+		/// <param name="originalBook"> This parameter is needed only temporarily, because we aren't yet actually storing
+		/// any features in the datadiv, so the features aren't available to us in the copy of the book made
+		/// while publishing to Android.</param>
+		public void UpdateBodyWithBookFeatures(Book originalBook)
+		{
+			if (originalBook.UsePhotoStoryModeInBloomReader)
+			{
+				// Enhance: we can probably put all this in HtmlDom and have it not know about the particular features, just copy them
+				// from the datadiv. That means it will need to be possible to identify them by some attribute, e.g. data-isBookFeature="true"
+				// these are read by Bloom Reader (and eventually Reading App Builder?)
+				OurHtmlDom.SetBookFeature("autoadvance", "landscape", "bloomReader");
+				OurHtmlDom.SetBookFeature("canrotate", "allOrientations", "bloomReader");
+				OurHtmlDom.SetBookFeature("playanimations", "landscape", "bloomReader");// could be ignoreAnimations
+				OurHtmlDom.SetBookFeature("playmusic", "landscape", "bloomReader");
+				OurHtmlDom.SetBookFeature("playnarration", "landscape", "bloomReader");
+
+				// these are read by css
+				//modifiedBook.OurHtmlDom.SetBookFeature("hideMargin", "landscape", "bloomReader");
+				//modifiedBook.OurHtmlDom.SetBookFeature("hidePageNumbers", "landscape", "bloomReader");
+				OurHtmlDom.SetBookFeature("fullscreenpicture", "landscape", "bloomReader");
+			}
+		}
 	}
 }
+

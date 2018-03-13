@@ -34,6 +34,7 @@ namespace Bloom.Publish.Android.file
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(dlg.FileName);
+					AndroidView.CheckBookLayout(book, progress);
 					PublishToAndroidApi.SendBook(book, bookServer, dlg.FileName, null,
 						progressWithL10N,
 						(publishedFileName, bookTitle) => progressWithL10N.GetMessageWithParams("Saving", "{0} is a file path", "Saving as {0}", dlg.FileName),

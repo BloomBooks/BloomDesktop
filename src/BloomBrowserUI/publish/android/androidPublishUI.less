@@ -19,6 +19,18 @@ body {
   font-size: 10pt;
   height: 100%;
 }
+.media-row {
+    display: flex;
+}
+.photoStoryModeCheckbox {
+    margin-left: 50px;
+    label {
+        width: 300px;
+        // this makes the second line indented.. I don't know why
+        display: inline-block;
+        vertical-align: top;
+    }
+}
 
 // The div at the root of our react view (right below body). It's given this ID in our
 // skeleton HTML file (androidPublishUI.html).

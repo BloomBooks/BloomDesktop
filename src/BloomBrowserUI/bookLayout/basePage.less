@@ -2,6 +2,8 @@
 @import "basePage-sharedRules.less";
 @import "device.less";
 @import "textOverPicture.less";
+// NOTE: more style sheet imports are at the end of this document,
+// ones that should supercede the normal rules
 
 @bloom-page-background: white;
 
@@ -546,5 +548,7 @@ h2 {
     }
 }
 
-
 //... to be continued. We sandwich most other sheets between this one and the languageDisplay.css, which comes last-ish
+
+// now apply any book features
+@import "bookFeatures.less";

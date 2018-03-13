@@ -56,6 +56,8 @@ namespace Bloom.Book
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
+			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
+			modifiedBook.UpdateBodyWithBookFeatures(book);
 			EmbedFonts(modifiedBook, progress, new FontFileFinder());
 
 			modifiedBook.Save();
