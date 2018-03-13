@@ -540,6 +540,7 @@ namespace Bloom.Api
 				case ".txt": return "text/plain";
 				case ".svg": return "image/svg+xml";
 				case ".mp3": return "audio/mpeg";
+				case ".ogg": return "audio/ogg";
 				default: return "application/octet-stream";
 			}
 		}
