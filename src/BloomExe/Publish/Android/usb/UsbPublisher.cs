@@ -2,12 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using Bloom.Book;
 using Bloom.web;
-using SIL.IO;
-using SIL.Progress;
 using SIL.Reporting;
 
 namespace Bloom.Publish.Android.usb
@@ -21,6 +19,7 @@ namespace Bloom.Publish.Android.usb
 		private readonly AndroidDeviceUsbConnection _androidDeviceUsbConnection;
 		private DeviceNotFoundReportType _previousDeviceNotFoundReportType;
 		private BackgroundWorker _connectionHandler;
+		protected string _lastPublishedBloomdPath;
 
 		public UsbPublisher(WebSocketProgress progress, BookServer bookServer)
 		{
@@ -60,7 +59,7 @@ namespace Bloom.Publish.Android.usb
 					comment: "This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.");
 
 				_androidDeviceUsbConnection.OneReadyDeviceFound = HandleFoundAReadyDevice;
-				_androidDeviceUsbConnection.OneReadyDeviceNotFound = HandeFoundOneNonReadyDevice;
+				_androidDeviceUsbConnection.OneReadyDeviceNotFound = HandleFoundOneNonReadyDevice;
 				// Don't suppress the first message after (re)starting.
 				_previousDeviceNotFoundReportType = DeviceNotFoundReportType.Unknown;
 
@@ -109,7 +108,7 @@ namespace Bloom.Publish.Android.usb
 			SendBookAsync(book, backColor);
 		}
 
-		private void HandeFoundOneNonReadyDevice(DeviceNotFoundReportType reportType, List<string> deviceNames)
+		private void HandleFoundOneNonReadyDevice(DeviceNotFoundReportType reportType, List<string> deviceNames)
 		{
 			// Don't report the same thing over and over
 			if (_previousDeviceNotFoundReportType == reportType)
@@ -154,7 +153,16 @@ namespace Bloom.Publish.Android.usb
 				backgroundWorker.RunWorkerCompleted += (sender, args) =>
 				{
 					if (args.Error != null)
-						FailSendBook(args.Error);
+					{
+						if (IsDiskFull(args.Error))
+						{
+							SendOutOfStorageSpaceMessage();
+						}
+						else
+						{
+							FailSendBook(args.Error);
+						}
+					}
 					else
 						Stopped();
 				};
@@ -166,10 +174,48 @@ namespace Bloom.Publish.Android.usb
 			}
 		}
 
-		private void SendBookDoWork(Book.Book book, Color backColor)
+		private static bool IsDiskFull(Exception ex)
+		{
+			if (!(ex is IOException))
+				return false;
+
+			const int HR_ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
+			const int HR_ERROR_DISK_FULL = unchecked((int)0x80070070);
+
+			return ex.HResult == HR_ERROR_HANDLE_DISK_FULL
+			       || ex.HResult == HR_ERROR_DISK_FULL;
+		}
+
+		private void SendOutOfStorageSpaceMessage()
+		{
+			var size = GetSizeOfBloomdFile(_lastPublishedBloomdPath);
+			// {0} is the size of the book that Bloom is trying to copy over to the Android device.
+			_progress.Error("DeviceOutOfSpace",
+				string.Format("The device reported that it does not have enough space for this book. The book is {0} MB.",
+				size));
+			Stopped();
+		}
+
+		protected string GetSizeOfBloomdFile(string pathToBloomdFile)
+		{
+			var size = 0.0m;
+			if (!string.IsNullOrEmpty(pathToBloomdFile))
+			{
+				var info = new FileInfo(pathToBloomdFile);
+				size = info.Length / 1048576m; // file length is in bytes and 1Mb = 1024 * 1024 bytes
+			}
+			return size.ToString("F1");
+		}
+
+		// internal virtual for testing only
+		internal virtual void SendBookDoWork(Book.Book book, Color backColor)
 		{
 			PublishToAndroidApi.SendBook(book, _bookServer,
-				null, (publishedFileName, path) => _androidDeviceUsbConnection.SendBook(path),
+				null, (publishedFileName, path) =>
+				{
+					_lastPublishedBloomdPath = path;
+					_androidDeviceUsbConnection.SendBook(path);
+				},
 				_progress,
 				(publishedFileName, bookTitle) =>
 					_androidDeviceUsbConnection.BookExists(publishedFileName) ?
