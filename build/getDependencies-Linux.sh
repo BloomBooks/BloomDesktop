@@ -90,7 +90,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_YouTrackSharp
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"bin/YouTrackSharp.dll"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
+#     paths: {"bin/YouTrackSharp.dll*"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
 # [3] build: Bloom Help 4.2 (Bloom_Help_BloomHelp42)
 #     project: Help
@@ -166,7 +166,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoLinux64masterContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"SIL.BuildTasks.dll"=>"build/", ""=>"", "Newtonsoft.Json.dll"=>"lib/dotnet/", "SIL.Core.dll*"=>"lib/dotnet/", "SIL.Core.Desktop.dll*"=>"lib/dotnet/", "SIL.Media.dll*"=>"lib/dotnet/", "SIL.TestUtilities.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.dll*"=>"lib/dotnet/", "SIL.WritingSystems.dll*"=>"lib/dotnet/", "taglib-sharp.dll*"=>"lib/dotnet/", "Enchant.Net.dll*"=>"lib/dotnet/", "NDesk.DBus.dll*"=>"lib/dotnet/"}
+#     paths: {"SIL.BuildTasks.dll"=>"build/", "SIL.BuildTasks.pdb"=>"build/", ""=>"", "Newtonsoft.Json.dll"=>"lib/dotnet/", "SIL.Core.dll*"=>"lib/dotnet/", "SIL.Core.pdb"=>"lib/dotnet/", "SIL.Core.Desktop.dll*"=>"lib/dotnet/", "SIL.Core.Desktop.pdb"=>"lib/dotnet/", "SIL.Media.dll*"=>"lib/dotnet/", "SIL.Media.pdb"=>"lib/dotnet/", "SIL.TestUtilities.dll*"=>"lib/dotnet/", "SIL.TestUtilities.pdb"=>"lib/dotnet/", "SIL.Windows.Forms.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.pdb"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.pdb"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.pdb"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.pdb"=>"lib/dotnet/", "SIL.WritingSystems.dll*"=>"lib/dotnet/", "SIL.WritingSystems.pdb"=>"lib/dotnet/", "taglib-sharp.dll*"=>"lib/dotnet/", "Enchant.Net.dll*"=>"lib/dotnet/", "NDesk.DBus.dll*"=>"lib/dotnet/"}
 #     VCS: https://github.com/sillsdev/libpalaso.git [master]
 
 # make sure output directories exist
@@ -218,19 +218,29 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_Lin
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/latest.lastSuccessful/HtmlXliff.exe.mdb ../lib/dotnet/HtmlXliff.exe.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.BuildTasks.dll ../build/SIL.BuildTasks.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.BuildTasks.pdb ../build/SIL.BuildTasks.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Newtonsoft.Json.dll ../lib/dotnet/Newtonsoft.Json.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.dll ../lib/dotnet/SIL.Core.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.pdb ../lib/dotnet/SIL.Core.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.Desktop.dll ../lib/dotnet/SIL.Core.Desktop.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.Desktop.pdb ../lib/dotnet/SIL.Core.Desktop.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Media.dll ../lib/dotnet/SIL.Media.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Media.dll.config ../lib/dotnet/SIL.Media.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Media.pdb ../lib/dotnet/SIL.Media.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.TestUtilities.dll ../lib/dotnet/SIL.TestUtilities.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.TestUtilities.pdb ../lib/dotnet/SIL.TestUtilities.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.dll ../lib/dotnet/SIL.Windows.Forms.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.dll.config ../lib/dotnet/SIL.Windows.Forms.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.pdb ../lib/dotnet/SIL.Windows.Forms.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.GeckoBrowserAdapter.dll ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.GeckoBrowserAdapter.pdb ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll.config ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.pdb ../lib/dotnet/SIL.Windows.Forms.Keyboarding.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.WritingSystems.dll ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Windows.Forms.WritingSystems.pdb ../lib/dotnet/SIL.Windows.Forms.WritingSystems.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.WritingSystems.dll ../lib/dotnet/SIL.WritingSystems.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.WritingSystems.pdb ../lib/dotnet/SIL.WritingSystems.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Enchant.Net.dll.config ../lib/dotnet/Enchant.Net.dll.config
