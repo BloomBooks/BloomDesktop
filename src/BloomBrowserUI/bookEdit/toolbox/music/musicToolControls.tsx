@@ -209,7 +209,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
             try {
                 audioVolumeFraction = parseFloat(audioVolumeStr);
             } catch (e) {
-                audioVolumeFraction = 1.0;
+                audioVolumeFraction = MusicToolControls.kDefaultVolumeFraction;
             }
             if (
                 isNaN(audioVolumeFraction) ||
