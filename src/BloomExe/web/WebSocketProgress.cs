@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Bloom.Api;
 using L10NSharp;
 
 namespace Bloom.web
@@ -10,8 +9,8 @@ namespace Bloom.web
 	/// </summary>
 	public class WebSocketProgress: IWebSocketProgress
 	{
-		private readonly BloomWebSocketServer _bloomWebSocketServer;
-		public string _l10IdPrefix;
+		private readonly IBloomWebSocketServer _bloomWebSocketServer;
+		private string _l10IdPrefix;
 
 		/// <summary>
 		/// Get a new WebSocketProgress that will prefix each localization id with the given string
@@ -26,7 +25,7 @@ namespace Bloom.web
 			};
 		}
 
-		public WebSocketProgress(BloomWebSocketServer bloomWebSocketServer)
+		public WebSocketProgress(IBloomWebSocketServer bloomWebSocketServer)
 		{
 			_bloomWebSocketServer = bloomWebSocketServer;
 		}
