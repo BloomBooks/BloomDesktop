@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2016 SIL International -->
+<!-- Copyright 2018 SIL International -->
 <component type="desktop">
 	<id>bloom-alpha.desktop</id>
 	<metadata_license>MIT</metadata_license>
@@ -47,7 +47,7 @@
 	</provides>
 
 	<releases>
-		<release version="4.2" date="2018-01-11">
+		<release version="4.3" date="2018-03-14">
 		</release>
 	</releases>
 </component>
