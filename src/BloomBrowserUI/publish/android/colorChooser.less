@@ -1,0 +1,83 @@
+// Thumbnail color block: style and variable names start with cc-
+@cc-image-height: 50px;
+@cc-arrow-height: 6px;
+@cc-arrow-top-margin: @cc-image-height - @cc-arrow-height;
+@cc-color-radius: 5px;
+@cc-color-margin: 4px;
+@cc-hex-padding: 3px;
+@cc-image-margin: 2px;
+
+.cc-outer-wrapper {
+    display:flex;
+    flex-direction: row;
+}
+
+.cc-image-wrapper {
+    height: @cc-image-height + @cc-image-margin * 2;
+}
+
+.cc-image {
+    height: @cc-image-height;
+    margin: @cc-image-margin;
+}
+
+.cc-menu-arrow {
+    margin-left: 5px;
+    margin-top: @cc-arrow-top-margin;
+    height: 0;
+    width: 0;
+    border: @cc-arrow-height solid transparent;
+    border-top: @cc-arrow-height solid black;
+    position: relative; // so absolutely positioned pull-down is relative to this.
+}
+
+.cc-pulldown-wrapper {
+    display: flex;
+    flex-direction: row;
+    width: 320px;
+    flex-wrap: wrap;
+    position: absolute; // relative to background-color-arrow
+    top: @cc-arrow-height + @cc-arrow-height;
+    left: -@cc-arrow-height;
+    background-color: white;
+    &:after {
+        content: "";
+        position: absolute;
+        top: -@cc-arrow-height;
+        left: 0;
+        border-width: 0 @cc-arrow-height @cc-arrow-height;
+        border-style: solid;
+        border-color: white transparent;
+        display: block;
+        width: 0;
+    }
+}
+
+.cc-color-option {
+    height: 30px;
+    width: 30px;
+    margin: @cc-color-margin;
+    border-radius: @cc-color-radius;
+}
+
+.cc-hex-wrapper {
+    display:flex;
+    flex-direction: row;
+    margin: @cc-color-margin;
+}
+
+.cc-hex-leadin {
+    background-color: lightgray;
+    border-radius: @cc-color-radius 0 0 @cc-color-radius;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: @cc-hex-padding;
+}
+
+.cc-hex-value {
+    width: 50px;
+    border: solid lightgray thin;
+    padding-left:5px;
+    border-radius: 0 @cc-color-radius @cc-color-radius 0;
+    padding-top: @cc-hex-padding;
+}
