@@ -5,6 +5,7 @@ import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
+import AudioRecording from "../talkingBook/audioRecording";
 
 interface IMusicState {
     activeRadioValue: string;
@@ -32,6 +33,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     static musicAttrName = "data-backgroundaudio";
     static musicVolumeAttrName = MusicToolControls.musicAttrName + "volume";
     static kDefaultVolumeFraction = 0.5;
+
+    static narrationPlayer: AudioRecording;
 
     addedListenerToPlayer: boolean;
 
@@ -158,6 +161,10 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         }
         if (currentlyPlaying()) {
             player.pause();
+            if (this.narrationPlayer) {
+                this.narrationPlayer.stopListen();
+                this.narrationPlayer = null;
+            }
             setPlayState(false);
             return;
         }
@@ -171,6 +178,10 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         player.setAttribute("src", musicUrl + "?nocache=" + new Date().getTime());
         player.volume = this.getPlayerVolumeFromAttributeOnPage(audioFileName);
         player.play();
+        // Play the audio during animation
+        this.narrationPlayer = new AudioRecording();
+        this.narrationPlayer.setupForListen();
+        this.narrationPlayer.listen();
         setPlayState(true);
     }
 
