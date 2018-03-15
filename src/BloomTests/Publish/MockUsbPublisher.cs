@@ -18,7 +18,7 @@ namespace BloomTests.Publish
 			Stopped = () => SetState("dummy");
 		}
 
-		internal override void SendBookDoWork(Bloom.Book.Book book, Color backColor)
+		protected override void SendBookDoWork(Bloom.Book.Book book, Color backColor)
 		{
 			throw new IOException("MockUsbPublisher threw a fake IOException (Disk is full) in SendBookDoWork", HR_ERROR_DISK_FULL);
 		}
