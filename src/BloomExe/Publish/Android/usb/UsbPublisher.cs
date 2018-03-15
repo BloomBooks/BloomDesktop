@@ -153,16 +153,7 @@ namespace Bloom.Publish.Android.usb
 				backgroundWorker.RunWorkerCompleted += (sender, args) =>
 				{
 					if (args.Error != null)
-					{
-						if (IsDiskFull(args.Error))
-						{
-							SendOutOfStorageSpaceMessage();
-						}
-						else
-						{
-							FailSendBook(args.Error);
-						}
-					}
+						FailSendBook(args.Error);
 					else
 						Stopped();
 				};
@@ -208,7 +199,7 @@ namespace Bloom.Publish.Android.usb
 		}
 
 		// internal virtual for testing only
-		internal virtual void SendBookDoWork(Book.Book book, Color backColor)
+		protected virtual void SendBookDoWork(Book.Book book, Color backColor)
 		{
 			PublishToAndroidApi.SendBook(book, _bookServer,
 				null, (publishedFileName, path) =>
@@ -228,16 +219,23 @@ namespace Bloom.Publish.Android.usb
 
 		private void FailSendBook(Exception e)
 		{
-			_progress.Error(id: "FailureToSend",
-				message: "An error occurred and the book was not sent to your Android device.");
-			if (e != null)
+			if (IsDiskFull(e))
 			{
-				//intentionally not localizable (each of these strings costs effort by each translation team)
-				_progress.ErrorWithoutLocalizing("\tTechnical details to share with the development team: ");
-				_progress.Exception(e);
-				Logger.WriteError(e);
+				SendOutOfStorageSpaceMessage();
 			}
-			Stopped();
+			else
+			{
+				_progress.Error(id: "FailureToSend",
+					message: "An error occurred and the book was not sent to your Android device.");
+				if (e != null)
+				{
+					//intentionally not localizable (each of these strings costs effort by each translation team)
+					_progress.ErrorWithoutLocalizing("\tTechnical details to share with the development team: ");
+					_progress.Exception(e);
+					Logger.WriteError(e);
+				}
+				Stopped();
+			}
 		}
 	}
 }
