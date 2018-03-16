@@ -111,7 +111,6 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                                 onClick={() => this.previewMusic()} />
                         </div>
                         <div id="musicFilename" >{this.state.musicName}</div>
-                        {this.state.volumeSliderPosition}%
                     </div>
                     <div id="musicVolumePercent" style={{ visibility: this.state.audioEnabled ? "visible" : "hidden" }}>
                         {this.state.volumeSliderPosition}%
