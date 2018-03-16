@@ -17,7 +17,6 @@ using Bloom.Publish.Android.wifi;
 using Bloom.web;
 using DesktopAnalytics;
 using SIL.IO;
-using SIL.Progress;
 
 namespace Bloom.Publish.Android
 {
