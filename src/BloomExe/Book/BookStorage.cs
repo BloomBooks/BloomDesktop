@@ -13,6 +13,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
@@ -55,6 +56,7 @@ namespace Bloom.Book
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles();
+		void CleanupUnusedAudioFiles();
         BookInfo BookInfo { get; set; }
 		string NormalBaseForRelativepaths { get; }
 		string InitialLoadErrors { get; }
@@ -298,7 +300,7 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// Compare the images we find in the top level of the book folder to those referenced
-		/// in the dom, and remove any unreferenced on
+		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
 		public void CleanupUnusedImageFiles()
 		{
@@ -351,6 +353,62 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Compare the audio we find in the top level of the book folder to those referenced
+		/// in the dom, and remove any unreferenced ones.
+		/// </summary>
+		public void CleanupUnusedAudioFiles()
+		{
+			
+			if (IsStaticContent(_folderPath))
+				return;
+			//Collect up all the audio files in our book's directory
+			var audioFolderPath = AudioProcessor.GetAudioFolderPath(this._folderPath);
+			var audioFiles = new List<string>();   
+			var audioExtentions = new HashSet<string>(new []{ ".wav", ".mp3" });  // .ogg, .wav, ...?
+			//var ignoredFilenameStarts = new HashSet<string>(new [] { });  //There are no standard prefixes (all chars or digits?)
+			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
+				s => audioExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
+			{
+				var filename = Path.GetFileName(path);
+				//if (ignoredFilenameStarts.Any(s=>filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
+				//	continue;
+				audioFiles.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+			}
+			//Remove from that list each image actually in use
+			var element = Dom.RawDom.DocumentElement;
+			var toRemove = GetAudioPathsRelativeToBook(element);
+
+			//also, remove from the doomed list anything referenced in the datadiv that looks like an audio
+			//This saves us from deleting, for example, cover page audios if this is called before the front-matter
+			//has been applied to the document.
+			toRemove.AddRange(from XmlElement dataDivAudio in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.wav') or contains(text(),'.mp3')]")
+							  select UrlPathString.CreateFromUrlEncodedString(dataDivAudio.InnerText.Trim()).PathOnly.NotEncoded);
+			foreach (var fileName in toRemove)
+			{
+				audioFiles.Remove(GetNormalizedPathForOS(fileName));   //Remove just returns false if it's not in there, which is fine
+			}
+
+			//Delete any files still in the list
+			foreach (var fileName in audioFiles)
+			{
+				var path = Path.Combine(_folderPath, fileName);
+				try
+				{
+					Debug.WriteLine("Removed unused audio file: "+path);
+					Logger.WriteEvent("Removed unused audio file: " + path);
+					RobustFile.Delete(path);
+				}
+				catch (Exception)
+				{
+					Debug.WriteLine("Could not remove unused audio file: " + path);
+					Logger.WriteEvent("Could not remove unused  audio file: " + path);
+					//It's not worth bothering the user about, we'll get it someday.
+					//We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+				}
+			}
+		}
+
+		/// <summary>
 		/// Return the paths, relative to the book folder, of all the images referred to in the element.
 		/// </summary>
 		/// <param name="element"></param>
@@ -359,6 +417,12 @@ namespace Bloom.Book
 		{
 			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
 				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
+		internal static List<string> GetAudioPathsRelativeToBook(XmlElement element)
+		{
+			return (from XmlElement audio in HtmlDom.SelectChildAudioAndBackgroundMusicElements(element)
+					select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
 		}
 
 		private string GetNormalizedPathForOS(string path)

@@ -8,6 +8,8 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Moq;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
@@ -70,6 +72,22 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
+		[Test]
+		public  void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"<p><span data-duration='2.300227' id='i3afb14d9-6362-40bf-9dca-de1b24d793f3' " +
+					"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
+					"</div></div></body></html>");
+			var keepName = "i3afb14d9-6362-40bf-9dca-de1b24d793f3.wav";
+			var keepNameTemp = MakeSampleWavAudio(Path.Combine(_folder.Path, keepName));
+			var dropmeTemp = MakeSampleWavAudio(Path.Combine(_folder.Path, "d3afb14d9-6362-40bf-9dca-de1b24d793f3.wav"));
+			storage.CleanupUnusedAudioFiles();
+			Assert.IsTrue(File.Exists(keepNameTemp.Path));
+			Assert.IsFalse(File.Exists(dropmeTemp.Path));
+		}
 
 		[Test]
 		public  void CleanupUnusedImageFiles_BookHadUnusedImages_ImagesRemoved()
@@ -159,6 +177,16 @@ namespace BloomTests.Book
 			var x = new Bitmap(10, 10);
 			x.Save(temp.Path, ImageFormat.Png);
 			x.Dispose();
+			return temp;
+		}
+		private TempFile MakeSampleWavAudio(string name)
+		{
+			//FROM: http://mark-dot-net.blogspot.ca/2011/04/how-to-use-wavefilewriter.html
+			var temp = TempFile.WithFilename(name);
+			var sampleRate = 44100;
+			var waveProvider = new SampleToWaveProvider(new VolumeSampleProvider(new SignalGenerator(sampleRate, 1)));
+			waveProvider.Read(new byte[] { 8, 2, 4, 16 }, 0, 4);
+			WaveFileWriter.CreateWaveFile(temp.Path, waveProvider);
 			return temp;
 		}
 		//
