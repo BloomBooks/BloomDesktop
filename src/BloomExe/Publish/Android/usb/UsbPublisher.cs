@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using Bloom.Book;
 using Bloom.web;
 using SIL.Reporting;
@@ -167,7 +168,7 @@ namespace Bloom.Publish.Android.usb
 
 		private static bool IsDiskFull(Exception ex)
 		{
-			if (!(ex is IOException))
+			if (!(ex is IOException || ex is COMException))
 				return false;
 
 			const int HR_ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
