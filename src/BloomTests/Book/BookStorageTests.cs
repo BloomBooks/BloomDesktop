@@ -8,8 +8,6 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Moq;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
@@ -75,18 +73,47 @@ namespace BloomTests.Book
 		[Test]
 		public  void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved()
 		{
+			const string audioGuid= "i3afb14d9-6362-40bf-9dca-de1b24d793f3";   //The files to keep.
+			const string audioGuid2 = "d3afb14d9-6362-40bf-9dca-de1b24d793f3"; //The files to drop.
+			const string keepBackgroundAudio = "Fur-elise-music-box";          //Background file to keep.
+			const string dropBackgroundAudio = "Eine-kleine-Nachtmusik";
+			var keepBgAudio = keepBackgroundAudio + ".wav";
+			var audioPath = Path.Combine(_folder.Path, "audio");               //Path to the audio files.
+			Directory.CreateDirectory(audioPath);
 			var storage =
 				GetInitialStorageWithCustomHtml(
-					"<html><body><div class='bloom-page'><div class='marginBox'>" +
-					"<p><span data-duration='2.300227' id='i3afb14d9-6362-40bf-9dca-de1b24d793f3' " +
+					"<html><body><div class='bloom-page numberedPage customPage bloom-combinedPage " +
+					"A5Portrait side-right bloom-monolingual' data-page='' " +
+					"id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage=" +
+					"'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' " +
+					"lang='' data-backgroundaudio='"+ keepBgAudio +"'><div class='marginBox'>" +
+					"<p><span data-duration='2.300227' id='"+ audioGuid +"' " +
 					"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
 					"</div></div></body></html>");
-			var keepName = "i3afb14d9-6362-40bf-9dca-de1b24d793f3.wav";
-			var keepNameTemp = MakeSampleWavAudio(Path.Combine(_folder.Path, keepName));
-			var dropmeTemp = MakeSampleWavAudio(Path.Combine(_folder.Path, "d3afb14d9-6362-40bf-9dca-de1b24d793f3.wav"));
+			var keepName = audioGuid + ".wav";
+			var keepName2 = audioGuid + ".mp3";
+			var dropName = audioGuid2 + ".wav";
+			var dropName2 = audioGuid2 + ".mp3";
+			var keepBgAudio2 = keepBackgroundAudio + ".mp3";
+			var dropBgAudio = dropBackgroundAudio + ".wav";
+			var dropBgAudio2 = dropBackgroundAudio + ".mp3";
+			var keepBGNameTemp = MakeSampleWavAudio(Path.Combine(audioPath, keepBgAudio), true);
+			var keepBGNamePath = Path.Combine(audioPath, keepBgAudio2);
+			var dropBGNameTemp = MakeSampleWavAudio(Path.Combine(audioPath, dropBgAudio), true);
+			var dropBGNamePath = Path.Combine(audioPath, dropBgAudio2);
+			var keepNameTemp = MakeSampleWavAudio(Path.Combine(audioPath, keepName), true);
+			var keepNamePath = Path.Combine(audioPath, keepName2);
+			var dropmeTemp = MakeSampleWavAudio(Path.Combine(audioPath, dropName), true);
+			var dropNamePath = Path.Combine(audioPath, dropName2);
 			storage.CleanupUnusedAudioFiles();
 			Assert.IsTrue(File.Exists(keepNameTemp.Path));
+			Assert.IsTrue(File.Exists(keepNamePath));
 			Assert.IsFalse(File.Exists(dropmeTemp.Path));
+			Assert.IsFalse(File.Exists(dropNamePath));
+			Assert.IsTrue(File.Exists(keepBGNameTemp.Path));
+			Assert.IsTrue(File.Exists(keepBGNamePath));
+			Assert.IsFalse(File.Exists(dropBGNameTemp.Path));
+			Assert.IsFalse(File.Exists(dropBGNamePath));
 		}
 
 		[Test]
@@ -179,14 +206,14 @@ namespace BloomTests.Book
 			x.Dispose();
 			return temp;
 		}
-		private TempFile MakeSampleWavAudio(string name)
+		private TempFile MakeSampleWavAudio(string name, bool makeMp3Also=false)
 		{
-			//FROM: http://mark-dot-net.blogspot.ca/2011/04/how-to-use-wavefilewriter.html
 			var temp = TempFile.WithFilename(name);
-			var sampleRate = 44100;
-			var waveProvider = new SampleToWaveProvider(new VolumeSampleProvider(new SignalGenerator(sampleRate, 1)));
-			waveProvider.Read(new byte[] { 8, 2, 4, 16 }, 0, 4);
-			WaveFileWriter.CreateWaveFile(temp.Path, waveProvider);
+			var ext = Path.GetExtension(name);
+			if (makeMp3Also && (ext ==".wav"))
+			{
+				TempFile.WithFilename(Path.ChangeExtension(name, ".mp3"));
+			}
 			return temp;
 		}
 		//

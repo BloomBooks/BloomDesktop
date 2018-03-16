@@ -361,37 +361,44 @@ namespace Bloom.Book
 			
 			if (IsStaticContent(_folderPath))
 				return;
-			//Collect up all the audio files in our book's directory
-			var audioFolderPath = AudioProcessor.GetAudioFolderPath(this._folderPath);
+			//Collect up all the audio files in our book's audio directory
+			var audioFolderPath = AudioProcessor.GetAudioFolderPath(_folderPath);
 			var audioFiles = new List<string>();   
-			var audioExtentions = new HashSet<string>(new []{ ".wav", ".mp3" });  // .ogg, .wav, ...?
-			//var ignoredFilenameStarts = new HashSet<string>(new [] { });  //There are no standard prefixes (all chars or digits?)
-			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
-				s => audioExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
+			var audioExtensions = new HashSet<string>(new []{ ".wav", ".mp3" });  // .ogg, .wav, ...?
+			foreach (var path in Directory.EnumerateFiles(audioFolderPath).Where(
+				s => audioExtensions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
-				var filename = Path.GetFileName(path);
-				//if (ignoredFilenameStarts.Any(s=>filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
-				//	continue;
 				audioFiles.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
 			}
-			//Remove from that list each image actually in use
+			//Remove from that list each audio file actually in use
 			var element = Dom.RawDom.DocumentElement;
 			var toRemove = GetAudioPathsRelativeToBook(element);
 
-			//also, remove from the doomed list anything referenced in the datadiv that looks like an audio
-			//This saves us from deleting, for example, cover page audios if this is called before the front-matter
+			//also, ensure that nothing to be removed is actually used in a datadiv as audio-sentence or backgroundaudio.
+			//This prevents us from deleting, for example, cover page audios if this is called before the front-matter
 			//has been applied to the document.
-			toRemove.AddRange(from XmlElement dataDivAudio in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.wav') or contains(text(),'.mp3')]")
+			toRemove.AddRange(from XmlElement dataDivAudio in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'audio-sentence')] | " +
+							  "//div[contains(text(),'data-backgroundaudio')]")
 							  select UrlPathString.CreateFromUrlEncodedString(dataDivAudio.InnerText.Trim()).PathOnly.NotEncoded);
 			foreach (var fileName in toRemove)
 			{
-				audioFiles.Remove(GetNormalizedPathForOS(fileName));   //Remove just returns false if it's not in there, which is fine
+				if (Path.GetExtension(fileName).Length > 0)
+				{
+					if (audioExtensions.Contains(Path.GetExtension(fileName).ToLowerInvariant()))
+					{
+						audioFiles.Remove(GetNormalizedPathForOS(fileName));  //This call just returns false if not found, which is fine.
+					}
+				}
+				foreach (var ext in audioExtensions)
+				{
+					var tempfileName = Path.ChangeExtension(fileName, ext);
+					audioFiles.Remove(GetNormalizedPathForOS(tempfileName));
+				}
 			}
-
 			//Delete any files still in the list
 			foreach (var fileName in audioFiles)
 			{
-				var path = Path.Combine(_folderPath, fileName);
+				var path = Path.Combine(audioFolderPath, fileName);
 				try
 				{
 					Debug.WriteLine("Removed unused audio file: "+path);
@@ -904,6 +911,7 @@ namespace Bloom.Book
 				{
 					UpdateSupportFiles();
 					CleanupUnusedImageFiles();
+					CleanupUnusedAudioFiles();
 				}
 			}
 		}
