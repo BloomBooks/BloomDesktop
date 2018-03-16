@@ -1,5 +1,4 @@
 ﻿#if !__MonoCS__
-using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
