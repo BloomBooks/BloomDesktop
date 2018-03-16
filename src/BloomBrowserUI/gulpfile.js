@@ -245,7 +245,6 @@ gulp.task('translateHtmlFiles', function() {
                 cmd = cmd + " -x \"" + xliffFiles[i] + "\"";
                 cmd = cmd + " -o \"" + outfile + "\"";
                 cmd = cmd + " \"" + file.path + "\"";
-                console.log("Translating " + outfile);
                 myProcess.exec(cmd, function(err, stdout, stderr) {
                     if (err) {
                         console.error("\n" + stderr);
@@ -268,7 +267,6 @@ gulp.task('createXliffFiles', function() {
                 cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract --preserve";
             cmd = cmd + " -o \"" + xliffFile + "\"";
             cmd = cmd + " \"" + file.path + "\"";
-            console.log("Extracting " + xliffFile + " from " + file.path);
             myProcess.exec(cmd, function(err, stdout, stderr) {
                 if (err) {
                     console.error("\n" + stderr);
