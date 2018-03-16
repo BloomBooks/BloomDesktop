@@ -1,3 +1,10 @@
+bloom-desktop-beta (4.2.0) stable; urgency=medium
+
+  * Change package from betainternal to beta.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 16 Mar 2018 13:33:13 -0600
+
 bloom-desktop-betainternal (4.2.0) stable; urgency=medium
 
   * Change package from alpha to betainternal.
