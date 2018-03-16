@@ -166,8 +166,15 @@ export default class AudioRecording {
     // We only do recording in editable divs in the main content language.
     // This should NOT restrict to ones that already contain audio-sentence spans.
     // BL-5575 But we don't (at this time) want to record comprehension questions.
+    // And BL-5457: Check that we actually have recordable text in the divs we return.
     private getRecordableDivs(): JQuery {
-        return this.getPage().find(':not(.bloom-noAudio) > div.bloom-editable.bloom-content1');
+        var $this = this;
+        var divs = this.getPage().find(':not(.bloom-noAudio) > div.bloom-editable.bloom-content1');
+        return divs.filter(function (idx, elt) {
+            return theOneLibSynphony.stringToSentences(elt.innerHTML).some(
+                frag => { return $this.isRecordable(frag); }
+            );
+        });
     }
 
     private getAudioElements(): JQuery {
@@ -903,7 +910,7 @@ export default class AudioRecording {
         elt.append(formatButton);
     }
 
-    private isRecordable(fragment: TextFragment): Boolean {
+    private isRecordable(fragment: TextFragment): boolean {
         if (fragment.isSpace) return false; // this seems to be reliable
         // initial white-space fragments may currently be marked sentence
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
@@ -914,7 +921,7 @@ export default class AudioRecording {
         return this.isTextOrHtmlWithText(test);
     }
 
-    private isTextOrHtmlWithText(textOrHtml: string): Boolean {
+    private isTextOrHtmlWithText(textOrHtml: string): boolean {
         var parser = new DOMParser();
         var doc = parser.parseFromString(textOrHtml, "text/html");
         if (doc && doc.documentElement) { //paranoia
@@ -930,7 +937,7 @@ export default class AudioRecording {
         return false;
     }
 
-    private isWhiteSpace(test: string): Boolean {
+    private isWhiteSpace(test: string): boolean {
         if (test.match(/^\s*$/))
             return true;
         return false;
