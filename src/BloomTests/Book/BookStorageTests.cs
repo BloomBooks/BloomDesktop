@@ -75,15 +75,18 @@ namespace BloomTests.Book
 		[Test]
 		public  void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved()
 		{
+			const string audioGuid= "i3afb14d9-6362-40bf-9dca-de1b24d793f3";
+			var audioPath = Path.Combine(_folder.Path, "audio");
+			Directory.CreateDirectory(audioPath);
 			var storage =
 				GetInitialStorageWithCustomHtml(
 					"<html><body><div class='bloom-page'><div class='marginBox'>" +
-					"<p><span data-duration='2.300227' id='i3afb14d9-6362-40bf-9dca-de1b24d793f3' " +
+					"<p><span data-duration='2.300227' id='"+ audioGuid +"' " +
 					"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
 					"</div></div></body></html>");
-			var keepName = "i3afb14d9-6362-40bf-9dca-de1b24d793f3.wav";
-			var keepNameTemp = MakeSampleWavAudio(Path.Combine(_folder.Path, keepName));
-			var dropmeTemp = MakeSampleWavAudio(Path.Combine(_folder.Path, "d3afb14d9-6362-40bf-9dca-de1b24d793f3.wav"));
+			var keepName = audioGuid + ".wav";
+			var keepNameTemp = MakeSampleWavAudio(Path.Combine(audioPath, keepName), true);
+			var dropmeTemp = MakeSampleWavAudio(Path.Combine(audioPath, "d3afb14d9-6362-40bf-9dca-de1b24d793f3.wav"), true);
 			storage.CleanupUnusedAudioFiles();
 			Assert.IsTrue(File.Exists(keepNameTemp.Path));
 			Assert.IsFalse(File.Exists(dropmeTemp.Path));
@@ -187,6 +190,16 @@ namespace BloomTests.Book
 			var waveProvider = new SampleToWaveProvider(new VolumeSampleProvider(new SignalGenerator(sampleRate, 1)));
 			waveProvider.Read(new byte[] { 8, 2, 4, 16 }, 0, 4);
 			WaveFileWriter.CreateWaveFile(temp.Path, waveProvider);
+			return temp;
+		}
+		private TempFile MakeSampleWavAudio(string name, bool makeMp3Also=false)
+		{
+			var temp = TempFile.WithFilename(name);
+			var ext = Path.GetExtension(name);
+			if (makeMp3Also && (ext ==".wav"))
+			{
+				TempFile.WithFilename(Path.ChangeExtension(name, ".mp3"));
+			}
 			return temp;
 		}
 		//

@@ -1391,8 +1391,8 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Gets the url for the image, either from an img element or any other element that has
-		/// an inline style with background-image set.
+		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
+		/// an inline style with data-backgroundaudio set.
 		/// </summary>
 		public static UrlPathString GetAudioElementUrl(GeckoHtmlElement audioElement)
 		{
@@ -1400,8 +1400,8 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Gets the url for the image, either from an img element or any other element that has
-		/// an inline style with background-image set.
+		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
+		/// an inline style with data-backgroundaudio set.
 		/// </summary>
 		public static UrlPathString GetAudioElementUrl(XmlElement audioElement)
 		{
@@ -1409,24 +1409,26 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Gets the url for the image, either from an img element or any other element that has
-		/// an inline style with background-image set.
+		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
+		/// an inline style with data-backgroundaudio set.
 		/// </summary>
 		public static UrlPathString GetAudioElementUrl(ElementProxy audioOrDivWithBackgroundMusic)
 		{
-			if (audioOrDivWithBackgroundMusic.Name.ToLower() == "audio")
+			if (audioOrDivWithBackgroundMusic.Name.ToLower() == "span")
 			{
-				var id = audioOrDivWithBackgroundMusic.GetAttribute("id");
-				return UrlPathString.CreateFromUrlEncodedString(id);
+				var classStr = audioOrDivWithBackgroundMusic.GetAttribute("class");
+				if (classStr.Contains("audio-sentence"))
+				{
+					var id = audioOrDivWithBackgroundMusic.GetAttribute("id");
+					return UrlPathString.CreateFromUrlEncodedString(id);
+				}
 			}
 			else
 			{
-				var styleRule = audioOrDivWithBackgroundMusic.GetAttribute("style") ?? "";
-				var regex = new Regex("background-audio\\s*:\\s*url\\((.*)\\)", RegexOptions.IgnoreCase);
-				var match = regex.Match(styleRule);
-				if (match.Groups.Count == 2)
+				var styleRule = audioOrDivWithBackgroundMusic.GetAttribute("data-backgroundaudio") ?? String.Empty;
+				if (styleRule != String.Empty)
 				{
-					return UrlPathString.CreateFromUrlEncodedString(match.Groups[1].Value.Trim(new[] { '\'', '"' }));
+					return UrlPathString.CreateFromUrlEncodedString(styleRule);
 				}
 			}
 			//we choose to return this instead of null to reduce errors created by things like
