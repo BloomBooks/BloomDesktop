@@ -1,7 +1,6 @@
 ﻿#if !__MonoCS__
-using System;
 using System.Drawing;
-using System.IO;
+using System.Runtime.InteropServices;
 using Bloom.Book;
 using Bloom.Publish.Android.usb;
 using Bloom.web;
@@ -18,9 +17,9 @@ namespace BloomTests.Publish
 			Stopped = () => SetState("dummy");
 		}
 
-		internal override void SendBookDoWork(Bloom.Book.Book book, Color backColor)
+		protected override void SendBookDoWork(Bloom.Book.Book book, Color backColor)
 		{
-			throw new IOException("MockUsbPublisher threw a fake IOException (Disk is full) in SendBookDoWork", HR_ERROR_DISK_FULL);
+			throw new COMException("MockUsbPublisher threw a fake COMException (Disk is full) in SendBookDoWork.", HR_ERROR_DISK_FULL);
 		}
 
 		private void SetState(string message)
