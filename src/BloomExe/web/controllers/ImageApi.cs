@@ -305,11 +305,18 @@ namespace Bloom.web.controllers
 				var fileName = request.RequiredParam("image");
 				Guard.AgainstNull(_bookSelection.CurrentSelection, "CurrentBook");
 				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
-				if (!RobustFile.Exists(path))
+				while (!RobustFile.Exists(path) && fileName.Contains('%'))
 				{
+					var fileName1 = fileName;
 					// We can be fed doubly-encoded filenames.  So try to decode a second time and see if that works.
 					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3749.
+					// Effectively triple-encoded filenames have cropped up for particular books.  Such files are
+					// already handled okay by EnhancedImageServer.ProcessAnyFileContent().  This code can handle
+					// any depth of url-encoding.
+					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5757.
 					fileName = System.Web.HttpUtility.UrlDecode(fileName);
+					if (fileName == fileName1)
+						break;
 					path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
 				}
 				RequireThat.File(path).Exists();
