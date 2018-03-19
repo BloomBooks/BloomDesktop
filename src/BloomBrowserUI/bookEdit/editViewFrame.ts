@@ -38,7 +38,7 @@ export function switchContentPage(newSource: string) {
     // I don't fully understand why the load is necessary; it seems that without it
     // the old page content is still around and applyToolboxStateToPage() works on that
     // instead of the new page.
-    $(iframe).load(() =>
+    $(iframe).one("load", () =>
         getToolboxFrameExports().applyToolboxStateToPage());
 }
 
