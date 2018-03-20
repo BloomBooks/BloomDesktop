@@ -27,14 +27,14 @@ namespace BloomTests.Publish
 			// do nothing.
 		}
 
-		public void SetLastBloomdFilePath(string filePath)
+		public void SetLastBloomdFileSize(string filePath)
 		{
-			_lastPublishedBloomdPath = filePath;
+			_lastPublishedBloomdSize = GetSizeOfBloomdFile(filePath);
 		}
 
-		public string GetBloomdFileSize()
+		public string GetStoredBloomdFileSize()
 		{
-			return GetSizeOfBloomdFile(_lastPublishedBloomdPath);
+			return _lastPublishedBloomdSize;
 		}
 	}
 }

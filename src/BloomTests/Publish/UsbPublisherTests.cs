@@ -78,7 +78,7 @@ namespace BloomTests.Publish
 			// Unfortunately, using the MockUsbPublisher to throw our Disk Full exception in SendBookDoWork also
 			// means we aren't testing the code that figures out the size of the book. At least it's predictable!
 			const string message =
-				"<span style='color:red'>The device reported that it does not have enough space for this book. The book is 0.0 MB.</span>";
+				"<span style='color:red'>The device reported that it does not have enough space for this book. The book is of unknown MB.</span>";
 			Assert.AreEqual(message, _spy.Events.First().Value.Item1);
 		}
 
@@ -87,8 +87,8 @@ namespace BloomTests.Publish
 		{
 			var book = CreateBookWithPhysicalFile(ThreePageHtml);
 			var bloomdPath = MakeFakeBloomdFile(book);
-			_testUsbPublisher.SetLastBloomdFilePath(bloomdPath);
-			var size = _testUsbPublisher.GetBloomdFileSize();
+			_testUsbPublisher.SetLastBloomdFileSize(bloomdPath);
+			var size = _testUsbPublisher.GetStoredBloomdFileSize();
 			Assert.AreEqual("0.1", size);
 		}
 
