@@ -87,8 +87,8 @@ namespace BloomTests.Publish
 		{
 			var book = CreateBookWithPhysicalFile(ThreePageHtml);
 			var bloomdPath = MakeFakeBloomdFile(book);
-			_testUsbPublisher.SetLastBloomdFilePath(bloomdPath);
-			var size = _testUsbPublisher.GetBloomdFileSize();
+			_testUsbPublisher.SetLastBloomdFileSize(bloomdPath);
+			var size = _testUsbPublisher.GetStoredBloomdFileSize();
 			Assert.AreEqual("0.1", size);
 		}
 
