@@ -3,8 +3,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
 import BloomButton from "../../react_components/bloomButton";
-import ContentEditable from "../../react_components/ContentEditable";
 import { Checkbox } from "../../react_components/checkbox";
+import { ColorChooser } from "../../react_components/colorChooser";
 import Option from "../../react_components/option";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
@@ -53,11 +53,9 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         axios.get("/bloom/api/publish/android/method").then(result => {
             this.setState({ method: result.data });
         });
-
         axios
             .get("/bloom/api/publish/android/backColor")
             .then(result => this.setState({ backColor: result.data }));
-
         axios
             .get("/bloom/api/publish/android/photoStoryMode")
             .then(result => this.setState({ photoStoryMode: result.data }));
@@ -103,78 +101,29 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
             document.getElementById("progress-box").innerText, { headers: { "Content-Type": "text/plain" } });
     }
 
-    reportColorChange(newColor: string) {
-        axios.post("/bloom/api/publish/android/backColor", newColor,
-            { headers: { "Content-Type": "text/plain" } }).then(
-                //wait until it's set because once the state changes, a
-                // new image gets requested and we want that to happen
-                // only after the server has registered this change.
-                () => this.setState({ backColor: newColor }));
-    }
-
-    somethingFocused(e) {
-        let test = e.target;
-        while (test) {
-            if (test.getAttribute("class") === "tc-outer-wrapper") {
-                return; // inside the menu, don't close it.
-            }
-            test = test.parentElement;
-        }
-        this.setState({ colorsVisible: false });
-    }
-
     render() {
-        let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5",
-            "#B2CC7D", "#F8B576", "#D29FEF", "#ABB8C3", "#C1EF93", "#FFD4D4", "#FFAAD4"];
-
-
         return (
-            <div id="androidPublishReactRoot" onFocus={(e) => this.somethingFocused(e)} onClick={(e) => this.somethingFocused(e)}>
+            <div id="androidPublishReactRoot">
                 <H1 className="media-heading" l10nKey="PublishTab.Android.Media"
                     l10nComment="A heading in the Publish to Android screen.">
                     Media
                 </H1>
-
                 <div className="media-row">
                     <div className="media-subheading">
                         <Div l10nKey="PublishTab.Android.ThumbnailColor">
                             Thumbnail Color
                         </Div>
                     </div>
-                    <div className="tc-outer-wrapper" tabIndex={0} onClick={
-                        (event) => {
-                            this.setState({ colorsVisible: !this.state.colorsVisible });
-                            axios.get("/bloom/api/publish/android/backColor").then(result =>
-                                this.setState({ backColor: result.data })
-                            );
-                        }}
-                    >
-                        <div className="tc-image-wrapper">
-                            <img className="tc-image"
-                                // the api ignores the color parameter, but it
-                                // causes this to re-request the img whenever the backcolor changes
-                                src={"/bloom/api/publish/android/thumbnail?color=" + this.state.backColor}></img>
-                        </div>
-                        <div className="tc-menu-arrow">
-                            <div className="tc-pulldown-wrapper" style={{ visibility: (this.state.colorsVisible ? "visible" : "hidden") }}>
-                                {colors.map((color, i) =>
-                                    <div className="tc-color-option" key={i} style={{ backgroundColor: color }} data-color={color} onClick={
-                                        (event) => {
-                                            const newColor = event.currentTarget.getAttribute("data-color");
-                                            this.reportColorChange(newColor);
-                                        }}>
-                                    </div>)}
-                                <div className="tc-hex-wrapper" onClick={(event) => event.stopPropagation()}>
-                                    <div className="tc-hex-leadin">#</div>
-                                    <div className="tc-hex-value">
-                                        <ContentEditable content={this.state.backColor.substring(1)} onChange={(newContent => {
-                                            this.reportColorChange("#" + newContent);
-                                        })} onEnterKeyPressed={() => this.setState({ colorsVisible: false })} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <ColorChooser imagePath="/bloom/api/publish/android/thumbnail?color="
+                        backColorSetting={this.state.backColor}
+                        onColorChanged={colorChoice => {
+                            axios.post("/bloom/api/publish/android/backColor", colorChoice,
+                                { headers: { "Content-Type": "text/plain" } }).then(
+                                    //wait until it's set because once the state changes, a
+                                    // new image gets requested and we want that to happen
+                                    // only after the server has registered this change.
+                                    () => this.setState({ backColor: colorChoice }));
+                        }} />
                     <Checkbox
                         id="photoStoryModeCheckbox"
                         wrapClassName="photoStoryModeCheckbox"
