@@ -19,8 +19,10 @@ export class PanAndZoomTool implements ITool {
     rootControl: PanAndZoomControl;
     animationStyleElement: HTMLStyleElement;
     animationWrapDiv: HTMLElement;
+    animationRootDiv: HTMLElement;
     narrationPlayer: AudioRecording;
     stopPreviewTimeout: number;
+    animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
 
     makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
@@ -79,27 +81,15 @@ export class PanAndZoomTool implements ITool {
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
         const scale = EditableDivUtils.getPageScale();
-        const imageHeight = this.getHeight(firstImage);
-        const imageWidth = this.getWidth(firstImage);
-        let usingDefaults = false;
-        const makeResizeRect = (handleLabel: string, id: string, left: number, top: number, width: number,
-            height: number, initAttr: string): JQuery => {
-            const savedState = firstImage.getAttribute(initAttr);
-            if (savedState) {
-                try {
-                    const parts = savedState.split(" ");
-                    // NB This is safe because Javascript parseFloat is not culture-specific.
-                    left = parseFloat(parts[0]) * imageWidth;
-                    top = parseFloat(parts[1]) * imageHeight;
-                    width = parseFloat(parts[2]) * imageWidth;
-                    height = parseFloat(parts[3]) * imageHeight;
-                } catch (e) {
-                    // If there's a problem with saved state, just go back to defaults.
-                    usingDefaults = true;
-                }
-            } else {
-                usingDefaults = true;
-            }
+        let needToSaveRectangles = false;
+        const makeResizeRect = (handleLabel: string, id: string, defLeft: number, defTop: number, defWidth: number,
+            defHeight: number, initAttr: string): JQuery => {
+            var needToSaveThisRectangle: boolean;
+            var left: number, top: number, width: number, height: number;
+            [left, top, width, height, needToSaveThisRectangle] = this.getActualRectFromAttrValue(
+                firstImage, defLeft, defTop, defWidth, defHeight, initAttr);
+            if (needToSaveThisRectangle) needToSaveRectangles = true;
+
             // So far, I can't figure out what the 3000 puts us in front of, but we have to be in front of it for dragging to work.
             // ui-resizable styles are setting font-size to 0.1px. so we have to set it back.
             const htmlForHandle = "<div id='elementId' class='classes' style='width:30px;height:30px;background-color:black;color:white;"
@@ -117,8 +107,12 @@ export class PanAndZoomTool implements ITool {
             // - putting a z-index on the actual draggable makes a new stacking context and somehow messes up how draggable/resizable work.
             //      All kinds of weird things happen, like handles disappearing,
             //      or not being able to click on them when one box is inside the other.
+            // The "+1" on top and left seems to be necessary to account for the border that draggable/resizable puts around
+            // the box; at least, the value we get back for the box's offset is one less than the value we pass here,
+            // which can throw things off, especially in repeated saves with no actual movement.
+            // Todo zoom: check that 1 is still the right amount to adjust.
             const htmlForDraggable = "<div id='" + id + "' style='height: "
-                + height + "px; width:" + width + "px; position: absolute; top: " + top + "px; left:" + left + "px;'>"
+                + height + "px; width:" + width + "px; position: absolute; top: " + (top + 1) + "px; left:" + (left + 1) + "px;'>"
                 + htmlForDragHandle
                 + "  <div style='height:100%;width:100%;position:absolute;top:0;left:0;"
                 + "border: dashed black 2px;box-sizing:border-box;z-index:1'></div>"
@@ -149,16 +143,20 @@ export class PanAndZoomTool implements ITool {
             // the dragging and resizing just don't work.
             return getPageFrameExports().makeElement(htmlForDraggable, $(firstImage), argsForResizable, argsForDraggable);
         };
-        const rect1 = makeResizeRect("1", "animationStart", 2, 2, imageWidth * 3 / 4, imageHeight * 3 / 4, "data-initialrect");
-        const rect2 = makeResizeRect("2", "animationEnd", imageWidth * 3 / 8,
-            imageHeight / 8, imageWidth / 2, imageHeight / 2, "data-finalrect");
-        if (usingDefaults) {
-            // If we're using defaults, the current rectangle positions don't correspond to what's in the file
-            // (typically because we're animating this picture for the first time).
-            // In case the user is happy with the defaults and doesn't move anything, we should save them.
-            // If not using defaults, we don't want to change the file, because some pixel approximation
+        const rect1 = makeResizeRect("1", "animationStart", 0, 0, 3 / 4, 3 / 4, "data-initialrect");
+        const rect2 = makeResizeRect("2", "animationEnd", 3 / 8, 1 / 8, 1 / 2, 1 / 2, "data-finalrect");
+        if (needToSaveRectangles) {
+            // If we're using defaults or had to adjust the aspect ratio,
+            // the current rectangle positions don't correspond to what's in the file
+            // (typically because we're animating this picture for the first time, or perhaps the
+            // rectangles came from some import process, or maybe the user changed the image
+            // since the last time he set the rectangles and the new one has a different aspect ratio).
+            // In case the user is happy with the defaults and doesn't move anything, or there is
+            // a significant change due to aspect ratio, we should save them.
+            // If we don't need to save, we don't want to change the file, because some pixel approximation
             // is involved in reading the rectangle positions, and we don't want the rectangles to creep
-            // a fraction of a pixel each time we open this page.
+            // a fraction of a pixel each time we open this page. Also we don't want to keep
+            // making the document look changed to export processes.
             this.updateDataAttributes();
         }
     }
@@ -188,14 +186,110 @@ export class PanAndZoomTool implements ITool {
         return "panAndZoom";
     }
 
-    getFirstImage(): HTMLImageElement {
+    getFirstImage(): HTMLElement {
         const imgElements = this.getPage().getElementsByClassName("bloom-imageContainer");
         if (!imgElements.length) {
             return null;
         }
-        return imgElements[0] as HTMLImageElement;
+        return imgElements[0] as HTMLElement;
     }
 
+    // Given one of the start/end rectangle objects, produce the string we want to save in
+    // data-initialRect or data-finalRect.
+    // This string is a representation of a rectangle as left top width height, where each is
+    // a fraction of the actual image size. (Note: the image, NOT the image container, even
+    // if the image is just a background image...though the current code does not support that.)
+    getTransformRectAttrValue(htmlRect: HTMLElement): string {
+        // Todo zoom: may not be using scale correctly here.
+        const scale = EditableDivUtils.getPageScale();
+        const rectTop = htmlRect.offsetTop / scale;
+        const rectLeft = htmlRect.offsetLeft / scale;
+        const rectWidth = this.getWidth(htmlRect);
+        const rectHeight = this.getHeight(htmlRect);
+
+        const actualImage = this.getFirstImage().getElementsByTagName("img")[0];
+        const imageTop = actualImage.offsetTop / scale;
+        const imageLeft = actualImage.offsetLeft / scale;
+        const imageHeight = this.getHeight(actualImage);
+        const imageWidth = this.getWidth(actualImage);
+
+        const top = (rectTop - imageTop) / imageHeight;
+        const left = (rectLeft - imageLeft) / imageWidth;
+        const width = rectWidth / imageWidth;
+        const height = rectHeight / imageHeight;
+        const result = "" + left + " " + top + " " + width + " " + height;
+        //alert("saved " + actualLeft + " " + actualTop + " " + actualWidth + " " + actualHeight + " got " + result);
+        return result;
+    }
+
+    // Performs the reverse of the above transformation.
+    // Todo zoom: this needs to get the right actual widths.
+    getActualRectFromAttrValue(firstImage: HTMLElement, defLeft: number, defTop: number, defWidth: number,
+        defHeight: number, initAttr: string): [number, number, number, number, boolean] {
+        let left = defLeft, top = defTop, width = defWidth, height = defHeight;
+        let needToSaveRectangle = true;
+        const savedState = firstImage.getAttribute(initAttr);
+        if (savedState) {
+            try {
+                const parts = savedState.split(" ");
+                // NB parseFloat is safe because Javascript parseFloat is not culture-specific.
+                // Get the size relative to the image itself
+                left = this.tryParseFloat(parts[0], defLeft);
+                top = this.tryParseFloat(parts[1], defTop);
+                width = this.tryParseFloat(parts[2], defWidth);
+                height = this.tryParseFloat(parts[3], defHeight);
+                // if we got a full set of saved values, we don't need to save...and would
+                // prefer not to, so rounding errors can't accumulate.
+                needToSaveRectangle = false;
+            } catch (e) {
+                // If there's a problem with saved state, just use defaults.
+                // (If we got some values, still don't use them...a mixture might
+                // produce something weird.)
+                left = defLeft;
+                top = defTop;
+                width = defWidth;
+                height = defHeight;
+            }
+        }
+        const actualImage = firstImage.getElementsByTagName("img")[0];
+        // Todo: may not yet be using scale correctly here. Decided to merge this feature
+        // without trying to get all the bugs out of supporting it when zoomed.
+        const scale = EditableDivUtils.getPageScale();
+        const imageHeight = this.getHeight(actualImage);
+        const imageWidth = this.getWidth(actualImage);
+        const actualTop = (top * imageHeight + actualImage.offsetTop / scale);
+        const actualLeft = (left * imageWidth + actualImage.offsetLeft / scale);
+        let actualWidth = width * imageWidth;
+        let actualHeight = height * imageHeight;
+        // For proper animation rectangles must be the same shape as the picture.
+        // If we relax this constraint, we need to fix both our own preview code
+        // and the main bloom player code so that the playback rectangle shape
+        // is determined by the initialRect. Also, to avoid distortion,
+        // we need to make sure they are at least the SAME shape (as each other).
+        // The .001 is an attempt to avoid saving minute changes caused by rounding
+        // errors, lest they accumulate over multiple page openings or cause
+        // spurious downloads because the document has changed. It may not be
+        // sufficient. Possibly we should avoid saving if the actual size changes
+        // by less than a whole pixel. Not sure how best to determine that.
+        if (actualWidth / actualHeight > imageWidth / imageHeight + 0.001) {
+            // proposed rectangle is too wide for height. Reduce width.
+            actualWidth = actualHeight * imageWidth / imageHeight;
+            needToSaveRectangle = true;
+        } else if (width / height < imageWidth / imageHeight - 0.001) {
+            // too high for width. Reduce height.
+            actualHeight = actualWidth * imageHeight / imageWidth;
+            needToSaveRectangle = true;
+        }
+        return [actualLeft, actualTop, actualWidth, actualHeight, needToSaveRectangle];
+    }
+
+    tryParseFloat(input: string, def: number): number {
+        try {
+            return parseFloat(input);
+        } catch (e) {
+            return def;
+        }
+    }
 
     panAndZoomChanged(checked: boolean) {
         const firstImage = this.getFirstImage();
@@ -246,6 +340,8 @@ export class PanAndZoomTool implements ITool {
 
     // https://github.com/nefe/You-Dont-Need-jQuery says this is eqivalent to $(el).height() which
     // we aren't allowed to use any more.
+    // I believe this is a height that does NOT need to be scaled by our zoom factor
+    // (e.g., it can be used unchanged to set a css width in px that will work zoomed)
     getHeight(el) {
         const styles = window.getComputedStyle(el);
         const height = el.offsetHeight;
@@ -272,17 +368,8 @@ export class PanAndZoomTool implements ITool {
         const startRect = page.getElementById("animationStart");
         const endRect = page.getElementById("animationEnd");
         const image = startRect.parentElement;
-
-        const fullHeight = this.getHeight(image);
-        const fullWidth = this.getWidth(image);
-
-        const scale = EditableDivUtils.getPageScale();
-
-        image.setAttribute("data-initialrect", "" + startRect.offsetLeft / fullWidth / scale
-            + " " + startRect.offsetTop / fullHeight / scale
-            + " " + this.getWidth(startRect) / fullWidth + " " + this.getHeight(startRect) / fullHeight);
-        image.setAttribute("data-finalrect", "" + endRect.offsetLeft / fullWidth / scale + " " + endRect.offsetTop / fullHeight / scale
-            + " " + this.getWidth(endRect) / fullWidth + " " + this.getHeight(endRect) / fullHeight);
+        image.setAttribute("data-initialrect", this.getTransformRectAttrValue(startRect));
+        image.setAttribute("data-finalrect", this.getTransformRectAttrValue(endRect));
     }
 
     removeElt(x: HTMLElement): void {
@@ -338,23 +425,96 @@ export class PanAndZoomTool implements ITool {
         }
 
         const scale = EditableDivUtils.getPageScale();
-        // Make a div that wraps a div that will move and be clipped which wraps a clone of firstImage
-        // Enhance: when we change the signature of makeElement, we can get rid of the vestiges of JQuery here.
-        this.animationWrapDiv = getPageFrameExports().makeElement("<div class='" + this.wrapperClassName
-            + " bloom-animationWrapper' style='visibility: hidden; background-color:white; "
-            + "height:" + this.getHeight(firstImage) * scale + "px; width:" + this.getWidth(firstImage) * scale + "px; "
+        var bloomPage = page.getElementsByClassName("bloom-page")[0] as HTMLElement;
+        var pageWidth = this.getWidth(bloomPage);
+
+        // Make a div with the shape of a typical phone screen in lansdscape mode which
+        // will be the root for displaying the animation.
+        this.animationRootDiv = getPageFrameExports().makeElement("<div "
+            + "style='background-color:black; "
+            + "height:" + (pageWidth / this.animationPreviewAspectRatio * scale) + "px; width:" + (pageWidth * scale) + "px; "
             + "position: absolute;"
-            + "left:" + firstImage.getBoundingClientRect().left + "px; "
-            + "top: " + firstImage.getBoundingClientRect().top + "px; "
-            + "'><div id='bloom-movingDiv'></div></div>", $(pageDoc.body))[0] as HTMLElement;
+            + "left: 0;"
+            + "top: 0;"
+            + "'></div>", $(pageDoc.body))[0] as HTMLElement;
+
+        // Make a div that determines the shape and position of the animation.
+        // It wraps a div that will move (by being scaled larger) and be clipped (to animationWrapDiv)
+        // which in turn wraps a modified clone of firstImage, the content that gets panned and zoomed.
+        // Enhance: when we change the signature of makeElement, we can get rid of the vestiges of JQuery here and above.
+        this.animationWrapDiv = getPageFrameExports().makeElement("<div class='" + this.wrapperClassName
+            + " bloom-animationWrapper' "
+            + "'><div id='bloom-movingDiv'></div></div>")[0] as HTMLElement;
+
+        const baseStyle = "visibility: hidden; background-color:white;";
+
+        // Figure out the size and position we need for animationRootDiv and animationWrapDiv.
+        // We use the original image to get the aspect ratio here because the clone
+        // may not have finished loading yet.
+        const originalImage = firstImage.getElementsByTagName("img")[0];
+        // Enhance: if we allow the zoom rectangles to be a different shape from the image,
+        // this should change to get the aspect ratio from the initialrect.
+        const panZoomAspectRatio = this.getWidth(originalImage) / this.getHeight(originalImage);
+        const pageHeight = pageWidth / this.animationPreviewAspectRatio;
+        if (panZoomAspectRatio < this.animationPreviewAspectRatio) {
+            // black bars on side
+            const imageWidth = pageHeight * panZoomAspectRatio;
+            this.animationWrapDiv.setAttribute("style", baseStyle + " height: 100%; width: " + imageWidth
+                + "px; left: " + (pageWidth - imageWidth) / 2 + "px; top:0");
+        } else {
+            // black bars top and bottom
+            const imageHeight = pageWidth / panZoomAspectRatio;
+            this.animationWrapDiv.setAttribute("style", baseStyle + " width: 100%; height: " + imageHeight
+                + "px; top: " + (pageWidth * 9 / 16 - imageHeight) / 2 + "px; left: 0");
+        }
         const movingDiv = this.animationWrapDiv.firstElementChild;
         var picToAnimate = firstImage.cloneNode(true) as HTMLElement;
         // don't use getElementById here; the elements we want to remove are NOT yet
         // in the document, but the ones they are clones of (which we want to keep) are.
         picToAnimate.querySelector("#animationStart").remove();
         picToAnimate.querySelector("#animationEnd").remove();
+        picToAnimate.setAttribute("style", "height:" + (pageWidth * 9 / 16 * scale) + "px;width: " + (pageWidth * scale) + "px;");
         movingDiv.appendChild(picToAnimate);
-        page.documentElement.appendChild(this.animationWrapDiv);
+        this.animationRootDiv.appendChild(this.animationWrapDiv);
+        page.documentElement.appendChild(this.animationRootDiv);
+        var actualImage = picToAnimate.getElementsByTagName("img")[0];
+
+        // unfortunately the cloned image brings over attributes that position it in the current container.
+        // The new parent is not the same size and we need different values to center it and make
+        // it fill the container as much as possible.
+        // We'd like to position it using SetupImage(actualImage); (from bloomImages) but for some reason,
+        // probably because several parents are newly created, that's proving flaky.
+        // The code here is a simplification of that method.
+        // I don't know whether the doCenterImage logic is relevant here.
+        const imgAspectRatio = panZoomAspectRatio; // should stay actual image AR, even if the other changes.
+        const containerWidth = this.getWidth(picToAnimate);
+        const containerHeight = this.getHeight(picToAnimate);
+        const doCenterImage = !picToAnimate.classList.contains("bloom-alignImageTopLeft");
+        var newWidth: number, newHeight: number,
+            newLeftMargin: number = 0,
+            newTopMargin: number = 0;
+        if (imgAspectRatio > containerWidth / containerHeight) {
+            // full width, center vertically.
+            newWidth = containerWidth;
+            newHeight = containerWidth / imgAspectRatio;
+            if (doCenterImage) {
+                newTopMargin = (containerHeight - newHeight) / 2;
+            }
+        } else {
+            newHeight = containerHeight;
+            newWidth = containerHeight * imgAspectRatio;
+            if (doCenterImage) {
+                newLeftMargin = (containerWidth - newWidth) / 2;
+            }
+        }
+        // not sure why we set width and height both ways...using the same approach as SetupImage.
+        actualImage.setAttribute("width", "" + newWidth);
+        actualImage.setAttribute("height", "" + newHeight);
+        actualImage.style.width = "" + newWidth + "px";
+        actualImage.style.height = "" + newHeight + "px";
+        actualImage.style.marginLeft = "0px";
+        actualImage.style.marginTop = "0px";
+
         this.animationStyleElement = pageDoc.createElement("style");
         this.animationStyleElement.setAttribute("type", "text/css");
         this.animationStyleElement.setAttribute("id", "animationSheet");
@@ -406,6 +566,7 @@ export class PanAndZoomTool implements ITool {
         // At this point the wrapDiv becomes visible and the animation starts.
         //wrapDiv.show(); mysteriously fails
         this.animationWrapDiv.setAttribute("style", this.animationWrapDiv.getAttribute("style").replace("visibility: hidden; ", ""));
+        bloomPage.style.visibility = "hidden";
         if (this.rootControl.state.previewVoice) {
             // Play the audio during animation
             this.narrationPlayer = new AudioRecording();
@@ -425,11 +586,13 @@ export class PanAndZoomTool implements ITool {
     }
 
     cleanupAnimation() {
+        (this.getPage().getElementsByClassName("bloom-page")[0] as HTMLElement).style.visibility = "";
         // stop the animation itself by removing the root elements it adds.
         this.removeElt(this.animationStyleElement);
         this.animationStyleElement = null;
-        this.removeElt(this.animationWrapDiv);
+        this.removeElt(this.animationRootDiv);
         this.animationWrapDiv = null;
+        this.animationRootDiv = null;
         // stop narration if any.
         if (this.narrationPlayer) {
             this.narrationPlayer.stopListen();

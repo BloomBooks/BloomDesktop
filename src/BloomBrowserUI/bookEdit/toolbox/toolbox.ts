@@ -102,7 +102,7 @@ export class ToolBox {
                     return;
                 }
                 handleKeyboardInput();
-            }).on("compositionend", function(argument) {
+            }).on("compositionend", function (argument) {
                 // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
                 // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
                 handleKeyboardInput();
@@ -247,7 +247,16 @@ function doWhenPageReady(action: () => void) {
     doWhenCkEditorReady(action);
 }
 
+// Do this action ONCE when all ckeditors are ready.
+// I'm not absolutely sure all the care to do it only once is necessary...the bug
+// I was trying to fix turned out to be caused by multiple calls to doWhenCkEditorReady...
+// but it seems a precaution worth keeping.
 function doWhenCkEditorReady(action: () => void) {
+    var removers = [];
+    doWhenCkEditorReadyCore({ removers: removers, done: false, action: action });
+}
+
+function doWhenCkEditorReadyCore(arg: { removers: Array<any>, done: boolean, action: () => void }): void {
     if ((<any>getPageFrame().contentWindow).CKEDITOR) {
         var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
         // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
@@ -261,19 +270,29 @@ function doWhenCkEditorReady(action: () => void) {
             if (instance == null) {
                 if (i === 0) {
                     // no instance at all...if one is later created, get us invoked.
-                    (<any>this.getPageFrame().contentWindow).CKEDITOR.on("instanceReady", e => doWhenCkEditorReady(action));
+                    arg.removers.push((<any>this.getPageFrame().contentWindow).CKEDITOR.on("instanceReady",
+                        e => {
+                            doWhenCkEditorReadyCore(arg);
+                        }));
                     return;
                 }
                 break; // if we get here all instances are ready
             }
             if (!instance.instanceReady) {
-                instance.on("instanceReady", e => doWhenCkEditorReady(action));
+                arg.removers.push(instance.on("instanceReady", e => {
+                    doWhenCkEditorReadyCore(arg);
+                }));
                 return;
             }
         }
     }
     // OK, CKEditor is done (or page doesn't use it), we can finally do the action.
-    action();
+    if (!arg.done) {
+        // We are the first call-back to find all ready! Any other editors invoking this should be ignored.
+        arg.done = true; // ensures action only done once
+        arg.removers.map(r => r.removeListener()); // try to prevent future callbacks for this action
+        arg.action();
+    }
 }
 
 function restoreToolboxSettingsWhenPageReady(settings: string) {
