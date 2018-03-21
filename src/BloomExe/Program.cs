@@ -320,6 +320,9 @@ namespace Bloom
 
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
+						DialogAdapters.CommonDialogAdapter.ForceKeepAbove = true;
+						DialogAdapters.CommonDialogAdapter.UseMicrosoftPositioning = true;
+
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
 						// We don't even want to try to install fonts if we are installed by an admin for all users;
 						// it will have been installed already as part of the allUsers install.

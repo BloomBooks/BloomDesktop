@@ -283,6 +283,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
     </Reference>
+    <Reference Include="DialogAdapters">
+      <HintPath>..\..\lib\dotnet\DialogAdapters.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutMemory.cs">

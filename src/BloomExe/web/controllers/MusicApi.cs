@@ -57,7 +57,7 @@ namespace Bloom.web.controllers
 			if (!Directory.Exists(destPath)) Directory.CreateDirectory(destPath);
 
 			var soundFiles = LocalizationManager.GetString("EditTab.Toolbox.Music.FileDialogSoundFiles", "Sound files");
-			var dlg = new OpenFileDialog
+			var dlg = new DialogAdapters.OpenFileDialogAdapter
 			{
 				Multiselect = false,
 				CheckFileExists = true,

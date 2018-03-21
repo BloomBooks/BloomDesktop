@@ -190,7 +190,7 @@ namespace Bloom.CollectionChoosing
 				Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
 			}
 
-			using (var dlg = new OpenFileDialog())
+			using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
 			{
 				dlg.Title = "Open Collection";
 

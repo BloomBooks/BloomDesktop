@@ -193,7 +193,7 @@ namespace Bloom.CollectionTab
 			{
 				d.ShowDialog();
 			}
-			using (var dlg = new SaveFileDialog())
+			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				dlg.FileName = Path.GetFileNameWithoutExtension(SelectedBook.GetPathHtmlFile())+".xml";
 				dlg.InitialDirectory = SelectedBook.FolderPath;
@@ -1159,7 +1159,7 @@ namespace Bloom.CollectionTab
 
 		private void OnMakeBloomPackOfBook(object sender, EventArgs e)
 		{
-			using (var dlg = new SaveFileDialog())
+			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				var extension = Path.GetExtension(_model.GetSuggestedBloomPackPath());
 				var filename = _bookSelection.CurrentSelection.Storage.FileName;
@@ -1225,7 +1225,7 @@ namespace Bloom.CollectionTab
 
 		internal void MakeBloomPack(bool forReaderTools)
 		{
-			using (var dlg = new SaveFileDialog())
+			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				dlg.FileName = _model.GetSuggestedBloomPackPath();
 				dlg.Filter = "BloomPack|*.BloomPack";

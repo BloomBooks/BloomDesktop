@@ -345,7 +345,7 @@ namespace Bloom.Publish
 					}
 				}
 
-				using (var dlg = new SaveFileDialog())
+				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 				{
 					if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
 						dlg.InitialDirectory = _lastDirectory;
@@ -622,7 +622,7 @@ namespace Bloom.Publish
 
 		internal void SaveAsEpub()
 		{
-			using (var dlg = new SaveFileDialog())
+			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
 					dlg.InitialDirectory = _lastDirectory;
