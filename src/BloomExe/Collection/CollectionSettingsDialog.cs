@@ -149,7 +149,7 @@ namespace Bloom.Collection
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.Language3Iso639Code = null;
+			_collectionSettings.Language3Iso639Code = String.Empty;	// null causes a crash in trying to set it again (BL-5795)
 			ChangeThatRequiresRestart();
 		}
 
