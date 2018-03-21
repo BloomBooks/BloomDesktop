@@ -148,6 +148,11 @@
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
       </trans-unit>
+      <trans-unit id="ImageToolbox.FileChooserTitle">
+        <source xml:lang="en">Choose Picture File</source>
+        <note>ID: ImageToolbox.FileChooserTitle</note>
+        <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
+      </trans-unit>
       <trans-unit id="ImageToolbox.Galleries">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
