@@ -44,7 +44,11 @@
         visibility: hidden;
     }
     .bloom-imageContainer {
-        background-color:white; // prevent transparency from leaking through
+        // in full-screenpicture mode, the original imageContainer becomes the
+        // frame, and its background color provides the black bars around the
+        // animation. A new div is inserted which wraps the animation and provides
+        // the white background in case the image is partly transparent.
+        background-color:black;
         position: fixed;
         left: 0;
         top: 0;
