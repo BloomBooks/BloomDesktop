@@ -120,7 +120,7 @@ namespace Bloom.Publish.Android.usb
 			return _device.Name;
 		}
 
-		private void Copy(Stream source, Stream destination)
+		private static void Copy(Stream source, Stream destination)
 		{
 			const int kCopyBufferSize = 262144;
 
