@@ -1450,9 +1450,23 @@
         <source xml:lang="en">Continue music from previous page</source>
         <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
+        <source xml:lang="en">Sound files</source>
+        <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.Music.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
+        <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
+        <note>ID: EditTab.Toolbox.Music.InvalidMp3File</note>
+        <note>The {0} is replaced by the filename.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle">
+        <source xml:lang="en">Choose Another Sound File</source>
+        <note>ID: EditTab.Toolbox.Music.InvalidMp3FileTitle</note>
+        <note>Title for a message box</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
         <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
