@@ -161,13 +161,13 @@ cd -
 #     revision: bloom-4.2.tcbuildtag
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
-# [13] build: palaso-win32-libpalaso-4.0-nostrongname Continuous (Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous)
+# [13] build: palaso-win32-libpalaso-4.1-nostrongname Continuous (Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous)
 #     project: libpalaso
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous
 #     clean: false
 #     revision: bloom-4.2.tcbuildtag
 #     paths: {"SIL.BuildTasks.dll"=>"build/", "SIL.BuildTasks.AWS.dll"=>"build/", "AWSSDK.Core.dll"=>"build/", "AWSSDK.S3.dll"=>"build/", ""=>"", "DialogAdapters.dll"=>"lib/dotnet/", "irrKlang.NET4.dll"=>"lib/dotnet/", "Newtonsoft.Json.dll"=>"lib/dotnet/", "SIL.Core.dll"=>"lib/dotnet/", "SIL.Core.Desktop.dll"=>"lib/dotnet/", "SIL.Media.dll"=>"lib/dotnet/", "SIL.TestUtilities.dll"=>"lib/dotnet/", "SIL.Windows.Forms.dll"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.dll"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.dll"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.dll"=>"lib/dotnet/", "SIL.WritingSystems.dll"=>"lib/dotnet/", "taglib-sharp.dll"=>"lib/dotnet/"}
-#     VCS: https://github.com/sillsdev/libpalaso.git [libpalaso-4.0]
+#     VCS: https://github.com/sillsdev/libpalaso.git [libpalaso-4.1]
 
 # make sure output directories exist
 mkdir -p ../DistFiles
@@ -239,23 +239,23 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/bloom-4.2.
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/bloom-4.2.tcbuildtag/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/bloom-4.2.tcbuildtag/HtmlXliff.pdb ../lib/dotnet/HtmlXliff.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/bloom-4.2.tcbuildtag/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.BuildTasks.dll ../build/SIL.BuildTasks.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.BuildTasks.AWS.dll ../build/SIL.BuildTasks.AWS.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/AWSSDK.Core.dll ../build/AWSSDK.Core.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/AWSSDK.S3.dll ../build/AWSSDK.S3.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/DialogAdapters.dll ../lib/dotnet/DialogAdapters.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/irrKlang.NET4.dll ../lib/dotnet/irrKlang.NET4.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/Newtonsoft.Json.dll ../lib/dotnet/Newtonsoft.Json.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Core.dll ../lib/dotnet/SIL.Core.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Core.Desktop.dll ../lib/dotnet/SIL.Core.Desktop.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Media.dll ../lib/dotnet/SIL.Media.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.TestUtilities.dll ../lib/dotnet/SIL.TestUtilities.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Windows.Forms.dll ../lib/dotnet/SIL.Windows.Forms.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Windows.Forms.GeckoBrowserAdapter.dll ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Windows.Forms.Keyboarding.dll ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Windows.Forms.WritingSystems.dll ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.WritingSystems.dll ../lib/dotnet/SIL.WritingSystems.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso40nostrongnameContinuous/bloom-4.2.tcbuildtag/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.BuildTasks.dll ../build/SIL.BuildTasks.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.BuildTasks.AWS.dll ../build/SIL.BuildTasks.AWS.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/AWSSDK.Core.dll ../build/AWSSDK.Core.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/AWSSDK.S3.dll ../build/AWSSDK.S3.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/DialogAdapters.dll ../lib/dotnet/DialogAdapters.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/irrKlang.NET4.dll ../lib/dotnet/irrKlang.NET4.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/Newtonsoft.Json.dll ../lib/dotnet/Newtonsoft.Json.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Core.dll ../lib/dotnet/SIL.Core.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Core.Desktop.dll ../lib/dotnet/SIL.Core.Desktop.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Media.dll ../lib/dotnet/SIL.Media.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.TestUtilities.dll ../lib/dotnet/SIL.TestUtilities.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Windows.Forms.dll ../lib/dotnet/SIL.Windows.Forms.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Windows.Forms.GeckoBrowserAdapter.dll ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Windows.Forms.Keyboarding.dll ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.Windows.Forms.WritingSystems.dll ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/SIL.WritingSystems.dll ../lib/dotnet/SIL.WritingSystems.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32libpalaso41nostrongnameContinuous/bloom-4.2.tcbuildtag/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
