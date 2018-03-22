@@ -19,21 +19,11 @@ namespace BloomTests.Publish
 	{
 		private static BookSelection s_bookSelection;
 		private BookServer _bookServer;
-		private WebSocketProgress _progress;
-		private MockUsbPublisher _testUsbPublisher;
-		private WebSocketServerSpy _spy;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			GetTestBookSelection();
-			_spy = new WebSocketServerSpy();
-		}
-
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
-			_spy.Dispose();
+			SetupTestBookSelection();
 		}
 
 		public override void Setup()
@@ -42,57 +32,84 @@ namespace BloomTests.Publish
 			Program.SetUpLocalization(new ApplicationContainer());
 			_bookServer = CreateBookServer();
 			s_bookSelection.SelectBook(CreateBook());
-			_progress = CreateWebSocketProgress();
-			_testUsbPublisher = new MockUsbPublisher(_progress, _bookServer);
 		}
 
-		public override void TearDown()
-		{
-			base.TearDown();
-			_spy.Reset();
-		}
-
-		private WebSocketProgress CreateWebSocketProgress()
-		{
-			_spy.Init("webSocketServerSpy");
-			return new WebSocketProgress(_spy);
-		}
-
-		private static BookSelection GetTestBookSelection()
+		private static void SetupTestBookSelection()
 		{
 			s_bookSelection = new BookSelection();
-			return s_bookSelection;
+		}
+
+		private static WebSocketProgress CreateWebSocketProgress(out WebSocketServerSpy spy)
+		{
+			spy = new WebSocketServerSpy();
+			spy.Init("webSocketServerSpy");
+			return new WebSocketProgress(spy);
 		}
 
 		[Test]
-		[Category("SkipOnTeamCity")] // fails on TeamCity... timing problem?
-		[Apartment(ApartmentState.STA)] // otherwise the 2 tests can collide
 		public void SendBookAsync_HandlesDiskFullException()
 		{
-			_testUsbPublisher.SendBookAsync(s_bookSelection.CurrentSelection, Color.Aqua);
+			// Setup
+			WebSocketServerSpy spy;
+			var progress = CreateWebSocketProgress(out spy);
+			var testUsbPublisher = new MockUsbPublisher(progress, _bookServer);
+			testUsbPublisher.SetExceptionToThrow(MockUsbPublisher.ExceptionToThrow.DeviceFull);
+
+			// SUT
+			testUsbPublisher.SendBookAsync(s_bookSelection.CurrentSelection, Color.Aqua);
+
 			// Allow async method to complete
-			Application.DoEvents();
-			Thread.Yield();
-			Application.DoEvents();
+			HangoutAwhile();
 
 			// Unfortunately, using the MockUsbPublisher to throw our Disk Full exception in SendBookDoWork also
 			// means we aren't testing the code that figures out the size of the book. At least it's predictable!
 			const string message =
 				"<span style='color:red'>The device reported that it does not have enough space for this book. The book is of unknown MB.</span>";
-			Assert.AreEqual(message, _spy.Events.First().Value.Item1);
+			Assert.AreEqual(message, spy.Events.First().Value.Item1);
+		}
+
+		[Test]
+		public void SendBookAsync_HandlesDeviceHungException()
+		{
+			// Setup
+			WebSocketServerSpy spy;
+			var progress = CreateWebSocketProgress(out spy);
+			var testUsbPublisher = new MockUsbPublisher(progress, _bookServer);
+			testUsbPublisher.SetExceptionToThrow(MockUsbPublisher.ExceptionToThrow.DeviceHung);
+
+			// SUT
+			testUsbPublisher.SendBookAsync(s_bookSelection.CurrentSelection, Color.Aqua);
+
+			// Allow async method to complete
+			HangoutAwhile();
+
+			// Unfortunately, using the MockUsbPublisher to throw our exception in SendBookDoWork also
+			// means we aren't testing the code that figures out the size of the book. At least it's predictable!
+			const string message =
+				"<span style='color:red'>The device reported that it does not have enough space for this book. The book is of unknown MB.</span>";
+			Assert.AreEqual(message, spy.Events.First().Value.Item1);
 		}
 
 		[Test]
 		public void GetSizeOfBloomdFile_Works()
 		{
+			// Setup
+			WebSocketServerSpy spy;
+			var progress = CreateWebSocketProgress(out spy);
+			var testUsbPublisher = new MockUsbPublisher(progress, _bookServer);
+			testUsbPublisher.SetExceptionToThrow(MockUsbPublisher.ExceptionToThrow.HandleDeviceFull);
+
 			var book = CreateBookWithPhysicalFile(ThreePageHtml);
 			var bloomdPath = MakeFakeBloomdFile(book);
-			_testUsbPublisher.SetLastBloomdFileSize(bloomdPath);
-			var size = _testUsbPublisher.GetStoredBloomdFileSize();
+			testUsbPublisher.SetLastBloomdFileSize(bloomdPath);
+
+			// SUT
+			var size = testUsbPublisher.GetStoredBloomdFileSize();
+
 			Assert.AreEqual("0.1", size);
 		}
 
-		private string MakeFakeBloomdFile(Bloom.Book.Book book)
+		private static string MakeFakeBloomdFile(Bloom.Book.Book book)
 		{
 			var srcFile = Path.Combine(book.FolderPath, "book.htm");
 			var filePath = new TempFileForSafeWriting(Path.Combine(book.FolderPath, "book.bloomd")).TempFilePath;
@@ -102,6 +119,15 @@ namespace BloomTests.Publish
 				File.AppendAllLines(filePath, fileContents);
 
 			return filePath;
+		}
+
+		private static void HangoutAwhile()
+		{
+			Application.DoEvents();
+			Thread.Sleep(1000);
+			Application.DoEvents();
+			Thread.Sleep(1000);
+			Application.DoEvents();
 		}
 	}
 }

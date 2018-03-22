@@ -1,4 +1,5 @@
 ﻿#if !__MonoCS__
+using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using Bloom.Book;
@@ -9,22 +10,45 @@ namespace BloomTests.Publish
 {
 	public class MockUsbPublisher : UsbPublisher
 	{
-		const int HR_ERROR_DISK_FULL = unchecked((int)0x80070070);
+		private int _exceptionToThrow;
 
 		public MockUsbPublisher(WebSocketProgress progress, BookServer bookServer)
 			:base(progress, bookServer)
 		{
 			Stopped = () => SetState("dummy");
+			_exceptionToThrow = HR_ERROR_DISK_FULL;
 		}
 
 		protected override void SendBookDoWork(Bloom.Book.Book book, Color backColor)
 		{
-			throw new COMException("MockUsbPublisher threw a fake COMException (Disk is full) in SendBookDoWork.", HR_ERROR_DISK_FULL);
+			throw new COMException("MockUsbPublisher threw a fake COMException in SendBookDoWork.", _exceptionToThrow);
 		}
 
-		private void SetState(string message)
+		private void SetState(string dummy)
 		{
 			// do nothing.
+		}
+
+		/// <summary>
+		/// Tell MockUsbPublisher which exception to throw in SendBookDoWork()
+		/// </summary>
+		/// <param name="exceptionChoice">ExceptionToThrow enum type</param>
+		public void SetExceptionToThrow(ExceptionToThrow exceptionChoice)
+		{
+			switch (exceptionChoice)
+			{
+				case ExceptionToThrow.DeviceFull:
+					_exceptionToThrow = HR_ERROR_DISK_FULL;
+					break;
+				case ExceptionToThrow.DeviceHung:
+					_exceptionToThrow = HR_E_WPD_DEVICE_IS_HUNG;
+					break;
+				case ExceptionToThrow.HandleDeviceFull:
+					_exceptionToThrow = HR_ERROR_HANDLE_DISK_FULL;
+					break;
+				default:
+					throw new ApplicationException("Unknown Exception type chosen");
+			}
 		}
 
 		public void SetLastBloomdFileSize(string filePath)
@@ -35,6 +59,13 @@ namespace BloomTests.Publish
 		public string GetStoredBloomdFileSize()
 		{
 			return _lastPublishedBloomdSize;
+		}
+
+		public enum ExceptionToThrow
+		{
+			DeviceFull,
+			DeviceHung,
+			HandleDeviceFull
 		}
 	}
 }
