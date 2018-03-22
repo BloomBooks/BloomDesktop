@@ -166,28 +166,6 @@ namespace Bloom.Publish.Android.usb
 			}
 		}
 
-		private static bool IsDiskFull(Exception ex)
-		{
-			if (!(ex is IOException || ex is COMException))
-				return false;
-
-			const int HR_ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
-			const int HR_ERROR_DISK_FULL = unchecked((int)0x80070070);
-
-			return ex.HResult == HR_ERROR_HANDLE_DISK_FULL
-			       || ex.HResult == HR_ERROR_DISK_FULL;
-		}
-
-		private void SendOutOfStorageSpaceMessage(Exception e)
-		{
-			// {0} is the size of the book that Bloom is trying to copy over to the Android device.
-			_progress.Error("DeviceOutOfSpace",
-				string.Format("The device reported that it does not have enough space for this book. The book is {0} MB.",
-					_lastPublishedBloomdSize??"of unknown"));
-			Logger.WriteError(e);
-			Stopped();
-		}
-
 		protected static string GetSizeOfBloomdFile(string pathToBloomdFile)
 		{
 			var size = 0.0m;
@@ -220,7 +198,7 @@ namespace Bloom.Publish.Android.usb
 
 		private void FailSendBook(Exception e)
 		{
-			if (IsDiskFull(e))
+			if (IsDeviceFullOrHung(e))
 			{
 				SendOutOfStorageSpaceMessage(e);
 			}
@@ -237,6 +215,30 @@ namespace Bloom.Publish.Android.usb
 				}
 				Stopped();
 			}
+		}
+
+		protected const int HR_ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
+		protected const int HR_ERROR_DISK_FULL = unchecked((int)0x80070070);
+		protected const int HR_E_WPD_DEVICE_IS_HUNG = unchecked((int)0x802A0006);
+
+		private static bool IsDeviceFullOrHung(Exception ex)
+		{
+			if (!(ex is IOException || ex is COMException))
+				return false;
+
+			return ex.HResult == HR_ERROR_HANDLE_DISK_FULL
+			       || ex.HResult == HR_ERROR_DISK_FULL
+			       || ex.HResult == HR_E_WPD_DEVICE_IS_HUNG;
+		}
+
+		private void SendOutOfStorageSpaceMessage(Exception e)
+		{
+			// {0} is the size of the book that Bloom is trying to copy over to the Android device.
+			_progress.Error("DeviceOutOfSpace",
+				string.Format("The device reported that it does not have enough space for this book. The book is {0} MB.",
+					_lastPublishedBloomdSize ?? "of unknown"));
+			Logger.WriteError(e);
+			Stopped();
 		}
 	}
 }
