@@ -20,7 +20,7 @@ namespace Bloom.Publish.Android.usb
 		private readonly AndroidDeviceUsbConnection _androidDeviceUsbConnection;
 		private DeviceNotFoundReportType _previousDeviceNotFoundReportType;
 		private BackgroundWorker _connectionHandler;
-		protected string _lastPublishedBloomdPath;
+		protected string _lastPublishedBloomdSize;
 
 		public UsbPublisher(WebSocketProgress progress, BookServer bookServer)
 		{
@@ -178,17 +178,17 @@ namespace Bloom.Publish.Android.usb
 			       || ex.HResult == HR_ERROR_DISK_FULL;
 		}
 
-		private void SendOutOfStorageSpaceMessage()
+		private void SendOutOfStorageSpaceMessage(Exception e)
 		{
-			var size = GetSizeOfBloomdFile(_lastPublishedBloomdPath);
 			// {0} is the size of the book that Bloom is trying to copy over to the Android device.
 			_progress.Error("DeviceOutOfSpace",
 				string.Format("The device reported that it does not have enough space for this book. The book is {0} MB.",
-				size));
+					_lastPublishedBloomdSize??"of unknown"));
+			Logger.WriteError(e);
 			Stopped();
 		}
 
-		protected string GetSizeOfBloomdFile(string pathToBloomdFile)
+		protected static string GetSizeOfBloomdFile(string pathToBloomdFile)
 		{
 			var size = 0.0m;
 			if (!string.IsNullOrEmpty(pathToBloomdFile))
@@ -205,7 +205,7 @@ namespace Bloom.Publish.Android.usb
 			PublishToAndroidApi.SendBook(book, _bookServer,
 				null, (publishedFileName, path) =>
 				{
-					_lastPublishedBloomdPath = path;
+					_lastPublishedBloomdSize = GetSizeOfBloomdFile(path);
 					_androidDeviceUsbConnection.SendBook(path);
 				},
 				_progress,
@@ -222,7 +222,7 @@ namespace Bloom.Publish.Android.usb
 		{
 			if (IsDiskFull(e))
 			{
-				SendOutOfStorageSpaceMessage();
+				SendOutOfStorageSpaceMessage(e);
 			}
 			else
 			{
