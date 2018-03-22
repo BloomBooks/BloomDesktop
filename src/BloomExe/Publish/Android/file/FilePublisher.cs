@@ -19,7 +19,7 @@ namespace Bloom.Publish.Android.file
 		public static void Save(Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
 		{
 			var progressWithL10N = progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
-			using (var dlg = new SaveFileDialog())
+			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				dlg.DefaultExt = BookCompressor.ExtensionForDeviceBloomBook;
 				var bloomdFileDescription = LocalizationManager.GetString("PublishTab.Android.bloomdFileFormatLabel", "Bloom Book for Devices", "This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App");

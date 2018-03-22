@@ -95,8 +95,11 @@ export class PanAndZoomTool implements ITool {
             const htmlForHandle = "<div id='elementId' class='classes' style='width:30px;height:30px;background-color:black;color:white;"
                 + "z-index:3000;cursor:default;'><p style='padding: 2px 0px 0px 9px;font-size:16px'>" + handleLabel + "</p></div>";
             const htmlForDragHandle = htmlForHandle.replace("elementId", "dragHandle").replace("classes", "bloom-dragHandleAnimation");
-            const htmlForResizeHandles = htmlForHandle.replace("elementId", "resizeHandle")
-                .replace("classes", "ui-resizable-handle ui-resizable-se") // the "2 box in the lower right"
+            // We're going to quite a bit of trouble here to get a bigger, darker drag handle in the bottom right
+            // corner than resizable provides by default. But the default one with our theme is almost invisible.
+            // Curiously, the 10% contrast filter makes the light grey in the icon DARKER thus INCREASING contrast.
+            const htmlForResizeHandles = ""
+                + "<div id='resizeHandle' class='ui-resizable-handle ui-resizable-se' style='width:16px;height:16px;z-index: 3000;filter:contrast(10%)'><span class='ui-icon ui-icon-grip-diagonal-se'></span></div>" // handle on bottom right
                 + "<div class='ui-resizable-handle ui-resizable-e' style='z-index: 90;'></div>" // handle on left edge (std appearance)
                 + "<div class='ui-resizable-handle ui-resizable-s' style='z-index: 90;'></div>" // handle on bottom edge (std appearance)
                 + "<div class='ui-resizable-handle ui-resizable-w' style='z-index: 90;'></div>" // handle on right edge (std appearance)

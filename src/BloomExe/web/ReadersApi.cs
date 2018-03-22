@@ -463,7 +463,7 @@ namespace Bloom.Api
 			if (!Directory.Exists(destPath)) Directory.CreateDirectory(destPath);
 
 			var textFiles = LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles", "Text files");
-			var dlg = new OpenFileDialog
+			var dlg = new DialogAdapters.OpenFileDialogAdapter
 			{
 				Multiselect = false,
 				CheckFileExists = true,
