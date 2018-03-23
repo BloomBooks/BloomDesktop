@@ -1053,6 +1053,38 @@ namespace Bloom.Book
 			Body.SetAttribute("data-bf" +featureName, orientationConstraint +";"+mediaConstraint);
 		}
 
+		/// <summary>
+		/// Remove the specified feature. I included the constraints for consistency with SetBookFeature,
+		/// but actually we don't currently support more than one constraint pair per feature, so any remove
+		/// removes that featre completely, irrespective of constraints.
+		/// </summary>
+		/// <param name="featureName"></param>
+		/// <param name="orientationConstraint"></param>
+		/// <param name="mediaConstraint"></param>
+		public void ClearBookFeature(string featureName, string orientationConstraint, string mediaConstraint)
+		{
+			Body.RemoveAttribute("data-bf" + featureName);
+		}
+
+		/// <summary>
+		/// Remove the specified feature. I included the constraints for consistency with SetBookFeature,
+		/// but actually we don't currently support more than one constraint pair per feature, so any remove
+		/// removes that featre completely, irrespective of constraints.
+		/// </summary>
+		/// <param name="featureName"></param>
+		/// <param name="orientationConstraint"></param>
+		/// <param name="mediaConstraint"></param>
+		public bool BookHasFeature(string featureName, string orientationConstraint, string mediaConstraint)
+		{
+			var attr = Body.Attributes["data-bf" + featureName];
+			if (attr == null)
+				return false;
+			// If we generalize this it should be something like contains, or else split at commas and then see if present.
+			// But it may be more complicated than that...Does a book have a feature in landscape orientation
+			// if it has it in all orientations, or not?
+			return attr.Value == orientationConstraint + ";" + mediaConstraint;
+		}
+
 		public static void MakeEditableDomShowAsTemplate(HtmlDom dom)
 		{
 			var label = dom.SelectSingleNode("//div[contains(@class,'pageLabel')]");

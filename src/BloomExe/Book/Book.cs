@@ -1646,10 +1646,6 @@ namespace Bloom.Book
 			}
 		}
 
-		// this is temporary, just trying to get support for full screen pan & zoom out quickly in 4.2
-		// so for now, we don't even remember it between loads of the book
-		public bool UsePhotoStoryModeInBloomReader;
-
 		/// <summary>
 		/// Make stuff readonly, which isn't doable via css, surprisingly
 		/// </summary>
@@ -2638,31 +2634,39 @@ namespace Bloom.Book
 			}
 		}
 
-		/// <summary>
-		/// Eventually-accurate summary: keep book features on the datdiv. This copies those down to the body element
-		/// so that css can read them.
-		/// Currently-accurate summary: copy features from the supplied book to the body element.
-		/// </summary>
-		/// <param name="originalBook"> This parameter is needed only temporarily, because we aren't yet actually storing
-		/// any features in the datadiv, so the features aren't available to us in the copy of the book made
-		/// while publishing to Android.</param>
-		public void UpdateBodyWithBookFeatures(Book originalBook)
+		// This is a shorthand for a whole set of features.
+		// Note: we are currently planning to eventually store this primarily in the data-div, with the
+		// body feature attributes present only so that CSS can base things on it. This method would then
+		// be responsible to set that too...and probaby that is what it should read.
+		public bool UsePhotoStoryModeInBloomReader
 		{
-			if (originalBook.UsePhotoStoryModeInBloomReader)
+			// Review: the issue suggested that it's only true if it has all of them. Currently they all get
+			// set or cleared together, so it makes no difference.
+			// I don't think it's helpful to have yet another place in our code
+			// that knows which six features make up PhotoStoryMode, so I decided to just check the most
+			// characteristic one.
+			get { return OurHtmlDom.BookHasFeature("fullscreenpicture", "landscape", "bloomReader"); }
+			set
 			{
+				Action<string, string, string> addOrRemove;
+					if (value) addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
+						OurHtmlDom.SetBookFeature(featureName, orientationConstraint, mediaConstraint);
+					else addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
+						OurHtmlDom.ClearBookFeature(featureName, orientationConstraint, mediaConstraint);
 				// Enhance: we can probably put all this in HtmlDom and have it not know about the particular features, just copy them
 				// from the datadiv. That means it will need to be possible to identify them by some attribute, e.g. data-isBookFeature="true"
 				// these are read by Bloom Reader (and eventually Reading App Builder?)
-				OurHtmlDom.SetBookFeature("autoadvance", "landscape", "bloomReader");
-				OurHtmlDom.SetBookFeature("canrotate", "allOrientations", "bloomReader");
-				OurHtmlDom.SetBookFeature("playanimations", "landscape", "bloomReader");// could be ignoreAnimations
-				OurHtmlDom.SetBookFeature("playmusic", "landscape", "bloomReader");
-				OurHtmlDom.SetBookFeature("playnarration", "landscape", "bloomReader");
+				addOrRemove("autoadvance", "landscape", "bloomReader");
+				addOrRemove("canrotate", "allOrientations", "bloomReader");
+				addOrRemove("playanimations", "landscape", "bloomReader");// could be ignoreAnimations
+				addOrRemove("playmusic", "landscape", "bloomReader");
+				addOrRemove("playnarration", "landscape", "bloomReader");
 
 				// these are read by css
 				//modifiedBook.OurHtmlDom.SetBookFeature("hideMargin", "landscape", "bloomReader");
 				//modifiedBook.OurHtmlDom.SetBookFeature("hidePageNumbers", "landscape", "bloomReader");
-				OurHtmlDom.SetBookFeature("fullscreenpicture", "landscape", "bloomReader");
+				addOrRemove("fullscreenpicture", "landscape", "bloomReader");
+				Save();
 			}
 		}
 	}
