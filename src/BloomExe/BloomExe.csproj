@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -1286,10 +1286,6 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
-    <!-- For Linux, copy the appropriate version of icudotnet -->
-    <!-- $(icu-config ...) is passed to shell to exec. -->
-    <!-- Escape the $ (%24) to ensure it is sent to the shell. -->
-    <Exec Command="cp -pvn $(SolutionDir)/lib/dotnet/icu%24(icu-config --version|tr -d .|cut -c -2)/icu.net.dll* $(SolutionDir)/lib/dotnet" />
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
     <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || npm install) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || npm run build)" />
     <!-- copy the appropriate Geckofx45 files to the output directory, first creating it if necessary -->
