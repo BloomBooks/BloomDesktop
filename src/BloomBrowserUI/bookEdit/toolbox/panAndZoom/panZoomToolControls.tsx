@@ -162,6 +162,7 @@ export class PanAndZoomTool implements ITool {
             // making the document look changed to export processes.
             this.updateDataAttributes();
         }
+        this.setupResizeObserver();
     }
     showTool() {
         this.updateMarkup();
@@ -177,6 +178,10 @@ export class PanAndZoomTool implements ITool {
         }
         firstImage.classList.remove("bloom-hideImageButtons");
         this.removeCurrentAudioMarkup();
+        if (this.observer) {
+            this.observer.disconnect();
+        }
+        this.sizeObserver.disconnect();
     }
     removeCurrentAudioMarkup(): void {
         const currentAudioElts = this.getPage().getElementsByClassName("ui-audioCurrent");
@@ -317,12 +322,76 @@ export class PanAndZoomTool implements ITool {
     }
 
     observer: MutationObserver;
+    sizeObserver: MutationObserver;
 
     updateChoosePictureState(): void {
         // If they once choose a picture, there's no going back to a placeholder (on this page).
         this.rootControl.setState({ haveImageContainerButNoImage: false });
         this.observer.disconnect();
         this.updateMarkup(); // one effect is to show the rectangles.
+    }
+
+    resizeRectanglesDelay: number = 200;
+    resizeInProgress: boolean = false;
+    resizeOldStyle: string;
+
+    // This is called when the size of the picture changes. We also get LOTS
+    // of spurious calls, for example, while resizing the rectangles. And even
+    // when really resizing the image container, we get too many calls, and
+    // the handler gets behind the events and things get sluggish if not worse.
+    // Worse, when resizing the rectangles, somehow the scaleImage code is triggered
+    // on the main image, and the size and position attributes may briefly
+    // be cleared, so for a short time they may really be changed, though no
+    // permanent change is occurring.
+    // Waiting briefly and then seeing whether the style really changed
+    // prevents the spurious events from triggering regeneration of the rectangles
+    // during resizing, which can prevent the resizing altogether.
+    // Simply waiting briefly reduces the frequency of regenerating
+    // the rectangles to something manageable and makes it feel much more responsive.
+    pictureSizeChanged(): void {
+        if (this.resizeInProgress) {
+            return;
+        }
+        setTimeout(() => {
+            // allow any future notifications to be processed. We want to clear this first,
+            // because a new notification while we are doing updateMarkup does need to
+            // be handled.
+            this.resizeInProgress = false;
+            const images = this.getImages();
+            if (images[0].getAttribute("style") === this.resizeOldStyle) {
+                return; // spurious notification
+            }
+            this.updateMarkup();
+        }, this.resizeRectanglesDelay);
+        this.resizeInProgress = true; // ignore notifications until timeout
+    }
+
+    getImages(): Array<HTMLImageElement> {
+        const firstImage = this.getFirstImage();
+        // not interested in images inside the resize rectangles.
+        return Array.prototype.slice.call(firstImage.getElementsByTagName("img"))
+            .filter(v => v.parentElement === firstImage);
+    }
+
+    setupResizeObserver(): void {
+        if (this.sizeObserver) {
+            this.sizeObserver.disconnect();
+        }
+        this.sizeObserver = new MutationObserver(() => this.pictureSizeChanged());
+        const images = this.getImages();
+
+        // I'm not sure how images can be an empty list...possibly while the page is shutting down??
+        // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
+        if (images.length > 0) {
+            this.resizeOldStyle = images[0].getAttribute("style");
+            // jquery's scaleImage function adjusts the position and size of the element to
+            // keep it centered when the size of the image container changes.
+            // margin-top and margin-left are only set using style; height and width
+            // are also set in their own attributes. But if any of them changes, the style does.
+            // We would prefer to use a ResizeObserver, but Gecko doesn't implement it yet.
+            this.sizeObserver.observe(images[0],
+                { attributes: true, attributeFilter: ["style"] });
+        }
     }
 
     setupImageObserver(): void {
@@ -336,7 +405,7 @@ export class PanAndZoomTool implements ITool {
         // I'm not sure how images can be an empty list...possibly while the page is shutting down??
         // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
         if (images.length > 0) {
-            this.observer.observe(this.getFirstImage().getElementsByTagName("img")[0],
+            this.observer.observe(images[0],
                 { attributes: true, attributeFilter: ["src"] });
         }
     }
