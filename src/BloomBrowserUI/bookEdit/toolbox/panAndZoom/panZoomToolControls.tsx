@@ -65,6 +65,11 @@ export class PanAndZoomTool implements ITool {
         // to be editing the book and configuring background music at the same time, so I'm not
         // too worried. If it becomes a performance problem, we could enhance ITool with a
         // function that is called just when the page switches.
+
+        // First, in case we really are switching pages, abort any preview that's in progress.
+        if (this.rootControl.state.playing) {
+            this.previewPanAndZoom();
+        }
         const newState = this.getStateFromHtml();
         if (newState.haveImageContainerButNoImage) {
             this.setupImageObserver();
