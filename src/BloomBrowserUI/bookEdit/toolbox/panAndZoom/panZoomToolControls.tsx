@@ -265,10 +265,23 @@ export class PanAndZoomTool implements ITool {
         const scale = EditableDivUtils.getPageScale();
         const imageHeight = this.getHeight(actualImage);
         const imageWidth = this.getWidth(actualImage);
-        const actualTop = (top * imageHeight + actualImage.offsetTop / scale);
-        const actualLeft = (left * imageWidth + actualImage.offsetLeft / scale);
+        let actualTop = (top * imageHeight + actualImage.offsetTop / scale);
+        let actualLeft = (left * imageWidth + actualImage.offsetLeft / scale);
         let actualWidth = width * imageWidth;
         let actualHeight = height * imageHeight;
+        // We want things to fit in the image container. This can be broken in various ways:
+        // - we may have changed to an image that is a different shape since last displaying
+        // - we may have changed the shape of the image container by origami
+        // - we may have changed the shape of the image container by choosing a different page layout
+        // (We may decide to go stronger than this and make sure it's within the actual image.)
+        const containerWidth = this.getWidth(firstImage);
+        const containerHeight = this.getHeight(firstImage);
+        if (actualWidth > containerWidth) {
+            actualWidth = containerWidth;
+        }
+        if (actualHeight > containerHeight) {
+            actualHeight = containerHeight;
+        }
         // For proper animation rectangles must be the same shape as the picture.
         // If we relax this constraint, we need to fix both our own preview code
         // and the main bloom player code so that the playback rectangle shape
@@ -279,6 +292,8 @@ export class PanAndZoomTool implements ITool {
         // spurious downloads because the document has changed. It may not be
         // sufficient. Possibly we should avoid saving if the actual size changes
         // by less than a whole pixel. Not sure how best to determine that.
+        // This should be done AFTER we made them small enough to fit, because the
+        // "small enough to fit" adjustment might throw off the aspect ratio.
         if (actualWidth / actualHeight > imageWidth / imageHeight + 0.001) {
             // proposed rectangle is too wide for height. Reduce width.
             actualWidth = actualHeight * imageWidth / imageHeight;
@@ -287,6 +302,21 @@ export class PanAndZoomTool implements ITool {
             // too high for width. Reduce height.
             actualHeight = actualWidth * imageHeight / imageWidth;
             needToSaveRectangle = true;
+        }
+        // Now make sure it's not positioned outside the container.
+        // This should be done after we settled on a size that will fit
+        // and is the right shape.
+        if (actualLeft < 0) {
+            actualLeft = 0;
+        }
+        if (actualLeft + actualWidth > containerWidth) {
+            actualLeft = containerWidth - actualWidth;
+        }
+        if (actualTop < 0) {
+            actualTop = 0;
+        }
+        if (actualTop + actualHeight > containerHeight) {
+            actualTop = containerHeight - actualHeight;
         }
         return [actualLeft, actualTop, actualWidth, actualHeight, needToSaveRectangle];
     }
