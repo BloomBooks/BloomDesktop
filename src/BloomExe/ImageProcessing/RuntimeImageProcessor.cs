@@ -178,7 +178,8 @@ namespace Bloom.ImageProcessing
 
 				// calculate dimensions
 				var newW = (originalImage.Image.Width > newWidth) ? newWidth : originalImage.Image.Width;
-				var newH = newW * originalImage.Image.Height / originalImage.Image.Width;
+				// allow for proper rounding from the division
+				var newH = (newW * originalImage.Image.Height + (originalImage.Image.Width/2)) / originalImage.Image.Width;
 
 				var thumbnail = new Bitmap(newW, newH);
 
@@ -191,8 +192,9 @@ namespace Bloom.ImageProcessing
 					imageToDraw = MakePngBackgroundTransparent(originalImage);
 				}
 				var destRect = new Rectangle(0, 0, newW, newH);
-
-				g.DrawImage(imageToDraw, destRect , new Rectangle(0,0,originalImage.Image.Width, originalImage.Image.Height),GraphicsUnit.Pixel);
+				// Note the image size may change when the background is made transparent.
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5632.
+				g.DrawImage(imageToDraw, destRect , new Rectangle(0,0,imageToDraw.Width, imageToDraw.Height),GraphicsUnit.Pixel);
 				if (!useOriginalImage)
 					imageToDraw.Dispose();
 				RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
