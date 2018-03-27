@@ -2226,7 +2226,7 @@ namespace Bloom.Book
 					{
 						var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
 						var path = HtmlDom.GetImageElementUrl(img);
-						var pathRelativeToFolioFolder = ".../" + bookFolderName + "/" + path.NotEncoded;
+						var pathRelativeToFolioFolder = "../" + bookFolderName + "/" + path.NotEncoded;
 						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
 						//So we are using UrlPathEncode
 
