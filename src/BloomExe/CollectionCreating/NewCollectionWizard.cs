@@ -191,6 +191,7 @@ namespace Bloom.CollectionCreating
 					_collectionInfo.Language1LineHeight = new decimal(height);
 			}
 			_collectionInfo.IsLanguage1Rtl = _fontDetails.RightToLeft;
+			_collectionInfo.Language1BreaksLinesOnlyAtSpaces = false;
 
 			//this both saves a step for the country with the most languages, but also helps get the order between en and tpi to what will be most useful
 			if (_collectionInfo.Country == "Papua New Guinea")
