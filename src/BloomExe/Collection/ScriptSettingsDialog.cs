@@ -51,6 +51,13 @@ namespace Bloom.Collection
 			set { _rtlLanguageCheckBox.Checked = value; }
 		}
 
+		// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5761.
+		public bool BreakLinesOnlyAtSpaces
+		{
+			get { return _lineBreakCheckBox.Checked; }
+			set { _lineBreakCheckBox.Checked = value; }
+		}
+
 		public decimal LanguageLineSpacing
 		{
 			get

@@ -473,11 +473,13 @@ namespace Bloom.Collection
 				frm.LanguageName = langName;
 				frm.LanguageRightToLeft = _collectionSettings.GetLanguageRtl(langNum);
 				frm.LanguageLineSpacing = _collectionSettings.GetLanguageLineHeight(langNum);
+				frm.BreakLinesOnlyAtSpaces = _collectionSettings.GetBreakLinesOnlyAtSpaces(langNum);
 				frm.ShowDialog(this);
 
 				// get the changes
 				var newRtl = frm.LanguageRightToLeft;
 				var newLs = frm.LanguageLineSpacing;
+				var newBreak = frm.BreakLinesOnlyAtSpaces;
 
 				if (newRtl != _collectionSettings.GetLanguageRtl(langNum))
 				{
@@ -488,6 +490,12 @@ namespace Bloom.Collection
 				if (newLs != _collectionSettings.GetLanguageLineHeight(langNum))
 				{
 					_collectionSettings.SetLanguageLineHeight(langNum, newLs);
+					ChangeThatRequiresRestart();
+				}
+
+				if (newBreak != _collectionSettings.GetBreakLinesOnlyAtSpaces(langNum))
+				{
+					_collectionSettings.SetBreakLinesOnlyAtSpaces(langNum, newBreak);
 					ChangeThatRequiresRestart();
 				}
 			}
