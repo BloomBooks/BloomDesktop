@@ -64,7 +64,11 @@ export function SetupImage(image) {
     $(image).parent().resize(function () {
         $(this).find("img").scaleImage(options);
         try {
-            ResetRememberedSize(this);
+            // When this function is for some reason loaded into the toolbox frame
+            // this function is undefined.
+            if (typeof (ResetRememberedSize) === "function") {
+                ResetRememberedSize(this);
+            }
         } catch (error) {
             console.log(error);
         }
@@ -249,10 +253,10 @@ function UpdateOverlay(container, img) {
             .done(translation => {
                 var title = translation.replace(/'/g, "&apos;");
                 $(container).prepend(`<button class='${buttonClasses}' title='${title}'></button>`);
-                })
+            })
             .fail(() => {
                 $(container).prepend(`<button class='${buttonClasses}' title='${englishText}'></button>`);
-             });
+            });
     }
 }
 
@@ -263,7 +267,7 @@ function SetAlternateTextOnImages(element) {
         var englishText = "This picture, {0}, is missing or was loading too slowly.";
         var nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         theOneLocalizationManager.asyncGetText("EditTab.Image.AltMsg", englishText,
-                "message displayed when the picture image cannot be displayed", nameWithoutQueryString)
+            "message displayed when the picture image cannot be displayed", nameWithoutQueryString)
             .done(translation => {
                 $(element).attr('alt', translation);
             })
