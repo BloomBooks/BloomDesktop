@@ -432,31 +432,45 @@ namespace Bloom.Edit
 
 
 		/// <summary>
-		/// Delete a file (typically a recording, as requested by the Clear button in the talking book tool)
+		/// Delete a recording segment, as requested by the Clear button in the talking book tool.
+		/// The corresponding mp3 should also be deleted.
 		/// </summary>
 		/// <param name="fileUrl"></param>
 		private void HandleDeleteSegment(ApiRequest request)
 		{
 			var path = GetPathToSegment(request.RequiredParam("id"));
-			if(!RobustFile.Exists(path))
+			var mp3Path = Path.ChangeExtension(path, "mp3");
+			var success = true;
+			if(RobustFile.Exists(path))
+				success = DeleteFileReportingAnyProblem(path);
+			if (RobustFile.Exists(mp3Path))
+				success &= DeleteFileReportingAnyProblem(mp3Path);
+
+			if (success)
 			{
 				request.PostSucceeded();
 			}
 			else
 			{
-				try
-				{
-					RobustFile.Delete(path);
-					request.PostSucceeded();
-				}
-				catch(IOException e)
-				{
-					var msg =
-						string.Format(
-							LocalizationManager.GetString("Errors.ProblemDeletingFile", "Bloom had a problem deleting this file: {0}"), path);
-					ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
-				}
+				request.Failed("could not delete at least one file");
 			}
+		}
+
+		private static bool DeleteFileReportingAnyProblem(string path)
+		{
+			try
+			{
+				RobustFile.Delete(path);
+				return true;
+			}
+			catch (IOException e)
+			{
+				var msg =
+					string.Format(
+						LocalizationManager.GetString("Errors.ProblemDeletingFile", "Bloom had a problem deleting this file: {0}"), path);
+				ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+			}
+			return false;
 		}
 
 
