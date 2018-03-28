@@ -22,11 +22,26 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 ## Building Web Source Code ##
 
-You'll need [nodejs](https://nodejs.org/en/) installed. On windows, the degree of [nesting inside of node_modules](https://github.com/Microsoft/nodejstools/issues/69) becomes a problem, but this is helped by NPM versions >= 3. To get a newish NPM, you should install a newish [nodejs](https://nodejs.org/en/), e.g. 5.4 or greater.
+You'll need [nodejs](https://nodejs.org/en/) installed.  As time goes on, the required version of nodejs changes.  Bloom 4.1 (and several earlier versions of Bloom) builds with nodejs 6.10.1.  Bloom 4.2 (and later versions of Bloom) builds with nodejs 8.10.0.  To make this feasible, we use [nvm-windows](https://github.com/coreybutler/nvm-windows) on Windows and [nvm](https://github.com/creationix/nvm) on Linux to install and manage which version of nodejs is active for the build process.  To install nvm on Windows, go to  [nvm-windows releases](https://github.com/coreybutler/nvm-windows/releases) and download the latest nvm-setup.zip file.  Unzip the downloaded file and run the nvm-setup.exe program to install nvm.  Once nvm has been installed for windows, run these commands in a command window to install the needed versions of nodejs.  This needs to be done only once.
+
+    nvm install 6.10.1
+    nvm install 8.10.0
+    nvm ls
+
+To install nvm (and the needed versions of nodejs) on Linux, run these commands in a bash shell window.  Again, this needs to be done only once.  (The version of nvm may change over time.  Check the [nvm home page](https://github.com/creationix/nvm#install-script) for exact details.)
+
+    wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm as a shell function
+    command -v nvm                                   # This should respond with "nvm"
+    nvm install 6.10.1
+    nvm install 8.10.0
+    nvm ls
 
 This will build and test the Typescript, javascript, less, and pug:
 
     cd src/BloomBrowserUI
+    nvm use 8.10.0    # or 6.10.1 if building Bloom 4.1 or earlier
     npm install
     npm run build
     npm test

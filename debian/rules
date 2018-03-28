@@ -25,13 +25,13 @@ override_dh_auto_build:
 	build/getDependencies-Linux.sh
 	# This seems to be the only reliable way to get the version of nodejs/npm that we need.
 	if [ "`uname -m`" = "x86_64" ]; then \
-	    wget https://nodejs.org/dist/v6.10.1/node-v6.10.1-linux-x64.tar.xz && \
-	    tar xf node-v6.10.1-linux-x64.tar.xz && \
-	    export PATH="`pwd`/node-v6.10.1-linux-x64/bin:$$PATH"; \
+	    wget https://nodejs.org/dist/v8.10.0/node-v8.10.0-linux-x64.tar.xz && \
+	    tar xf node-v8.10.0-linux-x64.tar.xz && \
+	    export PATH="`pwd`/node-v8.10.0-linux-x64/bin:$$PATH"; \
 	else \
-	    wget https://nodejs.org/dist/v6.10.1/node-v6.10.1-linux-x86.tar.xz && \
-	    tar xf node-v6.10.1-linux-x86.tar.xz && \
-	    export PATH="`pwd`/node-v6.10.1-linux-x86/bin:$$PATH"; \
+	    wget https://nodejs.org/dist/v8.10.0/node-v8.10.0-linux-x86.tar.xz && \
+	    tar xf node-v8.10.0-linux-x86.tar.xz && \
+	    export PATH="`pwd`/node-v8.10.0-linux-x86/bin:$$PATH"; \
 	fi && \
 	export HOME=/tmp && \
 	. ./environ && \
