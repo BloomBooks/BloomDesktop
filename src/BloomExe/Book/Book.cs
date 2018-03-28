@@ -19,6 +19,7 @@ using Bloom.Publish;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -727,7 +728,11 @@ namespace Bloom.Book
 			_pagesCache = null;
 			string oldMetaData = "";
 			if (RobustFile.Exists(BookInfo.MetaDataPath))
+			{
 				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
+				oldMetaData = BringMetaDataUpToDate(oldMetaData);
+				RobustFile.WriteAllText(BookInfo.MetaDataPath, oldMetaData);
+			}
 			BringBookUpToDate(OurHtmlDom, progress);
 			if (IsEditable)
 			{
@@ -756,6 +761,34 @@ namespace Bloom.Book
 			{
 				_bookRefreshEvent.Raise(this);
 			}
+		}
+
+		private string BringMetaDataUpToDate(string oldMetaData)
+		{
+			var result = JsonConvert.DeserializeObject<BookMetaData>(oldMetaData);
+			if (oldMetaData.Contains("country"))
+			{
+				if (!string.IsNullOrEmpty(_collectionSettings?.Country))
+				{
+					result.CountryName = _collectionSettings.Country;
+				}	
+			}
+			if (oldMetaData.Contains("province"))
+			{
+				if (!string.IsNullOrEmpty(_collectionSettings?.Province))
+				{
+					result.ProvinceName = _collectionSettings.Province;
+				}
+			}
+			if (oldMetaData.Contains("district"))
+			{
+				if (!string.IsNullOrEmpty(_collectionSettings?.District))
+				{
+					result.DistrictName = _collectionSettings.District;
+				}
+			}
+			oldMetaData = JsonConvert.SerializeObject(result);
+			return oldMetaData;
 		}
 
 		/// <summary>
