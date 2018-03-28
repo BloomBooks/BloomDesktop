@@ -277,6 +277,53 @@ namespace Bloom.Collection
 			}
 		}
 
+		// Line breaks are always wanted only between words.  (ignoring hyphenation)
+		// Most alphabetic scripts use spaces to separate words, and line-breaks occur only
+		// at those spaces.  CJK scripts (which includes scripts outside China, Japan, and
+		// Korea) usually do not have spaces, so either line breaks are acceptable anywhere
+		// or some fancy algorithm is used to detect word boundaries. (dictionary lookup?)
+		// Some minority languages use the CJK script of the national language but also
+		// use spaces to separate words.  For these languages, proper display requires
+		// the css setting "word-break: keep-all".  This setting affects only how CJK
+		// scripts are handled with regard to line breaking.
+		// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5761.
+		public virtual bool Language1BreaksLinesOnlyAtSpaces { get; set; }
+		public virtual bool Language2BreaksLinesOnlyAtSpaces { get; set; }
+		public virtual bool Language3BreaksLinesOnlyAtSpaces { get; set; }
+
+		public bool GetBreakLinesOnlyAtSpaces(int langNum)
+		{
+			switch (langNum)
+			{
+				case 1:
+					return Language1BreaksLinesOnlyAtSpaces;
+				case 2:
+					return Language2BreaksLinesOnlyAtSpaces;
+				case 3:
+					return Language3BreaksLinesOnlyAtSpaces;
+				default:
+					throw new ArgumentException("The language number is not valid.");
+			}
+		}
+
+		public void SetBreakLinesOnlyAtSpaces(int langNum, bool breakOnlyAtSpaces)
+		{
+			switch (langNum)
+			{
+				case 1:
+					Language1BreaksLinesOnlyAtSpaces = breakOnlyAtSpaces;
+					break;
+				case 2:
+					Language2BreaksLinesOnlyAtSpaces = breakOnlyAtSpaces;
+					break;
+				case 3:
+					Language3BreaksLinesOnlyAtSpaces = breakOnlyAtSpaces;
+					break;
+				default:
+					throw new ArgumentException("The language number is not valid.");
+			}
+		}
+
 		/// <summary>
 		/// Intended for making shell books and templates, not vernacular
 		/// </summary>
@@ -398,6 +445,9 @@ namespace Bloom.Collection
 			library.Add(new XElement("Language1LineHeight", Language1LineHeight));
 			library.Add(new XElement("Language2LineHeight", Language2LineHeight));
 			library.Add(new XElement("Language3LineHeight", Language3LineHeight));
+			library.Add(new XElement("Language1BreaksLinesOnlyAtSpaces", Language1BreaksLinesOnlyAtSpaces));
+			library.Add(new XElement("Language2BreaksLinesOnlyAtSpaces", Language2BreaksLinesOnlyAtSpaces));
+			library.Add(new XElement("Language3BreaksLinesOnlyAtSpaces", Language3BreaksLinesOnlyAtSpaces));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("PageNumberStyle", PageNumberStyle));
@@ -420,12 +470,12 @@ namespace Bloom.Collection
 				var sb = new StringBuilder();
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-				AddFontCssRule(sb, "BODY", GetDefaultFontName(), false, 0);
-				AddFontCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight);
-				AddFontCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight);
+				AddSelectorCssRule(sb, "BODY", GetDefaultFontName(), false, 0, false);
+				AddSelectorCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces);
+				AddSelectorCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight, Language2BreaksLinesOnlyAtSpaces);
 				if (!string.IsNullOrEmpty(Language3Iso639Code))
 				{
-					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight);
+					AddSelectorCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight, Language3BreaksLinesOnlyAtSpaces);
 				}
 				RobustFile.WriteAllText(path, sb.ToString());
 			}
@@ -435,7 +485,7 @@ namespace Bloom.Collection
 			}
 		}
 
-		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight)
+		private void AddSelectorCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight, bool breakOnlyAtSpaces)
 		{
 			sb.AppendLine();
 			sb.AppendLine(selector);
@@ -447,6 +497,9 @@ namespace Bloom.Collection
 
 			if (lineHeight > 0)
 				sb.AppendLine(" line-height: " + lineHeight.ToString(CultureInfo.InvariantCulture) + ";");
+
+			if (breakOnlyAtSpaces)
+				sb.AppendLine(" word-break: keep-all;");
 
 			sb.AppendLine("}");
 		}
@@ -492,6 +545,9 @@ namespace Bloom.Collection
 				Language1LineHeight = GetDecimalValue(library, "Language1LineHeight", 0);
 				Language2LineHeight = GetDecimalValue(library, "Language2LineHeight", 0);
 				Language3LineHeight = GetDecimalValue(library, "Language3LineHeight", 0);
+				Language1BreaksLinesOnlyAtSpaces = GetBoolValue(library, "Language1BreaksLinesOnlyAtSpaces", false);
+				Language2BreaksLinesOnlyAtSpaces = GetBoolValue(library, "Language2BreaksLinesOnlyAtSpaces", false);
+				Language3BreaksLinesOnlyAtSpaces = GetBoolValue(library, "Language3BreaksLinesOnlyAtSpaces", false);
 
 				Country = GetValue(library, "Country", "");
 				Province = GetValue(library, "Province", "");

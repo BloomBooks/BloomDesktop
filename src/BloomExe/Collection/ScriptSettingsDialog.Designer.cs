@@ -35,6 +35,7 @@
 			this._tallerLinesCheckBox = new System.Windows.Forms.CheckBox();
 			this._lineSpacingCombo = new System.Windows.Forms.ComboBox();
 			this._okButton = new System.Windows.Forms.Button();
+			this._lineBreakCheckBox = new System.Windows.Forms.CheckBox();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -113,7 +114,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
-			this._okButton.Location = new System.Drawing.Point(126, 147);
+			this._okButton.Location = new System.Drawing.Point(126, 176);
 			this._okButton.MinimumSize = new System.Drawing.Size(90, 29);
 			this._okButton.Name = "_okButton";
 			this._okButton.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -122,17 +123,31 @@
 			this._okButton.Text = "&OK";
 			this._okButton.UseVisualStyleBackColor = true;
 			// 
+			// _lineBreakCheckBox
+			// 
+			this._lineBreakCheckBox.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._lineBreakCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._lineBreakCheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._lineBreakCheckBox, "ScriptSettingsDialog.LineBreakCheckBox");
+			this._lineBreakCheckBox.Location = new System.Drawing.Point(3, 147);
+			this._lineBreakCheckBox.Name = "_lineBreakCheckBox";
+			this._lineBreakCheckBox.Size = new System.Drawing.Size(183, 23);
+			this._lineBreakCheckBox.TabIndex = 4;
+			this._lineBreakCheckBox.Text = "Break lines only at spaces";
+			this._lineBreakCheckBox.UseVisualStyleBackColor = true;
+			// 
 			// flowLayoutPanel1
 			// 
 			this.flowLayoutPanel1.AutoSize = true;
 			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.flowLayoutPanel1.Controls.Add(this._languageNameLabel);
 			this.flowLayoutPanel1.Controls.Add(this.tableLayoutPanel1);
+			this.flowLayoutPanel1.Controls.Add(this._lineBreakCheckBox);
 			this.flowLayoutPanel1.Controls.Add(this._okButton);
 			this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
 			this.flowLayoutPanel1.Location = new System.Drawing.Point(30, 20);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-			this.flowLayoutPanel1.Size = new System.Drawing.Size(219, 179);
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(219, 208);
 			this.flowLayoutPanel1.TabIndex = 0;
 			// 
 			// tableLayoutPanel1
@@ -193,5 +208,6 @@
 		private System.Windows.Forms.CheckBox _tallerLinesCheckBox;
 		private System.Windows.Forms.ComboBox _lineSpacingCombo;
 		private System.Windows.Forms.Button _okButton;
+		private System.Windows.Forms.CheckBox _lineBreakCheckBox;
 	}
 }
