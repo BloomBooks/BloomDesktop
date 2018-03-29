@@ -69,7 +69,7 @@ namespace Bloom.web
 				return url;
 			}
 
-			NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "Bloom could not retrieve the URL (type: " + urlType + ") from the live lookup", "We will try to continue with the fallback URL");
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Bloom could not retrieve the URL (type: " + urlType + ") from the live lookup", "We will try to continue with the fallback URL");
 			return LookupFallbackUrl(urlType);
 		}
 
