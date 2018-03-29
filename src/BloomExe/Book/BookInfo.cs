@@ -29,10 +29,32 @@ namespace Bloom.Book
 		private const string kBookshelfPrefix = "bookshelf:";
 
 		private BookMetaData _metadata;
+		private CollectionSettings _collectionSettings;
 
 		private BookMetaData MetaData
 		{
 			get { return _metadata ?? (_metadata = new BookMetaData()); }
+		}
+
+		private CollectionSettings CollectionSettings
+		{
+			get
+			{
+				if (_collectionSettings != null)
+				{
+					return _collectionSettings;
+				}
+				try
+				{
+					var collectionFolder = Directory.GetParent(FolderPath).FullName;
+					_collectionSettings = new CollectionSettings(CollectionSettings.FindSettingsFileInFolder(collectionFolder));
+				}
+				catch (ApplicationException ex)
+				{
+					// Do nothing will return null.
+				}
+				return _collectionSettings;
+			}
 		}
 
 		//for use by ErrorBookInfo
@@ -46,18 +68,30 @@ namespace Bloom.Book
 
 			//NB: This was coded in an unfortunate way such that touching almost any property causes a new metadata to be quietly created.
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
-
 			_metadata = BookMetaData.FromFolder(FolderPath);
 			if (_metadata == null)
 			{
 				// Look for old tags files not yet migrated
-				var oldTagsPath = Path.Combine(folderPath, "tags.txt");
+				var oldTagsPath = Path.Combine(FolderPath, "tags.txt");
 				if (RobustFile.Exists(oldTagsPath))
 				{
 					Book.ConvertTagsToMetaData(oldTagsPath, this);
 				}
 				// otherwise leave it null, first attempt to use will create a default one
 			}
+			if (!string.IsNullOrEmpty(CollectionSettings?.Country))
+			{
+				_metadata.CountryName = CollectionSettings.Country;
+			}
+			if (!string.IsNullOrEmpty(CollectionSettings?.Province))
+			{
+				_metadata.ProvinceName = CollectionSettings.Province;
+			}
+			if (!string.IsNullOrEmpty(CollectionSettings?.District))
+			{
+				_metadata.DistrictName = CollectionSettings.District;
+			}
+
 
 			IsEditable = isEditable;
 
@@ -135,7 +169,7 @@ namespace Bloom.Book
 
 		public bool IsRtl
 		{
-			get {return MetaData.IsRtl;}
+			get { return MetaData.IsRtl; }
 			set { MetaData.IsRtl = value; }
 		}
 
@@ -250,11 +284,11 @@ namespace Bloom.Book
 					image = ImageUtils.GetImageFromFile(path);
 					return true;
 				}
-				catch(Exception e) // If that file became corrupted, we would not want to lock user out of their book.
+				catch (Exception e) // If that file became corrupted, we would not want to lock user out of their book.
 				{
 					// Per BL-5241, and since some books in BL.org have empty thumbnail.png files and can easily get into
 					// books from bloom library, and we don't fix them there, we don't want a yellow screen even for alpha.
-					NonFatalProblem.Report(ModalIf.None, PassiveIf.All,"Could not read thumbnail.png", "Could not read thumbnail.png at "+FolderPath);
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Could not read thumbnail.png", "Could not read thumbnail.png at " + FolderPath);
 					//The file will be re-generate now.
 				}
 			}
@@ -363,6 +397,24 @@ namespace Bloom.Book
 		{
 			get { return MetaData.PageCount; }
 			set { MetaData.PageCount = value; }
+		}
+
+		public string CountryName
+		{
+			get { return MetaData.CountryName; }
+			set { MetaData.CountryName = value; }
+		}
+
+		public string ProvinceName
+		{
+			get { return MetaData.ProvinceName; }
+			set { MetaData.ProvinceName = value; }
+		}
+
+		public string DistrictName
+		{
+			get { return MetaData.DistrictName; }
+			set { MetaData.DistrictName = value; }
 		}
 
 		/// <summary>
@@ -640,7 +692,10 @@ namespace Bloom.Book
 						pageCount = PageCount,
 						langPointers = LanguageTableReferences,
 						uploader = Uploader,
-						leveledReaderLevel = LeveledReaderLevel
+						leveledReaderLevel = LeveledReaderLevel,
+						country = CountryName,
+						province = ProvinceName,
+						district = DistrictName
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -780,6 +835,15 @@ namespace Bloom.Book
 				return 0;
 			}
 		}
+
+		[JsonProperty("country")]
+		public string CountryName { get; set; }
+
+		[JsonProperty("province")]
+		public string ProvinceName { get; set; }
+
+		[JsonProperty("district")]
+		public string DistrictName { get; set; }
 
 		/// <summary>
 		/// Normally, we get the xmatter from our collection. But this can be overridden here

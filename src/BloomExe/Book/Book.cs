@@ -725,9 +725,7 @@ namespace Bloom.Book
 		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
-			string oldMetaData = "";
-			if (RobustFile.Exists(BookInfo.MetaDataPath))
-				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
+			BringBookInfoUpToDate();
 			BringBookUpToDate(OurHtmlDom, progress);
 			if (IsEditable)
 			{
@@ -744,17 +742,36 @@ namespace Bloom.Book
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
 			}
 
-			if (oldMetaData.Contains("readerToolsAvailable"))
-			{
-				var newMetaString = oldMetaData.Replace("readerToolsAvailable", "toolboxIsOpen");
-				var newMetaData = BookMetaData.FromString(newMetaString);
-				BookInfo.ToolboxIsOpen = newMetaData.ToolboxIsOpen;
-			}
-
 			Save();
 			if (_bookRefreshEvent != null)
 			{
 				_bookRefreshEvent.Raise(this);
+			}
+		}
+
+		private void BringBookInfoUpToDate()
+		{
+			if (!string.IsNullOrEmpty(_collectionSettings?.Country))
+			{
+				BookInfo.CountryName = _collectionSettings.Country;
+			}	
+			if (!string.IsNullOrEmpty(_collectionSettings?.Province))
+			{
+				BookInfo.ProvinceName = _collectionSettings.Province;
+			}
+			if (!string.IsNullOrEmpty(_collectionSettings?.District))
+			{
+				BookInfo.DistrictName = _collectionSettings.District;
+			}
+			if (RobustFile.Exists(BookInfo.MetaDataPath))
+			{
+				string oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
+				if (oldMetaData.Contains("readerToolsAvailable"))
+				{
+					var newMetaString = oldMetaData.Replace("readerToolsAvailable", "toolboxIsOpen");
+					var newMetaData = BookMetaData.FromString(newMetaString);
+					BookInfo.ToolboxIsOpen = newMetaData.ToolboxIsOpen;
+				}
 			}
 		}
 
