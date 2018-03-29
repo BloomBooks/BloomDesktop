@@ -70,6 +70,51 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
+		[Test]
+		public  void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved()
+		{
+			const string usedAudioGuid = "i3afb14d9-6362-40bf-9dca-de1b24d793f3";   //The files to keep.
+			const string unusedAudioGuid = "d3afb14d9-6362-40bf-9dca-de1b24d793f3"; //The files to drop.
+			const string usedBackgroundAudio = "Fur-elise-music-box";         //Background file to keep.
+			const string unusedBackgroundAudio = "Eine-kleine-Nachtmusik";
+			var usedBgWav = usedBackgroundAudio + ".wav";
+			var audioPath = Path.Combine(_folder.Path, "audio");              //Path to the audio files.
+			Directory.CreateDirectory(audioPath);
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page numberedPage customPage bloom-combinedPage " +
+					"A5Portrait side-right bloom-monolingual' data-page='' " +
+					"id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage=" +
+					"'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' " +
+					"lang='' data-backgroundaudio='"+ usedBgWav + "'><div class='marginBox'>" +
+					"<p><span data-duration='2.300227' id='"+ usedAudioGuid + "' " +
+					"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
+					"</div></div></body></html>");
+			var usedWavFilename = usedAudioGuid + ".wav";
+			var usedMp3Filename = usedAudioGuid + ".mp3";
+			var unusedWavFilename = unusedAudioGuid + ".wav";
+			var unusedMp3Filename = unusedAudioGuid + ".mp3";
+			var usedBgMp3Filename = usedBackgroundAudio + ".mp3";
+			var unusedBgWavFilename = unusedBackgroundAudio + ".wav";
+			var unusedBgMp3Filename = unusedBackgroundAudio + ".mp3";
+			var usedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedBgWav), true);
+			var usedBGMp3Path = Path.Combine(audioPath, usedBgMp3Filename);
+			var unusedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, unusedBgWavFilename), true);
+			var unusedBGMp3Path = Path.Combine(audioPath, unusedBgMp3Filename);
+			var usedWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedWavFilename), true);
+			var usedMp3Path = Path.Combine(audioPath, usedMp3Filename);
+			var unusedWavPath = MakeSampleWavAudio(Path.Combine(audioPath, unusedWavFilename), true);
+			var unusedMp3Path = Path.Combine(audioPath, unusedMp3Filename);
+			storage.CleanupUnusedAudioFiles();
+			Assert.IsTrue(File.Exists(usedWavPath.Path));
+			Assert.IsTrue(File.Exists(usedMp3Path));
+			Assert.IsFalse(File.Exists(unusedWavPath.Path));
+			Assert.IsFalse(File.Exists(unusedMp3Path));
+			Assert.IsTrue(File.Exists(usedBGWavPath.Path));
+			Assert.IsTrue(File.Exists(usedBGMp3Path));
+			Assert.IsFalse(File.Exists(unusedBGWavPath.Path));
+			Assert.IsFalse(File.Exists(unusedBGMp3Path));
+		}
 
 		[Test]
 		public  void CleanupUnusedImageFiles_BookHadUnusedImages_ImagesRemoved()
@@ -159,6 +204,16 @@ namespace BloomTests.Book
 			var x = new Bitmap(10, 10);
 			x.Save(temp.Path, ImageFormat.Png);
 			x.Dispose();
+			return temp;
+		}
+		private TempFile MakeSampleWavAudio(string name, bool makeMp3Also=false)
+		{
+			var temp = TempFile.WithFilename(name);
+			var ext = Path.GetExtension(name);
+			if (makeMp3Also && (ext ==".wav"))
+			{
+				TempFile.WithFilename(Path.ChangeExtension(name, ".mp3"));
+			}
 			return temp;
 		}
 		//

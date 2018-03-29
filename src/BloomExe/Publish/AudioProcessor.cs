@@ -79,7 +79,7 @@ namespace Bloom.Publish
 				});
 		}
 
-		private static string GetAudioFolderPath(string bookFolderPath)
+		internal static string GetAudioFolderPath(string bookFolderPath)
 		{
 			return Path.Combine(bookFolderPath, "audio");
 		}
