@@ -365,11 +365,16 @@ namespace Bloom.Book
 			var audioFolderPath = AudioProcessor.GetAudioFolderPath(_folderPath);
 			var audioFilesToDeleteIfNotUsed = new List<string>();
 			var audioExtensions = new HashSet<string>(new []{ ".wav", ".mp3" });  // .ogg, .wav, ...?
-			foreach (var path in Directory.EnumerateFiles(audioFolderPath).Where(
-				s => audioExtensions.Contains(Path.GetExtension(s).ToLowerInvariant())))
+
+			if (Directory.Exists(audioFolderPath))
 			{
-				audioFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+				foreach (var path in Directory.EnumerateFiles(audioFolderPath).Where(
+					s => audioExtensions.Contains(Path.GetExtension(s).ToLowerInvariant())))
+				{
+					audioFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+				}
 			}
+
 			//Remove from that list each audio file actually in use
 			var element = Dom.RawDom.DocumentElement;
 			var usedAudioPaths = GetAudioPathsRelativeToBook(element);
