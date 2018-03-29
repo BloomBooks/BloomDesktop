@@ -725,9 +725,6 @@ namespace Bloom.Book
 		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
-			string oldMetaData = "";
-			if (RobustFile.Exists(BookInfo.MetaDataPath))
-				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			BringBookUpToDate(OurHtmlDom, progress);
 			if (IsEditable)
 			{
@@ -744,18 +741,28 @@ namespace Bloom.Book
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
 			}
 
-			if (oldMetaData.Contains("readerToolsAvailable"))
-			{
-				var newMetaString = oldMetaData.Replace("readerToolsAvailable", "toolboxIsOpen");
-				var newMetaData = BookMetaData.FromString(newMetaString);
-				BookInfo.ToolboxIsOpen = newMetaData.ToolboxIsOpen;
-			}
-
 			Save();
 			if (_bookRefreshEvent != null)
 			{
 				_bookRefreshEvent.Raise(this);
 			}
+		}
+
+		private void BringBookInfoUpToDate()
+		{
+			if (RobustFile.Exists(BookInfo.MetaDataPath))
+			{
+				string oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
+				if (oldMetaData.Contains("readerToolsAvailable"))
+				{
+					var newMetaString = oldMetaData.Replace("readerToolsAvailable", "toolboxIsOpen");
+					var newMetaData = BookMetaData.FromString(newMetaString);
+					BookInfo.ToolboxIsOpen = newMetaData.ToolboxIsOpen;
+				}
+			}
+			BookInfo.CountryName = _collectionSettings.Country;
+			BookInfo.ProvinceName = _collectionSettings.Province;
+			BookInfo.DistrictName = _collectionSettings.District;
 		}
 
 		/// <summary>
@@ -888,6 +895,7 @@ namespace Bloom.Book
 					_doingBookUpdate = false;
 				}
 			}
+			BringBookInfoUpToDate();
 		}
 
 		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
