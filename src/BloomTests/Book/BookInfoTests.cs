@@ -113,7 +113,10 @@ namespace BloomTests.Book
 				LanguageTableReferences = new [] {new ParseDotComObjectPointer() { ClassName = "Language", ObjectId = "23456" }},
 				Uploader = new ParseDotComObjectPointer() { ClassName="User", ObjectId = "12345"},
 				Tools = new List<ToolboxToolState>(new [] {ToolboxToolState.CreateFromToolId("decodableReader")}),
-				AllowUploadingToBloomLibrary = false
+				AllowUploadingToBloomLibrary = false,
+				CountryName = "InTheBush",
+				ProvinceName = "Provence",
+				DistrictName = "Ocean"
 			};
 			var result = meta.WebDataJson;
 			var meta2 = BookMetaData.FromString(result);
@@ -143,6 +146,9 @@ namespace BloomTests.Book
 			Assert.That(meta2.DownloadSource, Is.Null);
 			Assert.That(meta2.CurrentTool, Is.Null);
 			Assert.That(meta2.Tools, Is.Null);
+			Assert.That(meta2.CountryName, Is.EqualTo("InTheBush"));
+			Assert.That(meta2.ProvinceName, Is.EqualTo("Provence"));
+			Assert.That(meta2.DistrictName, Is.EqualTo("Ocean"));
 			Assert.That(meta2.BookletMakingIsAppropriate, Is.True); // default value
 		}
 

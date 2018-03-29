@@ -725,10 +725,12 @@ namespace Bloom.Book
 		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
-			string oldMetaData = "";
+			string oldMetaData = string.Empty;
 			if (RobustFile.Exists(BookInfo.MetaDataPath))
+			{
 				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
-			BringBookUpToDate(OurHtmlDom, progress);
+			}
+			BringBookUpToDate(OurHtmlDom, progress, oldMetaData);
 			if (IsEditable)
 			{
 				// If the user might be editing it we want it more thoroughly up-to-date
@@ -744,18 +746,24 @@ namespace Bloom.Book
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
 			}
 
+			Save();
+			if (_bookRefreshEvent != null)
+			{
+				_bookRefreshEvent.Raise(this);
+			}
+		}
+
+		private void BringBookInfoUpToDate(string oldMetaData)
+		{
 			if (oldMetaData.Contains("readerToolsAvailable"))
 			{
 				var newMetaString = oldMetaData.Replace("readerToolsAvailable", "toolboxIsOpen");
 				var newMetaData = BookMetaData.FromString(newMetaString);
 				BookInfo.ToolboxIsOpen = newMetaData.ToolboxIsOpen;
 			}
-
-			Save();
-			if (_bookRefreshEvent != null)
-			{
-				_bookRefreshEvent.Raise(this);
-			}
+			BookInfo.CountryName = _collectionSettings.Country;
+			BookInfo.ProvinceName = _collectionSettings.Province;
+			BookInfo.DistrictName = _collectionSettings.District;
 		}
 
 		/// <summary>
@@ -868,7 +876,8 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="bookDOM"></param>
 		/// <param name="progress"></param>
-		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
+		/// <param name="oldMetaData">optional</param>
+		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress, string oldMetaData = "")
 		{
 			RemoveImgTagInDataDiv(bookDOM);
 			if (Title.Contains("allowSharedUpdate"))
@@ -888,6 +897,7 @@ namespace Bloom.Book
 					_doingBookUpdate = false;
 				}
 			}
+			BringBookInfoUpToDate(oldMetaData);
 		}
 
 		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
