@@ -13,6 +13,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
@@ -55,6 +56,7 @@ namespace Bloom.Book
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles();
+		void CleanupUnusedAudioFiles();
         BookInfo BookInfo { get; set; }
 		string NormalBaseForRelativepaths { get; }
 		string InitialLoadErrors { get; }
@@ -298,7 +300,7 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// Compare the images we find in the top level of the book folder to those referenced
-		/// in the dom, and remove any unreferenced on
+		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
 		public void CleanupUnusedImageFiles()
 		{
@@ -343,7 +345,70 @@ namespace Bloom.Book
 				catch (Exception)
 				{
 					Debug.WriteLine("Could not remove unused image: " + path);
-					Logger.WriteEvent("Could not remove unused  image: " + path);
+					Logger.WriteEvent("Could not remove unused image: " + path);
+					//It's not worth bothering the user about, we'll get it someday.
+					//We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+				}
+			}
+		}
+
+		/// <summary>
+		/// Compare the audio we find in the top level of the book folder to those referenced
+		/// in the dom, and remove any unreferenced ones.
+		/// </summary>
+		public void CleanupUnusedAudioFiles()
+		{
+
+			if (IsStaticContent(_folderPath))
+				return;
+			//Collect up all the audio files in our book's audio directory
+			var audioFolderPath = AudioProcessor.GetAudioFolderPath(_folderPath);
+			var audioFilesToDeleteIfNotUsed = new List<string>();
+			var audioExtensions = new HashSet<string>(new []{ ".wav", ".mp3" });  // .ogg, .wav, ...?
+			foreach (var path in Directory.EnumerateFiles(audioFolderPath).Where(
+				s => audioExtensions.Contains(Path.GetExtension(s).ToLowerInvariant())))
+			{
+				audioFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+			}
+			//Remove from that list each audio file actually in use
+			var element = Dom.RawDom.DocumentElement;
+			var usedAudioPaths = GetAudioPathsRelativeToBook(element);
+
+			//also, ensure that nothing to be removed is actually used in a datadiv as audio-sentence or backgroundaudio.
+			//This prevents us from deleting, for example, cover page audios if this is called before the front-matter
+			//has been applied to the document.
+			usedAudioPaths.AddRange(from XmlElement dataDivAudio in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'audio-sentence')"+
+							" or contains(text(),'data-backgroundaudio')]")
+							  select UrlPathString.CreateFromUrlEncodedString(dataDivAudio.InnerText.Trim()).PathOnly.NotEncoded);
+			foreach (var fileName in usedAudioPaths)
+			{
+				if (Path.GetExtension(fileName).Length > 0)
+				{
+					if (audioExtensions.Contains(Path.GetExtension(fileName).ToLowerInvariant()))
+					{
+						audioFilesToDeleteIfNotUsed.Remove(GetNormalizedPathForOS(fileName));  //This call just returns false if not found, which is fine.
+					}
+				}
+				foreach (var ext in audioExtensions)
+				{
+					var tempfileName = Path.ChangeExtension(fileName, ext);
+					audioFilesToDeleteIfNotUsed.Remove(GetNormalizedPathForOS(tempfileName));
+				}
+			}
+			//Delete any files still in the list
+			foreach (var fileName in audioFilesToDeleteIfNotUsed)
+			{
+				var path = Path.Combine(audioFolderPath, fileName);
+				try
+				{
+					Debug.WriteLine("Removed unused audio file: "+path);
+					Logger.WriteEvent("Removed unused audio file: " + path);
+					RobustFile.Delete(path);
+				}
+				catch (Exception)
+				{
+					Debug.WriteLine("Could not remove unused audio file: " + path);
+					Logger.WriteEvent("Could not remove unused audio file: " + path);
 					//It's not worth bothering the user about, we'll get it someday.
 					//We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
 				}
@@ -359,6 +424,12 @@ namespace Bloom.Book
 		{
 			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
 				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
+		internal static List<string> GetAudioPathsRelativeToBook(XmlElement element)
+		{
+			return (from XmlElement audio in HtmlDom.SelectChildAudioAndBackgroundMusicElements(element)
+					select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
 		}
 
 		private string GetNormalizedPathForOS(string path)
@@ -840,6 +911,7 @@ namespace Bloom.Book
 				{
 					UpdateSupportFiles();
 					CleanupUnusedImageFiles();
+					CleanupUnusedAudioFiles();
 				}
 			}
 		}

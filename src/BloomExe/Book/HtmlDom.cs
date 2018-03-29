@@ -1391,6 +1391,54 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
+		/// an inline style with data-backgroundaudio set.
+		/// </summary>
+		public static UrlPathString GetAudioElementUrl(GeckoHtmlElement audioElement)
+		{
+			return GetAudioElementUrl(new ElementProxy(audioElement));
+		}
+
+		/// <summary>
+		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
+		/// an inline style with data-backgroundaudio set.
+		/// </summary>
+		public static UrlPathString GetAudioElementUrl(XmlElement audioElement)
+		{
+			return GetAudioElementUrl(new ElementProxy(audioElement));
+		}
+
+		/// <summary>
+		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
+		/// an inline style with data-backgroundaudio set.
+		/// </summary>
+		public static UrlPathString GetAudioElementUrl(ElementProxy audioOrDivWithBackgroundMusic)
+		{
+			if (audioOrDivWithBackgroundMusic.Name.ToLower() == "span")
+			{
+				var classStr = audioOrDivWithBackgroundMusic.GetAttribute("class");
+				if (classStr.Contains("audio-sentence"))
+				{
+					var id = audioOrDivWithBackgroundMusic.GetAttribute("id");
+					return UrlPathString.CreateFromUrlEncodedString(id);
+				}
+			}
+			else
+			{
+				var backgroundAudioFileName = audioOrDivWithBackgroundMusic.GetAttribute("data-backgroundaudio") ?? String.Empty;
+				if (backgroundAudioFileName != String.Empty)
+				{
+					return UrlPathString.CreateFromUrlEncodedString(backgroundAudioFileName);
+				}
+			}
+			//we choose to return this instead of null to reduce errors created by things like
+			// HtmlDom.GetAudioElementUrl(element).UrlEncoded. If we just returned null, that has to be written
+			// as something that checks for null, like:
+			//  var url = HtmlDom.GetAudioElementUrl(element). if(url!=null) url.UrlEncoded
+			return UrlPathString.CreateFromUnencodedString(String.Empty);
+		}
+
+		/// <summary>
 		/// Sets the url attribute either of an img (the src attribute)
 		/// or a div with an inline style with an background-image rule
 		/// </summary>
@@ -1409,6 +1457,12 @@ namespace Bloom.Book
 		public static XmlNodeList SelectChildImgAndBackgroundImageElements(XmlElement element)
 		{
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
+		}
+
+		public static XmlNodeList SelectChildAudioAndBackgroundMusicElements(XmlElement element)
+		{
+			return element.SelectNodes(".//span[contains(@class,'audio-sentence')] | " +
+				".//div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]");
 		}
 
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)
