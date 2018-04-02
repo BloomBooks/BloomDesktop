@@ -292,6 +292,24 @@ namespace Bloom.Book
 			} while (count < 5);
 		}
 
+		public string CountryName
+		{
+			get { return MetaData.CountryName; }
+			set { MetaData.CountryName = value; }
+		}
+
+		public string ProvinceName
+		{
+			get { return MetaData.ProvinceName; }
+			set { MetaData.ProvinceName = value; }
+		}
+
+		public string DistrictName
+		{
+			get { return MetaData.DistrictName; }
+			set { MetaData.DistrictName = value; }
+		}
+
 		internal string MetaDataPath
 		{
 			get { return BookMetaData.MetaDataPath(FolderPath); }
@@ -640,7 +658,10 @@ namespace Bloom.Book
 						pageCount = PageCount,
 						langPointers = LanguageTableReferences,
 						uploader = Uploader,
-						leveledReaderLevel = LeveledReaderLevel
+						leveledReaderLevel = LeveledReaderLevel,
+						country = CountryName,
+						province = ProvinceName,
+						district = DistrictName
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -780,6 +801,15 @@ namespace Bloom.Book
 				return 0;
 			}
 		}
+
+		[JsonProperty("country")]
+		public string CountryName { get; set; }
+
+		[JsonProperty("province")]
+		public string ProvinceName { get; set; }
+
+		[JsonProperty("district")]
+		public string DistrictName { get; set; }
 
 		/// <summary>
 		/// Normally, we get the xmatter from our collection. But this can be overridden here
