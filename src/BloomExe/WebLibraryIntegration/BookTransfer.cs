@@ -353,7 +353,7 @@ namespace Bloom.WebLibraryIntegration
 			return UploadBook(bookFolder, progress, out parseId);
 		}
 
-		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeAudio = false)
+		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeAudio = true)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -792,7 +792,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="parseId"></param>
 		/// <param name="excludeAudio"></param>
 		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, bool excludeAudio = false)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, bool excludeAudio = true)
 		{
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
