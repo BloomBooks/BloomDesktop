@@ -1,4 +1,4 @@
-/// <reference path="../readerSettings.ts" />
+/// <reference path="../ReaderSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
 import { enableSampleWords, displayLetters, selectLetters, selectLevel, forcePlainTextPaste, selectStage, setLevelValue } from './readerSetup.ui';
 import { ReaderStage, ReaderLevel, ReaderSettings } from '../ReaderSettings';

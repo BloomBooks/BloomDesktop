@@ -1,7 +1,7 @@
 /// <reference path="libSynphony/synphony_lib.d.ts" />
 /// <reference path="../../../typings/underscore/underscore.d.ts" />
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
-/// <reference path="readerSettings.ts" />
+/// <reference path="ReaderSettings.ts" />
 
 import { theOneLanguageDataInstance, theOneLibSynphony, LanguageData } from './libSynphony/synphony_lib';
 import { ReaderStage, ReaderLevel, ReaderSettings } from './ReaderSettings';

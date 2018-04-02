@@ -18,17 +18,19 @@ var outputDir = "../../output/browser";
 //https://github.com/babel/babel-loader/issues/166
 var babelQueryString =
     "presets[]=" +
-    require.resolve("babel-preset-es2015") +
+    require.resolve("babel-preset-env") +
     ",presets[]=" +
     require.resolve("babel-preset-react");
 var babelString = require.resolve("babel-loader") + "?" + babelQueryString;
 
 module.exports = {
+    // mode must be set to either "production" or "development" in webpack 4
+    mode: "development",
     context: __dirname,
     devtool: "source-map",
     //Bloom is not (yet) one webapp; it's actually a several loosely related ones.
-    //So we have multiple "entry points" that we need to emit. Fortunately the
-    //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
+    //So we have multiple "entry points" that we need to emit. Fortunately the webpack 4
+    //optimization.splitChunks extracts the code that is common to more than one into "commonBundle.js"
     entry: {
         editTabRootBundle: "./bookEdit/editViewFrame.ts",
         //editablePageBootstrap: './bookEdit/editablePageBootstrap.ts',
@@ -68,22 +70,21 @@ module.exports = {
     },
 
     resolve: {
-        root: ["."],
         // For some reason, webpack began to complain about being given minified source.
         // alias: {
         //   "react-dom": pathToReactDom,
         //   react: pathToReact // the point of this is to use the minified version. https://christianalfoni.github.io/react-webpack-cookbook/Optimizing-rebundling.html
         // },
-        modulesDirectories: [
+        modules: [
+            ".",
             pathToOriginalJavascriptFilesInLib,
             node_modules,
             pathToBookEditJS,
             pathToOriginalJavascriptFilesInModified_Libraries
         ],
-        extensions: ["", ".js", ".jsx", ".ts", ".tsx"] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
+        extensions: [".js", ".jsx", ".ts", ".tsx"] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
     },
     plugins: [
-        new webpack.optimize.CommonsChunkPlugin("common", "commonBundle.js"),
         //answer on various legacy issues: http://stackoverflow.com/questions/28969861/managing-jquery-plugin-dependency-in-webpack?lq=1
         //prepend var $ = require("jquery") every time it encounters the global $ identifier or "jQuery".
         new webpack.ProvidePlugin({
@@ -92,9 +93,30 @@ module.exports = {
             "window.jQuery": "jquery"
         })
     ],
+    optimization: {
+        minimize: false,
+        namedModules: true,
+        splitChunks: {
+            cacheGroups: {
+                default: false,
+                commons: {
+                    name: 'commonBundle',
+                    chunks: "initial",
+                    minChunks: 9,
+                    minSize: 30000,
+                    reuseExistingChunk: true
+                }
+            }
+        },
+    },
     module: {
-        loaders: [
-            { test: /\.ts(x?)$/, loader: "ts-loader" },
+        rules: [
+            {
+                test: /\.ts(x?)$/,
+                use: [
+                    { loader: "ts-loader" }
+                ]
+            },
             {
                 test: /\.(js|jsx)$/,
                 //jquery-ui is currently *not* excluded because we added some imports to it
@@ -106,13 +128,10 @@ module.exports = {
                     /qtip/,
                     /xregexp-all-min.js/
                 ],
-                //               loader: 'babel?presets[]=react,presets[]=es2015',
-                //loader: 'babel?presets[]='+__dirname+"/node_modules/babel-preset-es2015",
-                loader: babelString
+                use: [
+                    { loader: babelString }
+                ]
             }
-            // { test: /\.ts(x?)$/, loader: 'babel-loader!ts-loader' },
-            // { test: /\.less$/, loader: "style!css!less" }
         ]
-        //noParse: [pathToReactDom, pathToReact]
     }
 };
