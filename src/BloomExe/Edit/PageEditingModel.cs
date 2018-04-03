@@ -2,6 +2,7 @@
 using System.IO;
 using Bloom.Book;
 using Bloom.ImageProcessing;
+using SIL.IO;
 using SIL.Network;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
@@ -25,6 +26,22 @@ namespace Bloom.Edit
 			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,
 				UrlPathString.CreateFromUnencodedString(imageFileName));
 			UpdateMetadataAttributesOnImage(imgOrDivWithBackgroundImage, imageInfo);
+		}
+
+		public void ChangeVideo(string bookFolderPath, ElementProxy videoContainer, string videoPath,
+			IProgress progress)
+		{
+			var videoFileName = Path.GetFileName(videoPath);
+			var destPath = Path.Combine(bookFolderPath, videoFileName);
+			if (destPath != videoPath && !File.Exists(destPath))
+			{
+				RobustFile.Copy(videoPath, destPath);
+			}
+			// Enhance: if destination exists and content does not match pick a new name and copy to that.
+
+			HtmlDom.SetVideoElementUrl(videoContainer, UrlPathString.CreateFromUnencodedString(videoFileName));
+			// Enhance: do we need to do something here about metadata, when we figure out how to handle that
+			// for videos?
 		}
 
 		/// <summary>

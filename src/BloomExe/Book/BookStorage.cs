@@ -61,6 +61,7 @@ namespace Bloom.Book
 		string NormalBaseForRelativepaths { get; }
 		string InitialLoadErrors { get; }
 		void UpdateSupportFiles();
+		void Update(string fileName, string factoryPath = "");
 	}
 
 	public class BookStorage : IBookStorage
@@ -309,7 +310,7 @@ namespace Bloom.Book
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
-			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license" });
+			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license","video-placeholder" });
 			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
@@ -1020,7 +1021,7 @@ namespace Bloom.Book
 			return (RobustFile.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
 		}
 
-		private void Update(string fileName, string factoryPath = "")
+		public void Update(string fileName, string factoryPath = "")
 		{
 			if (!IsUserOrTempFolder)
 			{

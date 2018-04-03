@@ -99,6 +99,12 @@ namespace Bloom.Edit
 				_editingModel.AdjustPageZoom(10);
 				request.PostSucceeded();
 			}, true);
+
+			server.RegisterEndpointHandler(kApiUrlPart + "requestVideoPlaceHolder", request =>
+			{
+				_editingModel.RequestVideoPlaceHolder();
+				request.PostSucceeded();
+			}, true);
 		}
 
 		private void SendCleanupState()
