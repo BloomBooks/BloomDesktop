@@ -190,7 +190,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="storageKeyOfBookFolder"></param>
 		/// <param name="pathToBloomBookDirectory"></param>
 		/// <param name="excludeAudio">If true, audio files are not uploaded.</param>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null, bool excludeAudio = false)
+		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null, bool excludeAudio = true)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
