@@ -109,9 +109,12 @@ module.exports = {
                 //               loader: 'babel?presets[]=react,presets[]=es2015',
                 //loader: 'babel?presets[]='+__dirname+"/node_modules/babel-preset-es2015",
                 loader: babelString
-            }
+            },
             // { test: /\.ts(x?)$/, loader: 'babel-loader!ts-loader' },
-            // { test: /\.less$/, loader: "style!css!less" }
+            {
+                test: /\.less$/i,
+                loader: "style-loader!css-loader!less-loader"
+            }
         ]
         //noParse: [pathToReactDom, pathToReact]
     }

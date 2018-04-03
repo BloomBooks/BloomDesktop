@@ -1,3 +1,4 @@
+///<reference path="../../../typings/globals.d.ts"/>
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
@@ -11,6 +12,7 @@ import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 import { Checkbox } from "../../../react_components/checkbox";
 import { MusicToolControls } from "../music/musicToolControls";
+let PanAndZoomStyles = require("./panAndZoom.less");
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -104,7 +106,9 @@ export class PanAndZoomTool implements ITool {
             // corner than resizable provides by default. But the default one with our theme is almost invisible.
             // Curiously, the 10% contrast filter makes the light grey in the icon DARKER thus INCREASING contrast.
             const htmlForResizeHandles = ""
-                + "<div id='resizeHandle' class='ui-resizable-handle ui-resizable-se' style='width:16px;height:16px;z-index: 3000;filter:contrast(10%)'><span class='ui-icon ui-icon-grip-diagonal-se'></span></div>" // handle on bottom right
+                + "<div id='resizeHandle' class='ui-resizable-handle ui-resizable-se' "
+                + "style='width:16px;height:16px;z-index: 3000;filter:contrast(10%)'>"
+                + "<span class='ui-icon ui-icon-grip-diagonal-se'></span></div>" // handle on bottom right
                 + "<div class='ui-resizable-handle ui-resizable-e' style='z-index: 90;'></div>" // handle on left edge (std appearance)
                 + "<div class='ui-resizable-handle ui-resizable-s' style='z-index: 90;'></div>" // handle on bottom edge (std appearance)
                 + "<div class='ui-resizable-handle ui-resizable-w' style='z-index: 90;'></div>" // handle on right edge (std appearance)

@@ -1,4 +1,5 @@
-﻿import axios from "axios";
+﻿///<reference path="../../typings/globals.d.ts"/>
+import axios from "axios";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
@@ -11,6 +12,7 @@ import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { H1, Div, IUILanguageAwareProps } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
+let androidPublishStyles = require("./androidPublishUI.less");
 
 const kWebSocketLifetime = "publish-android";
 

@@ -1,3 +1,4 @@
+///<reference path="../../../typings/globals.d.ts"/>
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
@@ -6,6 +7,7 @@ import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
+let MusicStyles = require("./music.less");
 
 interface IMusicState {
     activeRadioValue: string;
