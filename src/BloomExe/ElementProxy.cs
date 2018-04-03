@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using System.Xml;
 using Gecko;
 using Gecko.DOM;
@@ -121,6 +122,40 @@ namespace Bloom
 				var result =_xmlElement.OwnerDocument.GetElementById(id);
 				if (result == null)
 					return null;
+				return new ElementProxy(result);
+			}
+		}
+
+		public ElementProxy GetChildWithName(string name)
+		{
+			if (_xmlElement == null)
+			{
+				var result = _geckoElement.ChildNodes.FirstOrDefault(n => n.NodeName.ToLowerInvariant() == name) as GeckoHtmlElement;
+				if (result == null)
+					return null;
+				return new ElementProxy(result);
+			}
+			else
+			{
+				var result = _xmlElement.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n.Name.ToLowerInvariant() == name) as XmlElement;
+				if (result == null)
+					return null;
+				return new ElementProxy(result);
+			}
+		}
+
+		public ElementProxy AppendChild(string name)
+		{
+			if (_xmlElement == null)
+			{
+				var result = _geckoElement.OwnerDocument.CreateElement(name) as GeckoHtmlElement;
+				_geckoElement.AppendChild(result);
+				return new ElementProxy(result);
+			}
+			else
+			{
+				var result = _xmlElement.OwnerDocument.CreateElement(name);
+				_xmlElement.AppendChild(result);
 				return new ElementProxy(result);
 			}
 		}

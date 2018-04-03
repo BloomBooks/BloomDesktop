@@ -1097,13 +1097,43 @@ namespace Bloom.Edit
 			}
 		}
 
-//        private void InvokeUpdatePageList()
-//        {
-//            if (UpdatePageList != null)
-//            {
-//                UpdatePageList(this, null);
-//            }
-//        }
+		public void ChangeVideo(GeckoHtmlElement videoContainer, string videoPath, IProgress progress)
+		{
+			try
+			{
+				Logger.WriteMinorEvent("Starting ChangeVideo {0}...", videoPath);
+				var editor = new PageEditingModel();
+				editor.ChangeVideo(CurrentBook.FolderPath, new ElementProxy(videoContainer), videoPath, progress);
+
+				// We need to save so that when asked by the thumbnailer, the book will give the proper image
+				SaveNow();
+
+				// At some point we might clean up unused videos here. If so, be careful about
+				// losing license info if we ever put video information without it in the clipboard.
+				// Compare the parallel situation for images, BL-3717
+
+				// But after saving, we need the non-cleaned version back there
+				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+
+				_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+				Analytics.Track("Change Video");
+				Logger.WriteEvent("ChangeVideo {0}...", videoPath);
+
+			}
+			catch (Exception e)
+			{
+				var msg = LocalizationManager.GetString("Errors.ProblemImportingVideo", "Bloom had a problem importing this video.");
+				ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+			}
+		}
+
+		//        private void InvokeUpdatePageList()
+		//        {
+		//            if (UpdatePageList != null)
+		//            {
+		//                UpdatePageList(this, null);
+		//            }
+		//        }
 
 		public void SetView(EditingView view)
 		{
@@ -1310,6 +1340,19 @@ namespace Bloom.Edit
 		public void AdjustPageZoom(int delta)
 		{
 			_view.AdjustPageZoom(delta);
+		}
+
+		/// <summary>
+		/// Make sure the book folder contains a current version of the video placeholder.
+		/// We don't copy this to every book like placeHolder.png, since relatively few books need it,
+		/// but if it's used it needs to be there so things look right when opened in a browser.
+		/// I don't think our image deletion code is smart enough to detect that something a CSS
+		/// file says is needed as a background should not be deleted, so I've just made this
+		/// one of the image files that is never deleted once it gets added.
+		/// </summary>
+		public void RequestVideoPlaceHolder()
+		{
+			_bookSelection.CurrentSelection.Storage.Update("video-placeholder.svg");
 		}
 	}
 }

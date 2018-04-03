@@ -442,6 +442,27 @@ h2 {
         // Solves BL-1033 small picture frames cycling red overflow
         overflow: hidden;
     }
+    .bloom-videoContainer {
+        box-sizing: border-box;
+        width:100%;
+        height:100%;
+        &.bloom-noVideoSelected {
+            background: url("video-placeholder.svg") no-repeat center;
+            background-size: contain;
+        }
+
+        // above so buttons show
+        z-index: @imageContainerZIndex;
+
+        video {
+            // I don't know exactly why this works, but it makes the video shrink to fit,
+            // keep its aspect ratio, and center in whatever direction is not filled.
+            height: 100%;
+            width: 100%;
+            max-height: 100%;
+            max-width: 100%;
+        }
+    }
     .bloom-editable {
         overflow-y: hidden;
     }

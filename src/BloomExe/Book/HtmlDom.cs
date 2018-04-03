@@ -1390,6 +1390,29 @@ namespace Bloom.Book
 			return UrlPathString.CreateFromUnencodedString(String.Empty);
 		}
 
+		public static UrlPathString GetVideoElementUrl(GeckoHtmlElement videoContainer)
+		{
+			return GetVideoElementUrl(new ElementProxy(videoContainer));
+		}
+
+		/// <summary>
+		/// Gets the url for a video, starting from a parent div which may or may not contain a video element.
+		/// </summary>
+		public static UrlPathString GetVideoElementUrl(ElementProxy videoContainer)
+		{
+			var videoElt = videoContainer.GetChildWithName("video");
+			// we choose to return an empty path for failure instead of null to reduce errors created by things like
+			// HtmlDom.GetImageElementUrl(element).UrlEncoded.
+			if (videoElt == null)
+				return UrlPathString.CreateFromUnencodedString(String.Empty);
+			var srcElt = videoElt.GetChildWithName("source");
+			if (srcElt == null)
+				return UrlPathString.CreateFromUnencodedString(String.Empty);
+
+			var src = srcElt.GetAttribute("src");
+			return UrlPathString.CreateFromUrlEncodedString(src);
+		}
+
 		/// <summary>
 		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
 		/// an inline style with data-backgroundaudio set.
@@ -1452,6 +1475,42 @@ namespace Bloom.Book
 			{
 				imgOrDivWithBackgroundImage.SetAttribute("style", String.Format("background-image:url('{0}')", url.UrlEncoded));
 			}
+		}
+
+		/// <summary>
+		/// Set the video that will play for this container.
+		/// Includes creating the video and source elements if they don't already exist.
+		/// Does not yet handle setting to an empty url and restoring the bloom-noVideoSelected state.
+		/// </summary>
+		/// <param name="videoContainer"></param>
+		/// <param name="url"></param>
+		public static void SetVideoElementUrl(ElementProxy videoContainer, UrlPathString url)
+		{
+			var videoElt = videoContainer.GetChildWithName("video");
+			if (videoElt == null)
+			{
+				videoElt = videoContainer.AppendChild("video");
+				videoElt.SetAttribute("controls", "controls");
+			}
+
+			var srcElement = videoElt.GetChildWithName("source");
+			if (srcElement == null)
+			{
+				srcElement = videoElt.AppendChild("source");
+				srcElement.SetAttribute("type", "video/mp4");
+			}
+			srcElement.SetAttribute("src", url.UrlEncoded);
+			// Hides the placeholder.
+			
+			videoContainer.SetAttribute("class", RemoveClass("bloom-noVideoSelected", videoContainer.GetAttribute("class")));
+		}
+
+		public static string RemoveClass(string className, string input)
+		{
+			// We can remove the class name with a following space at the start,
+			// the class name with a preceding space and following word boundary anywhere,
+			// or just the class name itself if that's all there is.
+			return new Regex("(^" + className + " | " + className +"\\b|^" + className + "$)").Replace(input, "");
 		}
 
 		public static XmlNodeList SelectChildImgAndBackgroundImageElements(XmlElement element)
