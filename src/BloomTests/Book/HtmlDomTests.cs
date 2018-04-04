@@ -43,6 +43,25 @@ namespace BloomTests.Book
 			Assert.AreEqual("theBase", dom.BaseForRelativePaths);
 		}
 
+		[TestCase("", "", "")]
+		[TestCase("a", "a", "")] // no other class present
+		[TestCase("a", "b", "a")] // target class not found
+		[TestCase("abc def ghk", "abc", "def ghk")] // target class at start
+		[TestCase("def ghk abc", "abc", "def ghk")] // target class at end
+		[TestCase("def ghk abc", "ghk", "def abc")] // target class in middle
+		[TestCase("def", "de", "def")] // don't remove prefix at start
+		[TestCase("def ghk", "de", "def ghk")] // don't remove prefix at start with following space
+		[TestCase("def ghk abc", "gh", "def ghk abc")] // don't remove prefix in middle
+		[TestCase("def ghk", "gh", "def ghk")] // don't remove prefix from last class
+		[TestCase("def", "ef", "def")] // don't remove suffix at end
+		[TestCase("def ghk", "hk", "def ghk")] // don't remove suffix at end
+		[TestCase("def ghk abc", "hk", "def ghk abc")] // don't remove sufffix in middle
+		[TestCase("def ghkj abc", "hk", "def ghkj abc")] // don't remove central part
+		public void RemoveClass_RemovesCorrectly(string input, string className, string output)
+		{
+			Assert.That(HtmlDom.RemoveClass(className, input), Is.EqualTo(output));
+		}
+
 		[Test]
 		public void BaseForRelativePaths_NullPath_SetsToEmpty()
 		{

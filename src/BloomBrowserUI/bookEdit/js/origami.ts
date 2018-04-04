@@ -5,6 +5,7 @@ import { fireCSharpEditEvent } from "./bloomEditing";
 import { SetupImage } from "./bloomImages";
 import "split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
+import axios from "axios";
 
 //I was not able to get css-element-queries to load from here.. I think this should have worked:
 //import {ElementQueries} from 'css-element-queries'; //nb: this in turn loads resizesensor.js from the same module
@@ -330,8 +331,12 @@ function createTypeSelectors() {
     pictureLink.click(makePictureFieldClickHandler);
     var textLink = $("<a href='' data-i18n='EditTab.CustomPage.Text'>Text</a>");
     textLink.click(makeTextFieldClickHandler);
+    var videoLink = $("<a href='' data-i18n='EditTab.CustomPage.Video'>Video</a>");
+    videoLink.click(makeVideoFieldClickHandler);
     var orDiv = $("<div data-i18n='EditTab.CustomPage.Or'>or</div>");
-    links.append(pictureLink).append(space).append(orDiv).append(space).append(textLink);
+    links.append(pictureLink).append(",").append(space)
+        .append(videoLink).append(",").append(space).append(orDiv).append(space)
+        .append(textLink);
     return $("<div class='container-selector-links bloom-ui origami-ui'></div>").append(links);
 }
 function createTextBoxIdentifier() {
@@ -370,6 +375,20 @@ function makePictureFieldClickHandler(e) {
     imageContainer.append(image);
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(imageContainer);
+    $(this).closest(".selector-links").remove();
+}
+
+function makeVideoFieldClickHandler(e) {
+    e.preventDefault();
+    var container = $(this).closest(".split-pane-component-inner");
+    addUndoPoint();
+    var videoContainer = $("<div class='bloom-videoContainer bloom-leadingElement bloom-noVideoSelected'></div>");
+    container.append(videoContainer);
+    // For the book to look right when simply opened in an editor without the help of our local server,
+    // the image needs to be in the book folder. Unlike the regular placeholder, which we copy
+    // everywhere, this one is only meant to be around when needed. This call asks the server to make
+    // sure it is present in the book folder.
+    axios.post("/bloom/api/edit/pageControls/requestVideoPlaceHolder");
     $(this).closest(".selector-links").remove();
 }
 

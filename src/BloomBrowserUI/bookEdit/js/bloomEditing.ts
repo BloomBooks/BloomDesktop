@@ -3,6 +3,7 @@ import * as $ from "jquery";
 import * as JQuery from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import { cleanupImages, SetOverlayForImagesWithoutMetadata, SetupResizableElement, SetupImagesInContainer } from "./bloomImages";
+import { SetupVideoEditing } from "./bloomVideo";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
@@ -304,6 +305,7 @@ window.onload = () => {
 function SetupElements(container) {
 
     SetupImagesInContainer(container);
+    SetupVideoEditing(container);
     initializeTextOverPictureManager();
 
     //add a marginBox if it's missing. We introduced it early in the first beta
@@ -704,7 +706,7 @@ export function setZoom(newScale: string) {
 
 // This is used to keep wheel zooming messages from happening too fast.
 // The program will crash otherwise, at least on Linux.
-var wheelZoomOkay : boolean = true;
+var wheelZoomOkay: boolean = true;
 
 // ---------------------------------------------------------------------------------
 // called inside document ready function
@@ -720,7 +722,7 @@ export function bootstrap() {
     $("body").on("wheel", function (e) {
         var theEvent = e.originalEvent as WheelEvent;
         if (!theEvent.ctrlKey) return;
-        var command : string = null;
+        var command: string = null;
         // Note the direction of the zoom is opposite the direction of the scroll.
         if (theEvent.deltaY < 0) {
             command = "/bloom/api/edit/pageControls/zoomPlus";

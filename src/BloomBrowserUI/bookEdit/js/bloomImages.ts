@@ -75,7 +75,7 @@ export function SetupImage(image) {
     });
 }
 
-function GetButtonModifier(container) {
+export function GetButtonModifier(container) {
     var buttonModifier = '';
     var imageButtonWidth = 87;
     var imageButtonHeight = 52;
