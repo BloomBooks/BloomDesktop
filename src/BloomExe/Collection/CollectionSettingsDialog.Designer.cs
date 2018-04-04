@@ -307,6 +307,7 @@ namespace Bloom.Collection
 			this._numberStyleCombo.Name = "_numberStyleCombo";
 			this._numberStyleCombo.Size = new System.Drawing.Size(189, 25);
 			this._numberStyleCombo.TabIndex = 35;
+			this._numberStyleCombo.SelectedIndexChanged += new System.EventHandler(this._numberStyleCombo_SelectedIndexChanged);
 			// 
 			// label3
 			// 

@@ -64,6 +64,7 @@ namespace Bloom.Collection
 				{ "Bengali", "০১২৩৪৫৬৭৮৯"}, // from bn-BD
 				{ "Cambodian", "០១២៣៤៥៦៧៨៩"}, // from km-KH
 				{ "Khmer", "០១២៣៤៥៦៧៨៩"}, // from km-KH"
+				{ "Chakma", "𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿" }, // see https://codepoints.net/search?sc=Cakm
 				{ "Cjk-Decimal", "〇一二三四五六七八九"},// haven't found a culture for this
 				{ "Decimal", "" },
 				{ "Devanagari", "०१२३४५६७८९"}, // from hi-IN
@@ -421,6 +422,9 @@ namespace Bloom.Collection
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
 				AddFontCssRule(sb, "BODY", GetDefaultFontName(), false, 0);
+				// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts
+				// not covered by Andika New Basic.
+				AddFontCssRule(sb, ".numberedPage::after", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight);
 				AddFontCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight);
 				AddFontCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight);
 				if (!string.IsNullOrEmpty(Language3Iso639Code))
@@ -850,10 +854,15 @@ namespace Bloom.Collection
 				string info;
 				if(CssNumberStylesToCultureOrDigits.TryGetValue(PageNumberStyle, out info))
 				{
-					if (info.Length == 10) // string of digits
+					// normal info.length gives 20 for chakma's 10 characters... I gather because it is converted to utf 16  and then
+					// those bytes are counted? Here's all the info:
+					// "In short, the length of a string is actually a ridiculously complex question and calculating it can take a lot of CPU time as well as data tables."
+					// https://stackoverflow.com/questions/26975736/why-is-the-length-of-this-string-longer-than-the-number-of-characters-in-it
+					var infoOnDigitsCharacters = new StringInfo(info);
+					if (infoOnDigitsCharacters.LengthInTextElements == 10) // string of digits
 						return info; //we've just listed the digits out, no need to look up a culture
 
-					if(info.Length == 5) // Microsoft culture code
+					if(infoOnDigitsCharacters.LengthInTextElements == 5) // Microsoft culture code
 					{
 						try
 						{
