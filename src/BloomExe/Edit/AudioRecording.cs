@@ -178,6 +178,7 @@ namespace Bloom.Edit
 				request.Failed("Got endRecording, but was not recording");
 				return;
 			}
+			Exception exceptionCaught = null;
 			try
 			{
 				Debug.WriteLine("Stop recording");
@@ -186,15 +187,59 @@ namespace Bloom.Edit
 				//we requested to stop. A few seconds later (2, looking at the library code today), it will
 				//actually close the file and raise the Stopped event
 				Recorder.Stop();
-				request.PostSucceeded();
-				//ReportSuccessfulRecordingAnalytics();
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				//swallow it. One reason (based on HearThis comment) is that they didn't hold it down long enough, we detect this below.
+				// Swallow the exception for now. One reason (based on HearThis comment) is that the user
+				// didn't hold the record button down long enough, we detect this below.
+				exceptionCaught = ex;
+				Recorder.Stopped -= Recorder_Stopped;
+				Debug.WriteLine("Error stopping recording: " + ex.Message);
 			}
+			if (TestForTooShortAndSendFailIfSo(request))
+			{
+				return;
+			}
+			else if (exceptionCaught != null)
+			{
+				ResetRecorderOnError();
+				request.Failed("Stopping the recording caught an exception: " + exceptionCaught.Message);
+			}
+			else
+			{
+				// Report success now that we're sure we succeeded.
+				request.PostSucceeded();
+			}
+		}
 
-			TestForTooShortAndSendFailIfSo(request);
+		private void ResetRecorderOnError()
+		{
+			Debug.WriteLine("Resetting the audio recorder");
+			// Try to delete the file we were writing to.
+			try
+			{
+				Application.DoEvents();
+				RobustFile.Delete(PathToCurrentAudioSegment);
+			}
+			catch (Exception error)
+			{
+				Logger.WriteError("Audio Recording trying to delete "+PathToCurrentAudioSegment, error);
+			}
+			// The recorder may well be in a bad state.  Throw it away and get a new one.
+			// But maintain the assigned recording device.
+			var currentMic = RecordingDevice.ProductName;
+			_recorder.Dispose();
+			_recorder = new AudioRecorder(1);
+			_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+			foreach (var d in RecordingDevice.Devices)
+			{
+				if (d.ProductName == currentMic)
+				{
+					RecordingDevice = d;
+					break;
+				}
+			}
+			BeginMonitoring();
 		}
 
 		private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)
@@ -304,7 +349,6 @@ namespace Bloom.Edit
 				try
 				{
 					RobustFile.Delete(PathToCurrentAudioSegment);
-					//DesktopAnalytics.Analytics.Track("Re-recorded a clip", ContextForAnalytics);
 				}
 				catch (Exception err)
 				{
@@ -317,7 +361,6 @@ namespace Bloom.Edit
 			else
 			{
 				RobustFile.Delete(_backupPath);
-				//DesktopAnalytics.Analytics.Track("Recording clip", ContextForAnalytics);
 			}
 			_startRecording = DateTime.Now;
 			_startRecordingTimer.Start();
