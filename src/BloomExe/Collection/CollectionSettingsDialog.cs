@@ -530,5 +530,10 @@ namespace Bloom.Collection
 		{
 			Process.Start("http://bit.ly/2zTQHfM");
 		}
+
+		private void _numberStyleCombo_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			ChangeThatRequiresRestart();
+		}
 	}
 }

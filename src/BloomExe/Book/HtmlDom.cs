@@ -1711,13 +1711,18 @@ namespace Bloom.Book
 			if(string.IsNullOrEmpty(charactersForDigits))
 				return postiveInteger.ToString(CultureInfo.InvariantCulture);
 
-			Debug.Assert(charactersForDigits.Length==10);
-
+			// normal charactersForDigits.length gives 20 for chakma's 10 characters... I gather because it is converted to utf 16  and then
+			// those bytes are counted? Here's all the info:
+			// "In short, the length of a string is actually a ridiculously complex question and calculating it can take a lot of CPU time as well as data tables."
+			// https://stackoverflow.com/questions/26975736/why-is-the-length-of-this-string-longer-than-the-number-of-characters-in-it
+			var infoOnDigitsCharacters = new StringInfo(charactersForDigits);
+			Debug.Assert(infoOnDigitsCharacters.LengthInTextElements == 10);
+			
 			return String.Join("", postiveInteger.ToString(CultureInfo.InvariantCulture)
 				.Select(x =>
 				{
 					if ("1234567890".Contains(x.ToString()))
-						return charactersForDigits.Substring(x - '0', 1);
+						return infoOnDigitsCharacters.SubstringByTextElements(x - '0', 1);
 					else
 						return x.ToString();
 				}));
