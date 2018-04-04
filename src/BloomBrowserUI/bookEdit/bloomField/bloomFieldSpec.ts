@@ -1,4 +1,4 @@
-/// <reference path="bloomField.ts" />
+/// <reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 import BloomField from './BloomField';
 
