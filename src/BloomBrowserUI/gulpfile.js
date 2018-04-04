@@ -2,8 +2,8 @@
 var gulp = require('gulp');
 var semver = require('semver');
 var { engines } = require('./package');
-var gutil = require('gulp-util');
 var tap = require('gulp-tap');
+var replaceExt = require('replace-ext');
 
 //set up markdown with the extensions that we use to mark lines for localization
 var markdownIt = require('markdown-it')({
@@ -16,14 +16,11 @@ markdownIt.use(markdownItContainer);
 markdownIt.use(markdownItAttrs);
 
 var debug = require('gulp-debug');
-//var ts = require('gulp-typescript');
 var batch = require('gulp-batch');
 var watch = require('gulp-watch');
 var path = require('path');
 var sourcemaps = require('gulp-sourcemaps');
-//const babel = require('gulp-babel');
-//var browserify = require('gulp-browserify');
-var webpack = require('gulp-webpack');
+var webpackStream = require('webpack-stream');
 var del = require('del');
 var runSequence = require('run-sequence');
 var gulpCopy = require('gulp-copy');
@@ -101,24 +98,13 @@ gulp.task('pugLRT', function () {
 gulp.task('webpack', function () {
     var webpackconfig = require('./webpack.config.js');
     return gulp.src('unused') // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
-        .pipe(webpack(webpackconfig))
+        .pipe(webpackStream(webpackconfig, require("webpack")))
         .pipe(gulp.dest(outputDir));
 });
 
 gulp.task('clean', function () {
     return del([outputDir + "/**/*"], { force: true });
 });
-
-// gulp.task('jsx?', () => {
-// 	return gulp.src(paths.jsx)
-// 		.pipe(babel({
-// 			presets: ['es2015', "react"]
-// 		}))
-//         .pipe(browserify({
-// 		  insertGlobals : true
-// 		}))
-// 		.pipe(gulp.dest(outputDir));
-// });
 
 //This task is needed to move files we are *not* running through some
 //compiler into the outputDir directory.
@@ -127,24 +113,9 @@ gulp.task('copy', function () {
     gulp.src('./node_modules/jquery/dist/jquery.min.js')
         .pipe(gulpCopy(outputDir, { prefix: 3 }))
 
-    //   gulp.src('./node_modules/jquery.hotkeys/jquery.hotkeys.js')
-    //     .pipe(gulpCopy(outputDir, {prefix:2}))
-
     return gulp.src(paths.filesThatMightBeNeededInOutput)
         .pipe(gulpCopy(outputDir))
 });
-
-// gulp.task('typescript', function () {
-//   return gulp.src(paths.typescript)
-//     .pipe(debug({title: 'typescript:'}))
-//     .pipe(sourcemaps.init())
-//     .pipe(ts({
-//         target: "es5",// need to keep this down to the level that our gecko can directly handle. Things going through webpack+babel can target es6, fine. But not this other un-converted  stuff.
-//         module:"commonjs"
-//     }))
-//     .pipe(sourcemaps.write(outputDir))
-//     .pipe(gulp.dest(outputDir)); //drop all js's into the same dirs.
-// });
 
 gulp.task('watchInner', function () {
     watch(paths.less, batch(function (events, done) {
@@ -189,7 +160,7 @@ gulp.task('markdownHelp', function () {
                 `<html><head><meta charset='utf-8'><link rel='stylesheet' href='help.css' type='text/css'/></head><body>
 ` + result + `
 </body></html>`);
-            file.path = gutil.replaceExtension(file.path, '.htm');
+            file.path = replaceExt(file.path, '.htm');
             return;
         }))
         .pipe(gulpFlatten({ includeParents: 0 })) // number of parent folders to include
@@ -207,10 +178,10 @@ gulp.task('markdownTemplateReadme', function () {
             file.contents = new Buffer(`<html><head><meta charset='utf-8'><link rel='stylesheet' href='../../../bookPreview/BookReadme.css' type='text/css' /></head><body>
                 ` + result.replace("removethis", "") + `
                 </body></html>`);
-            file.path = gutil.replaceExtension(file.path, '.htm');
+            file.path = replaceExt(file.path, '.htm');
             return;
         }))
-        .pipe(gulp.dest(outputDir + "/templates"))	// we lose this level somewhere
+        .pipe(gulp.dest(outputDir + "/templates"))      // we lose this level somewhere
         .pipe(debug({ title: ' md --> ' }));
 });
 
@@ -219,11 +190,11 @@ gulp.task('markdownDistInfo', function () {
         .pipe(debug({ title: 'md:' }))
         .pipe(tap(function (file) {
             var result = markdownIt.render(file.contents.toString());
-	    // convert to full HTML, ensuring that the file is known to be utf-8.
+            // convert to full HTML, ensuring that the file is known to be utf-8.
             file.contents = new Buffer(`<html><head><meta charset='utf-8'></head><body>
 ` + result + `
 </body></html>`);
-            file.path = gutil.replaceExtension(file.path, '.htm');
+            file.path = replaceExt(file.path, '.htm');
             return;
         }))
         .pipe(gulp.dest("../../DistFiles"))
@@ -280,7 +251,9 @@ gulp.task('createXliffFiles', function() {
 gulp.task('default',
     function (callback) {
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
-        //currently our webpack run is pure javascript, so do it only after the typescript is all done
+        // This parallelism seems to provide the best performance.  The pug and markdown tasks must all be done before the
+        // translateHtml and createXliff tasks.  Putting 'less' with the first group and 'webpack' with the second group
+        // minimizes the overall build time according to tests.
         runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp', 'markdownTemplateReadme', 'markdownDistInfo'], ['webpack', 'translateHtmlFiles', 'createXliffFiles'], callback)
     });
 

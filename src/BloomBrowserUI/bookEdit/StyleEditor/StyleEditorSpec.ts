@@ -2,9 +2,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 
 
-/*
-/// <reference path="../../lib/jquery-1.9.1.js"/>
-*/
+/*/// <reference path="../../lib/jquery-1.9.1.js"/>*/
 
 import StyleEditor from "./StyleEditor";
 "use strict";
