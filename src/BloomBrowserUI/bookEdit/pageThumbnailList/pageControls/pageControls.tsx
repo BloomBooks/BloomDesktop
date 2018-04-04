@@ -3,6 +3,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
+import "./pageControls.less";
 
 // This is one of the root files for our webpack build, the root from which
 // pageControlsBundle.js is built. Currently, contrary to our usual practice,

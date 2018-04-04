@@ -19,8 +19,8 @@ var outputDir = "../../output/browser";
 // suggested at https://github.com/babel/babel-loader/issues/166.
 function localResolve(preset) {
     return Array.isArray(preset) ?
-           [require.resolve(preset[0]), preset[1]] :
-           require.resolve(preset);
+        [require.resolve(preset[0]), preset[1]] :
+        require.resolve(preset);
 }
 
 module.exports = {
@@ -145,12 +145,22 @@ module.exports = {
                         query: {
                             presets: [
                                 // Ensure that we target our version of geckofx (mozilla/firefox)
-                                ["babel-preset-env", {"targets": {"browsers": ["Firefox >= 45","last 2 versions"]}}],
+                                ["babel-preset-env", { "targets": { "browsers": ["Firefox >= 45", "last 2 versions"] } }],
                                 "babel-preset-react"
                             ].map(localResolve)
                         }
                     }
                 ]
+            },
+            {
+                test: /\.less$/i,
+                use: [{
+                    loader: "style-loader" // creates style nodes from JS strings
+                }, {
+                    loader: "css-loader" // translates CSS into CommonJS
+                }, {
+                    loader: "less-loader" // compiles Less to CSS
+                }]
             }
         ]
     }
