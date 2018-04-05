@@ -31,7 +31,7 @@ namespace Bloom.Edit
 	///				code in the toolbox bundle: in toolboxBootstrap.ts, add a line like
 	///				ToolBox.registerTool(new MyWonderfulTool());
 	///			- should implement makeRootElement() to create one div, the react root.
-	///				- the returned root should already have been passed passed to ReactDOM.render().
+	///				- the returned root should already have been passed to ReactDOM.render().
 	///			- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}.Heading,
 	///				where UCToolId is the capitalized version of your tool Id, e.g., "Music".
 	///				We currently assume the default English value of this will be UCToolId Tool, e.g., "Music Tool"
@@ -42,6 +42,10 @@ namespace Bloom.Edit
 	///				background-image:url('/bloom/images/pan and zoom.svg') !important;
 	///			}
 	///		which specifies the icon for your tool. (And create the icon in the BloomBrowserUI/images folder).
+	/// - Usually you will add a line to GetToolboxServerDirectories() in this file
+	/// - Add two lines like this to src\BloomBrowserUI\bookEdit\toolbox\settings\Settings.pug
+	///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='FrameExports.showOrHideTool_click(this);')
+	///		.checkbox-label(data-i18n='EditTab.Toolbox.Music.Heading') Music Tool
 	/// </summary>
 	public class ToolboxView
 	{
@@ -81,6 +85,7 @@ namespace Bloom.Edit
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/music");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/bookSettings");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/readerSetup");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/videoRecorder");
 		}
 
 		public static string MakeToolboxContent(Book.Book book)

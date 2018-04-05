@@ -1754,6 +1754,10 @@
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Video.Heading" sil:dynamic="true">
+        <source xml:lang="en">Video Recorder Tool</source>
+        <note>ID: EditTab.Toolbox.Video.Heading</note>
+      </trans-unit>
       <trans-unit id="EditTab.Trilingual">
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>

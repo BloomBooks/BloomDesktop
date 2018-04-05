@@ -12,6 +12,10 @@
   version "16.0.35"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.0.35.tgz#7ce8a83cad9690fd965551fc513217a74fc9e079"
 
+"@types/webrtc@^0.0.23":
+  version "0.0.23"
+  resolved "https://registry.yarnpkg.com/@types/webrtc/-/webrtc-0.0.23.tgz#bd5aea5aab67b7ba9f0ce659340793d5cead7596"
+
 Base64@~0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/Base64/-/Base64-0.2.1.tgz#ba3a4230708e186705065e66babdd4c35cf60028"

@@ -171,6 +171,11 @@ namespace Bloom
 			// This suppresses the normal zoom-whole-window behavior that Gecko normally does when using the mouse while
 			// while holding crtl. Code in bloomEditing.js provides a more controlled zoom of just the body.
 			GeckoPreferences.User["mousewheel.with_control.action"] = 0;
+
+			// These two allow the video recording toolbox to capture a camera without asking the user's permission...
+			// which we have no way to do, so it otherwise just fails.
+			GeckoPreferences.User["media.navigator.enabled"] = true;
+			GeckoPreferences.User["media.navigator.permission.disabled"] = true;
 		}
 
 		public Browser()

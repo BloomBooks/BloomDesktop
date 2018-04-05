@@ -1,0 +1,25 @@
+#videoMonitorWrapper {
+    width: 100%;
+    height: 200px;
+}
+#videoMonitor {
+    width: 100%;
+    height: 100%;
+}
+
+#videoToggleRecording {
+    background-image: url(audio/record_expected.svg);
+    height: 40px;
+    width: 40px;
+    border: none;
+    background-size: contain;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    &.recording {
+        background-image: url(audio/record_active.svg);
+    }
+}
+
+.ui-accordion h3[data-toolId="videoTool"] span.ui-accordion-header-icon {
+    background-image:url('/bloom/images/videoTool.svg') !important;
+}

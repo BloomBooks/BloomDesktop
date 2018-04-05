@@ -1138,6 +1138,7 @@ namespace Bloom.Edit
 		public void SetView(EditingView view)
 		{
 			_view = view;
+			_view.RegisterWithServer(_server);
 		}
 
 
