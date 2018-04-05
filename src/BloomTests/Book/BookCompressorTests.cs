@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using Bloom;
@@ -12,6 +13,7 @@ using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests.Book
 {
@@ -654,6 +656,24 @@ namespace BloomTests.Book
 					Assert.AreEqual(oldMetadata.Creator, newMetadata.Creator, "creator preserved for LakePendOreille.jpg");
 					Assert.AreEqual(oldMetadata.License.ToString(), newMetadata.License.ToString(), "license preserved for LakePendOreille.jpg");
 				}
+			}
+		}
+
+		[Test]
+		public void GetBytesOfReducedImage_LargePng24bImageReduced()
+		{
+			// lady24b.png:        PNG image data, 24bit depth, 3632w x 3872h
+
+			var path = FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "lady24b.png");
+			var originalBytes = File.ReadAllBytes(path);
+			var reducedBytes = BookCompressor.GetBytesOfReducedImage(path);
+			// Is it reduced, even tho' we switched from 24bit depth to 32bit depth?
+			Assert.Greater(originalBytes.Length, reducedBytes.Length, "lady24b.png is reduced from 3632x3872");
+			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
+			{
+				RobustFile.WriteAllBytes(tempFile.Path, reducedBytes);
+				var newImage = PalasoImage.FromFileRobustly(tempFile.Path);
+				Assert.AreEqual(PixelFormat.Format32bppArgb, newImage.Image.PixelFormat, "should have switched to 32bit depth");
 			}
 		}
 
