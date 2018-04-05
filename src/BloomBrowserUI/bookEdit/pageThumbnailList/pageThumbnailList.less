@@ -34,6 +34,7 @@ BODY {
 #pageGridWrapper {
     flex: 1 1 auto;
     overflow-y: auto; // so it will scroll, if it needs to, instead of growing
+    cursor: default;
 }
 
 .pageContainer {
@@ -42,7 +43,9 @@ BODY {
     overflow: hidden;
     display: inline-block;
     height: 65px; width: 47px; /* default = A5Portrait */
-
+    * {
+        cursor: pointer!important;
+    }
     &.A5Landscape {
         height: 51px;
         width: 69px;
