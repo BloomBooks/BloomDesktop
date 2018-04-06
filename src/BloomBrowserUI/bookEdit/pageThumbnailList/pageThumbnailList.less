@@ -5,6 +5,8 @@
 @import "../../templates/common-mixins.less";
 
 @highlightColor: @bloom-yellow;
+@gridWidth: 80px;
+@gridHeight: 105px; // BL-336 small increase
 
 BODY {
     background-color: @DarkBackgroundColor;
@@ -155,8 +157,8 @@ BODY {
 .gridSelected .pageContainer { padding: 1px; border: 2px solid @highlightColor }
 
 .gridItem {
-    width: 80px;
-    height: 105px; // BL-336 small increase
+    width: @gridWidth;
+    height: @gridHeight;
     opacity: 1;
     //overflow:hidden;
     &:nth-child(even) {
@@ -169,6 +171,17 @@ BODY {
                 float: right;
         }
     }
+}
+
+.invisibleThumbnailCover {
+    z-index: 50; // just needs to be above the .bloom-page and its contents
+    position: absolute;
+    display: inline-block;
+    opacity: 0; // transparent
+    width: @gridWidth - 2px;
+    height: @gridHeight - 2px;
+    top: 1px; // top and left are 'absolute', but somehow still relative to their container
+    left: 1px;
 }
 
 /* div.gridItem.dragging { opacity: .8; } */

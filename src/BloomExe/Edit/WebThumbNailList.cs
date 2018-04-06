@@ -223,6 +223,7 @@ namespace Bloom.Edit
 
 		private bool _usingTwoColumns;
 		private string PageContainerClass = "pageContainer";
+		private string InvisbleThumbClass = "invisibleThumbnailCover";
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
@@ -299,14 +300,19 @@ namespace Bloom.Edit
 				var pageContainer = pageDoc.CreateElement("div");
 				pageContainer.SetAttribute("class", PageContainerClass);
 				pageContainer.AppendChild(pageElementForThumbnail);
+				// We need an invisible div covering our pageContainer, so that the user can't actually click
+				// on the underlying "incredible-shrinking page".
+				var invisibleCover = pageDoc.CreateElement("div");
+				invisibleCover.SetAttribute("class", InvisbleThumbClass);
+				pageContainer.AppendChild(invisibleCover);
 
-				/* And here it gets fragile (for not).
-					The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
-					the browser's normal ability to assign a width to the parent div. So our parent
-					here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
-					moment, we assign appropriate sizes, by hand. We rely on c# code to add these
-					classes, since we can't write a rule in css3 that peeks into a child attribute.
-				*/
+				// And here it gets fragile(for not).
+				// The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
+				// the browser's normal ability to assign a width to the parent div. So our parent
+				// here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
+				// moment, we assign appropriate sizes, by hand.We rely on c# code to add these
+				// classes, since we can't write a rule in css3 that peeks into a child attribute.
+
 				if (!string.IsNullOrEmpty(cssClass))
 					pageContainer.SetAttribute("class", "pageContainer " + cssClass);
 
