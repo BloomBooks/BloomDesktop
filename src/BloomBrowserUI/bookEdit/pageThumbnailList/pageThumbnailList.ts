@@ -30,7 +30,12 @@ $(window).ready(function () {
             reordered: reorder
         }
     });
-    jQuery(".gridItem").click(function () {
+    jQuery(".gridItem").click(function (e) {
+        // adding "preventDefault()"" here and the cursor css might make the
+        // invisibleThumbnailCover unneccessary, but all of it together should be plenty
+        // of defense against the user getting unwanted results by clicking on thumbnails.
+        e.stopPropagation();
+        e.preventDefault();
         fireCSharpEvent("gridClick", $(this).attr("id"));
     });
 
