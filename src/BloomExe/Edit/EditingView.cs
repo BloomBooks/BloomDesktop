@@ -1549,7 +1549,7 @@ namespace Bloom.Edit
 				var root = _browser1.WebBrowser.Document;
 				var page = root.GetElementById("page") as GeckoIFrameElement;
 				var pageDoc = page.ContentWindow.Document;
-				var videoContainer = pageDoc.GetElementsByClassName("bloom-videoContainer").FirstOrDefault() as GeckoHtmlElement;
+				var videoContainer = pageDoc.GetElementsByClassName("bloom-videoContainer bloom-selected").FirstOrDefault() as GeckoHtmlElement;
 				if (videoContainer == null)
 				{
 					// Enhance: if we end up needing this it should be localizable. But the current plan is to disable

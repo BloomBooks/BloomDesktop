@@ -6,10 +6,12 @@ import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
+import { getPageFrameExports } from "../../js/bloomFrames";
 
 interface IVideoState {
     recording: boolean;
     countdown: number;
+    enabled: boolean;
 }
 
 // incomplete typescript definitions for MediaRecorder and related types.
@@ -40,7 +42,7 @@ declare var MediaRecorder: {
 export class VideoToolControls extends React.Component<{}, IVideoState> {
     constructor() {
         super({});
-        this.state = { recording: false, countdown: 0 };
+        this.state = { recording: false, countdown: 0, enabled: false };
     }
 
     videoStream: MediaStream;
@@ -49,12 +51,12 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
 
     public render() {
         return (
-            <div className="videoBody">
-                <div className={"button-label-wrapper" + (this.state.recording ? "" : " disabled")} id="videoOuterWrapper">
+            <div className={"videoBody" + (this.state.enabled ? "" : " disabled")}>
+                <div className="button-label-wrapper">
                     <div id="videoPlayAndLabelWrapper">
                         <div className="videoButtonWrapper">
-                            <button id="videoToggleRecording" className={"video-button ui-button enabled"
-                                + (this.state.recording ? " recording" : "")}
+                            <button id="videoToggleRecording" className={"video-button ui-button"
+                                + (this.state.recording ? " recording" : "") + (this.state.enabled ? " enabled" : " disabled")}
                                 onClick={() => this.toggleRecording()} />
                         </div>
                     </div>
@@ -65,7 +67,7 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
     }
 
     public turnOnVideo() {
-        const constraints = { video: true, audio: true };
+        const constraints = { video: true };
         // ((navigator.mediaDevices) as any).getUserMedia(constraints, this.startMonitoring, this.errorCallback);
         // works in FF 59 and Chrome. Not in Bloom.
         navigator.mediaDevices.getUserMedia(constraints).then(stream => this.startMonitoring(stream))
@@ -169,20 +171,90 @@ export class VideoTool implements ITool {
         return result;
     }
     showTool() {
-        this.reactControls.turnOnVideo();
+        this.updateMarkup();
     }
     hideTool() {
+        // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
+        // does anything with it) and leaving it allows us to keep the same one selected
+        // when we come back to the page. This is especially important when refreshing the
+        // page after selecting or recording a video.
+        const containers = ToolBox.getPage().getElementsByClassName("bloom-videoContainer");
+        for (var i = 0; i < containers.length; i++) {
+            containers[i].removeEventListener("click", this.containerClickListener);
+        }
+
         this.reactControls.turnOffVideo();
     }
 
     id(): string {
         return "video";
     }
+
+    // This function is saved in a variable so we can remove the same listener we added.
+    containerClickListener: EventListener = (event: MouseEvent) => {
+        // The reason for the listener: to select the current element
+        const currentContainers = ToolBox.getPage().getElementsByClassName("bloom-videoContainer");
+        for (var i = 0; i < currentContainers.length; i++) {
+            currentContainers[i].classList.remove("bloom-selected");
+        }
+        var container = (event.currentTarget as HTMLElement);
+        container.classList.add("bloom-selected");
+        // And now in most locations we want to prevent the default behavior where click starts playback.
+        // This may need adjustment for zoom.
+        // The idea here is that it should be possible to select a video by clicking it
+        // without starting it playing. On the other hand, the playback controls should work.
+        // So we prevent the default (playback-related) behavior if the click is in the area
+        // that the actual controls occupy.
+        // This is fairly rough (the central circle is approximated with a square, and we don't
+        // try to account for the fact that it disappears once first clicked).
+        // It's also fairly fragile...future versions of Gecko may not have the exact same
+        // controls in the same places. But it's the best I've been able to figure out.
+        const buttonRadius = 28;
+        var clientRect = container.getBoundingClientRect();
+        var x = event.clientX - clientRect.left;
+        var y = event.clientY - clientRect.top;
+        if (y < container.offsetHeight - 40 // above the control bar across the bottom
+            && (y < container.offsetHeight / 2 - buttonRadius // above the play button
+                || y > container.offsetHeight / 2 + buttonRadius // below the play button
+                || x < container.offsetWidth / 2 - buttonRadius // left of play button
+                || x > container.offsetWidth / 2 + buttonRadius)) {// right of play button
+            event.preventDefault();
+        }
+    }
     // required for ITool interface
     hasRestoredSettings: boolean;
     /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
     configureElements(container: HTMLElement) { }
     finishToolLocalization(pane: HTMLElement) { }
-    updateMarkup() { }
     /* tslint:enable:no-empty */
+
+    updateMarkup() {
+        const page = ToolBox.getPage();
+        const containers = page.getElementsByClassName("bloom-videoContainer");
+        if (containers.length === 0) {
+            if (this.reactControls.state.enabled) {
+                this.reactControls.turnOffVideo();
+                this.reactControls.setState({ enabled: false });
+            }
+        } else {
+            // We want one video container to be selected, so pick the first.
+            // If one is already marked selected, presumably from a previous use of this page,
+            // we'll leave that one active.
+            if (page.getElementsByClassName("bloom-videoContainer bloom-selected").length === 0) {
+                containers[0].classList.add("bloom-selected");
+            }
+            for (var i = 0; i < containers.length; i++) {
+                const container = containers[i];
+                // UpdateMarkup is called fairlyfrequently. Not sure what effect having
+                // the same listener attached multiple times might have, so play safe by
+                // removing it before adding.
+                container.removeEventListener("click", this.containerClickListener);
+                container.addEventListener("click", this.containerClickListener);
+            }
+            if (!this.reactControls.state.enabled) {
+                this.reactControls.turnOnVideo();
+                this.reactControls.setState({ enabled: true });
+            }
+        }
+    }
 }
