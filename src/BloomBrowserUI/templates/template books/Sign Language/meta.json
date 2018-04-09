@@ -1,0 +1,15 @@
+{
+    "bookInstanceId": "1a648b00-1ec0-46a7-be11-b0dec22fa0f4",
+    "experimental": "true",
+    "suitableForVernacularLibrary": "true",
+    "suitableForMakingShells": "true",
+    "tools": [
+        {
+            "name": "video",
+            "enabled": true,
+            "state": null
+        }
+    ],
+    "currentTool": "videoTool",
+    "toolboxIsOpen": true
+}
