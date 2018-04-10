@@ -29,5 +29,6 @@ namespace Bloom.Api
 		HttpMethods HttpMethod { get; }
 		void ExternalLinkSucceeded();
 		string DoNotCacheFolder { set; }
+		byte[] GetRawPostData();
 	}
 }

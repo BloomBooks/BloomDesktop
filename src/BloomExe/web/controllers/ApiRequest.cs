@@ -222,5 +222,7 @@ namespace Bloom.Api
 				throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have 1 value for " + key);
 			return values[0];
 		}
+
+		public byte[] RawPostData => _requestInfo.GetRawPostData();
 	}
 }

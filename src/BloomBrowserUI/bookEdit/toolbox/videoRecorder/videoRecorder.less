@@ -1,0 +1,38 @@
+#videoMonitorWrapper {
+    width: 100%;
+    height: 200px;
+}
+#videoMonitor {
+    width: 100%;
+    height: 100%;
+}
+
+#videoToggleRecording {
+    background-image: url(/bloom/images/record_expected.svg);
+    height: 40px;
+    width: 40px;
+    border: none;
+    background-size: contain;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    &.recording {
+        background-image: url(/bloom/images/record_active.svg);
+    }
+    &.disabled {
+        // This is an unfortunate naming, but we're borrowing the talking book icons.
+        // The video recorder doesn't (yet) have multiple buttons or the idea of an
+        // expected one, but the record-expected icon is the thing the user is used to
+        // seeing when making a recording is expected. record-enabled is less inviting,
+        // just used when he COULD record over an existing one. So we use that
+        // (in combination with the general dimming) when DISabled here.
+        background-image: url(/bloom/images/record_enabled.svg);
+    }
+}
+
+.disabled{
+    opacity: 0.4;
+}
+
+.ui-accordion h3[data-toolId="videoTool"] span.ui-accordion-header-icon {
+    background-image:url('/bloom/images/videoTool.svg') !important;
+}
