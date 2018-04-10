@@ -415,6 +415,11 @@ namespace Bloom.Book
 							imagePixelFormat = PixelFormat.Format32bppArgb;
 								break;
 					}
+					// OTOH, always using 32-bit format for .png files keeps us from having problems in BloomReader
+					// like BL-5740 (where 24bit format files came out in BR with black backgrounds).
+					if (!appearsToBeJpeg)
+						imagePixelFormat = PixelFormat.Format32bppArgb;
+
 					using (var newImage = new Bitmap(newWidth, newHeight, imagePixelFormat))
 					{
 						// Draws the image in the specified size with quality mode set to HighQuality
