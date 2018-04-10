@@ -6,6 +6,7 @@ import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
+import "./music.less";
 
 interface IMusicState {
     activeRadioValue: string;

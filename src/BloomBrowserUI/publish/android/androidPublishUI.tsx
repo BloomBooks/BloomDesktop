@@ -11,6 +11,7 @@ import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { H1, Div, IUILanguageAwareProps } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
+import "./androidPublishUI.less";
 
 const kWebSocketLifetime = "publish-android";
 
