@@ -110,6 +110,17 @@ export class ToolBox {
         }
     }
 
+    public static getPageFrame(): HTMLIFrameElement {
+        return parent.window.document.getElementById("page") as HTMLIFrameElement;
+    }
+
+    // The body of the editable page, a root for searching for document content.
+    public static getPage(): HTMLElement {
+        const page = this.getPageFrame();
+        if (!page) return null;
+        return page.contentWindow.document.body;
+    }
+
     /**
      * Fires an event for C# to handle
      * @param {String} eventName

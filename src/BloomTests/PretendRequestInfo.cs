@@ -102,5 +102,7 @@ namespace Bloom.Api
 		public string DoNotCacheFolder { get; set; }
 
 		public string RawUrl { get; private set; }
+
+		public byte[] GetRawPostData() { return new byte[0];}
 	}
 }

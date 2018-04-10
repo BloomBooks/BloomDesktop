@@ -973,23 +973,28 @@ namespace Bloom.Edit
 			imageInfo.Dispose(); // ensure memory doesn't leak
 		}
 
-		void OnChangeVideo(DomEventArgs ge)
+		internal bool WarnIfVideoCantChange(GeckoHtmlElement videoContainer)
 		{
 			if (!_model.CanChangeImages())
 			{
 				MessageBox.Show(
 					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
 						"Sorry, this book is locked down so that images cannot be changed.")); // Is it worth another LM string so we can say "videos can't be changed?
-				return;
+				return true;
 			}
-
-			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
-			var videoContainer = target.Parent;
-			if (videoContainer == null)
-				return;
 			string currentPath = HtmlDom.GetVideoElementUrl(videoContainer).NotEncoded;
 
 			if (!CheckIfLockedAndWarn(currentPath))
+				return true;
+			return false;
+		}
+		void OnChangeVideo(DomEventArgs ge)
+		{
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			var videoContainer = target.Parent;
+			if (videoContainer == null)
+				return; // should never happen
+			if (WarnIfVideoCantChange(videoContainer))
 				return;
 
 			var videoFiles = LocalizationManager.GetString("EditTab.FileDialogVideoFiles", "Video files");
@@ -1009,7 +1014,7 @@ namespace Bloom.Edit
 					if (DialogResult.OK == result)
 					{
 						// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-						SaveChangedVideo(videoContainer, dlg.FileName, "Bloom had a problem including that video");
+						_model.SaveChangedVideo(videoContainer, dlg.FileName, "Bloom had a problem including that video");
 						// Warn the user if we're starting to use too much memory.
 						SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
 					}
@@ -1036,26 +1041,6 @@ namespace Bloom.Edit
 				ErrorReport.NotifyUserOfProblem(error, error.Message);
 			}
 			catch(Exception error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
-			}
-		}
-
-		void SaveChangedVideo(GeckoHtmlElement videoElement, string videoPath, string exceptionMsg)
-		{
-			try
-			{
-				_model.ChangeVideo(videoElement, videoPath, new NullProgress());
-			}
-			catch (System.IO.IOException error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, error.Message);
-			}
-			catch (ApplicationException error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, error.Message);
-			}
-			catch (Exception error)
 			{
 				ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
 			}
@@ -1515,5 +1500,8 @@ namespace Bloom.Edit
 		{
 			_zoomControl = zoomCtl;
 		}
+
+		// intended for use only by the EditingModel
+		internal Browser Browser => _browser1;
 	}
 }

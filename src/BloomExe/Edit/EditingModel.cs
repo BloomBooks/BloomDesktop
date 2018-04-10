@@ -17,6 +17,7 @@ using Bloom.Api;
 using Bloom.MiscUI;
 using DesktopAnalytics;
 using Gecko;
+using Gecko.DOM;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
@@ -149,6 +150,7 @@ namespace Bloom.Edit
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
+			RegisterWithServer(_server);
 		}
 
 		private Form _oldActiveForm;
@@ -1353,6 +1355,77 @@ namespace Bloom.Edit
 		public void RequestVideoPlaceHolder()
 		{
 			_bookSelection.CurrentSelection.Storage.Update("video-placeholder.svg");
+		}
+
+		// It's slightly odd for a component which has project rather than global scope to be registered as a request
+		// handler. Also that something which isn't a specialized Api class handles requests. But this request needs
+		// access to the current page and various EditingView code. Currently in Bloom there is only one EditingView.
+		// Any other solution would involve somehow making the API class aware of the current EditingView.
+		public void RegisterWithServer(EnhancedImageServer server)
+		{
+			server.RegisterEndpointHandler("toolbox/recordedVideo", HandleRecordedVideoRequest, true);
+		}
+
+		// Request from video recorder tool, issued when a complete recording has been captured.
+		// It is passed as a binary blob that is the actual content that needs to be made into
+		// an mp4 file. (At this point we don't try to handle recordings too big for this approach.)
+		// We make a file (with an arbitrary guid name) and attempt to make it the recording for the
+		// first page element with class bloom-videoContainer.
+		// Enhance: we need a way to know (and show) which bloom-videoContainer is selected, and
+		// apply it to that one.
+		private void HandleRecordedVideoRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var bytes = request.RawPostData;
+				var fileName = Guid.NewGuid().ToString() + ".mp4";
+				var path = Path.Combine(CurrentBook.FolderPath, fileName);
+				File.WriteAllBytes(path, bytes);
+				// Todo: we should somehow know which video container is selected, if there is more than one.
+				var root = _view.Browser.WebBrowser.Document;
+				var page = root.GetElementById("page") as GeckoIFrameElement;
+				var pageDoc = page.ContentWindow.Document;
+				var videoContainer = pageDoc.GetElementsByClassName("bloom-videoContainer bloom-selected").FirstOrDefault() as GeckoHtmlElement;
+				if (videoContainer == null)
+				{
+					// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
+					// video recording if there is no container on the page.
+					MessageBox.Show("There's nowhere to put a video on this page. You can find it later at " + fileName);
+					request.Failed("nowhere to put video");
+					return;
+				}
+
+				if (_view.WarnIfVideoCantChange(videoContainer))
+				{
+					request.Failed("editing not allowed");
+					return;
+				}
+
+				// Technically this could fail and we might want to report that the post failed.
+				// But currently nothing is using the success/fail status, and we don't expect this to fail.
+				SaveChangedVideo(videoContainer, path, "Bloom had a problem including that video");
+				request.PostSucceeded();
+			}
+		}
+
+		internal void SaveChangedVideo(GeckoHtmlElement videoElement, string videoPath, string exceptionMsg)
+		{
+			try
+			{
+				ChangeVideo(videoElement, videoPath, new NullProgress());
+			}
+			catch (System.IO.IOException error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			catch (ApplicationException error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			catch (Exception error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
+			}
 		}
 	}
 }

@@ -25,6 +25,7 @@
     "license": "MIT",
     "dependencies": {
         "@types/rc-slider": "^8.2.2",
+        "@types/webrtc": "^0.0.23",
         "axios": "^0.16.2",
         "css-element-queries": "^0.3.2",
         "global": "^4.3.2",
