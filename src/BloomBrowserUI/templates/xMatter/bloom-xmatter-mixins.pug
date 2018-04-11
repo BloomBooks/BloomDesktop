@@ -99,7 +99,7 @@ mixin standard-cover-contents
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
 
-	.bloom-imageContainer.bloom-backgroundImage(data-book='coverImage', style="background-image:url('placeHolder.png')")
+	+standard-cover-image
 
 	// 2 columns: first for an optional logo, then text content
 	.bottomBlock
@@ -115,6 +115,15 @@ mixin standard-cover-contents
 			.bottomRow
 				.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
 				+chooser-topic.coverBottomBookTopic
+
+// Standard cover image has a (normally hidden) image description field.
+// The usual code for creating image description on demand is not satisfactory,
+// because the cover image description needs to have a data-book attribute
+// so that the contents will survive changes to xmatter (and updates in bringBookUpToDate)
+mixin standard-cover-image
+	.bloom-imageContainer
+		img(data-book="coverImage", src="placeHolder.png")
+		+field("auto").bloom-trailingElement.normal-style(data-book="coverImageDescription")
 
 mixin factoryStandard-outsideFrontCover
 	// FRONT COVER

@@ -11,6 +11,7 @@ import { PanAndZoomTool } from "./panAndZoom/panZoomToolControls";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 import { VideoTool } from "./videoRecorder/videoTool";
+import { ImageDescriptionTool } from "./imageDescription/imageDescription";
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
 // reviewslog: is this actually needed? Could these be be directly imported where they are used?
@@ -53,3 +54,4 @@ ToolBox.registerTool(new MusicTool());
 ToolBox.registerTool(new PanAndZoomTool());
 ToolBox.registerTool(new TalkingBookTool());
 ToolBox.registerTool(new VideoTool());
+ToolBox.registerTool(new ImageDescriptionTool());
