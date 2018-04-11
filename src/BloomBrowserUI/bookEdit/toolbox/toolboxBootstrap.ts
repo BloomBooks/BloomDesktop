@@ -16,6 +16,7 @@ import { MotionTool } from "./motionTool/motionTool";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 import { VideoTool } from "./videoRecorder/videoTool";
+import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
 // reviewslog: is this actually needed? Could these be be directly imported where they are used?
@@ -53,7 +54,7 @@ export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     getTheOneToolbox().initialize();
 });
 
@@ -67,3 +68,4 @@ ToolBox.registerTool(new MusicToolAdaptor());
 ToolBox.registerTool(new MotionTool());
 ToolBox.registerTool(new TalkingBookTool());
 ToolBox.registerTool(new VideoTool());
+ToolBox.registerTool(new ImageDescriptionAdapter());

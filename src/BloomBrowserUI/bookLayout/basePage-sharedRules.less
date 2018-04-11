@@ -7,10 +7,61 @@ body {
 	font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulos SIL", Sans-Serif;
 }
 
+// Centers the img in the container making it as large as possible while preserving aspect ratio
+// (for any obsolete xmatter pages which use a background image)
 .bloom-backgroundImage{
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+}
+
+// Centers the img in the container making it as large as possible while preserving aspect ratio
+// (for all current pages, which currently have a child img element)
+.bloom-imageContainer img {
+    width: 100%;
+    height:100%;
+    object-fit:contain;
+}
+
+// overridden if it is also nested in bloom-showImageDescriptions, but this can't be shared,
+// because we can't use display:flex in epubs.
+.bloom-imageContainer .bloom-imageDescription {
+    display: none;
+}
+
+// When bloom-showImageDescriptions is set (typically only when the relevant toolbox is showing, currently,
+// but we'd like to be able to turn it on in the end result, too), we make the picture shrink to fit
+// in the left half and show the translation group in the right half.
+.bloom-showImageDescriptions .bloom-imageContainer {
+    background-size: 50% auto;
+    background-position-x: 0;
+    .bloom-imageDescription {
+        width:50%;
+        // not needed in content pages, but for some reason on cover.
+        // Overridden in edit mode to make room for special border on top.
+        height: 100%;
+        top:0;
+        
+        position: absolute;
+        left: 50%;
+        box-sizing: border-box;
+        border-left: solid lightgray 1px;
+        // We also want to turn off the display:none that usually applies to translation groups
+        // inside image containers (above), but we want display:flex in Bloom, and display:block
+        // in epubs. So that rule is elsewhere.
+    }
+    img {
+        width: 50%;
+    }
+}
+
+//This is needed to support captioned, inline images, as in  SIL LEAD's Uganda P4 Pupils Books.
+//In these cases, the captions went from 1 to many lines, and
+//the container needs to grow to hold the caption (else the text doesn't flow around the caption). But as it
+//grows, we don't want the image to also keep moving downwards so that it is centered within the container.
+// images also are going to look best left aligned.
+.bloom-alignImageTopLeft img {
+    object-position: 0 0;
 }
 
 .bloom-borderstyle-black, .bloom-borderstyle-black-round, .bloom-borderstyle-gray, .bloom-borderstyle-gray-round{

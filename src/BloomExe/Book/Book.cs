@@ -2576,13 +2576,21 @@ namespace Bloom.Book
 
 		public string GetCoverImagePath()
 		{
-			// It's unfortunate that we have to check for @style here, because it partly exposes how we do images
-			// with background-image. But if we don't check something beyond the data-book attribute, this xpath
+			// This first branch covers the currently obsolete approach to images using background-image.
+			// In that approach the data-book attribute is on the imageContainer.
+			// We also have to check for @style here, because if we don't check something beyond the data-book attribute, this xpath
 			// typically finds the data-div element, and that doesn't have the data in the form that GetImageElementUrl
 			// can handle.
 			var coverImgElt = _storage.Dom.SafeSelectNodes("//div[@data-book='coverImage' and @style]")
 				.Cast<XmlElement>()
 				.FirstOrDefault();
+			// If that fails, we look for an img with the relevant attribute. Happily this doesn't conflict with the data-div.
+			if (coverImgElt == null)
+			{
+				coverImgElt = _storage.Dom.SafeSelectNodes("//img[@data-book='coverImage']")
+					.Cast<XmlElement>()
+					.FirstOrDefault();
+			}
 			if (coverImgElt == null)
 				return null;
 			var coverImageUrl = HtmlDom.GetImageElementUrl(coverImgElt);

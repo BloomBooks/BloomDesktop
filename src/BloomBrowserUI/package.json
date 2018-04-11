@@ -40,7 +40,8 @@
         "time-require": "^0.1.2",
         "toastr": "^2.1.2",
         "underscore": "^1.8.3",
-        "xregexp": "^3.0.0"
+        "xregexp": "^3.0.0",
+        "yarn": "^1.6.0"
     },
     "devDependencies": {
         "babel-cli": "^6.26.0",
@@ -82,8 +83,8 @@
         "ts-loader": "^4.1.0",
         "tslint": "^5.9.1",
         "typescript": "^2.8.1",
-        "webpack": "^4.4.1",
-        "webpack-cli": "^2.0.13",
+        "webpack": "^4.6.0",
+        "webpack-cli": "^2.1.2",
         "webpack-stream": "^4.0.3"
     }
 }

@@ -21,6 +21,17 @@
     }
 }
 
+// When bloom-showImageDescriptions is set (typically only when the relevant toolbox is showing, currently,
+// but we'd like to be able to turn it on in the end result, too), we make the picture shrink to fit
+// in the left half and show the translation group in the right half.
+// This rule would like to live in basePage-sharedRules, but we need display:flex in Bloom and display:block
+// in epubs.
+.bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
+        // We really just want to turn off the display:none that usually applies to translation groups
+        // inside image containers, but we have to set something.
+        display:block;
+}
+
 .credits {
     .licenseAndCopyrightBlock {
         img {
