@@ -410,18 +410,33 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         return fileName.split(".")[0];
     }
 
-    public static setup(root): MusicToolControls {
-        return ReactDOM.render(<MusicToolControls />, root);
+    public static setup(
+        root: any,
+        giveCreatorRefToOurElement: (renderedElement: MusicToolControls) => void
+    ) {
+        // Note: although React 16.2 does have a return value, using it
+        // is deprecated and will not work someday: https://github.com/facebook/react/issues/6397
+        // So instead we need to use the callback ref mechanism
+        ReactDOM.render(
+            <MusicToolControls ref={giveCreatorRefToOurElement} />,
+            root
+        );
     }
 }
 
 export class MusicTool implements ITool {
-    private reactControls: MusicToolControls;
+    private controlsElement: MusicToolControls;
     public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-        root.setAttribute("class", "musicBody");
-        this.reactControls = MusicToolControls.setup(root);
-        return root as HTMLDivElement;
+        // We need a wrapperDiv becuase react wants some freedom to render later.
+        // So we'll just give the toolbox this div now and know that the
+        // actual controls will render in there eventually.
+        const wrapperDiv = document.createElement("div");
+        wrapperDiv.setAttribute("class", "musicBody");
+        MusicToolControls.setup(
+            wrapperDiv,
+            renderedElement => (this.controlsElement = renderedElement)
+        );
+        return wrapperDiv as HTMLDivElement;
     }
     public isAlwaysEnabled(): boolean {
         return false;
@@ -448,7 +463,7 @@ export class MusicTool implements ITool {
         // to be editing the book and configuring background music at the same time, so I'm not
         // too worried. If it becomes a performance problem, we could enhance ITool with a
         // function that is called just when the page switches.
-        this.reactControls.updateStateFromHtml();
+        this.controlsElement.updateStateFromHtml();
     }
 
     public id(): string {
