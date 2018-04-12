@@ -1,6 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
+import {
+    H1,
+    Div,
+    IUILanguageAwareProps,
+    Label
+} from "../../../react_components/l10n";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
@@ -31,17 +36,20 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // The names of the attributes (of the main page div) which store the background
     // audio file name (relative to the audio folder) and the volume (a fraction
     // of full volume).
-    static musicAttrName = "data-backgroundaudio";
-    static musicVolumeAttrName = MusicToolControls.musicAttrName + "volume";
-    static kDefaultVolumeFraction = 0.5;
+    private static musicAttrName = "data-backgroundaudio";
+    private static musicVolumeAttrName = MusicToolControls.musicAttrName +
+        "volume";
+    private static kDefaultVolumeFraction = 0.5;
 
-    static narrationPlayer: AudioRecording;
+    private static narrationPlayer: AudioRecording;
 
-    addedListenerToPlayer: boolean;
+    private addedListenerToPlayer: boolean;
 
-    getStateFromHtml(): IMusicState {
-        let audioFileName = MusicToolControls.getBloomPageAttr(MusicToolControls.musicAttrName);
-        let hasMusicAttr = typeof (audioFileName) === typeof (""); // may be false or undefined if missing
+    public getStateFromHtml(): IMusicState {
+        let audioFileName = MusicToolControls.getBloomPageAttr(
+            MusicToolControls.musicAttrName
+        );
+        let hasMusicAttr = typeof audioFileName === typeof ""; // may be false or undefined if missing
         if (!audioFileName) {
             audioFileName = ""; // null won't handle split
         }
@@ -92,40 +100,93 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     public render() {
         return (
             <div className="musicBody">
-                <Div className="musicHelp"
-                    l10nKey="EditTab.Toolbox.Music.Overview">You can set up background music to play
-                    with this page when the book is viewed in the Bloom Reader app.</Div>
-                <RadioGroup onChange={val => this.setRadio(val)} value={this.state.activeRadioValue}>
-                    <Radio l10nKey="EditTab.Toolbox.Music.NoMusic" value="noMusic">No Music</Radio>
-                    <Radio l10nKey="EditTab.Toolbox.Music.ContinueMusic" value="continueMusic">Continue music from previous page</Radio>
+                <Div
+                    className="musicHelp"
+                    l10nKey="EditTab.Toolbox.Music.Overview"
+                >
+                    You can set up background music to play with this page when
+                    the book is viewed in the Bloom Reader app.
+                </Div>
+                <RadioGroup
+                    onChange={val => this.setRadio(val)}
+                    value={this.state.activeRadioValue}
+                >
+                    <Radio
+                        l10nKey="EditTab.Toolbox.Music.NoMusic"
+                        value="noMusic"
+                    >
+                        No Music
+                    </Radio>
+                    <Radio
+                        l10nKey="EditTab.Toolbox.Music.ContinueMusic"
+                        value="continueMusic"
+                    >
+                        Continue music from previous page
+                    </Radio>
                     <div className="musicChooseWrapper">
-                        <Radio l10nKey="EditTab.Toolbox.Music.NewMusic" value="newMusic">Start new music</Radio>
-                        <Label className="musicChooseFile" l10nKey="EditTab.Toolbox.Music.Choose"
-                            onClick={() => this.chooseMusicFile()}>Choose...</Label>
+                        <Radio
+                            l10nKey="EditTab.Toolbox.Music.NewMusic"
+                            value="newMusic"
+                        >
+                            Start new music
+                        </Radio>
+                        <Label
+                            className="musicChooseFile"
+                            l10nKey="EditTab.Toolbox.Music.Choose"
+                            onClick={() => this.chooseMusicFile()}
+                        >
+                            Choose...
+                        </Label>
                     </div>
                 </RadioGroup>
 
-                <div className={"button-label-wrapper" + (this.state.audioEnabled ? "" : " disabled")} id="musicOuterWrapper">
+                <div
+                    className={
+                        "button-label-wrapper" +
+                        (this.state.audioEnabled ? "" : " disabled")
+                    }
+                    id="musicOuterWrapper"
+                >
                     <div id="musicPlayAndLabelWrapper">
                         <div className="musicButtonWrapper">
-                            <button id="musicPreview" className={"music-button ui-button enabled" + (this.state.playing ? " playing" : "")}
-                                onClick={() => this.previewMusic()} />
+                            <button
+                                id="musicPreview"
+                                className={
+                                    "music-button ui-button enabled" +
+                                    (this.state.playing ? " playing" : "")
+                                }
+                                onClick={() => this.previewMusic()}
+                            />
                         </div>
-                        <div id="musicFilename" >{this.state.musicName}</div>
+                        <div id="musicFilename">{this.state.musicName}</div>
                     </div>
-                    <div id="musicVolumePercent" style={{ visibility: this.state.audioEnabled ? "visible" : "hidden" }}>
+                    <div
+                        id="musicVolumePercent"
+                        style={{
+                            visibility: this.state.audioEnabled
+                                ? "visible"
+                                : "hidden"
+                        }}
+                    >
                         {this.state.volumeSliderPosition}%
                     </div>
                     <div id="musicSetVolume">
-                        <img className="speaker-volume" src="speaker-volume.svg" />
+                        <img
+                            className="speaker-volume"
+                            src="speaker-volume.svg"
+                        />
                         <div className="bgSliderWrapper">
-                            <Slider className="musicVolumeSlider" value={this.state.volumeSliderPosition}
-                                disabled={!this.state.audioEnabled} onChange={
-                                    value => this.sliderMoved(value)} />
+                            <Slider
+                                className="musicVolumeSlider"
+                                value={this.state.volumeSliderPosition}
+                                disabled={!this.state.audioEnabled}
+                                onChange={value => this.sliderMoved(value)}
+                            />
                         </div>
                     </div>
                 </div>
-                {   // preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
+                {
+                    // preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
                     // which in BL-3153 was faster than the c# thread writing the file could finish with it.
                     // As an alternative, a settimeout() in the javascript also worked, but
                     // this seems more durable. By the time the user can click Play, we'll be done.}
@@ -135,24 +196,31 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         );
     }
 
-    getPlayer(): HTMLMediaElement {
+    private getPlayer(): HTMLMediaElement {
         return document.getElementById("musicPlayer") as HTMLMediaElement;
     }
 
-    previewMusic() {
+    private previewMusic() {
         const player = this.getPlayer();
         if (!this.addedListenerToPlayer) {
-            player.addEventListener("ended", () => this.setState({ playing: false }));
+            player.addEventListener("ended", () =>
+                this.setState({ playing: false })
+            );
             this.addedListenerToPlayer = true;
         }
-        MusicToolControls.previewBackgroundMusic(player,
+        MusicToolControls.previewBackgroundMusic(
+            player,
             () => this.state.playing,
-            (playing) => this.setState({ playing: playing }));
+            playing => this.setState({ playing: playing })
+        );
     }
 
-    public static previewBackgroundMusic(player: HTMLMediaElement,
+    public static previewBackgroundMusic(
+        player: HTMLMediaElement,
         currentlyPlaying: () => boolean, // caller function for testing whether already playing
-        setPlayState: (boolean) => void) { // call-back function for changing playing state
+        setPlayState: (boolean) => void
+    ) {
+        // call-back function for changing playing state
         // automatic indentation is weird here. This is the start of the body of previewBackgroundMusic,
         // not of setPlayState, which is just a function parameter.
         let audioFileName = this.getBloomPageAttr(this.musicAttrName);
@@ -175,7 +243,10 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         // The ?nocache argument is ignored, except that it ensures each time we do this,
         // src is a different URL, so the player treats it as a new sound to play.
         // Without this it may not play if it hasn't changed.
-        player.setAttribute("src", musicUrl + "?nocache=" + new Date().getTime());
+        player.setAttribute(
+            "src",
+            musicUrl + "?nocache=" + new Date().getTime()
+        );
         player.volume = this.getPlayerVolumeFromAttributeOnPage(audioFileName);
         player.play();
         // Play the audio during animation
@@ -185,25 +256,33 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         setPlayState(true);
     }
 
-    pausePlaying() {
+    private pausePlaying() {
         this.getPlayer().pause();
         this.setState({ playing: false });
     }
 
-    setRadio(val: string) {
-        if (val === this.state.activeRadioValue)
-            return;
+    private setRadio(val: string) {
+        if (val === this.state.activeRadioValue) return;
         const audioEnabled = val === "newMusic";
-        this.setState({ activeRadioValue: val, audioEnabled: audioEnabled, musicName: "" });
+        this.setState({
+            activeRadioValue: val,
+            audioEnabled: audioEnabled,
+            musicName: ""
+        });
         if (!audioEnabled) {
             this.pausePlaying();
         }
         switch (val) {
             case "noMusic":
-                MusicToolControls.setBloomPageAttr(MusicToolControls.musicAttrName, "");
+                MusicToolControls.setBloomPageAttr(
+                    MusicToolControls.musicAttrName,
+                    ""
+                );
                 break;
             case "continueMusic":
-                MusicToolControls.getBloomPage().removeAttribute(MusicToolControls.musicAttrName);
+                MusicToolControls.getBloomPage().removeAttribute(
+                    MusicToolControls.musicAttrName
+                );
                 break;
             // choosing the third button doesn't change anything, until you actually choose a file.
         }
@@ -212,7 +291,9 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // Get the audio volume. The value of audioFileName is checked to determine whether data-backgroundAudioVolume
     // is used at all. If anything goes wrong, or we're not specifying new music for this page,
     // we return the default volume.
-    static getPlayerVolumeFromAttributeOnPage(audioFileName: string): number {
+    private static getPlayerVolumeFromAttributeOnPage(
+        audioFileName: string
+    ): number {
         const audioVolumeStr = this.getBloomPageAttr(this.musicVolumeAttrName);
         let audioVolumeFraction: number =
             MusicToolControls.kDefaultVolumeFraction;
@@ -237,10 +318,12 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // so that you have more control at the low volumes that are likely for background music.
     // We are using 3 but 2 is also ok. Using 3 because the effect feels right to me (subjectively,
     // with a very small sample size).
-    static kLowEndVolumeSensitivity: number = 3;
+    private static kLowEndVolumeSensitivity: number = 3;
 
     // Position is always 0 to 100, and resulting volume is always 0.0 to 1.0, via a non-linear function
-    static convertSliderPositionToVolume(position1To100: number): number {
+    private static convertSliderPositionToVolume(
+        position1To100: number
+    ): number {
         return Math.pow(
             position1To100 / 100,
             MusicToolControls.kLowEndVolumeSensitivity
@@ -249,7 +332,9 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
 
     // Volume is always 0.0 to 1.0, and the resulting position is always 0 to 100
     // In between is a non-linear function.
-    static convertVolumeToSliderPosition(volumeFraction: number): number {
+    private static convertVolumeToSliderPosition(
+        volumeFraction: number
+    ): number {
         return Math.round(
             Math.pow(
                 volumeFraction,
@@ -258,9 +343,10 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         );
     }
 
-
     public static getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById("page") as HTMLIFrameElement;
+        return parent.window.document.getElementById(
+            "page"
+        ) as HTMLIFrameElement;
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -288,7 +374,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         page.setAttribute(name, val);
     }
 
-    sliderMoved(position1to100: number): void {
+    private sliderMoved(position1to100: number): void {
         const volume = MusicToolControls.convertSliderPositionToVolume(
             position1to100
         );
@@ -302,54 +388,60 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         });
     }
 
-    chooseMusicFile() {
+    private chooseMusicFile() {
         axios.get("/bloom/api/music/ui/chooseFile").then(result => {
             const fileName = result.data;
             if (!fileName) {
                 return;
             }
-            MusicToolControls.setBloomPageAttr(MusicToolControls.musicAttrName, fileName);
-            this.setState({ activeRadioValue: "newMusic", audioEnabled: true, musicName: this.getDisplayNameOfMusicFile(fileName) });
+            MusicToolControls.setBloomPageAttr(
+                MusicToolControls.musicAttrName,
+                fileName
+            );
+            this.setState({
+                activeRadioValue: "newMusic",
+                audioEnabled: true,
+                musicName: this.getDisplayNameOfMusicFile(fileName)
+            });
         });
     }
 
-    getDisplayNameOfMusicFile(fileName: string) {
+    private getDisplayNameOfMusicFile(fileName: string) {
         return fileName.split(".")[0];
     }
 
     public static setup(root): MusicToolControls {
-        return ReactDOM.render(
-            <MusicToolControls />,
-            root
-        );
+        return ReactDOM.render(<MusicToolControls />, root);
     }
 }
 
 export class MusicTool implements ITool {
-    reactControls: MusicToolControls;
-    makeRootElement(): HTMLDivElement {
+    private reactControls: MusicToolControls;
+    public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "musicBody");
         this.reactControls = MusicToolControls.setup(root);
         return root as HTMLDivElement;
     }
-    isAlwaysEnabled(): boolean {
+    public isAlwaysEnabled(): boolean {
         return false;
     }
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();
         result.resolve();
         return result;
     }
-    showTool() {
+    public showTool() {
         this.updateMarkup();
     }
-    hideTool() {
-        const rawPlayer = (document.getElementById("musicPlayer") as HTMLMediaElement);
+    public hideTool() {
+        const rawPlayer = document.getElementById(
+            "musicPlayer"
+        ) as HTMLMediaElement;
         rawPlayer.pause();
     }
-    updateMarkup() {
+    public updateMarkup() {
         // This isn't exactly updating the markup, but it needs to happen when we switch pages,
         // just like updating markup. Using this hook does mean it will (unnecessarily) happen
         // every time the user pauses typing while this tool is active. I don't much expect people
@@ -359,13 +451,14 @@ export class MusicTool implements ITool {
         this.reactControls.updateStateFromHtml();
     }
 
-    id(): string {
+    public id(): string {
         return "music";
     }
     // required for ITool interface
-    hasRestoredSettings: boolean;
-    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
-    configureElements(container: HTMLElement) { }
-    finishToolLocalization(pane: HTMLElement) { }
+    public hasRestoredSettings: boolean; // We need these to implement the interface, but don't need them to do anything.
+    /* tslint:disable:no-empty */ public configureElements(
+        container: HTMLElement
+    ) {}
+    public finishToolLocalization(pane: HTMLElement) {}
     /* tslint:enable:no-empty */
 }
