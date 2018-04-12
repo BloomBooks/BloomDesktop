@@ -1,23 +1,4 @@
-﻿## 4.3 (Preliminary)
-- Collections Tab
-    - Provide a way to create anthologies of multiple books, with an automated Table of Contents.
-- Edit Tab
-    - Add an Image Credits field which Bloom will automatically fill and keep up to date.
-    - Allow you to choose what front/back matter fields to show, and in what languages.
-- Publish Tab
-    - Add "Fold & Cut" booklet layout for printing A5 books on A3 paper.
-- Bloom Library
-    - Sort numbered books in a numerically, rather than alphabetically
-
-## 4.2 (alpha)
-- Edit Tab
-    - New "Music Tool" allow you to choose background music and levels.
-    - New "Pan and Zoom Tool" allows you to specify pan/zoom effects of a page.
-- (Planned)
-    - Add CC0 (Public Domain) license choice.     [See original feature request](https://community.software.sil.org/t/cc0-creative-commons/610/2)
-
-
-## 4.1 (beta)
+﻿## 4.1 (current release)
 
 - Settings
     - You can now customize how Language 2 and Language 3 are displayed, just like you previously could for Language 1.
@@ -37,7 +18,7 @@
     - From "Add Page", you can add a "Bloom Reader Quiz" page (one works with books published with a Bloom Enterprise subscription)
     - You can add bookshelves and sub-bookshelves (requires Bloom Enterprise subscription)
 
-## 4.0 (current release)
+## 4.0
 - Publish Tab
     - Publish Book to **[Bloom Reader](https://play.google.com/store/search?q=bloom%20reader&c=apps)** Android app, which can get from the Play store or another user who has it installed.
     - **PDFs are now automatically compressed**, so they are often a small fraction of their previous size.
@@ -968,4 +949,3 @@ A5 Wall Calendar now usable, with vernacular days and months. Could use a graphi
 
 ## 0.3: 24 Nov 2011
 In the image toolbox, you can now reuse metadata (license, copyright, illustrator) from the last image you edited.
-
