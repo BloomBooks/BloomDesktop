@@ -409,19 +409,6 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     private getDisplayNameOfMusicFile(fileName: string) {
         return fileName.split(".")[0];
     }
-
-    public static setup(
-        root: any,
-        giveCreatorRefToOurElement: (renderedElement: MusicToolControls) => void
-    ) {
-        // Note: although React 16.2 does have a return value, using it
-        // is deprecated and will not work someday: https://github.com/facebook/react/issues/6397
-        // So instead we need to use the callback ref mechanism
-        ReactDOM.render(
-            <MusicToolControls ref={giveCreatorRefToOurElement} />,
-            root
-        );
-    }
 }
 
 export class MusicTool implements ITool {
@@ -432,9 +419,17 @@ export class MusicTool implements ITool {
         // actual controls will render in there eventually.
         const wrapperDiv = document.createElement("div");
         wrapperDiv.setAttribute("class", "musicBody");
-        MusicToolControls.setup(
-            wrapperDiv,
-            renderedElement => (this.controlsElement = renderedElement)
+
+        // Note: although React 16.2 does have a return value, using it
+        // is deprecated and will not work someday: https://github.com/facebook/react/issues/6397
+        // So instead we need to use the callback ref mechanism
+        ReactDOM.render(
+            <MusicToolControls
+                ref={renderedElement =>
+                    (this.controlsElement = renderedElement)
+                }
+            />,
+            wrapperDiv
         );
         return wrapperDiv as HTMLDivElement;
     }
