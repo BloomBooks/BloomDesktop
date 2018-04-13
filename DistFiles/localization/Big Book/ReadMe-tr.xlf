@@ -2,9 +2,9 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="tr">
     <body>
-      <trans-unit id="bigbook.title">
+      <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="tr" state="translated">Büyük Kitaplar Hakkında</target>
+        <target xml:lang="tr">Büyük Kitaplar Hakkında</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use">
