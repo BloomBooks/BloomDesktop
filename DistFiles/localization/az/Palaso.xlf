@@ -11,23 +11,23 @@
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="az" state="needs-translation">No Updates</target>
+        <target xml:lang="az" state="translated">Yeniləmələr Yoxdur</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="az" state="needs-translation">About {0}</target>
+        <target xml:lang="az" state="translated">{0} Haqqında</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="az" state="needs-translation">Check For Updates</target>
+        <target xml:lang="az" state="translated">Yeniləmələri üçün yoxla</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="az" state="needs-translation">Release Notes</target>
+        <target xml:lang="az" state="translated">Buraxılış qeydləri</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -181,6 +181,12 @@
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
         <target xml:lang="az" state="needs-translation">File</target>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.FileChooserTitle">
+        <source xml:lang="en">Choose Picture File</source>
+        <note>ID: ImageToolbox.FileChooserTitle</note>
+        <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
+        <target xml:lang="az" state="needs-translation">Choose Picture File</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries">
         <source xml:lang="en">Galleries</source>

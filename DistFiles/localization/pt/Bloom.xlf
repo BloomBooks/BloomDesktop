@@ -1258,6 +1258,11 @@
         <note>ID: EditTab.CustomPage.Text</note>
         <target xml:lang="pt-PT" state="translated">Texto</target>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Video" sil:dynamic="true">
+        <source xml:lang="en">Video</source>
+        <note>ID: EditTab.CustomPage.Video</note>
+        <target xml:lang="pt-PT" state="needs-translation">Video</target>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
@@ -1382,6 +1387,12 @@
         <alt-trans>
           <target xml:lang="pt-PT">Esta página é um protótipo experimental que pode ter muitos problemas, que antecipadamente pedimos desculpa.</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.FileDialogVideoFiles">
+        <source xml:lang="en">Video files</source>
+        <note>ID: EditTab.FileDialogVideoFiles</note>
+        <note>Used to identify the kind of files wanted in a file Open dialog</note>
+        <target xml:lang="pt-PT" state="needs-translation">Video files</target>
       </trans-unit>
       <trans-unit id="EditTab.FontMissing">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
@@ -2047,10 +2058,27 @@
         <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
         <target xml:lang="pt-PT" state="translated">Continuar a música da página anterior</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
+        <source xml:lang="en">Sound files</source>
+        <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
+        <target xml:lang="pt-PT" state="needs-translation">Sound files</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.Music.Heading</note>
         <target xml:lang="pt-PT" state="translated">Ferramenta de música</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
+        <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
+        <note>ID: EditTab.Toolbox.Music.InvalidMp3File</note>
+        <note>The {0} is replaced by the filename.</note>
+        <target xml:lang="pt-PT" state="needs-translation">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle">
+        <source xml:lang="en">Choose Another Sound File</source>
+        <note>ID: EditTab.Toolbox.Music.InvalidMp3FileTitle</note>
+        <note>Title for a message box</note>
+        <target xml:lang="pt-PT" state="needs-translation">Choose Another Sound File</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
         <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
@@ -2405,6 +2433,11 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
         <target xml:lang="pt-PT" state="translated">Fazer um e-livro que pode reproduzir gravações ao destacar frases.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Video.Heading" sil:dynamic="true">
+        <source xml:lang="en">Video Recorder Tool</source>
+        <note>ID: EditTab.Toolbox.Video.Heading</note>
+        <target xml:lang="pt-PT" state="needs-translation">Video Recorder Tool</target>
+      </trans-unit>
       <trans-unit id="EditTab.Trilingual">
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>
@@ -2431,6 +2464,11 @@
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="pt-PT" state="translated">Este livro está protegido e só pode ser traduzido. Se quiser fazer outras alterações, clique aqui para desbloqueá-lo temporariamente.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Video.ChangeVideo" sil:dynamic="true">
+        <source xml:lang="en">Change Video</source>
+        <note>ID: EditTab.Video.ChangeVideo</note>
+        <target xml:lang="pt-PT" state="needs-translation">Change Video</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -2499,6 +2537,11 @@
         <source xml:lang="en">Bloom had a problem importing this picture.</source>
         <note>ID: Errors.ProblemImportingPicture</note>
         <target xml:lang="pt-PT" state="translated">Bloom teve um problema de importar esta imagem.</target>
+      </trans-unit>
+      <trans-unit id="Errors.ProblemImportingVideo">
+        <source xml:lang="en">Bloom had a problem importing this video.</source>
+        <note>ID: Errors.ProblemImportingVideo</note>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom had a problem importing this video.</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -3139,6 +3182,12 @@
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
         <target xml:lang="pt-PT" state="translated">Conectado a {0} via USB...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
+        <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
+        <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
+        <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
+        <target xml:lang="pt-PT" state="needs-translation">The device reported that it does not have enough space for this book. The book is {0} MB.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>

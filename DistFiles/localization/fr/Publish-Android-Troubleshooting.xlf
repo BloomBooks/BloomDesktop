@@ -25,9 +25,6 @@
         <alt-trans>
           <target xml:lang="fr">Problème ‎: l'appareil sous Android ne voit aucune publicités pour les livres</target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Problème‎: l'appareil Android ne reçoit aucune annonces du livres</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive" approved="yes">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
@@ -68,9 +65,6 @@
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Assurez-vous que votre ordinateur n'a pas de pare-feu qui interfère. Le pare-feu Windows s'affichera la première fois où vous vous mettez à faire de la publicité pour votre livre. Si vous avez répondu "Non", vous risquez qu'il ne vous le demander plus jamais. Si d'autres pare-feu sont installés, essayez de les désactiver. Bloom informe d'un livre en émettant sur le réseau local via UDP au port 5913 et le Reader Bloom demande un livre via le port 5915.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Assurez-vous que votre ordinateur n'a pas de pare-feu qui interfère. Le pare-feu Windows s'affiche lorsque vous commencez à partager votre livre. Si vous avez répondu "Non" à cette question, vous ne pouvez pas demander à nouveau. Si d'autres pare-feu sont installés, essayez de les désactiver. Bloom partage un livre en le transmettant sur le réseau local via UDP au port 5913 et Reader Bloom demande un livre via le port 5915.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb" approved="yes">
