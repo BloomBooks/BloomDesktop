@@ -10,7 +10,7 @@ import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 import { Checkbox } from "../../../react_components/checkbox";
-import ToolboxToolReactAdaptor from "../ToolboxToolReactAdaptor";
+import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { MusicToolControls } from "../music/musicToolControls";
 import "./panAndZoom.less";
 

@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import ToolboxToolReactAdaptor from "../ToolboxToolReactAdaptor";
+import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import {
     H1,
     Div,
