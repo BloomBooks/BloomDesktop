@@ -152,6 +152,7 @@
           
           
           
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
         <note>ID: training.videos.hires</note>
         <alt-trans>
@@ -171,6 +172,26 @@
           
           
           
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
         </alt-trans>
         <alt-trans>
@@ -211,21 +232,6 @@
         <alt-trans>
           <target xml:lang="es-ES">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
           
           
           
@@ -243,6 +249,7 @@
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
         <target xml:lang="es-ES">
+          
           
           
           
@@ -278,6 +285,26 @@
           
           
           
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
         </alt-trans>
         <alt-trans>
@@ -318,21 +345,6 @@
         <alt-trans>
           <target xml:lang="es-ES">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
           
           
           
