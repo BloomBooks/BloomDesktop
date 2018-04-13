@@ -11,7 +11,6 @@ using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Bloom.MiscUI;
 
 namespace Bloom.Collection
