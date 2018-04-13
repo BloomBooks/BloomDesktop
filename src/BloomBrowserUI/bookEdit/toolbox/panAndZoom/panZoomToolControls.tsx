@@ -10,6 +10,7 @@ import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 import { Checkbox } from "../../../react_components/checkbox";
+import ToolboxToolReactAdaptor from "../ToolboxToolReactAdaptor";
 import { MusicToolControls } from "../music/musicToolControls";
 import "./panAndZoom.less";
 
@@ -730,7 +731,7 @@ export class PanAndZoomTool implements ITool {
 
     getStateFromHtml(): IPanAndZoomHtmlState {
         const page = this.getPage();
-        const pageClass = MusicToolControls.getBloomPageAttr("class");
+        const pageClass = ToolboxToolReactAdaptor.getBloomPageAttr("class");
         const xmatter = pageClass.indexOf("bloom-frontMatter") >= 0 || pageClass.indexOf("bloom-backMatter") >= 0;
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();

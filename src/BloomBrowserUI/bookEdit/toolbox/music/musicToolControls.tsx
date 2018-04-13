@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import ToolboxToolReactAdaptor from "../ToolboxToolReactAdaptor";
 import {
     H1,
     Div,
@@ -27,11 +28,6 @@ interface IMusicState {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which adds an instance of Music to ToolBox.getMasterToolList().
 export class MusicToolControls extends React.Component<{}, IMusicState> {
-    constructor() {
-        super({});
-        this.state = this.getStateFromHtml();
-    }
-
     // duplicates information in HtmlDom.cs
     // The names of the attributes (of the main page div) which store the background
     // audio file name (relative to the audio folder) and the volume (a fraction
@@ -40,13 +36,34 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     private static musicVolumeAttrName = MusicToolControls.musicAttrName +
         "volume";
     private static kDefaultVolumeFraction = 0.5;
-
     private static narrationPlayer: AudioRecording;
-
     private addedListenerToPlayer: boolean;
+    constructor() {
+        super({});
+        this.state = this.getStateFromHtmlOfPage();
+    }
+    public hideTool() {
+        const rawPlayer = document.getElementById(
+            "musicPlayer"
+        ) as HTMLMediaElement;
+        rawPlayer.pause();
+    }
 
-    public getStateFromHtml(): IMusicState {
-        let audioFileName = MusicToolControls.getBloomPageAttr(
+    public showTool() {
+        this.updateBasedOnContentsOfPage();
+    }
+
+    public updateMarkup() {
+        // This isn't exactly updating the markup, but it needs to happen when we switch pages,
+        // just like updating markup. Using this hook does mean it will (unnecessarily) happen
+        // every time the user pauses typing while this tool is active. I don't much expect people
+        // to be editing the book and configuring background music at the same time, so I'm not
+        // too worried. If it becomes a performance problem, we could enhance ITool with a
+        // function that is called just when the page switches.
+        this.updateBasedOnContentsOfPage();
+    }
+    public getStateFromHtmlOfPage(): IMusicState {
+        let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
             MusicToolControls.musicAttrName
         );
         let hasMusicAttr = typeof audioFileName === typeof ""; // may be false or undefined if missing
@@ -93,8 +110,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // react stuff, and allowing this component to know how to update the HTML when things change and
     // itself when the HTML changes lets it encapsulate a lot more of the functionality. Hence this
     // method (and the fact that various changes update the HTML rather than raising events).
-    public updateStateFromHtml(): void {
-        this.setState(this.getStateFromHtml());
+    public updateBasedOnContentsOfPage(): void {
+        this.setState(this.getStateFromHtmlOfPage());
     }
 
     public render() {
@@ -223,7 +240,9 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         // call-back function for changing playing state
         // automatic indentation is weird here. This is the start of the body of previewBackgroundMusic,
         // not of setPlayState, which is just a function parameter.
-        let audioFileName = this.getBloomPageAttr(this.musicAttrName);
+        let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
+            this.musicAttrName
+        );
         if (!audioFileName) {
             return;
         }
@@ -236,7 +255,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
             setPlayState(false);
             return;
         }
-        const bookSrc = this.getPageFrame().src;
+        const bookSrc = ToolboxToolReactAdaptor.getPageFrame().src;
         const index = bookSrc.lastIndexOf("/");
         const bookFolderUrl = bookSrc.substring(0, index + 1);
         const musicUrl = encodeURI(bookFolderUrl + "audio/" + audioFileName);
@@ -274,13 +293,13 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         }
         switch (val) {
             case "noMusic":
-                MusicToolControls.setBloomPageAttr(
+                ToolboxToolReactAdaptor.setBloomPageAttr(
                     MusicToolControls.musicAttrName,
                     ""
                 );
                 break;
             case "continueMusic":
-                MusicToolControls.getBloomPage().removeAttribute(
+                ToolboxToolReactAdaptor.getBloomPage().removeAttribute(
                     MusicToolControls.musicAttrName
                 );
                 break;
@@ -294,7 +313,9 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     private static getPlayerVolumeFromAttributeOnPage(
         audioFileName: string
     ): number {
-        const audioVolumeStr = this.getBloomPageAttr(this.musicVolumeAttrName);
+        const audioVolumeStr = ToolboxToolReactAdaptor.getBloomPageAttr(
+            this.musicVolumeAttrName
+        );
         let audioVolumeFraction: number =
             MusicToolControls.kDefaultVolumeFraction;
         if (audioFileName && audioVolumeStr) {
@@ -343,42 +364,11 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         );
     }
 
-    public static getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById(
-            "page"
-        ) as HTMLIFrameElement;
-    }
-
-    // The body of the editable page, a root for searching for document content.
-    public static getPage(): HTMLElement {
-        const page = this.getPageFrame();
-        if (!page) return null;
-        return page.contentWindow.document.body;
-    }
-
-    public static getBloomPage(): HTMLElement {
-        const page = this.getPage();
-        if (!page) return null;
-        return page.querySelector(".bloom-page") as HTMLElement;
-    }
-
-    public static getBloomPageAttr(name: string): string {
-        const page = this.getBloomPage();
-        if (page == null) return null;
-        return page.getAttribute(name);
-    }
-
-    public static setBloomPageAttr(name: string, val: string): void {
-        const page = this.getBloomPage();
-        if (page == null) return;
-        page.setAttribute(name, val);
-    }
-
     private sliderMoved(position1to100: number): void {
         const volume = MusicToolControls.convertSliderPositionToVolume(
             position1to100
         );
-        MusicToolControls.setBloomPageAttr(
+        ToolboxToolReactAdaptor.setBloomPageAttr(
             MusicToolControls.musicVolumeAttrName,
             volume.toString()
         );
@@ -394,7 +384,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
             if (!fileName) {
                 return;
             }
-            MusicToolControls.setBloomPageAttr(
+            ToolboxToolReactAdaptor.setBloomPageAttr(
                 MusicToolControls.musicAttrName,
                 fileName
             );
@@ -411,64 +401,27 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 }
 
-export class MusicTool implements ITool {
+export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     private controlsElement: MusicToolControls;
     public makeRootElement(): HTMLDivElement {
-        // We need a wrapperDiv becuase react wants some freedom to render later.
-        // So we'll just give the toolbox this div now and know that the
-        // actual controls will render in there eventually.
-        const wrapperDiv = document.createElement("div");
-        wrapperDiv.setAttribute("class", "musicBody");
-
-        // Note: although React 16.2 does have a return value, using it
-        // is deprecated and will not work someday: https://github.com/facebook/react/issues/6397
-        // So instead we need to use the callback ref mechanism
-        ReactDOM.render(
+        return super.adaptReactElement(
             <MusicToolControls
                 ref={renderedElement =>
                     (this.controlsElement = renderedElement)
                 }
-            />,
-            wrapperDiv
+            />
         );
-        return wrapperDiv as HTMLDivElement;
     }
-    public isAlwaysEnabled(): boolean {
-        return false;
-    }
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
-        // Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
-    }
-    public showTool() {
-        this.updateMarkup();
-    }
-    public hideTool() {
-        const rawPlayer = document.getElementById(
-            "musicPlayer"
-        ) as HTMLMediaElement;
-        rawPlayer.pause();
-    }
-    public updateMarkup() {
-        // This isn't exactly updating the markup, but it needs to happen when we switch pages,
-        // just like updating markup. Using this hook does mean it will (unnecessarily) happen
-        // every time the user pauses typing while this tool is active. I don't much expect people
-        // to be editing the book and configuring background music at the same time, so I'm not
-        // too worried. If it becomes a performance problem, we could enhance ITool with a
-        // function that is called just when the page switches.
-        this.controlsElement.updateStateFromHtml();
-    }
-
     public id(): string {
         return "music";
     }
-    // required for ITool interface
-    public hasRestoredSettings: boolean; // We need these to implement the interface, but don't need them to do anything.
-    /* tslint:disable:no-empty */ public configureElements(
-        container: HTMLElement
-    ) {}
-    public finishToolLocalization(pane: HTMLElement) {}
-    /* tslint:enable:no-empty */
+    public showTool() {
+        this.controlsElement.showTool();
+    }
+    public hideTool() {
+        this.controlsElement.hideTool();
+    }
+    public updateMarkup() {
+        this.controlsElement.updateMarkup();
+    }
 }
