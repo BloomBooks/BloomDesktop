@@ -4,23 +4,17 @@
         "curly": false,
         "eofline": false,
         "forin": true,
-        "indent": [
-            true,
-            4
-        ],
+        "indent": [true, 4],
         "label-position": true,
         "label-undefined": true,
-        "max-line-length": [
-            true,
-            140
-        ],
+        "max-line-length": [true, 140],
         "no-arg": true,
         "no-bitwise": true,
         "no-construct": true,
         "no-debugger": true,
         "no-duplicate-key": true,
         "no-duplicate-variable": true,
-        "no-empty": true,
+        "no-empty": false,
         "no-eval": true,
         "no-string-literal": true,
         "no-trailing-whitespace": true,
@@ -32,16 +26,10 @@
             "check-else",
             "check-whitespace"
         ],
-        "quotemark": [
-            true,
-            "double"
-        ],
+        "quotemark": [true, "double"],
         "radix": true,
         "semicolon": true,
-        "triple-equals": [
-            true,
-            "allow-null-check"
-        ],
+        "triple-equals": [true, "allow-null-check"],
         "variable-name": false,
         "whitespace": [
             false,
@@ -50,6 +38,7 @@
             "check-operator",
             "check-separator",
             "check-type"
-        ]
+        ],
+        "member-access": true
     }
 }

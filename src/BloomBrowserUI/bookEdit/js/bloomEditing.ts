@@ -657,6 +657,8 @@ function SetupElements(container) {
     ConstrainContentsOfPageLabel(container);
 }
 
+const pageLabelL18nPrefix = "TemplateBooks.PageLabel.";
+
 function ConstrainContentsOfPageLabel(container) {
     var pageLabel = <HTMLDivElement>document.getElementsByClassName("pageLabel")[0];
     if (!pageLabel)
@@ -666,6 +668,12 @@ function ConstrainContentsOfPageLabel(container) {
         pageLabel.innerText = pageLabel.innerText.split(/[\/\\*:?"<>|]/).join("");
         // characters that mess something else up, found through experimentation
         pageLabel.innerText = pageLabel.innerText.split(/[#%\r\n]/).join("");
+        // update data-i18n attribute to prevent this change being forgotton on reload; BL-5855
+        var localizationAttr = pageLabel.getAttribute("data-i18n");
+        if (localizationAttr.startsWith(pageLabelL18nPrefix)) {
+            localizationAttr = pageLabelL18nPrefix + pageLabel.innerText;
+            pageLabel.setAttribute("data-i18n", localizationAttr);
+        }
     });
 }
 
@@ -678,9 +686,9 @@ function AddXMatterLabelAfterPageLabel(container) {
     xMatterLabel = xMatterLabel.replace(new RegExp("\"", "g"), ""); //No idea why the quotes are still in there at this point.
     if (xMatterLabel === "" || xMatterLabel === "none")
         return;
-    theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel." + xMatterLabel, xMatterLabel, "")
+    theOneLocalizationManager.asyncGetText(pageLabelL18nPrefix + xMatterLabel, xMatterLabel, "")
         .done(function (xMatterLabelTranslation) {
-            theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel.FrontBackMatter", "Front/Back Matter", "")
+            theOneLocalizationManager.asyncGetText(pageLabelL18nPrefix + "FrontBackMatter", "Front/Back Matter", "")
                 .done(function (frontBackTranslation) {
                     $(pageLabel).attr("data-after-content", xMatterLabelTranslation + " " + frontBackTranslation);
                 });
