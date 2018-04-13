@@ -35,6 +35,12 @@ Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
         <target xml:lang="zh-CN">如果您使用的屏幕较小，版权页可能很难阅读。 使用CTRL +鼠标滚轮放大页面，以便对其进行编辑。</target>
         <note>ID: bigbook.limits.smallscreen</note>
+        <alt-trans>
+          <target xml:lang="zh-CN">如果您使用的屏幕较小，版权页可能很难阅读。 请使用屏幕右上方的“’+/-缩放‘’选项加以调整。</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">如果您使用的屏幕较小，版权页可能很难阅读。 请使用屏幕右上方的“’+/-缩放‘’选项对其进行编辑。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.

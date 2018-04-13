@@ -13,11 +13,11 @@
         <note>ID: AboutDialog.NoUpdates</note>
         <target xml:lang="tr" state="translated">Güncelleme Yok</target>
       </trans-unit>
-      <trans-unit id="AboutDialog.WindowTitle">
+      <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="tr" state="translated">{0} Hakkında</target>
+        <target xml:lang="tr">{0} Hakkında</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
@@ -92,20 +92,20 @@
         <note>ID: Common.OKButton</note>
         <target xml:lang="tr">&amp;Tamam</target>
       </trans-unit>
-      <trans-unit id="Common.RetryButton">
+      <trans-unit id="Common.RetryButton" approved="yes">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="tr" state="translated">&amp;Yeniden Dene</target>
+        <target xml:lang="tr">&amp;Yeniden Dene</target>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
         <target xml:lang="tr" state="translated">Evet</target>
       </trans-unit>
-      <trans-unit id="Common.YesButton">
+      <trans-unit id="Common.YesButton" approved="yes">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="tr" state="translated">&amp;Evet</target>
+        <target xml:lang="tr">&amp;Evet</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -181,6 +181,12 @@
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
         <target xml:lang="tr" state="translated">Dosya</target>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.FileChooserTitle">
+        <source xml:lang="en">Choose Picture File</source>
+        <note>ID: ImageToolbox.FileChooserTitle</note>
+        <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
+        <target xml:lang="tr" state="needs-translation">Choose Picture File</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries">
         <source xml:lang="en">Galleries</source>
@@ -302,15 +308,18 @@
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
         <target xml:lang="tr" state="translated">Ethnologue.com</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="tr" state="translated">Dil 639-3 Kodları Hakkında &amp; Yeniler İçin Nasıl Uygulanır</target>
+        <target xml:lang="tr">639-3 Dil Kodları Hakkında &amp; Yeni Kod İçin Başvuru</target>
+        <alt-trans>
+          <target xml:lang="tr">Dil 639-3 Kodları Hakkında &amp; Yeniler İçin Nasıl Uygulanır</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="tr" state="translated">ISO Dil Kaydı Hakkında</target>
+        <target xml:lang="tr">ISO Dil Kaydı Hakkında</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader">
         <source xml:lang="en">Code</source>
@@ -496,11 +505,11 @@
         <note>ID: MetadataEditor.YesShareAlike</note>
         <target xml:lang="tr" state="translated">Evet, başkaları da paylaştığı sürüce</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.additionalRequestsLabel">
+      <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="tr" state="translated">Ek İstekler</target>
+        <target xml:lang="tr">Ek İstekler</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1">
         <source xml:lang="en">more info</source>
@@ -582,25 +591,28 @@
         <note>ID: WSFontControl.Font</note>
         <target xml:lang="tr">&amp;Yazı tipi:</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.FontNotAvailable">
+      <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="tr" state="translated">(Seçili yazı tipi bu makine için kullanılabilir değil. Varsayılan kullanılıyor.)</target>
+        <target xml:lang="tr">(Seçilen yazi tipi bu bilgisayarda mevcut değil. Varsayılan kullanılacak.)</target>
+        <alt-trans>
+          <target xml:lang="tr">(Seçili yazı tipi bu makine için kullanılabilir değil. Varsayılan kullanılıyor.)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
         <target xml:lang="tr" state="translated">Bu &amp;sağdan sola yazma sistemi.</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.Size">
+      <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="tr" state="translated">&amp;Boyut:</target>
+        <target xml:lang="tr">&amp;Boyut:</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.TestArea">
+      <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="tr" state="translated">&amp;Test Alanı:</target>
+        <target xml:lang="tr">&amp;Test Alanı:</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
@@ -642,10 +654,10 @@
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
         <target xml:lang="tr" state="translated">Klavye ayarla</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.TestAreaCaption">
+      <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="tr" state="translated">&amp;Test Alanı (Klavyeniz ile bir şeyler yazmayı test etmek için bu alanı kullanın.)</target>
+        <target xml:lang="tr">&amp;Test Alanı (Klavyeniz ile bir şeyler yazmayı test etmek için bu alanı kullanın.)</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
