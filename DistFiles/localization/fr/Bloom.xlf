@@ -567,13 +567,13 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="fr" state="needs-translation">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</target>
+        <target xml:lang="fr" state="translated">Note : La bibliothèque Bloom contient des livres canevas, alors que votre collection actuelle est une "collection source", ce qui signifie qu'elle sert à faire des livres canevas, pas à les traduire dans un langage local.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
         <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="fr" state="needs-translation">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</target>
+        <target xml:lang="fr" state="translated">Lorsque vous avez fait un livre canevas, vous pouvez le mettre en ligne sur la bibliothèque Bloom à partir de l'onglet Publier.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption" approved="yes">
         <source xml:lang="en">Source Collection</source>
@@ -1144,6 +1144,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: EditTab.CustomPage.Text</note>
         <target xml:lang="fr">Texte</target>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Video" sil:dynamic="true">
+        <source xml:lang="en">Video</source>
+        <note>ID: EditTab.CustomPage.Video</note>
+        <target xml:lang="fr" state="needs-translation">Video</target>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
@@ -1262,6 +1267,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
         <note>ID: EditTab.ExperimentalNotice</note>
         <target xml:lang="fr">Cette page étant un prototype expérimental, elle est susceptible de connaître plusieurs dysfonctionnements ; nous nous excsusons de la gêne occasionnée.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FileDialogVideoFiles">
+        <source xml:lang="en">Video files</source>
+        <note>ID: EditTab.FileDialogVideoFiles</note>
+        <note>Used to identify the kind of files wanted in a file Open dialog</note>
+        <target xml:lang="fr" state="needs-translation">Video files</target>
       </trans-unit>
       <trans-unit id="EditTab.FontMissing" approved="yes">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
@@ -2008,10 +2019,27 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
           <target xml:lang="fr">Continuez la musique de la page précédente</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
+        <source xml:lang="en">Sound files</source>
+        <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
+        <target xml:lang="fr" state="translated">Fichiers audio</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.Music.Heading</note>
         <target xml:lang="fr">Outil de musique</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
+        <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
+        <note>ID: EditTab.Toolbox.Music.InvalidMp3File</note>
+        <note>The {0} is replaced by the filename.</note>
+        <target xml:lang="fr" state="translated">Le fichier audio sélectionné «{0}» ne peut pas être joué par Bloom.  Veuillez choisir un autre fichier audio.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle">
+        <source xml:lang="en">Choose Another Sound File</source>
+        <note>ID: EditTab.Toolbox.Music.InvalidMp3FileTitle</note>
+        <note>Title for a message box</note>
+        <target xml:lang="fr" state="translated">Choisir Un Autre Fichier Audio</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
@@ -2378,6 +2406,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
         <target xml:lang="fr">Faites un livre électronique qui joue des enregistrements audio en surlignant des phrases.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Video.Heading" sil:dynamic="true">
+        <source xml:lang="en">Video Recorder Tool</source>
+        <note>ID: EditTab.Toolbox.Video.Heading</note>
+        <target xml:lang="fr" state="needs-translation">Video Recorder Tool</target>
+      </trans-unit>
       <trans-unit id="EditTab.Trilingual" approved="yes">
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>
@@ -2407,6 +2440,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <alt-trans>
           <target xml:lang="fr">Ce livre est en mode traduire uniquement. Si vous souhaitez apporter d’autres modifications, cliquez ici pour débloquer temporairement le livre.</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.Video.ChangeVideo" sil:dynamic="true">
+        <source xml:lang="en">Change Video</source>
+        <note>ID: EditTab.Video.ChangeVideo</note>
+        <target xml:lang="fr" state="needs-translation">Change Video</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -2493,6 +2531,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Bloom had a problem importing this picture.</source>
         <note>ID: Errors.ProblemImportingPicture</note>
         <target xml:lang="fr">Bloom a rencontré un problème pour importer cette illustration.</target>
+      </trans-unit>
+      <trans-unit id="Errors.ProblemImportingVideo">
+        <source xml:lang="en">Bloom had a problem importing this video.</source>
+        <note>ID: Errors.ProblemImportingVideo</note>
+        <target xml:lang="fr" state="needs-translation">Bloom had a problem importing this video.</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton" approved="yes">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -3062,25 +3105,25 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
         <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
         <note>{0} is a font name</note>
-        <target xml:lang="fr" state="needs-translation">Checking {0} font: License OK for embedding.</target>
+        <target xml:lang="fr" state="translated">Vérification des polices {0} : licence OK pour l'ajout.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true">
         <source xml:lang="en">Embedding font {0} at a cost of {1} megs</source>
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
-        <target xml:lang="fr" state="needs-translation">Embedding font {0} at a cost of {1} megs</target>
+        <target xml:lang="fr" state="translated">Ajouter la police {0} de {1} Mb</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License does not permit embedding.</source>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
         <note>{0} is a font name</note>
-        <target xml:lang="fr" state="needs-translation">Checking {0} font: License does not permit embedding.</target>
+        <target xml:lang="fr" state="translated">Vérification des polices {0} : la licence ne permet pas l'ajout.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: No font found to embed.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
-        <target xml:lang="fr" state="needs-translation">Checking {0} font: No font found to embed.</target>
+        <target xml:lang="fr" state="translated">Vérification des polices {0} : aucune police à ajouter n'a été trouvée.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
@@ -3110,7 +3153,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Substituting "{0}" for "{1}"</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} and {1} are font names</note>
-        <target xml:lang="fr" state="needs-translation">Substituting "{0}" for "{1}"</target>
+        <target xml:lang="fr" state="translated">Remplacer «{0}» par «{1} »</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -3172,6 +3215,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <alt-trans>
           <target xml:lang="fr">Connecté à ‎{0‎} via USB ...</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
+        <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
+        <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
+        <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
+        <target xml:lang="fr" state="translated">L'appareil a signalé ne pas avoir assez d'espace pour ce livre. Le libre fait {0} MB.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
@@ -4829,7 +4878,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
-        <target xml:lang="fr" state="needs-translation">Bloom Reader Quiz</target>
+        <target xml:lang="fr" state="translated">Quizz de Bloom Reader</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
@@ -4913,7 +4962,10 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
-        <target xml:lang="fr">Troisième de couverture</target>
+        <target xml:lang="fr">Dos intérieur</target>
+        <alt-trans>
+          <target xml:lang="fr">Troisième de couverture</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Front Cover</source>

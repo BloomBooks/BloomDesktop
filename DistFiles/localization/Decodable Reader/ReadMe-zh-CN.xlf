@@ -37,6 +37,9 @@
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
         <target xml:lang="zh-CN">找到帮助菜单，然后选择：“创建读物模板”。</target>
         <note>ID: decodable.learn.helpmenu</note>
+        <alt-trans>
+          <target xml:lang="zh-CN">找到"帮助"菜单，然后选择：“创建读物模板”。</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
