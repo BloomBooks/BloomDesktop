@@ -6,7 +6,7 @@ import { ToolBox } from "./toolbox";
 import { BookSettings } from "./bookSettings/bookSettings";
 import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
 import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
-import { MusicTool } from "./music/musicToolControls";
+import { MusicToolAdaptor } from "./music/musicToolControls";
 import { PanAndZoomTool } from "./panAndZoom/panZoomToolControls";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
@@ -49,7 +49,7 @@ $(document).ready(function () {
 ToolBox.registerTool(new BookSettings());
 ToolBox.registerTool(new DecodableReaderToolboxTool());
 ToolBox.registerTool(new LeveledReaderToolboxTool());
-ToolBox.registerTool(new MusicTool());
+ToolBox.registerTool(new MusicToolAdaptor());
 ToolBox.registerTool(new PanAndZoomTool());
 ToolBox.registerTool(new TalkingBookTool());
 ToolBox.registerTool(new VideoTool());
