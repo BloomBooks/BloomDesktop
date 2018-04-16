@@ -42,11 +42,16 @@ namespace Bloom.Api
 							{
 								try
 								{
-									if (!d.ContainsKey(key))
-									{
-										var translation = GetTranslationDefaultMayNotBeEnglish(key, post[key]);
-										d.Add(key, translation);
-									}
+									if (d.ContainsKey(key))
+										continue;
+
+									// Now that end users can create templates, it's annoying to report that their names,
+									// page labels, and page descriptions don't have localizations.
+									if (IsTemplateBookKey(key))
+										continue;
+
+									var translation = GetTranslationDefaultMayNotBeEnglish(key, post[key]);
+									d.Add(key, translation);
 								}
 								catch (Exception error)
 								{
@@ -93,10 +98,10 @@ namespace Bloom.Api
 						}
 						else
 						{
-							if (id.StartsWith("TemplateBooks.BookName") || id.StartsWith("TemplateBooks.PageLabel") || id.StartsWith("TemplateBooks.PageDescription"))
+							// Now that end users can create templates, it's annoying to report that their names,
+							// page labels, and page descriptions don't have localizations.
+							if (IsTemplateBookKey(id))
 							{
-								// Now that end users can create templates, it's annoying to report that their names,
-								// page labels, and page descriptions don't have localizations.
 								englishText = englishText.Trim();
 							}
 							else
@@ -123,6 +128,13 @@ namespace Bloom.Api
 			}
 
 			return false;
+		}
+
+		private static bool IsTemplateBookKey(string key)
+		{
+			return key.StartsWith("TemplateBooks.BookName") ||
+			       key.StartsWith("TemplateBooks.PageLabel") ||
+			       key.StartsWith("TemplateBooks.PageDescription");
 		}
 
 		/// <summary>
