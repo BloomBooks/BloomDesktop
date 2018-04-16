@@ -3,7 +3,7 @@
     - New "Music Tool" allow you to choose background music and levels.
     - New "Pan and Zoom Tool" allows you to specify pan/zoom effects of a page.
 - Publish
-    - Fonts are now embedded in Bloom Reader books, if their embbeded metadata allows that.
+    - Fonts are now embedded in Bloom Reader books, if their embedded metadata allows that.
 
 ## 4.1  (current release & beta)
 - Settings
@@ -238,7 +238,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 
 ## 3.1 Beta 2
 - Improved feedback during application updating
-- Various memory-use improvments (more to come)
+- Various memory-use improvements (more to come)
 - Fix overlapping text bubbles
 - Fix page numbering
 - 52 other minor fixes/improvements
@@ -285,10 +285,10 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 - Stopped "Source Bubbles" from overlapping with other stuff by saying that unless the field takes up the full width of the page, only show the bubble when the cursor is in the field.
 - Fixed problem with changing the collection name.
 - Pasted images are now named "image 1", "image 2", etc., instead of having random names.
-- Vaccninations book had lost its Creative Commons license image.
+- Vaccinations book had lost its Creative Commons license image.
 - Fixed problem with saving meta data into certain jpeg images.
 - [Decodable Reader] If you change the letters of a stage then close the dialog by clicking "OK", the toolbox tool doesn't update to show the new letters
-- [Decodable Reader] If a letter is in a letter combination in current the stage, DR should not automatically allow its consituent letters
+- [Decodable Reader] If a letter is in a letter combination in current the stage, DR should not automatically allow its constituent letters
 - Bloom's feature of making white transparent makes pdfs look awful in some previewers.
 - Calendar Title Page font-changing widget in "Funding" box is non-functional
 - Fixed bold items not using the same font as its surroundings when styles are customized.
@@ -359,7 +359,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 ### Front/Back Matter
 
 #### Cover Page
-- Fields on the Cover can now grow to fit however many lines you neeed, because...
+- Fields on the Cover can now grow to fit however many lines you need, because...
 - The image on the Cover page  will now automatically shrink so that whatever text you need can fit
 - Front cover & title page can now show title in all 3 languages
 
@@ -388,7 +388,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 
 ### Fixes
 - Bloom will now be patient if Dropbox is temporarily locking the languagedisplay.css file
-- Title page now updates immeditatley if you change country/province in Settings Dialog
+- Title page now updates immediately if you change country/province in Settings Dialog
 - Format dialog tooltips no longer make Source Bubbles disappear
 - Improved error messages when an html file can't be opened
 - Thai script is now larger in shell book source bubbles
@@ -401,7 +401,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 
 ## 3.0.80 BETA
 - Fix: "Open in Firefox" should now work even if you have spaces in the path
-- Fix: BigBook National Language title was missinga parenthesis
+- Fix: BigBook National Language title was missing a parenthesis
 - Fix: Was hard to insert an uppercase character using the long-press special character feature
 - Fix: "Update Book" messed up custom pages
 - Several Linux-only fixes
@@ -543,7 +543,7 @@ Make textboxes red when there is more text in them than fits
 ## 1.0.24 - 13 Dec 2013
 * Fix Problem of readonly thumbnails when updating a collection with a BloomPack.
 * Fix height of green source text bubble on Just Text pages.
-* Fix bug tht would cause problems if you used a '&' in a copyright notice.
+* Fix bug that would cause problems if you used a '&' in a copyright notice.
 * Add context menu item for getting stylesheet troubleshooting information to the clipboard.
 * Avoid collecting new strings for localization from non-developer machines.
 * Add "publish" class to the <body> when previewing or making a publish. Stylesheets can use
@@ -608,7 +608,7 @@ Make textboxes red when there is more text in them than fits
 * Added missing null xmatter
 
 ## 0.9.109 14 Aug 2013
-* Update french localizations
+* Update French localizations
 * Fix extra blank page problem
 
 ## 0.9.105 10 Aug 2013
@@ -641,10 +641,10 @@ Make textboxes red when there is more text in them than fits
 These changes will only be noticed by those of us writing new templates from scratch in html:
 
 * When starting a book, now removes incoming content with lang = "x", so we can draft with "x" and know that it won't show to users.
-* data-hints should now live on the enclosing bloom-translationGroup. On the minus side: for now, they will not dissappear even when there is content.
+* data-hints should now live on the enclosing bloom-translationGroup. On the minus side: for now, they will not disappear even when there is content.
 
 ## 0.9.90 19 June 2013
-* Alleviate problem (Windows 7) of sylesheets from old versions sticking around even when you upgrade (VirtualStore).
+* Alleviate problem (Windows 7) of stylesheets from old versions sticking around even when you upgrade (VirtualStore).
 
 ## 0.9.89 16 June 2013
 * Fix page size/layout choices
@@ -692,7 +692,7 @@ These changes will only be noticed by those of us writing new templates from scr
 
 ## 0.9.55 16 May 2013
 * Fixed problem with error on machines lacking Adobe Reader
-* Update French Localizations (Thx David Rowe)
+* Update French Localizations (thanks David Rowe)
 
 ## 0.9.54 15 May 2013
  * New "Picture & Word" page in Basic Book for simple one-word-per-page books.
@@ -761,7 +761,7 @@ These changes will only be noticed by those of us writing new templates from scr
 ## 0.9: Sept 22 2012
 
 * Auto compression of pngs as you select them
-* "Update All Books" menu command which updates frontmatter, illustration metadata, and compresses all imags
+* "Update All Books" menu command which updates frontmatter, illustration metadata, and compresses all images
 * Can now paste if there is an image path on the clipboard
 
 
@@ -803,7 +803,7 @@ These changes will only be noticed by those of us writing new templates from scr
 
 ## 0.8: June 25 2012
 
-* From-scatch overhaul of the First Time and Create Collection experiences. Note that the wizard with different questions depending on whether you choose Vernacular or Source
+* From-scratch overhaul of the First Time and Create Collection experiences. Note that the wizard with different questions depending on whether you choose Vernacular or Source
 * Template stylesheets can now specify not just size/orientations they support, but also options which the user can select. The Basic Book now uses this to offer 2 different A4Landscape layouts.
 
 ## 0.8: May 14 2012
@@ -817,7 +817,7 @@ These changes will only be noticed by those of us writing new templates from scr
    * Factory FrontMatter now puts the "Credits" page to the inside front cover, replacing the "verso" page
    * Factory FrontMatter now starts logical numbering with the title page as page 1. Doesn't show it, though.
    * New margin model
-   * Margins are now sensitive to the odd/even'nes of the page
+   * Margins are now sensitive to the odd/even'ness of the page
 
 ## 0.8: May 3 2012
 * Control-mousewheel now does page zooming
@@ -865,7 +865,7 @@ These are the last <em>planned</em> format changes before version 1.
 * page thumbnails don't always update.
   * li translations bubble covers "book li in ___".
   * Adding images leaves an unneeded "_orginal" copy.
-  * Custom license can't have single quotes (appostrophes)
+  * Custom license can't have single quotes (apostrophes)
   * Once a CreativeCommons license is chosen, changing to another option leaves us with the CC license Image.
   * In bi/trilingual books, you can't yet change order of the languages.
 
@@ -933,14 +933,14 @@ data from a combination of sources:
 ## 0.3: 9 Dec 2011
 Format change: id attributes are no longer used in textareas or img's.
 'hideme' class is no longer used to hide elements in languages other than those in the current publication. Instead, hiding is now the reponsibility of "languageDisplay.css", still based on the @lang attributes of elements.
-	 evelopers can now right-click on pages and choose "View in System Browser". You can then have access to every bit of info you could want about the html, stylesheets, & scripts, using firefug (Firefox), or Chrome developer tools.
+	Developers can now right-click on pages and choose "View in System Browser". You can then have access to every bit of info you could want about the html, stylesheets, & scripts, using firebug (Firefox), or Chrome developer tools.
 
 ## 0.3: 1 Dec 2011
 ###Breaking Changes
-I've abandoned the attempt to store Bloom files as xml html5.&nbsp; I risked death by a thousand paper cuts.&nbsp; So, as of this version, Bloom uses strictly-valid HTML5 (whether well-formed-xml or not).&nbsp; Internally, it's still doing xml; it uses HTML Tidy to convert to xml as needed.&nbsp; Other validation issues: The header material has changed so that it now passes the w3c validation for html5, with the only remaning complaint being the proprietary &lt;meta&gt; tags. &lt;meta&gt; tags now use @name attributes, instead of @id attributes.&nbsp; See the updated File Format help topic for updated information.
+I've abandoned the attempt to store Bloom files as xml html5.&nbsp; I risked death by a thousand paper cuts.&nbsp; So, as of this version, Bloom uses strictly-valid HTML5 (whether well-formed-xml or not).&nbsp; Internally, it's still doing xml; it uses HTML Tidy to convert to xml as needed.&nbsp; Other validation issues: The header material has changed so that it now passes the w3c validation for html5, with the only remaining complaint being the proprietary &lt;meta&gt; tags. &lt;meta&gt; tags now use @name attributes, instead of @id attributes.&nbsp; See the updated File Format help topic for updated information.
 
 ## 0.3: 30 Nov 2011
-Making use of a new capabilty offered by html5, many formerly "special" classes have been moved to div-* attributes:
+Making use of a new capability offered by html5, many formerly "special" classes have been moved to div-* attributes:
 
 ## 0.3: 29 Nov 2011
 ####Breaking Changes

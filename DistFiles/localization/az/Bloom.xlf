@@ -5,116 +5,116 @@
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
-        <target xml:lang="az" state="needs-translation">Bloom Problem</target>
+        <target xml:lang="az" state="translated">Bloom Məsələsi</target>
       </trans-unit>
       <trans-unit id="BloomIntegrityDialog.ReportProblem">
         <source xml:lang="en">Report Problem</source>
         <note>ID: BloomIntegrityDialog.ReportProblem</note>
-        <target xml:lang="az" state="needs-translation">Report Problem</target>
+        <target xml:lang="az" state="translated">Məsələni hesabat et</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
-        <target xml:lang="az" state="needs-translation">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</target>
+        <target xml:lang="az" state="translated">-- Yəqin ki, bu, Bloom Pack-ın fayl adlarının xüsusi simvollarını oxumaq xüsusiyyətinə malik olmasından öncə yaradılmış Bloom Pack-ın köhnə versiyasıdır. Siz cari versiyanı istifadə edərək, yeni fayl yaratmaq üçün müəllifdən kömək əldə edə bilərsiniz. Bu mümkün deyilsə, texniki ekspert vəziyyəti bərpa edə bilər.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
         <source xml:lang="en">Bloom Pack Installation</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstallation</note>
-        <target xml:lang="az" state="needs-translation">Bloom Pack Installation</target>
+        <target xml:lang="az" state="translated">Bloom Paketin Quraşdırılması</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
-        <target xml:lang="az" state="needs-translation">The {0} Collection is now ready to use on this computer.</target>
+        <target xml:lang="az" state="translated">{0} Yığması bu kompüterdə istifadə üçün hazırdır.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
         <source xml:lang="en">Bloom Pack Installer</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
         <note>Displayed as the message box title</note>
-        <target xml:lang="az" state="needs-translation">Bloom Pack Installer</target>
+        <target xml:lang="az" state="translated">Bloom Paketin Quraşdırıcısı</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.CorruptBloomPack">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
         <note>ID: BloomPackInstallDialog.CorruptBloomPack</note>
-        <target xml:lang="az" state="needs-translation">This BloomPack appears to be incomplete or corrupt.</target>
+        <target xml:lang="az" state="translated">Görünür ki, bu BloomPack natamamdır və ya xarab olub.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.DoesNotExist">
         <source xml:lang="en">{0} does not exist</source>
         <note>ID: BloomPackInstallDialog.DoesNotExist</note>
-        <target xml:lang="az" state="needs-translation">{0} does not exist</target>
+        <target xml:lang="az" state="translated">{0} mövcud deyil</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
-        <target xml:lang="az" state="needs-translation">Bloom was not able to install that Bloom Pack</target>
+        <target xml:lang="az" state="translated">Bloom proqramı o Bloom Paketini quraşdıra bilmədi</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Extracting">
         <source xml:lang="en">Extracting...</source>
         <note>ID: BloomPackInstallDialog.Extracting</note>
         <note>Shown while Bloom Packs are being installed</note>
-        <target xml:lang="az" state="needs-translation">Extracting...</target>
+        <target xml:lang="az" state="translated">Çıxarılır...</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="az" state="needs-translation">Bloom is already running, but the contents will not show up until the next time you run Bloom</target>
+        <target xml:lang="az" state="translated">"Bloom" proqramı artıq işləyir, lakin "Bloom" proqramı növbəti dəfə işə salanadək məzmunu göstərilməyəcək</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.NotInstalled">
         <source xml:lang="en">The Bloom collection will not be installed.</source>
         <note>ID: BloomPackInstallDialog.NotInstalled</note>
-        <target xml:lang="az" state="needs-translation">The Bloom collection will not be installed.</target>
+        <target xml:lang="az" state="translated">Bloom yığması quraşdırılmayacaq.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Opening">
         <source xml:lang="en">Opening {0}...</source>
         <note>ID: BloomPackInstallDialog.Opening</note>
-        <target xml:lang="az" state="needs-translation">Opening {0}...</target>
+        <target xml:lang="az" state="translated">{0} Açılır...</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Replace">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
-        <target xml:lang="az" state="needs-translation">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</target>
+        <target xml:lang="az" state="translated">Bu kompüterdə '{0}' adlanan Bloom yığması artıq mövcuddur. Onu bu Bloom yığması ilə əvəz etmək istəyirsinizmi?</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder">
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
-        <target xml:lang="az" state="needs-translation">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</target>
+        <target xml:lang="az" state="translated">Bloom Paketin Zip faylının yuxarı səviyyəsində ancaq bir yığma qovluğu olmalıdır.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.UnableToReplace">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="az" state="needs-translation">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</target>
+        <target xml:lang="az" state="translated">Bloom '{0}' artıq mövcud olan nüsxəsini silə bilmədi. Əgər Bloom açıqdırsa, Bloomdan çıxın və &amp; yenidən cəhd edin. Əks halda, kompüterinizi söndürüb-yandırdıqdan sonra, yenidən cəhd edin.</target>
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="az" state="needs-translation">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</target>
+        <target xml:lang="az" state="translated">Siçan ilə istədiyiniz hər şeyi seçin və ya bənövşəyi düyməni basmaq üçün siçan təkərini istifadə edin. Nəhayət, bu siyahı göstərmək üçün bastığınız düyməni buraxın.</target>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true">
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
-        <target xml:lang="az" state="needs-translation">This formatting is the default for all text boxes with '{0}' style.</target>
+        <target xml:lang="az" state="translated">Bu formatlaşdırma '{0}' üslubu olan bütün mətn qutuları üçün standartdur.</target>
       </trans-unit>
       <trans-unit id="BookEditor.ForText" sil:dynamic="true">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.ForText</note>
-        <target xml:lang="az" state="needs-translation">This formatting is for all text boxes with '{0}' style.</target>
+        <target xml:lang="az" state="translated">Bu formatlaşdırma {0} üslubu daşayan bütün mətn qutuları üçündür.</target>
       </trans-unit>
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="az" state="needs-translation">This formatting is for all {0} text boxes with '{1}' style.</target>
+        <target xml:lang="az" state="translated">Bu formatlaşdırma {1} üslubu daşayan bütün {0} mətn qutuları üçündür.</target>
       </trans-unit>
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
-        <target xml:lang="az" state="needs-translation">Sorry, Reader Templates do not allow changes to formatting.</target>
+        <target xml:lang="az" state="translated">Təəssüflər olsun ki, Oxuyan Şablonlar dəyişdirilə bilməz.</target>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="az" state="needs-translation">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</target>
+        <target xml:lang="az" state="translated">Bloom bu kitabı oxuyərkən bir problem baş verib və ən son ehtiyatın geri qaytarılması ilə saxlayıb. Xahiş edirik bu kitabdakı son dəyişikliyi yoxlayın. Bu, heç bir aydın səbəb olmadan baş verərsə, aşağıya "detallar" düyməsi basın və bizə bildirin.</target>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
@@ -199,7 +199,7 @@
         <source xml:lang="en">Device</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
-        <target xml:lang="az" state="needs-translation">Device</target>
+        <target xml:lang="az" state="translated">Cihaz</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
@@ -545,7 +545,7 @@
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
         <note>ID: CollectionTab.BookMenu.UpdateFrontMatterToolStrip</note>
-        <target xml:lang="az" state="needs-translation">Update Book</target>
+        <target xml:lang="az" state="translated">Kitab yeniləşdir</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
         <source xml:lang="en">Update Thumbnail</source>
@@ -555,7 +555,7 @@
       <trans-unit id="CollectionTab.BookSourceHeading">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="az" state="needs-translation">Sources For New Books</target>
+        <target xml:lang="az" state="translated">Yeni kitablar üçün mənbələr</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourcesLockNotice">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
@@ -799,40 +799,40 @@
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
-        <target xml:lang="az" state="needs-translation">Loading...</target>
+        <target xml:lang="az" state="translated">Yüklənir...</target>
       </trans-unit>
       <trans-unit id="Common.Next">
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="az" state="needs-translation">&amp;Next</target>
+        <target xml:lang="az" state="translated">&amp;Növbəti</target>
       </trans-unit>
       <trans-unit id="Common.NextButton">
         <source xml:lang="en">Next</source>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
-        <target xml:lang="az" state="needs-translation">Next</target>
+        <target xml:lang="az" state="translated">Növbəti</target>
       </trans-unit>
       <trans-unit id="Common.OK">
         <source xml:lang="en">OK</source>
         <note>ID: Common.OK</note>
-        <target xml:lang="az" state="needs-translation">OK</target>
+        <target xml:lang="az" state="translated">Oldu</target>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="az" state="needs-translation">&amp;OK</target>
+        <target xml:lang="az" state="translated">&amp;Oldu</target>
       </trans-unit>
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
-        <target xml:lang="az" state="needs-translation">optional</target>
+        <target xml:lang="az" state="translated">əlavə</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
-        <target xml:lang="az" state="needs-translation">See {0}.</target>
+        <target xml:lang="az" state="translated">{0} Baxın.</target>
       </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -1039,6 +1039,11 @@
         <note>ID: EditTab.CustomPage.Text</note>
         <target xml:lang="az" state="needs-translation">Text</target>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Video" sil:dynamic="true">
+        <source xml:lang="en">Video</source>
+        <note>ID: EditTab.CustomPage.Video</note>
+        <target xml:lang="az" state="needs-translation">Video</target>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
@@ -1148,6 +1153,12 @@
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
         <note>ID: EditTab.ExperimentalNotice</note>
         <target xml:lang="az" state="needs-translation">This page is an experimental prototype which may have many problems, for which we apologize.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FileDialogVideoFiles">
+        <source xml:lang="en">Video files</source>
+        <note>ID: EditTab.FileDialogVideoFiles</note>
+        <note>Used to identify the kind of files wanted in a file Open dialog</note>
+        <target xml:lang="az" state="needs-translation">Video files</target>
       </trans-unit>
       <trans-unit id="EditTab.FontMissing">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
@@ -1786,10 +1797,27 @@
         <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
         <target xml:lang="az" state="needs-translation">Continue music from previous page</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
+        <source xml:lang="en">Sound files</source>
+        <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
+        <target xml:lang="az" state="needs-translation">Sound files</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.Music.Heading</note>
         <target xml:lang="az" state="needs-translation">Music Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
+        <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
+        <note>ID: EditTab.Toolbox.Music.InvalidMp3File</note>
+        <note>The {0} is replaced by the filename.</note>
+        <target xml:lang="az" state="needs-translation">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle">
+        <source xml:lang="en">Choose Another Sound File</source>
+        <note>ID: EditTab.Toolbox.Music.InvalidMp3FileTitle</note>
+        <note>Title for a message box</note>
+        <target xml:lang="az" state="needs-translation">Choose Another Sound File</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
         <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
@@ -2135,6 +2163,11 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
         <target xml:lang="az" state="needs-translation">Make an e-book that can play recordings while highlighting sentences.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Video.Heading" sil:dynamic="true">
+        <source xml:lang="en">Video Recorder Tool</source>
+        <note>ID: EditTab.Toolbox.Video.Heading</note>
+        <target xml:lang="az" state="needs-translation">Video Recorder Tool</target>
+      </trans-unit>
       <trans-unit id="EditTab.Trilingual">
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>
@@ -2161,6 +2194,11 @@
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="az" state="needs-translation">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Video.ChangeVideo" sil:dynamic="true">
+        <source xml:lang="en">Change Video</source>
+        <note>ID: EditTab.Video.ChangeVideo</note>
+        <target xml:lang="az" state="needs-translation">Change Video</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -2229,6 +2267,11 @@
         <source xml:lang="en">Bloom had a problem importing this picture.</source>
         <note>ID: Errors.ProblemImportingPicture</note>
         <target xml:lang="az" state="needs-translation">Bloom had a problem importing this picture.</target>
+      </trans-unit>
+      <trans-unit id="Errors.ProblemImportingVideo">
+        <source xml:lang="en">Bloom had a problem importing this video.</source>
+        <note>ID: Errors.ProblemImportingVideo</note>
+        <target xml:lang="az" state="needs-translation">Bloom had a problem importing this video.</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -2848,6 +2891,12 @@
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
         <target xml:lang="az" state="needs-translation">Connected to {0} via USB...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
+        <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
+        <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
+        <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
+        <target xml:lang="az" state="needs-translation">The device reported that it does not have enough space for this book. The book is {0} MB.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>

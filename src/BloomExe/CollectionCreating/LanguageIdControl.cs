@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
-using Bloom.ToPalaso;
 
 namespace Bloom.CollectionCreating
 {
@@ -15,7 +13,7 @@ namespace Bloom.CollectionCreating
 		{
 			InitializeComponent();
 			_lookupISOControl.SelectedLanguage = null;
-			_lookupISOControl.IsShowRegionalDialectsCheckBoxVisible = false;
+			_lookupISOControl.IsShowRegionalDialectsCheckBoxVisible = true;
 
 			// Following should be consistent with CollectionSettingsDialog.ChangeLanguage()
 			_lookupISOControl.UseSimplifiedChinese();
