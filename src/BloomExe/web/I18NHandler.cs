@@ -44,6 +44,12 @@ namespace Bloom.Api
 								{
 									if (!d.ContainsKey(key))
 									{
+										if (key.StartsWith("TemplateBooks.BookName") || key.StartsWith("TemplateBooks.PageLabel") || key.StartsWith("TemplateBooks.PageDescription"))
+										{
+											// Now that end users can create templates, it's annoying to report that their names,
+											// page labels, and page descriptions don't have localizations.
+											continue;
+										}
 										var translation = GetTranslationDefaultMayNotBeEnglish(key, post[key]);
 										d.Add(key, translation);
 									}
