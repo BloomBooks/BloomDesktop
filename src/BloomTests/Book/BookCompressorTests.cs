@@ -675,8 +675,8 @@ namespace BloomTests.Book
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
 				RobustFile.WriteAllBytes(tempFile.Path, reducedBytes);
-				var newImage = PalasoImage.FromFileRobustly(tempFile.Path);
-				Assert.AreEqual(PixelFormat.Format32bppArgb, newImage.Image.PixelFormat, "should have switched to 32bit depth");
+				using (var newImage = PalasoImage.FromFileRobustly(tempFile.Path))
+					Assert.AreEqual(PixelFormat.Format32bppArgb, newImage.Image.PixelFormat, "should have switched to 32bit depth");
 			}
 		}
 
