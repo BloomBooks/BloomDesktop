@@ -260,7 +260,7 @@ namespace BloomTests.Book
 			// questions with more than one right answer (currently will be included)
 			// questions with only one answer (currently will be included),
 			// since I'm not sure what the desired behavior is.
-			// If we want to test corner cases it might be easier to test BloomReaderFileMaker.MakeQuestion directly.
+			// If we want to test corner cases it might be easier to test BloomReaderFileMaker.ExtractQuestionGroups directly.
 			var bookHtml = @"<html>
 <head>
 	<meta charset='UTF-8'></meta>
