@@ -383,7 +383,8 @@ namespace Bloom.Book
 			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var originalBody = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
-			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
+			var enterpriseStatusClass = this.CollectionSettings.HaveEnterpriseFeatures ? "enterprise-on" : "enterprise-off";
+			var dom = new HtmlDom(@"<html>" + headXml + $"<body class='{enterpriseStatusClass}'></body></html>");
 			dom = _storage.MakeDomRelocatable(dom);
 			// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 			dom.RawDom.PreserveWhitespace = true;

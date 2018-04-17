@@ -935,6 +935,8 @@ namespace Bloom.Collection
 			}
 		}
 
+		public bool HaveEnterpriseFeatures => this.BrandingProjectKey != "Default";
+
 		/// <summary>
 		/// The collection settings point to object which might not exist. For example, the xmatter pack might not exist.
 		/// So this should be called as soon as it is OK to show some UI. It will find any dependencies it can't meet,

@@ -1,11 +1,19 @@
 @import "../../common-mixins.less";
 
+.enterprise-off .bloom-page.questions {
+    .bloom-translationGroup:before {
+        color: red;
+        background-color: @bloom-lightgray;
+        text-align: center;
+        content: "This collection is not Bloom Enterprise-enabled";
+    }
+}
 
 .bloom-page.questions {
     background-color: @bloom-blue;
 
     .quizIntructions {
-        background-color: lightgray;
+        background-color: @bloom-lightgray;
         font-size: 10pt;
         font-family: Segoe UI, Open Sans, Arial, sans-serif;
         padding: 8px;
