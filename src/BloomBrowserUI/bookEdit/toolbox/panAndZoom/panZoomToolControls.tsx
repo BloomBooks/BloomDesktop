@@ -23,15 +23,15 @@ import "./panAndZoom.less";
 // in tooboxBootstrap.ts:
 // ToolBox.registerTool(new PanAndZoomTool());.
 export class PanAndZoomTool implements ITool {
-    rootControl: PanAndZoomControl;
-    animationStyleElement: HTMLStyleElement;
-    animationWrapDiv: HTMLElement;
-    animationRootDiv: HTMLElement;
-    narrationPlayer: AudioRecording;
-    stopPreviewTimeout: number;
-    animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
+    private rootControl: PanAndZoomControl;
+    private animationStyleElement: HTMLStyleElement;
+    private animationWrapDiv: HTMLElement;
+    private animationRootDiv: HTMLElement;
+    private narrationPlayer: AudioRecording;
+    private stopPreviewTimeout: number;
+    private animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
 
-    makeRootElement(): HTMLDivElement {
+    public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "ui-panAndZoomBody");
         this.rootControl = ReactDOM.render(
@@ -48,23 +48,22 @@ export class PanAndZoomTool implements ITool {
         }
         return root as HTMLDivElement;
     }
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(settings: string): JQueryPromise<void> {
         //Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();
         result.resolve();
         return result;
     }
-    isAlwaysEnabled(): boolean {
+    public isAlwaysEnabled(): boolean {
         return false;
     }
 
     // required for ITool interface
-    hasRestoredSettings: boolean; // We need these to implement the interface, but don't need them to do anything.
-    /* tslint:disable:no-empty */ configureElements(container: HTMLElement) {}
-    finishToolLocalization(pane: HTMLElement) {}
-    /* tslint:enable:no-empty */
+    public hasRestoredSettings: boolean; // We need these to implement the interface, but don't need them to do anything.
+    public configureElements(container: HTMLElement) {}
+    public finishToolLocalization(pane: HTMLElement) {}
 
-    updateMarkup() {
+    public updateMarkup() {
         // This isn't exactly updating the markup, but it needs to happen when we switch pages,
         // just like updating markup. Using this hook does mean it will (unnecessarily) happen
         // every time the user pauses typing while this tool is active. I don't much expect people
@@ -244,10 +243,10 @@ export class PanAndZoomTool implements ITool {
         }
         this.setupResizeObserver();
     }
-    showTool() {
+    public showTool() {
         this.updateMarkup();
     }
-    hideTool() {
+    public hideTool() {
         const page = this.getPage();
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
@@ -263,7 +262,7 @@ export class PanAndZoomTool implements ITool {
         }
         this.sizeObserver.disconnect();
     }
-    removeCurrentAudioMarkup(): void {
+    private removeCurrentAudioMarkup(): void {
         const currentAudioElts = this.getPage().getElementsByClassName(
             "ui-audioCurrent"
         );
@@ -272,11 +271,11 @@ export class PanAndZoomTool implements ITool {
         }
     }
 
-    id(): string {
+    public id(): string {
         return "panAndZoom";
     }
 
-    getFirstImage(): HTMLElement {
+    private getFirstImage(): HTMLElement {
         const imgElements = this.getPage().getElementsByClassName(
             "bloom-imageContainer"
         );
@@ -291,7 +290,7 @@ export class PanAndZoomTool implements ITool {
     // This string is a representation of a rectangle as left top width height, where each is
     // a fraction of the actual image size. (Note: the image, NOT the image container, even
     // if the image is just a background image...though the current code does not support that.)
-    getTransformRectAttrValue(htmlRect: HTMLElement): string {
+    private getTransformRectAttrValue(htmlRect: HTMLElement): string {
         // Todo zoom: may not be using scale correctly here.
         const scale = EditableDivUtils.getPageScale();
         const rectTop = htmlRect.offsetTop / scale;
@@ -316,7 +315,7 @@ export class PanAndZoomTool implements ITool {
 
     // Performs the reverse of the above transformation.
     // Todo zoom: this needs to get the right actual widths.
-    getActualRectFromAttrValue(
+    private getActualRectFromAttrValue(
         firstImage: HTMLElement,
         defLeft: number,
         defTop: number,
@@ -420,7 +419,7 @@ export class PanAndZoomTool implements ITool {
         ];
     }
 
-    tryParseFloat(input: string, def: number): number {
+    private tryParseFloat(input: string, def: number): number {
         try {
             return parseFloat(input);
         } catch (e) {
@@ -428,7 +427,7 @@ export class PanAndZoomTool implements ITool {
         }
     }
 
-    panAndZoomChanged(checked: boolean) {
+    private panAndZoomChanged(checked: boolean) {
         const firstImage = this.getFirstImage();
         if (!firstImage) {
             return;
@@ -457,19 +456,19 @@ export class PanAndZoomTool implements ITool {
         }
     }
 
-    observer: MutationObserver;
-    sizeObserver: MutationObserver;
+    private observer: MutationObserver;
+    private sizeObserver: MutationObserver;
 
-    updateChoosePictureState(): void {
+    private updateChoosePictureState(): void {
         // If they once choose a picture, there's no going back to a placeholder (on this page).
         this.rootControl.setState({ haveImageContainerButNoImage: false });
         this.observer.disconnect();
         this.updateMarkup(); // one effect is to show the rectangles.
     }
 
-    resizeRectanglesDelay: number = 200;
-    resizeInProgress: boolean = false;
-    resizeOldStyle: string;
+    private resizeRectanglesDelay: number = 200;
+    private resizeInProgress: boolean = false;
+    private resizeOldStyle: string;
 
     // This is called when the size of the picture changes. We also get LOTS
     // of spurious calls, for example, while resizing the rectangles. And even
@@ -484,7 +483,7 @@ export class PanAndZoomTool implements ITool {
     // during resizing, which can prevent the resizing altogether.
     // Simply waiting briefly reduces the frequency of regenerating
     // the rectangles to something manageable and makes it feel much more responsive.
-    pictureSizeChanged(): void {
+    private pictureSizeChanged(): void {
         if (this.resizeInProgress) {
             return;
         }
@@ -502,7 +501,7 @@ export class PanAndZoomTool implements ITool {
         this.resizeInProgress = true; // ignore notifications until timeout
     }
 
-    getImages(): Array<HTMLImageElement> {
+    private getImages(): Array<HTMLImageElement> {
         const firstImage = this.getFirstImage();
         // not interested in images inside the resize rectangles.
         return Array.prototype.slice
@@ -510,7 +509,7 @@ export class PanAndZoomTool implements ITool {
             .filter(v => v.parentElement === firstImage);
     }
 
-    setupResizeObserver(): void {
+    private setupResizeObserver(): void {
         if (this.sizeObserver) {
             this.sizeObserver.disconnect();
         }
@@ -535,7 +534,7 @@ export class PanAndZoomTool implements ITool {
         }
     }
 
-    setupImageObserver(): void {
+    private setupImageObserver(): void {
         // Arrange to update things when they DO choose an image.
         this.observer = new MutationObserver(() =>
             this.updateChoosePictureState()
@@ -559,7 +558,7 @@ export class PanAndZoomTool implements ITool {
     // we aren't allowed to use any more.
     // I believe this is a height that does NOT need to be scaled by our zoom factor
     // (e.g., it can be used unchanged to set a css width in px that will work zoomed)
-    getHeight(el) {
+    private getHeight(el) {
         const styles = window.getComputedStyle(el);
         const height = el.offsetHeight;
         const borderTopWidth = parseFloat(styles.borderTopWidth);
@@ -576,7 +575,7 @@ export class PanAndZoomTool implements ITool {
     }
 
     // Hopefully I figured out the equivalent for width
-    getWidth(el) {
+    private getWidth(el) {
         const styles = window.getComputedStyle(el);
         const width = el.offsetWidth;
         const borderLeftWidth = parseFloat(styles.borderLeftWidth);
@@ -592,7 +591,7 @@ export class PanAndZoomTool implements ITool {
         );
     }
 
-    updateDataAttributes(): void {
+    private updateDataAttributes(): void {
         const page = this.getPage();
         const startRect = page.getElementById("animationStart");
         const endRect = page.getElementById("animationEnd");
@@ -607,7 +606,7 @@ export class PanAndZoomTool implements ITool {
         );
     }
 
-    removeElt(x: HTMLElement): void {
+    private removeElt(x: HTMLElement): void {
         if (x) {
             x.remove();
         }
@@ -620,7 +619,7 @@ export class PanAndZoomTool implements ITool {
     // want to set up the animation
     // - this code is complicated by having to deal with problems caused by parent divs using scale for zoom.
     // somewhat more care is needed here to avoid adding the animation stuff permanently to the document
-    togglePanAndZoomPreviewPlaying() {
+    private togglePanAndZoomPreviewPlaying() {
         const page = this.getPage();
         const pageDoc = this.getPageFrame().contentWindow.document;
         const firstImage = this.getFirstImage();
@@ -905,7 +904,7 @@ export class PanAndZoomTool implements ITool {
         }, (duration + 1) * 1000);
     }
 
-    cleanupAnimation() {
+    private cleanupAnimation() {
         (this.getPage().getElementsByClassName(
             "bloom-page"
         )[0] as HTMLElement).style.visibility =
@@ -925,25 +924,25 @@ export class PanAndZoomTool implements ITool {
         this.getPlayer().pause();
     }
 
-    getPlayer(): HTMLMediaElement {
+    private getPlayer(): HTMLMediaElement {
         return document.getElementById("pzMusicPlayer") as HTMLMediaElement;
     }
 
     private wrapperClassName = "bloom-ui-animationWrapper";
-    public getPageFrame(): HTMLIFrameElement {
+    private getPageFrame(): HTMLIFrameElement {
         return parent.window.document.getElementById(
             "page"
         ) as HTMLIFrameElement;
     }
 
     // The document object of the editable page, a root for searching for document content.
-    public getPage(): HTMLDocument {
+    private getPage(): HTMLDocument {
         var page = this.getPageFrame();
         if (!page) return null;
         return page.contentWindow.document;
     }
 
-    getStateFromHtml(): IPanAndZoomHtmlState {
+    private getStateFromHtml(): IPanAndZoomHtmlState {
         const page = this.getPage();
         const pageClass = ToolboxToolReactAdaptor.getBloomPageAttr("class");
         const xmatter =
@@ -1013,7 +1012,7 @@ export class PanAndZoomControl extends React.Component<
     IPanAndZoomProps,
     IPanAndZoomState
 > {
-    constructor(props) {
+    public constructor(props) {
         super(props);
         // This state won't last long, client sets the first two immediately. But must have something.
         // To minimize flash we start with both off.
@@ -1027,7 +1026,7 @@ export class PanAndZoomControl extends React.Component<
         };
     }
 
-    onPanAndZoomChanged(checked: boolean): void {
+    private onPanAndZoomChanged(checked: boolean): void {
         this.setState({ panAndZoomChecked: checked });
         this.props.onPanAndZoomChanged(checked);
     }
