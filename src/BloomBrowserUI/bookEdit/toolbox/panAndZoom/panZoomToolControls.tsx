@@ -950,9 +950,19 @@ export class PanAndZoomTool implements ITool {
             pageClass.indexOf("bloom-backMatter") >= 0;
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
-        let wantChoosePictureMessage = false;
+
+        // Enhance this if we need to support background-image approach.
+        var images = firstImage.getElementsByTagName("img");
+        // I'm not quite sure how we can have no images in an image container
+        // in a non-xmatter page, but I've seen JS errors caused by it, so
+        // programming defensively.
+
+        let doNotHaveAPicture =
+            images.length === 0 ||
+            images[0].getAttribute("src").indexOf("placeHolder") > -1;
+
         let panAndZoomChecked = true;
-        let panAndZoomPossible = true;
+        let panAndZoomPossible = !doNotHaveAPicture;
         if (!firstImage || xmatter) {
             // if there's no place to put an image, we can't be enabled.
             // And we don't support Pan and Zoom in xmatter (BL-5427),
@@ -967,23 +977,9 @@ export class PanAndZoomTool implements ITool {
                 // At some point on this page the check box has been explicitly turned off
                 panAndZoomChecked = false;
             }
-            // Enhance this if we need to support background-image approach.
-            var images = firstImage.getElementsByTagName("img");
-            // I'm not quite sure how we can have no images in an image container
-            // in a non-xmatter page, but I've seen JS errors caused by it, so
-            // programming defensively. Since I don't know what causes this
-            // I'm not sure whether we want the choose picture message in this state.
-            if (
-                images.length === 0 ||
-                images[0].getAttribute("src") === "placeHolder.png"
-            ) {
-                // it's a placeholder, show the message, we need to let them choose it before
-                // we hide those controls to show ours.
-                wantChoosePictureMessage = true;
-            }
         }
         return {
-            haveImageContainerButNoImage: wantChoosePictureMessage,
+            haveImageContainerButNoImage: doNotHaveAPicture,
             panAndZoomChecked: panAndZoomChecked,
             panAndZoomPossible: panAndZoomPossible
         };
@@ -1051,7 +1047,10 @@ export class PanAndZoomControl extends React.Component<
                     Pan and Zoom this page
                 </Checkbox>
                 <div
-                    className="button-label-wrapper"
+                    className={
+                        "button-label-wrapper" +
+                        (this.state.panAndZoomChecked ? "" : " disabled")
+                    }
                     id="panAndZoom-play-wrapper"
                 >
                     <div className="button-wrapper">
@@ -1099,17 +1098,6 @@ export class PanAndZoomControl extends React.Component<
                             </Checkbox>
                         </div>
                     </div>
-                    <Div
-                        className={
-                            "panAndZoom-message" +
-                            (this.state.haveImageContainerButNoImage
-                                ? ""
-                                : " hidden")
-                        }
-                        l10nKey="EditTab.Toolbox.PanAndZoom.ChooseImage"
-                    >
-                        Choose an image to activate the Pan and Zoom controls.
-                    </Div>
                 </div>
                 <audio id="pzMusicPlayer" preload="none" />
             </div>
