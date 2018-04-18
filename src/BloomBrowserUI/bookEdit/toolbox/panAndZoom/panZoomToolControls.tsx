@@ -1,6 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
+import {
+    H1,
+    Div,
+    IUILanguageAwareProps,
+    Label
+} from "../../../react_components/l10n";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
@@ -18,21 +23,21 @@ import "./panAndZoom.less";
 // in tooboxBootstrap.ts:
 // ToolBox.registerTool(new PanAndZoomTool());.
 export class PanAndZoomTool implements ITool {
-    rootControl: PanAndZoomControl;
-    animationStyleElement: HTMLStyleElement;
-    animationWrapDiv: HTMLElement;
-    animationRootDiv: HTMLElement;
-    narrationPlayer: AudioRecording;
-    stopPreviewTimeout: number;
-    animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
+    private rootControl: PanAndZoomControl;
+    private animationStyleElement: HTMLStyleElement;
+    private animationWrapDiv: HTMLElement;
+    private animationRootDiv: HTMLElement;
+    private narrationPlayer: AudioRecording;
+    private stopPreviewTimeout: number;
+    private animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
 
-    makeRootElement(): HTMLDivElement {
+    public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "ui-panAndZoomBody");
         this.rootControl = ReactDOM.render(
             <PanAndZoomControl
                 onPreviewClick={() => this.togglePanAndZoomPreviewPlaying()}
-                onPanAndZoomChanged={(checked) => this.panAndZoomChanged(checked)}
+                onPanAndZoomChanged={checked => this.panAndZoomChanged(checked)}
             />,
             root
         );
@@ -43,24 +48,22 @@ export class PanAndZoomTool implements ITool {
         }
         return root as HTMLDivElement;
     }
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(settings: string): JQueryPromise<void> {
         //Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();
         result.resolve();
         return result;
     }
-    isAlwaysEnabled(): boolean {
+    public isAlwaysEnabled(): boolean {
         return false;
     }
 
     // required for ITool interface
-    hasRestoredSettings: boolean;
-    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
-    configureElements(container: HTMLElement) { }
-    finishToolLocalization(pane: HTMLElement) { }
-    /* tslint:enable:no-empty */
+    public hasRestoredSettings: boolean; // We need these to implement the interface, but don't need them to do anything.
+    public configureElements(container: HTMLElement) {}
+    public finishToolLocalization(pane: HTMLElement) {}
 
-    updateMarkup() {
+    public updateMarkup() {
         // This isn't exactly updating the markup, but it needs to happen when we switch pages,
         // just like updating markup. Using this hook does mean it will (unnecessarily) happen
         // every time the user pauses typing while this tool is active. I don't much expect people
@@ -77,7 +80,10 @@ export class PanAndZoomTool implements ITool {
             this.setupImageObserver();
         }
         this.rootControl.setState(newState);
-        if (!newState.panAndZoomChecked || newState.haveImageContainerButNoImage) {
+        if (
+            !newState.panAndZoomChecked ||
+            newState.haveImageContainerButNoImage
+        ) {
             return;
         }
 
@@ -89,30 +95,55 @@ export class PanAndZoomTool implements ITool {
         this.removeElt(page.getElementById("animationEnd"));
         const scale = EditableDivUtils.getPageScale();
         let needToSaveRectangles = false;
-        const makeResizeRect = (handleLabel: string, id: string, defLeft: number, defTop: number, defWidth: number,
-            defHeight: number, initAttr: string): JQuery => {
+        const makeResizeRect = (
+            handleLabel: string,
+            id: string,
+            defLeft: number,
+            defTop: number,
+            defWidth: number,
+            defHeight: number,
+            initAttr: string
+        ): JQuery => {
             var needToSaveThisRectangle: boolean;
             var left: number, top: number, width: number, height: number;
-            [left, top, width, height, needToSaveThisRectangle] = this.getActualRectFromAttrValue(
-                firstImage, defLeft, defTop, defWidth, defHeight, initAttr);
+            [
+                left,
+                top,
+                width,
+                height,
+                needToSaveThisRectangle
+            ] = this.getActualRectFromAttrValue(
+                firstImage,
+                defLeft,
+                defTop,
+                defWidth,
+                defHeight,
+                initAttr
+            );
             if (needToSaveThisRectangle) needToSaveRectangles = true;
 
             // So far, I can't figure out what the 3000 puts us in front of, but we have to be in front of it for dragging to work.
             // ui-resizable styles are setting font-size to 0.1px. so we have to set it back.
-            const htmlForHandle = "<div id='elementId' class='classes' style='width:30px;height:30px;background-color:black;color:white;"
-                + "z-index:3000;cursor:default;'><p style='padding: 2px 0px 0px 9px;font-size:16px'>" + handleLabel + "</p></div>";
-            const htmlForDragHandle = htmlForHandle.replace("elementId", "dragHandle").replace("classes", "bloom-dragHandleAnimation");
+            const htmlForHandle =
+                "<div id='elementId' class='classes' style='width:30px;height:30px;background-color:black;color:white;" +
+                "z-index:3000;cursor:default;'><p style='padding: 2px 0px 0px 9px;font-size:16px'>" +
+                handleLabel +
+                "</p></div>";
+            const htmlForDragHandle = htmlForHandle
+                .replace("elementId", "dragHandle")
+                .replace("classes", "bloom-dragHandleAnimation");
             // We're going to quite a bit of trouble here to get a bigger, darker drag handle in the bottom right
             // corner than resizable provides by default. But the default one with our theme is almost invisible.
             // Curiously, the 10% contrast filter makes the light grey in the icon DARKER thus INCREASING contrast.
-            const htmlForResizeHandles = ""
-                + "<div id='resizeHandle' class='ui-resizable-handle ui-resizable-se' "
-                + "style='width:16px;height:16px;z-index: 3000;filter:contrast(10%)'>"
-                + "<span class='ui-icon ui-icon-grip-diagonal-se'></span></div>" // handle on bottom right
-                + "<div class='ui-resizable-handle ui-resizable-e' style='z-index: 90;'></div>" // handle on left edge (std appearance)
-                + "<div class='ui-resizable-handle ui-resizable-s' style='z-index: 90;'></div>" // handle on bottom edge (std appearance)
-                + "<div class='ui-resizable-handle ui-resizable-w' style='z-index: 90;'></div>" // handle on right edge (std appearance)
-                + "<div class='ui-resizable-handle ui-resizable-n' style='z-index: 90;'></div>"; // handle on top edge (std appearance)
+            const htmlForResizeHandles =
+                "" +
+                "<div id='resizeHandle' class='ui-resizable-handle ui-resizable-se' " +
+                "style='width:16px;height:16px;z-index: 3000;filter:contrast(10%)'>" +
+                "<span class='ui-icon ui-icon-grip-diagonal-se'></span></div>" + // handle on bottom right
+                "<div class='ui-resizable-handle ui-resizable-e' style='z-index: 90;'></div>" + // handle on left edge (std appearance)
+                "<div class='ui-resizable-handle ui-resizable-s' style='z-index: 90;'></div>" + // handle on bottom edge (std appearance)
+                "<div class='ui-resizable-handle ui-resizable-w' style='z-index: 90;'></div>" + // handle on right edge (std appearance)
+                "<div class='ui-resizable-handle ui-resizable-n' style='z-index: 90;'></div>"; // handle on top edge (std appearance)
             // The order is important here. Something assumes the drag handle is the first child.
             // It does not work well to just put the border on the outer div.
             // - without a z-index it somehow disappears over jpegs.
@@ -123,18 +154,29 @@ export class PanAndZoomTool implements ITool {
             // the box; at least, the value we get back for the box's offset is one less than the value we pass here,
             // which can throw things off, especially in repeated saves with no actual movement.
             // Todo zoom: check that 1 is still the right amount to adjust.
-            const htmlForDraggable = "<div id='" + id + "' style='height: "
-                + height + "px; width:" + width + "px; position: absolute; top: " + (top + 1) + "px; left:" + (left + 1) + "px;'>"
-                + htmlForDragHandle
-                + "  <div style='height:100%;width:100%;position:absolute;top:0;left:0;"
-                + "border: dashed black 2px;box-sizing:border-box;z-index:1'></div>"
-                + htmlForResizeHandles
-                + "</div>";
+            const htmlForDraggable =
+                "<div id='" +
+                id +
+                "' style='height: " +
+                height +
+                "px; width:" +
+                width +
+                "px; position: absolute; top: " +
+                (top + 1) +
+                "px; left:" +
+                (left + 1) +
+                "px;'>" +
+                htmlForDragHandle +
+                "  <div style='height:100%;width:100%;position:absolute;top:0;left:0;" +
+                "border: dashed black 2px;box-sizing:border-box;z-index:1'></div>" +
+                htmlForResizeHandles +
+                "</div>";
             // Do NOT use an opacity setting here. Besides the fact that there's no reason to dim the rectangle while
             // moving it, it makes a new stacking context, and somehow this causes the dragged rectangle to go
             // behind jpeg images.
             const argsForDraggable = {
-                handle: ".bloom-dragHandleAnimation", containment: "parent",
+                handle: ".bloom-dragHandleAnimation",
+                containment: "parent",
                 stop: (event, ui) => this.updateDataAttributes(),
                 // This bizarre kludge works around a bug that jquery have decided not to fix in their jquery draggable
                 // code (https://bugs.jqueryui.com/ticket/6844). Basically without this the dragging happens as if
@@ -147,16 +189,44 @@ export class PanAndZoomTool implements ITool {
                 }
             };
             const argsForResizable = {
-                handles: { e: ".ui-resizable-e", s: ".ui-resizable-s", n: ".ui-resizable-n", w: ".ui-resizable-w", se: "#resizeHandle" },
-                containment: "parent", aspectRatio: true,
+                handles: {
+                    e: ".ui-resizable-e",
+                    s: ".ui-resizable-s",
+                    n: ".ui-resizable-n",
+                    w: ".ui-resizable-w",
+                    se: "#resizeHandle"
+                },
+                containment: "parent",
+                aspectRatio: true,
                 stop: (event, ui) => this.updateDataAttributes()
             };
             // Unless the element is created and made draggable and resizable in the page iframe's execution context,
             // the dragging and resizing just don't work.
-            return getPageFrameExports().makeElement(htmlForDraggable, $(firstImage), argsForResizable, argsForDraggable);
+            return getPageFrameExports().makeElement(
+                htmlForDraggable,
+                $(firstImage),
+                argsForResizable,
+                argsForDraggable
+            );
         };
-        const rect1 = makeResizeRect("1", "animationStart", 0, 0, 3 / 4, 3 / 4, "data-initialrect");
-        const rect2 = makeResizeRect("2", "animationEnd", 3 / 8, 1 / 8, 1 / 2, 1 / 2, "data-finalrect");
+        const rect1 = makeResizeRect(
+            "1",
+            "animationStart",
+            0,
+            0,
+            3 / 4,
+            3 / 4,
+            "data-initialrect"
+        );
+        const rect2 = makeResizeRect(
+            "2",
+            "animationEnd",
+            3 / 8,
+            1 / 8,
+            1 / 2,
+            1 / 2,
+            "data-finalrect"
+        );
         if (needToSaveRectangles) {
             // If we're using defaults or had to adjust the aspect ratio,
             // the current rectangle positions don't correspond to what's in the file
@@ -173,10 +243,10 @@ export class PanAndZoomTool implements ITool {
         }
         this.setupResizeObserver();
     }
-    showTool() {
+    public showTool() {
         this.updateMarkup();
     }
-    hideTool() {
+    public hideTool() {
         const page = this.getPage();
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
@@ -192,19 +262,23 @@ export class PanAndZoomTool implements ITool {
         }
         this.sizeObserver.disconnect();
     }
-    removeCurrentAudioMarkup(): void {
-        const currentAudioElts = this.getPage().getElementsByClassName("ui-audioCurrent");
+    private removeCurrentAudioMarkup(): void {
+        const currentAudioElts = this.getPage().getElementsByClassName(
+            "ui-audioCurrent"
+        );
         if (currentAudioElts.length) {
             currentAudioElts[0].classList.remove("ui-audioCurrent");
         }
     }
 
-    id(): string {
+    public id(): string {
         return "panAndZoom";
     }
 
-    getFirstImage(): HTMLElement {
-        const imgElements = this.getPage().getElementsByClassName("bloom-imageContainer");
+    private getFirstImage(): HTMLElement {
+        const imgElements = this.getPage().getElementsByClassName(
+            "bloom-imageContainer"
+        );
         if (!imgElements.length) {
             return null;
         }
@@ -216,7 +290,7 @@ export class PanAndZoomTool implements ITool {
     // This string is a representation of a rectangle as left top width height, where each is
     // a fraction of the actual image size. (Note: the image, NOT the image container, even
     // if the image is just a background image...though the current code does not support that.)
-    getTransformRectAttrValue(htmlRect: HTMLElement): string {
+    private getTransformRectAttrValue(htmlRect: HTMLElement): string {
         // Todo zoom: may not be using scale correctly here.
         const scale = EditableDivUtils.getPageScale();
         const rectTop = htmlRect.offsetTop / scale;
@@ -241,9 +315,18 @@ export class PanAndZoomTool implements ITool {
 
     // Performs the reverse of the above transformation.
     // Todo zoom: this needs to get the right actual widths.
-    getActualRectFromAttrValue(firstImage: HTMLElement, defLeft: number, defTop: number, defWidth: number,
-        defHeight: number, initAttr: string): [number, number, number, number, boolean] {
-        let left = defLeft, top = defTop, width = defWidth, height = defHeight;
+    private getActualRectFromAttrValue(
+        firstImage: HTMLElement,
+        defLeft: number,
+        defTop: number,
+        defWidth: number,
+        defHeight: number,
+        initAttr: string
+    ): [number, number, number, number, boolean] {
+        let left = defLeft,
+            top = defTop,
+            width = defWidth,
+            height = defHeight;
         let needToSaveRectangle = true;
         const savedState = firstImage.getAttribute(initAttr);
         if (savedState) {
@@ -274,8 +357,8 @@ export class PanAndZoomTool implements ITool {
         const scale = EditableDivUtils.getPageScale();
         const imageHeight = this.getHeight(actualImage);
         const imageWidth = this.getWidth(actualImage);
-        let actualTop = (top * imageHeight + actualImage.offsetTop / scale);
-        let actualLeft = (left * imageWidth + actualImage.offsetLeft / scale);
+        let actualTop = top * imageHeight + actualImage.offsetTop / scale;
+        let actualLeft = left * imageWidth + actualImage.offsetLeft / scale;
         let actualWidth = width * imageWidth;
         let actualHeight = height * imageHeight;
         // We want things to fit in the image container. This can be broken in various ways:
@@ -327,10 +410,16 @@ export class PanAndZoomTool implements ITool {
         if (actualTop + actualHeight > containerHeight) {
             actualTop = containerHeight - actualHeight;
         }
-        return [actualLeft, actualTop, actualWidth, actualHeight, needToSaveRectangle];
+        return [
+            actualLeft,
+            actualTop,
+            actualWidth,
+            actualHeight,
+            needToSaveRectangle
+        ];
     }
 
-    tryParseFloat(input: string, def: number): number {
+    private tryParseFloat(input: string, def: number): number {
         try {
             return parseFloat(input);
         } catch (e) {
@@ -338,7 +427,7 @@ export class PanAndZoomTool implements ITool {
         }
     }
 
-    panAndZoomChanged(checked: boolean) {
+    private panAndZoomChanged(checked: boolean) {
         const firstImage = this.getFirstImage();
         if (!firstImage) {
             return;
@@ -346,33 +435,40 @@ export class PanAndZoomTool implements ITool {
         if (checked) {
             if (!firstImage.getAttribute("data-initialrect")) {
                 // see if we can restore a backup state
-                firstImage.setAttribute("data-initialrect", firstImage.getAttribute("data-disabled-initialrect"));
+                firstImage.setAttribute(
+                    "data-initialrect",
+                    firstImage.getAttribute("data-disabled-initialrect")
+                );
                 firstImage.removeAttribute("data-disabled-initialrect");
                 this.updateMarkup();
             }
         } else {
-            if (firstImage.getAttribute("data-initialrect")) { // always?
+            if (firstImage.getAttribute("data-initialrect")) {
+                // always?
                 // save old state, thus recording that we're in the off state, not just uninitialized.
-                firstImage.setAttribute("data-disabled-initialrect", firstImage.getAttribute("data-initialrect"));
+                firstImage.setAttribute(
+                    "data-disabled-initialrect",
+                    firstImage.getAttribute("data-initialrect")
+                );
                 firstImage.removeAttribute("data-initialrect");
             }
             this.hideTool();
         }
     }
 
-    observer: MutationObserver;
-    sizeObserver: MutationObserver;
+    private observer: MutationObserver;
+    private sizeObserver: MutationObserver;
 
-    updateChoosePictureState(): void {
+    private updateChoosePictureState(): void {
         // If they once choose a picture, there's no going back to a placeholder (on this page).
         this.rootControl.setState({ haveImageContainerButNoImage: false });
         this.observer.disconnect();
         this.updateMarkup(); // one effect is to show the rectangles.
     }
 
-    resizeRectanglesDelay: number = 200;
-    resizeInProgress: boolean = false;
-    resizeOldStyle: string;
+    private resizeRectanglesDelay: number = 200;
+    private resizeInProgress: boolean = false;
+    private resizeOldStyle: string;
 
     // This is called when the size of the picture changes. We also get LOTS
     // of spurious calls, for example, while resizing the rectangles. And even
@@ -387,7 +483,7 @@ export class PanAndZoomTool implements ITool {
     // during resizing, which can prevent the resizing altogether.
     // Simply waiting briefly reduces the frequency of regenerating
     // the rectangles to something manageable and makes it feel much more responsive.
-    pictureSizeChanged(): void {
+    private pictureSizeChanged(): void {
         if (this.resizeInProgress) {
             return;
         }
@@ -405,18 +501,21 @@ export class PanAndZoomTool implements ITool {
         this.resizeInProgress = true; // ignore notifications until timeout
     }
 
-    getImages(): Array<HTMLImageElement> {
+    private getImages(): Array<HTMLImageElement> {
         const firstImage = this.getFirstImage();
         // not interested in images inside the resize rectangles.
-        return Array.prototype.slice.call(firstImage.getElementsByTagName("img"))
+        return Array.prototype.slice
+            .call(firstImage.getElementsByTagName("img"))
             .filter(v => v.parentElement === firstImage);
     }
 
-    setupResizeObserver(): void {
+    private setupResizeObserver(): void {
         if (this.sizeObserver) {
             this.sizeObserver.disconnect();
         }
-        this.sizeObserver = new MutationObserver(() => this.pictureSizeChanged());
+        this.sizeObserver = new MutationObserver(() =>
+            this.pictureSizeChanged()
+        );
         const images = this.getImages();
 
         // I'm not sure how images can be an empty list...possibly while the page is shutting down??
@@ -428,14 +527,18 @@ export class PanAndZoomTool implements ITool {
             // margin-top and margin-left are only set using style; height and width
             // are also set in their own attributes. But if any of them changes, the style does.
             // We would prefer to use a ResizeObserver, but Gecko doesn't implement it yet.
-            this.sizeObserver.observe(images[0],
-                { attributes: true, attributeFilter: ["style"] });
+            this.sizeObserver.observe(images[0], {
+                attributes: true,
+                attributeFilter: ["style"]
+            });
         }
     }
 
-    setupImageObserver(): void {
+    private setupImageObserver(): void {
         // Arrange to update things when they DO choose an image.
-        this.observer = new MutationObserver(() => this.updateChoosePictureState());
+        this.observer = new MutationObserver(() =>
+            this.updateChoosePictureState()
+        );
         // The specific thing we want to observe is the src attr of the img element embedded
         // in the first image container. We want to update our UI if this changes from
         // placeholder to a 'real' image. This will need to be enhanced if we support
@@ -444,8 +547,10 @@ export class PanAndZoomTool implements ITool {
         // I'm not sure how images can be an empty list...possibly while the page is shutting down??
         // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
         if (images.length > 0) {
-            this.observer.observe(images[0],
-                { attributes: true, attributeFilter: ["src"] });
+            this.observer.observe(images[0], {
+                attributes: true,
+                attributeFilter: ["src"]
+            });
         }
     }
 
@@ -453,37 +558,55 @@ export class PanAndZoomTool implements ITool {
     // we aren't allowed to use any more.
     // I believe this is a height that does NOT need to be scaled by our zoom factor
     // (e.g., it can be used unchanged to set a css width in px that will work zoomed)
-    getHeight(el) {
+    private getHeight(el) {
         const styles = window.getComputedStyle(el);
         const height = el.offsetHeight;
         const borderTopWidth = parseFloat(styles.borderTopWidth);
         const borderBottomWidth = parseFloat(styles.borderBottomWidth);
         const paddingTop = parseFloat(styles.paddingTop);
         const paddingBottom = parseFloat(styles.paddingBottom);
-        return height - borderBottomWidth - borderTopWidth - paddingTop - paddingBottom;
+        return (
+            height -
+            borderBottomWidth -
+            borderTopWidth -
+            paddingTop -
+            paddingBottom
+        );
     }
 
     // Hopefully I figured out the equivalent for width
-    getWidth(el) {
+    private getWidth(el) {
         const styles = window.getComputedStyle(el);
         const width = el.offsetWidth;
         const borderLeftWidth = parseFloat(styles.borderLeftWidth);
         const borderRightWidth = parseFloat(styles.borderRightWidth);
         const paddingLeft = parseFloat(styles.paddingLeft);
         const paddingRight = parseFloat(styles.paddingRight);
-        return width - borderLeftWidth - borderRightWidth - paddingLeft - paddingRight;
+        return (
+            width -
+            borderLeftWidth -
+            borderRightWidth -
+            paddingLeft -
+            paddingRight
+        );
     }
 
-    updateDataAttributes(): void {
+    private updateDataAttributes(): void {
         const page = this.getPage();
         const startRect = page.getElementById("animationStart");
         const endRect = page.getElementById("animationEnd");
         const image = startRect.parentElement;
-        image.setAttribute("data-initialrect", this.getTransformRectAttrValue(startRect));
-        image.setAttribute("data-finalrect", this.getTransformRectAttrValue(endRect));
+        image.setAttribute(
+            "data-initialrect",
+            this.getTransformRectAttrValue(startRect)
+        );
+        image.setAttribute(
+            "data-finalrect",
+            this.getTransformRectAttrValue(endRect)
+        );
     }
 
-    removeElt(x: HTMLElement): void {
+    private removeElt(x: HTMLElement): void {
         if (x) {
             x.remove();
         }
@@ -496,12 +619,16 @@ export class PanAndZoomTool implements ITool {
     // want to set up the animation
     // - this code is complicated by having to deal with problems caused by parent divs using scale for zoom.
     // somewhat more care is needed here to avoid adding the animation stuff permanently to the document
-    togglePanAndZoomPreviewPlaying() {
+    private togglePanAndZoomPreviewPlaying() {
         const page = this.getPage();
         const pageDoc = this.getPageFrame().contentWindow.document;
         const firstImage = this.getFirstImage();
-        if (!firstImage || !(document.getElementById("panAndZoom") as HTMLInputElement).checked
-            || this.rootControl.state.haveImageContainerButNoImage) {
+        if (
+            !firstImage ||
+            !(document.getElementById("panAndZoom") as HTMLInputElement)
+                .checked ||
+            this.rootControl.state.haveImageContainerButNoImage
+        ) {
             return;
         }
         let wasPlaying: boolean = this.rootControl.state.playing;
@@ -525,37 +652,53 @@ export class PanAndZoomTool implements ITool {
             return;
         }
         var duration = 0;
-        $(page).find(".bloom-editable.bloom-content1").find("span.audio-sentence").each((index, span) => {
-            var spanDuration = parseFloat($(span).attr("data-duration"));
-            if (spanDuration) { // might be NaN if missing or somehow messed up
-                duration += spanDuration;
-            }
-        });
+        $(page)
+            .find(".bloom-editable.bloom-content1")
+            .find("span.audio-sentence")
+            .each((index, span) => {
+                var spanDuration = parseFloat($(span).attr("data-duration"));
+                if (spanDuration) {
+                    // might be NaN if missing or somehow messed up
+                    duration += spanDuration;
+                }
+            });
         if (duration < 0.5) {
             duration = 4;
         }
 
         const scale = EditableDivUtils.getPageScale();
-        var bloomPage = page.getElementsByClassName("bloom-page")[0] as HTMLElement;
+        var bloomPage = page.getElementsByClassName(
+            "bloom-page"
+        )[0] as HTMLElement;
         var pageWidth = this.getWidth(bloomPage);
 
         // Make a div with the shape of a typical phone screen in lansdscape mode which
         // will be the root for displaying the animation.
-        this.animationRootDiv = getPageFrameExports().makeElement("<div "
-            + "style='background-color:black; "
-            + "height:" + (pageWidth / this.animationPreviewAspectRatio * scale) + "px; width:" + (pageWidth * scale) + "px; "
-            + "position: absolute;"
-            + "left: 0;"
-            + "top: 0;"
-            + "'></div>", $(pageDoc.body))[0] as HTMLElement;
+        this.animationRootDiv = getPageFrameExports().makeElement(
+            "<div " +
+                "style='background-color:black; " +
+                "height:" +
+                pageWidth / this.animationPreviewAspectRatio * scale +
+                "px; width:" +
+                pageWidth * scale +
+                "px; " +
+                "position: absolute;" +
+                "left: 0;" +
+                "top: 0;" +
+                "'></div>",
+            $(pageDoc.body)
+        )[0] as HTMLElement;
 
         // Make a div that determines the shape and position of the animation.
         // It wraps a div that will move (by being scaled larger) and be clipped (to animationWrapDiv)
         // which in turn wraps a modified clone of firstImage, the content that gets panned and zoomed.
         // Enhance: when we change the signature of makeElement, we can get rid of the vestiges of JQuery here and above.
-        this.animationWrapDiv = getPageFrameExports().makeElement("<div class='" + this.wrapperClassName
-            + " bloom-animationWrapper' "
-            + "'><div id='bloom-movingDiv'></div></div>")[0] as HTMLElement;
+        this.animationWrapDiv = getPageFrameExports().makeElement(
+            "<div class='" +
+                this.wrapperClassName +
+                " bloom-animationWrapper' " +
+                "'><div id='bloom-movingDiv'></div></div>"
+        )[0] as HTMLElement;
 
         const baseStyle = "visibility: hidden; background-color:white;";
 
@@ -565,18 +708,33 @@ export class PanAndZoomTool implements ITool {
         const originalImage = firstImage.getElementsByTagName("img")[0];
         // Enhance: if we allow the zoom rectangles to be a different shape from the image,
         // this should change to get the aspect ratio from the initialrect.
-        const panZoomAspectRatio = this.getWidth(originalImage) / this.getHeight(originalImage);
+        const panZoomAspectRatio =
+            this.getWidth(originalImage) / this.getHeight(originalImage);
         const pageHeight = pageWidth / this.animationPreviewAspectRatio;
         if (panZoomAspectRatio < this.animationPreviewAspectRatio) {
             // black bars on side
             const imageWidth = pageHeight * panZoomAspectRatio;
-            this.animationWrapDiv.setAttribute("style", baseStyle + " height: 100%; width: " + imageWidth
-                + "px; left: " + (pageWidth - imageWidth) / 2 + "px; top:0");
+            this.animationWrapDiv.setAttribute(
+                "style",
+                baseStyle +
+                    " height: 100%; width: " +
+                    imageWidth +
+                    "px; left: " +
+                    (pageWidth - imageWidth) / 2 +
+                    "px; top:0"
+            );
         } else {
             // black bars top and bottom
             const imageHeight = pageWidth / panZoomAspectRatio;
-            this.animationWrapDiv.setAttribute("style", baseStyle + " width: 100%; height: " + imageHeight
-                + "px; top: " + (pageWidth * 9 / 16 - imageHeight) / 2 + "px; left: 0");
+            this.animationWrapDiv.setAttribute(
+                "style",
+                baseStyle +
+                    " width: 100%; height: " +
+                    imageHeight +
+                    "px; top: " +
+                    (pageWidth * 9 / 16 - imageHeight) / 2 +
+                    "px; left: 0"
+            );
         }
         const movingDiv = this.animationWrapDiv.firstElementChild;
         var picToAnimate = firstImage.cloneNode(true) as HTMLElement;
@@ -584,7 +742,14 @@ export class PanAndZoomTool implements ITool {
         // in the document, but the ones they are clones of (which we want to keep) are.
         picToAnimate.querySelector("#animationStart").remove();
         picToAnimate.querySelector("#animationEnd").remove();
-        picToAnimate.setAttribute("style", "height:" + (pageWidth * 9 / 16 * scale) + "px;width: " + (pageWidth * scale) + "px;");
+        picToAnimate.setAttribute(
+            "style",
+            "height:" +
+                pageWidth * 9 / 16 * scale +
+                "px;width: " +
+                pageWidth * scale +
+                "px;"
+        );
         movingDiv.appendChild(picToAnimate);
         this.animationRootDiv.appendChild(this.animationWrapDiv);
         page.documentElement.appendChild(this.animationRootDiv);
@@ -600,8 +765,11 @@ export class PanAndZoomTool implements ITool {
         const imgAspectRatio = panZoomAspectRatio; // should stay actual image AR, even if the other changes.
         const containerWidth = this.getWidth(picToAnimate);
         const containerHeight = this.getHeight(picToAnimate);
-        const doCenterImage = !picToAnimate.classList.contains("bloom-alignImageTopLeft");
-        var newWidth: number, newHeight: number,
+        const doCenterImage = !picToAnimate.classList.contains(
+            "bloom-alignImageTopLeft"
+        );
+        var newWidth: number,
+            newHeight: number,
             newLeftMargin: number = 0,
             newTopMargin: number = 0;
         if (imgAspectRatio > containerWidth / containerHeight) {
@@ -629,9 +797,10 @@ export class PanAndZoomTool implements ITool {
         this.animationStyleElement = pageDoc.createElement("style");
         this.animationStyleElement.setAttribute("type", "text/css");
         this.animationStyleElement.setAttribute("id", "animationSheet");
-        this.animationStyleElement.innerText = ".bloom-ui-animationWrapper {overflow: hidden; translateZ(0)} "
-            + ".bloom-animate {height: 100%; width: 100%; "
-            + "background-repeat: no-repeat; background-size: contain}";
+        this.animationStyleElement.innerText =
+            ".bloom-ui-animationWrapper {overflow: hidden; translateZ(0)} " +
+            ".bloom-animate {height: 100%; width: 100%; " +
+            "background-repeat: no-repeat; background-size: contain}";
         pageDoc.body.appendChild(this.animationStyleElement);
         const stylesheet = this.animationStyleElement.sheet;
         const initialRectStr = firstImage.getAttribute("data-initialrect");
@@ -654,29 +823,66 @@ export class PanAndZoomTool implements ITool {
         // Using 3d scale and transform apparently causes GPU to be used and improves
         // performance over scale/transform. (https://www.kirupa.com/html5/ken_burns_effect_css.htm)
         // May also help with blurring of material originally hidden.
-        const initialTransform = "scale3d(" + initialScaleWidth + ", " + initialScaleHeight
-            + ", 1.0) translate3d(" + (-initialX) + "px, " + (-initialY) + "px, 0px)";
-        const finalTransform = "scale3d(" + finalScaleWidth + ", " + finalScaleHeight
-            + ", 1.0) translate3d(" + (-finalX) + "px, " + (-finalY) + "px, 0px)";
+        const initialTransform =
+            "scale3d(" +
+            initialScaleWidth +
+            ", " +
+            initialScaleHeight +
+            ", 1.0) translate3d(" +
+            -initialX +
+            "px, " +
+            -initialY +
+            "px, 0px)";
+        const finalTransform =
+            "scale3d(" +
+            finalScaleWidth +
+            ", " +
+            finalScaleHeight +
+            ", 1.0) translate3d(" +
+            -finalX +
+            "px, " +
+            -finalY +
+            "px, 0px)";
         //Insert the keyframe animation rule with the dynamic begin and end set
-        (stylesheet as CSSStyleSheet).insertRule("@keyframes " + movePicName
-            + " { from{ transform-origin: 0px 0px; transform: " + initialTransform
-            + "; } to{ transform-origin: 0px 0px; transform: " + finalTransform + "; } }", 0);
+        (stylesheet as CSSStyleSheet).insertRule(
+            "@keyframes " +
+                movePicName +
+                " { from{ transform-origin: 0px 0px; transform: " +
+                initialTransform +
+                "; } to{ transform-origin: 0px 0px; transform: " +
+                finalTransform +
+                "; } }",
+            0
+        );
 
         //Insert the css for the imageView div that utilizes the newly created animation
         // We make the animation longer than the narration by the transition time so
         // the old animation continues during the fade.
-        (stylesheet as CSSStyleSheet).insertRule("." + animateStyleName
-            + " { transform-origin: 0px 0px; transform: "
-            + initialTransform
-            + "; animation-name: " + movePicName + "; animation-duration: "
-            + duration
-            + "s; animation-fill-mode: forwards; "
-            + "animation-timing-function: linear;}", 1);
-        movingDiv.setAttribute("class", "bloom-animate bloom-pausable " + animateStyleName);
+        (stylesheet as CSSStyleSheet).insertRule(
+            "." +
+                animateStyleName +
+                " { transform-origin: 0px 0px; transform: " +
+                initialTransform +
+                "; animation-name: " +
+                movePicName +
+                "; animation-duration: " +
+                duration +
+                "s; animation-fill-mode: forwards; " +
+                "animation-timing-function: linear;}",
+            1
+        );
+        movingDiv.setAttribute(
+            "class",
+            "bloom-animate bloom-pausable " + animateStyleName
+        );
         // At this point the wrapDiv becomes visible and the animation starts.
         //wrapDiv.show(); mysteriously fails
-        this.animationWrapDiv.setAttribute("style", this.animationWrapDiv.getAttribute("style").replace("visibility: hidden; ", ""));
+        this.animationWrapDiv.setAttribute(
+            "style",
+            this.animationWrapDiv
+                .getAttribute("style")
+                .replace("visibility: hidden; ", "")
+        );
         bloomPage.style.visibility = "hidden";
         if (this.rootControl.state.previewVoice) {
             // Play the audio during animation
@@ -685,10 +891,12 @@ export class PanAndZoomTool implements ITool {
             this.narrationPlayer.listen();
         }
         if (this.rootControl.state.previewMusic) {
-            MusicToolControls.previewBackgroundMusic(this.getPlayer(),
+            MusicToolControls.previewBackgroundMusic(
+                this.getPlayer(),
                 // Enhance: implement pause, by adding playing to state.
                 () => false,
-                (playing) => undefined);
+                playing => undefined
+            );
         }
         this.stopPreviewTimeout = window.setTimeout(() => {
             this.cleanupAnimation();
@@ -696,8 +904,11 @@ export class PanAndZoomTool implements ITool {
         }, (duration + 1) * 1000);
     }
 
-    cleanupAnimation() {
-        (this.getPage().getElementsByClassName("bloom-page")[0] as HTMLElement).style.visibility = "";
+    private cleanupAnimation() {
+        (this.getPage().getElementsByClassName(
+            "bloom-page"
+        )[0] as HTMLElement).style.visibility =
+            "";
         // stop the animation itself by removing the root elements it adds.
         this.removeElt(this.animationStyleElement);
         this.animationStyleElement = null;
@@ -713,31 +924,45 @@ export class PanAndZoomTool implements ITool {
         this.getPlayer().pause();
     }
 
-    getPlayer(): HTMLMediaElement {
+    private getPlayer(): HTMLMediaElement {
         return document.getElementById("pzMusicPlayer") as HTMLMediaElement;
     }
 
     private wrapperClassName = "bloom-ui-animationWrapper";
-    public getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById("page") as HTMLIFrameElement;
+    private getPageFrame(): HTMLIFrameElement {
+        return parent.window.document.getElementById(
+            "page"
+        ) as HTMLIFrameElement;
     }
 
     // The document object of the editable page, a root for searching for document content.
-    public getPage(): HTMLDocument {
+    private getPage(): HTMLDocument {
         var page = this.getPageFrame();
         if (!page) return null;
         return page.contentWindow.document;
     }
 
-    getStateFromHtml(): IPanAndZoomHtmlState {
+    private getStateFromHtml(): IPanAndZoomHtmlState {
         const page = this.getPage();
         const pageClass = ToolboxToolReactAdaptor.getBloomPageAttr("class");
-        const xmatter = pageClass.indexOf("bloom-frontMatter") >= 0 || pageClass.indexOf("bloom-backMatter") >= 0;
+        const xmatter =
+            pageClass.indexOf("bloom-frontMatter") >= 0 ||
+            pageClass.indexOf("bloom-backMatter") >= 0;
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
-        let wantChoosePictureMessage = false;
+
+        // Enhance this if we need to support background-image approach.
+        var images = firstImage.getElementsByTagName("img");
+        // I'm not quite sure how we can have no images in an image container
+        // in a non-xmatter page, but I've seen JS errors caused by it, so
+        // programming defensively.
+
+        let doNotHaveAPicture =
+            images.length === 0 ||
+            images[0].getAttribute("src").indexOf("placeHolder") > -1;
+
         let panAndZoomChecked = true;
-        let panAndZoomPossible = true;
+        let panAndZoomPossible = !doNotHaveAPicture;
         if (!firstImage || xmatter) {
             // if there's no place to put an image, we can't be enabled.
             // And we don't support Pan and Zoom in xmatter (BL-5427),
@@ -752,20 +977,9 @@ export class PanAndZoomTool implements ITool {
                 // At some point on this page the check box has been explicitly turned off
                 panAndZoomChecked = false;
             }
-            // Enhance this if we need to support background-image approach.
-            var images = firstImage.getElementsByTagName("img");
-            // I'm not quite sure how we can have no images in an image container
-            // in a non-xmatter page, but I've seen JS errors caused by it, so
-            // programming defensively. Since I don't know what causes this
-            // I'm not sure whether we want the choose picture message in this state.
-            if (images.length === 0 || images[0].getAttribute("src") === "placeHolder.png") {
-                // it's a placeholder, show the message, we need to let them choose it before
-                // we hide those controls to show ours.
-                wantChoosePictureMessage = true;
-            }
         }
         return {
-            haveImageContainerButNoImage: wantChoosePictureMessage,
+            haveImageContainerButNoImage: doNotHaveAPicture,
             panAndZoomChecked: panAndZoomChecked,
             panAndZoomPossible: panAndZoomPossible
         };
@@ -790,49 +1004,100 @@ interface IPanAndZoomProps {
 }
 
 // This react class implements the UI for the pan and zoom toolbox.
-export class PanAndZoomControl extends React.Component<IPanAndZoomProps, IPanAndZoomState> {
-    constructor(props) {
+export class PanAndZoomControl extends React.Component<
+    IPanAndZoomProps,
+    IPanAndZoomState
+> {
+    public constructor(props) {
         super(props);
         // This state won't last long, client sets the first two immediately. But must have something.
         // To minimize flash we start with both off.
         this.state = {
-            haveImageContainerButNoImage: false, panAndZoomChecked: false, panAndZoomPossible: true,
-            previewVoice: true, previewMusic: true, playing: false
+            haveImageContainerButNoImage: false,
+            panAndZoomChecked: false,
+            panAndZoomPossible: true,
+            previewVoice: true,
+            previewMusic: true,
+            playing: false
         };
     }
 
-    onPanAndZoomChanged(checked: boolean): void {
+    private onPanAndZoomChanged(checked: boolean): void {
         this.setState({ panAndZoomChecked: checked });
         this.props.onPanAndZoomChanged(checked);
     }
 
     public render() {
         return (
-            <div className={"ui-panAndZoomBody" + (this.state.panAndZoomPossible ? "" : " disabled")}>
-                <Checkbox id="panAndZoom" name="panAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.ThisPage"
-                    onCheckChanged={(checked) => this.onPanAndZoomChanged(checked)}
-                    checked={this.state.panAndZoomChecked}>Pan and Zoom this page</Checkbox>
-                <div className="button-label-wrapper" id="panAndZoom-play-wrapper">
+            <div
+                className={
+                    "ui-panAndZoomBody" +
+                    (this.state.panAndZoomPossible ? "" : " disabled")
+                }
+            >
+                <Checkbox
+                    id="panAndZoom"
+                    name="panAndZoom"
+                    l10nKey="EditTab.Toolbox.PanAndZoom.ThisPage"
+                    onCheckChanged={checked =>
+                        this.onPanAndZoomChanged(checked)
+                    }
+                    checked={this.state.panAndZoomChecked}
+                >
+                    Pan and Zoom this page
+                </Checkbox>
+                <div
+                    className={
+                        "button-label-wrapper" +
+                        (this.state.panAndZoomChecked ? "" : " disabled")
+                    }
+                    id="panAndZoom-play-wrapper"
+                >
                     <div className="button-wrapper">
-                        <button id="panAndZoom-preview"
-                            className={"ui-panAndZoom-button ui-button enabled" + (this.state.playing ? " playing" : "")}
-                            onClick={() => this.props.onPreviewClick()} />
+                        <button
+                            id="panAndZoom-preview"
+                            className={
+                                "ui-panAndZoom-button ui-button enabled" +
+                                (this.state.playing ? " playing" : "")
+                            }
+                            onClick={() => this.props.onPreviewClick()}
+                        />
                         <div className="previewSettingsWrapper">
-                            <Div className="panAndZoom-label"
-                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview">Preview</Div>
-                            <Checkbox name="previewPanAndZoom" l10nKey="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom"
-                                checked={true}>Pan and Zoom</Checkbox>
-                            <Checkbox name="previewVoice" l10nKey="EditTab.Toolbox.PanAndZoom.Preview.Voice"
-                                onCheckChanged={(checked) => this.setState({ previewVoice: checked })}
-                                checked={this.state.previewVoice}>Voice</Checkbox>
-                            <Checkbox name="previewMusic" l10nKey="EditTab.Toolbox.PanAndZoom.Preview.Music"
-                                onCheckChanged={(checked) => this.setState({ previewMusic: checked })}
-                                checked={this.state.previewMusic}>Background Music</Checkbox>
+                            <Div
+                                className="panAndZoom-label"
+                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview"
+                            >
+                                Preview
+                            </Div>
+                            <Checkbox
+                                name="previewPanAndZoom"
+                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom"
+                                checked={true}
+                            >
+                                Pan and Zoom
+                            </Checkbox>
+                            <Checkbox
+                                name="previewVoice"
+                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview.Voice"
+                                onCheckChanged={checked =>
+                                    this.setState({ previewVoice: checked })
+                                }
+                                checked={this.state.previewVoice}
+                            >
+                                Voice
+                            </Checkbox>
+                            <Checkbox
+                                name="previewMusic"
+                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview.Music"
+                                onCheckChanged={checked =>
+                                    this.setState({ previewMusic: checked })
+                                }
+                                checked={this.state.previewMusic}
+                            >
+                                Background Music
+                            </Checkbox>
                         </div>
                     </div>
-                    <Div className={"panAndZoom-message" + (this.state.haveImageContainerButNoImage ? "" : " hidden")}
-                        l10nKey="EditTab.Toolbox.PanAndZoom.ChooseImage">Choose an image to activate the
-                        Pan and Zoom controls.</Div>
                 </div>
                 <audio id="pzMusicPlayer" preload="none" />
             </div>

@@ -34,7 +34,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // of full volume).
     private static musicAttrName = "data-backgroundaudio";
     private static musicVolumeAttrName = MusicToolControls.musicAttrName +
-        "volume";
+    "volume";
     private static kDefaultVolumeFraction = 0.5;
     private static narrationPlayer: AudioRecording;
     private addedListenerToPlayer: boolean;
@@ -282,7 +282,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
 
     private setRadio(val: string) {
         if (val === this.state.activeRadioValue) return;
-        const audioEnabled = val === "newMusic";
+        const audioEnabled =
+            val === "newMusic" && this.state.musicName.length > 0;
         this.setState({
             activeRadioValue: val,
             audioEnabled: audioEnabled,
