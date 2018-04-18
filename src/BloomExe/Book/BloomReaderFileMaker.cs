@@ -22,7 +22,7 @@ namespace Bloom.Book
 	/// Much of the logic is still in BookCompressor. Eventually we might move more of it here,
 	/// so that making a bloomd actually starts here and calls BookCompressor.
 	/// </summary>
-	class BloomReaderFileMaker
+	public class BloomReaderFileMaker
 	{
 		public const string QuestionFileName = "questions.json";
 
@@ -37,7 +37,7 @@ namespace Bloom.Book
 			var questions = new List<QuestionGroup>();
 			foreach (var page in questionPages.Cast<XmlElement>().ToArray())
 			{
-				MakeQuestion(page, questions);
+				ExtractQuestionGroups(page, questions);
 				page.ParentNode.RemoveChild(page);
 			}
 			var builder = new StringBuilder("[");
@@ -143,18 +143,21 @@ namespace Bloom.Book
 		/// <summary>
 		/// Start with a page, which should appear to the user to contain blocks like this,
 		/// separated by blank lines:
-		/// Question
+		/// Question A
 		/// answer1
-		/// *correct answer
-		/// answer2
+		/// *correct answer2
+		/// answer3
 		///
-		/// Actually, each line may be wrapped as a paragraph, or there might be br-type line breaks.
+		/// Question B
+		/// *correct answer1
+		/// answer2
+		/// answer3
+		///
+		/// The actual html encoding will vary. Each line may be wrapped as a paragraph, or there might be br-type line breaks.
 		/// We want to make json like this for each question:
 		/// {"question":"Question", "answers": [{"text":"answer1"}, {"text":"correct answer", "correct":true}, {"text":"answer2"}]},
 		/// </summary>
-		/// <param name="page"></param>
-		/// <returns></returns>
-		static void MakeQuestion(XmlElement page, List<QuestionGroup> questionGroups)
+		public static void ExtractQuestionGroups(XmlElement page, List<QuestionGroup> questionGroups)
 		{
 			foreach (XmlElement source in page.SafeSelectNodes(".//div[contains(@class, 'bloom-editable')]"))
 			{
@@ -162,15 +165,17 @@ namespace Bloom.Book
 				if (string.IsNullOrEmpty(lang) || lang == "z")
 					continue;
 				var group = new QuestionGroup() {lang = lang};
-				var lines = source.GetElementsByTagName("p").Cast<XmlElement>()
-					.SelectMany(p => Regex.Split(p.InnerXml, "<br />"))
-					.ToList();
+				// this looks weird, but it's just driven by the test cases which are in turn collected
+				// from various ways of getting the questions on the page (typing, pasting).
+				// See BookReaderFileMakerTests.ExtractQuestionGroups_ParsesCorrectly()
+				var lines = source.InnerXml.Split(new []{"<br />", "</p>"}, StringSplitOptions.None);
 				var questions = new List<Question>();
 				Question question = null;
 				var answers = new List<Answer>();
 				foreach (var line in lines)
 				{
-					if (string.IsNullOrWhiteSpace(line))
+					var cleanLine = line.Replace("<p>", ""); // our split above just looks at the ends of paragraphs, ignores the starts.
+					if (string.IsNullOrWhiteSpace(cleanLine))
 					{
 						// If we've accumulated an actual question and answers, put it in the output.
 						// otherwise, we're probably just dealing with leading white space before the first question.
@@ -183,7 +188,7 @@ namespace Bloom.Book
 						}
 					} else
 					{
-						var trimLine = line.Trim();
+						var trimLine = cleanLine.Trim();
 						if (question == null)
 						{
 							// If we don't already have a question being built, this first line is the question.
