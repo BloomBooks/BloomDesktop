@@ -12,7 +12,7 @@ namespace BloomTests.Book
 	[TestFixture]
 	public class BookReaderFileMakerTests
 	{
-		// Go this pasting from notepad with the extra line in between the Qs already, into Bloom 4.1.5.
+		// Got this pasting from notepad and word with the extra line in between the Qs already, into Bloom 4.2.
 		[TestCase("<p>first<br>one<br>*two<br><br>second<br>*aa<br>bb<br></p>")]
 		// Got this by typing instead of pasting in Bloom
 		[TestCase(@"<p>first<br></p><p>one</p><p>*two</p><p><br></p><p>second</p><p>*aa</p><p>bb</p>")]
