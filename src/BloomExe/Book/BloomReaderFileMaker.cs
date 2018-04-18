@@ -82,13 +82,23 @@ namespace Bloom.Book
 				// this looks weird, but it's just driven by the test cases which are in turn collected
 				// from various ways of getting the questions on the page (typing, pasting).
 				// See BookReaderFileMakerTests.ExtractQuestionGroups_ParsesCorrectly()
-				var lines = source.InnerXml.Split(new []{"<br />", "</p>"}, StringSplitOptions.None);
+				var separators = new[]
+				{
+					"<br />", "</p>",
+					// now add those may not actually show up in firefox, but are in the pre-existing
+					// unit tests, presumably with written-by-hand html?
+					"</br>", "<p />"
+				};
+				var lines = source.InnerXml.Split(separators, StringSplitOptions.None);
 				var questions = new List<Question>();
 				Question question = null;
 				var answers = new List<Answer>();
 				foreach (var line in lines)
 				{
 					var cleanLine = line.Replace("<p>", ""); // our split above just looks at the ends of paragraphs, ignores the starts.
+					// Similarly, our split above just looks at the ends of brs, ignores the starts
+					//(separate start vs. end br elements might not occur in real FF tests, see note above).
+					cleanLine = cleanLine.Replace("<br>", ""); 
 					if (string.IsNullOrWhiteSpace(cleanLine))
 					{
 						// If we've accumulated an actual question and answers, put it in the output.
