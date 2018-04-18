@@ -195,7 +195,7 @@ namespace Bloom.Publish.Epub
 	}
 
 	// its public interface (for purposes of test stubbing)
-	interface IFontFinder
+	public interface IFontFinder
 	{
 		IEnumerable<string> GetFilesForFont(string fontName);
 		bool NoteFontsWeCantInstall { get; set; }

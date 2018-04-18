@@ -11,7 +11,7 @@ namespace Bloom.Publish.Epub
 	/// <summary>
 	/// Set of up to four files useful for a given font name
 	/// </summary>
-	class FontGroup : IEnumerable<string>
+	public class FontGroup : IEnumerable<string>
 	{
 		public string Normal;
 		public string Bold;
