@@ -260,7 +260,9 @@ export class PanAndZoomTool implements ITool {
         if (this.observer) {
             this.observer.disconnect();
         }
-        this.sizeObserver.disconnect();
+        if (this.sizeObserver) {
+            this.sizeObserver.disconnect();
+        }
     }
     private removeCurrentAudioMarkup(): void {
         const currentAudioElts = this.getPage().getElementsByClassName(
@@ -543,14 +545,17 @@ export class PanAndZoomTool implements ITool {
         // in the first image container. We want to update our UI if this changes from
         // placeholder to a 'real' image. This will need to be enhanced if we support
         // images done with background-image.
-        const images = this.getFirstImage().getElementsByTagName("img");
-        // I'm not sure how images can be an empty list...possibly while the page is shutting down??
-        // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
-        if (images.length > 0) {
-            this.observer.observe(images[0], {
-                attributes: true,
-                attributeFilter: ["src"]
-            });
+        const firstImage = this.getFirstImage();
+        if (firstImage) {
+            const images = this.getFirstImage().getElementsByTagName("img");
+            // I'm not sure how images can be an empty list...possibly while the page is shutting down??
+            // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
+            if (images.length > 0) {
+                this.observer.observe(images[0], {
+                    attributes: true,
+                    attributeFilter: ["src"]
+                });
+            }
         }
     }
 
@@ -952,12 +957,14 @@ export class PanAndZoomTool implements ITool {
         const firstImage = this.getFirstImage();
 
         // Enhance this if we need to support background-image approach.
-        var images = firstImage.getElementsByTagName("img");
+        var images = firstImage ? firstImage.getElementsByTagName("img") : null;
         // I'm not quite sure how we can have no images in an image container
         // in a non-xmatter page, but I've seen JS errors caused by it, so
         // programming defensively.
 
         let doNotHaveAPicture =
+            images === null ||
+            images === undefined ||
             images.length === 0 ||
             images[0].getAttribute("src").indexOf("placeHolder") > -1;
 
