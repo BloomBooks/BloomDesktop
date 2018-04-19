@@ -986,10 +986,12 @@ namespace Bloom.Book
 				{
 					var file = Path.GetFileName(path);
 
-					// In BL-5824, we got bit by a design decision we made that allows stylesheets installed via bloompack
-					// to override local ones. This was done so that we could send out new custom stylesheets via webpack
-					// and have those used in all the books. Fine. But that is indiscriminate; it also was grabbing
-					// any "customBookStyles.css" from those sources and using it instead (EnhancedImageServer) and replacing that of your book (here).
+					// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via bloompack and by new Bloom versions
+					// to replace local ones. This was done so that we could send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
+					// and have those used in all the books. This works well for most stylesheets.
+					// But customBookStyles.css needs to be an exception; it's whole purpose is to let the local book override Bloom's normal
+					// behavior or anything in a bloompack.
+					// So customBookStyles.css is not overridden (EnhancedImageServer) or replaced (here)..
 					if (!file.ToLowerInvariant().Contains("custombookstyles"))
 					{
 						Update(file);
