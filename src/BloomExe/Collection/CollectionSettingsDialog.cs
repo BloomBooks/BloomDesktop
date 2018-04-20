@@ -158,6 +158,8 @@ namespace Bloom.Collection
 			{
 				//at this point, we don't let them customize the national languages
 				dlg.IsDesiredLanguageNameFieldVisible = potentiallyCustomName != null;
+				dlg.IsShowRegionalDialectsCheckBoxVisible = true;
+				dlg.IsScriptAndVariantLinkVisible = true;
 
 				var language = new LanguageInfo() { LanguageTag = iso639Code};
 				if (!string.IsNullOrEmpty(potentiallyCustomName))
