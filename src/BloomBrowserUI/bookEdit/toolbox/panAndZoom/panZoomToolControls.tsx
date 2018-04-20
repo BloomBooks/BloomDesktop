@@ -181,6 +181,8 @@ export class PanAndZoomTool implements ITool {
                 // This bizarre kludge works around a bug that jquery have decided not to fix in their jquery draggable
                 // code (https://bugs.jqueryui.com/ticket/6844). Basically without this the dragging happens as if
                 // the view were not scaled. In particular there's a sudden jump when dragging starts.
+                // Unfortunately, when scale > 1.0 the dragging is limited to within a rectangle the size of the original
+                // image.  There doesn't seem to be any way around this bug if we use this fix for the initial offset bug.
                 drag: (event, ui) => {
                     const xpos = ui.position.left / scale;
                     const ypos = ui.position.top / scale;
@@ -293,16 +295,14 @@ export class PanAndZoomTool implements ITool {
     // a fraction of the actual image size. (Note: the image, NOT the image container, even
     // if the image is just a background image...though the current code does not support that.)
     private getTransformRectAttrValue(htmlRect: HTMLElement): string {
-        // Todo zoom: may not be using scale correctly here.
-        const scale = EditableDivUtils.getPageScale();
-        const rectTop = htmlRect.offsetTop / scale;
-        const rectLeft = htmlRect.offsetLeft / scale;
+        const rectTop = htmlRect.offsetTop;
+        const rectLeft = htmlRect.offsetLeft;
         const rectWidth = this.getWidth(htmlRect);
         const rectHeight = this.getHeight(htmlRect);
 
         const actualImage = this.getFirstImage().getElementsByTagName("img")[0];
-        const imageTop = actualImage.offsetTop / scale;
-        const imageLeft = actualImage.offsetLeft / scale;
+        const imageTop = actualImage.offsetTop;
+        const imageLeft = actualImage.offsetLeft;
         const imageHeight = this.getHeight(actualImage);
         const imageWidth = this.getWidth(actualImage);
 
@@ -354,13 +354,10 @@ export class PanAndZoomTool implements ITool {
             }
         }
         const actualImage = firstImage.getElementsByTagName("img")[0];
-        // Todo: may not yet be using scale correctly here. Decided to merge this feature
-        // without trying to get all the bugs out of supporting it when zoomed.
-        const scale = EditableDivUtils.getPageScale();
         const imageHeight = this.getHeight(actualImage);
         const imageWidth = this.getWidth(actualImage);
-        let actualTop = top * imageHeight + actualImage.offsetTop / scale;
-        let actualLeft = left * imageWidth + actualImage.offsetLeft / scale;
+        let actualTop = (top * imageHeight) + actualImage.offsetTop;
+        let actualLeft = (left * imageWidth) + actualImage.offsetLeft;
         let actualWidth = width * imageWidth;
         let actualHeight = height * imageHeight;
         // We want things to fit in the image container. This can be broken in various ways:
@@ -679,13 +676,15 @@ export class PanAndZoomTool implements ITool {
 
         // Make a div with the shape of a typical phone screen in lansdscape mode which
         // will be the root for displaying the animation.
+        var animationPageHeight = pageWidth / this.animationPreviewAspectRatio * scale;
+        var animationPageWidth = pageWidth * scale;
         this.animationRootDiv = getPageFrameExports().makeElement(
             "<div " +
                 "style='background-color:black; " +
                 "height:" +
-                pageWidth / this.animationPreviewAspectRatio * scale +
+                animationPageHeight +
                 "px; width:" +
-                pageWidth * scale +
+                animationPageWidth +
                 "px; " +
                 "position: absolute;" +
                 "left: 0;" +
@@ -715,29 +714,28 @@ export class PanAndZoomTool implements ITool {
         // this should change to get the aspect ratio from the initialrect.
         const panZoomAspectRatio =
             this.getWidth(originalImage) / this.getHeight(originalImage);
-        const pageHeight = pageWidth / this.animationPreviewAspectRatio;
         if (panZoomAspectRatio < this.animationPreviewAspectRatio) {
             // black bars on side
-            const imageWidth = pageHeight * panZoomAspectRatio;
+            const imageWidth = animationPageHeight * panZoomAspectRatio;
             this.animationWrapDiv.setAttribute(
                 "style",
                 baseStyle +
                     " height: 100%; width: " +
                     imageWidth +
                     "px; left: " +
-                    (pageWidth - imageWidth) / 2 +
+                    (animationPageWidth - imageWidth) / 2 +
                     "px; top:0"
             );
         } else {
             // black bars top and bottom
-            const imageHeight = pageWidth / panZoomAspectRatio;
+            const imageHeight = animationPageWidth / panZoomAspectRatio;
             this.animationWrapDiv.setAttribute(
                 "style",
                 baseStyle +
                     " width: 100%; height: " +
                     imageHeight +
                     "px; top: " +
-                    (pageWidth * 9 / 16 - imageHeight) / 2 +
+                    (animationPageHeight - imageHeight) / 2 +
                     "px; left: 0"
             );
         }
@@ -750,9 +748,9 @@ export class PanAndZoomTool implements ITool {
         picToAnimate.setAttribute(
             "style",
             "height:" +
-                pageWidth * 9 / 16 * scale +
+                animationPageHeight +
                 "px;width: " +
-                pageWidth * scale +
+                animationPageWidth +
                 "px;"
         );
         movingDiv.appendChild(picToAnimate);
@@ -798,7 +796,6 @@ export class PanAndZoomTool implements ITool {
         actualImage.style.height = "" + newHeight + "px";
         actualImage.style.marginLeft = "0px";
         actualImage.style.marginTop = "0px";
-
         this.animationStyleElement = pageDoc.createElement("style");
         this.animationStyleElement.setAttribute("type", "text/css");
         this.animationStyleElement.setAttribute("id", "animationSheet");
@@ -810,18 +807,18 @@ export class PanAndZoomTool implements ITool {
         const stylesheet = this.animationStyleElement.sheet;
         const initialRectStr = firstImage.getAttribute("data-initialrect");
         const initialRect = initialRectStr.split(" ");
-        const initialScaleWidth = 1 / parseFloat(initialRect[2]) * scale;
-        const initialScaleHeight = 1 / parseFloat(initialRect[3]) * scale;
+        const initialScaleWidth = 1 / parseFloat(initialRect[2]);
+        const initialScaleHeight = 1 / parseFloat(initialRect[3]);
         const finalRectStr = firstImage.getAttribute("data-finalrect");
         const finalRect = finalRectStr.split(" ");
-        const finalScaleWidth = 1 / parseFloat(finalRect[2]) * scale;
-        const finalScaleHeight = 1 / parseFloat(finalRect[3]) * scale;
+        const finalScaleWidth = 1 / parseFloat(finalRect[2]);
+        const finalScaleHeight = 1 / parseFloat(finalRect[3]);
         const wrapDivWidth = this.getWidth(this.animationWrapDiv);
         const wrapDivHeight = this.getHeight(this.animationWrapDiv);
-        const initialX = parseFloat(initialRect[0]) * wrapDivWidth / scale;
-        const initialY = parseFloat(initialRect[1]) * wrapDivHeight / scale;
-        const finalX = parseFloat(finalRect[0]) * wrapDivWidth / scale;
-        const finalY = parseFloat(finalRect[1]) * wrapDivHeight / scale;
+        const initialX = parseFloat(initialRect[0]) * wrapDivWidth;
+        const initialY = parseFloat(initialRect[1]) * wrapDivHeight;
+        const finalX = parseFloat(finalRect[0]) * wrapDivWidth;
+        const finalY = parseFloat(finalRect[1]) * wrapDivHeight;
         const animateStyleName = "bloom-animationPreview";
         const movePicName = "movepic";
         // Will take the form of "scale3d(W, H,1.0) translate3d(Xpx, Ypx, 0px)"
