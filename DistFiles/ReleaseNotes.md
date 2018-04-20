@@ -1,7 +1,7 @@
 ﻿## 4.2
 - Edit Tab
     - New "Music Tool" allow you to choose background music and levels.
-    - New "Pan and Zoom Tool" allows you to specify pan/zoom effects of a page.
+    - New "Motion Tool" allows you to specify pan/zoom effects of a page, to make a "Motion Book" in Bloom Reader.
 - Publish
     - Fonts are now embedded in Bloom Reader books, if their embedded metadata allows that.
 

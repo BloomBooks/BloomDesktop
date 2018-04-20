@@ -1,0 +1,62 @@
+@import "../../../templates/common-mixins.less";
+@textColor: @bloom-buff; // #0C8597;
+@toolboxBackgroundColor: @DarkBackgroundColor;
+@buttonColumnWidth: 40px;
+
+.ui-panAndZoomBody {
+    padding-left: 15px;
+    padding-right: 15px;
+    *,
+    a {
+        color: @textColor;
+    }
+    background-color: @toolboxBackgroundColor;
+
+    background-position: center;
+
+    .ui-motion-button {
+        height: @buttonColumnWidth;
+        width: @buttonColumnWidth;
+        border: none;
+        background-size: contain;
+        background-color: transparent;
+        background-repeat: no-repeat;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .motion-label {
+        display: inline-block;
+        max-width: 100px;
+    }
+
+    .disabled {
+        opacity: 0.4;
+    }
+
+    #motion-preview {
+        background-image: url("/bloom/bookEdit/toolbox/talkingBook/play_enabled.svg");
+        height: 45px;
+        width: 45px;
+
+        &.playing {
+            background-image: url("/bloom/images/pause-blue.svg");
+        }
+    }
+
+    .button-label-wrapper {
+        margin-top: 10px;
+    }
+    .button-wrapper {
+        display: flex;
+        min-width: 60px;
+    }
+
+    .previewSettingsWrapper {
+        display: inline-block;
+    }
+}
+
+.ui-accordion h3[data-toolId="panAndZoomTool"] span.ui-accordion-header-icon {
+    background-image: url("/bloom/images/motion.svg") !important;
+}
