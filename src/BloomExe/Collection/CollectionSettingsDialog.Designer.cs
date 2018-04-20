@@ -737,7 +737,7 @@ namespace Bloom.Collection
 			// 
 			this._restartReminder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._restartReminder.AutoSize = true;
-			this._restartReminder.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._restartReminder.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._restartReminder.ForeColor = System.Drawing.Color.Firebrick;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._restartReminder, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._restartReminder, null);

@@ -479,7 +479,7 @@ namespace Bloom.Publish.BloomLibrary
 			// _giveBackLabel
 			// 
 			this._giveBackLabel.AutoSize = true;
-			this._giveBackLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+			this._giveBackLabel.Font = new System.Drawing.Font("Segoe UI", 12F);
 			this._L10NSharpExtender.SetLocalizableToolTip(this._giveBackLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._giveBackLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._giveBackLabel, "PublishTab.Upload.GiveBack");

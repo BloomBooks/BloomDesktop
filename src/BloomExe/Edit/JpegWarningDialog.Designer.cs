@@ -47,7 +47,7 @@
 			// 
 			this._photographRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this._photographRadioButton.AutoSize = true;
-			this._photographRadioButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._photographRadioButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._photographRadioButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._photographRadioButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._photographRadioButton, "EditTab.JpegWarningDialog.Photograph");
@@ -63,7 +63,7 @@
 			this._cancelRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this._cancelRadioButton.AutoSize = true;
 			this._cancelRadioButton.Checked = true;
-			this._cancelRadioButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._cancelRadioButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._cancelRadioButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._cancelRadioButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._cancelRadioButton, "EditTab.JpegWarningDialog.DoNotUse");

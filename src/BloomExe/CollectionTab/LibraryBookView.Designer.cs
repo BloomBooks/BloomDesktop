@@ -47,7 +47,7 @@
 			// 
 			this._addToCollectionButton.BackColor = System.Drawing.SystemColors.ControlLightLight;
 			this._addToCollectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._addToCollectionButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._addToCollectionButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._addToCollectionButton.Image = global::Bloom.Properties.Resources.newBook;
 			this._addToCollectionButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._addToCollectionButton, "Create a book in my language using this source book");
@@ -68,7 +68,7 @@
 			// 
 			this._editBookButton.BackColor = System.Drawing.SystemColors.ControlLightLight;
 			this._editBookButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._editBookButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._editBookButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._editBookButton.Image = global::Bloom.Properties.Resources.edit;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._editBookButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._editBookButton, null);
