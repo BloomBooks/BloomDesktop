@@ -20,6 +20,9 @@ namespace BloomTests.Book
 		[TestCase(("<p>first<br>one<br>*two<br></p><p><br></p><p>second<br>*aa<br>bb</p>"))]
 		// got this from pasting from notepad into Firefox 59
 		[TestCase("<p>first<br>one<br>*two<br></p><p><br></p><p>second<br>*aa<br>bb<br></p>")]
+		// This approximates what we got in BL-5920; don't know how the zero-width-non-joiner got in there, but most lines had them.
+		// Features: no paragraphs, \200c (zero width-non-joiner) which was causing the parser to miss the break between questions
+		[TestCase("first<br>one<br>*two<br>\u200C<br>second<br>*aa<br>bb")]
 		//Got this by pasting into the quiz page when the Talking Book was open
 		// This fails. Enable when fixing BL-5910
 		/*[TestCase(@"<p><span id='b352ae2e-8394-4d6b-82a3-367521cbafb5' class='audio-sentence'>first <br></span>

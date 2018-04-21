@@ -98,7 +98,8 @@ namespace Bloom.Book
 					var cleanLine = line.Replace("<p>", ""); // our split above just looks at the ends of paragraphs, ignores the starts.
 					// Similarly, our split above just looks at the ends of brs, ignores the starts
 					//(separate start vs. end br elements might not occur in real FF tests, see note above).
-					cleanLine = cleanLine.Replace("<br>", ""); 
+					cleanLine = cleanLine.Replace("<br>", "");
+					cleanLine = cleanLine.Replace("\u200c", "");
 					if (string.IsNullOrWhiteSpace(cleanLine))
 					{
 						// If we've accumulated an actual question and answers, put it in the output.
