@@ -158,19 +158,25 @@ class AndroidPublishUI extends React.Component<
                 onFocus={e => this.somethingFocused(e)}
                 onClick={e => this.somethingFocused(e)}
             >
+                <Div
+                    className={"intro"}
+                    l10nKey="PublishTab.Android.Intro"
+                    l10nComment="This is displayed at the top of the Android screen."
+                >
+                    Here you can send your book to the Bloom Reader Android app.
+                </Div>
                 <H1
-                    className="media-heading"
                     l10nKey="PublishTab.Android.Media"
                     l10nComment="A heading in the Publish to Android screen."
                 >
-                    Media
+                    Settings
                 </H1>
 
-                <div className="media-row">
-                    <div className="media-subheading">
-                        <Div l10nKey="PublishTab.Android.ThumbnailColor">
+                <div className="settings-row">
+                    <div className="settings-subheading">
+                        {/* <Div l10nKey="PublishTab.Android.ThumbnailColor">
                             Thumbnail Color
-                        </Div>
+                        </Div> */}
                     </div>
                     <div
                         className="tc-outer-wrapper"
@@ -246,32 +252,38 @@ class AndroidPublishUI extends React.Component<
                             </div>
                         </div>
                     </div>
-                    <Checkbox
-                        id="motionBookModeCheckbox"
-                        wrapClassName="motionBookModeCheckbox"
-                        name="motionBookMode"
-                        l10nKey="PublishTab.Android.motionBookMode"
-                        // tslint:disable-next-line:max-line-length
-                        l10nComment="Motion Books are Talking Books in which the picture fils the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
-                        checked={this.state.motionBookMode}
-                        onCheckChanged={checked => {
-                            this.setState({ motionBookMode: checked });
-                            axios.post(
-                                "/bloom/api/publish/android/motionBookMode",
-                                checked,
-                                { headers: { "Content-Type": "text/plain" } }
-                            );
-                        }}
-                    >
-                        "Motion Book" mode when device is in landscape
-                        orientation (for motion, music, etc.)
-                    </Checkbox>
+
+                    <div>
+                        <Checkbox
+                            id="motionBookModeCheckbox"
+                            wrapClassName="motionBookModeCheckbox"
+                            name="motionBookMode"
+                            l10nKey="PublishTab.Android.motionBookMode"
+                            // tslint:disable-next-line:max-line-length
+                            l10nComment="Motion Books are Talking Books in which the picture fils the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
+                            checked={this.state.motionBookMode}
+                            onCheckChanged={checked => {
+                                this.setState({ motionBookMode: checked });
+                                axios.post(
+                                    "/bloom/api/publish/android/motionBookMode",
+                                    checked,
+                                    {
+                                        headers: {
+                                            "Content-Type": "text/plain"
+                                        }
+                                    }
+                                );
+                            }}
+                        >
+                            Motion Book
+                        </Checkbox>
+                    </div>
                 </div>
                 <H1
                     l10nKey="PublishTab.Android.Method"
                     l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser."
                 >
-                    Method Choices
+                    Choose how to send to device
                 </H1>
                 {/* This wrapper, with some really tricky CSS, serves to make a select where the options have both text
                 and images, and the down arrow is a dark black on a plain white background with a black line left of it.
@@ -343,7 +355,6 @@ class AndroidPublishUI extends React.Component<
                     </select>
                 </div>
 
-                <p />
                 <H1
                     l10nKey="PublishTab.Android.Control"
                     l10nComment="This is the heading above various buttons that control the publishing of the book to Android."
@@ -414,20 +425,22 @@ class AndroidPublishUI extends React.Component<
                 <div id="progress-section" style={{ visibility: "visible" }}>
                     <div id="progress-row">
                         <h1>Progress</h1>
-                        <Link
-                            id="getBloomReaderLink"
-                            href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
-                            l10nKey="PublishTab.Android.GetBloomReader"
-                            l10nComment="Link to find Bloom Reader on Google Play Store"
-                        >
-                            Get Bloom Reader App
-                        </Link>
-                        <HtmlHelpLink
-                            l10nKey="PublishTab.Android.Troubleshooting"
-                            fileid="Publish-Android-Troubleshooting"
-                        >
-                            Troubleshooting Tips
-                        </HtmlHelpLink>
+                        <div id="rightSideOfProgressRow">
+                            <Link
+                                id="getBloomReaderLink"
+                                href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
+                                l10nKey="PublishTab.Android.GetBloomReader"
+                                l10nComment="Link to find Bloom Reader on Google Play Store"
+                            >
+                                Get Bloom Reader App
+                            </Link>
+                            <HtmlHelpLink
+                                l10nKey="PublishTab.Android.Troubleshooting"
+                                fileid="Publish-Android-Troubleshooting"
+                            >
+                                Troubleshooting Tips
+                            </HtmlHelpLink>
+                        </div>
                     </div>
                     <ProgressBox lifetimeLabel={kWebSocketLifetime} />
                     <Link

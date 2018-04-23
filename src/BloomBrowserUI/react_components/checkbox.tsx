@@ -1,6 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ILocalizationProps, LocalizableElement, Label, ILabelProps } from "./l10n";
+import {
+    ILocalizationProps,
+    LocalizableElement,
+    Label,
+    ILabelProps
+} from "./l10n";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
@@ -24,9 +29,18 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
     render() {
         return (
             <div className={this.props.wrapClassName}>
-                <input id={this.props.id} type="checkbox" className={this.props.className} name={this.props.name}
-                    checked={this.props.checked} onChange={(event) => this.props.onCheckChanged(event.target.checked)}
-                    ref={(input) => this.input = input} />
+                <input
+                    id={this.props.id}
+                    type="checkbox"
+                    className={this.props.className}
+                    name={this.props.name}
+                    disabled={this.props.disabled}
+                    checked={this.props.checked}
+                    onChange={event =>
+                        this.props.onCheckChanged(event.target.checked)
+                    }
+                    ref={input => (this.input = input)}
+                />
                 <label onClick={() => this.onLabelClicked()}>
                     {this.getLocalizedContent()}
                 </label>
