@@ -985,8 +985,17 @@ namespace Bloom.Book
 				foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 				{
 					var file = Path.GetFileName(path);
-					//if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
-					Update(file);
+
+					// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via bloompack and by new Bloom versions
+					// to replace local ones. This was done so that we could send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
+					// and have those used in all the books. This works well for most stylesheets.
+					// But customBookStyles.css needs to be an exception; it's whole purpose is to let the local book override Bloom's normal
+					// behavior or anything in a bloompack.
+					// So customBookStyles.css is not overridden (EnhancedImageServer) or replaced (here)..
+					if (!file.ToLowerInvariant().Contains("custombookstyles"))
+					{
+						Update(file);
+					}
 				}
 			}
 

@@ -112,3 +112,5 @@ DistFiles/AdobeColorProfileEULA.htm
 DistFiles/IntegrityFailureAdvice-*.htm
 DistFiles/infoPages/TrainingVideos-*.htm
 DistFiles/localization/*.htm
+
+src/BloomBrowserUI/yarn-error\.log
