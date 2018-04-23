@@ -253,6 +253,8 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customCollectionStyles.css']", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='fonts.css']", _ns);
+
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//body/div/span[@role='doc-pagebreak' and @id='pg1' and @aria-label='1']", 1);
 		}
 
 		/// <summary>
@@ -451,6 +453,7 @@ namespace BloomTests.Publish
 
 			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
+			AssertThatXmlIn.String(page2Data).HasSpecifiedNumberOfMatchesForXpath("//body/div/span[@role='doc-pagebreak' and @id='pg2' and @aria-label='2']", 1);
 		}
 
 		[Test]

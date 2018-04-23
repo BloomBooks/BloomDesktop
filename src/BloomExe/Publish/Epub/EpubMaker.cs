@@ -535,6 +535,9 @@ namespace Bloom.Publish.Epub
 
 			CopyImages(pageDom);
 
+			AddEpubNamespace(pageDom);
+			AddPageBreakSpan(pageDom);
+
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
 			if(!PublishWithoutAudio)
@@ -660,6 +663,40 @@ namespace Bloom.Publish.Epub
 			}
 			return String.Empty;
 		}
+
+		private void AddEpubNamespace (HtmlDom pageDom)
+		{
+			pageDom.RawDom.DocumentElement.SetAttribute("xmlns:epub", "http://www.idpf.org/2007/ops");
+		}
+
+		private void AddPageBreakSpan (HtmlDom pageDom)
+		{
+			var body = pageDom.Body;
+			var div = body.FirstChild;
+			var divClass = div.GetStringAttribute("class");
+			var classes = divClass.Split(' ');
+			// REVIEW: should this affect only pages with the "numberedPage" class?
+			if (classes.Contains("bloom-page"))
+			{
+				var newChild = pageDom.RawDom.CreateElement("span");
+				newChild.SetAttribute("type", "http://www.idpf.org/2007/ops", "pagebreak");
+				newChild.SetAttribute("role", "doc-pagebreak");
+				var page = _pageIndex.ToString(System.Globalization.CultureInfo.InvariantCulture);
+				newChild.SetAttribute("id", $"pg{page}");
+				// REVIEW: should the page number for aria-label and InnerXml be in a specific locale relative to the book?
+				newChild.SetAttribute("aria-label", page);
+				newChild.InnerXml = page;
+				div.InsertBefore(newChild, div.FirstChild);
+				// We don't generally want to display the numbers for the page breaks.
+				// REVIEW: should this be a user-settable option, defaulting to "display: none"?
+				// Note that we've said elsewhere that many e-readers ignore "display: none".
+				var head = pageDom.Head;
+				var newStyle = pageDom.RawDom.CreateElement("style");
+				newStyle.SetAttribute("type", "text/css");
+				newStyle.InnerXml = "span[role='doc-pagebreak'] { display: none }";
+				head.AppendChild(newStyle);
+			}
+}
 
 		// Combines staging and finishing (currently just used in tests).
 		public void SaveEpub(string destinationEpubPath)
