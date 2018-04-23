@@ -176,16 +176,19 @@ export class PanAndZoomTool implements ITool {
             // behind jpeg images.
             const argsForDraggable = {
                 handle: ".bloom-dragHandleAnimation",
-                containment: "parent",
                 stop: (event, ui) => this.updateDataAttributes(),
                 // This bizarre kludge works around a bug that jquery have decided not to fix in their jquery draggable
                 // code (https://bugs.jqueryui.com/ticket/6844). Basically without this the dragging happens as if
                 // the view were not scaled. In particular there's a sudden jump when dragging starts.
-                // Unfortunately, when scale > 1.0 the dragging is limited to within a rectangle the size of the original
-                // image.  There doesn't seem to be any way around this bug if we use this fix for the initial offset bug.
+                // Setting containment to "parent" uses the unscaled size of the image as the bounds, resulting in
+                // areas you can't move the pan&zoom rectangles when the zoom scale > 1.  When the zoom scale < 1, you
+                // could drag the rectangles off the picture.  This event handler programmatically enforces the desired
+                // containment.  (Setting the containment to a boundary array just didn't work for some reason.)
                 drag: (event, ui) => {
-                    const xpos = ui.position.left / scale;
-                    const ypos = ui.position.top / scale;
+                    const xpos = Math.min(Math.max(0, ui.position.left / scale),
+                        firstImage.clientWidth - ui.helper.width());
+                    const ypos = Math.min(Math.max(0, ui.position.top / scale),
+                        firstImage.clientHeight - ui.helper.height());
                     ui.position.top = ypos;
                     ui.position.left = xpos;
                 }
