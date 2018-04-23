@@ -1,13 +1,18 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from "jquery";
-import { getTheOneToolbox, applyToolboxStateToUpdatedPage, showOrHideTool_click, removeToolboxMarkup } from "./toolbox";
+import {
+    getTheOneToolbox,
+    applyToolboxStateToUpdatedPage,
+    showOrHideTool_click,
+    removeToolboxMarkup
+} from "./toolbox";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
 import { BookSettings } from "./bookSettings/bookSettings";
 import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
 import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
-import { PanAndZoomTool } from "./panAndZoom/panZoomToolControls";
+import { MotionTool } from "./motionTool/motionTool";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 
@@ -15,18 +20,28 @@ import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 // reviewslog: is this actually needed? Could these be be directly imported where they are used?
 export { showOrHideTool_click };
 export { removeToolboxMarkup };
-export { showSetupDialog, initializeReaderSetupDialog, closeSetupDialog } from "./readers/readerSetup/readerSetupDialog";
-export { addWordListChangedListener, beginSaveChangedSettings, makeLetterWordList } from "./readers/readerTools";
+export {
+    showSetupDialog,
+    initializeReaderSetupDialog,
+    closeSetupDialog
+} from "./readers/readerSetup/readerSetupDialog";
+export {
+    addWordListChangedListener,
+    beginSaveChangedSettings,
+    makeLetterWordList
+} from "./readers/readerTools";
 export { loadLongpressInstructions } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
-
 
 // called by click handler in jade; also, exporting something from it gets it included in the bundle.
 export { handleBookSettingCheckboxClick };
 export { getTheOneToolbox };
 
 export function canUndo(): boolean {
-    return getTheOneReaderToolsModel().shouldHandleUndo() && getTheOneReaderToolsModel().canUndo();
+    return (
+        getTheOneReaderToolsModel().shouldHandleUndo() &&
+        getTheOneReaderToolsModel().canUndo()
+    );
 }
 
 export function undo() {
@@ -37,8 +52,7 @@ export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
 
-
-$(document).ready(function () {
+$(document).ready(function() {
     getTheOneToolbox().initialize();
 });
 
@@ -49,5 +63,5 @@ ToolBox.registerTool(new BookSettings());
 ToolBox.registerTool(new DecodableReaderToolboxTool());
 ToolBox.registerTool(new LeveledReaderToolboxTool());
 ToolBox.registerTool(new MusicToolAdaptor());
-ToolBox.registerTool(new PanAndZoomTool());
+ToolBox.registerTool(new MotionTool());
 ToolBox.registerTool(new TalkingBookTool());

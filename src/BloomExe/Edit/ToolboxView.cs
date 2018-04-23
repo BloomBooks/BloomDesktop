@@ -38,8 +38,8 @@ namespace Bloom.Edit
 	///				(This supports localization of the tool's accordion tab label.)
 	/// - In some toolbox less file (typically a new one for your tool, but could be toolbox.less)
 	///		you need to create a rule like
-	///			.ui-accordion h3[data-toolId="panAndZoomTool"] span.ui-accordion-header-icon {
-	///				background-image:url('/bloom/images/pan and zoom.svg') !important;
+	///			.ui-accordion h3[data-toolId="motionTool"] span.ui-accordion-header-icon {
+	///				background-image:url('/bloom/images/motion.svg') !important;
 	///			}
 	///		which specifies the icon for your tool. (And create the icon in the BloomBrowserUI/images folder).
 	/// </summary>
@@ -77,7 +77,7 @@ namespace Bloom.Edit
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/leveledReader");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/decodableReader");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/talkingBook");
-			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/panAndZoom");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/motion");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/music");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/bookSettings");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/readerSetup");

@@ -20,11 +20,14 @@ interface IComponentState {
     stateId: string;
     backColor: string;
     colorsVisible: boolean;
-    photoStoryMode: boolean;
+    motionBookMode: boolean;
 }
 // This is a screen of controls that gives the user instructions and controls
 // for pushing a book to a connected Android device running Bloom Reader.
-class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponentState> {
+class AndroidPublishUI extends React.Component<
+    IUILanguageAwareProps,
+    IComponentState
+> {
     isLinux: boolean;
     constructor(props) {
         super(props);
@@ -35,7 +38,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
             method: "wifi",
             backColor: "#FFFFFF",
             colorsVisible: false,
-            photoStoryMode: false
+            motionBookMode: false
         };
 
         // enhance: For some reason setting the callback to "this.handleUpdate" calls handleUpdate()
@@ -60,8 +63,8 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
             .then(result => this.setState({ backColor: result.data }));
 
         axios
-            .get("/bloom/api/publish/android/photoStoryMode")
-            .then(result => this.setState({ photoStoryMode: result.data }));
+            .get("/bloom/api/publish/android/motionBookMode")
+            .then(result => this.setState({ motionBookMode: result.data }));
     }
 
     public componentDidMount() {
@@ -100,17 +103,24 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         // Yes, this is a hack. I simply could not get the client to populate the clipboard.
         // I tried using react-copy-to-clipboard, but kept getting runtime errors as if the component was not found.
         // I tried using document.execCommand("copy"), but though it worked in FF and Chrome, it did not work in Bloom.
-        axios.post("/bloom/api/publish/android/textToClipboard",
-            document.getElementById("progress-box").innerText, { headers: { "Content-Type": "text/plain" } });
+        axios.post(
+            "/bloom/api/publish/android/textToClipboard",
+            document.getElementById("progress-box").innerText,
+            { headers: { "Content-Type": "text/plain" } }
+        );
     }
 
     reportColorChange(newColor: string) {
-        axios.post("/bloom/api/publish/android/backColor", newColor,
-            { headers: { "Content-Type": "text/plain" } }).then(
+        axios
+            .post("/bloom/api/publish/android/backColor", newColor, {
+                headers: { "Content-Type": "text/plain" }
+            })
+            .then(
                 //wait until it's set because once the state changes, a
                 // new image gets requested and we want that to happen
                 // only after the server has registered this change.
-                () => this.setState({ backColor: newColor }));
+                () => this.setState({ backColor: newColor })
+            );
     }
 
     somethingFocused(e) {
@@ -125,82 +135,155 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
     }
 
     render() {
-        let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5",
-            "#B2CC7D", "#F8B576", "#D29FEF", "#ABB8C3", "#C1EF93", "#FFD4D4", "#FFAAD4"];
-
+        let colors: string[] = [
+            "#E48C84",
+            "#B0DEE4",
+            "#98D0B9",
+            "#C2A6BF",
+            "#FFFFA4",
+            "#FEBF00",
+            "#7BDCB5",
+            "#B2CC7D",
+            "#F8B576",
+            "#D29FEF",
+            "#ABB8C3",
+            "#C1EF93",
+            "#FFD4D4",
+            "#FFAAD4"
+        ];
 
         return (
-            <div id="androidPublishReactRoot" onFocus={(e) => this.somethingFocused(e)} onClick={(e) => this.somethingFocused(e)}>
-                <H1 className="media-heading" l10nKey="PublishTab.Android.Media"
-                    l10nComment="A heading in the Publish to Android screen.">
-                    Media
+            <div
+                id="androidPublishReactRoot"
+                onFocus={e => this.somethingFocused(e)}
+                onClick={e => this.somethingFocused(e)}
+            >
+                <Div
+                    className={"intro"}
+                    l10nKey="PublishTab.Android.Intro"
+                    l10nComment="This is displayed at the top of the Android screen."
+                >
+                    Here you can send your book to the Bloom Reader Android app.
+                </Div>
+                <H1
+                    l10nKey="PublishTab.Android.Media"
+                    l10nComment="A heading in the Publish to Android screen."
+                >
+                    Settings
                 </H1>
 
-                <div className="media-row">
-                    <div className="media-subheading">
-                        <Div l10nKey="PublishTab.Android.ThumbnailColor">
+                <div className="settings-row">
+                    <div className="settings-subheading">
+                        {/* <Div l10nKey="PublishTab.Android.ThumbnailColor">
                             Thumbnail Color
-                        </Div>
+                        </Div> */}
                     </div>
-                    <div className="tc-outer-wrapper" tabIndex={0} onClick={
-                        (event) => {
-                            this.setState({ colorsVisible: !this.state.colorsVisible });
-                            axios.get("/bloom/api/publish/android/backColor").then(result =>
-                                this.setState({ backColor: result.data })
-                            );
+                    <div
+                        className="tc-outer-wrapper"
+                        tabIndex={0}
+                        onClick={event => {
+                            this.setState({
+                                colorsVisible: !this.state.colorsVisible
+                            });
+                            axios
+                                .get("/bloom/api/publish/android/backColor")
+                                .then(result =>
+                                    this.setState({ backColor: result.data })
+                                );
                         }}
                     >
                         <div className="tc-image-wrapper">
-                            <img className="tc-image"
+                            <img
+                                className="tc-image"
                                 // the api ignores the color parameter, but it
                                 // causes this to re-request the img whenever the backcolor changes
-                                src={"/bloom/api/publish/android/thumbnail?color=" + this.state.backColor}></img>
+                                src={
+                                    "/bloom/api/publish/android/thumbnail?color=" +
+                                    this.state.backColor
+                                }
+                            />
                         </div>
                         <div className="tc-menu-arrow">
-                            <div className="tc-pulldown-wrapper" style={{ visibility: (this.state.colorsVisible ? "visible" : "hidden") }}>
-                                {colors.map((color, i) =>
-                                    <div className="tc-color-option" key={i} style={{ backgroundColor: color }} data-color={color} onClick={
-                                        (event) => {
-                                            const newColor = event.currentTarget.getAttribute("data-color");
+                            <div
+                                className="tc-pulldown-wrapper"
+                                style={{
+                                    visibility: this.state.colorsVisible
+                                        ? "visible"
+                                        : "hidden"
+                                }}
+                            >
+                                {colors.map((color, i) => (
+                                    <div
+                                        className="tc-color-option"
+                                        key={i}
+                                        style={{ backgroundColor: color }}
+                                        data-color={color}
+                                        onClick={event => {
+                                            const newColor = event.currentTarget.getAttribute(
+                                                "data-color"
+                                            );
                                             this.reportColorChange(newColor);
-                                        }}>
-                                    </div>)}
-                                <div className="tc-hex-wrapper" onClick={(event) => event.stopPropagation()}>
+                                        }}
+                                    />
+                                ))}
+                                <div
+                                    className="tc-hex-wrapper"
+                                    onClick={event => event.stopPropagation()}
+                                >
                                     <div className="tc-hex-leadin">#</div>
                                     <div className="tc-hex-value">
-                                        <ContentEditable content={this.state.backColor.substring(1)} onChange={(newContent => {
-                                            this.reportColorChange("#" + newContent);
-                                        })} onEnterKeyPressed={() => this.setState({ colorsVisible: false })} />
+                                        <ContentEditable
+                                            content={this.state.backColor.substring(
+                                                1
+                                            )}
+                                            onChange={newContent => {
+                                                this.reportColorChange(
+                                                    "#" + newContent
+                                                );
+                                            }}
+                                            onEnterKeyPressed={() =>
+                                                this.setState({
+                                                    colorsVisible: false
+                                                })
+                                            }
+                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <Checkbox
-                        id="photoStoryModeCheckbox"
-                        wrapClassName="photoStoryModeCheckbox"
-                        name="photoStoryMode"
-                        l10nKey="PublishTab.Android.photoStoryMode"
-                        l10nComment="Do not translate this yet, it's a temporary thing we are testing"
-                        checked={this.state.photoStoryMode}
-                        onCheckChanged={checked => {
-                            this.setState({ photoStoryMode: checked });
-                            axios.post(
-                                "/bloom/api/publish/android/photoStoryMode",
-                                checked,
-                                { headers: { "Content-Type": "text/plain" } }
-                            );
-                        }}
-                    >
-                        "Photo Story" mode when device is in landscape (for pan
-                        and zoom, music, etc.)
-                    </Checkbox>
+
+                    <div>
+                        <Checkbox
+                            id="motionBookModeCheckbox"
+                            wrapClassName="motionBookModeCheckbox"
+                            name="motionBookMode"
+                            l10nKey="PublishTab.Android.motionBookMode"
+                            // tslint:disable-next-line:max-line-length
+                            l10nComment="Motion Books are Talking Books in which the picture fils the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
+                            checked={this.state.motionBookMode}
+                            onCheckChanged={checked => {
+                                this.setState({ motionBookMode: checked });
+                                axios.post(
+                                    "/bloom/api/publish/android/motionBookMode",
+                                    checked,
+                                    {
+                                        headers: {
+                                            "Content-Type": "text/plain"
+                                        }
+                                    }
+                                );
+                            }}
+                        >
+                            Motion Book
+                        </Checkbox>
+                    </div>
                 </div>
                 <H1
                     l10nKey="PublishTab.Android.Method"
                     l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser."
                 >
-                    Method Choices
+                    Choose how to send to device
                 </H1>
                 {/* This wrapper, with some really tricky CSS, serves to make a select where the options have both text
                 and images, and the down arrow is a dark black on a plain white background with a black line left of it.
@@ -233,104 +316,139 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 have to re-implement without using select.
                  */}
                 <div className="method-select-wrapper">
-                    <select className={`method-shared method-root ${this.state.method}-method-option`}
-                        disabled={this.state.stateId !== "stopped"} value={this.state.method} onChange={
-                            (event) => {
-                                this.setState({ method: event.target.value });
-                                axios.post("/bloom/api/publish/android/method", event.target.value,
-                                    { headers: { "Content-Type": "text/plain" } });
-                            }}>
-                        <Option l10nKey="PublishTab.Android.ChooseWifi"
+                    <select
+                        className={`method-shared method-root ${
+                            this.state.method
+                        }-method-option`}
+                        disabled={this.state.stateId !== "stopped"}
+                        value={this.state.method}
+                        onChange={event => {
+                            this.setState({ method: event.target.value });
+                            axios.post(
+                                "/bloom/api/publish/android/method",
+                                event.target.value,
+                                { headers: { "Content-Type": "text/plain" } }
+                            );
+                        }}
+                    >
+                        <Option
+                            l10nKey="PublishTab.Android.ChooseWifi"
                             className="method-shared wifi-method-option"
-                            value="wifi">
+                            value="wifi"
+                        >
                             Serve on WiFi Network
-                    </Option>
-                        <Option l10nKey="PublishTab.Android.ChooseUSB"
-                            className="method-shared usb-method-option" value="usb">
+                        </Option>
+                        <Option
+                            l10nKey="PublishTab.Android.ChooseUSB"
+                            className="method-shared usb-method-option"
+                            value="usb"
+                        >
                             Send over USB Cable
-                    </Option>
-                        <Option l10nKey="PublishTab.Android.ChooseFile"
-                            className="method-shared file-method-option" value="file">
+                        </Option>
+                        <Option
+                            l10nKey="PublishTab.Android.ChooseFile"
+                            className="method-shared file-method-option"
+                            value="file"
+                        >
                             Save Bloom Reader File
-                    </Option>
+                        </Option>
                     </select>
                 </div>
 
-                <p />
-                <H1 l10nKey="PublishTab.Android.Control"
-                    l10nComment="This is the heading above various buttons that control the publishing of the book to Android.">
+                <H1
+                    l10nKey="PublishTab.Android.Control"
+                    l10nComment="This is the heading above various buttons that control the publishing of the book to Android."
+                >
                     Control
                 </H1>
 
-                {this.state.method === "wifi" &&
+                {this.state.method === "wifi" && (
                     <div>
-                        <BloomButton l10nKey="PublishTab.Android.Wifi.Start"
+                        <BloomButton
+                            l10nKey="PublishTab.Android.Wifi.Start"
                             l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                             enabled={this.state.stateId === "stopped"}
                             clickEndpoint="publish/android/wifi/start"
-                            hasText={true}>
+                            hasText={true}
+                        >
                             Start Serving
                         </BloomButton>
-                        <BloomButton l10nKey="PublishTab.Android.Wifi.Stop"
+                        <BloomButton
+                            l10nKey="PublishTab.Android.Wifi.Stop"
                             l10nComment="Button that tells Bloom to stop offering this book on the wifi network."
                             enabled={this.state.stateId === "ServingOnWifi"}
                             clickEndpoint="publish/android/wifi/stop"
-                            hasText={true}>
+                            hasText={true}
+                        >
                             Stop Serving
                         </BloomButton>
                     </div>
-                }
+                )}
 
-                {this.state.method === "usb" &&
+                {this.state.method === "usb" && (
                     <div>
-                        <BloomButton l10nKey="PublishTab.Android.Usb.Start"
+                        <BloomButton
+                            l10nKey="PublishTab.Android.Usb.Start"
                             l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                             enabled={this.state.stateId === "stopped"}
                             clickEndpoint="publish/android/usb/start"
                             hidden={this.isLinux}
-                            hasText={true}>
+                            hasText={true}
+                        >
                             Connect with USB cable
                         </BloomButton>
 
-                        <BloomButton l10nKey="PublishTab.Android.Usb.Stop"
+                        <BloomButton
+                            l10nKey="PublishTab.Android.Usb.Stop"
                             enabled={this.state.stateId === "UsbStarted"}
                             clickEndpoint="publish/android/usb/stop"
-                            hasText={true}>
+                            hasText={true}
+                        >
                             Stop Trying
                         </BloomButton>
                     </div>
-                }
-                {this.state.method === "file" &&
+                )}
+                {this.state.method === "file" && (
                     <div>
-                        <BloomButton l10nKey="PublishTab.Android.Save"
+                        <BloomButton
+                            l10nKey="PublishTab.Android.Save"
                             l10nComment="Button that tells Bloom to save the book as a .bloomD file."
                             clickEndpoint="publish/android/file/save"
                             enabled={true}
-                            hasText={true}>
+                            hasText={true}
+                        >
                             Save...
                         </BloomButton>
                     </div>
-                }
+                )}
 
                 <div id="progress-section" style={{ visibility: "visible" }}>
                     <div id="progress-row">
                         <h1>Progress</h1>
-                        <Link id="getBloomReaderLink"
-                            href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
-                            l10nKey="PublishTab.Android.GetBloomReader"
-                            l10nComment="Link to find Bloom Reader on Google Play Store">
-                            Get Bloom Reader App
-                        </Link>
-                        <HtmlHelpLink l10nKey="PublishTab.Android.Troubleshooting"
-                            fileid="Publish-Android-Troubleshooting">
-                            Troubleshooting Tips
-                        </HtmlHelpLink>
+                        <div id="rightSideOfProgressRow">
+                            <Link
+                                id="getBloomReaderLink"
+                                href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
+                                l10nKey="PublishTab.Android.GetBloomReader"
+                                l10nComment="Link to find Bloom Reader on Google Play Store"
+                            >
+                                Get Bloom Reader App
+                            </Link>
+                            <HtmlHelpLink
+                                l10nKey="PublishTab.Android.Troubleshooting"
+                                fileid="Publish-Android-Troubleshooting"
+                            >
+                                Troubleshooting Tips
+                            </HtmlHelpLink>
+                        </div>
                     </div>
                     <ProgressBox lifetimeLabel={kWebSocketLifetime} />
-                    <Link id="copyProgressToClipboard"
+                    <Link
+                        id="copyProgressToClipboard"
                         href=""
                         l10nKey="PublishTab.Android.CopyToClipboard"
-                        onClick={this.onCopy}>
+                        onClick={this.onCopy}
+                    >
                         Copy to Clipboard
                     </Link>
                 </div>

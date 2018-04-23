@@ -2639,12 +2639,12 @@ namespace Bloom.Book
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then
 		// be responsible to set that too...and probaby that is what it should read.
-		public bool UsePhotoStoryModeInBloomReader
+		public bool UseMotionModeInBloomReader
 		{
 			// Review: the issue suggested that it's only true if it has all of them. Currently they all get
 			// set or cleared together, so it makes no difference.
 			// I don't think it's helpful to have yet another place in our code
-			// that knows which six features make up PhotoStoryMode, so I decided to just check the most
+			// that knows which six features make up MotionBookMode, so I decided to just check the most
 			// characteristic one.
 			get { return OurHtmlDom.BookHasFeature("fullscreenpicture", "landscape", "bloomReader"); }
 			set

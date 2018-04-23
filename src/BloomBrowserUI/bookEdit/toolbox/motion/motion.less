@@ -1,0 +1,80 @@
+@import "../../../templates/common-mixins.less";
+@textColor: @bloom-buff; // #0C8597;
+@toolboxBackgroundColor: @DarkBackgroundColor;
+@buttonColumnWidth: 40px;
+
+.ui-motionBody {
+    padding-left: 15px;
+    padding-right: 15px;
+
+    .intro {
+        margin-bottom: 2em;
+    }
+    *,
+    a {
+        color: @textColor;
+    }
+    background-color: @toolboxBackgroundColor;
+
+    background-position: center;
+
+    .intro {
+        margin-bottom: 2em;
+    }
+    .ui-motion-button {
+        height: @buttonColumnWidth;
+        width: @buttonColumnWidth;
+        border: none;
+        background-size: contain;
+        background-color: transparent;
+        background-repeat: no-repeat;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .enable-checkbox {
+        // I don't why this is needed to line it up correctly...
+        // I can't get FF to open with tools anymore, so I can't really investigate
+        margin-left: -4px;
+    }
+    .motion-label {
+        display: inline-block;
+        max-width: 100px;
+    }
+
+    .disabled {
+        opacity: 0.4;
+    }
+
+    #motion-preview {
+        background-image: url("/bloom/bookEdit/toolbox/talkingBook/play_enabled.svg");
+        height: 45px;
+        width: 45px;
+
+        &.playing {
+            background-image: url("/bloom/images/pause-blue.svg");
+        }
+    }
+
+    .button-label-wrapper {
+        margin-top: 10px;
+    }
+    .button-wrapper {
+        display: flex;
+        min-width: 60px;
+        margin-top: 2em;
+    }
+
+    .previewSettingsWrapper {
+        margin-top: 15px; // move down so that Preview alings with point of the Play triangle
+        display: inline-block;
+
+        .motion-label {
+            margin-bottom: 1em;
+        }
+    }
+}
+
+.ui-accordion h3[data-toolId="motionTool"] span.ui-accordion-header-icon {
+    background-image: url("/bloom/images/motion.svg") !important;
+}
