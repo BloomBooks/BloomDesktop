@@ -89,7 +89,7 @@ namespace Bloom.MiscUI
 			| System.Windows.Forms.AnchorStyles.Right)));
 			this._message.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.tableLayout.SetColumnSpan(this._message, 3);
-			this._message.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._message.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._message.Location = new System.Drawing.Point(60, 0);
 			this._message.Margin = new System.Windows.Forms.Padding(0, 0, 0, 23);
 			this._message.Multiline = true;

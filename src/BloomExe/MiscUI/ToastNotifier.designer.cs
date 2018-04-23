@@ -39,7 +39,7 @@
 			// _message
 			// 
 			this._message.AutoSize = true;
-			this._message.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._message.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._message.Location = new System.Drawing.Point(50, 9);
 			this._message.MaximumSize = new System.Drawing.Size(240, 0);
 			this._message.Name = "_message";
