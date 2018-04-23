@@ -889,7 +889,12 @@ namespace Bloom.Book
 			var licenseMetadata = GetLicenseMetadata();
 			BringXmatterHtmlUpToDate(bookDOM);
 			RepairBrokenSmallCoverCredits(bookDOM);
+
+			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
+
+			progress.WriteStatus("Repair possible messed up Questions pages");
+			RepairQuestionsPages(bookDOM);
 
 			progress.WriteStatus("Gathering Data...");
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -941,6 +946,33 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
+		}
+
+		/// <summary>
+		/// At one point in v4.1, Question pages were able to be recorded with the Talking Book tool, but opening the
+		/// tool on these pages embedded tons of span elements which messed up BR display. New question pages have classes
+		/// that keep them from being recorded. Here we fix up any existing question pages from the old code.
+		/// </summary>
+		/// <param name="bookDOM"></param>
+		private void RepairQuestionsPages(HtmlDom bookDOM)
+		{
+			if (bookDOM?.Body == null)
+				return;     // must be a test running...
+
+			// classes to add
+			const string classNoStyleMods = "bloom-userCannotModifyStyles";
+			const string classNoAudio = "bloom-noAudio";
+
+			var questionNodes = bookDOM.Body.SelectNodes("//div[contains(@class,'quizContents')]");
+			foreach (XmlElement quizContentsElement in questionNodes)
+			{
+				if (!HtmlDom.HasClass(quizContentsElement, "bloom-noAudio")) // Needs migration
+				{
+					HtmlDom.AddClassIfMissing(quizContentsElement, classNoStyleMods);
+					HtmlDom.AddClassIfMissing(quizContentsElement, classNoAudio);
+					HtmlDom.StripUnwantedTagsPreservingText(bookDOM.RawDom, quizContentsElement, new []{ "div", "p", "br" });
+				}
+			}
 		}
 
 		/// <summary>

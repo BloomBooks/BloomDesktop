@@ -1143,6 +1143,26 @@ namespace Bloom.Book
 			node.InnerXml = node.InnerXml.Replace(kBR, "<br/>");
 		}
 
+		internal static void StripUnwantedTagsPreservingText(XmlDocument dom, XmlNode element, string[] tagsToPreserve)
+		{
+			if (element.HasChildNodes)
+			{
+				var countOfChildren = element.ChildNodes.Count;
+				for (var i = 0; i < countOfChildren; i++)
+				{
+					var childNode = element.ChildNodes[i];
+					if (childNode is XmlText)
+						continue;
+
+					StripUnwantedTagsPreservingText(dom, childNode, tagsToPreserve);
+				}
+			}
+			if (tagsToPreserve.Contains(element.Name))
+				return;
+			var replacementNode = dom.CreateTextNode(element.InnerText);
+			element.ParentNode.ReplaceChild(replacementNode, element);
+		}
+
 		/// <summary>
 		/// Blindly merge the classes from the source into the target.
 		/// </summary>
