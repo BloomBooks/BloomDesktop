@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -52,6 +53,19 @@ namespace BloomTests
 				var text = File.ReadAllText(temp.Path);
 				Assert.IsTrue(text.Contains("</div>"), text);
 			}
+		}
+
+		[TestCase("abc<svg whatever> some content</svg> something $$ else")]
+		[TestCase("abc<svg whatever> some content</svg> something $$ <svg 2>second svg</svg>else")]
+		public void RemoveRestoreSvgs(string input)
+		{
+			var svgs = new List<string>();
+			var itermediate = XmlHtmlConverter.RemoveSvgs(input, svgs);
+			var adapted = itermediate.Replace("$$", "Something changed");
+			Assert.That(itermediate, Does.Not.Contain("<svg"));
+			var output = XmlHtmlConverter.RestoreSvgs(adapted, svgs);
+			var expectedOutput = input.Replace("$$", "Something changed");
+			Assert.That(output, Is.EqualTo(expectedOutput));
 		}
 
 		/// <summary>
@@ -157,6 +171,23 @@ namespace BloomTests
 				Assert.AreEqual(6, matches.Count,text);
 				//this one also exercises XmlHtmlConverter.GetXmlDomFromHtmlFile, so we're not really testing anymore
 				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//p", 6);
+			}
+		}
+
+		[Test]
+		public void SaveAsHTM_DoesNotMessUpPaths()
+		{
+			var pattern = "<svg whatever='whatever'><path something='rubbish' /></svg>";
+			var dom = new XmlDocument();
+			dom.LoadXml("<!DOCTYPE html><html><body>" +
+			            pattern +
+			            "</body></html>");
+			using (var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				var text = File.ReadAllText(temp.Path);
+				//this one also exercises XmlHtmlConverter.GetXmlDomFromHtmlFile, so we're not really testing anymore
+				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//path", 1);
 			}
 		}
 
