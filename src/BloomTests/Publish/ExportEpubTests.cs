@@ -365,7 +365,6 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
-		[Platform(Exclude = "Linux", Reason = "Linux code produces strange GTK errors after passing the test.")]
 		public void BookSwitchedToDeviceXMatter()
 		{
 			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true);
