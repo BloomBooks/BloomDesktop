@@ -12,7 +12,7 @@ namespace Bloom.Book
 		{
 			WritingSystemAliases = new Dictionary<string, string>();
 			TextVariables = new Dictionary<string, NamedMutliLingualValue>();
-			Attributes = new Dictionary<string, List<KeyValuePair<string, string>>>();
+			XmatterPageDataAttributeSets = new Dictionary<string, ISet<KeyValuePair<string, string>>>();
 		}
 
 		/// <summary>
@@ -25,8 +25,7 @@ namespace Bloom.Book
 
 		public Dictionary<string, NamedMutliLingualValue> TextVariables { get; private set; }
 
-		public Dictionary<string, List<KeyValuePair<string, string>>> Attributes { get; private set; }
-
+		public Dictionary<string, ISet<KeyValuePair<string, string>>> XmatterPageDataAttributeSets { get; }
 
 		public void UpdateGenericLanguageString(string key, string value, bool isCollectionValue)
 		{
@@ -72,6 +71,14 @@ namespace Bloom.Book
 				TextVariables.Add(key, new NamedMutliLingualValue(text, isCollectionValue));
 			}
 			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId,value);
+		}
+
+		public void UpdateXmatterPageDataAttributeSet(string key, ISet<KeyValuePair<string, string>> xmatterPageDataAttributeSet)
+		{
+			if (XmatterPageDataAttributeSets.ContainsKey(key))
+				XmatterPageDataAttributeSets[key] = xmatterPageDataAttributeSet;
+			else
+				XmatterPageDataAttributeSets.Add(key, xmatterPageDataAttributeSet);
 		}
 	}
 

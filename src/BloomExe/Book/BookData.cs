@@ -50,6 +50,8 @@ namespace Bloom.Book
 	/// </remarks>
 	public class BookData
 	{
+		private const string kDataXmatterPage = "data-xmatter-page";
+
 		private readonly HtmlDom _dom;
 		private readonly Action<XmlElement> _updateImgNode;
 		private readonly CollectionSettings _collectionSettings;
@@ -195,6 +197,8 @@ namespace Bloom.Book
 			}
 			foreach (var tuple in itemsToDelete)
 				UpdateSingleTextVariableInDataDiv(tuple.Item1, tuple.Item2, "");
+			foreach (var attributeSet in incomingData.XmatterPageDataAttributeSets)
+				UpdateXmatterDataAttributeSetInDataDiv(attributeSet);
 			//Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
@@ -202,6 +206,28 @@ namespace Bloom.Book
 			if (info != null)
 				UpdateBookInfoTags(info);
 			UpdateCredits(info);
+		}
+
+		private void UpdateXmatterDataAttributeSetInDataDiv(KeyValuePair<string, ISet<KeyValuePair<string, string>>> attributeSet)
+		{
+			XmlElement dataDivElementToUpdate = (XmlElement)_dataDiv.SelectSingleNode($"div[@{kDataXmatterPage}='{attributeSet.Key}']");
+			if (dataDivElementToUpdate == null)
+				dataDivElementToUpdate = AddDataDivElement(kDataXmatterPage, attributeSet.Key);
+			else
+			{
+				var attributesToRemove = new HashSet<XmlAttribute>();
+				foreach (XmlAttribute attribute in dataDivElementToUpdate.Attributes)
+					if (attribute.Name != kDataXmatterPage)
+						attributesToRemove.Add(attribute);
+
+				foreach (XmlAttribute attribute in attributesToRemove)
+					dataDivElementToUpdate.RemoveAttributeNode(attribute);
+			}
+
+			foreach (var attributeKvp in attributeSet.Value)
+				dataDivElementToUpdate.SetAttribute(attributeKvp.Key, attributeKvp.Value);
+
+			_dataset.UpdateXmatterPageDataAttributeSet(attributeSet.Key, attributeSet.Value);
 		}
 
 		private void MigrateData(DataSet data)
@@ -461,11 +487,18 @@ namespace Bloom.Book
 
 		public void AddDataDivBookVariable(string key, string lang, string form)
 		{
-			XmlElement d = _dom.RawDom.CreateElement("div");
-			d.SetAttribute("data-book", key);
-			d.SetAttribute("lang", lang);
-			SetNodeXml(key, form, d);
-			GetOrCreateDataDiv().AppendChild(d);
+			AddDataDivElement("data-book", key, lang, form);
+		}
+
+		public XmlElement AddDataDivElement(string type, string key, string lang = null, string form = "")
+		{
+			XmlElement newDiv = _dom.RawDom.CreateElement("div");
+			newDiv.SetAttribute(type, key);
+			if (lang != null)
+				newDiv.SetAttribute("lang", lang);
+			SetNodeXml(key, form, newDiv);
+			GetOrCreateDataDiv().AppendChild(newDiv);
+			return newDiv;
 		}
 
 		public void Set(string key, string value, bool isCollectionValue)
@@ -643,7 +676,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection or data-book-attributes attributes.
+		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection or data-xmatter-page attributes.
 		/// </summary>
 		private void GatherDataItemsFromXElement(DataSet data,
 			XmlNode sourceElement, // can be the whole sourceDom or just a page
@@ -652,7 +685,7 @@ namespace Bloom.Book
 			string elementName = "*";
 			try
 			{
-				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection or @data-book-attributes) and not(contains(@class,'bloom-writeOnly'))]", elementName);
+				string query = $".//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage}) and not(contains(@class,'bloom-writeOnly'))]";
 
 				XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
@@ -663,10 +696,10 @@ namespace Bloom.Book
 					string key = node.GetAttribute("data-book").Trim();
 					if (key == String.Empty)
 					{
-						key = node.GetAttribute("data-book-attributes").Trim();
+						key = node.GetAttribute(kDataXmatterPage).Trim();
 						if (key != String.Empty)
 						{
-							GatherAttributes(data, node, key);
+							GatherXmatterPageDataAttributeSets(data, node, key);
 							continue;
 						}
 						key = node.GetAttribute("data-collection").Trim();
@@ -757,17 +790,17 @@ namespace Bloom.Book
 			}
 		}
 
-		private void GatherAttributes(DataSet data, XmlElement node, string key)
+		private void GatherXmatterPageDataAttributeSets(DataSet data, XmlElement node, string key)
 		{
-			if (data.Attributes.ContainsKey(key))
+			if (data.XmatterPageDataAttributeSets.ContainsKey(key))
 				return;
-			List<KeyValuePair<string, string>> attributes = new List<KeyValuePair<string, string>>();
+			ISet<KeyValuePair<string, string>> attributes = new HashSet<KeyValuePair<string, string>>();
 			foreach (XmlAttribute attribute in node.Attributes)
 			{
-				if (attribute.Name != "data-book-attributes")
+				if (attribute.Name != kDataXmatterPage && attribute.Name.StartsWith("data-"))
 					attributes.Add(new KeyValuePair<string, string>(attribute.Name, attribute.Value));
 			}
-			data.Attributes.Add(key, attributes);
+			data.XmatterPageDataAttributeSets.Add(key, attributes);
 		}
 
 		/// <summary>
@@ -787,7 +820,7 @@ namespace Bloom.Book
 		{
 			try
 			{
-				var query = String.Format("//{0}[(@data-book or @data-collection or @data-library or @data-book-attributes)]", elementName);
+				var query = $"//{elementName}[(@data-book or @data-collection or @data-library or @{kDataXmatterPage})]";
 				var nodesOfInterest = targetDom.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
@@ -795,10 +828,10 @@ namespace Bloom.Book
 					var key = node.GetAttribute("data-book").Trim();
 					if (key == string.Empty)
 					{
-						key = node.GetAttribute("data-book-attributes").Trim();
+						key = node.GetAttribute(kDataXmatterPage).Trim();
 						if (key != string.Empty)
 						{
-							UpdateAttributes(data, node, key);
+							UpdateXmatterPageDataAttributeSets(data, node, key);
 							continue;
 						}
 						key = node.GetAttribute("data-collection").Trim();
@@ -896,10 +929,10 @@ namespace Bloom.Book
 			return string.IsNullOrWhiteSpace(strippedString);
 		}
 
-		private void UpdateAttributes(DataSet data, XmlElement node, string key)
+		private void UpdateXmatterPageDataAttributeSets(DataSet data, XmlElement node, string key)
 		{
-			List<KeyValuePair<string, string>> attributes;
-			if (!data.Attributes.TryGetValue(key, out attributes))
+			ISet<KeyValuePair<string, string>> attributes;
+			if (!data.XmatterPageDataAttributeSets.TryGetValue(key, out attributes))
 				return;
 			foreach (var attribute in attributes)
 				node.SetAttribute(attribute.Key, attribute.Value);
@@ -1060,6 +1093,15 @@ namespace Bloom.Book
 			if (string.IsNullOrEmpty(f))//the TextAlternatives thing gives "", whereas we want null
 				return null;
 			return f;
+		}
+
+		public string GetXmatterPageDataAttributeValue(string key, string attributeName)
+		{
+			ISet<KeyValuePair<string, string>> attributeSet;
+			if (!_dataset.XmatterPageDataAttributeSets.TryGetValue(key, out attributeSet))
+				return null;
+			var attributeKvp = attributeSet.SingleOrDefault(kvp => kvp.Key == attributeName);
+			return attributeKvp.Equals(default(KeyValuePair<string, string>)) ? null : attributeKvp.Value;
 		}
 
 		public MultiTextBase GetMultiTextVariableOrEmpty(string key)

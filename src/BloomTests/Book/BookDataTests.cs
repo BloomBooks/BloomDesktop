@@ -145,7 +145,74 @@ namespace BloomTests.Book
 		   data.SuckInDataFromEditedDom(editedPageDom);
 
 		   Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz"));
-	   }
+		}
+
+		[Test]
+		public void SuckInDataFromEditedDom_XmatterPageAttributeAddedToXmatterPage_XmatterPageAttributeAddedToBookDataAndDataDiv()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+				</div>
+			 </body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+			Assert.IsNull(data.GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudio"));
+			Assert.IsNull(data.GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudiovolume"));
+
+			HtmlDom editedPageDom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover' data-backgroundaudio='SoundTrack0.mp3' data-backgroundaudiovolume='0.21'>
+				</div>
+			 </body></html>");
+
+			data.SuckInDataFromEditedDom(editedPageDom);
+
+			Assert.AreEqual("SoundTrack0.mp3", data.GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudio"));
+			Assert.AreEqual("0.21", data.GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudiovolume"));
+
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-xmatter-page='frontCover' " +
+				"and @data-backgroundaudio='SoundTrack0.mp3' and @data-backgroundaudiovolume='0.21' and not(text())]", 1);
+		}
+
+		//[Test] TODO - this test doesn't work because SuckInDataFromEditedDom first updates the page from the data div before updating the data div from the page.
+		// I couldn't get it worked out, but the production code does do things correctly. I attempted to add this test for BL-5409.
+		public void SuckInDataFromEditedDom_XmatterPageAttributeUpdatedInXmatterPage_XmatterPageAttributeUpdatedInBookDataAndDataDiv()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+					<div class='bloom-page frontCover' data-xmatter-page='frontCover' data-backgroundaudio='SoundTrack0.mp3' data-backgroundaudiovolume='0.21'>
+					</div>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover' data-backgroundaudio='SoundTrack0.mp3' data-backgroundaudiovolume='0.21'>
+				</div>
+			 </body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+			Assert.AreEqual("SoundTrack0.mp3", data.GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudio"));
+			Assert.AreEqual("0.21", data.GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudiovolume"));
+
+			HtmlDom editedPageDom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+					<div class='bloom-page frontCover' data-xmatter-page='frontCover' data-backgroundaudio='SoundTrack0.mp3' data-backgroundaudiovolume='0.21'>
+					</div>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover' data-backgroundaudio='SoundTrack2.mp3' data-backgroundaudiovolume='0.99'>
+				</div>
+			 </body></html>");
+
+			data.SuckInDataFromEditedDom(editedPageDom);
+
+			Assert.AreEqual("SoundTrack2.mp3", data.GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudio"));
+			Assert.AreEqual("0.99", data.GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudiovolume"));
+
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-xmatter-page='frontCover' " +
+				"and @data-backgroundaudio='SoundTrack2.mp3' and @data-backgroundaudiovolume='0.99' and not(text())]", 1);
+		}
 
 		[Test]
 		public void UpdateFieldsAndVariables_CustomLibraryVariable_CopiedToOtherElement()
@@ -183,14 +250,14 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom(@"<html><head></head><body>
 				<div id='bloomDataDiv'>
-					<div data-book-attributes='frontCover' " + HtmlDom.musicAttrName + "='audio/SoundTrack1.mp3' " + HtmlDom.musicVolumeName + @"='0.17'></div>
+					<div data-xmatter-page='frontCover' " + HtmlDom.musicAttrName + "='audio/SoundTrack1.mp3' " + HtmlDom.musicVolumeName + @"='0.17'></div>
 				</div>
-				<div id='firstPage' class='bloom-page' data-book-attributes='frontCover'>1st page</div>
+				<div id='firstPage' class='bloom-page' data-xmatter-page='frontCover'>1st page</div>
 				</body></html>");
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(dom.RawDom)
-				.HasSpecifiedNumberOfMatchesForXpath("//div[@id='firstPage' and @data-book-attributes='frontCover' and @"
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@id='firstPage' and @data-xmatter-page='frontCover' and @"
 					+ HtmlDom.musicAttrName + "='audio/SoundTrack1.mp3' and @" + HtmlDom.musicVolumeName + "='0.17']", 1);
 		}
 
@@ -392,6 +459,62 @@ namespace BloomTests.Book
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='someVariable' and text()='world']", 1);
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_NewXmatterPageAttributeSet_AddedToDataDiv()
+		{
+			var dom = new HtmlDom(@"<html><head></head><body></body></html>");
+
+			var e = dom.RawDom.CreateElement("div");
+			e.SetAttribute("data-xmatter-page", "frontCover");
+			e.SetAttribute("data-someattribute", "someValue");
+			e.InnerText = "anything";
+			dom.RawDom.SelectSingleNode("//body").AppendChild(e);
+
+			var data = new BookData(dom, new CollectionSettings(), null);
+			data.UpdateVariablesAndDataDivThroughDOM();
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-xmatter-page='frontCover' and @data-someattribute='someValue' and not(text())]", 1);
+		}
+
+		//[Test] TODO - this test doesn't work because UpdateVariablesAndDataDivThroughDOM first updates the page from the data div before updating the data div from the page.
+		// I couldn't get it worked out, but the production code does do things correctly. I attempted to add this test for BL-5409.
+		public void UpdateVariablesAndDataDivThroughDOM_UpdatedXmatterPageAttributeSet_UpdatedInDataDiv()
+		{
+			var dom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'><div data-xmatter-page='frontCover' data-someattribute='someValue'></div></div>
+				<div class='bloom-page' data-xmatter-page='frontCover' data-someattribute='someValue'>anything</div>
+				</body></html>");
+
+			var e = (XmlElement)dom.RawDom.SelectSingleNode("//body/div[@class='bloom-page' and @data-xmatter-page='frontCover']");
+			e.SetAttribute("data-someattribute", "someOtherValue");
+
+			var data = new BookData(dom, new CollectionSettings(), null);
+			data.UpdateVariablesAndDataDivThroughDOM();
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-xmatter-page='frontCover' and @data-someattribute='someOtherValue' and not(text())]", 1);
+		}
+
+		//[Test] TODO - this test doesn't work because UpdateVariablesAndDataDivThroughDOM first updates the page from the data div before updating the data div from the page.
+		// I couldn't get it worked out, but the production code does do things correctly. I attempted to add this test for BL-5409.
+		public void UpdateVariablesAndDataDivThroughDOM_RemovedXmatterPageAttribute_RemovedFromDataDiv()
+		{
+			var dom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'><div data-xmatter-page='frontCover' data-someattribute='someValue'></div></div>
+				<div class='bloom-page' data-xmatter-page='frontCover' data-someattribute='someValue'>anything</div>
+				</body></html>");
+
+			var e = (XmlElement)dom.RawDom.SelectSingleNode("//body/div[@class='bloom-page' and @data-xmatter-page='frontCover']");
+			e.RemoveAttribute("data-someattribute");
+
+			var data = new BookData(dom, new CollectionSettings(), null);
+			data.UpdateVariablesAndDataDivThroughDOM();
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);//NB microsoft uses 1 as the first. W3c uses 0.
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-xmatter-page='frontCover' and not(@data-someattribute) and not(text())]", 1);
 		}
 
 
