@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -12,12 +13,13 @@ namespace Bloom
 {
 	public static class XmlHtmlConverter
 	{
+		private const string SvgPlaceholder = "****RestoreSvgHere****";
 
 		private static readonly Regex _selfClosingRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)/>");
 		private static readonly Regex _emptySelfClosingElementsToRemoveRegex = new Regex(@"<([ubi]|em|strong|span)\s*/>");
 		private static readonly Regex _emptyElementsWithAttributesRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)>(\s*)</\1>");
 		private static readonly Regex _emptyElementsToPreserveRegex = new Regex(@"<(p)\s*>(\s*)</\1>");
-		private static readonly Regex _selfClosingElementsToPreserveRegex = new Regex(@"<(p)(\s*[^><]*\s*)/>");
+		private static readonly Regex _selfClosingElementsToPreserveRegex = new Regex(@"<(p)(\s+[^><]*\s*)/>");
 
 
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
@@ -60,6 +62,10 @@ namespace Bloom
 				content = content.Substring(0, startOfCdata) + restoreCdataHere + content.Substring(endOfCdata, content.Length - endOfCdata);
 			}
 
+			var removedSvgs = new List<string>();
+			content = RemoveSvgs(content, removedSvgs);
+
+
 			//using (var temp = new TempFile())
 			var temp = new TempFile();
 			{
@@ -93,6 +99,8 @@ namespace Bloom
 					var newContents = tidy.Save();
 					try
 					{
+
+						newContents = RestoreSvgs(newContents, removedSvgs);
 						newContents = RemoveFillerInEmptyElements(newContents);
 
 						newContents = newContents.Replace("&nbsp;", "&#160;");
@@ -158,7 +166,6 @@ namespace Bloom
 				Debug.Fail("Repro of http://jira.palaso.org/issues/browse/BL-46 ");
 			}
 
-
 			//this is a hack... each time we write the content, we add a new <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 			//so for now, we remove it when we read it in. It'll get added again when we write it out
 			RemoveAllContentTypesMetas(dom);
@@ -221,6 +228,10 @@ namespace Bloom
 		/// <param name="content"></param>
 		public static void ThrowIfHtmlHasErrors(string content)
 		{
+			// Tidy chokes on embedded svgs so just take them out. Here we don't use the removed svgs.
+			var dummy = new List<string>();
+			content = RemoveSvgs(content, dummy);
+
 			using (var tidy = Document.FromString(content))
 			{
 				tidy.ShowWarnings = false;
@@ -329,6 +340,9 @@ namespace Bloom
 			var BrPlaceholder = "$$ConvertThisBackToBr$$";
 			xml = xml.Replace("<br />", BrPlaceholder);
 
+			var removedSvgs = new List<string>();
+			xml = RemoveSvgs(xml, removedSvgs);
+
 			// Now re-write as html, indented nicely
 			string html;
 			using (var tidy = Document.FromString(xml))
@@ -366,6 +380,9 @@ namespace Bloom
 			}
 
 			// Now revert the stuff we did to make it "safe from libtidy"
+
+			html = RestoreSvgs(html, removedSvgs);
+
 			html = html.Replace(BrPlaceholder, "<br>");
 			html = RemoveFillerInEmptyElements(html);
 			return html;
@@ -377,6 +394,36 @@ namespace Bloom
 			{
 				n.ParentNode.RemoveChild(n);
 			}
+		}
+
+		public static string RemoveSvgs(string input, List<string> svgs)
+		{
+			// Tidy utterly chokes (exits the whole program without even a green screen) on SVGs.
+			var regexSvg = new Regex("<svg .*?</svg>", RegexOptions.Singleline);
+			// This is probably not the most efficient way to remove and restore them but the common case is that none are found,
+			// and this is not too bad for that case.
+			var result = input;
+			for (var matchSvg = regexSvg.Match(result); matchSvg.Success; matchSvg = regexSvg.Match(result))
+			{
+				svgs.Add(matchSvg.Value);
+				result = result.Substring(0, matchSvg.Index) + SvgPlaceholder +
+				      result.Substring(matchSvg.Index + matchSvg.Length);
+			}
+
+			return result;
+		}
+
+		public static string RestoreSvgs(string input, List<string> svgs)
+		{
+			var result = input;
+			foreach (var svg in svgs)
+			{
+				// We want a ReplaceFirst but .Net doesn't have it.
+				int index = result.IndexOf(SvgPlaceholder);
+				result = result.Substring(0, index) + svg + result.Substring(index + SvgPlaceholder.Length);
+
+			}
+			return result;
 		}
 	}
 }

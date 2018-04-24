@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -52,6 +53,21 @@ namespace BloomTests
 				var text = File.ReadAllText(temp.Path);
 				Assert.IsTrue(text.Contains("</div>"), text);
 			}
+		}
+
+		[TestCase("abc<svg whatever> some content</svg> something $$ else")]
+		[TestCase("abc<svg whatever> some content</svg> something $$ <svg 2>second svg</svg>else")]
+		public void RemoveRestoreSvgs(string input)
+		{
+			var svgs = new List<string>();
+			var intermediate = XmlHtmlConverter.RemoveSvgs(input, svgs);
+			var adapted = intermediate.Replace("$$", "Something changed");
+			Assert.That(intermediate, Does.Not.Contain("<svg"));
+			Assert.That(intermediate, Does.Not.Contain("</svg"));
+			Assert.That(intermediate, Does.Not.Contain("some content")); // checks at least once that the body of the svg is gone
+			var output = XmlHtmlConverter.RestoreSvgs(adapted, svgs);
+			var expectedOutput = input.Replace("$$", "Something changed");
+			Assert.That(output, Is.EqualTo(expectedOutput));
 		}
 
 		/// <summary>
@@ -157,6 +173,26 @@ namespace BloomTests
 				Assert.AreEqual(6, matches.Count,text);
 				//this one also exercises XmlHtmlConverter.GetXmlDomFromHtmlFile, so we're not really testing anymore
 				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//p", 6);
+			}
+		}
+
+		[Test]
+		public void SaveDOMAsHtml5_DoesNotMessUpPaths()
+		{
+			var pattern = "<svg whatever='whatever'><path something='rubbish' /></svg>";
+			var dom = new XmlDocument();
+			dom.LoadXml("<!DOCTYPE html><html><body>" +
+			            pattern +
+			            "</body></html>");
+			using (var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				// This is a regression test guarding against a problem where something we were trying
+				// to do to <p whatever /> that converted it to <p whatever ></p> was also converting
+				// <path whatever /> to <path whatever></p> (note the non-matching closing tag!)
+				// That causes the parser to throw on invalid XML, so the main point here is just that we ended up
+				// with valid XML. The further test that the <path> element survived is a bonus.
+				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//path", 1);
 			}
 		}
 
