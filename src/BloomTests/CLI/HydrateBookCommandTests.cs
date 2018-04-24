@@ -47,7 +47,7 @@ namespace BloomTests.CLI
 							Some Acknowledgments
 						</div>
 
-						<div data-book-attributes='frontCover' " + HtmlDom.musicAttrName + @"='audio/SoundTrack1.mp3'" + HtmlDom.musicVolumeName + @"='0.17'></div>
+						<div data-xmatter-page='frontCover' " + HtmlDom.musicAttrName + @"='audio/SoundTrack1.mp3'" + HtmlDom.musicVolumeName + @"='0.17'></div>
 					</div>
 					<div id ='firstPage' class='bloom-page A5Landscape'>1st page</div>
 				</body></html>");
@@ -138,11 +138,15 @@ namespace BloomTests.CLI
 				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='originalAcknowledgments' and @lang='en' and contains(@class,'bloom-editable') and contains(text(),'Some Acknowledgments')]", 1);
 
 			AssertThatXmlIn.Dom(dom)
-				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book-attributes='frontCover' and @" + HtmlDom.musicAttrName
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-xmatter-page='frontCover' and @" + HtmlDom.musicAttrName
 					+ "='audio/SoundTrack1.mp3' and @" + HtmlDom.musicVolumeName + "='0.17']", 2);
 
 			AssertThatXmlIn.Dom(dom)
-				.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'frontCover') and @" + HtmlDom.musicAttrName
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-xmatter-page='frontCover' and @" + HtmlDom.musicAttrName
+					+ "='audio/SoundTrack1.mp3' and @" + HtmlDom.musicVolumeName + "='0.17']", 1);
+
+			AssertThatXmlIn.Dom(dom)
+				.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'frontCover') and contains(@class,'bloom-page') and @data-xmatter-page='frontCover' and @" + HtmlDom.musicAttrName
 					+ "='audio/SoundTrack1.mp3' and @" + HtmlDom.musicVolumeName + "='0.17']", 1);
 		}
 
