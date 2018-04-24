@@ -50,6 +50,24 @@ namespace Bloom.Book
 	/// </remarks>
 	public class BookData
 	{
+		/// <summary>
+		/// This is the attribute name used in the data div for a rather complex data-model.
+		/// Specifically, an xmatter page sets a specific page name as the value of this attribute.
+		/// That value is used as a key to link the attributes stored in the data div with the attributes on the page itself.
+		/// This allows us to keep the values persisted (since the xmatter is constantly being regenerated).
+		///
+		/// E.g.
+		/// In the data div, we have a div such as
+		/// <div data-xmatter-page="frontCover" data-backgroundaudio="SoundTrack0.mp3" data-backgroundaudiovolume="0.5717869999999999"></div>
+		///
+		/// The actual xmatter page will also have these same attributes (along with all the rest it has).
+		/// <div class="bloom-page cover coverColor bloom-frontMatter frontCover Device16x9Landscape layout-style-Default side-right"
+		/// id="76ed5d5b-c178-4db1-8be1-4a2f63eccaa4"
+		/// data-xmatter-page="frontCover" data-backgroundaudio="SoundTrack0.mp3" data-backgroundaudiovolume="0.5717869999999999"
+		/// lang="">
+		/// </summary>
+		private const string kDataXmatterPage = "data-xmatter-page";
+
 		private readonly HtmlDom _dom;
 		private readonly Action<XmlElement> _updateImgNode;
 		private readonly CollectionSettings _collectionSettings;
@@ -195,6 +213,8 @@ namespace Bloom.Book
 			}
 			foreach (var tuple in itemsToDelete)
 				UpdateSingleTextVariableInDataDiv(tuple.Item1, tuple.Item2, "");
+			foreach (var attributeSet in incomingData.XmatterPageDataAttributeSets)
+				PushXmatterPageAttributesIntoDataDiv(attributeSet);
 			//Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
@@ -202,6 +222,26 @@ namespace Bloom.Book
 			if (info != null)
 				UpdateBookInfoTags(info);
 			UpdateCredits(info);
+		}
+
+		/// <summary>
+		/// We have a set of attributes which belong to an xmatter page; we need to update the data div with those values.
+		/// In attributeSet, the key is the page name (such as "frontCover"); the value is the set of attributes as key-value pairs.
+		/// </summary>
+		private void PushXmatterPageAttributesIntoDataDiv(KeyValuePair<string, ISet<KeyValuePair<string, string>>> attributeSet)
+		{
+			XmlElement dataDivElementForThisXmatterPage = (XmlElement)_dataDiv.SelectSingleNode($"div[@{kDataXmatterPage}='{attributeSet.Key}']");
+
+			if (dataDivElementForThisXmatterPage != null)
+				_dataDiv.RemoveChild(dataDivElementForThisXmatterPage);
+
+			dataDivElementForThisXmatterPage = AddDataDivElement(kDataXmatterPage, attributeSet.Key);
+
+			foreach (var attributeKvp in attributeSet.Value)
+				dataDivElementForThisXmatterPage.SetAttribute(attributeKvp.Key, attributeKvp.Value);
+
+			// Ok, we've updated the dom; now we need to update the dataset.
+			_dataset.UpdateXmatterPageDataAttributeSet(attributeSet.Key, attributeSet.Value);
 		}
 
 		private void MigrateData(DataSet data)
@@ -427,7 +467,7 @@ namespace Bloom.Book
 				{
 					//Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
 					//Debug.WriteLine("nop: " + _dataDiv.OuterXml);
-					AddDataDivBookVariable(key, writingSystemId, form);
+					AddDataDivElementContainingBookVariable(key, writingSystemId, form);
 				}
 			}
 			else
@@ -459,13 +499,20 @@ namespace Bloom.Book
 			node.InnerXml = form;
 		}
 
-		public void AddDataDivBookVariable(string key, string lang, string form)
+		public void AddDataDivElementContainingBookVariable(string key, string lang, string form)
 		{
-			XmlElement d = _dom.RawDom.CreateElement("div");
-			d.SetAttribute("data-book", key);
-			d.SetAttribute("lang", lang);
-			SetNodeXml(key, form, d);
-			GetOrCreateDataDiv().AppendChild(d);
+			AddDataDivElement("data-book", key, lang, form);
+		}
+
+		public XmlElement AddDataDivElement(string type, string key, string lang = null, string form = "")
+		{
+			XmlElement newDiv = _dom.RawDom.CreateElement("div");
+			newDiv.SetAttribute(type, key);
+			if (lang != null)
+				newDiv.SetAttribute("lang", lang);
+			SetNodeXml(key, form, newDiv);
+			GetOrCreateDataDiv().AppendChild(newDiv);
+			return newDiv;
 		}
 
 		public void Set(string key, string value, bool isCollectionValue)
@@ -643,7 +690,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection or data-book-attributes attributes.
+		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection or data-xmatter-page attributes.
 		/// </summary>
 		private void GatherDataItemsFromXElement(DataSet data,
 			XmlNode sourceElement, // can be the whole sourceDom or just a page
@@ -652,7 +699,7 @@ namespace Bloom.Book
 			string elementName = "*";
 			try
 			{
-				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection or @data-book-attributes) and not(contains(@class,'bloom-writeOnly'))]", elementName);
+				string query = $".//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage}) and not(contains(@class,'bloom-writeOnly'))]";
 
 				XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
@@ -663,10 +710,13 @@ namespace Bloom.Book
 					string key = node.GetAttribute("data-book").Trim();
 					if (key == String.Empty)
 					{
-						key = node.GetAttribute("data-book-attributes").Trim();
+						key = node.GetAttribute(kDataXmatterPage).Trim();
 						if (key != String.Empty)
 						{
-							GatherAttributes(data, node, key);
+							if (!data.XmatterPageDataAttributeSets.ContainsKey(key))
+								GatherXmatterPageDataAttributeSetIntoDataSet(data, node);
+							// This element has a data-xmatter-page attribute. So it is a bloom-page div.
+							// And currently a bloom-page cannot also be an element waiting to be filled with data-collection, so we're done here.
 							continue;
 						}
 						key = node.GetAttribute("data-collection").Trim();
@@ -757,17 +807,25 @@ namespace Bloom.Book
 			}
 		}
 
-		private void GatherAttributes(DataSet data, XmlElement node, string key)
+		/// <summary>
+		/// Xmatter pages sometimes have data-* attributes that can be changed by the user.
+		/// For example, setting background music. This method reads those attributes into the given dataset under the xmatterPageKey.
+		/// </summary>
+		/// <param name="element">Could be the xmatter page element or the related div inside the data div</param>
+		private void GatherXmatterPageDataAttributeSetIntoDataSet(DataSet dataSet, XmlElement element)
 		{
-			if (data.Attributes.ContainsKey(key))
-				return;
-			List<KeyValuePair<string, string>> attributes = new List<KeyValuePair<string, string>>();
-			foreach (XmlAttribute attribute in node.Attributes)
+			var xmatterPageKey = element.GetAttribute(kDataXmatterPage).Trim();
+
+			ISet<KeyValuePair<string, string>> attributes = new HashSet<KeyValuePair<string, string>>();
+			foreach (XmlAttribute attribute in element.Attributes)
 			{
-				if (attribute.Name != "data-book-attributes")
+				if (attribute.Name != kDataXmatterPage && attribute.Name.StartsWith("data-"))
 					attributes.Add(new KeyValuePair<string, string>(attribute.Name, attribute.Value));
 			}
-			data.Attributes.Add(key, attributes);
+
+			if (dataSet.XmatterPageDataAttributeSets.ContainsKey(xmatterPageKey))
+				dataSet.XmatterPageDataAttributeSets.Remove(xmatterPageKey);
+			dataSet.XmatterPageDataAttributeSets.Add(xmatterPageKey, attributes);
 		}
 
 		/// <summary>
@@ -787,7 +845,7 @@ namespace Bloom.Book
 		{
 			try
 			{
-				var query = String.Format("//{0}[(@data-book or @data-collection or @data-library or @data-book-attributes)]", elementName);
+				var query = $"//{elementName}[(@data-book or @data-collection or @data-library or @{kDataXmatterPage})]";
 				var nodesOfInterest = targetDom.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
@@ -795,10 +853,10 @@ namespace Bloom.Book
 					var key = node.GetAttribute("data-book").Trim();
 					if (key == string.Empty)
 					{
-						key = node.GetAttribute("data-book-attributes").Trim();
+						key = node.GetAttribute(kDataXmatterPage).Trim();
 						if (key != string.Empty)
 						{
-							UpdateAttributes(data, node, key);
+							UpdateXmatterPageDataAttributeSets(data, node);
 							continue;
 						}
 						key = node.GetAttribute("data-collection").Trim();
@@ -896,13 +954,19 @@ namespace Bloom.Book
 			return string.IsNullOrWhiteSpace(strippedString);
 		}
 
-		private void UpdateAttributes(DataSet data, XmlElement node, string key)
+		/// <summary>
+		/// Xmatter pages sometimes have data-* attributes that can be changed by the user.
+		/// For example, setting background music. This method sets those attributes from the given dataset into the dom.
+		/// </summary>
+		/// <param name="element">Could be the xmatter page element or the related div inside the data div</param>
+		private void UpdateXmatterPageDataAttributeSets(DataSet dataset, XmlElement element)
 		{
-			List<KeyValuePair<string, string>> attributes;
-			if (!data.Attributes.TryGetValue(key, out attributes))
+			var xmatterPageKey = element.GetAttribute(kDataXmatterPage).Trim();
+			ISet<KeyValuePair<string, string>> attributes;
+			if (!dataset.XmatterPageDataAttributeSets.TryGetValue(xmatterPageKey, out attributes))
 				return;
 			foreach (var attribute in attributes)
-				node.SetAttribute(attribute.Key, attribute.Value);
+				element.SetAttribute(attribute.Key, attribute.Value);
 		}
 
 		/// <summary>
@@ -1060,6 +1124,20 @@ namespace Bloom.Book
 			if (string.IsNullOrEmpty(f))//the TextAlternatives thing gives "", whereas we want null
 				return null;
 			return f;
+		}
+
+		/// <summary>
+		/// Looks up the value of a data attribute associated with a particular xmatter page.
+		/// For example, you may want to find the value of the "data-backgroundaudio" attribute of the "frontCover":
+		///		GetXmatterPageDataAttributeValue("frontCover", "data-backgroundaudio")
+		/// </summary>
+		public string GetXmatterPageDataAttributeValue(string xmatterPageKey, string attributeName)
+		{
+			ISet<KeyValuePair<string, string>> attributeSet;
+			if (!_dataset.XmatterPageDataAttributeSets.TryGetValue(xmatterPageKey, out attributeSet))
+				return null;
+			var attributeKvp = attributeSet.SingleOrDefault(kvp => kvp.Key == attributeName);
+			return attributeKvp.Equals(default(KeyValuePair<string, string>)) ? null : attributeKvp.Value;
 		}
 
 		public MultiTextBase GetMultiTextVariableOrEmpty(string key)
