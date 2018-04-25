@@ -501,8 +501,18 @@ namespace Bloom.Edit
 			var ge = e as DomEventArgs;
 			if(ge == null || ge.Target == null)
 				return; //I've seen this happen
+			GeckoHtmlElement target;
+			try
+			{
+				target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
+			}
+			catch (InvalidCastException)
+			{
+				// Some things...e.g., SVG elements...can't be cast like this. I can't find any way to
+				// predict it. But if we click on one of those, just take the default behavior.
+				return;
+			}
 
-			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
 			if(target.ClassName.Contains("sourceTextTab"))
 			{
 				RememberSourceTabChoice(target);
