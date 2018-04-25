@@ -1,7 +1,8 @@
 ﻿## 4.2
 - Edit Tab
-    - New "Music Tool" allow you to choose background music and levels.
-    - New "Motion Tool" allows you to specify pan/zoom effects of a page, to make a "Motion Book" in Bloom Reader.
+    - New "Motion Tool" allows you to specify pan/zoom effects of a page, to make a "Motion Book" in Bloom Reader. Then tick the "Motion Book" button when publishing to the Android Bloom Reader. What you'll get is a book that is a normal talking book in portrait mode, then goes to sit-back-and-watch mode when you turn the device sideways.
+    - New "Music Tool" allow you to choose background music and levels, to go along with your Motion Book.
+    - We've reinstated the ability to zoom via CTRL+mouse wheel.
 - Publish
     - Fonts are now embedded in Bloom Reader books, if their embedded metadata allows that.
 
