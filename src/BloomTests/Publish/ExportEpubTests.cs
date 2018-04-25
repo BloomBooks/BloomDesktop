@@ -75,6 +75,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest("my_Image", "my_image1");
 			CheckBasicsInPage("my_Image", "my_image1");
 #endif
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -91,6 +92,7 @@ namespace BloomTests.Publish
 			MakeEpub("ปูกับมด", "HandlesNonRomanFileNames", book);
 			CheckBasicsInManifest(outputImageName, "my_image");
 			CheckBasicsInPage(outputImageName, "my_image");
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -124,7 +126,7 @@ namespace BloomTests.Publish
 		/// <param name="createPhysicalFile"></param>
 		/// <param name="optionalDataDiv"></param>
 		/// <returns></returns>
-		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraContentOutsideTranslationGroup = "",
+		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = " numberedPage' data-page-number='1", string extraContent = "", string extraContentOutsideTranslationGroup = "",
 			string parentDivId = "somewrapper", string extraPages="", string[] images = null,
 			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto", bool createPhysicalFile = false,
 			string optionalDataDiv = "")
@@ -150,7 +152,8 @@ namespace BloomTests.Publish
 					{5}",
 				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
 			Bloom.Book.Book book;
-			string head = @"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+			string head = @"<meta charset='UTF-8'/>
+				<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
 				<link rel='stylesheet' href='languageDisplay.css' type='text/css'/>
 				<link rel='stylesheet' href='../customCollectionStyles.css'/>
@@ -268,6 +271,11 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='fonts.css']", _ns);
 		}
 
+		private void CheckPageBreakMarker(string pageData, string pageId="pg1", string pageLabel="1")
+		{
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//body/div/span[@role='doc-pagebreak' and @id='"+pageId+"' and @aria-label='"+pageLabel+"']", 1);
+		}
+
 		/// <summary>
 		/// Check that all the files referenced in the manifest are actually present in the zip.
 		/// </summary>
@@ -355,6 +363,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "Missing_Audio_Ignored", book);
 			CheckBasicsInManifest("my_image");
 			CheckBasicsInPage("my_image");
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -387,12 +396,42 @@ namespace BloomTests.Publish
 			// lose that fix, although currently the failure that happens if I take out the conversion is not
 			// a simple failure of this assert...something goes wrong before that making a real physical file
 			// for the unit test.
-			// This loop just finds the last page.
-			int i = 1;
-			while (_epub.GetEntry("content/" + (i+1) + ".xhtml") != null)
-				i++;
-			var lastPage = GetZipContent(_epub, "content/"+ i + ".xhtml");
-			AssertThatXmlIn.String(lastPage).HasAtLeastOneMatchForXpath("//div[contains(@class, 'theEndPage')]");
+			var currentPage = String.Empty;
+			int pageCount = 0;
+			for (int i = 1; ; ++i)
+			{
+				var entryPath = "content/" + i + ".xhtml";
+				var entry = _epub.GetEntry(entryPath);
+				if (entry == null)
+					break;
+				++pageCount;
+				currentPage = GetZipContent(_epub, entryPath);
+				switch (i)
+				{
+				case 1:
+					CheckPageBreakMarker(currentPage, "pgFrontCover", "Front Cover");
+					break;
+				case 2:
+					CheckPageBreakMarker(currentPage, "pg1", "1");
+					break;
+				case 3:
+					CheckPageBreakMarker(currentPage, "pgTitlePage", "Title Page");
+					break;
+				case 4:
+					CheckPageBreakMarker(currentPage, "pgCreditsPage", "Credits Page");
+					break;
+				case 5:
+					CheckPageBreakMarker(currentPage, "pgTheEnd", "The End");
+					break;
+				default:
+					// We should never get here!
+					Assert.IsTrue(i > 0 && i < 6, "unexpected page number {0} should be between 1 and 5 inclusive", i);
+					break;
+				}
+			}
+			// device xmatter currently has 1 front and a default of 3 back pages, so we should have exactly five pages.
+			Assert.AreEqual(5, pageCount);
+			AssertThatXmlIn.String(currentPage).HasAtLeastOneMatchForXpath("//div[contains(@class, 'theEndPage')]");
 		}
 
 		[Test]
@@ -407,6 +446,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "Missing_Audio_CreatedFromWav", book);
 			CheckBasicsInManifest("my_image");
 			CheckBasicsInPage("my_image");
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -441,13 +481,14 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ImageSrcQuery_IsIgnored", book);
 			CheckBasicsInManifest("myImage");
 			CheckBasicsInPage("myImage");
+			CheckPageBreakMarker(_page1Data);
 		}
 
 		[Test]
 		public void HandlesMultiplePages()
 		{
 			var book = SetupBookLong("This is some text",
-				"en", extraPages: @"<div class='bloom-page'>
+				"en", extraPages: @"<div class='bloom-page numberedPage' data-page-number='2'>
 						<div id='anotherId' class='marginBox'>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
 								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
@@ -461,9 +502,11 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckSourceInManifest(String.Format("created from Bloom book on {0} with page size A5 Portrait", DateTime.Now.ToString("yyyy-MM-dd")));
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 
 			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
+			CheckPageBreakMarker(page2Data, "pg2", "2");
 		}
 
 		[Test]
@@ -483,6 +526,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "OmitsNonPrintingPages", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 
 			var page2entry = _epub.GetEntry(Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			Assert.That(page2entry, Is.Null, "nonprinting page should be omitted");
@@ -504,6 +548,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ImageMissing_IsRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img");
@@ -542,6 +587,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "BloomUi_IsRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img[@src='myImage.png']");
@@ -575,6 +621,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "StandardStyleSheets_AreRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 			// Check that the standard stylesheet, not wanted in the ePUB, is removed.
@@ -640,6 +687,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "InvisibleAndUnwantedContentRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -663,7 +711,7 @@ namespace BloomTests.Publish
 		{
 			// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
 			var book = SetupBookLong("English text (first national language) should display in title.", "en",
-				extraPageClass: " bloom-frontMatter frontCover",
+				extraPageClass: " bloom-frontMatter frontCover' data-page='required singleton",
 				extraContent:
 					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
 							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
@@ -674,6 +722,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data, "pgFrontCover", "Front Cover");
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
@@ -703,6 +752,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "UserSpecifiedNoVernacular_VernacularRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
@@ -739,7 +789,7 @@ namespace BloomTests.Publish
 		{
 			// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
 			var book = SetupBookLong("Acknowledgments should only show in national 1.", "en",
-				extraPageClass: " bloom-frontMatter credits",
+				extraPageClass: " bloom-frontMatter credits' data-page='required singleton",
 				extraContent:
 					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>acknowledgments in vernacular not displayed</div>
 							<div class='bloom-editable' lang='fr'>National 2 should not be displayed</div>
@@ -750,6 +800,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
 			//Thread.Sleep(20000);
 
 			//Console.WriteLine(XElement.Parse(_page1Data).ToString());
@@ -771,7 +822,7 @@ namespace BloomTests.Publish
 		{
 			// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
 			var book = SetupBookLong("License url and ISBN should be removed from the epub", "en",
-				extraPageClass: " bloom-frontMatter credits",
+				extraPageClass: " bloom-frontMatter credits' data-page='required singleton",
 				extraContentOutsideTranslationGroup:
 					@"<div class=""bloom-metaData licenseAndCopyrightBlock"" data-functiononhintclick=""bookMetadataEditor"" data-hint=""Click to Edit Copyright &amp; License"">
 						<div class=""copyright Credits-Page-style"" data-derived=""copyright"" lang=""*"">
@@ -814,6 +865,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckSourceInManifest("urn:isbn:ABCDEFG");
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='ISBNContainer']", _ns);
@@ -913,13 +965,14 @@ namespace BloomTests.Publish
 		public void ImageStyles_ConvertedToPercent(string sizeClass, double pageWidthMm)
 		{
 			var book = SetupBookLong("This is some text", "en",
-				extraPageClass: " " + sizeClass,
+				extraPageClass: " " + sizeClass + " numberedPage' data-page-number='5",
 				extraContentOutsideTranslationGroup: @"<div><img src='image1.png' width='334' height='220' style='width:334px; height:220px; margin-left: 34px; margin-top: 0px;'></img></div>
 							<div><img src='image2.png' width='330' height='220' style='width:330px; height: 220px; margin-left: 33px; margin-top: 0px;'></img></div>");
 			MakeImageFiles(book, "image1", "image2");
 			MakeEpub("output", "ImageStyles_ConvertedToPercent" + sizeClass, book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data, "pg5", "5");
 
 			// A5Portrait page is 297/2 mm wide
 			// Percent size however is relative to containing block, typically the marginBox,
@@ -948,13 +1001,14 @@ namespace BloomTests.Publish
 			// First image triggers special case for missing height
 			// Second image triggers special cases for no width at all.
 			var book = SetupBookLong("This is some text", "en",
-				extraPageClass: " A5Portrait",
+				extraPageClass: " A5Portrait numberedPage' data-page-number='3",
 				extraContentOutsideTranslationGroup: @"<div><img src='image1.png' width='334' height='220' style='width:334px; margin-left: 34px; margin-top: 0px;'></img></div>
 							<div><img src='image2.png' width='330' height='220' style='margin-top: 0px;'></img></div>");
 			MakeImageFiles(book, "image1", "image2");
 			MakeEpub("output", "ImageStyles_ConvertedToPercent_SpecialCases", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data, "pg3", "3");
 
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='margin-top: 0px;']", _ns);
 			var marginboxInches = (297.0/2.0 - 40) / 25.4;
@@ -971,7 +1025,7 @@ namespace BloomTests.Publish
 		public void ImageStyles_PercentsAdjustForContainingPercentDivs()
 		{
 			var book = SetupBookLong("This is some text", "en",
-				extraPageClass: " A5Portrait",
+				extraPageClass: " A5Portrait numberedPage' data-page-number='99",
 				extraContentOutsideTranslationGroup: @"<div id='anotherWrapper' style='width:80%'>
 								<div id='innerrWrapper' style='width:50%'>
 									<div><img src='image1.png' width='40' height='220' style='width:40px; height:220px; margin-left: 14px; margin-top: 0px;'></img></div>
@@ -981,6 +1035,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ImageStyles_PercentsAdjustForContainingPercentDivs", book);
 			CheckBasicsInManifest("image1");
 			CheckBasicsInPage("image1");
+			CheckPageBreakMarker(_page1Data, "pg99", "99");
 
 			// A5Portrait page is 297/2 mm wide
 			// Percent size however is relative to containing block,
@@ -1007,6 +1062,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "BookWithAudio_ProducesOverlay", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1044,6 +1100,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "AudioWithParagraphsAndRealGuids_ProducesOverlay", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1137,6 +1194,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "IllegalIds_AreFixed", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 
 			// This is possibly too strong; see comment where we remove them.
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='i12']");
@@ -1152,6 +1210,7 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ConflictingIds_AreNotConfused", book);
 			CheckBasicsInManifest(); // don't check the file stuff here, we're looking at special cases
 			CheckBasicsInPage();
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1192,6 +1251,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest("my_3dimage", "my_3Dimage1", "my_image", "my_image1");
 			CheckBasicsInPage("my_3dimage", "my_3Dimage1", "my_image", "my_image1");
 #endif
+			CheckPageBreakMarker(_page1Data);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
