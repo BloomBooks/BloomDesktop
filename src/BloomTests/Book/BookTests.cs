@@ -1044,6 +1044,87 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void BringBookUpToDate_RepairQuestionsPages_DoesNotMessUpGoodPages()
+		{
+			const string xpathQuestionsPrefix = "//div[contains(@class,'questions')]";
+			_bookDom = new HtmlDom(@"
+				<html>
+					<head />
+					<body>
+						<div class='bloom-page questions'>
+							<div class='marginBox'>
+								<div>
+									<div class='quizInstructions'>Some gobbledy-gook</div>
+								</div>
+								<div>
+									<div class='bloom-translationGroup quiz-style quizContents bloom-noAudio bloom-userCannotModifyStyles'>
+										<div class='bloom-editable bloom-content1 bloom-contentNational1' contenteditable='true' lang='en'>
+											My test question. <br/>
+											<p>‌Answer 1 </p>
+											<p>‌*Answer 2 </p>
+											<p>‌</p>
+											<p>‌Second test question </p>
+											<p>‌*Some right answer </p>
+											<p>‌Some wrong answer </p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>");
+
+			var book = CreateBook();
+
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div[contains(@class,'bloom-noAudio') and contains(@class,'bloom-userCannotModifyStyles')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div//p", 6);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div//br", 1);
+		}
+
+		[Test]
+		public void BringBookUpToDate_RepairQuestionsPages_Works()
+		{
+			const string xpathQuestionsPrefix = "//div[contains(@class,'questions')]";
+			_bookDom = new HtmlDom(@"
+				<html>
+					<head />
+					<body>
+						<div class='bloom-page questions'>
+							<div class='marginBox'>
+								<div>
+									<div class='quizInstructions'>Some gobbledy-gook</div>
+								</div>
+								<div>
+									<div class='bloom-translationGroup quiz-style quizContents'>
+										<div class='bloom-editable bloom-content1 bloom-contentNational1' contenteditable='true' lang='en'>
+											<h1>My test question.</h1> <br/>
+											<p>‌Answer 1 </p>
+											<p>‌*Ans<span class='audio-sentence'>wer 2</span></p>
+											<p>‌</p>
+											<p>‌Second test question <em>weird stuff!</em></p>
+											<p>*Some right answer</p>
+											<p><span data-duration='1.600227' id='i125f143d-7c30-44c1-8d23-0e000f484e08' class='audio-sentence' recordingmd5='undefined'>My test text.</span></p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>");
+
+			var book = CreateBook();
+
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div[contains(@class,'bloom-noAudio') and contains(@class,'bloom-userCannotModifyStyles')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(xpathQuestionsPrefix + "//div//span");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(xpathQuestionsPrefix + "//div//em");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(xpathQuestionsPrefix + "//div//h1");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div//p[.='‌*Answer 2']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div//p[.='My test text.']", 1);
+		}
+
+		[Test]
 		public void BringBookUpToDate_LanguagesOfBookUpdated()
 		{
 			_bookDom = new HtmlDom(@"
