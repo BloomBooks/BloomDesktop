@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web;
 using SIL.Network;
 
 namespace Bloom.WebLibraryIntegration
@@ -63,9 +64,9 @@ namespace Bloom.WebLibraryIntegration
 			var parts = qparams[0].Split('=');
 			if (parts.Length != 2 || parts[0] != kOrderFile)
 				throw new ArgumentException(String.Format("badly formed BloomLinkArgs URL string: {0}", url));
-			OrderUrl = HttpUtilityFromMono.UrlDecode(parts[1]);
+			OrderUrl = HttpUtility.UrlDecode(parts[1]);
 			if (qparams.Length > 1 && qparams[1].StartsWith("title="))
-				Title = HttpUtilityFromMono.UrlDecode(qparams[1].Substring("title=".Length));
+				Title = HttpUtility.UrlDecode(qparams[1].Substring("title=".Length));
 			else
 			{
 				// Make up a title from the book order. This should be obsolete once all instances of Bloom Library
