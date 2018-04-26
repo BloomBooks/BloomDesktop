@@ -15,6 +15,7 @@ using BloomTemp;
 using NAudio.Wave;
 #endif
 using SIL.IO;
+using SIL.Text;
 using SIL.Xml;
 
 namespace Bloom.Publish.Epub
@@ -246,6 +247,7 @@ namespace Bloom.Publish.Epub
 				new XAttribute("unique-identifier", "I" + Book.ID));
 			// add metadata
 			var dcNamespace = "http://purl.org/dc/elements/1.1/";
+			var source = GetBookSource();
 			XNamespace dc = dcNamespace;
 			var metadataElt = new XElement(opf + "metadata",
 				new XAttribute(XNamespace.Xmlns + "dc", dcNamespace),
@@ -254,6 +256,7 @@ namespace Bloom.Publish.Epub
 				new XElement(dc + "language", Book.CollectionSettings.Language1Iso639Code),
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
+				new XElement(dc + "source", source),
 				new XElement(opf + "meta",
 					new XAttribute("property", "dcterms:modified"),
 					new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z")); // like 2012-03-20T11:37:00Z
@@ -304,6 +307,29 @@ namespace Bloom.Publish.Epub
 			MakeSpine(opf, rootElt, manifestPath);
 		}
 
+		/// <summary>
+		/// If the book has an ISBN we should use use that.  Otherwise the source should contain
+		/// "as much information as possible about the source publication (e.g., the publisher,
+		/// date, edition, and binding)". Since it probably doesn't have a publisher if it lacks
+		/// an ISBN, let alone an edition, maybe all we can do is a date, something like
+		/// "created from Bloom book on *date*".  Possibly noting the currently configured
+		/// page size is relevant. Possibly at some point we will have a metadata input screen
+		/// and we might put a version field in that and use it here.
+		/// </summary>
+		private string GetBookSource()
+		{
+			var isbnMulti = Book.GetDataItem("ISBN");
+			if (!MultiTextBase.IsEmpty(isbnMulti))
+			{
+				var isbn = isbnMulti.GetBestAlternative("*");
+				if (!String.IsNullOrEmpty(isbn))
+					return "urn:isbn:" + isbn;
+			}
+			var layout = Book.GetLayout();
+			var pageSize = layout.SizeAndOrientation.PageSizeName + (layout.SizeAndOrientation.IsLandScape ? " Landscape" : " Portrait");
+			var date = DateTime.Now.ToString("yyyy-MM-dd");
+			return String.Format("created from Bloom book on {0} with page size {1}", date, pageSize);
+		}
 
 		/// <summary>
 		/// Make a compressed audio file for the specified .wav file.
