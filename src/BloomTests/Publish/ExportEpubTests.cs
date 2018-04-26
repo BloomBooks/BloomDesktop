@@ -112,25 +112,29 @@ namespace BloomTests.Publish
 		/// </summary>
 		/// <param name="text"></param>
 		/// <param name="lang"></param>
+		/// <param name="extraPageClass"></param>
 		/// <param name="extraContent"></param>
 		/// <param name="extraContentOutsideTranslationGroup"></param>
-		/// <param name="extraStyleSheet"></param>
+		/// <param name="parentDivId"></param>
 		/// <param name="extraPages"></param>
 		/// <param name="images"></param>
 		/// <param name="extraEditGroupClasses"></param>
 		/// <param name="extraEditDivClasses"></param>
-		/// <param name="parentDivId"></param>
+		/// <param name="defaultLanguages"></param>
+		/// <param name="createPhysicalFile"></param>
+		/// <param name="optionalDataDiv"></param>
 		/// <returns></returns>
 		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraContentOutsideTranslationGroup = "",
 			string parentDivId = "somewrapper", string extraPages="", string[] images = null,
-			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto", bool createPhysicalFile = false)
+			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto", bool createPhysicalFile = false,
+			string optionalDataDiv = "")
 		{
 			if (images == null)
 				images = new string[0];
 			string imageDivs = "";
 			foreach (var image in images)
 				imageDivs += "<div><img src='" + image + ".png'></img></div>\n";
-			var body = string.Format(@"<div class='bloom-page" + extraPageClass + @"'>
+			var body = optionalDataDiv + string.Format(@"<div class='bloom-page" + extraPageClass + @"'>
 						<div id='" + parentDivId + @"' class='marginBox'>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang='' data-default-languages='{8}'>
 								<div class='bloom-editable {6}' lang='{0}' contenteditable='true'>
@@ -214,6 +218,7 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:title", _ns);
 			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:language", _ns);
 			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:identifier", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:source", _ns);
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='dcterms:modified']");
 
 			// This is not absolutely required, but it's true for all our test cases and the way we generate books.
@@ -235,6 +240,14 @@ namespace BloomTests.Publish
 
 			foreach (var image in imageFiles)
 				assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='" + image + "' and @href='" + image + ".png']");
+		}
+
+		private void CheckSourceInManifest(string desiredSource)
+		{
+			var xdoc = new XmlDocument();
+			xdoc.LoadXml(_manifestContent);
+			var source = xdoc.SelectSingleNode("opf:package/opf:metadata/dc:source", _ns);
+			Assert.AreEqual(desiredSource, source.InnerXml);
 		}
 
 		private void CheckBasicsInPage(params string[] images)
@@ -446,6 +459,7 @@ namespace BloomTests.Publish
 					</div>");
 			MakeEpub("output", "HandlesMultiplePages", book);
 			CheckBasicsInManifest();
+			CheckSourceInManifest(String.Format("created from Bloom book on {0} with page size A5 Portrait", DateTime.Now.ToString("yyyy-MM-dd")));
 			CheckBasicsInPage();
 
 			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
@@ -788,16 +802,18 @@ namespace BloomTests.Publish
 								<p></p>
 							</div>
 						</div>
+					</div>",
+				optionalDataDiv: @"<div id=""bloomDataDiv"">
+						<div data-book=""contentLanguage1"" lang=""*"">en</div>
+						<div data-book=""ISBN"" lang=""*"">ABCDEFG</div>
+						<div data-book=""ISBN"" lang=""en"">ABCDEFG-en</div>
 					</div>");
-
 			MakeImageFiles(book, "license");
 
 			MakeEpub("output", "InCreditsPage_LicenseUrlAndISBN_AreRemoved", book);
 			CheckBasicsInManifest();
+			CheckSourceInManifest("urn:isbn:ABCDEFG");
 			CheckBasicsInPage();
-			//Thread.Sleep(20000);
-
-			//Console.WriteLine(XElement.Parse(_page1Data).ToString());
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='ISBNContainer']", _ns);
