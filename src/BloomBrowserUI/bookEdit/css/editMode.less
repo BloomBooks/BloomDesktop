@@ -2,35 +2,32 @@
 @import "../../templates/common-mixins.less";
 @import "../sourceBubbles/sourceBubbles.less";
 
-@MediumGray: #C0B9B9;
-@ImageHoverOverlay: #D5D5E4;
+@MediumGray: #c0b9b9;
+@ImageHoverOverlay: #d5d5e4;
 @ImageButtonBorder: #716666;
 @ChangeImageButtonColor: @ControlColor;
 @PasteImageButtonColor: @bloom-blue; /*#0C8597; */
-@MetadataButtonColor: #3A7F62; // the only place in .less files that any green is used
+@MetadataButtonColor: #3a7f62; // the only place in .less files that any green is used
 @OverflowColor: @WarningColor;
-@MainPageBackgroundColor: #F8F8F8;
-@PageDragBackgroundColor: #FFFFA3;
-@PageDragBorderColor: #C1E6CA;
+@MainPageBackgroundColor: #f8f8f8;
+@PageDragBackgroundColor: #ffffa3;
+@PageDragBorderColor: #c1e6ca;
 @PageDragInnerItemBorderColor: #787800;
 
 @PageLabelAndChangeLayoutPaneHeight: 45px;
 @PageLabelVerticalDisplacement: -33px;
 
-BODY
-{
+body {
     background-color: @bloom-darkestgray;
     transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
     transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
 }
 
-#labelAndLayoutPane
-{
+#labelAndLayoutPane {
     height: @PageLabelAndChangeLayoutPaneHeight;
 }
 
-.tool-items:after
-{
+.tool-items:after {
     content: ".";
     display: block;
     height: 0;
@@ -38,47 +35,40 @@ BODY
     visibility: hidden;
     font-size: 0;
 }
-.tool-items
-{
+.tool-items {
     display: inline-block;
 }
-.tool-items
-{
+.tool-items {
     /*\*/
     display: block;
     /**/
     -height: 1px;
 }
 /*+}*/
-DIV.bloom-imageContainer
-{
+div.bloom-imageContainer {
     border: 1px solid @MediumGray;
 }
 
-// The editing buttons are hidden when this class is added (currently by panAndZoom toolbar)
-.bloom-imageContainer.bloom-hideImageButtons
-{
+// The editing buttons are hidden when this class is added (currently by motion tool)
+.bloom-imageContainer.bloom-hideImageButtons {
     .imageButton,
     .miniButton {
-        display:none
+        display: none;
     }
 }
-.coverColor DIV.bloom-imageContainer
-{
+.coverColor div.bloom-imageContainer {
     border: thin solid rgba(1, 1, 1, 0.2);
 }
 
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
-.marginBox DIV.pageLabel
-{
+.marginBox div.pageLabel {
     /*+placement:anchor-top-left -1px -29px;*/
     position: absolute;
     left: -1px;
     top: calc(@PageLabelVerticalDisplacement - 48);
 }
 
-.bloom-page .pageLabel
-{
+.bloom-page .pageLabel {
     text-align: left;
     color: @ControlColor;
     position: absolute;
@@ -92,23 +82,19 @@ DIV.bloom-imageContainer
     }
 }
 
-.evenPage DIV.pageLabel
-{
+.evenPage div.pageLabel {
     margin-left: 2.5cm;
 }
 
-.oddPage DIV.pageLabel
-{
+.oddPage div.pageLabel {
     margin-left: 1.3cm;
 }
 
-DIV.page
-{
+div.page {
     background-color: @MainPageBackgroundColor;
     border: medium outset black;
 }
-DIV.page.coverColor
-{
+div.page.coverColor {
     background-color: @ImageHoverOverlay;
     border: medium outset black;
 }
@@ -118,12 +104,10 @@ DIV.page.coverColor
    the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css,
    and there is javascript which notices that transparnet border and makes the field read-only.
 */
-DIV.readOnlyInTranslationMode
-{
+div.readOnlyInTranslationMode {
     border: thin solid @MediumGray;
 }
-DIV.hoverUp
-{
+div.hoverUp {
     background-color: @ImageHoverOverlay;
 }
 .imageButton {
@@ -190,7 +174,7 @@ DIV.hoverUp
     }
 }
 .hoverUp .imageButton {
-   	border: 2px outset @ImageButtonBorder !important;
+    border: 2px outset @ImageButtonBorder !important;
     border-radius: 3px !important;
     &:hover {
         border: inset @ImageButtonBorder !important;
@@ -200,7 +184,7 @@ DIV.hoverUp
         background-color: @MetadataButtonColor !important;
     }
 }
-BUTTON.miniButton {
+button.miniButton {
     width: 20px;
     height: 18px;
     right: 60px;
@@ -227,7 +211,7 @@ BUTTON.miniButton {
         background-image: url("../img/cut.svg");
         bottom: 27px;
         &.disabled {
-    	    background-image: url("../img/cutGrey.svg");
+            background-image: url("../img/cutGrey.svg");
             pointer-events: none;
         }
         &.smallButtonHeight {
@@ -238,7 +222,7 @@ BUTTON.miniButton {
         background-image: url("../img/copy.svg");
         bottom: 6px;
         &.disabled {
-    	    background-image: url("../img/copyGrey.svg");
+            background-image: url("../img/copyGrey.svg");
             pointer-events: none;
         }
         &.smallButtonHeight {
@@ -246,8 +230,7 @@ BUTTON.miniButton {
         }
     }
 }
-BUTTON.deleteButton
-{
+button.deleteButton {
     position: absolute;
     left: 0;
     bottom: 0;
@@ -257,14 +240,12 @@ BUTTON.deleteButton
     z-index: 100;
 }
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
-.moveButtonIcon
-{
+.moveButtonIcon {
     background-image: url("../img/moveDivButton.png") !important;
     width: 37px !important;
     height: 37px !important;
 }
-BUTTON.moveButton
-{
+button.moveButton {
     /*+placement:anchor-top-left -19px -17px;*/
     position: absolute;
     left: -19px;
@@ -278,44 +259,45 @@ BUTTON.moveButton
     z-index: 1000;
     background-size: contain;
 }
-TEXTAREA, DIV.bloom-editable, DIV.pageLabel[contenteditable="true"]
-{
+textarea,
+div.bloom-editable,
+div.pageLabel[contenteditable="true"] {
     border: thin solid @MediumGray;
     /*[disabled]min-height:34px;*/
 }
 /*need a darker border when we have a background color*/
-.coverColor TEXTAREA, DIV.bloom-editable
-{
+.coverColor textarea,
+div.bloom-editable {
     border: thin solid rgba(0, 0, 0, 0.2);
 }
-IMG.hoverUp
-{
+img.hoverUp {
     background-color: @bloom-buff;
     border: 1px outset black;
 }
-TEXTAREA:focus, DIV.bloom-editable:focus, DIV.pageLabel[contenteditable="true"]:focus
-{
+textarea:focus,
+div.bloom-editable:focus,
+div.pageLabel[contenteditable="true"]:focus {
     border: 1px solid rgba(82, 168, 236, 0.6);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 8px rgba(82, 168, 236, 0.6);
     outline: 0;
 }
-TEXTAREA.province
-{
+textarea.province {
     width: 151px;
     height: 33px;
 }
 
 /* somehow, this doesn't affect the layout of the page inside. */
-DIV.bloom-templateMode {
+div.bloom-templateMode {
     border: 3px dashed black;
 }
 
-.overflow
-{
+.overflow {
     color: @OverflowColor !important;
     border: solid thin @OverflowColor !important; //NB: can't afford to go "thick" because it throws off the calculation
-    p:empty:after{ //br:after would be great but it doesn't work
-        content:'¶';
+    p:empty:after {
+        //br:after would be great but it doesn't work
+        content: "¶";
     }
 }
 .childOverflowingThis {
@@ -323,20 +305,20 @@ DIV.bloom-templateMode {
     // no, that's really confusing when text far from the crime turns red color: red !important;
 }
 //we do both in case one is already used and !important
-.Layout-Problem-Detected:before, .Layout-Problem-Detected:after {
+.Layout-Problem-Detected:before,
+.Layout-Problem-Detected:after {
     content: attr(layoutproblem);
     text-align: left;
     color: @OverflowColor;
-    position:absolute;
+    position: absolute;
     bottom: 0;
     left: 0;
     font-size: 9pt;
     line-height: 9pt;
 }
 
-.fieldInfo-qtip .ui-tooltip-content
-{
-    border: 0 solid #A03C50;
+.fieldInfo-qtip .ui-tooltip-content {
+    border: 0 solid #a03c50;
     padding: 0px;
     text-align: right;
     color: @bloom-darkestgray;
@@ -345,34 +327,30 @@ DIV.bloom-templateMode {
     margin-right: 8px;
 }
 
-DIV.textWholePage UL
-{
+div.textWholePage ul {
     position: absolute;
     margin-left: 1px;
     margin-top: -37px;
 }
 /*suggested by http://jqueryui.com/docs/Upgrade_Guide_17*/
-.ui-mouseOver .ui-resizable-handle
-{
+.ui-mouseOver .ui-resizable-handle {
     width: 8px;
     height: 8px;
     border: 1px solid rgb(128, 128, 128);
     background: rgb(242, 242, 242);
 }
-.ui-resizable-n, .ui-resizable-s
-{
+.ui-resizable-n,
+.ui-resizable-s {
     left: 45%;
 }
-.ui-resizable-e, .ui-resizable-w
-{
+.ui-resizable-e,
+.ui-resizable-w {
     top: 45%;
 }
-DIV.marginBox
-{
+div.marginBox {
     border: 1px solid rgba(115, 189, 189, 0.3);
 }
-.bloom-frontMatter DIV.marginBox
-{
+.bloom-frontMatter div.marginBox {
     /*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
     border: none;
 }
@@ -380,34 +358,32 @@ DIV.marginBox
 //BL-2512 when overflowing on pages where the text is allowed to run off the screen, the formatButton would not be visible/reachable, so you couldn't shrink the text
 //in response to the overflow situation.
 //So in this situation, we just show it at the top.
-.thisOverflowingParent #formatButton{
-  top: 0;
+.thisOverflowingParent #formatButton {
+    top: 0;
 }
 
-#formatButton
-{
+#formatButton {
     overflow: hidden;
     position: absolute;
     margin-left: 3px;
     bottom: 0;
-    left:0;
+    left: 0;
     /*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
     font-size: 10pt;
     height: 20px;
     width: 20px;
     z-index: @formatButtonZIndex;
-    img{
+    img {
         position: absolute;
         bottom: 0;
         left: 0;
     }
-    &:Hover {
+    &:hover {
         color: black;
     }
 }
 /*Toolbox*/
-#pagedragtoolbox
-{
+#pagedragtoolbox {
     background-color: @PageDragBackgroundColor;
     position: relative;
     left: 564px;
@@ -415,47 +391,45 @@ DIV.marginBox
     width: 274px;
     height: 645px;
 }
-.ui-resizable, .ui-draggable, .ui-deletable
-{
+.ui-resizable,
+.ui-draggable,
+.ui-deletable {
     border: 1px solid @PageDragBorderColor;
 }
-#pagedragtoolbox IMG
-{
+#pagedragtoolbox img {
     width: 116px;
 }
-#pagedragtoolbox > UL > LI > DIV
-{
+#pagedragtoolbox > ul > li > div {
     border: 1px dotted @PageDragInnerItemBorderColor;
     margin-top: 34px;
     /*[empty]padding-top:;*/
 }
-UL.pagedragtoolbox
-{
+ul.pagedragtoolbox {
     height: 212px;
     width: 207px;
     margin-left: 31px;
     margin-top: 15px;
     background-color: transparent;
 }
-UL.pagedragtoolbox LI
-{
+ul.pagedragtoolbox li {
     display: inline-block;
     width: 162px;
 }
-TEXTAREA.Heading1-style,  DIV.bloom-editable.Heading1-style{
+textarea.Heading1-style,
+div.bloom-editable.Heading1-style {
     font-size: 16pt;
 }
-TEXTAREA.Heading2-style,  DIV.bloom-editable.Heading2-style {
+textarea.Heading2-style,
+div.bloom-editable.Heading2-style {
     font-size: 13pt;
     font-weight: bold;
 }
-.centered
-{
+.centered {
     text-align: center;
 }
 /*Put in little grey language tooltips in the bottom-right of the editable divs*/
-.languageTip, .bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):after
-{
+.languageTip,
+.bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     position: absolute;
     right: 0;
     bottom: 0px;
@@ -465,16 +439,14 @@ TEXTAREA.Heading2-style,  DIV.bloom-editable.Heading2-style {
     font-family: Arial, sans-serif; /* Arial matches .qtip-content */
     font-style: normal;
     font-weight: normal;
-    line-height: 1;//else it will draw up in the box somewhere if the font is large
+    line-height: 1; //else it will draw up in the box somewhere if the font is large
 }
-.languageTip
-{
+.languageTip {
     /* 'top' is added by javascript (StyleEditor.AttachLanguageTip) based on the height of the element */
     margin-right: 1px;
     text-align: right;
 }
-.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):after
-{
+.bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     content: attr(data-languageTipContent);
     bottom: 0px;
     margin-right: 2px;
@@ -486,14 +458,12 @@ has a :before rule applied and which already has focus, weird things happen and 
 When this bug is fixed, or if we can find a better workaround, the :not(:focus) should be removed
 so that when a div has the data-placeholder attribute set, the placeholder will continue to appear
 even when the div is focused (as long as it is empty).*/
-[contentEditable=true][data-placeholder]:empty:not(:focus):before
-{
+[contentEditable="true"][data-placeholder]:empty:not(:focus):before {
     content: attr(data-placeholder);
     color: @bloom-buff;
 }
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
-SPAN.sentence-too-long
-{
+span.sentence-too-long {
     background-color: @LeveledReaderViolationColor;
 }
 
@@ -507,13 +477,13 @@ SPAN.sentence-too-long
     border: 5px solid @LeveledReaderViolationColor !important;
 }
 
-.ui-dialog { z-index: 20000; }
-
-SPAN.sight-word
-{
+.ui-dialog {
+    z-index: 20000;
 }
-SPAN.word-not-found
-{
+
+span.sight-word {
+}
+span.word-not-found {
     background-color: @DecodableReaderViolationColor;
 }
 
@@ -527,15 +497,19 @@ SPAN.possible-word
 */
 
 div.cke_float {
-  div.cke_top {
-    padding: 4px !important;
+    div.cke_top {
+        padding: 4px !important;
 
-    span.cke_toolgroup { margin: 0 !important; }
-  }
+        span.cke_toolgroup {
+            margin: 0 !important;
+        }
+    }
 }
 
 .bloom-textOverPicture .bloom-editable {
     padding-top: 1px; // for some reason this is needed to keep edit/non-edit text spacing the same
 }
 
-div.long-press-popup {z-index: 15005} // in front of hint bubbles
+div.long-press-popup {
+    z-index: 15005;
+} // in front of hint bubbles

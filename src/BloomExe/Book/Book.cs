@@ -909,7 +909,12 @@ namespace Bloom.Book
 			var licenseMetadata = GetLicenseMetadata();
 			BringXmatterHtmlUpToDate(bookDOM);
 			RepairBrokenSmallCoverCredits(bookDOM);
+
+			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
+
+			progress.WriteStatus("Repair possible messed up Questions pages");
+			RepairQuestionsPages(bookDOM);
 
 			progress.WriteStatus("Gathering Data...");
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -961,6 +966,33 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
+		}
+
+		/// <summary>
+		/// At one point in v4.1, Question pages were able to be recorded with the Talking Book tool, but opening the
+		/// tool on these pages embedded tons of span elements which messed up BR display. New question pages have classes
+		/// that keep them from being recorded. Here we fix up any existing question pages from the old code.
+		/// </summary>
+		/// <param name="bookDOM"></param>
+		private void RepairQuestionsPages(HtmlDom bookDOM)
+		{
+			if (bookDOM?.Body == null)
+				return;     // must be a test running...
+
+			// classes to add
+			const string classNoStyleMods = "bloom-userCannotModifyStyles";
+			const string classNoAudio = "bloom-noAudio";
+
+			var questionNodes = bookDOM.Body.SelectNodes("//div[contains(@class,'quizContents')]");
+			foreach (XmlElement quizContentsElement in questionNodes)
+			{
+				if (!HtmlDom.HasClass(quizContentsElement, "bloom-noAudio")) // Needs migration
+				{
+					HtmlDom.AddClassIfMissing(quizContentsElement, classNoStyleMods);
+					HtmlDom.AddClassIfMissing(quizContentsElement, classNoAudio);
+					HtmlDom.StripUnwantedTagsPreservingText(bookDOM.RawDom, quizContentsElement, new []{ "div", "p", "br" });
+				}
+			}
 		}
 
 		/// <summary>
@@ -2649,12 +2681,12 @@ namespace Bloom.Book
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then
 		// be responsible to set that too...and probaby that is what it should read.
-		public bool UsePhotoStoryModeInBloomReader
+		public bool UseMotionModeInBloomReader
 		{
 			// Review: the issue suggested that it's only true if it has all of them. Currently they all get
 			// set or cleared together, so it makes no difference.
 			// I don't think it's helpful to have yet another place in our code
-			// that knows which six features make up PhotoStoryMode, so I decided to just check the most
+			// that knows which six features make up MotionBookMode, so I decided to just check the most
 			// characteristic one.
 			get { return OurHtmlDom.BookHasFeature("fullscreenpicture", "landscape", "bloomReader"); }
 			set

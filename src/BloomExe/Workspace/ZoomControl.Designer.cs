@@ -38,7 +38,7 @@
 			this._minusButton.BackColor = System.Drawing.Color.Transparent;
 			this._minusButton.FlatAppearance.BorderSize = 0;
 			this._minusButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._minusButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._minusButton.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._minusButton.Location = new System.Drawing.Point(0, -8);
 			this._minusButton.Margin = new System.Windows.Forms.Padding(0);
 			this._minusButton.Name = "_minusButton";
@@ -55,7 +55,7 @@
 			this._plusButton.BackColor = System.Drawing.Color.Transparent;
 			this._plusButton.FlatAppearance.BorderSize = 0;
 			this._plusButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._plusButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._plusButton.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._plusButton.Location = new System.Drawing.Point(58, -8);
 			this._plusButton.Name = "_plusButton";
 			this._plusButton.Size = new System.Drawing.Size(19, 38);
@@ -68,7 +68,7 @@
 			// _percentLabel
 			//
 			this._percentLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
-			this._percentLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._percentLabel.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._percentLabel.Location = new System.Drawing.Point(20, 4);
 			this._percentLabel.Name = "_percentLabel";
 			this._percentLabel.Size = new System.Drawing.Size(35, 13);

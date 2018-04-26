@@ -10,20 +10,22 @@ import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
-// These are for Pan and Zoom:
+// These are for Motion:
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 import { Checkbox } from "../../../react_components/checkbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { MusicToolControls } from "../music/musicToolControls";
-import "./panAndZoom.less";
+import "../motion/motion.less";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
-// ToolBox.registerTool(new PanAndZoomTool());.
-export class PanAndZoomTool implements ITool {
-    private rootControl: PanAndZoomControl;
+// ToolBox.registerTool(new MotionTool());
+
+/// The motion tool lets you define two rectangles; Bloom Reader will pan & zoom from one to the other
+export class MotionTool implements ITool {
+    private rootControl: MotionControl;
     private animationStyleElement: HTMLStyleElement;
     private animationWrapDiv: HTMLElement;
     private animationRootDiv: HTMLElement;
@@ -33,11 +35,11 @@ export class PanAndZoomTool implements ITool {
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        root.setAttribute("class", "ui-panAndZoomBody");
+        root.setAttribute("class", "ui-motionBody");
         this.rootControl = ReactDOM.render(
-            <PanAndZoomControl
-                onPreviewClick={() => this.togglePanAndZoomPreviewPlaying()}
-                onPanAndZoomChanged={checked => this.panAndZoomChanged(checked)}
+            <MotionControl
+                onPreviewClick={() => this.toggleMotionPreviewPlaying()}
+                onMotionChanged={checked => this.motionChanged(checked)}
             />,
             root
         );
@@ -73,17 +75,14 @@ export class PanAndZoomTool implements ITool {
 
         // First, in case we really are switching pages, abort any preview that's in progress.
         if (this.rootControl.state.playing) {
-            this.togglePanAndZoomPreviewPlaying();
+            this.toggleMotionPreviewPlaying();
         }
         const newState = this.getStateFromHtml();
         if (newState.haveImageContainerButNoImage) {
             this.setupImageObserver();
         }
         this.rootControl.setState(newState);
-        if (
-            !newState.panAndZoomChecked ||
-            newState.haveImageContainerButNoImage
-        ) {
+        if (!newState.motionChecked || newState.haveImageContainerButNoImage) {
             return;
         }
 
@@ -102,7 +101,8 @@ export class PanAndZoomTool implements ITool {
             defTop: number,
             defWidth: number,
             defHeight: number,
-            initAttr: string
+            initAttr: string,
+            color: string
         ): JQuery => {
             var needToSaveThisRectangle: boolean;
             var left: number, top: number, width: number, height: number;
@@ -125,7 +125,7 @@ export class PanAndZoomTool implements ITool {
             // So far, I can't figure out what the 3000 puts us in front of, but we have to be in front of it for dragging to work.
             // ui-resizable styles are setting font-size to 0.1px. so we have to set it back.
             const htmlForHandle =
-                "<div id='elementId' class='classes' style='width:30px;height:30px;background-color:black;color:white;" +
+                `<div id='elementId' class='classes' style='width:30px;height:30px;background-color:${color};color:white;` +
                 "z-index:3000;cursor:default;'><p style='padding: 2px 0px 0px 9px;font-size:16px'>" +
                 handleLabel +
                 "</p></div>";
@@ -135,6 +135,7 @@ export class PanAndZoomTool implements ITool {
             // We're going to quite a bit of trouble here to get a bigger, darker drag handle in the bottom right
             // corner than resizable provides by default. But the default one with our theme is almost invisible.
             // Curiously, the 10% contrast filter makes the light grey in the icon DARKER thus INCREASING contrast.
+
             const htmlForResizeHandles =
                 "" +
                 "<div id='resizeHandle' class='ui-resizable-handle ui-resizable-se' " +
@@ -168,7 +169,7 @@ export class PanAndZoomTool implements ITool {
                 "px;'>" +
                 htmlForDragHandle +
                 "  <div style='height:100%;width:100%;position:absolute;top:0;left:0;" +
-                "border: dashed black 2px;box-sizing:border-box;z-index:1'></div>" +
+                `border: dashed ${color} 2px;box-sizing:border-box;z-index:1'></div>` +
                 htmlForResizeHandles +
                 "</div>";
             // Do NOT use an opacity setting here. Besides the fact that there's no reason to dim the rectangle while
@@ -176,16 +177,19 @@ export class PanAndZoomTool implements ITool {
             // behind jpeg images.
             const argsForDraggable = {
                 handle: ".bloom-dragHandleAnimation",
-                containment: "parent",
                 stop: (event, ui) => this.updateDataAttributes(),
                 // This bizarre kludge works around a bug that jquery have decided not to fix in their jquery draggable
                 // code (https://bugs.jqueryui.com/ticket/6844). Basically without this the dragging happens as if
                 // the view were not scaled. In particular there's a sudden jump when dragging starts.
-                // Unfortunately, when scale > 1.0 the dragging is limited to within a rectangle the size of the original
-                // image.  There doesn't seem to be any way around this bug if we use this fix for the initial offset bug.
+                // Setting containment to "parent" uses the unscaled size of the image as the bounds, resulting in
+                // areas you can't move the pan&zoom rectangles when the zoom scale > 1.  When the zoom scale < 1, you
+                // could drag the rectangles off the picture.  This event handler programmatically enforces the desired
+                // containment.  (Setting the containment to a boundary array just didn't work for some reason.)
                 drag: (event, ui) => {
-                    const xpos = ui.position.left / scale;
-                    const ypos = ui.position.top / scale;
+                    const xpos = Math.min(Math.max(0, ui.position.left / scale),
+                        firstImage.clientWidth - ui.helper.width());
+                    const ypos = Math.min(Math.max(0, ui.position.top / scale),
+                        firstImage.clientHeight - ui.helper.height());
                     ui.position.top = ypos;
                     ui.position.left = xpos;
                 }
@@ -211,6 +215,8 @@ export class PanAndZoomTool implements ITool {
                 argsForDraggable
             );
         };
+        const bloomBlue = "#1D94A4";
+        const bloomPurple = "#96668F";
         const rect1 = makeResizeRect(
             "1",
             "animationStart",
@@ -218,7 +224,8 @@ export class PanAndZoomTool implements ITool {
             0,
             3 / 4,
             3 / 4,
-            "data-initialrect"
+            "data-initialrect",
+            bloomBlue
         );
         const rect2 = makeResizeRect(
             "2",
@@ -227,7 +234,8 @@ export class PanAndZoomTool implements ITool {
             1 / 8,
             1 / 2,
             1 / 2,
-            "data-finalrect"
+            "data-finalrect",
+            bloomPurple
         );
         if (needToSaveRectangles) {
             // If we're using defaults or had to adjust the aspect ratio,
@@ -276,7 +284,7 @@ export class PanAndZoomTool implements ITool {
     }
 
     public id(): string {
-        return "panAndZoom";
+        return "motion";
     }
 
     private getFirstImage(): HTMLElement {
@@ -426,7 +434,7 @@ export class PanAndZoomTool implements ITool {
         }
     }
 
-    private panAndZoomChanged(checked: boolean) {
+    private motionChanged(checked: boolean) {
         const firstImage = this.getFirstImage();
         if (!firstImage) {
             return;
@@ -615,20 +623,19 @@ export class PanAndZoomTool implements ITool {
     }
 
     // This code shares various aspects with BloomPlayer. But I don't see a good way to share them, and many aspects are very different.
-    // - This code is simpler because there is only ever one pan-and-zoom-animation-capable image in a document
-    //   (for now, anyway, since bloom only displays one page at a time in edit mode and we only support pan and zoom on the first image)
+    // - This code is simpler because there is only ever one motion-capable image in a document
+    //   (for now, anyway, since bloom only displays one page at a time in edit mode and we only support motion on the first image)
     // - this code is also simpler because we don't have to worry about the image not yet being loaded by the time we
     // want to set up the animation
     // - this code is complicated by having to deal with problems caused by parent divs using scale for zoom.
     // somewhat more care is needed here to avoid adding the animation stuff permanently to the document
-    private togglePanAndZoomPreviewPlaying() {
+    private toggleMotionPreviewPlaying() {
         const page = this.getPage();
         const pageDoc = this.getPageFrame().contentWindow.document;
         const firstImage = this.getFirstImage();
         if (
             !firstImage ||
-            !(document.getElementById("panAndZoom") as HTMLInputElement)
-                .checked ||
+            !(document.getElementById("motion") as HTMLInputElement).checked ||
             this.rootControl.state.haveImageContainerButNoImage
         ) {
             return;
@@ -944,7 +951,7 @@ export class PanAndZoomTool implements ITool {
         return page.contentWindow.document;
     }
 
-    private getStateFromHtml(): IPanAndZoomHtmlState {
+    private getStateFromHtml(): IMotionHtmlState {
         const page = this.getPage();
         const pageClass = ToolboxToolReactAdaptor.getBloomPageAttr("class");
         const xmatter =
@@ -965,124 +972,133 @@ export class PanAndZoomTool implements ITool {
             images.length === 0 ||
             images[0].getAttribute("src").indexOf("placeHolder") > -1;
 
-        let panAndZoomChecked = true;
-        let panAndZoomPossible = !doNotHaveAPicture;
+        let motionChecked = true;
+        let motionPossible = !doNotHaveAPicture;
         if (!firstImage || xmatter) {
             // if there's no place to put an image, we can't be enabled.
-            // And we don't support Pan and Zoom in xmatter (BL-5427),
+            // And we don't support Motion in xmatter (BL-5427),
             // in part because we use background-image there and haven't fully supported
             // panning and zooming that; but mainly just don't think it makes
             // sense. In either case, leave choose picture hidden, there's no way
             // to choose an image on this page, or (in xmatter) it wouldn't help.
-            panAndZoomChecked = false;
-            panAndZoomPossible = false;
+            motionChecked = false;
+            motionPossible = false;
         } else {
             if (firstImage.getAttribute("data-disabled-initialrect")) {
                 // At some point on this page the check box has been explicitly turned off
-                panAndZoomChecked = false;
+                motionChecked = false;
             }
         }
         return {
             haveImageContainerButNoImage: doNotHaveAPicture,
-            panAndZoomChecked: panAndZoomChecked,
-            panAndZoomPossible: panAndZoomPossible
+            motionChecked: motionChecked,
+            motionPossible: motionPossible
         };
     }
 }
 
-interface IPanAndZoomHtmlState {
+interface IMotionHtmlState {
     haveImageContainerButNoImage: boolean;
-    panAndZoomChecked: boolean;
-    panAndZoomPossible: boolean;
+    motionChecked: boolean;
+    motionPossible: boolean;
 }
 
-interface IPanAndZoomState extends IPanAndZoomHtmlState {
+interface IMotionState extends IMotionHtmlState {
     previewVoice: boolean;
     previewMusic: boolean;
     playing: boolean;
 }
 
-interface IPanAndZoomProps {
+interface IMotionProps {
     onPreviewClick: () => void;
-    onPanAndZoomChanged: (boolean) => void;
+    onMotionChanged: (boolean) => void;
 }
 
-// This react class implements the UI for the pan and zoom toolbox.
-export class PanAndZoomControl extends React.Component<
-    IPanAndZoomProps,
-    IPanAndZoomState
-> {
+// This react class implements the UI for the motion tool.
+export class MotionControl extends React.Component<IMotionProps, IMotionState> {
     public constructor(props) {
         super(props);
         // This state won't last long, client sets the first two immediately. But must have something.
         // To minimize flash we start with both off.
         this.state = {
             haveImageContainerButNoImage: false,
-            panAndZoomChecked: false,
-            panAndZoomPossible: true,
+            motionChecked: false,
+            motionPossible: true,
             previewVoice: true,
             previewMusic: true,
             playing: false
         };
     }
 
-    private onPanAndZoomChanged(checked: boolean): void {
-        this.setState({ panAndZoomChecked: checked });
-        this.props.onPanAndZoomChanged(checked);
+    private onMotionChanged(checked: boolean): void {
+        this.setState({ motionChecked: checked });
+        this.props.onMotionChanged(checked);
     }
 
     public render() {
         return (
             <div
                 className={
-                    "ui-panAndZoomBody" +
-                    (this.state.panAndZoomPossible ? "" : " disabled")
+                    "ui-motionBody" +
+                    (this.state.motionPossible ? "" : " disabled")
                 }
             >
-                <Checkbox
-                    id="panAndZoom"
-                    name="panAndZoom"
-                    l10nKey="EditTab.Toolbox.PanAndZoom.ThisPage"
-                    onCheckChanged={checked =>
-                        this.onPanAndZoomChanged(checked)
-                    }
-                    checked={this.state.panAndZoomChecked}
+                <Div
+                    l10nKey="EditTab.Toolbox.Motion.Intro"
+                    l10nComment="Shown at the top of the 'Motion Tool' in the Edit tab"
+                    className="intro"
                 >
-                    Pan and Zoom this page
+                    Motion Books are Bloom Reader books with two modes.
+                    Normally, they are Talking Books. When you turn the phone
+                    sideways, the picture fills the screen. It pans and zooms
+                    from rectangle "1" to rectangle "2".
+                </Div>
+                <Checkbox
+                    id="motion"
+                    name="motion"
+                    wrapClassName="enable-checkbox"
+                    l10nKey="EditTab.Toolbox.Motion.ThisPage"
+                    // tslint:disable-next-line:max-line-length
+                    l10nComment="Motion here refers to panning and zooms image when it is viewed in Bloom Reader. Google 'Ken Burns effect' to see exactly what we mean."
+                    onCheckChanged={checked => this.onMotionChanged(checked)}
+                    checked={this.state.motionChecked}
+                >
+                    Enable motion on this page
                 </Checkbox>
                 <div
                     className={
                         "button-label-wrapper" +
-                        (this.state.panAndZoomChecked ? "" : " disabled")
+                        (this.state.motionChecked ? "" : " disabled")
                     }
-                    id="panAndZoom-play-wrapper"
+                    id="motion-play-wrapper"
                 >
                     <div className="button-wrapper">
                         <button
-                            id="panAndZoom-preview"
+                            id="motion-preview"
                             className={
-                                "ui-panAndZoom-button ui-button enabled" +
+                                "ui-motion-button ui-button enabled" +
                                 (this.state.playing ? " playing" : "")
                             }
                             onClick={() => this.props.onPreviewClick()}
                         />
                         <div className="previewSettingsWrapper">
                             <Div
-                                className="panAndZoom-label"
-                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview"
+                                className="motion-label"
+                                l10nKey="EditTab.Toolbox.Motion.Preview"
                             >
                                 Preview
                             </Div>
                             <Checkbox
-                                name="previewPanAndZoom"
-                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom"
+                                name="previewMotion"
+                                l10nKey="EditTab.Toolbox.Motion.Preview.Motion"
                                 checked={true}
+                                disabled={true}
                             >
-                                Pan and Zoom
+                                Motion
                             </Checkbox>
                             <Checkbox
                                 name="previewVoice"
-                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview.Voice"
+                                l10nKey="EditTab.Toolbox.Motion.Preview.Voice"
                                 onCheckChanged={checked =>
                                     this.setState({ previewVoice: checked })
                                 }
@@ -1092,13 +1108,13 @@ export class PanAndZoomControl extends React.Component<
                             </Checkbox>
                             <Checkbox
                                 name="previewMusic"
-                                l10nKey="EditTab.Toolbox.PanAndZoom.Preview.Music"
+                                l10nKey="EditTab.Toolbox.Motion.Preview.Music"
                                 onCheckChanged={checked =>
                                     this.setState({ previewMusic: checked })
                                 }
                                 checked={this.state.previewMusic}
                             >
-                                Background Music
+                                Music
                             </Checkbox>
                         </div>
                     </div>

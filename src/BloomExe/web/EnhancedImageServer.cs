@@ -675,7 +675,13 @@ namespace Bloom.Api
 			{
 				_fileLocator = Program.OptimizedFileLocator;
 			}
-			var path = _fileLocator.LocateFile(fileName);
+
+			// In BL-5824, we got bit by a design decision we made that allows stylesheets installed via bloompack
+			// to override local ones. This was done so that we could send out new custom stylesheets via webpack
+			// and have those used in all the books. Fine. But that is indiscriminate; it also was grabbing
+			// any "customBookStyles.css" from those sources and using it instead (here) and replacing that of your book (in BookStorage).
+			var path = fileName.ToLowerInvariant().Contains("custombookstyles") && RobustFile.Exists(localPath) ? localPath 
+				: _fileLocator.LocateFile(fileName);
 
 			// if still not found, and localPath is an actual file path, use it
 			if (string.IsNullOrEmpty(path) && RobustFile.Exists(localPath)) path = localPath;

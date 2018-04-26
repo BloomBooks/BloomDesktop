@@ -40,7 +40,7 @@
             this._tabControl.Controls.Add(this.tabPage1);
             this._tabControl.Controls.Add(this.tabPage2);
             this._tabControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._tabControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._tabControl.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._tabControl.Location = new System.Drawing.Point(0, 0);
             this._tabControl.Multiline = true;
             this._tabControl.Name = "_tabControl";
