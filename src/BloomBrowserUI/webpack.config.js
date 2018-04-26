@@ -18,9 +18,9 @@ var outputDir = "../../output/browser";
 // need to resolve the babel related presets (and plugins).  This mapping function was
 // suggested at https://github.com/babel/babel-loader/issues/166.
 function localResolve(preset) {
-    return Array.isArray(preset) ?
-        [require.resolve(preset[0]), preset[1]] :
-        require.resolve(preset);
+    return Array.isArray(preset)
+        ? [require.resolve(preset[0]), preset[1]]
+        : require.resolve(preset);
 }
 
 module.exports = {
@@ -34,13 +34,16 @@ module.exports = {
     //optimization.splitChunks extracts the code that is common to more than one into "commonBundle.js"
     entry: {
         editTabRootBundle: "./bookEdit/editViewFrame.ts",
-        readerSetupBundle: "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
+        readerSetupBundle:
+            "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
         bookPreviewBundle: "./bookPreview/bookPreview.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
         pageChooserBundle: "./pageChooser/page-chooser.ts",
-        pageThumbnailListBundle: "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
-        pageControlsBundle: "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
+        pageThumbnailListBundle:
+            "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
+        pageControlsBundle:
+            "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         publishUIBundle: globule.find(["./publish/**/*.tsx"]),
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
@@ -100,7 +103,7 @@ module.exports = {
             cacheGroups: {
                 default: false,
                 commons: {
-                    name: 'commonBundle',
+                    name: "commonBundle",
                     chunks: "initial",
                     // Our build process creates 10 independent bundle files.  (See exports.entry
                     // above.)  minChunks specifies how many of those bundles must contain a common
@@ -119,17 +122,19 @@ module.exports = {
                     reuseExistingChunk: true
                 }
             }
-        },
+        }
     },
     module: {
         rules: [
             {
                 test: /\.ts(x?)$/,
-                use: [
-                    { loader: "ts-loader" }
-                ]
+                use: [{ loader: "ts-loader" }]
             },
             {
+                // For the most part, we're using typescript and ts-loader handles that.
+                // But for things that are still in javascript, the following babel setup allows newer
+                // javascript features by compiling to the version JS feature supported by the specific
+                // version of FF we currently ship with.
                 test: /\.(js|jsx)$/,
                 exclude: [
                     /node_modules/,
@@ -145,7 +150,17 @@ module.exports = {
                         query: {
                             presets: [
                                 // Ensure that we target our version of geckofx (mozilla/firefox)
-                                ["babel-preset-env", { "targets": { "browsers": ["Firefox >= 45", "last 2 versions"] } }],
+                                [
+                                    "babel-preset-env",
+                                    {
+                                        targets: {
+                                            browsers: [
+                                                "Firefox >= 45",
+                                                "last 2 versions"
+                                            ]
+                                        }
+                                    }
+                                ],
                                 "babel-preset-react"
                             ].map(localResolve)
                         }
@@ -154,13 +169,17 @@ module.exports = {
             },
             {
                 test: /\.less$/i,
-                use: [{
-                    loader: "style-loader" // creates style nodes from JS strings
-                }, {
-                    loader: "css-loader" // translates CSS into CommonJS
-                }, {
-                    loader: "less-loader" // compiles Less to CSS
-                }]
+                use: [
+                    {
+                        loader: "style-loader" // creates style nodes from JS strings
+                    },
+                    {
+                        loader: "css-loader" // translates CSS into CommonJS
+                    },
+                    {
+                        loader: "less-loader" // compiles Less to CSS
+                    }
+                ]
             }
         ]
     }
