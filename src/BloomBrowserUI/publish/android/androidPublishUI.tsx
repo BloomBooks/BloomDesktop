@@ -110,11 +110,7 @@ class AndroidPublishUI extends React.Component<
 
     render() {
         return (
-            <div
-                id="androidPublishReactRoot"
-                onFocus={e => this.somethingFocused(e)}
-                onClick={e => this.somethingFocused(e)}
-            >
+            <div id="androidPublishReactRoot">
                 <Div
                     className={"intro"}
                     l10nKey="PublishTab.Android.Intro"
