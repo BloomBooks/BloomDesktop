@@ -866,5 +866,35 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath($"//div[@id='12' and @data-page-number='{page12Number}']", 1);
 
 		}
+
+		[Test]
+		public void StripUnwantedTagsPreservingText_StripsEmbeddedSpan()
+		{
+			var tagsToPreserve = new[] { "div", "p", "br" };
+			var dom = new HtmlDom(@"<html><head></head><body>
+						<div id='testthiselement'>
+							<div class='bloom-editable bloom-content1 bloom-contentNational1' contenteditable='true' lang='en'>
+								<h1>My test question.</h1> <br/>
+								<p>‌Answer 1 </p>
+								<p>‌*Ans<span class='audio-sentence'>wer 2</span></p>
+								<p>‌</p>
+								<p>‌Second test question <em>weird stuff!</em></p>
+								<p>‌*Some right answer </p>
+								<p><span data-duration='1.600227' id='i125f143d-7c30-44c1-8d23-0e000f484e08' class='audio-sentence' recordingmd5='undefined'>My test text.</span></p>
+							</div>
+						</div>
+				</body></html>");
+			var testableElement = dom.SelectSingleNode("//div[@id='testthiselement']");
+
+			// SUT
+			HtmlDom.StripUnwantedTagsPreservingText(dom.RawDom, testableElement, tagsToPreserve);
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//span");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//h1");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//em");
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//p[.='‌*Some right answer ']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//p[.='‌*Answer 2']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//p[.='My test text.']", 1);
+		}
 	}
 }
