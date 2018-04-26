@@ -182,7 +182,7 @@ namespace BloomTests.Publish
 				MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath(image + ".png"));
 		}
 
-		private void CheckNavPage()
+		private string CheckNavPage()
 		{
 			XNamespace opf = "http://www.idpf.org/2007/opf";
 
@@ -191,6 +191,7 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(navPageData)
 				.HasAtLeastOneMatchForXpath(
 					"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml']", _ns);
+			return navPageData;	// in case the test wants more extensive checking
 		}
 
 		private void CheckFontStylesheet()
@@ -432,6 +433,25 @@ namespace BloomTests.Publish
 			// device xmatter currently has 1 front and a default of 3 back pages, so we should have exactly five pages.
 			Assert.AreEqual(5, pageCount);
 			AssertThatXmlIn.String(currentPage).HasAtLeastOneMatchForXpath("//div[contains(@class, 'theEndPage')]");
+			var navPageData = CheckNavPage();
+			AssertThatXmlIn.String(navPageData).HasAtLeastOneMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']", _ns);
+			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml']", _ns);
+			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml']", _ns);
+			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml']", _ns);
+			AssertThatXmlIn.String(navPageData).HasAtLeastOneMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml#pgFrontCover']", _ns);
+			AssertThatXmlIn.String(navPageData).HasAtLeastOneMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml#pg1']", _ns);
+			AssertThatXmlIn.String(navPageData).HasAtLeastOneMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml#pgTitlePage']", _ns);
+			AssertThatXmlIn.String(navPageData).HasAtLeastOneMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml#pgCreditsPage']", _ns);
+			AssertThatXmlIn.String(navPageData).HasAtLeastOneMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml#pgTheEnd']", _ns);
 		}
 
 		[Test]
@@ -507,6 +527,13 @@ namespace BloomTests.Publish
 			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
 			CheckPageBreakMarker(page2Data, "pg2", "2");
+			var navPageData = CheckNavPage();
+			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']", _ns);
+			AssertThatXmlIn.String(navPageData).HasAtLeastOneMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml#pg1']", _ns);
+			AssertThatXmlIn.String(navPageData).HasAtLeastOneMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml#pg2']", _ns);
 		}
 
 		[Test]
