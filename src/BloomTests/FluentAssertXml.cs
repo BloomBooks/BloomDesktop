@@ -154,17 +154,25 @@ namespace BloomTests
 		public void HasSpecifiedNumberOfMatchesForXpath(string xpath, int count)
 		{
 			var nodes = NodeOrDom.SafeSelectNodes(xpath);
-			if (nodes==null)
+			CheckCountOfNodes(nodes, xpath, count);
+		}
+
+		public void HasSpecifiedNumberOfMatchesForXpath(string xpath, XmlNamespaceManager nameSpaceManager, int count)
+		{
+			var nodes = NodeOrDom.SafeSelectNodes(xpath, nameSpaceManager);
+			CheckCountOfNodes(nodes, xpath, count);
+		}
+
+		private void CheckCountOfNodes (XmlNodeList nodes, string xpath, int count)
+		{
+			int nodeCount = 0;
+			if (nodes != null)
+				nodeCount = nodes.Count;
+			if (nodeCount != count)
 			{
-				Console.WriteLine("Expected {0} but got 0 matches for {1}",count,  xpath);
+				Console.WriteLine("Expected {0} but got {1} matches for {2}", count, nodeCount, xpath);
 				PrintNodeToConsole(NodeOrDom);
-				Assert.AreEqual(count,0);
-			}
-			else if (nodes.Count != count)
-			{
-				Console.WriteLine("Expected {0} but got {1} matches for {2}",count, nodes.Count, xpath);
-				PrintNodeToConsole(NodeOrDom);
-				Assert.AreEqual(count, nodes.Count, "matches for "+xpath);
+				Assert.AreEqual(count, nodeCount, "matches for "+xpath);
 			}
 		}
 
