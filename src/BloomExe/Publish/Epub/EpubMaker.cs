@@ -122,6 +122,8 @@ namespace Bloom.Publish.Epub
 		public bool PublishWithoutAudio { get; set; }
 		Browser _browser = new Browser();
 		private BookServer _bookServer;
+		// Ordered list of page navigation list item elements.
+		private List<string> _pageList = new List<string>();
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -571,7 +573,7 @@ namespace Bloom.Publish.Epub
 			CopyImages(pageDom);
 
 			AddEpubNamespace(pageDom);
-			AddPageBreakSpan(pageDom);
+			AddPageBreakSpan(pageDom, pageDocName);
 
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
@@ -704,7 +706,7 @@ namespace Bloom.Publish.Epub
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns:epub", "http://www.idpf.org/2007/ops");
 		}
 
-		private void AddPageBreakSpan(HtmlDom pageDom)
+		private void AddPageBreakSpan(HtmlDom pageDom, string pageDocName)
 		{
 			var body = pageDom.Body;
 			var div = body.FirstChild;
@@ -798,6 +800,7 @@ namespace Bloom.Publish.Epub
 				newStyle.SetAttribute("type", "text/css");
 				newStyle.InnerXml = "span[role='doc-pagebreak'] { display: none }";
 				head.AppendChild(newStyle);
+				_pageList.Add( String.Format("<li><a href=\"{0}#{1}\">{2}</a></li>", pageDocName, id, page) );
 			}
 		}
 
@@ -1291,7 +1294,8 @@ namespace Bloom.Publish.Epub
 		{
 			XNamespace xhtml = "http://www.w3.org/1999/xhtml";
 			// Todo: improve this or at least make a way "Cover" and "Content" can be put in the book's language.
-			var content = XElement.Parse(@"
+			var sb = new StringBuilder();
+			sb.Append(@"
 <html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'>
 	<head>
 		<meta charset='utf-8' />
@@ -1303,8 +1307,19 @@ namespace Bloom.Publish.Epub
 				<li><a>Content</a></li>
 			</ol>
 		</nav>
+		<nav epub:type='page-list'>
+			<ol>");
+			foreach (var item in _pageList)
+			{
+				sb.AppendFormat("\t\t\t\t{0}", item);
+				sb.AppendLine();
+			}
+			sb.Append(@"
+			</ol>
+		</nav>
 	</body>
 </html>");
+			var content = XElement.Parse(sb.ToString());
 			var ol = content.Element(xhtml + "body").Element(xhtml + "nav").Element(xhtml + "ol");
 			var items = ol.Elements(xhtml + "li").ToArray();
 			var coverItem = items[0];
