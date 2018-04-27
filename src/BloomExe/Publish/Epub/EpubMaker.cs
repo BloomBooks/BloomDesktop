@@ -271,6 +271,7 @@ namespace Bloom.Publish.Epub
 				new XElement(opf + "meta",
 					new XAttribute("property", "dcterms:modified"),
 					new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z")); // like 2012-03-20T11:37:00Z
+			AddAccessibilityMetadata(metadataElt, opf);
 			rootElt.Add(metadataElt);
 
 			var manifestElt = new XElement(opf + "manifest");
@@ -343,21 +344,102 @@ namespace Bloom.Publish.Epub
 		}
 
 		/// <summary>
-		/// Make a compressed audio file for the specified .wav file.
-		/// (Or return null if it can't be done becaus we don't have a LAME package installed.)
+		/// Check whether the book references any audio files that actually exist.
 		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
-		// internal and virtual for testing.
 		public bool GetBookHasAudio()
 		{
 			return
 				Book.RawDom.SafeSelectNodes("//span[@id]")
 					.Cast<XmlElement>()
 					.Any(
-						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value) != null);
+						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value));
 		}
 
+		/// <summary>
+		/// Add accessibility related metadata elements.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5895 and http://www.idpf.org/epub/a11y/techniques/#meta-003.
+		/// https://www.w3.org/wiki/WebSchemas/Accessibility is also helpful.
+		/// </remarks>
+		private void AddAccessibilityMetadata(XElement metadataElt, XNamespace opf)
+		{
+			// TODO: give user control over many of these values?
+			var hasImages = GetBookHasImages();
+			var hasAudio = GetBookHasAudio();
+
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessMode"), "textual"));
+			if (hasImages)
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessMode"), "visual"));
+			if (hasAudio)
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessMode"), "auditory"));
+
+			// Including everything like this is probably the best we can do programmatically, unless we can detect full audio
+			// coverage (even image descriptions?) and derive a simple "auditory" without "textual".  Really needs author input.
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "textual"));
+			if (hasImages)
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "textual,visual"));
+			if (hasAudio)
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "textual,auditory"));
+			if (hasImages && hasAudio)
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "textual,visual,auditory"));
+
+			if (hasAudio)
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "synchronizedAudioText"));
+			// Note: largePrint description says "The property is not set if the font size can be increased. See displayTransformability."
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "displayTransformability/resizeText"));
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "printPageNumbers"));
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "unlocked"));
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "readingOrder"));
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "tableOfContents"));
+			// Maybe someday we can claim "signLanguage" here as well...
+
+			if (hasAudio)
+			{
+				// REVIEW: Should we check for video or motion as well as audio to make the hazard "unknown" overall? or should we ignore those?
+				// Note: omitting mention of sound should imply "unknown" for that particular hazard.
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "noMotionSimulationHazard"));	// video/motion?
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "noFlashingHazard"));			// video?
+			}
+			else
+			{
+				// "none" is recommended instead of listing all 3 noXXXHazard values separately
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "none"));
+			}
+
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilitySummary"),
+				"How well the accessibility features work is up to the individual author."));	// What else to say?  not sure localization is possible.
+		}
+
+		/// <summary>
+		/// Check whether the book references any image files that actually exist.
+		/// </summary>
+		private bool GetBookHasImages()
+		{
+			return Book.RawDom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().Any(img => NonTrivialImageFileExists(img)) ||
+				Book.RawDom.SafeSelectNodes("//div[@style]").Cast<XmlElement>().Any(div => NonTrivialImageFileExists(div));
+		}
+
+		private bool NonTrivialImageFileExists(XmlElement image)
+		{
+			if (image.Name == "img")
+			{
+				var className = image.GetOptionalStringAttribute("class", "");
+				switch (className)
+				{
+				case "branding":
+				case "licenseImage":
+					return false;
+				default:
+					break;
+				}
+			}
+			var value = HtmlDom.GetImageElementUrl(image);
+			var file = value.PathOnly.NotEncoded;
+			if (String.IsNullOrEmpty(file))
+				return false;
+			return RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
+		}
 
 		/// <summary>
 		/// Create an audio overlay for the page if appropriate.
