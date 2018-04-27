@@ -30,6 +30,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		//BL-5419
 		[Test]
+		[Platform(Exclude="Linux", Reason="The Linux Firefox apparently URL-encodes non-ASCII characters.  The Mono HttpUtility.UrlDecode() method mangles non-ASCII characters.")]
 		public void BloomLinkArgs_WithSpanishFromFirefox_DoesNotMangle()
 		{
 			var url =
