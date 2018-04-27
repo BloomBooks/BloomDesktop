@@ -168,6 +168,23 @@ namespace BloomTests
 			}
 		}
 
+		public void HasSpecifiedNumberOfMatchesForXpath(string xpath, XmlNamespaceManager nameSpaceManager, int count)
+		{
+			var nodes = NodeOrDom.SafeSelectNodes(xpath, nameSpaceManager);
+			if (nodes==null)
+			{
+				Console.WriteLine("Expected {0} but got 0 matches for {1}",count,  xpath);
+				PrintNodeToConsole(NodeOrDom);
+				Assert.AreEqual(count,0);
+			}
+			else if (nodes.Count != count)
+			{
+				Console.WriteLine("Expected {0} but got {1} matches for {2}",count, nodes.Count, xpath);
+				PrintNodeToConsole(NodeOrDom);
+				Assert.AreEqual(count, nodes.Count, "matches for "+xpath);
+			}
+		}
+
 		public int CountOfMatchesForXPath(string xpath)
 		{
 			return NodeOrDom.SafeSelectNodes(xpath).Count;
