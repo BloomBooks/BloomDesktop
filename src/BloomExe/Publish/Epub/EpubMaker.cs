@@ -103,6 +103,10 @@ namespace Bloom.Publish.Epub
 		private List<string> _spineItems;
 		// Counter for creating output page files.
 		int _pageIndex;
+		// Counter for referencing unrecognized "required singleton" (front/back matter?) pages.
+		int _frontBackPage;
+		// list of language ids to use for trying to localize names of front/back matter pages.
+		string[] _langsForLocalization;
 		// We track the first page that is actually content and link to it in our rather trivial table of contents.
 		private string _firstContentPageItem;
 		private string _coverPage;
@@ -145,6 +149,11 @@ namespace Bloom.Publish.Epub
 			PublishWithoutAudio = publishWithoutAudio;
 			if(!string.IsNullOrEmpty(BookInStagingFolder))
 				return; //already staged
+
+			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
+				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code };
+			else
+				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code, Book.CollectionSettings.Language3Iso639Code };
 
 			//I (JH) kept having trouble making epubs because this kept getting locked.
 			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
@@ -561,6 +570,9 @@ namespace Bloom.Publish.Epub
 
 			CopyImages(pageDom);
 
+			AddEpubNamespace(pageDom);
+			AddPageBreakSpan(pageDom);
+
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
 			if(!PublishWithoutAudio)
@@ -685,6 +697,108 @@ namespace Bloom.Publish.Epub
 				}
 			}
 			return String.Empty;
+		}
+
+		private void AddEpubNamespace(HtmlDom pageDom)
+		{
+			pageDom.RawDom.DocumentElement.SetAttribute("xmlns:epub", "http://www.idpf.org/2007/ops");
+		}
+
+		private void AddPageBreakSpan(HtmlDom pageDom)
+		{
+			var body = pageDom.Body;
+			var div = body.FirstChild;
+			var divClass = div.GetStringAttribute("class");
+			var classes = divClass.Split(' ');
+			System.Diagnostics.Debug.Assert(classes.Contains("bloom-page"));
+			var page = String.Empty;
+			var id = String.Empty;
+			if (classes.Contains("numberedPage"))
+			{
+				page = div.GetStringAttribute("data-page-number");
+			}
+			else if (div.GetOptionalStringAttribute("data-page", "") == "required singleton")
+			{
+				string languageIdUsed;
+				if (classes.Contains("frontCover"))
+				{
+					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Front Cover", "Front Cover", "",
+						_langsForLocalization, out languageIdUsed);
+					id = "pgFrontCover";
+				}
+				else if (classes.Contains("titlePage"))
+				{
+					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Title Page", "Title Page", "",
+						_langsForLocalization, out languageIdUsed);
+					id = "pgTitlePage";
+				}
+				else if (classes.Contains("credits"))
+				{
+					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Credits Page", "Credits Page", "",
+						_langsForLocalization, out languageIdUsed);
+					id = "pgCreditsPage";
+				}
+				else if (classes.Contains("insideFrontCover"))
+				{
+					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Inside Back Cover", "Inside Front Cover", "",
+						_langsForLocalization, out languageIdUsed);
+					id = "pgInsideFrontCover";
+				}
+				else if (classes.Contains("insideBackCover"))
+				{
+					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Inside Back Cover", "Inside Back Cover", "",
+						_langsForLocalization, out languageIdUsed);
+					id = "pgInsideBackCover";
+				}
+				else if (classes.Contains("outsideBackCover"))
+				{
+					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Outside Back Cover", "Back Cover", "",
+						_langsForLocalization, out languageIdUsed);
+					id = "pgBackCover";
+				}
+				else if (classes.Contains("theEndPage"))
+				{
+					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.The End", "The End", "",
+						_langsForLocalization, out languageIdUsed);
+					id = "pgTheEnd";
+				}
+				else
+				{
+					// The 7 classes above match against what the device xmatter currently offers.  This handles any
+					// "required singleton" that doesn't have a matching class.  Perhaps not satisfactory, and perhaps
+					// not needed.
+					++_frontBackPage;
+					page = "x" + _frontBackPage.ToString(System.Globalization.CultureInfo.InvariantCulture);
+				}
+			}
+			// REVIEW: If the page isn't a numbered page, and not an xmatter page, maybe we should ignore it?
+			//else
+			//{
+			//	++_frontBackPage;
+			//	page = "x" + _frontBackPage.ToString(System.Globalization.CultureInfo.InvariantCulture);
+			//}
+			if (!String.IsNullOrEmpty(page))
+			{
+				if (String.IsNullOrEmpty(id))
+					id = $"pg{page}";
+				var newChild = pageDom.RawDom.CreateElement("span");
+				newChild.SetAttribute("type", "http://www.idpf.org/2007/ops", "pagebreak");
+				newChild.SetAttribute("role", "doc-pagebreak");
+				newChild.SetAttribute("id", id);
+				newChild.SetAttribute("aria-label", page);
+				newChild.InnerXml = page;
+				div.InsertBefore(newChild, div.FirstChild);
+				// We don't generally want to display the numbers for the page breaks.
+				// REVIEW: should this be a user-settable option, defaulting to "display: none"?
+				// Note that some e-readers ignore "display: none".  However, the recommended
+				// Gitden reader appears to handle it okay.  At least, the page number values
+				// from the inserted page break span are not displayed.
+				var head = pageDom.Head;
+				var newStyle = pageDom.RawDom.CreateElement("style");
+				newStyle.SetAttribute("type", "text/css");
+				newStyle.InnerXml = "span[role='doc-pagebreak'] { display: none }";
+				head.AppendChild(newStyle);
+			}
 		}
 
 		// Combines staging and finishing (currently just used in tests).
