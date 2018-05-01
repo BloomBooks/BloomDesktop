@@ -152,7 +152,7 @@ namespace Bloom.Collection
 			ChangeThatRequiresRestart();
 		}
 
-		private LanguageInfo ChangeLanguage(string iso639Code, string potentiallyCustomName=null)
+		private static LanguageInfo ChangeLanguage(string languageIdentifier, string potentiallyCustomName=null)
 		{
 			using (var dlg = new LanguageLookupDialog())
 			{
@@ -161,13 +161,15 @@ namespace Bloom.Collection
 				dlg.IsShowRegionalDialectsCheckBoxVisible = true;
 				dlg.IsScriptAndVariantLinkVisible = true;
 
-				var language = new LanguageInfo() { LanguageTag = iso639Code};
+				var language = new LanguageInfo() { LanguageTag = languageIdentifier};
 				if (!string.IsNullOrEmpty(potentiallyCustomName))
 				{
 					language.DesiredName = potentiallyCustomName; // to be noticed, must set before dlg.SelectedLanguage
 				}
 				dlg.SelectedLanguage = language;
-				dlg.SearchText = iso639Code;
+				// if languageIdentifier includes Script/Region/Variant codes... which it might now...
+				// limit the SearchText to the part before the first hyphen (the iso 639 code).
+				dlg.SearchText = languageIdentifier.Split('-')[0];
 
 				// Following should be consistent with LanguageIdControl constructor.
 				dlg.UseSimplifiedChinese();
