@@ -152,7 +152,7 @@ namespace Bloom.Collection
 			ChangeThatRequiresRestart();
 		}
 
-		private LanguageInfo ChangeLanguage(string iso639Code, string potentiallyCustomName=null)
+		private static LanguageInfo ChangeLanguage(string iso639Code, string potentiallyCustomName=null)
 		{
 			using (var dlg = new LanguageLookupDialog())
 			{
@@ -167,7 +167,7 @@ namespace Bloom.Collection
 					language.DesiredName = potentiallyCustomName; // to be noticed, must set before dlg.SelectedLanguage
 				}
 				dlg.SelectedLanguage = language;
-				dlg.SearchText = iso639Code;
+				dlg.SearchText = GetSearchText(iso639Code);
 
 				// Following should be consistent with LanguageIdControl constructor.
 				dlg.UseSimplifiedChinese();
@@ -178,6 +178,14 @@ namespace Bloom.Collection
 				}
 				return  dlg.SelectedLanguage;
 			}
+		}
+
+		private static string GetSearchText(string iso639Code)
+		{
+			// iso639Code might contain Script/Region/Variant info which we don't want in the search text
+			// so just return the part before the first hyphen.
+			// Why length < 4? Because length 4 could be a 2-letter code + hyphen + 1-letter variant.
+			return iso639Code.Length < 4 ? iso639Code : iso639Code.Split('-')[0];
 		}
 
 		private void _okButton_Click(object sender, EventArgs e)
