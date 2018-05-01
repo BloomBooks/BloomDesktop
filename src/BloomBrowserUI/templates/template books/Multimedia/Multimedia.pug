@@ -9,7 +9,7 @@ html
 		meta(name='bloomBookId', content='cb900946-584d-49e8-b5b3-a17286deb6d0')
 		//- Eventually, we'll remove Bloom's need for this.
 		meta(name='pageTemplateSource', content='Multimedia')
-		title 'Basic Book'
+		title 'Multimedia'
 		+stylesheets('Multimedia.css')
 		+standardStyles
 			= '\n'
@@ -60,3 +60,7 @@ html
 				.split-pane-component.position-right
 					.split-pane-component-inner.adding
 						+field("auto").quiz-style.quizContents.bloom-userCannotModifyStyles.bloom-noAudio
+		+page('Instructions', 'Use this non-printing page, for example, to tell people about the importance of consultant checking.' )#d054bb76-dc6b-4452-a4ab-f4b83ffa10cc(data-page='extra').nonprinting.screen-only
+			.split-pane-component-inner
+				+fieldx.bloom-noAudio
+
