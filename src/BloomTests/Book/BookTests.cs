@@ -2012,6 +2012,34 @@ namespace BloomTests.Book
 
 			return templatePage;
 		}
+
+		[Test]
+		public void RemoveNonPublishablePages_Works()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage nonprinting' id='guid1' data-page-number='1'>
+						<div />
+					</div>
+					<div class='bloom-page numberedPage bloom-noAudio' id='guid2' data-page-number='2'>
+					</div>
+					<div class='bloom-page numberedPage nonpublished' id='guid3' data-page-number='3'>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
+					</div>
+					<div class='bloom-page numberedPage screen-only' id='guid4' data-page-number='4'>
+						<div class='bloom-imageContainer some other classes'></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+
+			// SUT
+			book.RemoveNonPublishablePages();
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(@"//div[contains(@class, 'bloom-page')]", 3);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[contains(@class,'nonpublished')]");
+		}
+
 #if UserControlledTemplate
 		[Test]
 		public void SetType_WasPublicationSetToTemplate_HasTemplateFeatures()

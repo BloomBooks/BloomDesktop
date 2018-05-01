@@ -3653,6 +3653,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Traditional</source>
         <note>ID: TemplateBooks.PageLabel.Traditional</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Translation Instructions" sil:dynamic="true">
+        <source xml:lang="en">Translation Instructions</source>
+        <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
+        <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
         <source xml:lang="en">Setup</source>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>

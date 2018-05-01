@@ -10,7 +10,6 @@ using System;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Xml;
-using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.web;
 using BloomTemp;
@@ -64,6 +63,7 @@ namespace Bloom.Book
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress());
 			modifiedBook.AdjustCollectionStylesToBookFolder();
+			modifiedBook.RemoveNonPublishablePages();
 			modifiedBook.Save();
 			modifiedBook.Storage.UpdateSupportFiles();
 			// Copy the possibly modified stylesheets after UpdateSupportFiles so that they don't
