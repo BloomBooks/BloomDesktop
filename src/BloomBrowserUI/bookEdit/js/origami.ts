@@ -117,7 +117,7 @@ function layoutToggleClickHandler() {
         const toggleTransitionLength = 450;
         setTimeout(function () {
             $("html").off("keydown.origami");
-            fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
+            axios.post("/bloom/api/toolbox/saveChangesAndRethinkPageEvent");
         }, toggleTransitionLength);
     }
 }

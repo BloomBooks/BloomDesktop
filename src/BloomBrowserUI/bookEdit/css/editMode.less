@@ -17,6 +17,8 @@
 @PageLabelAndChangeLayoutPaneHeight: 45px;
 @PageLabelVerticalDisplacement: -33px;
 
+@imageDescriptionTopBorderWidth: 20px;
+
 body {
     background-color: @bloom-darkestgray;
     transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
@@ -166,6 +168,61 @@ div.hoverUp {
             background-image: url("../img/imageMissingMetaData.svg") !important;
             border: none;
         }
+    }
+}
+// override button positions when the image is shrunk to make room for an image description
+.bloom-showImageDescriptions {
+    .imageButton {
+        &.changeImageButton, &.pasteImageButton {
+            right: 50%;
+        }
+        &.changeImageButton, &.editMetadataButton {
+            top: @imageDescriptionTopBorderWidth; // below the ::before border
+        }
+    }
+    BUTTON.miniButton {
+        right: calc(50% + 60px);
+        &.verySmallButtons {
+            // normally right:60%, width: 30%.
+            // We need the effect of 60% of the picture half, plus the 50%
+            // occupied by the text, that is, 30%+50%
+            right: 80%;
+            width: 15%
+        }
+    }
+    .bloom-imageContainer {
+        img {
+            height: calc(100% - @imageDescriptionTopBorderWidth);
+        }
+        .bloom-imageDescription {
+            // Note: this rule has basically the same specificity as one in basePage.less
+            // that sets top to zero. I think this one only wins because it comes later.
+            // It would be better to include another class that actually indicates edit mode,
+            // but we don't seem to have one.
+            top: @imageDescriptionTopBorderWidth;
+            height: calc(100% - @imageDescriptionTopBorderWidth);
+        }
+    }
+}
+@imageDescriptionBorderWidth: 3px;
+.bloom-showImageDescriptions .bloom-page .bloom-imageContainer {
+    // This produces the thin border on the left, bottom, and right of each image when the
+    // image description tool is active.
+    border-style: solid;
+    border-color: @accordion-active-element;
+    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth @imageDescriptionBorderWidth;
+    background-repeat: no-repeat;
+    // This rule produces the border and icon at the top of each image when the image description tool is active
+    &::before {
+        content:"";
+        position: relative;
+        height: @imageDescriptionTopBorderWidth;
+        width:100%;
+        display:block;
+        background-color: @accordion-active-element;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-image: url("/bloom/images/ImageDescriptionToolIcon.svg");
     }
 }
 .bloom-videoContainer {

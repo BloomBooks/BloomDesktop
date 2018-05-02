@@ -709,7 +709,7 @@ interface String {
 export function setZoom(newScale: string) {
     $("div#page-scaling-container").attr("style", "transform: scale(" + newScale + "); transform-origin: top left;");
     // Save changes, so TextOverPicture draggables work correctly.
-    fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
+    axios.post("/bloom/api/toolbox/saveChangesAndRethinkPageEvent");
 }
 
 // This is used to keep wheel zooming messages from happening too fast.

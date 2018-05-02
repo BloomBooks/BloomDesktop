@@ -65,10 +65,8 @@ namespace BloomTests.Book
 			book.BringBookUpToDate(new NullProgress());
 			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
 			Assert.AreEqual("myImage.png", dataBookImage.InnerText);
-			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
-			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
-			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('myImage.png'"));
-			Assert.AreEqual(string.Empty, pageImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals("myImage.png"));
 		}
 
 		[Test]
@@ -92,10 +90,8 @@ namespace BloomTests.Book
 			book.BringBookUpToDate(new NullProgress());
 			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
 			Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
-			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
-			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
-			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('" + placeHolderFile + "'"));
-			Assert.AreEqual(string.Empty, pageImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals(placeHolderFile));
 		}
 
 		[Test]
@@ -123,10 +119,8 @@ namespace BloomTests.Book
 			book.BringBookUpToDate(new NullProgress());
 			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
 			Assert.AreEqual(imageFilename, dataBookImage.InnerText);
-			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
-			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
-			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('" + noPlusEncodedName + "'"));
-			Assert.AreEqual(string.Empty, pageImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals(noPlusEncodedName));
 		}
 
 		[Test]
@@ -1177,7 +1171,7 @@ namespace BloomTests.Book
 			//book.BringBookUpToDate(new NullProgress());
 			var dom = book.GetPreviewHtmlFileForWholeBook();
 
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@style=\"background-image:url('theCover.png')\"]", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage' and @src='theCover.png']", 1);
 		}
 
 		[Test]

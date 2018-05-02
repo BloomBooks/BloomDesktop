@@ -43,36 +43,13 @@ export function SetupImagesInContainer(container) {
 }
 
 export function SetupImage(image) {
-    //This is needed to support captioned, inline images, as in  SIL LEAD's Uganda P4 Pupils Books.
-    //In these cases, the captions went from 1 to many lines, and
-    //the container needs to grow to hold the caption (else the text doesn't flow around the caption). But as it
-    //grows, we don't want the image to also keep moving downwards so that it is centered within the container.
-    //The images also are going to look best left aligned.
-    var doCenterImage = !$(image).parent().hasClass('bloom-alignImageTopLeft');
-
-    var options = { scale: "fit", center: doCenterImage }
-
-    //make images scale up to their container without distorting their proportions, while being centered within it.
-    $(image).scaleImage(options); //uses jquery.myimgscale.js
-
-    // when the image changes, we need to scale again:
-    $(image).load(function () {
-        $(this).scaleImage(options);
-    });
-
-    //and when their parent is resized by the user, we need to scale again:
-    $(image).parent().resize(function () {
-        $(this).find("img").scaleImage(options);
-        try {
-            // When this function is for some reason loaded into the toolbox frame
-            // this function is undefined.
-            if (typeof (ResetRememberedSize) === "function") {
-                ResetRememberedSize(this);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    });
+    // Remove any obsolete explicit image size and position left over from earlier versions of Bloom.
+    if (image.style) {
+        image.style.width = "";
+        image.style.height = "";
+        image.style.marginLeft = "";
+        image.style.marginTop = "";
+    }
 }
 
 export function GetButtonModifier(container) {

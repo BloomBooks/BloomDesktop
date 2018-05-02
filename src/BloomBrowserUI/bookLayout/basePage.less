@@ -434,8 +434,9 @@ h2 {
 
 .customPage {
     .bloom-imageContainer {
-        width: ~"calc(100% - 1px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
-        height: ~"calc(100% - 3px)"; //hack: this should logically be 1px, but 3 was needed, so I'm missing something, or maybe it's about rounding and such.
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box; // need any borders inside that 100% sizing (otherwise they tend to be clipped on at least one side)
 
         // above so buttons show
         z-index: @imageContainerZIndex;
@@ -567,6 +568,18 @@ h2 {
         right: @EvenPageNumberPosition;
         text-align: right;
     }
+}
+
+// When bloom-showImageDescriptions is set (typically only when the relevant toolbox is showing, currently,
+// but we'd like to be able to turn it on in the end result, too), we make the picture shrink to fit
+// in the left half and show the translation group in the right half.
+// This rule would like to live in basePage-sharedRules, but we need display:flex in Bloom and display:block
+// in epubs.
+.bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
+        // We really just want to turn off the display:none that usually applies to image descriptions
+        // inside image containers, but we have to set something. Fortunately, translation groups
+        // are always display:flex (when not hidden) in Bloom itself.
+        display:flex;
 }
 
 //... to be continued. We sandwich most other sheets between this one and the languageDisplay.css, which comes last-ish
