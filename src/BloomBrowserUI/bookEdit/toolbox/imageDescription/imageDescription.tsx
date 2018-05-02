@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 //import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
 //import { RadioGroup, Radio } from "../../../react_components/radio";
-//import axios from "axios";
+import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import "./imageDescription.less";
@@ -82,7 +82,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         }
         if (addedTranslationGroup) {
             // This inserts all the right bloom-editable divs in whatever languages are needed.
-            fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
+            axios.post("/bloom/api/toolbox/saveChangesAndRethinkPageEvent");
             // This return is currently redundant but it emphasizes that you can't count on anything
             // more happening in this branch.The page will unload somewhere in the
             // course of saveChangesAndRethinkPageEvent. Then a new page will load and updateMarkup()

@@ -110,7 +110,7 @@ namespace Bloom.Edit
 				switch (behavior)
 				{
 					case PageRefreshEvent.SaveBehavior.SaveBeforeRefresh:
-						RethinkPageAndReloadIt(null);
+						RethinkPageAndReloadIt();
 						break;
 
 					case PageRefreshEvent.SaveBehavior.JustRedisplay:
@@ -824,7 +824,6 @@ namespace Bloom.Edit
 		internal void AddStandardEventListeners()
 		{
 			AddMessageEventListener("saveToolboxSettingsEvent", SaveToolboxSettings);
-			AddMessageEventListener("saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt);
 			AddMessageEventListener("setTopic", SetTopic);
 			AddMessageEventListener("finishSavingPage", FinishSavingPage);
 		}
@@ -897,10 +896,16 @@ namespace Bloom.Edit
 			//make the change in the data div
 			_currentlyDisplayedBook.SetTopic(englishTopicAsKey);
 			//reflect that change on this page
-			RethinkPageAndReloadIt(null);
+			RethinkPageAndReloadIt();
 		}
 
-		private void RethinkPageAndReloadIt(string obj)
+		private void RethinkPageAndReloadIt(ApiRequest request)
+		{
+			RethinkPageAndReloadIt();
+			request.PostSucceeded();
+		}
+
+		private void RethinkPageAndReloadIt()
 		{
 			if (CannotSavePage())
 				return;
@@ -1364,6 +1369,7 @@ namespace Bloom.Edit
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
 			server.RegisterEndpointHandler("toolbox/recordedVideo", HandleRecordedVideoRequest, true);
+			server.RegisterEndpointHandler("toolbox/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt,true);
 		}
 
 		// Request from video recorder tool, issued when a complete recording has been captured.
