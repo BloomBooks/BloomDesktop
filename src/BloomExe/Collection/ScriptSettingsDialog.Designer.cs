@@ -35,9 +35,9 @@
 			this._tallerLinesCheckBox = new System.Windows.Forms.CheckBox();
 			this._lineSpacingCombo = new System.Windows.Forms.ComboBox();
 			this._okButton = new System.Windows.Forms.Button();
-			this._lineBreakCheckBox = new System.Windows.Forms.CheckBox();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+			this._lineBreakCheckBox = new System.Windows.Forms.CheckBox();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.flowLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -83,7 +83,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tallerLinesCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._tallerLinesCheckBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._tallerLinesCheckBox, "ScriptSettingsDialog.TallerLinesCheckBox");
-			this._tallerLinesCheckBox.Location = new System.Drawing.Point(3, 35);
+			this._tallerLinesCheckBox.Location = new System.Drawing.Point(3, 64);
 			this._tallerLinesCheckBox.Name = "_tallerLinesCheckBox";
 			this._tallerLinesCheckBox.Size = new System.Drawing.Size(207, 23);
 			this._tallerLinesCheckBox.TabIndex = 26;
@@ -95,11 +95,12 @@
 			// 
 			this._lineSpacingCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._lineSpacingCombo.FormattingEnabled = true;
+			this._lineSpacingCombo.ItemHeight = 17;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._lineSpacingCombo, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._lineSpacingCombo, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._lineSpacingCombo, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._lineSpacingCombo, "ScriptSettingsDialog.LineSpacingCombo");
-			this._lineSpacingCombo.Location = new System.Drawing.Point(26, 64);
+			this._lineSpacingCombo.Location = new System.Drawing.Point(26, 93);
 			this._lineSpacingCombo.Margin = new System.Windows.Forms.Padding(26, 3, 20, 20);
 			this._lineSpacingCombo.Name = "_lineSpacingCombo";
 			this._lineSpacingCombo.Size = new System.Drawing.Size(121, 25);
@@ -114,7 +115,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
-			this._okButton.Location = new System.Drawing.Point(126, 176);
+			this._okButton.Location = new System.Drawing.Point(225, 168);
 			this._okButton.MinimumSize = new System.Drawing.Size(90, 29);
 			this._okButton.Name = "_okButton";
 			this._okButton.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -123,31 +124,17 @@
 			this._okButton.Text = "&OK";
 			this._okButton.UseVisualStyleBackColor = true;
 			// 
-			// _lineBreakCheckBox
-			// 
-			this._lineBreakCheckBox.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._lineBreakCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._lineBreakCheckBox, null);
-			this._L10NSharpExtender.SetLocalizingId(this._lineBreakCheckBox, "ScriptSettingsDialog.LineBreakCheckBox");
-			this._lineBreakCheckBox.Location = new System.Drawing.Point(3, 147);
-			this._lineBreakCheckBox.Name = "_lineBreakCheckBox";
-			this._lineBreakCheckBox.Size = new System.Drawing.Size(183, 23);
-			this._lineBreakCheckBox.TabIndex = 4;
-			this._lineBreakCheckBox.Text = "Break lines only at spaces";
-			this._lineBreakCheckBox.UseVisualStyleBackColor = true;
-			// 
 			// flowLayoutPanel1
 			// 
 			this.flowLayoutPanel1.AutoSize = true;
 			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.flowLayoutPanel1.Controls.Add(this._languageNameLabel);
 			this.flowLayoutPanel1.Controls.Add(this.tableLayoutPanel1);
-			this.flowLayoutPanel1.Controls.Add(this._lineBreakCheckBox);
 			this.flowLayoutPanel1.Controls.Add(this._okButton);
 			this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-			this.flowLayoutPanel1.Location = new System.Drawing.Point(30, 20);
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(21, 23);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-			this.flowLayoutPanel1.Size = new System.Drawing.Size(219, 208);
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(318, 200);
 			this.flowLayoutPanel1.TabIndex = 0;
 			// 
 			// tableLayoutPanel1
@@ -156,17 +143,32 @@
 			this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel1.Controls.Add(this._lineSpacingCombo, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this._tallerLinesCheckBox, 0, 2);
+			this.tableLayoutPanel1.Controls.Add(this._lineBreakCheckBox, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this._rtlLanguageCheckBox, 0, 0);
-			this.tableLayoutPanel1.Controls.Add(this._tallerLinesCheckBox, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this._lineSpacingCombo, 0, 2);
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 32);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 3;
+			this.tableLayoutPanel1.RowCount = 4;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(213, 109);
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(312, 130);
 			this.tableLayoutPanel1.TabIndex = 2;
+			// 
+			// _lineBreakCheckBox
+			// 
+			this._lineBreakCheckBox.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._lineBreakCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._lineBreakCheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._lineBreakCheckBox, "ScriptSettingsDialog.LineBreakCheckBox");
+			this._lineBreakCheckBox.Location = new System.Drawing.Point(3, 35);
+			this._lineBreakCheckBox.Name = "_lineBreakCheckBox";
+			this._lineBreakCheckBox.Size = new System.Drawing.Size(306, 23);
+			this._lineBreakCheckBox.TabIndex = 28;
+			this._lineBreakCheckBox.Text = "Do not use special Asian script word breaking";
+			this._lineBreakCheckBox.UseVisualStyleBackColor = true;
 			// 
 			// ScriptSettingsDialog
 			// 
