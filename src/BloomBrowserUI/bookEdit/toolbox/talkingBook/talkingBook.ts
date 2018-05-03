@@ -21,6 +21,7 @@ export default class TalkingBookTool implements ITool {
     configureElements(container: HTMLElement) { }
 
     showTool() {
+        this.showImageDescriptionsIfAny();
         AudioRecorder.initializeTalkingBookTool();
         AudioRecorder.theOneAudioRecorder.setupForRecording();
     }
@@ -31,10 +32,29 @@ export default class TalkingBookTool implements ITool {
         if (AudioRecorder.theOneAudioRecorder) {
             AudioRecorder.theOneAudioRecorder.removeRecordingSetup();
         }
+        ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
     }
 
     updateMarkup() {
+        this.showImageDescriptionsIfAny();
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
+    }
+
+    private showImageDescriptionsIfAny() {
+        // If we have any image descriptions we need to show them so we can record them.
+        // (Also because we WILL select them, which is confusing if they are not visible.)
+        const page = ToolBox.getPage();
+        var imageContainers = page.getElementsByClassName("bloom-imageContainer");
+        for (var i = 0; i < imageContainers.length; i++) {
+            const container = imageContainers[i];
+            var imageDescriptions = container.getElementsByClassName("bloom-imageDescription");
+            for (var j = 0; j < imageDescriptions.length; j++) {
+                if (imageDescriptions[j].textContent.trim().length > 0) {
+                    page.classList.add("bloom-showImageDescriptions");
+                    return;
+                }
+            }
+        }
     }
 
     id() { return "talkingBook"; }
