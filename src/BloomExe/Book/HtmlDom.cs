@@ -1765,5 +1765,56 @@ namespace Bloom.Book
 		{
 			Body.SetAttribute("data-media", media);
 		}
+
+		public void SetImageAltAttrsFromDescriptions(string descriptionLang)
+		{
+			SetImageAltAttrsFromDescriptions(RawDom.DocumentElement, descriptionLang);
+		}
+
+		public static void SetImageAltAttrsFromDescriptions(XmlElement root, string descriptionLang)
+		{
+			foreach (XmlElement img in root.SelectNodes("//img"))
+			{
+				SetImageAltAttrFromDescription(img, descriptionLang);
+			}
+		}
+
+		// Make the image's alt attr match the image description for the specified language.
+		// If we don't have one, make the alt attr exactly an empty string.
+		private static void SetImageAltAttrFromDescription(XmlElement img, string descriptionLang)
+		{
+			var parent = img.ParentNode as XmlElement;
+			if (HasClass(parent, "bloom-imageContainer"))
+			{
+				var description = parent.ChildNodes.Cast<XmlNode>()
+					.FirstOrDefault(n => n is XmlElement && HasClass((XmlElement) n, "bloom-imageDescription"));
+				if (description != null)
+				{
+					foreach (var node in description.ChildNodes)
+					{
+						var editable = node as XmlElement;
+						if (editable == null)
+							continue;
+						if (!HasClass(editable, "bloom-editable"))
+							continue;
+						if (editable.Attributes["lang"] == null || editable.Attributes["lang"].Value != descriptionLang)
+							continue;
+						// We found the relevant description. (Even if it's empty, we won't find a better one,
+						// so stop here anyway.)
+						// Enhance: we may want to do something about over-long descriptions. Epub accessibility
+						// guidelines recommend alt should not be more than about 200 characters. There is
+						// a mechanism in WCAG 2.0 for providing a 'long description' by means of a link in
+						// a longdesc attr (does anything implement this?) or a separate link element whose 'alt'
+						// indicates that it is a link to a long description. Not sure how that could work in an
+						// epub, either.
+						img.SetAttribute("alt", editable.InnerText.Trim());
+						return;
+					}
+				}
+			}
+
+			// Images in accessible epubs should have explicit empty alt attr if no useful description
+			img.SetAttribute("alt", "");
+		}
 	}
 }
