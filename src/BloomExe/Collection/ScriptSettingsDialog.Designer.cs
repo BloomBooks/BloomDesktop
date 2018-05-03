@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ScriptSettingsDialog));
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._languageNameLabel = new System.Windows.Forms.Label();
 			this._rtlLanguageCheckBox = new System.Windows.Forms.CheckBox();
@@ -161,7 +162,7 @@
 			// 
 			this._lineBreakCheckBox.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._lineBreakCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._lineBreakCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._lineBreakCheckBox, resources.GetString("_lineBreakCheckBox.LocalizationComment"));
 			this._L10NSharpExtender.SetLocalizingId(this._lineBreakCheckBox, "ScriptSettingsDialog.LineBreakCheckBox");
 			this._lineBreakCheckBox.Location = new System.Drawing.Point(3, 35);
 			this._lineBreakCheckBox.Name = "_lineBreakCheckBox";
