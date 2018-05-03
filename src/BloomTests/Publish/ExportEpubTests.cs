@@ -76,6 +76,7 @@ namespace BloomTests.Publish
 			CheckBasicsInPage("my_Image", "my_image1");
 #endif
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -93,6 +94,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest(outputImageName, "my_image");
 			CheckBasicsInPage(outputImageName, "my_image");
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -270,11 +272,21 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customCollectionStyles.css']", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='fonts.css']", _ns);
+
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:body/xhtml:section[@epub:type]", _ns, 1);
 		}
 
 		private void CheckPageBreakMarker(string pageData, string pageId="pg1", string pageLabel="1")
 		{
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//body/div/span[@role='doc-pagebreak' and @id='"+pageId+"' and @aria-label='"+pageLabel+"']", 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//body/section/div/span[@role='doc-pagebreak' and @id='"+pageId+"' and @aria-label='"+pageLabel+"']", 1);
+		}
+
+		private void CheckEpubTypeAttributes(string currentPage, string pageType, params string[] otherEpubTypeValues)
+		{
+			AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//xhtml:body/xhtml:section[@epub:type='"+pageType+"']", _ns, 1);
+			AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@epub:type]", _ns, otherEpubTypeValues.Count());
+			foreach (var val in otherEpubTypeValues)
+				AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@epub:type='"+val+"']", _ns, 1);
 		}
 
 		/// <summary>
@@ -365,6 +377,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest("my_image");
 			CheckBasicsInPage("my_image");
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -411,18 +424,23 @@ namespace BloomTests.Publish
 				{
 				case 1:
 					CheckPageBreakMarker(currentPage, "pgFrontCover", "Front Cover");
+					CheckEpubTypeAttributes(currentPage, "cover");
 					break;
 				case 2:
 					CheckPageBreakMarker(currentPage, "pg1", "1");
+					CheckEpubTypeAttributes(currentPage, "bodymatter");
 					break;
 				case 3:
 					CheckPageBreakMarker(currentPage, "pgTitlePage", "Title Page");
+					CheckEpubTypeAttributes(currentPage, "frontmatter", "titlepage");
 					break;
 				case 4:
 					CheckPageBreakMarker(currentPage, "pgCreditsPage", "Credits Page");
+					CheckEpubTypeAttributes(currentPage, "frontmatter", "credits");
 					break;
 				case 5:
 					CheckPageBreakMarker(currentPage, "pgTheEnd", "The End");
+					CheckEpubTypeAttributes(currentPage, "backmatter");
 					break;
 				default:
 					// We should never get here!
@@ -467,6 +485,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest("my_image");
 			CheckBasicsInPage("my_image");
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -502,6 +521,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest("myImage");
 			CheckBasicsInPage("myImage");
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 		}
 
 		[Test]
@@ -523,10 +543,12 @@ namespace BloomTests.Publish
 			CheckSourceInManifest(String.Format("created from Bloom book on {0} with page size A5 Portrait", DateTime.Now.ToString("yyyy-MM-dd")));
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
 			CheckPageBreakMarker(page2Data, "pg2", "2");
+			CheckEpubTypeAttributes(page2Data, "bodymatter");
 			var navPageData = CheckNavPage();
 			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']", _ns);
@@ -554,6 +576,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			var page2entry = _epub.GetEntry(Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			Assert.That(page2entry, Is.Null, "nonprinting page should be omitted");
@@ -576,6 +599,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img");
@@ -615,6 +639,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img[@src='myImage.png']");
@@ -649,6 +674,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 			// Check that the standard stylesheet, not wanted in the ePUB, is removed.
@@ -715,6 +741,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -750,6 +777,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pgFrontCover", "Front Cover");
+			CheckEpubTypeAttributes(_page1Data, "cover");
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
@@ -780,6 +808,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
@@ -828,6 +857,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
+			CheckEpubTypeAttributes(_page1Data, "frontmatter", "credits");
 			//Thread.Sleep(20000);
 
 			//Console.WriteLine(XElement.Parse(_page1Data).ToString());
@@ -893,6 +923,7 @@ namespace BloomTests.Publish
 			CheckSourceInManifest("urn:isbn:ABCDEFG");
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
+			CheckEpubTypeAttributes(_page1Data, "frontmatter", "credits", "copyright-page");
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='ISBNContainer']", _ns);
@@ -1000,6 +1031,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pg5", "5");
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			// A5Portrait page is 297/2 mm wide
 			// Percent size however is relative to containing block, typically the marginBox,
@@ -1036,6 +1068,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pg3", "3");
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='margin-top: 0px;']", _ns);
 			var marginboxInches = (297.0/2.0 - 40) / 25.4;
@@ -1063,6 +1096,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest("image1");
 			CheckBasicsInPage("image1");
 			CheckPageBreakMarker(_page1Data, "pg99", "99");
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			// A5Portrait page is 297/2 mm wide
 			// Percent size however is relative to containing block,
@@ -1090,6 +1124,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1128,6 +1163,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1222,6 +1258,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 
 			// This is possibly too strong; see comment where we remove them.
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='i12']");
@@ -1238,6 +1275,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest(); // don't check the file stuff here, we're looking at special cases
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1279,6 +1317,7 @@ namespace BloomTests.Publish
 			CheckBasicsInPage("my_3dimage", "my_3Dimage1", "my_image", "my_image1");
 #endif
 			CheckPageBreakMarker(_page1Data);
+			CheckEpubTypeAttributes(_page1Data, "bodymatter");
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
