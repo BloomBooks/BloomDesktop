@@ -54,7 +54,7 @@ namespace Bloom.Book
 
 			// We use the "initial name" to make the initial copy, and it gives us something
 			//to name the folder and file until such time as the user enters a title in for the book.
-			string initialBookName = GetInitialName(sourceBookFolder, parentCollectionPath);
+			string initialBookName = GetInitialName(parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
 			CopyFolder(sourceBookFolder, newBookFolder);
 			//if something bad happens from here on out, we need to delete that folder we just made
@@ -509,7 +509,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private string GetInitialName(string sourcePath, string parentCollectionPath)
+		private string GetInitialName(string parentCollectionPath)
 		{
 			var name = BookStorage.SanitizeNameForFileSystem(UntitledBookName);
 			return BookStorage.GetUniqueFolderName(parentCollectionPath, name);
