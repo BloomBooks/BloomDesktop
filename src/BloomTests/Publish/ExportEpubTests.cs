@@ -33,6 +33,7 @@ namespace BloomTests.Publish
 		private static EnhancedImageServer s_testServer;
 		private static BookSelection s_bookSelection;
 		private BookServer _bookServer;
+		private string _defaultSourceValue;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
@@ -226,6 +227,11 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:identifier", _ns);
 			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:source", _ns);
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='dcterms:modified']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessMode']", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessModeSufficient']", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityFeature']", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityHazard']", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessibilitySummary']", _ns);
 
 			// This is not absolutely required, but it's true for all our test cases and the way we generate books.
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml']");
@@ -248,12 +254,121 @@ namespace BloomTests.Publish
 				assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='" + image + "' and @href='" + image + ".png']");
 		}
 
-		private void CheckSourceInManifest(string desiredSource)
+		private void CheckAccessibilityInManifest(bool hasAudio, bool hasImages, string desiredSource, bool hasFullAudio = false)
 		{
 			var xdoc = new XmlDocument();
 			xdoc.LoadXml(_manifestContent);
 			var source = xdoc.SelectSingleNode("opf:package/opf:metadata/dc:source", _ns);
 			Assert.AreEqual(desiredSource, source.InnerXml);
+
+			var foundTextual = false;
+			var foundAudio = false;
+			var foundVisual = false;
+			var foundOther = false;
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessMode']", _ns))
+			{
+				switch (node.InnerXml)
+				{
+				case "textual":		foundTextual = true;	break;
+				case "auditory":	foundAudio = true;		break;
+				case "visual":		foundVisual = true;		break;
+				default:			foundOther = true;		break;
+				}
+			}
+			Assert.IsFalse(foundOther, "Unrecognized accessMode in manifest");
+			Assert.IsTrue(foundTextual, "Failed to find expected 'textual' accessMode in manifest");
+			Assert.AreEqual(hasAudio, foundAudio, (hasAudio ? "Failed to find expected 'auditory' accessMode in manifest" : "Unexpected 'auditory' accessMode in manifest"));
+			Assert.AreEqual(hasImages, foundVisual, (hasImages ? "Failed to find expected 'visual' accessMode in manifest" : "Unexpected 'visual' accessMode in manifest"));
+
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessModeSufficient']", _ns))
+			{
+				foundTextual = foundAudio = foundVisual = foundOther = false;
+				var modes =  node.InnerXml.Split(',');
+				foreach (var mode in modes)
+				{
+					switch (mode)
+					{
+					case "textual":		foundTextual = true;	break;
+					case "auditory":	foundAudio = true;		break;
+					case "visual":		foundVisual = true;		break;
+					default:			foundOther = true;		break;
+					}
+				}
+				Assert.IsFalse(foundOther, "Unrecognized mode in accessModeSufficient in manifest");
+				if (!hasFullAudio)
+					// If hasFullAudio is false, then every accessModeSufficient must contain textual.
+					Assert.IsTrue(foundTextual, "Failed to find expected 'textual' in accessModeSufficient in manifest");
+				else
+					// If hasFullAudio is true, then every accessModeSufficient must contain either textual or auditory (or both).
+					Assert.IsTrue(foundTextual || foundAudio, "Failed to find either 'textual' or 'auditory' in accessModeSufficient in manifest");
+				if (!hasAudio)
+					Assert.IsFalse(foundAudio, "Unexpected 'auditory' in accessModeSufficient in manifest");
+				if (!hasImages)
+					Assert.IsFalse(foundVisual, "Unexpected 'visual' in accessModeSufficient in manifest");
+			}
+
+			foundOther = false;
+			bool foundSynchronizedAudio = false;
+			bool foundResizeText = false;
+			bool foundPageNumbers = false;
+			bool foundUnlocked = false;
+			bool foundReadingOrder = false;
+			bool foundTableOfContents = false;
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityFeature']", _ns))
+			{
+				switch (node.InnerXml)
+				{
+				case "synchronizedAudioText":				foundSynchronizedAudio = true;	break;
+				case "displayTransformability/resizeText":	foundResizeText = true;			break;
+				case "printPageNumbers":					foundPageNumbers = true;		break;
+				case "unlocked":							foundUnlocked = true;			break;
+				case "readingOrder":						foundReadingOrder = true;		break;
+				case "tableOfContents":						foundTableOfContents = true;	break;
+				default:									foundOther = true;				break;
+				}
+			}
+			Assert.IsFalse(foundOther, "Unrecognized accessibilityFeature value in manifest");
+			Assert.AreEqual(hasAudio, foundSynchronizedAudio, "Bloom Audio is synchronized iff it exists (which it does{0}) [manifest accessibilityFeature]", hasAudio ? "" : " not");
+			Assert.IsTrue(foundResizeText, "Bloom text should always be resizable [manifest accessibilityFeature]");
+			Assert.IsTrue(foundPageNumbers, "Bloom books provide page number mapping to the print edition [manifest accessibilityFeature]");
+			Assert.IsTrue(foundUnlocked, "Bloom books are always unlocked [manifest accessibilityFeature]");
+			Assert.IsTrue(foundReadingOrder, "Bloom books have simple formats that are always in reading order [manifest accessibilityFeature]");
+			Assert.IsTrue(foundTableOfContents, "Bloom books have a trivial table of contents [manifest accessibilityFeature]");
+
+			foundOther = false;
+			bool foundNone = false;
+			bool foundNoMotionHazard = false;
+			bool foundNoFlashingHazard = false;
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityHazard']", _ns))
+			{
+				switch (node.InnerXml)
+				{
+				case "none":						foundNone = true;				break;
+				case "noMotionSimulationHazard":	foundNoMotionHazard = true;		break;
+				case "noFlashingHazard":			foundNoFlashingHazard = true;	break;
+				default:							foundOther = true;				break;
+				}
+			}
+			Assert.IsFalse(foundOther, "Unrecognized accessibilityHazard value in manifest");
+			if (hasAudio)
+			{
+				Assert.IsFalse(foundNone, "If we have Audio, then accessibilityHazard is not 'none' in manifest");
+				Assert.IsTrue(foundNoMotionHazard, "If we have Audio, then accessibilityHazard includes 'noMotionHazard' in manifest");
+				Assert.IsTrue(foundNoFlashingHazard, "If we have Audio, then accessibilityHazard includes 'noFlashingHazard' in manifest");
+			}
+			else
+			{
+				Assert.IsTrue(foundNone, "If we do not have Audio, then accessibilityHazard is 'none' in manifest");
+				Assert.IsFalse(foundNoMotionHazard, "If we do not have Audio, then accessibilityHazard is 'none', not 'noMotionHazard' in manifest");
+				Assert.IsFalse(foundNoFlashingHazard, "If we do not have Audio, then accessibilityHazard is 'none', not 'noFlashingHazard' in manifest");
+			}
+
+			int summaryCount = 0;
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilitySummary']", _ns))
+			{
+				++summaryCount;
+			}
+			Assert.AreEqual(1, summaryCount, "Expected a single accessibilitySummary item in the manifest, but found {0}", summaryCount);
 		}
 
 		private void CheckBasicsInPage(params string[] images)
@@ -356,6 +471,7 @@ namespace BloomTests.Publish
 			_manifestContent = StripXmlHeader(GetZipContent(_epub, _manifestFile));
 			_manifestDoc = XDocument.Parse(_manifestContent);
 			GetPageOneData();
+			_defaultSourceValue = String.Format("created from Bloom book on {0} with page size A5 Portrait", DateTime.Now.ToString("yyyy-MM-dd"));
 			return _epub;
 		}
 
@@ -483,6 +599,7 @@ namespace BloomTests.Publish
 			// But don't make a fake audio file for the second span
 			MakeEpub("output", "Missing_Audio_CreatedFromWav", book);
 			CheckBasicsInManifest("my_image");
+			CheckAccessibilityInManifest(true, true, _defaultSourceValue);	// both sound and image files
 			CheckBasicsInPage("my_image");
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, "bodymatter");
@@ -519,6 +636,7 @@ namespace BloomTests.Publish
 			MakeImageFiles(book, "myImage");
 			MakeEpub("output", "ImageSrcQuery_IsIgnored", book);
 			CheckBasicsInManifest("myImage");
+			CheckAccessibilityInManifest(false, true, _defaultSourceValue);		// no sound files, but a nontrivial image file
 			CheckBasicsInPage("myImage");
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, "bodymatter");
@@ -540,7 +658,7 @@ namespace BloomTests.Publish
 					</div>");
 			MakeEpub("output", "HandlesMultiplePages", book);
 			CheckBasicsInManifest();
-			CheckSourceInManifest(String.Format("created from Bloom book on {0} with page size A5 Portrait", DateTime.Now.ToString("yyyy-MM-dd")));
+			CheckAccessibilityInManifest(false, false, _defaultSourceValue);	// neither sound nor image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, "bodymatter");
@@ -920,7 +1038,7 @@ namespace BloomTests.Publish
 
 			MakeEpub("output", "InCreditsPage_LicenseUrlAndISBN_AreRemoved", book);
 			CheckBasicsInManifest();
-			CheckSourceInManifest("urn:isbn:ABCDEFG");
+			CheckAccessibilityInManifest(false, false, "urn:isbn:ABCDEFG");	// no sound or nontrivial image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
 			CheckEpubTypeAttributes(_page1Data, "frontmatter", "credits", "copyright-page");
@@ -1122,6 +1240,7 @@ namespace BloomTests.Publish
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
 			MakeEpub("output", "BookWithAudio_ProducesOverlay", book);
 			CheckBasicsInManifest();
+			CheckAccessibilityInManifest(true, false, _defaultSourceValue);	// sound files but no image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, "bodymatter");
@@ -1328,6 +1447,62 @@ namespace BloomTests.Publish
 			var sb = new StringBuilder();
 			Assert.DoesNotThrow(() => EpubMaker.AddFontFace(sb, "myFont", "bold", "italic", null));
 			Assert.That(sb.Length, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void HasFullAudioCoverage_ReturnsTrue()
+		{
+			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2d' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b764' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz");
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2d.mp4"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b764.mp3"));
+			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			Assert.IsTrue(hasFullAudio, "HasFullAudioCoverage should return true when appropriate");
+			MakeEpub("output", "HasFullAudioCoverage_ReturnsTrue", book);
+			CheckBasicsInManifest();
+			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+		}
+
+		[Test]
+		public void HasFullAudioCoverage_ReturnsFalseForNoAudio()
+		{
+			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2f' class='audio-sentence'>This is some text.</span> Another sentence</p>  \r\n", "xyz");
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2f.mp3"));
+			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			Assert.IsFalse(hasFullAudio, "HasFullAudioCoverage should return false when not all text is covered by an audio span.");
+			MakeEpub("output", "HasFullAudioCoverage_ReturnsFalseForNoAudio", book);
+			CheckBasicsInManifest();
+			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+		}
+
+		[Test]
+		public void HasFullAudioCoverage_ReturnsFalseForMissingAudioFile()
+		{
+			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2e' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b765' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz");
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b765.mp3"));
+			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			Assert.IsFalse(hasFullAudio, "HasFullAudioCoverage should return false when an audio file is missing.");
+			MakeEpub("output", "HasFullAudioCoverage_ReturnsFalseForMissingAudioFile", book);
+			CheckBasicsInManifest();
+			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+		}
+
+		[Test]
+		public void HasFullAudioCoverage_IgnoresOtherLanguage()
+		{
+			var book = SetupBookLong("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2f' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b764' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz",
+							extraContent: @"
+					<div class='bloom-editable' lang='xyz' contenteditable='true'>
+						<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a20' class='audio-sentence'>More text with audio</span></p>
+					</div>
+					<div class='bloom-editable' lang='de' contenteditable='true'>German should never display in this collection, and audio shouldn't be required either!</div>");
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2f.mp3"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a20.mp3"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b764.mp3"));
+			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			Assert.IsTrue(hasFullAudio, "HasFullAudioCoverage should return true, ignoring text in other languages");
+			MakeEpub("output", "HasFullAudioCoverage_IgnoresOtherLanguage", book);
+			CheckBasicsInManifest();
+			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 	}
 
