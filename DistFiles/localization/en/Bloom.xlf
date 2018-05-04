@@ -1454,6 +1454,7 @@
       <trans-unit id="EditTab.Toolbox.Motion.Heading" sil:dynamic="true">
         <source xml:lang="en">Motion Tool</source>
         <note>ID: EditTab.Toolbox.Motion.Heading</note>
+        <note>Used as the overall title of the toolbox panel</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
@@ -1466,14 +1467,17 @@
       <trans-unit id="EditTab.Toolbox.Motion.Preview.Motion" sil:dynamic="true">
         <source xml:lang="en">Motion</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Motion</note>
+        <note>The label of a checkbox indicating whether motion is included in Preview (currently it always is, so the box is always checked)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview.Music" sil:dynamic="true">
         <source xml:lang="en">Music</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Music</note>
+        <note>The label of a checkbox indicating whether background music is played during Preview.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview.Voice" sil:dynamic="true">
         <source xml:lang="en">Voice</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Voice</note>
+        <note>The label of a checkbox controlling whether voice narration plays during Preview.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.ThisPage" sil:dynamic="true">
         <source xml:lang="en">Enable motion on this page</source>
@@ -1516,38 +1520,6 @@
       <trans-unit id="EditTab.Toolbox.Music.NoMusic" sil:dynamic="true">
         <source xml:lang="en">No Music</source>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
-        <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom Tool</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
-        <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
-        <source xml:lang="en">Preview</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Music" sil:dynamic="true">
-        <source xml:lang="en">Background Music</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
-        <note>The label of a checkbox controlling whether music plays during preview.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
-          <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
-        <source xml:lang="en">Voice</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voice</note>
-        <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom this page</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.ThisPage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
