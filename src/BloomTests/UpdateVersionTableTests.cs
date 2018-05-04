@@ -148,7 +148,7 @@ namespace BloomTests
 		{
 			var t = new UpdateVersionTable();
 			t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
-			t.RunningVersion = Version.Parse("2.0.2000");
+			t.RunningVersion = Version.Parse("3.7.2000"); // Pre-3.7 versions no longer supported
 			//the full result will be something like
 			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
 			//this just checks the part that is less likely to break (independent of channel)
