@@ -59,7 +59,8 @@ namespace Bloom.Edit
 			var newReaderTools = Path.Combine(bloomFolder, Path.GetFileName(readerToolsPath));
 			if (!RobustFile.Exists(newReaderTools))
 				return;
-			if (RobustFile.Exists(readerToolsPath) && RobustFile.GetLastWriteTime(readerToolsPath) > RobustFile.GetLastWriteTime(newReaderTools))
+			// The GetLastWriteTime calls should stay RobustFile.GetLastWriteTime in branches after 4.1
+			if (RobustFile.Exists(readerToolsPath) && File.GetLastWriteTime(readerToolsPath) > File.GetLastWriteTime(newReaderTools))
 				return; // don't overwrite newer existing settings?
 			RobustFile.Copy(newReaderTools, readerToolsPath, true);
 		}
