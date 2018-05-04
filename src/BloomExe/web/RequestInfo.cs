@@ -148,7 +148,8 @@ namespace Bloom.Api
 				// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
 				if(_actualContext.Request.HttpMethod == "HEAD")
 				{
-					var lastModified = RobustFile.GetLastWriteTimeUtc(path).ToString("R");
+					// 4.2 and later should keep using RobustFile, but the 4.1 tag of libpalaso has a bug
+					var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
 
 					// Originally we were returning the Last-Modified header with every response, but we discovered that this was
 					// causing Geckofx to cache the contents of the files. This made debugging difficult because, even if the file
