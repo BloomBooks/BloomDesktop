@@ -1300,6 +1300,11 @@ namespace Bloom.Book
 			dangerousCharacters.AddRange(PathUtilities.GetInvalidOSIndependentFileNameChars());
 			// NBSP also causes problems.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5212.
 			dangerousCharacters.Add('\u00a0');
+			// Curly braces cause problems in PDF generation (BL-5940).
+			// Interestingly enough, this fixes the problem, but still allows braces in the title to show in the book.
+			// It just keeps them out of the filename.
+			dangerousCharacters.Add('{');
+			dangerousCharacters.Add('}');
 			//dangerousCharacters.Add('.'); Moved this to a trim because SHRP uses names like "SHRP 2.3" (term 2, week 3)
 			foreach (char c in dangerousCharacters)
 			{

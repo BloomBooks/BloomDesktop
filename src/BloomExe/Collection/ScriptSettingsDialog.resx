@@ -120,4 +120,7 @@
   <metadata name="_L10NSharpExtender.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="_lineBreakCheckBox.LocalizationComment" xml:space="preserve">
+    <value>Most scripts use  spaces between words. But some scripts, like Thai, do not normally use spaces so there is a more complicated algorithm that decides when to break for a new line. But in some minority languages, those algorithms do the wrong thing. This setting means that we should turn of anything but spaces for word/line breaking.</value>
+  </data>
 </root>
