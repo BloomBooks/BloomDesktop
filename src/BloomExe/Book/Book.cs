@@ -964,6 +964,8 @@ namespace Bloom.Book
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
+			bookDOM.SetImageAltAttrsFromDescriptions(_collectionSettings.Language1Iso639Code);
+
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
 		}
@@ -2036,6 +2038,7 @@ namespace Bloom.Book
 				var pageFromStorage = GetPageFromStorage(pageId);
 
 				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
+				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, _collectionSettings.Language1Iso639Code);
 
 				_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
 

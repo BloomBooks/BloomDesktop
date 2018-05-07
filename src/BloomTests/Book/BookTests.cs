@@ -69,6 +69,7 @@ namespace BloomTests.Book
 			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals("myImage.png"));
 		}
 
+
 		[Test]
 		public void BringBookUpToDate_EmbeddedEmptyImgTagRemoved()
 		{
@@ -92,6 +93,66 @@ namespace BloomTests.Book
 			Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
 			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']");
 			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals(placeHolderFile));
+		}
+
+		// Unless it's part of an image container that has an image description, an image
+		// should have an alt attr that is exactly an empty string.
+		[Test]
+		public void BringBookUpToDate_AltNotImageDescription_SetEmpty()
+		{
+			SetDom(@"
+					<div class='bloom-page bloom-frontMatter'>
+						<div class='marginBox'>
+							<img class='branding' src='title-page.svg' type='image/svg' alt='loading slowly'></img>
+							<img class='licenseImage' src='license.png' data-derived='licenseImage' alt='License image'></img>
+						</div>
+					</div>
+					<div class='bloom-page numberedPage customPage A5Portrait'>
+						<div class='marginBox'>
+							<img src='junk' alt = 'more junk'></img>
+							<img src='rubbish'></img>
+							<div style='min-height: 42px;' class='split-pane horizontal-percent'>
+								<div title='aor_1B-E1.png' data-hasqtip='true' class='bloom-imageContainer bloom-leadingElement'>
+									 <img data-license='cc-by-sa' data-creator='Susan Rose' data-copyright='Copyright SIL International 2009' src='aor_1B-E1.png' alt='This picture, aor_1B-E1.png, is missing or was loading too slowly.'></img>
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var images = dom.SelectNodes("//img");
+			Assert.That(images, Has.Count.AtLeast(4)); // may get extras from xmatter update
+			foreach (XmlElement img in images)
+			{
+				Assert.That(img.Attributes["alt"], Is.Not.Null);
+				Assert.That(img.Attributes["alt"].Value, Is.EqualTo(""));
+			}
+		}
+
+		[Test]
+		public void BringBookUpToDate_ImgWithDescription_CopiedToAlt()
+		{
+			SetDom(@"
+					<div class='bloom-page numberedPage customPage A5Portrait'>
+						<div class='marginBox'>
+							<div style='min-height: 42px;' class='split-pane horizontal-percent'>
+								<div title='aor_1B-E1.png' data-hasqtip='true' class='bloom-imageContainer'>
+									 <img data-license='cc-by-sa' data-creator='Susan Rose' data-copyright='Copyright SIL International 2009' src='aor_1B-E1.png' alt='This picture, aor_1B-E1.png, is missing or was loading too slowly.'></img>
+									<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style'>
+										<div class='bloom-editable normal-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+											<p>Bird with wings stretched wide</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var img = dom.SelectSingleNode("//div[@class='bloom-imageContainer']/img[@src='aor_1B-E1.png']");
+			Assert.That(img.Attributes["alt"].Value, Is.EqualTo("Bird with wings stretched wide"));
 		}
 
 		[Test]
