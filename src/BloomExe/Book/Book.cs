@@ -2720,6 +2720,22 @@ namespace Bloom.Book
 				Save();
 			}
 		}
+
+		/// <summary>
+		/// BL-5886 Translation Instructions page should not end up in BR (or Epub or Pdf, but other classes ensure that).
+		/// N.B. This is only intended for use on temporary files.
+		/// </summary>
+		public void RemoveNonPublishablePages()
+		{
+			const string xpath = "//div[contains(@class,'nonpublished')]";
+
+			var dom = OurHtmlDom.RawDom;
+			var nonpublishablePages = dom.SafeSelectNodes(xpath);
+			foreach (XmlNode doomedPage in nonpublishablePages)
+			{
+				doomedPage.ParentNode.RemoveChild(doomedPage);
+			}
+		}
 	}
 }
 
