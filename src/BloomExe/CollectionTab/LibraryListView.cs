@@ -197,6 +197,7 @@ namespace Bloom.CollectionTab
 			{
 				dlg.FileName = Path.GetFileNameWithoutExtension(SelectedBook.GetPathHtmlFile())+".xml";
 				dlg.InitialDirectory = SelectedBook.FolderPath;
+				dlg.OverwritePrompt = true;
 				if(DialogResult.OK == dlg.ShowDialog())
 				{
 					try

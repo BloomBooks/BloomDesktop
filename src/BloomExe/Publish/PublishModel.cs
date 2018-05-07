@@ -380,6 +380,7 @@ namespace Bloom.Publish
 					rgb = rgb.Replace("|", "");
 					swopv2 = swopv2.Replace("|", "");
 					dlg.Filter = String.Format("{0}|*.pdf|{1}|*.pdf", rgb, swopv2);
+					dlg.OverwritePrompt = true;
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
@@ -631,6 +632,7 @@ namespace Bloom.Publish
 													 _collectionSettings.GetLanguage1Name("en"));
 				dlg.FileName = suggestedName;
 				dlg.Filter = "EPUB|*.epub";
+				dlg.OverwritePrompt = true;
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
