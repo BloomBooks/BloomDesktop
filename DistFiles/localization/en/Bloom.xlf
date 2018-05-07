@@ -1598,6 +1598,50 @@
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
+        <source xml:lang="en">Image Description Tool</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
+        <source xml:lang="en">Be Concise</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true">
+        <source xml:lang="en">Be Objective</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
+        <source xml:lang="en">bloom training video</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
+        <source xml:lang="en">Check your image description against each of these reminders</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
+        <source xml:lang="en">Consider your Audience</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ContextKey" sil:dynamic="true">
+        <source xml:lang="en">Context is Key</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ContextKey</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific" sil:dynamic="true">
+        <source xml:lang="en">General to Specific</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific</note>
+      </trans-unit>
+	  <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true">
+        <source xml:lang="en">Learn to make effective image descriptions</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.LearnToMake</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram" sil:dynamic="true">
+        <source xml:lang="en">poet.diagramcenter.org</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
+        <source xml:lang="en">Write your image description on the left, in the box to the right of the picture</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader Tool</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>

@@ -531,7 +531,12 @@ namespace Bloom.Edit
 			if (target.ClassName.Contains("changeVideoButton"))
 				OnChangeVideo(ge);
 
-			var anchor = target as Gecko.DOM.GeckoAnchorElement;
+			var anchor = target as GeckoAnchorElement;
+			if (anchor == null)
+			{
+				// Might be a span inside an anchor
+				anchor = target.Parent as GeckoAnchorElement;
+			}
 			if(anchor != null && anchor.Href != "" && anchor.Href != "#")
 			{
 				if(anchor.Href.Contains("bookMetadataEditor"))
