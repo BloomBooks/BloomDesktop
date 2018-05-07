@@ -79,8 +79,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="497.95423"
-     inkscape:cy="515.39199"
+     inkscape:cx="800.18593"
+     inkscape:cy="343.96342"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -88,9 +88,9 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1920"
-     inkscape:window-height="1137"
-     inkscape:window-x="1912"
+     inkscape:window-width="1858"
+     inkscape:window-height="1177"
+     inkscape:window-x="3832"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:snap-global="false"
@@ -104,7 +104,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -229,7 +229,7 @@
        width="63.235416" />
     <g
        id="g4992"
-       transform="translate(-0.81130572,16.861296)">
+       transform="translate(-0.43332953,1.1752841)">
       <flowRoot
          transform="matrix(0.26458333,0,0,0.26458333,-27.175307,17.591926)"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6ebdd9;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -383,7 +383,7 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;font-family:Sans;-inkscape-font-specification:'Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1" /></flowRegion><flowPara
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333397px;font-family:Sans;-inkscape-font-specification:'Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start"
          id="flowPara4676">The boy stands with arms held up and looking up at the moon. He is wearing his red hat. In between the boy and the moon is a tree, and his blue hat is hanging from a tree branch so that it looks like it is resting on top of the moon. The moon is smiling.</flowPara></flowRoot>    <g
-       transform="translate(-2.2893423,31.720989)"
+       transform="translate(-1.9113661,16.034977)"
        id="g4745">
       <flowRoot
          transform="matrix(0.26458333,0,0,0.26458333,-20.502258,49.424872)"
@@ -489,7 +489,8 @@
          id="tspan959"
          sodipodi:role="line">Enterprise</tspan></text>
     <g
-       id="g1080">
+       id="g1080"
+       transform="translate(59.909226,-0.37797619)">
       <g
          transform="translate(0,1.5875)"
          id="g1061">
