@@ -1,3 +1,31 @@
+@import "../../../templates/common-mixins.less";
+
 .ui-accordion h3[data-toolId="imageDescriptionTool"] span.ui-accordion-header-icon {
     background-image:url('/bloom/images/ImageDescriptionToolIcon.svg') !important;
+}
+
+.imgDescLabelBlock {
+    margin: 20px;
+    color: @bloom-lightblue;
+    // This seems as if it should just be inherited, but we need the extra specificity to
+    // beat some other rules.
+    A {color: @bloom-lightblue;}
+}
+@playVideoIconWidth: 16px;
+@playVideoIconMargin: 5px;
+
+#playBloomTrainingVideo {
+    width: @playVideoIconWidth;
+    box-sizing: border-box;
+    border: 1px solid @bloom-lightblue;
+    margin-right: @playVideoIconMargin;
+}
+
+.indentPoet {
+    margin-left: @playVideoIconWidth + @playVideoIconMargin;
+}
+
+.wrapPlayVideo {
+    display: flex;
+    flex-direction: row;
 }
