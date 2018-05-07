@@ -187,8 +187,14 @@ namespace Bloom.Publish.PDF
 			bldr.Append(" -dDownsampleColorImages=true -dColorImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleGrayImages=true -dGrayImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleMonoImages=true -dMonoImageDownsampleThreshold=1.0");
-			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{_inputPdfPath}\"");
+			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{DoubleBracesInInputPath(_inputPdfPath)}\"");
 			return bldr.ToString();
+		}
+
+		private string DoubleBracesInInputPath(string inputPath)
+		{
+			// prevents BL-5940
+			return inputPath.Replace("{", "{{").Replace("}", "}}");
 		}
 
 		private string GetSpecificStatus()
