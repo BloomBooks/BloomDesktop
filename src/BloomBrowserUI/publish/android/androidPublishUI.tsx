@@ -9,7 +9,12 @@ import Option from "../../react_components/option";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import { H1, Div, IUILanguageAwareProps } from "../../react_components/l10n";
+import {
+    H1,
+    H2,
+    Div,
+    IUILanguageAwareProps
+} from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
 import "./androidPublishUI.less";
 
@@ -130,16 +135,31 @@ class AndroidPublishUI extends React.Component<
                             Thumbnail Color
                         </Div> */}
                     </div>
-                    <ColorChooser imagePath="/bloom/api/publish/android/thumbnail?color="
+                    <ColorChooser
+                        imagePath="/bloom/api/publish/android/thumbnail?color="
                         backColorSetting={this.state.backColor}
                         onColorChanged={colorChoice => {
-                            axios.post("/bloom/api/publish/android/backColor", colorChoice,
-                                { headers: { "Content-Type": "text/plain" } }).then(
+                            axios
+                                .post(
+                                    "/bloom/api/publish/android/backColor",
+                                    colorChoice,
+                                    {
+                                        headers: {
+                                            "Content-Type": "text/plain"
+                                        }
+                                    }
+                                )
+                                .then(
                                     //wait until it's set because once the state changes, a
                                     // new image gets requested and we want that to happen
                                     // only after the server has registered this change.
-                                    () => this.setState({ backColor: colorChoice }));
-                        }} />
+                                    () =>
+                                        this.setState({
+                                            backColor: colorChoice
+                                        })
+                                );
+                        }}
+                    />
                     <div>
                         <Checkbox
                             id="motionBookModeCheckbox"
@@ -311,7 +331,7 @@ class AndroidPublishUI extends React.Component<
 
                 <div id="progress-section" style={{ visibility: "visible" }}>
                     <div id="progress-row">
-                        <h1>Progress</h1>
+                        <H2 l10nKey="Common.Progress">Progress</H2>
                         <div id="rightSideOfProgressRow">
                             <Link
                                 id="getBloomReaderLink"
@@ -344,7 +364,12 @@ class AndroidPublishUI extends React.Component<
     }
 }
 
-ReactDOM.render(
-    <AndroidPublishUI />,
-    document.getElementById("AndroidPublishUI")
-);
+// a bit goofy... currently the html loads everying in publishUIBundlejs. So all the publish screens
+// get any not-in-a-class code called, including ours. But it only makes sense to get wired up
+// if that html has the root page we need.
+if (document.getElementById("AndroidPublishUI")) {
+    ReactDOM.render(
+        <AndroidPublishUI />,
+        document.getElementById("AndroidPublishUI")
+    );
+}

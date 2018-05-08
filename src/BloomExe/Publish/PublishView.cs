@@ -18,6 +18,7 @@ using System.Drawing;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
+using Bloom.Publish.Epub2;
 using Bloom.Publish.PDF;
 
 namespace Bloom.Publish
@@ -32,6 +33,7 @@ namespace Bloom.Publish
 		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
 		private EpubView _epubPreviewControl;
+		private EpubView2 _epubControl;
 		private AndroidView _androidControl;
 		private NavigationIsolator _isolator;
 		private PublishToAndroidApi _publishApi;
@@ -118,6 +120,7 @@ namespace Bloom.Publish
 		public void SetStateOfNonUploadRadios(bool enable)
 		{
 			_epubRadio.Enabled = enable;
+			_epub2Radio.Enabled = enable;
 			_bookletBodyRadio.Enabled = enable;
 			_bookletCoverRadio.Enabled = enable;
 			_simpleAllPagesRadio.Enabled = enable;
@@ -159,7 +162,7 @@ namespace Bloom.Publish
 			_bookletCoverRadio.AutoCheck = autoCheck;
 			_bookletBodyRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
-			_epubRadio.AutoCheck = autoCheck;
+			_epubRadio.AutoCheck = _epub2Radio.AutoCheck = autoCheck;
 			_androidRadio.AutoCheck = autoCheck;
 		}
 
@@ -235,7 +238,7 @@ namespace Bloom.Publish
 		private void ClearRadioButtons()
 		{
 			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _androidRadio.Checked = false;
+				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _epub2Radio.Checked = _androidRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -305,6 +308,8 @@ namespace Bloom.Publish
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
+				else if (_epub2Radio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.EPUB2;
 				else if (_androidRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Android;
 				else if (_model.PdfGenerationSucceeded)
@@ -331,6 +336,7 @@ namespace Bloom.Publish
 			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
 			_uploadRadio.Checked = _model.UploadMode;
 			_epubRadio.Checked = _model.EpubMode;
+			_epub2Radio.Checked = _model.Epub2Mode;
 
 			if (!_model.AllowUpload)
 			{
@@ -424,7 +430,19 @@ namespace Bloom.Publish
 					_androidControl = null;
 				}
 			}
+			if (displayMode != PublishModel.DisplayModes.EPUB2 && _epubControl != null && Controls.Contains(_epubControl))
+			{
+				Controls.Remove(_epubControl);
+
+				// disposal of the browser is good but it hides a multitude of sins that we'd rather catch and fix during development. E.g. BL-4901
+				if (!ApplicationUpdateSupport.IsDevOrAlpha)
+				{
+					_epubControl.Dispose();
+					_epubControl = null;
+				}
+			}
 			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
+				if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
 				_pdfViewer.Visible = true;
 			switch (displayMode)
 			{
@@ -531,6 +549,27 @@ namespace Bloom.Publish
 
 					break;
 				}
+				case PublishModel.DisplayModes.EPUB2:
+				{
+					Logger.WriteEvent("Entering Publish EPUB2 Screen");
+					_workingIndicator.Visible = false;
+					_printButton.Enabled = false;
+					_pdfViewer.Visible = false;
+					Cursor = Cursors.WaitCursor;
+					_epubControl = new EpubView2(_isolator);
+					_epubControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+						_pdfViewer.Width, _pdfViewer.Height);
+					_epubControl.Dock = _pdfViewer.Dock;
+					_epubControl.Anchor = _pdfViewer.Anchor;
+					var saveBackGround = _epubControl.BackColor; // changed to match parent during next statement
+					Controls.Add(_epubControl);
+					_epubControl.BackColor = saveBackGround; // keep own color.
+															 // Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+					_epubControl.BringToFront();
+					Cursor = Cursors.Default;
+
+					break;
+				}
 			}
 			UpdateSaveButton();
 		}
@@ -564,7 +603,7 @@ namespace Bloom.Publish
 			_publishControl.BringToFront();
 		}
 
-		private void OnBookletRadioChanged(object sender, EventArgs e)
+		private void OnPublishRadioChanged(object sender, EventArgs e)
 		{
 			if (!_activated)
 				return;
@@ -586,6 +625,10 @@ namespace Bloom.Publish
 				else if (_epubRadio.Checked)
 				{
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
+				}
+				else if (_epub2Radio.Checked)
+				{
+					_model.DisplayMode = PublishModel.DisplayModes.EPUB2;
 				}
 				else if (_androidRadio.Checked)
 				{
@@ -637,6 +680,7 @@ namespace Bloom.Publish
 				_model.BookletPortion = PublishModel.BookletPortions.None;
 			_model.UploadMode = _uploadRadio.Checked;
 			_model.EpubMode = _epubRadio.Checked;
+			_model.Epub2Mode = _epub2Radio.Checked;
 			_model.ShowCropMarks = false; // obsolete: _showCropMarks.Checked && !_uploadRadio.Checked; // don't want crop-marks on upload PDF
 		}
 

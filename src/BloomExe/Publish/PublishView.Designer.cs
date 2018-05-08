@@ -35,6 +35,10 @@ namespace Bloom.Publish
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper3 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo3 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
@@ -43,10 +47,8 @@ namespace Bloom.Publish
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
@@ -57,18 +59,19 @@ namespace Bloom.Publish
 			this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._openPDF = new System.Windows.Forms.ToolStripMenuItem();
+			this._androidRadio = new System.Windows.Forms.RadioButton();
+			this._uploadRadio = new System.Windows.Forms.RadioButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._bookletCoverRadio = new System.Windows.Forms.RadioButton();
 			this.label1 = new System.Windows.Forms.Label();
 			this._bookletBodyRadio = new System.Windows.Forms.RadioButton();
 			this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
+			this._epub2Radio = new System.Windows.Forms.RadioButton();
 			this._epubRadio = new System.Windows.Forms.RadioButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._pdfViewer = new PdfViewer();
+			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
-			this._uploadRadio = new System.Windows.Forms.RadioButton();
-			this._androidRadio = new System.Windows.Forms.RadioButton();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -76,27 +79,27 @@ namespace Bloom.Publish
 			this._menusToolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
-			//
+			// 
 			// _makePdfBackgroundWorker
-			//
-			this._makePdfBackgroundWorker.WorkerSupportsCancellation = true;
+			// 
 			this._makePdfBackgroundWorker.WorkerReportsProgress = true;
+			this._makePdfBackgroundWorker.WorkerSupportsCancellation = true;
 			this._makePdfBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this._makePdfBackgroundWorker_DoWork);
-			//
+			// 
 			// _workingIndicator
-			//
-			this._workingIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+			// 
+			this._workingIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._workingIndicator.BackColor = System.Drawing.Color.White;
 			this._workingIndicator.Controls.Add(this._topBarPanel);
 			this._workingIndicator.Location = new System.Drawing.Point(114, 24);
 			this._workingIndicator.Name = "_workingIndicator";
-			this._workingIndicator.Size = new System.Drawing.Size(714, 567);
+			this._workingIndicator.Size = new System.Drawing.Size(714, 653);
 			this._workingIndicator.TabIndex = 8;
-			//
+			// 
 			// _topBarPanel
-			//
+			// 
 			this._topBarPanel.AutoSize = true;
 			this._topBarPanel.Controls.Add(this._saveButton);
 			this._topBarPanel.Controls.Add(this._printButton);
@@ -104,9 +107,9 @@ namespace Bloom.Publish
 			this._topBarPanel.Name = "_topBarPanel";
 			this._topBarPanel.Size = new System.Drawing.Size(327, 74);
 			this._topBarPanel.TabIndex = 14;
-			//
+			// 
 			// _saveButton
-			//
+			// 
 			this._saveButton.AutoSize = true;
 			this._saveButton.BackColor = System.Drawing.Color.Transparent;
 			this._saveButton.FlatAppearance.BorderSize = 0;
@@ -125,9 +128,9 @@ namespace Bloom.Publish
 			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._saveButton.UseVisualStyleBackColor = false;
 			this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
-			//
+			// 
 			// _printButton
-			//
+			// 
 			this._printButton.AutoSize = true;
 			this._printButton.BackColor = System.Drawing.Color.Transparent;
 			this._printButton.FlatAppearance.BorderSize = 0;
@@ -146,9 +149,9 @@ namespace Bloom.Publish
 			this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._printButton.UseVisualStyleBackColor = false;
 			this._printButton.Click += new System.EventHandler(this.OnPrint_Click);
-			//
+			// 
 			// tableLayoutPanel1
-			//
+			// 
 			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -160,12 +163,13 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this._simpleAllPagesRadio, 0, 1);
+			this.tableLayoutPanel1.Controls.Add(this._epub2Radio, 0, 6);
 			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 5);
 			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
 			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 8;
+			this.tableLayoutPanel1.RowCount = 9;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -175,12 +179,13 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(114, 591);
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(114, 677);
 			this.tableLayoutPanel1.TabIndex = 10;
 			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
-			//
+			// 
 			// _contextMenuStrip
-			//
+			// 
 			this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._openinBrowserMenuItem,
             this._openPDF});
@@ -190,9 +195,9 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
 			this._contextMenuStrip.Name = "_contextMenuStrip";
 			this._contextMenuStrip.Size = new System.Drawing.Size(432, 48);
-			//
+			// 
 			// _openinBrowserMenuItem
-			//
+			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._openinBrowserMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
@@ -201,9 +206,9 @@ namespace Bloom.Publish
 			this._openinBrowserMenuItem.Size = new System.Drawing.Size(431, 22);
 			this._openinBrowserMenuItem.Text = "Open the HTML used to make this PDF, in Firefox (must be on path)";
 			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
-			//
+			// 
 			// _openPDF
-			//
+			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openPDF, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._openPDF, null);
 			this._L10NSharpExtender.SetLocalizingId(this._openPDF, "PublishTab.OpenThePDFInTheSystemPDFViewer");
@@ -211,9 +216,64 @@ namespace Bloom.Publish
 			this._openPDF.Size = new System.Drawing.Size(431, 22);
 			this._openPDF.Text = "Open the PDF in the default system PDF viewer";
 			this._openPDF.Click += new System.EventHandler(this._openPDF_Click);
-			//
+			// 
+			// _androidRadio
+			// 
+			this._androidRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._androidRadio.Image = global::Bloom.Properties.Resources.android;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._androidRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._androidRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._androidRadio, "PublishTab.AndroidButton");
+			this._androidRadio.Location = new System.Drawing.Point(3, 497);
+			this._androidRadio.Name = "_androidRadio";
+			this._androidRadio.Size = new System.Drawing.Size(105, 71);
+			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo1.BodyText = "Publish to an Android device.";
+			superToolTipInfo1.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo1.ShowHeader = false;
+			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
+			superToolTipInfoWrapper1.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._androidRadio, superToolTipInfoWrapper1);
+			this._androidRadio.TabIndex = 22;
+			this._androidRadio.TabStop = true;
+			this._androidRadio.Text = "Android";
+			this._androidRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._androidRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._androidRadio.UseVisualStyleBackColor = true;
+			this._androidRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
+			// _uploadRadio
+			// 
+			this._uploadRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._uploadRadio.Image = global::Bloom.Properties.Resources.upload;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._uploadRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
+			this._uploadRadio.Location = new System.Drawing.Point(3, 574);
+			this._uploadRadio.Name = "_uploadRadio";
+			this._uploadRadio.Size = new System.Drawing.Size(105, 89);
+			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo2.BodyText = "Upload to BloomLibrary.org, where others can download and localize into their own" +
+    " language.";
+			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo2.ShowHeader = false;
+			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
+			superToolTipInfoWrapper2.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper2);
+			this._uploadRadio.TabIndex = 21;
+			this._uploadRadio.TabStop = true;
+			this._uploadRadio.Text = "Share on the Web";
+			this._uploadRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._uploadRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._uploadRadio.UseVisualStyleBackColor = true;
+			this._uploadRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
 			// _menusToolStrip
-			//
+			// 
 			this._menusToolStrip.AutoSize = false;
 			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._menusToolStrip.CanOverflow = false;
@@ -230,9 +290,9 @@ namespace Bloom.Publish
 			this._menusToolStrip.Name = "_menusToolStrip";
 			this._menusToolStrip.Size = new System.Drawing.Size(100, 24);
 			this._menusToolStrip.TabIndex = 13;
-			//
+			// 
 			// _layoutChoices
-			//
+			// 
 			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._layoutChoices.ForeColor = System.Drawing.Color.White;
 			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -244,9 +304,9 @@ namespace Bloom.Publish
 			this._layoutChoices.Size = new System.Drawing.Size(62, 19);
 			this._layoutChoices.Text = "Options";
 			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
-			//
+			// 
 			// _bookletCoverRadio
-			//
+			// 
 			this._bookletCoverRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._bookletCoverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bookletCoverRadio, null);
@@ -272,10 +332,10 @@ namespace Bloom.Publish
 			this._bookletCoverRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._bookletCoverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._bookletCoverRadio.UseVisualStyleBackColor = true;
-			this._bookletCoverRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			//
+			this._bookletCoverRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
 			// label1
-			//
+			// 
 			this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
@@ -284,9 +344,9 @@ namespace Bloom.Publish
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(108, 1);
 			this.label1.TabIndex = 17;
-			//
+			// 
 			// _bookletBodyRadio
-			//
+			// 
 			this._bookletBodyRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._bookletBodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bookletBodyRadio, null);
@@ -312,10 +372,10 @@ namespace Bloom.Publish
 			this._bookletBodyRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._bookletBodyRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._bookletBodyRadio.UseVisualStyleBackColor = true;
-			this._bookletBodyRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			//
+			this._bookletBodyRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
 			// _simpleAllPagesRadio
-			//
+			// 
 			this._simpleAllPagesRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._simpleAllPagesRadio.Image = global::Bloom.Properties.Resources.simplePages;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._simpleAllPagesRadio, null);
@@ -339,18 +399,18 @@ namespace Bloom.Publish
 			this._simpleAllPagesRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._simpleAllPagesRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._simpleAllPagesRadio.UseVisualStyleBackColor = true;
-			this._simpleAllPagesRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			//
-			// _epubRadio
-			//
-			this._epubRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._epubRadio.Image = global::Bloom.Properties.Resources.epubPublishButton;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._epubRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
-			this._epubRadio.Location = new System.Drawing.Point(3, 327);
-			this._epubRadio.Name = "_epubRadio";
-			this._epubRadio.Size = new System.Drawing.Size(105, 82);
+			this._simpleAllPagesRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
+			// _epub2Radio
+			// 
+			this._epub2Radio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._epub2Radio.Image = global::Bloom.Properties.Resources.epubPublishButton;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._epub2Radio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._epub2Radio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._epub2Radio, "PublishTab.EpubButton");
+			this._epub2Radio.Location = new System.Drawing.Point(3, 415);
+			this._epub2Radio.Name = "_epub2Radio";
+			this._epub2Radio.Size = new System.Drawing.Size(105, 76);
 			superToolTipInfo6.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo6.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo6.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
@@ -360,22 +420,50 @@ namespace Bloom.Publish
 			superToolTipInfo6.ShowHeader = false;
 			superToolTipInfoWrapper6.SuperToolTipInfo = superToolTipInfo6;
 			superToolTipInfoWrapper6.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper6);
+			this._superToolTip.SetSuperStuff(this._epub2Radio, superToolTipInfoWrapper6);
+			this._epub2Radio.TabIndex = 23;
+			this._epub2Radio.TabStop = true;
+			this._epub2Radio.Text = "ePUB2";
+			this._epub2Radio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._epub2Radio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._epub2Radio.UseVisualStyleBackColor = true;
+			this._epub2Radio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
+			// _epubRadio
+			// 
+			this._epubRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._epubRadio.Image = global::Bloom.Properties.Resources.epubPublishButton;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._epubRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
+			this._epubRadio.Location = new System.Drawing.Point(3, 327);
+			this._epubRadio.Name = "_epubRadio";
+			this._epubRadio.Size = new System.Drawing.Size(105, 82);
+			superToolTipInfo7.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo7.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo7.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo7.BodyText = "Make an ePUB (electronic book) out of this book, allowing it to be read on variou" +
+    "s electronic reading devices.";
+			superToolTipInfo7.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo7.ShowHeader = false;
+			superToolTipInfoWrapper7.SuperToolTipInfo = superToolTipInfo7;
+			superToolTipInfoWrapper7.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper7);
 			this._epubRadio.TabIndex = 18;
 			this._epubRadio.TabStop = true;
 			this._epubRadio.Text = "ePUB";
 			this._epubRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._epubRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._epubRadio.UseVisualStyleBackColor = true;
-			this._epubRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			//
+			this._epubRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
 			// _L10NSharpExtender
-			//
+			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			//
+			// 
 			// _pdfViewer
-			//
+			// 
 			this._pdfViewer.BackColor = System.Drawing.Color.White;
 			this._pdfViewer.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfViewer, null);
@@ -383,70 +471,15 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizingId(this._pdfViewer, "PdfViewer.PdfViewer");
 			this._pdfViewer.Location = new System.Drawing.Point(114, 0);
 			this._pdfViewer.Name = "_pdfViewer";
-			this._pdfViewer.Size = new System.Drawing.Size(719, 591);
+			this._pdfViewer.Size = new System.Drawing.Size(719, 677);
 			this._pdfViewer.TabIndex = 16;
-			//
+			// 
 			// _superToolTip
-			//
+			// 
 			this._superToolTip.FadingInterval = 10;
-			//
-			// _uploadRadio
-			//
-			this._uploadRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._uploadRadio.Image = global::Bloom.Properties.Resources.upload;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._uploadRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			this._uploadRadio.Location = new System.Drawing.Point(3, 492);
-			this._uploadRadio.Name = "_uploadRadio";
-			this._uploadRadio.Size = new System.Drawing.Size(105, 82);
-			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo2.BodyText = "Upload to BloomLibrary.org, where others can download and localize into their own" +
-    " language.";
-			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo2.ShowHeader = false;
-			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
-			superToolTipInfoWrapper2.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper2);
-			this._uploadRadio.TabIndex = 21;
-			this._uploadRadio.TabStop = true;
-			this._uploadRadio.Text = "Share on the Web";
-			this._uploadRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this._uploadRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._uploadRadio.UseVisualStyleBackColor = true;
-			this._uploadRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			//
-			// _androidRadio
-			//
-			this._androidRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._androidRadio.Image = global::Bloom.Properties.Resources.android;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._androidRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._androidRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._androidRadio, "PublishTab.AndroidButton");
-			this._androidRadio.Location = new System.Drawing.Point(3, 415);
-			this._androidRadio.Name = "_androidRadio";
-			this._androidRadio.Size = new System.Drawing.Size(105, 71);
-			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo1.BodyText = "Publish to an Android device.";
-			superToolTipInfo1.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo1.ShowHeader = false;
-			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
-			superToolTipInfoWrapper1.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._androidRadio, superToolTipInfoWrapper1);
-			this._androidRadio.TabIndex = 22;
-			this._androidRadio.TabStop = true;
-			this._androidRadio.Text = "Android";
-			this._androidRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this._androidRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._androidRadio.UseVisualStyleBackColor = true;
-			this._androidRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			//
+			// 
 			// PublishView
-			//
+			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -457,7 +490,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "PublishView.PublishView");
 			this.Name = "PublishView";
-			this.Size = new System.Drawing.Size(833, 591);
+			this.Size = new System.Drawing.Size(833, 677);
 			this._workingIndicator.ResumeLayout(false);
 			this._workingIndicator.PerformLayout();
 			this._topBarPanel.ResumeLayout(false);
@@ -496,5 +529,6 @@ namespace Bloom.Publish
 		private System.Windows.Forms.RadioButton _epubRadio;
 		private System.Windows.Forms.RadioButton _androidRadio;
 		private System.Windows.Forms.RadioButton _uploadRadio;
+		private System.Windows.Forms.RadioButton _epub2Radio;
 	}
 }

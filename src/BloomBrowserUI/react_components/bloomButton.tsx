@@ -1,7 +1,11 @@
 import axios from "axios";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ILocalizationProps, ILocalizationState, LocalizableElement } from "./l10n";
+import {
+    ILocalizationProps,
+    ILocalizationState,
+    LocalizableElement
+} from "./l10n";
 
 export interface IButtonProps extends ILocalizationProps {
     enabled: boolean;
@@ -19,8 +23,10 @@ export interface IButtonProps extends ILocalizationProps {
 // and a bool to determine if this button should currently be enabled.
 // The button displays localizable text and optionally enabled and disabled versions of an image file.
 // Also, this button optionally implements the LocalizableElement tooltip function.
-export default class BloomButton extends LocalizableElement<IButtonProps, ILocalizationState> {
-
+export default class BloomButton extends LocalizableElement<
+    IButtonProps,
+    ILocalizationState
+> {
     constructor(props: IButtonProps) {
         super(props);
     }
@@ -35,16 +41,26 @@ export default class BloomButton extends LocalizableElement<IButtonProps, ILocal
         return image;
     }
 
-    render() {
+    public render() {
         const image = this.getButtonImage();
         let tip: string = null;
-        if (this.props.l10nTipEnglishEnabled || this.props.l10nTipEnglishDisabled) {
+        if (
+            this.props.l10nTipEnglishEnabled ||
+            this.props.l10nTipEnglishDisabled
+        ) {
             tip = this.getLocalizedTooltip(this.props.enabled);
         }
         return (
-            <button className={this.props.hidden ? "hidden" : ""}
+            <button
+                className={
+                    this.props.className +
+                    " " +
+                    (this.props.hidden ? "hidden" : "")
+                }
                 title={tip}
-                onClick={() => axios.post("/bloom/api/" + this.props.clickEndpoint)}
+                onClick={() =>
+                    axios.post("/bloom/api/" + this.props.clickEndpoint)
+                }
                 disabled={!this.props.enabled}
             >
                 {image}
