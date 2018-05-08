@@ -70,6 +70,7 @@ export default class AudioRecording {
 
     listenerFunction: (MessageEvent) => void;
 
+    // Class method called by exported function of the same name.
     public initializeTalkingBookTool() {
         // I've sometimes observed events like click being handled repeatedly for a single click.
         // Adding thse .off calls seems to help...it's as if something causes this show event to happen
@@ -106,6 +107,8 @@ export default class AudioRecording {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
     }
+
+    // Called by TalkingBookModel.showTool() when a different tool is added/chosen.
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
         this.hiddenSourceBubbles = this.getPage().find('.uibloomSourceTextsBubble');
@@ -120,6 +123,11 @@ export default class AudioRecording {
 
         this.changeStateAndSetExpected('record');
 
+        this.addAudioLevelListener();
+    }
+
+    // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
+    public addAudioLevelListener(): void {
         this.listenerFunction = event => {
             var e = JSON.parse(event.data);
             if (e.id == "peakAudioLevel")
@@ -133,6 +141,8 @@ export default class AudioRecording {
         }
     }
 
+    // Called by TalkingBookModel.hideTool(), which is called when changing tools, hiding the toolbox,
+    // or saving (leaving) pages.
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
@@ -176,6 +186,7 @@ export default class AudioRecording {
         this.setCurrentSpan(current, $(next));
         this.changeStateAndSetExpected('record');
     }
+
     private getNextSpan(): HTMLElement {
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var audioElts = this.getAudioElements();
@@ -250,7 +261,6 @@ export default class AudioRecording {
         });
     }
 
-
     private endRecordCurrent(): void {
         if (!this.recording) return; // will trigger if the button wasn't enabled, so the recording never started
 
@@ -295,7 +305,6 @@ export default class AudioRecording {
         this.setStatus('play', Status.Active);
         this.playCurrentInternal();
     }
-
 
     private playCurrentInternal() {
         (<HTMLMediaElement>document.getElementById('player')).play();
@@ -445,6 +454,7 @@ export default class AudioRecording {
         return $(page.contentWindow.document.body);
     }
 
+    // Called on initial setup and on toolbox updateMarkup()
     public updateMarkupAndControlsToCurrentText() {
         var editable = this.getRecordableDivs();
         if (editable.length === 0) {
