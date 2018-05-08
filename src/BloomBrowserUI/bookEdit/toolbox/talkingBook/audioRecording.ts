@@ -545,6 +545,17 @@ export default class AudioRecording {
             .post(
                 "/bloom/api/audio/deleteSegment?id=" + this.idOfCurrentSentence
             )
+            .then(result => {
+                // data-duration needs to be deleted when the file is deleted.
+                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3671.
+                // Note: this is not foolproof because the durationchange handler is
+                // being called asynchronously with stale data and sometimes restoring
+                // the deleted attribute.
+                var current = this.getPage().find("span#"+this.idOfCurrentSentence);
+                if (current.length !== 0) {
+                    current.first().removeAttr("data-duration");
+                }
+            })
             .catch(error => {
                 toastr.error(error.statusText);
             });
