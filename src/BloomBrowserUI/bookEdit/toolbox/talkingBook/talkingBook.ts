@@ -28,6 +28,7 @@ export default class TalkingBookModel implements ITabModel {
 
     updateMarkup() {
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
+        AudioRecorder.theOneAudioRecorder.addAudioLevelListener();
     }
 
     name() { return "talkingBook"; }
