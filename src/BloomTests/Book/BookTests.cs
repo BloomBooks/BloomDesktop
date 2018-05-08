@@ -1106,7 +1106,7 @@ namespace BloomTests.Book
 				<html>
 					<head />
 					<body>
-						<div class='bloom-page questions'>
+						<div class='bloom-page bloom-nonprinting questions'>
 							<div class='marginBox'>
 								<div>
 									<div class='quizInstructions'>Some gobbledy-gook</div>
@@ -1135,17 +1135,21 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div[contains(@class,'bloom-noAudio') and contains(@class,'bloom-userCannotModifyStyles')]", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div//p", 6);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div//br", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-nonprinting')]", 1);
 		}
 
 		[Test]
 		public void BringBookUpToDate_RepairQuestionsPages_Works()
 		{
+			// tests migrating nonprinting class to bloom-nonprinting
+			// tests cleaning out audio spans from questions
+			// tests adding two classes to question content divs: 'bloom-noAudio' and 'bloom-userCannotModifyStyles'
 			const string xpathQuestionsPrefix = "//div[contains(@class,'questions')]";
 			_bookDom = new HtmlDom(@"
 				<html>
 					<head />
 					<body>
-						<div class='bloom-page questions'>
+						<div class='bloom-page questions nonprinting'>
 							<div class='marginBox'>
 								<div>
 									<div class='quizInstructions'>Some gobbledy-gook</div>
@@ -1177,6 +1181,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(xpathQuestionsPrefix + "//div//h1");
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div//p[.='‌*Answer 2']", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpathQuestionsPrefix + "//div//p[.='My test text.']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-nonprinting')]", 1);
 		}
 
 		[Test]
@@ -2079,12 +2084,12 @@ namespace BloomTests.Book
 		{
 			_bookDom = new HtmlDom(@"
 				<html><head></head><body>
-					<div class='bloom-page numberedPage nonprinting' id='guid1' data-page-number='1'>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='guid1' data-page-number='1'>
 						<div />
 					</div>
 					<div class='bloom-page numberedPage bloom-noAudio' id='guid2' data-page-number='2'>
 					</div>
-					<div class='bloom-page numberedPage nonpublished' id='guid3' data-page-number='3'>
+					<div class='bloom-page numberedPage bloom-noreader' id='guid3' data-page-number='3'>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
 					</div>
 					<div class='bloom-page numberedPage screen-only' id='guid4' data-page-number='4'>
@@ -2098,7 +2103,7 @@ namespace BloomTests.Book
 			book.RemoveNonPublishablePages();
 
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(@"//div[contains(@class, 'bloom-page')]", 3);
-			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[contains(@class,'nonpublished')]");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[contains(@class,'bloom-noreader')]");
 		}
 
 #if UserControlledTemplate

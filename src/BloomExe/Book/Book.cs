@@ -914,8 +914,9 @@ namespace Bloom.Book
 			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
 
-			progress.WriteStatus("Repair possible messed up Questions pages");
+			progress.WriteStatus("Repair possible messed up Questions pages and migrate classes");
 			RepairQuestionsPages(bookDOM);
+			MigrateNonstandardClassNames(bookDOM);
 
 			progress.WriteStatus("Gathering Data...");
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -972,12 +973,31 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// For awhile in v4.1, Question pages used a "nonprinting" class,
+		/// but later we made the class fit our usual "bloom-x" class naming scheme for classes
+		/// which are known to the C# code.
+		/// </summary>
+		/// <param name="bookDOM"></param>
+		private static void MigrateNonstandardClassNames(HtmlDom bookDOM)
+		{
+			if (bookDOM?.Body == null)
+				return;     // must be a test running...
+
+			var nonPrintingPages = bookDOM.Body.SelectNodes("//div[contains(@class,'nonprinting')]");
+			foreach (XmlElement nonPrintingPageElement in nonPrintingPages)
+			{
+				nonPrintingPageElement.Attributes["class"].InnerText = HtmlDom.RemoveClass("nonprinting", nonPrintingPageElement.Attributes["class"].InnerText);
+				HtmlDom.AddClassIfMissing(nonPrintingPageElement, "bloom-nonprinting");
+			}
+		}
+
+		/// <summary>
 		/// At one point in v4.1, Question pages were able to be recorded with the Talking Book tool, but opening the
 		/// tool on these pages embedded tons of span elements which messed up BR display. New question pages have classes
 		/// that keep them from being recorded. Here we fix up any existing question pages from the old code.
 		/// </summary>
 		/// <param name="bookDOM"></param>
-		private void RepairQuestionsPages(HtmlDom bookDOM)
+		private static void RepairQuestionsPages(HtmlDom bookDOM)
 		{
 			if (bookDOM?.Body == null)
 				return;     // must be a test running...
@@ -2214,7 +2234,7 @@ namespace Bloom.Book
 			var pathSafeForWkHtml2Pdf = FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
 			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
 
-			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("nonprinting"));
+			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting"));
 
 			switch (bookletPortion)
 			{
@@ -2748,7 +2768,7 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveNonPublishablePages()
 		{
-			const string xpath = "//div[contains(@class,'nonpublished')]";
+			const string xpath = "//div[contains(@class,'bloom-noreader')]";
 
 			var dom = OurHtmlDom.RawDom;
 			var nonpublishablePages = dom.SafeSelectNodes(xpath);

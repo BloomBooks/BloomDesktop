@@ -682,7 +682,7 @@ namespace BloomTests.Publish
 		public void OmitsNonPrintingPages()
 		{
 			var book = SetupBookLong("This is some text",
-				"en", extraPages: @"<div class='bloom-page nonprinting'>
+				"en", extraPages: @"<div class='bloom-page bloom-nonprinting'>
 						<div id='anotherId' class='marginBox'>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
 								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
