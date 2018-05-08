@@ -106,6 +106,8 @@ export default class AudioRecording {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
     }
+
+    // Called by TalkingBookModel.showTool() when a different tool is added/chosen.
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
         this.hiddenSourceBubbles = this.getPage().find('.uibloomSourceTextsBubble');
@@ -120,6 +122,10 @@ export default class AudioRecording {
 
         this.changeStateAndSetExpected('record');
 
+        this.addAudioLevelListener();
+    }
+
+    public addAudioLevelListener(): void {
         this.listenerFunction = event => {
             var e = JSON.parse(event.data);
             if (e.id == "peakAudioLevel")
