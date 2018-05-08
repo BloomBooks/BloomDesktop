@@ -77,7 +77,7 @@ namespace BloomTests.Publish
 			CheckBasicsInPage("my_Image", "my_image1");
 #endif
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -95,7 +95,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest(outputImageName, "my_image");
 			CheckBasicsInPage(outputImageName, "my_image");
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -373,8 +373,7 @@ namespace BloomTests.Publish
 
 		private void CheckBasicsInPage(params string[] images)
 		{
-			// This is possibly too strong; see comment where we remove them.
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@aria-describedby]");
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@aria-describedby and not(@id)]");
 			// Not sure why we sometimes have these, but validator doesn't like them.
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@lang='']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:script", _ns);
@@ -388,17 +387,22 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='fonts.css']", _ns);
 
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:body/xhtml:section[@epub:type]", _ns, 1);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:body/*[@role]", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:body/*[@aria-label]", _ns);
 		}
 
 		private void CheckPageBreakMarker(string pageData, string pageId="pg1", string pageLabel="1")
 		{
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//body/section/div/span[@role='doc-pagebreak' and @id='"+pageId+"' and @aria-label='"+pageLabel+"']", 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//div/span[@role='doc-pagebreak' and @id='"+pageId+"' and @aria-label='"+pageLabel+"']", 1);
 		}
 
 		private void CheckEpubTypeAttributes(string currentPage, string pageType, params string[] otherEpubTypeValues)
 		{
-			AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//xhtml:body/xhtml:section[@epub:type='"+pageType+"']", _ns, 1);
+			if (String.IsNullOrEmpty(pageType))
+				AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//xhtml:body/xhtml:section", _ns, 0);
+			else
+				AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//xhtml:body/xhtml:section[@epub:type='"+pageType+"']", _ns, 1);
+
 			AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@epub:type]", _ns, otherEpubTypeValues.Count());
 			foreach (var val in otherEpubTypeValues)
 				AssertThatXmlIn.String(currentPage).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@epub:type='"+val+"']", _ns, 1);
@@ -493,7 +497,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest("my_image");
 			CheckBasicsInPage("my_image");
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -540,23 +544,21 @@ namespace BloomTests.Publish
 				{
 				case 1:
 					CheckPageBreakMarker(currentPage, "pgFrontCover", "Front Cover");
-					CheckEpubTypeAttributes(currentPage, "cover");
 					break;
 				case 2:
 					CheckPageBreakMarker(currentPage, "pg1", "1");
-					CheckEpubTypeAttributes(currentPage, "bodymatter");
+					CheckEpubTypeAttributes(currentPage, null);
 					break;
 				case 3:
 					CheckPageBreakMarker(currentPage, "pgTitlePage", "Title Page");
-					CheckEpubTypeAttributes(currentPage, "frontmatter", "titlepage");
+					CheckEpubTypeAttributes(currentPage, null, "titlepage");
 					break;
 				case 4:
 					CheckPageBreakMarker(currentPage, "pgCreditsPage", "Credits Page");
-					CheckEpubTypeAttributes(currentPage, "frontmatter", "credits");
 					break;
 				case 5:
 					CheckPageBreakMarker(currentPage, "pgTheEnd", "The End");
-					CheckEpubTypeAttributes(currentPage, "backmatter");
+					CheckEpubTypeAttributes(currentPage, null);
 					break;
 				default:
 					// We should never get here!
@@ -602,7 +604,7 @@ namespace BloomTests.Publish
 			CheckAccessibilityInManifest(true, true, _defaultSourceValue);	// both sound and image files
 			CheckBasicsInPage("my_image");
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -639,7 +641,7 @@ namespace BloomTests.Publish
 			CheckAccessibilityInManifest(false, true, _defaultSourceValue);		// no sound files, but a nontrivial image file
 			CheckBasicsInPage("myImage");
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 		}
 
 		[Test]
@@ -661,12 +663,12 @@ namespace BloomTests.Publish
 			CheckAccessibilityInManifest(false, false, _defaultSourceValue);	// neither sound nor image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
 			CheckPageBreakMarker(page2Data, "pg2", "2");
-			CheckEpubTypeAttributes(page2Data, "bodymatter");
+			CheckEpubTypeAttributes(page2Data, null);
 			var navPageData = CheckNavPage();
 			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']", _ns);
@@ -694,7 +696,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			var page2entry = _epub.GetEntry(Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			Assert.That(page2entry, Is.Null, "nonprinting page should be omitted");
@@ -717,7 +719,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img");
@@ -757,7 +759,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img[@src='myImage.png']");
@@ -792,7 +794,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 			// Check that the standard stylesheet, not wanted in the ePUB, is removed.
@@ -859,7 +861,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -895,7 +897,6 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pgFrontCover", "Front Cover");
-			CheckEpubTypeAttributes(_page1Data, "cover");
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
@@ -926,7 +927,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
@@ -975,7 +976,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
-			CheckEpubTypeAttributes(_page1Data, "frontmatter", "credits");
+			CheckEpubTypeAttributes(_page1Data, null);
 			//Thread.Sleep(20000);
 
 			//Console.WriteLine(XElement.Parse(_page1Data).ToString());
@@ -1041,7 +1042,7 @@ namespace BloomTests.Publish
 			CheckAccessibilityInManifest(false, false, "urn:isbn:ABCDEFG");	// no sound or nontrivial image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
-			CheckEpubTypeAttributes(_page1Data, "frontmatter", "credits", "copyright-page");
+			CheckEpubTypeAttributes(_page1Data, null, "copyright-page");
 
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='ISBNContainer']", _ns);
@@ -1149,7 +1150,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pg5", "5");
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			// A5Portrait page is 297/2 mm wide
 			// Percent size however is relative to containing block, typically the marginBox,
@@ -1186,7 +1187,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pg3", "3");
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='margin-top: 0px;']", _ns);
 			var marginboxInches = (297.0/2.0 - 40) / 25.4;
@@ -1214,7 +1215,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest("image1");
 			CheckBasicsInPage("image1");
 			CheckPageBreakMarker(_page1Data, "pg99", "99");
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			// A5Portrait page is 297/2 mm wide
 			// Percent size however is relative to containing block,
@@ -1243,7 +1244,7 @@ namespace BloomTests.Publish
 			CheckAccessibilityInManifest(true, false, _defaultSourceValue);	// sound files but no image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1282,7 +1283,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1290,7 +1291,7 @@ namespace BloomTests.Publish
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
 #if __MonoCS__
-			// Fake audio time calculations on Linux don't work very well.
+			// Fake audio time calculations on Linux don't work very well, but at least seem to be consistent.
 			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:00.0026746']");
 			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:00.0026746']");
 #else
@@ -1377,7 +1378,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 
 			// This is possibly too strong; see comment where we remove them.
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='i12']");
@@ -1394,7 +1395,7 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest(); // don't check the file stuff here, we're looking at special cases
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1436,7 +1437,7 @@ namespace BloomTests.Publish
 			CheckBasicsInPage("my_3dimage", "my_3Dimage1", "my_image", "my_image1");
 #endif
 			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, "bodymatter");
+			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -1503,6 +1504,263 @@ namespace BloomTests.Publish
 			MakeEpub("output", "HasFullAudioCoverage_IgnoresOtherLanguage", book);
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+		}
+
+		[Test]
+		public void XMatterAndContentAriaRolesAreMarked()
+		{
+			// This more complicated book (stripped down from a real book) provides examples of each place
+			// where an aria role should be assigned.
+			var book = SetupBookLong("This is some text", "xyz", " bloom-frontMatter frontCover' data-page='required singleton",
+				extraContentOutsideTranslationGroup: @"<div class=""bloom-imageContainer"">
+						<img data-book=""coverImage"" src=""DevilsSlide.png"" data-copyright=""Copyright © 2015, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by-sa""></img>
+						<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style"" data-default-languages=""auto"" data-book=""coverImageDescription"">
+							<div data-languagetipcontent=""English"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" style=""min-height: 64.01px;"" class=""bloom-editable cke_editable cke_editable_inline cke_contents_ltr thisOverflowingParent bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""xyz"" contenteditable=""true"">
+								<p>Photograph of a rock formation with two parallel spines coming down a hill</p>
+							</div>
+						</div>
+					</div>",
+				extraPages: @"
+					<div class='bloom-page numberedPage' data-page-number='1'>
+						<div class=""marginBox"">
+							<div style=""min-height: 42px;"" class=""split-pane horizontal-percent"">
+								<div class=""split-pane-component position-top"" style=""bottom: 50%;"">
+									<div class=""split-pane-component-inner"">
+										<div title=""SteveAtMalad.png 91.92 KB 1024 x 768 489 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-imageContainer bloom-leadingElement"">
+											<img style="""" data-license=""cc-by-sa"" data-creator=""Stephen McConnel"" data-copyright=""Copyright © 2012, Stephen McConnel"" src=""SteveAtMalad.png"" alt=""This picture, SteveAtMalad.png, is missing or was loading too slowly."" height=""481"" width=""642""></img>
+											<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style"">
+												<div aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" class=""bloom-editable cke_editable cke_editable_inline cke_contents_ltr cke_focus normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""xyz"" contenteditable=""true"">
+													<p>photograph of a man in a cowboy hat standing on a bridge over a narrow river gorge with a highway bridge behind him</p>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class=""split-pane-divider horizontal-divider"" style=""bottom: 50%;""></div>
+								<div class=""split-pane-component position-bottom"" style=""height: 50%;"">
+									<div class=""split-pane-component-inner"">
+										<div class=""bloom-translationGroup bloom-trailingElement normal-style"" data-default-languages=""auto"">
+											<div aria-describedby=""qtip-1"" data-languagetipcontent=""English"" data-hasqtip=""true"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" style=""min-height: 64px;"" class=""bloom-editable cke_editable cke_editable_inline cke_contents_ltr normal-style cke_focus overflow bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""xyz"" contenteditable=""true"">
+												<p>This is a <i><b>me</b></i> at Malad Gorge State Park in Idaho.</p>
+												<p>Notice how deep this river gorge is beneath the bridge!</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class=""bloom-page titlePage bloom-backMatter A5Portrait layout-style-Default side-left"" data-page=""required singleton"" id=""60ae9f18-b7b8-405b-8dd0-2cb5926eacde"" data-page-number=""10"">
+						<div class=""marginBox"">
+							<div class=""bloom-translationGroup"" data-default-languages=""V,N1"" id=""titlePageTitleBlock"">
+								<div class=""bloom-editable bloom-nodefaultstylerule Title-On-Title-Page-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""xyz"" contenteditable=""true"" data-book=""bookTitle"">
+									<p>New Book</p>
+								</div>
+							</div>
+							<div class=""bloom-translationGroup"" data-default-languages=""N1"" id=""originalContributions"">
+								<div class=""bloom-editable credits bloom-copyFromOtherLanguageIfNecessary Content-On-Title-Page-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" data-book=""originalContributions"">
+									<p>words <em>carefully</em> chosen by Stephen McConnel</p>
+									<p>Image on page Front Cover by Stephen McConnel, © 2012 Stephen McConnel. CC-BY-SA 4.0.</p>
+									<p>Image on page 1 by International Illustrations; The Art Of Reading 3.0, © 2009 SIL International. CC-BY-SA 4.0.</p>
+								</div>
+							</div>
+							<div class=""bloom-translationGroup"" data-default-languages=""N1"" id=""funding"">
+								<div class=""bloom-editable funding Content-On-Title-Page-style bloom-copyFromOtherLanguageIfNecessary bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" data-book=""funding"">
+									<p>We gratefully acknowledge those who help fund the author in his work.  They know who they are.</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class=""bloom-page bloom-backMatter credits A5Portrait layout-style-Default side-right"" data-page=""required singleton"" id=""e56cb792-855a-4be9-8362-8a8d8bea3468"" data-page-number=""1"">
+						<div class=""marginBox"">
+							<div class=""bloom-metaData licenseAndCopyrightBlock"" data-functiononhintclick=""bookMetadataEditor"" data-hint=""Click to Edit Copyright &amp; License"" lang=""xyz"">
+								<div class=""copyright Credits-Page-style"" data-derived=""copyright"" lang=""*"">
+									Copyright © 2018, Stephen R. McConnel
+								</div>
+								<div class=""licenseBlock"">
+									<div class=""licenseDescription Credits-Page-style"" data-derived=""licenseDescription"" lang=""xyz"">
+										http://creativecommons.org/licenses/by/4.0/<br/>You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+									</div>
+								</div>
+							</div>
+							<div class=""bloom-translationGroup versionAcknowledgments"" data-default-languages=""N1"">
+								<div class=""bloom-editable versionAcknowledgments Credits-Page-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" data-book=""versionAcknowledgments"">
+									Dr. Stephen R. McConnel, Ph.D.
+								</div>
+							</div>
+							<div class=""copyright Credits-Page-style"" data-derived=""originalCopyrightAndLicense"">
+								<div class=""copyright Credits-Page-style"" data-derived=""copyright"" lang=""*"">
+									Copyright © 2017, Timothy I. McConnel
+								</div>
+								<div class=""licenseBlock"">
+									<div class=""licenseUrl"" data-derived=""licenseUrl"" lang=""*"">
+										http://creativecommons.org/licenses/by/4.0/
+									</div>
+								</div>
+							</div>
+							<div class=""bloom-translationGroup originalAcknowledgments"" data-default-languages=""N1"">
+								<div class=""bloom-editable bloom-copyFromOtherLanguageIfNecessary Credits-Page-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" data-book=""originalAcknowledgments"">
+									<div class=""bloom-editable originalAcknowledgments Credits-Page-style bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" data-book=""originalAcknowledgments"">
+										Dr. Timothy I. McConnel, Ph.D.
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class=""bloom-page bloom-backMatter theEndPage A5Portrait layout-style-Default side-right"" data-page=""required singleton"" id=""2f5d5775-a8c4-49fd-8a92-601b64b4846f"" data-page-number=""10"">
+						<div class=""pageLabel"" lang=""xyz"" data-i18n=""TemplateBooks.PageLabel.The End"">
+							The End
+						</div>
+						<div class=""pageDescription"" lang=""xyz""></div>
+						<div class=""marginBox""><img class=""branding"" src=""back-cover-outside.png"" type=""image/png"" onerror=""this.style.display='none'""></img></div>
+					</div>");
+			MakeImageFiles(book, "DevilsSlide", "SteveAtMalad", "back-cover-outside");
+			MakeEpub("output", "XMatterAndContentRolesAreMarked", book);
+			CheckBasicsInPage("DevilsSlide");
+			CheckBasicsInManifest();
+			CheckAccessibilityInManifest(false, true, _defaultSourceValue, false); // no sound files, but some image files
+
+			FrontCoverHasCorrectAriaRolesAndLabels();
+			XmatterPageHasContentInfoNotMain(_page1Data);
+			ImageDescriptionIsMarkedForAccessibility(_page1Data, "1");
+
+			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
+			FirstContentPageHasCorrectAriaRolesAndLabels(page2Data);
+			ContentPageHasNoContentInfo(page2Data);
+			ImageDescriptionIsMarkedForAccessibility(page2Data, "2");
+
+			var page3Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "3.xhtml");
+			TitlePageHasCorrectAriaRolesAndLabels(page3Data);
+			XmatterPageHasContentInfoNotMain(_page1Data);
+			EpubBackmatterPageHasNoDescribableImage(page3Data);
+
+			var page4Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "4.xhtml");
+			CreditsPageHasCorrectAriaRolesAndLabels(page4Data);
+			XmatterPageHasContentInfoNotMain(_page1Data);
+			EpubBackmatterPageHasNoDescribableImage(page4Data);
+
+			var page5Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "5.xhtml");
+			EndPageHasMinimalAriaRolesAndLabels(page5Data);
+			EpubBackmatterPageHasNoDescribableImage(page5Data);
+		}
+
+		/// <summary>
+		/// Verify that an image has a description linked to it properly.
+		/// </summary>
+		private void ImageDescriptionIsMarkedForAccessibility(string pageData, string figureNumber)
+		{
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby]", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc"+figureNumber+"' and @id='bookfig"+figureNumber+"']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@id='figdesc"+figureNumber+"']", _ns, 1);
+		}
+
+		/// <summary>
+		/// Verify that an xmatter page does not have an image description set up.
+		/// </summary>
+		private void EpubBackmatterPageHasNoDescribableImage(string pageData)
+		{
+			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:img[@aria-describedby]", _ns);
+		}
+
+		/// <summary>
+		/// Verify that an xmatter page has a "contentinfo" role, but no "main" role.
+		/// </summary>
+		private void XmatterPageHasContentInfoNotMain(string pageData)
+		{
+			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:*[@role='main']", _ns);
+			AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//xhtml:div[@role='contentinfo']", _ns);
+		}
+
+		/// <summary>
+		/// Verify that a content page does not have a "contentinfo" role.
+		/// </summary>
+		private void ContentPageHasNoContentInfo(string pageData)
+		{
+			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:*[@role='contentinfo']", _ns);
+		}
+
+		/// <summary>
+		/// Verify the ARIA role and labels for the front cover page.
+		/// </summary>
+		private void FrontCoverHasCorrectAriaRolesAndLabels()
+		{
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo']", _ns, 1);
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 2);
+
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Front Cover']", _ns, 1);
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Front Cover']", _ns, 1);
+
+			// Check the page break references.
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='Front Cover']", _ns, 1);
+		}
+
+		/// <summary>
+		/// Verify the ARIA role and labels for the first content page of a Bloom epub book.
+		/// </summary>
+		private void FirstContentPageHasCorrectAriaRolesAndLabels(string pageData)
+		{
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='main']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 2);
+
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='main' and @aria-label='Main Content']", _ns, 1);
+
+			// Check the page break references.
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='1']", _ns, 1);
+		}
+
+		/// <summary>
+		/// Verify the ARIA roles and labels for the Bloom title page.
+		/// </summary>
+		private void TitlePageHasCorrectAriaRolesAndLabels(string pageData)
+		{
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 3);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 4);
+
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Title Page']", _ns, 1);
+
+			// Check our standard subsections of the title page as well.
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Contributions']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Funding']", _ns, 1);
+
+			// Check the page break references.
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='Title Page']", _ns, 1);
+		}
+
+		/// <summary>
+		/// Verify the ARIA roles and labels for the Bloom credits page.
+		/// </summary>
+		private void CreditsPageHasCorrectAriaRolesAndLabels(string pageData)
+		{
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 5);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 6);
+
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Credits Page']", _ns, 1);
+
+			// Check our standard subsections of the credits page as well.
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Copyright']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Version Acknowledgments']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Copyright']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Acknowledgments']", _ns, 1);
+
+			// Check the page break references.
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='Credits Page']", _ns, 1);
+		}
+
+		/// <summary>
+		/// Verify the ARIA roles and labels for the End Page.
+		/// </summary>
+		private void EndPageHasMinimalAriaRolesAndLabels(string pageData)
+		{
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 1);
+
+			// Check the page break references.
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak' and @aria-label='The End']", _ns, 1);
 		}
 	}
 
