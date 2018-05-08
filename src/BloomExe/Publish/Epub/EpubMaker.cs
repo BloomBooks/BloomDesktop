@@ -648,7 +648,7 @@ namespace Bloom.Publish.Epub
 		private HtmlDom MakePageFile(XmlElement pageElement)
 		{
 			// nonprinting pages (e.g., comprehension questions) are omitted for now
-			if (pageElement.Attributes["class"]?.Value?.Contains("nonprinting") ?? false)
+			if (pageElement.Attributes["class"]?.Value?.Contains("bloom-nonprinting") ?? false)
 			{
 				return null;
 			}

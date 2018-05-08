@@ -274,7 +274,7 @@ namespace BloomTests.Book
 	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 		<div  contenteditable='true'>This page should make it into the book</div>
 	</div>
-    <div class='bloom-page customPage enterprise questions nonprinting Device16x9Portrait layout-style-Default side-left bloom-monolingual' id='86574a93-a50f-42da-b78f-574ef790c481' data-page='' data-pagelineage='4140d100-e4c3-49c4-af05-dda5789e019b' data-page-number='1' lang=''>
+    <div class='bloom-page customPage enterprise questions bloom-nonprinting Device16x9Portrait layout-style-Default side-left bloom-monolingual' id='86574a93-a50f-42da-b78f-574ef790c481' data-page='' data-pagelineage='4140d100-e4c3-49c4-af05-dda5789e019b' data-page-number='1' lang=''>
         <div class='pageLabel' lang='en'>
             Comprehension Questions
         </div>
@@ -330,7 +330,7 @@ namespace BloomTests.Book
             </div>
         </div>
     </div>
-    <div class='bloom-page customPage enterprise questions nonprinting Device16x9Portrait layout-style-Default side-left bloom-monolingual' id='299c0b20-56f7-4a0f-a6d4-08f1ec01f1e6' data-page='' data-pagelineage='4140d100-e4c3-49c4-af05-dda5789e019b' data-page-number='2' lang=''>
+    <div class='bloom-page customPage enterprise questions bloom-nonprinting Device16x9Portrait layout-style-Default side-left bloom-monolingual' id='299c0b20-56f7-4a0f-a6d4-08f1ec01f1e6' data-page='' data-pagelineage='4140d100-e4c3-49c4-af05-dda5789e019b' data-page-number='2' lang=''>
         <div class='pageLabel' lang='en'>
             Comprehension Questions
         </div>

@@ -975,6 +975,7 @@ namespace Bloom.Book
 		/// At one point in v4.1, Question pages were able to be recorded with the Talking Book tool, but opening the
 		/// tool on these pages embedded tons of span elements which messed up BR display. New question pages have classes
 		/// that keep them from being recorded. Here we fix up any existing question pages from the old code.
+		/// Also, the older nonprinting class will be updated here to bloom-nonprinting.
 		/// </summary>
 		/// <param name="bookDOM"></param>
 		private void RepairQuestionsPages(HtmlDom bookDOM)
@@ -985,6 +986,7 @@ namespace Bloom.Book
 			// classes to add
 			const string classNoStyleMods = "bloom-userCannotModifyStyles";
 			const string classNoAudio = "bloom-noAudio";
+			const string classNonPrinting = "bloom-nonprinting";
 
 			var questionNodes = bookDOM.Body.SelectNodes("//div[contains(@class,'quizContents')]");
 			foreach (XmlElement quizContentsElement in questionNodes)
@@ -995,6 +997,13 @@ namespace Bloom.Book
 					HtmlDom.AddClassIfMissing(quizContentsElement, classNoAudio);
 					HtmlDom.StripUnwantedTagsPreservingText(bookDOM.RawDom, quizContentsElement, new []{ "div", "p", "br" });
 				}
+			}
+
+			var quizPages = bookDOM.Body.SelectNodes("//div[contains(@class,'nonprinting')]");
+			foreach (XmlElement quizPageElement in quizPages)
+			{
+				quizPageElement.Attributes["class"].InnerText = HtmlDom.RemoveClass("nonprinting", quizPageElement.Attributes["class"].InnerText);
+				HtmlDom.AddClassIfMissing(quizPageElement, classNonPrinting);
 			}
 		}
 
@@ -2214,7 +2223,7 @@ namespace Bloom.Book
 			var pathSafeForWkHtml2Pdf = FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
 			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
 
-			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("nonprinting"));
+			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting"));
 
 			switch (bookletPortion)
 			{
@@ -2748,7 +2757,7 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveNonPublishablePages()
 		{
-			const string xpath = "//div[contains(@class,'nonpublished')]";
+			const string xpath = "//div[contains(@class,'bloom-noreader')]";
 
 			var dom = OurHtmlDom.RawDom;
 			var nonpublishablePages = dom.SafeSelectNodes(xpath);
