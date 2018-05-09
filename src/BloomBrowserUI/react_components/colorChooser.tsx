@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ContentEditable from "./ContentEditable";
+import "./colorChooser.less";
 
 interface IColorChooserProps {
     imagePath: string;
