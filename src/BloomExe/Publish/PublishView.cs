@@ -442,7 +442,6 @@ namespace Bloom.Publish
 				}
 			}
 			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
-				if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
 				_pdfViewer.Visible = true;
 			switch (displayMode)
 			{

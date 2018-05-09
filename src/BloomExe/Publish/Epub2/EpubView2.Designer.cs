@@ -30,11 +30,11 @@
 		{
 			this.SuspendLayout();
 			// 
-			// AndroidView
+			// EpubView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Name = "AndroidView";
+			this.Name = "EpubView";
 			this.Size = new System.Drawing.Size(448, 214);
 			this.ResumeLayout(false);
 

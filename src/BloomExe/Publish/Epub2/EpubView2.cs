@@ -21,16 +21,10 @@ namespace Bloom.Publish.Epub2
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.
 			_browser.BringToFront();
-			BloomFileLocator.GetBrowserFile(false, "gulpfile.js"); // WHAT???
 			var path = BloomFileLocator.GetBrowserFile(false, "publish","epub", "EpubPublishUI.html");
-			_browser.Navigate(path.ToLocalhost() + GetUrlParams(), false);
+			_browser.Navigate(path.ToLocalhost(), false);
 
 			VisibleChanged += OnVisibleChanged;
-		}
-
-		private string GetUrlParams()
-		{
-			return $"?isLinux={Platform.IsLinux}";
 		}
 
 		private void OnVisibleChanged(object sender, EventArgs eventArgs)

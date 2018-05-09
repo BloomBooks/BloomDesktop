@@ -20,13 +20,9 @@ import EpubPreview from "./EpubPreview";
 
 const kWebSocketLifetime = "publish-epub";
 
-interface IComponentState {}
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
-class EpubPublishUI extends React.Component<
-    IUILanguageAwareProps,
-    IComponentState
-> {
+class EpubPublishUI extends React.Component<IUILanguageAwareProps> {
     private isLinux: boolean;
     constructor(props) {
         super(props);
@@ -63,18 +59,18 @@ class EpubPublishUI extends React.Component<
                     <img src="epub.png" />
                     <H1 l10nKey="PublishTab.epub.Title">Create an Epub book</H1>
                 </header>
-                <div className={"sections"}>
-                    <section className={"preview-section"}>
+                <div className="sections">
+                    <section className="preview-section">
                         <H1 l10nKey="PublishTab.Preview">Preview</H1>
                         <EpubPreview />
                     </section>
-                    <section className={"publish-section"}>
+                    <section className="publish-section">
                         {/* todo: pick correct l10nkey... same as tab? */}
                         <H1 l10nKey="PublishTab.Publish">Publish</H1>
                         <BloomButton
-                            className={"save-button"}
+                            className="save-button"
                             enabled={false}
-                            clickEndpoint={"TODO"}
+                            clickEndpoint="TODO"
                             hasText={true}
                             l10nKey="PublishTab.Save"
                         >
@@ -84,14 +80,14 @@ class EpubPublishUI extends React.Component<
                             id="progress-section"
                             style={{ visibility: "visible" }}
                         >
-                            <H2 className={"label"} l10nKey="Common.Progress">
+                            <H2 className="label" l10nKey="Common.Progress">
                                 Progress
                             </H2>
                             <ProgressBox lifetimeLabel={kWebSocketLifetime} />
                         </div>
                     </section>
-                    <div className={"column"}>
-                        <section className={"help-section"}>
+                    <div className="column">
+                        <section className="help-section">
                             <H1 l10nKey="Common.Help">Help</H1>
                             <HtmlHelpLink
                                 l10nKey="PublishTab.Epub.Help.AboutEpubs"

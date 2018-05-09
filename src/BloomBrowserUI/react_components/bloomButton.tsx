@@ -53,9 +53,7 @@ export default class BloomButton extends LocalizableElement<
         return (
             <button
                 className={
-                    this.props.className +
-                    " " +
-                    (this.props.hidden ? "hidden" : "")
+                    this.props.className + (this.props.hidden ? " hidden" : "")
                 }
                 title={tip}
                 onClick={() =>
