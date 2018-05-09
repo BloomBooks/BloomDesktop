@@ -898,6 +898,7 @@ namespace Bloom.Book
 					_doingBookUpdate = false;
 				}
 			}
+			RemoveObsoleteSoundAttributes(bookDOM);
 			BringBookInfoUpToDate(oldMetaData);
 		}
 
@@ -2445,6 +2446,7 @@ namespace Bloom.Book
 		public void Save()
 		{
 			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
+			RemoveObsoleteSoundAttributes(OurHtmlDom);
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			if(!LockDownTheFileAndFolderName)
 			{
@@ -2457,6 +2459,22 @@ namespace Bloom.Book
 				PageTemplateSource = Path.GetFileName(FolderPath);
 			}
 			_storage.Save();
+		}
+
+		/// <summary>
+		/// Remove any obsolete data-duration attributes that the typescript code failed to remove.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3671.
+		/// </remarks>
+		private void RemoveObsoleteSoundAttributes(HtmlDom htmlDom)
+		{
+			foreach (var span in htmlDom.RawDom.SafeSelectNodes("//span[@data-duration and @id]").Cast<XmlElement>())
+			{
+				var path = FolderPath.CombineForPath("audio", span.GetStringAttribute("id") + ".wav");
+				if (!RobustFile.Exists(path))
+					span.RemoveAttribute("data-duration");	// file no longer exists, shouldn't have any duration setting
+			}
 		}
 
 		//used by the command-line "hydrate" command
