@@ -125,6 +125,10 @@ namespace Bloom.Publish.Epub
 		private BookServer _bookServer;
 		// Ordered list of page navigation list item elements.
 		private List<string> _pageList = new List<string>();
+		// flag whether we've seen the first page with class numberedPage
+		private bool _firstNumberedPageSeen;
+		// image counter for creating id values
+		private int _imgCount;
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -700,7 +704,8 @@ namespace Bloom.Publish.Epub
 
 			AddEpubNamespace(pageDom);
 			AddPageBreakSpan(pageDom, pageDocName);
-			AddEpubTypeAnnotations(pageDom);
+			AddEpubTypeAttributes(pageDom);
+			AddAriaAccessibilityMarkup(pageDom);
 
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
@@ -934,42 +939,34 @@ namespace Bloom.Publish.Epub
 		/// <summary>
 		/// Add epub:type attributes as appropriate.
 		/// </summary>
-		/// <param name="pageDom">Page DOM.</param>
-		private void AddEpubTypeAnnotations (HtmlDom pageDom)
+		private void AddEpubTypeAttributes(HtmlDom pageDom)
 		{
 			// See http://kb.daisy.org/publishing/docs/html/epub-type.html and https://idpf.github.io/epub-vocabs/structure/.
 			// Note: all the "title" related types go on a heading content element (h1, h2, h3, ...).  Bloom doesn't use those.
 			// "toc" is used in the nav.html file.
+			// Various epub:type values such as frontmatter, bodymatter, cover, credits, etc. are true of certain pages
+			// in Bloom books, but we can't currently use them. The standard calls for them to be applied to HTML
+			// section elements (or body, but that is strongly deprecated).  Other guidelines say sections must be
+			// used for things that belong in the table of contents, but we don't want a TOC entry for every xmatter
+			// page.
+			// NB: very few epub:type values seem to be valid in conjunction with the aria role attribute.  Conformance
+			// checking seems to imply that every epub:type attribute must be matched with a role attribute.
 			var body = pageDom.Body;
 			var div = body.SelectSingleNode("div[@class]") as XmlElement;
 			if (div.GetOptionalStringAttribute("data-page", "") == "required singleton")
 			{
-				if (HasClass(div, "frontCover")) {
-					InsertSectionWithEpubType(pageDom, div, "cover");
-				} else if (HasClass(div, "titlePage")) {
-					div.SetAttribute ("type", kEpubNamespace, "titlepage");
-					InsertSectionWithEpubType(pageDom, div, "frontmatter");
-				} else if (HasClass(div, "credits"))
+				if (HasClass(div, "titlePage"))
 				{
-					div.SetAttribute ("type", kEpubNamespace, "credits");
-					InsertSectionWithEpubType(pageDom, div, "frontmatter");
-				} else if (HasClass (div, "insideFrontCover")) {
-					InsertSectionWithEpubType(pageDom, div, "frontmatter");
-				} else if (HasClass (div, "insideBackCover")) {
-					InsertSectionWithEpubType(pageDom, div, "backmatter");
-				} else if (HasClass (div, "outsideBackCover")) {
-					InsertSectionWithEpubType(pageDom, div, "backmatter");
-				} else if (HasClass (div, "theEndPage")) {
-					InsertSectionWithEpubType(pageDom, div, "backmatter");
+					div.SetAttribute ("type", kEpubNamespace, "titlepage");
 				}
-				// Probably on title page
+				// Possibly on title page
 				var divOrigContrib = div.SelectSingleNode (".//div[@id='originalContributions']") as XmlElement;
 				if (divOrigContrib != null && !String.IsNullOrWhiteSpace (divOrigContrib.InnerText))
 					divOrigContrib.SetAttribute ("type", kEpubNamespace, "contributors");
 				var divFunding = div.SelectSingleNode ("../div[@id='funding']") as XmlElement;
 				if (divFunding != null && !String.IsNullOrWhiteSpace (divFunding.InnerText))
 					divFunding.SetAttribute ("type", kEpubNamespace, "acknowledgements");
-				// Probably on general credits page
+				// Possibly on general credits page
 				var divCopyright = div.SelectSingleNode (".//div[@data-derived='copyright']") as XmlElement;
 				if (divCopyright != null && !String.IsNullOrWhiteSpace (divCopyright.InnerText))
 					divCopyright.SetAttribute ("type", kEpubNamespace, "copyright-page");
@@ -982,17 +979,110 @@ namespace Bloom.Publish.Epub
 				var divOrigAck = div.SelectSingleNode (".//div[@data-derived='originalAcknowledgments']") as XmlElement;
 				if (divOrigAck != null && !String.IsNullOrWhiteSpace (divOrigAck.InnerText))
 					divOrigAck.SetAttribute ("type", kEpubNamespace, "contributors");
-			} else if (HasClass (div, "numberedPage")) {
-				InsertSectionWithEpubType(pageDom, div, "bodymatter");
 			}
 		}
 
-		private static void InsertSectionWithEpubType(HtmlDom pageDom, XmlElement div, string type)
+		/// <summary>
+		/// Add ARIA attributes and structure as appropriate.
+		/// </summary>
+		/// <remarks>
+		/// See https://www.w3.org/TR/html-aria/ and http://kb.daisy.org/publishing/.
+		///
+		/// "Although the W3C’s Web Content Accessibility Guidelines 2.0 are a huge step forward in improving web accessibility,
+		/// they do have their issues. Primarily, they are almost impossible to understand."
+		/// https://www.wuhcag.com/web-content-accessibility-guidelines/
+		/// </remarks>
+		private void AddAriaAccessibilityMarkup(HtmlDom pageDom)
 		{
-			var section = pageDom.RawDom.CreateElement("section");
-			var body = pageDom.Body.InsertBefore(section, div);
-			section.AppendChild(div);
-			section.SetAttribute("type", kEpubNamespace, type);
+			var div = pageDom.Body.SelectSingleNode("//div[@data-page='required singleton']") as XmlElement;
+			if (div != null)
+			{
+				SetRoleAndLabelForClass(div, "frontCover", "TemplateBooks.PageLabel.Front Cover", "Front Cover");
+				SetRoleAndLabelForClass(div, "titlePage", "TemplateBooks.PageLabel.Title Page", "Title Page");
+				SetRoleAndLabelForClass(div, "credits", "TemplateBooks.PageLabel.Credits Page", "Credits Page");
+				// Possibly on title page
+				SetRoleAndLabelForMatchingDiv(div, "@id='originalContributions'", "PublishTab.AccessibleEpub.Original Contributions", "Original Contributions");
+				SetRoleAndLabelForMatchingDiv(div, "@id='funding'", "PublishTab.AccessibleEpub.Funding", "Funding");
+				// Possibly on general credits page
+				SetRoleAndLabelForMatchingDiv(div, "@data-derived='copyright'", "PublishTab.AccessibleEpub.Copyright", "Copyright");
+				SetRoleAndLabelForMatchingDiv(div, "contains(concat(' ',@class,' '), ' versionAcknowledgments ')", "PublishTab.AccessibleEpub.Version Acknowledgments", "Version Acknowledgments");
+				SetRoleAndLabelForMatchingDiv(div, "@data-derived='originalCopyrightAndLicense'", "PublishTab.AccessibleEpub.Original Copyright", "Original Copyright");
+				SetRoleAndLabelForMatchingDiv(div, "contains(concat(' ',@class,' '), ' originalAcknowledgments ')", "PublishTab.AccessibleEpub.Original Acknowledgments", "Original Acknowledgments");
+			}
+			else
+			{
+				// tests at least don't always start content on page 1
+				div = pageDom.Body.SelectSingleNode("//div[@data-page-number]") as XmlElement;
+				if (div != null && HasClass(div, "numberedPage") && !_firstNumberedPageSeen)
+				{
+					div.SetAttribute ("role", "main");
+					string languageIdUsed;
+					var label = L10NSharp.LocalizationManager.GetString("PublishTab.AccessibleEpub.Main Content", "Main Content", "",
+						_langsForLocalization, out languageIdUsed);
+					div.SetAttribute("aria-label", label);
+					_firstNumberedPageSeen = true;
+				}
+			}
+			foreach (var img in pageDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
+			{
+				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
+				{
+					img.SetAttribute("alt", "");   // signal no accessibility need
+					continue;
+				}
+				div = img.SelectSingleNode("parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]") as XmlElement;
+				if (div != null)
+				{
+					var desc = div.SelectSingleNode("./div[contains(concat(' ',@class,' '), ' bloom-imageDescription ')]/div[@lang='" + Book.CollectionSettings.Language1Iso639Code + "']") as XmlElement;
+					if (desc != null && !String.IsNullOrWhiteSpace (desc.InnerText))
+					{
+						// This isn't really useful until BL-5952 is implemented.
+						++_imgCount;
+						var bookFigId = "bookfig" + _imgCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+						img.SetAttribute("id", bookFigId);
+						var figDescId = "figdesc" + _imgCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+						desc.SetAttribute("id", figDescId);
+						img.SetAttribute("aria-describedby", figDescId);
+						// Simplest implementation of BL-5892...  It may be redundant, but it's certainly safe.
+						var text = desc.InnerText.Trim();
+						img.SetAttribute("alt", text);
+						continue;
+					}
+				}
+				img.RemoveAttribute("alt");    // signal missing accessibility information
+			}
+			// Provide the general language of this document.
+			// (Required for intermediate (AA) conformance with WCAG 2.0.)
+			div = pageDom.RawDom.SelectSingleNode("/html") as XmlElement;
+			div.SetAttribute("lang", Book.CollectionSettings.Language1Iso639Code);
+			div.SetAttribute("xml:lang", Book.CollectionSettings.Language1Iso639Code);
+		}
+
+		private bool SetRoleAndLabelForMatchingDiv(XmlElement div, string attributeValue, string labelId, string labelEnglish)
+		{
+			var divInternal = div.SelectSingleNode (".//div[" + attributeValue + "]") as XmlElement;
+			if (divInternal != null && !String.IsNullOrWhiteSpace(divInternal.InnerText))
+			{
+				string languageIdUsed;
+				divInternal.SetAttribute("role", "contentinfo");
+				var label = L10NSharp.LocalizationManager.GetString(labelId, labelEnglish, "", _langsForLocalization, out languageIdUsed);
+				divInternal.SetAttribute("aria-label", label);
+				return true;
+			}
+			return false;
+		}
+
+		private bool SetRoleAndLabelForClass(XmlElement div, string desiredClass, string labelId, string labelEnglish)
+		{
+			if (HasClass(div, desiredClass))
+			{
+				string languageIdUsed;
+				div.SetAttribute("role", "contentinfo");
+				var label = L10NSharp.LocalizationManager.GetString (labelId, labelEnglish, "", _langsForLocalization, out languageIdUsed);
+				div.SetAttribute("aria-label", label);
+				return true;
+			}
+			return false;
 		}
 
 		// Combines staging and finishing (currently just used in tests).
@@ -1291,6 +1381,14 @@ namespace Bloom.Publish.Epub
 				elt.RemoveAttribute ("contenteditable");
 			}
 			RemoveTempIds (pageElt); // don't need temporary IDs any more.
+
+			foreach (var div in pageDom.Body.SelectNodes("//div[@role='textbox']").Cast<XmlElement>())
+			{
+				div.RemoveAttribute("role");				// this isn't an editable textbox in an ebook
+				div.RemoveAttribute("aria-label");			// don't want this without a role
+				div.RemoveAttribute("spellcheck");			// too late for spell checking in an ebook
+				div.RemoveAttribute("content-editable");	// too late for editing in an ebook
+			}
 		}
 
 		/// <summary>
@@ -1320,6 +1418,8 @@ namespace Bloom.Publish.Epub
 
 		private bool IsDisplayed (XmlElement elt)
 		{
+			if (HasClass(elt, "bloom-imageDescription"))
+				return true;
 			var id = elt.Attributes ["id"].Value;
 			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
 			return display != "none";
@@ -1545,7 +1645,7 @@ namespace Bloom.Publish.Epub
 		/// <param name="pageDom"></param>
 		private void RemoveBloomUiElements (HtmlDom pageDom)
 		{
-			foreach (var elt in pageDom.RawDom.SafeSelectNodes ("//*[contains(@class,'bloom-ui')]").Cast<XmlElement> ().ToList ()) {
+			foreach (var elt in pageDom.RawDom.SafeSelectNodes ("//*[contains(concat(' ',@class,' '),' bloom-ui ')]").Cast<XmlElement> ().ToList ()) {
 				elt.ParentNode.RemoveChild (elt);
 			}
 		}
