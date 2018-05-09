@@ -1,14 +1,14 @@
 // C# used to replace this with the desired background color,
 // but the switch to a separate less/css file defeated that mechanism.
 
-@import (less) '../../node_modules/toastr/toastr.less';
-@import "../../templates/common-mixins.less";
+@import (less) "../../node_modules/toastr/toastr.less";
+@import "../../bloomUI.less";
 
 @highlightColor: @bloom-yellow;
 @gridWidth: 80px;
 @gridHeight: 105px; // BL-336 small increase
 
-BODY {
+body {
     background-color: @DarkBackgroundColor;
 }
 
@@ -44,9 +44,10 @@ BODY {
     box-sizing: border-box;
     overflow: hidden;
     display: inline-block;
-    height: 65px; width: 47px; /* default = A5Portrait */
+    height: 65px;
+    width: 47px; /* default = A5Portrait */
     * {
-        cursor: pointer!important;
+        cursor: pointer !important;
     }
     &.A5Landscape {
         height: 51px;
@@ -154,7 +155,10 @@ BODY {
     }
 }
 
-.gridSelected .pageContainer { padding: 1px; border: 2px solid @highlightColor }
+.gridSelected .pageContainer {
+    padding: 1px;
+    border: 2px solid @highlightColor;
+}
 
 .gridItem {
     width: @gridWidth;
@@ -163,12 +167,12 @@ BODY {
     //overflow:hidden;
     &:nth-child(even) {
         .thumbnailCaption {
-                text-align: left;
+            text-align: left;
         }
     }
     &:nth-child(odd) {
         .pageContainer {
-                float: right;
+            float: right;
         }
     }
 }
@@ -190,16 +194,19 @@ BODY {
     top: 63px;
     color: white;
     overflow: hidden;
-    text-align:right;
+    text-align: right;
     width: 80px;
     // BL336 leave space for 3 lines of caption
     font-size: 9pt;
     line-height: 1.3em;
 }
 
-.placeholder { pointer-events: none; }
+.placeholder {
+    pointer-events: none;
+}
 
-html, body {
+html,
+body {
     height: 100%; // need this to get page browser to fill available space on the screen
 }
 
@@ -215,19 +222,19 @@ body > #menuIconHolder {
 
 //for "Saved" toast
 .toast-info {
-	background-color: @bloom-darkestgray;
-	width: 100% !important;
+    background-color: @bloom-darkestgray;
+    width: 100% !important;
     padding: 0px 0px 0px 0px;
 }
 
 #toast-container {
-    font-family: "Segoe UI","sans-serif";
+    font-family: "Segoe UI", "sans-serif";
     font-size: 9pt;
 }
 
-#toast-container > .toast{
-        //opacity: 1.0 !important;
-        box-shadow: none !important;
-        background-image: none !important;
-        padding-left:5px;//don't leave room for the icon
+#toast-container > .toast {
+    //opacity: 1.0 !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    padding-left: 5px; //don't leave room for the icon
 }

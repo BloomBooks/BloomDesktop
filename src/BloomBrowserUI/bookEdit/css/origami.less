@@ -6,9 +6,9 @@
 // origamiEditing.less. The initial goal of splitting them up was to avoid
 // getting the origami editing behaviors while reading in BloomReader.
 @import (inline) "../../lib/split-pane/split-pane.css";
-@import "../../templates/common-mixins.less";
+@import "../../bloomUI.less";
 
-@flowerPetalGrey:#7e7e7e; // shouldn't this just be @bloom-gray?
+@flowerPetalGrey: #7e7e7e; // shouldn't this just be @bloom-gray?
 @inactiveColor: @bloom-buff;
 @font: "Segoe UI", "Open Sans", Arial, sans-serif;
 
@@ -46,7 +46,7 @@
 // need to see these elements, and there are rules inherited from split-pane.css
 // which do annoying things if they are visible in epubs.
 .split-pane-divider {
-        visibility: hidden;
+    visibility: hidden;
 }
 
 .split-pane.vertical-percent > .vertical-divider {
@@ -59,90 +59,91 @@
     border-bottom: 3px dashed transparent;
 }
 
-.origami-layout-mode .bloom-editable{
+.origami-layout-mode .bloom-editable {
     // We want to see some text in the background, but it can't interfer with the forground.
     // If you change this color, be sure to see how it looks when grey background is enabled.
-    color:#ececec !important;
+    color: #ececec !important;
 }
 
 @firstButtonOffset: 10px;
 @secondButtonOffset: 10px;
 @distanceOfButtonToEdge: 10px;
 .origami-controls {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 20000;
+    height: 99%;
+    width: 99%;
+    .close {
+        font-weight: bold;
+    }
+    .button,
+    .origami-controls .button:visited {
+        display: inline-block;
+        text-decoration: none;
+        position: relative;
+        height: 20px;
+        width: 20px;
+        text-align: center;
+        color: @inactiveColor;
+        background-color: transparent;
+        line-height: 1em;
+        font-size: 18px;
+    }
+    .close-button-wrapper {
+        float: left;
+        padding: 5px;
         position: absolute;
-        top: 0;
         right: 0;
-        z-index: 20000;
-        height: 99%;
-        width: 99%;
-        .close {
-                font-weight: bold;
+        top: 0;
+    }
+    .vertical-adders {
+        left: 0;
+        position: absolute;
+        top: 10%;
+        .button {
+            //padding: 10px;
+            position: absolute;
+            left: @distanceOfButtonToEdge;
         }
-        .button, .origami-controls .button:visited {
-                display: inline-block;
-                text-decoration: none;
-                position: relative;
-                height: 20px;
-                width: 20px;
-                text-align: center;
-                color: @inactiveColor;
-                background-color: transparent;
-                line-height: 1em;
-                font-size: 18px;
+        .button.add-top {
+            top: @firstButtonOffset;
         }
-        .close-button-wrapper {
-		float: left;
-		padding: 5px;
-		position: absolute;
-		right: 0;
-		top: 0;
-	}
-	.vertical-adders {
-		left: 0;
-		position: absolute;
-		top: 10%;
-		.button {
-			//padding: 10px;
-                        position: absolute;
-                        left:@distanceOfButtonToEdge;
-		}
-                .button.add-top{
-                        top:@firstButtonOffset;
-                }
-                .button.add-bottom{
-                        bottom:@secondButtonOffset;
-                }
-		.separator {
-			border-bottom: 3px @inactiveColor dashed;
-                        width:100%;
-                        position: absolute;
-                        top:50%;
-		}
-	}
-	.horizontal-adders {
-                bottom: 0;
-		right: 10%;
-		position: absolute;
-		.button {
-			position: absolute;
-                        bottom: @distanceOfButtonToEdge;
-		}
-                .button.add-left{
-                        left:@firstButtonOffset;
-                }
-                .button.add-right{
-                        right:@secondButtonOffset;
-                }
-		.separator {
-			border-right: 3px @inactiveColor dashed;
-                        height:100%;
-                        position: absolute;
-                        left:50%;
-		}
-	}
-	.horizontal-adders>div {
-		float: left;
-	}
+        .button.add-bottom {
+            bottom: @secondButtonOffset;
+        }
+        .separator {
+            border-bottom: 3px @inactiveColor dashed;
+            width: 100%;
+            position: absolute;
+            top: 50%;
+        }
+    }
+    .horizontal-adders {
+        bottom: 0;
+        right: 10%;
+        position: absolute;
+        .button {
+            position: absolute;
+            bottom: @distanceOfButtonToEdge;
+        }
+        .button.add-left {
+            left: @firstButtonOffset;
+        }
+        .button.add-right {
+            right: @secondButtonOffset;
+        }
+        .separator {
+            border-right: 3px @inactiveColor dashed;
+            height: 100%;
+            position: absolute;
+            left: 50%;
+        }
+    }
+    .horizontal-adders > div {
+        float: left;
+    }
 }
 
 @smallSplitterLength: 30px;
@@ -160,15 +161,10 @@
         transition-duration: 0.5s;
 }*/
 
-
-
-
-
 .origami-controls .vertical-adders,
 .origami-controls .horizontal-adders {
     /*   -background-color: lightgrey;rgba(0,0,0,.1) ;*/
 }
-
 
 .split-pane-component-inner {
     position: relative;
@@ -204,10 +200,10 @@
     }
 }
 .container-selector-links {
-	display: none;
+    display: none;
 }
 .container-textBox-id {
-	display: none;
+    display: none;
 }
 .selector-links {
     top: 45%;
@@ -216,66 +212,65 @@
 }
 
 .selector-links div {
-	display: inline;
+    display: inline;
 }
 
-
 //Assume too small to show
-.split-pane-component-inner{
+.split-pane-component-inner {
     .vertical-adders {
-            display:none;
-        }
-     .horizontal-adders{
-                display:none;
-        }
+        display: none;
+    }
+    .horizontal-adders {
+        display: none;
+    }
 }
 
 //If wide enough, show the horizontal adders with medium size
-.split-pane-component-inner[min-width~="60px"]{
-     .horizontal-adders{
-             width: @mediumClusterThickness;
-                height: @mediumSplitterLength;
-        }
+.split-pane-component-inner[min-width~="60px"] {
+    .horizontal-adders {
+        width: @mediumClusterThickness;
+        height: @mediumSplitterLength;
+    }
 }
-
 
 //If tall enough, show the vertical adders with medium size
-.split-pane-component-inner[min-height~="60px"]{
+.split-pane-component-inner[min-height~="60px"] {
     .vertical-adders {
-                width: @mediumSplitterLength;
-                height: @mediumClusterThickness;
-        }
+        width: @mediumSplitterLength;
+        height: @mediumClusterThickness;
+    }
 }
 
-.split-pane-component-inner[min-width~="150px"][min-height~="150px"] .textBox-identifier {
+.split-pane-component-inner[min-width~="150px"][min-height~="150px"]
+    .textBox-identifier {
     transition-property: font-size;
     transition-duration: 0.5s;
     font-size: 24pt;
 }
 
 //If really tall, show the vertical adders with large size
-.split-pane-component-inner[min-height~="250px"]{
-         .vertical-adders{
-                 height: @largeClusterThickness;
-        }
-        .horizontal-adders{
-                height: @largeSplitterLength;
-        }
+.split-pane-component-inner[min-height~="250px"] {
+    .vertical-adders {
+        height: @largeClusterThickness;
+    }
+    .horizontal-adders {
+        height: @largeSplitterLength;
+    }
 }
 
 //If really wide, show the horizontal adders with large size
- .split-pane-component-inner[min-width~="250px"]{
-         .vertical-adders{
-                 width: @largeSplitterLength;
-                }
-        .horizontal-adders{
-                width: @largeClusterThickness;
-        }
- }
+.split-pane-component-inner[min-width~="250px"] {
+    .vertical-adders {
+        width: @largeSplitterLength;
+    }
+    .horizontal-adders {
+        width: @largeClusterThickness;
+    }
+}
 
 //only show the plus signs that add new blocks for the block that has the mouse
-.origami-layout-mode .origami-ui{
-        .adders{
-                display: none;
-        }
+.origami-layout-mode .origami-ui {
+    .adders {
+        display: none;
+    }
 }

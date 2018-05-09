@@ -1,7 +1,7 @@
 //importing this (less) here makes it actually start this file off with the contents of the toastr.css,
 //which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
-@import (less) '../../node_modules/toastr/toastr.less';
-@import "../../templates/common-mixins.less";
+@import (less) "../../node_modules/toastr/toastr.less";
+@import "../../bloomUI.less";
 
 @toolboxBackgroundColor: @DarkBackgroundColor;
 
@@ -17,28 +17,53 @@ div.toolboxRoot {
     width: 200px;
     z-index: 18000; /* Just over help bubbles, but under topic dialog */
 
-    .ui-widget-content{
+    .ui-widget-content {
         background: none; // clear out the backgroudn image jquery-ui adds
         background-color: @toolboxBackgroundColor;
         border: none;
     }
 }
 
-.ui-accordion-header { -moz-user-select: none; }
-span.scroll-button { color: white; float: left; }
-div.ui-accordion { padding-left: 0; padding-right: 0; }
-div.ui-accordion-content { padding-left: 3px !important; padding-right: 0 !important; }
+.ui-accordion-header {
+    -moz-user-select: none;
+}
+span.scroll-button {
+    color: white;
+    float: left;
+}
+div.ui-accordion {
+    padding-left: 0;
+    padding-right: 0;
+}
+div.ui-accordion-content {
+    padding-left: 3px !important;
+    padding-right: 0 !important;
+}
 
-.h1{padding-top:20px;}
-.section { padding-top: 20px; color: @bloom-lightblue; }
-.tableTitle{padding-top:20px;}
-.thisPageSection{ padding-top: 0;}
+.h1 {
+    padding-top: 20px;
+}
+.section {
+    padding-top: 20px;
+    color: @bloom-lightblue;
+}
+.tableTitle {
+    padding-top: 20px;
+}
+.thisPageSection {
+    padding-top: 0;
+}
 
-
-
-div.clear, table.clear { clear: both; }
-.hidden { display: none !important; }
-.align-top { vertical-align: top; }
+div.clear,
+table.clear {
+    clear: both;
+}
+.hidden {
+    display: none !important;
+}
+.align-top {
+    vertical-align: top;
+}
 
 input[type="checkbox"] {
     color: white;
@@ -68,7 +93,7 @@ div.checkbox-label {
     cursor: default;
 }
 
-.ui-accordion h3   {
+.ui-accordion h3 {
     padding-left: 28px;
 }
 
@@ -93,7 +118,7 @@ div.checkbox-label {
     background-image: none;
 }
 
-.ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon, {
+.ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon {
     background-size: 12px 16px;
     background-position: 2px 0;
     display: inline-block;
@@ -103,21 +128,26 @@ div.checkbox-label {
 // in the tool's own less file. If your tool shouldn't have an icon you need a similar
 // rule to force it not to have a background image, since otherwise the one at
 // position 0,0 in the accordion image collection is used.
-.ui-accordion h3[data-toolId="decodableReaderTool"] span.ui-accordion-header-icon {
-    background-image:url('/bloom/images/keys-white.png') !important;
+.ui-accordion
+    h3[data-toolId="decodableReaderTool"]
+    span.ui-accordion-header-icon {
+    background-image: url("/bloom/images/keys-white.png") !important;
 }
 
-.ui-accordion h3[data-toolId="leveledReaderTool"] span.ui-accordion-header-icon {
-    background-image:url('/bloom/images/steps-white.png') !important;
+.ui-accordion
+    h3[data-toolId="leveledReaderTool"]
+    span.ui-accordion-header-icon {
+    background-image: url("/bloom/images/steps-white.png") !important;
 }
 
 .ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon {
-    background-image:url('/bloom/images/microphone-white.svg') !important;
+    background-image: url("/bloom/images/microphone-white.svg") !important;
 }
 
 // Dialogs launched from the toolbox need to be in front of everything,
 // and so does the backdrop used to dim and disable the stuff behind the dialog.
 // In particular they need to be in front of the pure-drawer stuff (1-99).
-.ui-dialog, .ui-widget-overlay {
-  z-index: 20000;
+.ui-dialog,
+.ui-widget-overlay {
+    z-index: 20000;
 }

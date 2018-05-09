@@ -1,4 +1,4 @@
-@import "../../templates/common-mixins.less";
+@import "../../bloomUI.less";
 
 body {
     background-color: @DarkBackgroundColor !important; // previewMode.css tries to override; don't let it.
@@ -6,10 +6,11 @@ body {
 .bloom-page {
     /* bizarrely, the translate moves it to the top left instead of the middle of the original space.
         If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
-    transform: scale(0.075) translate(-617%,-617%);
+    transform: scale(0.075) translate(-617%, -617%);
     position: absolute;
-    &.A4Portrait, &.A3Portrait {
-        transform: scale(0.05) translate(950%,-950%);
+    &.A4Portrait,
+    &.A3Portrait {
+        transform: scale(0.05) translate(950%, -950%);
         position: absolute;
         right: 0px;
     }
@@ -17,7 +18,7 @@ body {
 .gridItem {
     height: 100px;
     opacity: 1;
-    overflow:hidden;
+    overflow: hidden;
 }
 .pageContainer {
     margin: 0 auto;
@@ -25,7 +26,8 @@ body {
     &.A4Portrait {
         width: 40px;
     }
-    &.A4Landscape, &.A3Landscape {
+    &.A4Landscape,
+    &.A3Landscape {
         width: 85px;
     }
 }
@@ -35,7 +37,7 @@ body {
     color: white;
     overflow: hidden;
     text-align: center;
-    line-height: 1.1
+    line-height: 1.1;
 }
 .placeholder {
     pointer-events: none;

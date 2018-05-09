@@ -1,7 +1,9 @@
-@import "../../../templates/common-mixins.less";
+@import "../../../bloomUI.less";
 
-.ui-accordion h3[data-toolId="imageDescriptionTool"] span.ui-accordion-header-icon {
-    background-image:url('/bloom/images/ImageDescriptionToolIcon.svg') !important;
+.ui-accordion
+    h3[data-toolId="imageDescriptionTool"]
+    span.ui-accordion-header-icon {
+    background-image: url("/bloom/images/ImageDescriptionToolIcon.svg") !important;
 }
 
 .imgDescLabelBlock {
@@ -9,7 +11,9 @@
     color: @bloom-lightblue;
     // This seems as if it should just be inherited, but we need the extra specificity to
     // beat some other rules.
-    A {color: @bloom-lightblue;}
+    a {
+        color: @bloom-lightblue;
+    }
 }
 @playVideoIconWidth: 16px;
 @playVideoIconMargin: 5px;

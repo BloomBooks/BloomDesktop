@@ -1,20 +1,20 @@
 // page-chooser.less - rules for the Bloom Page Chooser dialog
 // try not to overwrite the bloomDialog.less rules
-
-@import "../templates/common-mixins.less";
+@import "../bloomUI.less";
+//@import "../templates/common-mixins.less";
 
 @PreviewPaneLeftPadding: 15px;
-@WindowsDialogBackgroundColor: #F0F0F0;
-@WindowsButton-BackgroundColor: #E1E1E1;
+@WindowsDialogBackgroundColor: #f0f0f0;
+@WindowsButton-BackgroundColor: #e1e1e1;
 @WindowsButton-BackgroundColor-Hover: @bloom-lightblue;
-@WindowsButton-Border: #ADADAD;
+@WindowsButton-Border: #adadad;
 @HighlightColor: @bloom-lightblue;
- // partly transparent to go on TOP of the page image but still let it show through.
- // Intended to be similar to HighlightColor when over the default dialog background, but I haven't
- // tried to figure out exactly what would achieve that.
+// partly transparent to go on TOP of the page image but still let it show through.
+// Intended to be similar to HighlightColor when over the default dialog background, but I haven't
+// tried to figure out exactly what would achieve that.
 @TransparentHiglightColor: hsla(186.9, 49.1%, 65%, 0.45);
 
-BODY {
+body {
     margin: 4px;
 }
 #mainContainer {
@@ -42,16 +42,16 @@ BODY {
     max-width: 370px; // in the standard dialog width, allows the other pane to be wide enough for 3 columns with scroll bar
     padding-left: @PreviewPaneLeftPadding;
 
-    img{
+    img {
         border: 1px solid @HighlightColor;
         //center it
-            display:block;
-            margin-left: auto;
-            margin-right: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 #preview {
-  max-height: 232px;
+    max-height: 232px;
 }
 
 .landscape {
@@ -82,12 +82,11 @@ BODY {
     max-height: 119px;
     line-height: 1.5em;
     overflow: hidden;
-  text-overflow: ellipsis;
-    overflow-y: auto ;
+    text-overflow: ellipsis;
+    overflow-y: auto;
     margin-right: @PreviewPaneLeftPadding;
     margin-left: @PreviewPaneLeftPadding;
 }
-
 
 // Currently unused
 //.templatesCaption {
@@ -146,7 +145,7 @@ BODY {
     //todo: this will have to change depending on orientation
     width: 60px;
     //take the height proportionally, from the width
-    margin-left: 20px;//centers the thumbnail in the enclosing grid item
+    margin-left: 20px; //centers the thumbnail in the enclosing grid item
 }
 
 .disabled .thumbnail {
@@ -155,7 +154,7 @@ BODY {
 
 .landscape {
     .thumbnail {
-        width:unset;
+        width: unset;
         height: 60px;
         margin-left: 6px;
     }
@@ -171,7 +170,9 @@ BODY {
         overflow: hidden;
         line-height: 1em;
     }
-    .pageDescription{display:none;}
+    .pageDescription {
+        display: none;
+    }
 }
 .invisibleThumbCover {
     z-index: 5;
@@ -193,12 +194,12 @@ BODY {
     }
 }
 
-#mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button{
+#mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button {
     background: @WindowsButton-BackgroundColor !important;
     color: black;
     border: @WindowsButton-Border solid thin;
     font-size: 10pt;
-    margin-left:10px;
+    margin-left: 10px;
 }
 
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
@@ -206,21 +207,25 @@ BODY {
     color: black;
 }
 
-#mainContainer .ui-dialog-buttonpane{
+#mainContainer .ui-dialog-buttonpane {
     padding: 0.3em 20px 20px 0.4em;
 }
-#mainContainer div.ui-dialog div.ui-dialog-content, .ui-dialog .ui-dialog-buttonpane, .bloomDialogContainer{
+#mainContainer div.ui-dialog div.ui-dialog-content,
+.ui-dialog .ui-dialog-buttonpane,
+.bloomDialogContainer {
     background-color: @WindowsDialogBackgroundColor !important;
 }
 
-#mainContainer div.ui-dialog div.ui-dialog-titlebar{
+#mainContainer div.ui-dialog div.ui-dialog-titlebar {
     border: none;
-    .ui-dialog-title{
+    .ui-dialog-title {
         font-weight: normal;
     }
 }
 
-#mainContainer .ui-dialog-buttonpane{	display: none;}
+#mainContainer .ui-dialog-buttonpane {
+    display: none;
+}
 /*
 .ui-dialog-buttonset {
 
@@ -250,9 +255,9 @@ BODY {
     width: 200px;
     border: 5px solid @HighlightColor;
     font-weight: bold;
-    background-image:none;
+    background-image: none;
 
-    &:disabled{
+    &:disabled {
         color: @bloom-buff;
         border: medium solid @bloom-buff;
     }
@@ -260,13 +265,13 @@ BODY {
 
 #convertAnyway {
     color: @WarningColor;
-    visibility:hidden;
+    visibility: hidden;
     margin-left: @PreviewPaneLeftPadding;
     margin-right: @PreviewPaneLeftPadding;
 }
 #convertLosesMaterial {
     color: @WarningColor;
-    visibility:hidden;
+    visibility: hidden;
     margin-left: @PreviewPaneLeftPadding; // rather arbitrary. I'd like it to be left-aligned with the picture.
     margin-right: @PreviewPaneLeftPadding;
     line-height: 1.5em;
@@ -274,9 +279,9 @@ BODY {
 
 .willLoseData {
     #convertAnyway {
-        visibility:visible;
+        visibility: visible;
     }
     #convertLosesMaterial {
-        visibility:visible;
+        visibility: visible;
     }
 }

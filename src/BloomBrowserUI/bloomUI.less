@@ -1,0 +1,30 @@
+/* Common Bloom UI styling */
+
+@ui-fonts: "Segoe UI", "Sans";
+
+@imageContainerZIndex: 1000;
+@textOverPictureZIndex: @imageContainerZIndex + 1;
+@formatButtonZIndex: @textOverPictureZIndex + 1;
+@dragHandleZIndex: @textOverPictureZIndex + 1;
+
+// Bloom's web palette
+@bloom-blue: #1d94a4; // used in decodable reader and various text backgrounds and Paste Image button
+@bloom-lightblue: #b0dee4; // used in a few highlight and hover situations
+@bloom-yellow : #FEBF00;
+@bloom-gray: #575757; // used for disabled controls and EPub preview controls
+@bloom-lightgray: lightgray;
+@bloom-darkestgray: #363333; // used for borders and backgrounds... this is the darker main panel background
+@bloom-buff: #d2d2d2; // used for various unrelated things like hovered/disabled controls, text on dark background, borders, etc.
+@DisabledButtonColor: @bloom-gray;
+@ControlColor: #96668f;
+@DarkBackgroundColor: #404040; // side panels; toolbox and page thumbs
+@WarningColor: #d65649;
+@OrigamiActiveColor: #e48c84;
+@PreviewCoverColor: #d8adad;
+@LeveledReaderViolationColor: orange;
+@DecodableReaderViolationColor: @bloom-blue;
+// This is the color which jquery-ui-1.8.16.custom.css applies for ui-state-active, that is,
+// the color of the background of the selected item in the toolbox accordion.
+// Naming it here allows us to make various things match it.
+@accordion-active-element: #59b4d4;
+@form-background: #f0f0f0;

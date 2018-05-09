@@ -1,17 +1,17 @@
-@import "../templates/common-mixins.less";
+@import "../bloomUI.less";
 
 @LightGrey: @bloom-gray;
 
 a:hover {
-        color: blue; // can we get away with @bloom-blue here (much less harsh)?
+    color: blue; // can we get away with @bloom-blue here (much less harsh)?
 }
 a {
-        color: black;
+    color: black;
 }
 
 body {
-	background-color: #808080; // should we use @bloom-buff here?
-        font-family:"Segoe UI";
+    background-color: #808080; // should we use @bloom-buff here?
+    font-family: "Segoe UI";
 }
 
 /*#device-outer {
@@ -30,8 +30,8 @@ body {
     width: calc(100% - 49px);
 */
 * {
-        box-sizing: border-box;
-        position: relative;
+    box-sizing: border-box;
+    position: relative;
 }
 /*#instructions:before{
     background-image: url("../epub/experimentalEpubNotice.svg");
@@ -39,83 +39,87 @@ body {
      padding-top: 131px;
     content:''
 }*/
-#sideColumn{
+#sideColumn {
     background-repeat: no-repeat;
     position: absolute;
-    top:10px;
+    top: 10px;
     left: 50px;
     width: 217px;
     display: block;
 }
 #device {
-        margin-left: 300px;
-        height: 800px;
-        width: 400px;
-        padding-left: 30px;
-        padding-top: 72px;
-        padding-bottom: 18px;
-        //border: 5px solid white;
-        border-radius: 38px;
-        background-color: @DarkBackgroundColor;
-        box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
+    margin-left: 300px;
+    height: 800px;
+    width: 400px;
+    padding-left: 30px;
+    padding-top: 72px;
+    padding-bottom: 18px;
+    //border: 5px solid white;
+    border-radius: 38px;
+    background-color: @DarkBackgroundColor;
+    box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
 }
 
 //The speaker is a "before" rule
-@SpeakerLength : 80px;
+@speakerlength : 80px;
 #device:before {
-        width: @SpeakerLength;
-        height: 10px;
-        top: 35px;
-        left: calc(~"50% - "@SpeakerLength - 39px);
-        border-radius: 10px;
-        background-color: @LightGrey;
+    width: @speakerlength;
+    height: 10px;
+    top: 35px;
+    left: calc(~"50% - " @speakerlength - 39px);
+    border-radius: 10px;
+    background-color: @LightGrey;
 }
 @CircleDiameter: 40px;
 
 //the bottom button is the "after" rule
 #device:after {
-        width: @CircleDiameter;
-        height: @CircleDiameter;
-        border-radius: 50%;
-        border: solid 5px @LightGrey;
-        left: calc(~"50% - "@CircleDiameter - 16px);
-        bottom: 10px;
+    width: @CircleDiameter;
+    height: @CircleDiameter;
+    border-radius: 50%;
+    border: solid 5px @LightGrey;
+    left: calc(~"50% - " @CircleDiameter - 16px);
+    bottom: 10px;
 }
-#device:before, #device:after {
-        content: '';
-        position: absolute;
-        z-index: 2;
-
+#device:before,
+#device:after {
+    content: "";
+    position: absolute;
+    z-index: 2;
 }
 
 iframe {
-	//background-color: white;
-    margin:auto;
+    //background-color: white;
+    margin: auto;
     height: ~"calc(100% - 51px)";
     width: ~"calc(100% - 30px)";
     border: none;
 }
 
 .ui-resizable-se {
-        width: 50px;
-        height: 50px;
-        right: -20px;
-        bottom: -20px;
+    width: 50px;
+    height: 50px;
+    right: -20px;
+    bottom: -20px;
 }
-#missingLame{
-        max-width: 4in;
+#missingLame {
+    max-width: 4in;
 }
 
 //Hide all the conditional texts
-.showWhenHaveAudioButNotMakingTalkingBook, .showForTalkingBooks, .showWhenNoAudio{
-        display: none;
+.showWhenHaveAudioButNotMakingTalkingBook,
+.showForTalkingBooks,
+.showWhenNoAudio {
+    display: none;
 }
 
 //Show the conditional texts that match the _AudioSituationClass_ the c# has replaced at runtime
-.noAudioAvailable .showWhenNoAudio, .isTalkingBook .showForTalkingBooks, .haveAudioButNotMakingTalkingBook .showWhenHaveAudioButNotMakingTalkingBook{
-        display: inherit;
+.noAudioAvailable .showWhenNoAudio,
+.isTalkingBook .showForTalkingBooks,
+.haveAudioButNotMakingTalkingBook .showWhenHaveAudioButNotMakingTalkingBook {
+    display: inherit;
 }
 
-.isTalkingBook span.showForTalkingBooks{
-        display:inline !important;
+.isTalkingBook span.showForTalkingBooks {
+    display: inline !important;
 }

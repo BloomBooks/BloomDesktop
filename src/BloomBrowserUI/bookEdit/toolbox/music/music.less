@@ -1,98 +1,126 @@
-@import "../../../templates/common-mixins.less";
+@import "../../../bloomUI.less";
 //@import "../../../node_modules/rc-slider/assets/index.css";
-@textColor: @bloom-buff;// #D2D2D2;
+@textColor: @bloom-buff; // #D2D2D2;
 @toolboxBackgroundColor: @DarkBackgroundColor;
 @buttonColumnWidth: 40px;
 @disabledColor: #7a7a7a; // matches apparent color of dimmed speaker icon
 
-.musicBody{
+.musicBody {
     padding-left: 10px;
     padding-right: 10px;
-    *, a{color: @textColor;}
+    *,
+    a {
+        color: @textColor;
+    }
     background-color: @toolboxBackgroundColor;
 
     background-position: center;
 
     .music-button {
-        height:@buttonColumnWidth;
+        height: @buttonColumnWidth;
         width: @buttonColumnWidth;
-        border:none;
-        background-size:contain;
-        background-color:transparent;
-        background-repeat:no-repeat;
-        display:inline-block;
-        margin-bottom:5px;
+        border: none;
+        background-size: contain;
+        background-color: transparent;
+        background-repeat: no-repeat;
+        display: inline-block;
+        margin-bottom: 5px;
     }
 
     #musicPreview {
-        background-image: url('/bloom/bookEdit/toolbox/talkingBook/play_enabled.svg');
-        height:25px;
-        width:25px;
+        background-image: url("/bloom/bookEdit/toolbox/talkingBook/play_enabled.svg");
+        height: 25px;
+        width: 25px;
 
-        &.playing {background-image: url('/bloom/images/pause-blue.svg')}
+        &.playing {
+            background-image: url("/bloom/images/pause-blue.svg");
+        }
     }
     .speaker-volume {
-        height:23px;
-        width:23px;
+        height: 23px;
+        width: 23px;
         position: relative;
     }
-    .radioButton {margin-top:20px;}
-    .radioLabel {display:inline-block; max-width: 120px;}
+    .radioButton {
+        margin-top: 20px;
+    }
+    .radioLabel {
+        display: inline-block;
+        max-width: 120px;
+    }
     #musicFilename {
         // The combination of these makes us have just one line of filename,
         // adjacent to the Play button, with ellipsis if it is truncated.
         display: inline-block;
         max-width: 140px;
-        overflow:hidden;
+        overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
     #musicPlayAndLabelWrapper {
-        display:flex;
+        display: flex;
         align-items: center;
     }
-    .radioInput {vertical-align: top}
-    .musicChooseFile {text-decoration: @textColor underline; margin-left: 10px;}
-    #musicVolumePercent {text-align: center;margin-left: 10px;}
-    #musicVolumeSlider {
-        background-color:@textColor;
-        height:2px;
+    .radioInput {
+        vertical-align: top;
     }
-    #musicSetVolume {display:flex;}
+    .musicChooseFile {
+        text-decoration: @textColor underline;
+        margin-left: 10px;
+    }
+    #musicVolumePercent {
+        text-align: center;
+        margin-left: 10px;
+    }
+    #musicVolumeSlider {
+        background-color: @textColor;
+        height: 2px;
+    }
+    #musicSetVolume {
+        display: flex;
+    }
     .bgSliderWrapper {
         flex-grow: 1; // only grow item, so takes as much space as it can
         margin-top: 5px;
         margin-left: 8px;
-        margin-right: 15px
+        margin-right: 15px;
     }
     .ui-slider-horizontal .ui-slider-handle {
         // found by experiment things to tweak from default to make a small circular white handle.
-        top:-0.6em;
+        top: -0.6em;
         border-radius: 8px;
-        padding-top:0;
-        width:8px;
-        height:8px;
+        padding-top: 0;
+        width: 8px;
+        height: 8px;
         // not sure we need all these; between them they overcome complex coloring that is done by default.
         // in particular a background image that is a plain orangey color tends to turn it orange when dragged.
         background-color: @textColor;
         color: @textColor;
-        border-color:@textColor;
+        border-color: @textColor;
         background-image: none;
     }
     #musicOuterWrapper {
-        margin-left:5px; // needed to make the nested controls line up visually with the radio buttons
+        margin-left: 5px; // needed to make the nested controls line up visually with the radio buttons
 
         &.disabled {
             opacity: 0.3;
         }
-
     }
-    .musicChooseFile, .musicChooseWrapper .radioButton {display:inline-block;}
+    .musicChooseFile,
+    .musicChooseWrapper .radioButton {
+        display: inline-block;
+    }
 
-    .button-label-wrapper {margin-top: 10px;}
-    .musicButtonWrapper {display:inline-block;min-width: 30px; margin-top:9px;}
+    .button-label-wrapper {
+        margin-top: 10px;
+    }
+    .musicButtonWrapper {
+        display: inline-block;
+        min-width: 30px;
+        margin-top: 9px;
+    }
 }
 
 .ui-accordion h3[data-toolId="musicTool"] span.ui-accordion-header-icon {
-    background-image:url('/bloom/images/music-notes-white.svg') !important;
+    background-image: url("/bloom/images/music-notes-white.svg") !important;
 }

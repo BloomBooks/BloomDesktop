@@ -1,5 +1,5 @@
-@import "../../templates/common-mixins.less";
-@mainSliderColor: @bloom-buff;// #D2D2D2;
+@import "../../bloomUI.less";
+@mainSliderColor: @bloom-buff; // #D2D2D2;
 // copied, simplified, and adjusted from rc-slider/assets/index.css
 // There are other styles there that may be useful if we need tooltips, text, vertical, steps, and other features.
 // Enhance: we need some way that each context can select the colors it wants.
@@ -17,26 +17,26 @@
     width: 100%;
     border-radius: 6px;
     box-sizing: border-box;
-  }
-  .rc-slider * {
+}
+.rc-slider * {
     box-sizing: border-box;
-  }
-  // The bar of the slider
-  .rc-slider-rail {
+}
+// The bar of the slider
+.rc-slider-rail {
     position: absolute;
     width: 100%;
     background-color: @mainSliderColor;
     height: 4px;
     border-radius: 6px;
-  }
-  // The part of the slider left of the handle
-  .rc-slider-track {
+}
+// The part of the slider left of the handle
+.rc-slider-track {
     position: absolute;
     left: 0;
     height: 4px;
     border-radius: 6px;
-  }
-  .rc-slider-handle {
+}
+.rc-slider-handle {
     position: absolute;
     margin-left: -7px;
     margin-top: -5px;
@@ -46,11 +46,11 @@
     cursor: grab;
     border-radius: 50%;
     background-color: @mainSliderColor;
-  }
-  .rc-slider-handle:active {
+}
+.rc-slider-handle:active {
     cursor: grabbing;
-  }
-  .rc-slider-dot {
+}
+.rc-slider-dot {
     position: absolute;
     bottom: -2px;
     margin-left: -4px;
@@ -61,11 +61,11 @@
     cursor: pointer;
     border-radius: 50%;
     vertical-align: middle;
-  }
-  .rc-slider-disabled .rc-slider-handle,
-  .rc-slider-disabled .rc-slider-dot {
+}
+.rc-slider-disabled .rc-slider-handle,
+.rc-slider-disabled .rc-slider-dot {
     cursor: not-allowed;
-  }
-  .rc-slider-disabled .rc-slider-dot {
+}
+.rc-slider-disabled .rc-slider-dot {
     cursor: not-allowed !important;
-  }
+}

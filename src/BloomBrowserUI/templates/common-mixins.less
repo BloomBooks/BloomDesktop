@@ -1,31 +1,12 @@
-// Bloom's web palette; import this file whereever we need colors
-@bloom-blue: #1D94A4; // used in decodable reader and various text backgrounds and Paste Image button
-@bloom-lightblue: #B0DEE4; // used in a few highlight and hover situations
-@bloom-yellow : #FEBF00;
-@bloom-gray: #575757; // used for disabled controls and EPub preview controls
-@bloom-lightgray: lightgray;
-@bloom-darkestgray: #363333; // used for borders and backgrounds... this is the darker main panel background
-@bloom-buff: #D2D2D2; // used for various unrelated things like hovered/disabled controls, text on dark background, borders, etc.
-@DisabledButtonColor: @bloom-gray;
-@ControlColor: #96668F;
-@DarkBackgroundColor: #404040; // side panels; toolbox and page thumbs
-@WarningColor: #D65649;
-@OrigamiActiveColor: #E48C84;
-@PreviewCoverColor: #D8ADAD;
-@LeveledReaderViolationColor: orange;
-@DecodableReaderViolationColor: @bloom-blue;
-// This is the color which jquery-ui-1.8.16.custom.css applies for ui-state-active, that is,
-// the color of the background of the selected item in the toolbox accordion.
-// Naming it here allows us to make various things match it.
-@accordion-active-element: #59B4D4;
+/* This is for common styling on pages. It is not for UI */
 
 //NB: why wouldn't you *always* want this? If you're doing something fancy,
 //and placing editables around(like basic book: basic text & picture does),
 //you may have already dealt with spacing.
 //.SeparateMultilingualEditables(@doSeparate) when (@doSeparate) {
-@StandardMultilingualEditBoxSeparation: 10px;//Beware the temptation to express this in "em"s. As the user changes the font size, that could make stuff exceed the bounds of the page
+@StandardMultilingualEditBoxSeparation: 10px; //Beware the temptation to express this in "em"s. As the user changes the font size, that could make stuff exceed the bounds of the page
 
-.Common-SeparateMultilingualEditables(@separation){
+.Common-SeparateMultilingualEditables(@separation) {
     // .bloom-translationGroup {
     //     .bloom-editable {
     //         &.bloom-content2, &.bloom-content3 {
@@ -41,13 +22,13 @@
     // the underlying html, so it does work.
     // Note that in the near future we want to more clearly seperate out the three axes: order, visibility, and
     // role (Vern, National, etc). When we do that, we may have a different way to do this that we like more.
-    .bloom-editable.bloom-visibility-code-on ~ .bloom-editable, .bloom-editable.bloom-visibility-user-on ~ .bloom-editable
-    {
-        margin-top: @separation
+    .bloom-editable.bloom-visibility-code-on ~ .bloom-editable,
+    .bloom-editable.bloom-visibility-user-on ~ .bloom-editable {
+        margin-top: @separation;
     }
 }
 
-@defaultLineHeight: 1.5em;//no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
+@defaultLineHeight: 1.5em; //no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
 
 // N.B. New formats must also work something out in pageThumbnailList.less.
 @Device16x9Portrait-Width: 100mm;
@@ -65,18 +46,18 @@
 @A4Landscape-Height: @A4Portrait-Width;
 @A4Landscape-Width: @A4Portrait-Height;
 
-@A3Portrait-Height: @A4Portrait-Width * 2.0;
+@A3Portrait-Height: @A4Portrait-Width * 2;
 @A3Portrait-Width: @A4Portrait-Height;
 @A3Landscape-Height: @A3Portrait-Width;
 @A3Landscape-Width: @A3Portrait-Height;
 
 @A5Portrait-Height: @A4Portrait-Width;
-@A5Portrait-Width: floor(@A4Portrait-Height / 2.0);
+@A5Portrait-Width: floor(@A4Portrait-Height / 2);
 @A5Landscape-Height: @A5Portrait-Width;
 @A5Landscape-Width: @A5Portrait-Height;
 
 @A6Portrait-Height: @A5Portrait-Width;
-@A6Portrait-Width: floor(@A4Portrait-Width / 2.0);
+@A6Portrait-Width: floor(@A4Portrait-Width / 2);
 @A6Landscape-Height: @A6Portrait-Width;
 @A6Landscape-Width: @A6Portrait-Height;
 
@@ -113,9 +94,4 @@
 @MarginBottom: 15mm;
 @ExtraSpaceForBinding: 10mm;
 @MarginInner: @MarginOuter + @ExtraSpaceForBinding;
-@MarginBalanced: (@MarginOuter + @MarginInner) / 2.0; // for when we want the same left and right margins
-
-@imageContainerZIndex: 1000;
-@textOverPictureZIndex: @imageContainerZIndex + 1;
-@formatButtonZIndex: @textOverPictureZIndex + 1;
-@dragHandleZIndex: @textOverPictureZIndex + 1;
+@MarginBalanced: (@MarginOuter + @MarginInner) / 2; // for when we want the same left and right margins

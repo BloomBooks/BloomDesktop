@@ -1,5 +1,5 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
-@import "../../templates/common-mixins.less";
+@import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
 
 @MediumGray: #c0b9b9;
@@ -173,21 +173,23 @@ div.hoverUp {
 // override button positions when the image is shrunk to make room for an image description
 .bloom-showImageDescriptions {
     .imageButton {
-        &.changeImageButton, &.pasteImageButton {
+        &.changeImageButton,
+        &.pasteImageButton {
             right: 50%;
         }
-        &.changeImageButton, &.editMetadataButton {
+        &.changeImageButton,
+        &.editMetadataButton {
             top: @imageDescriptionTopBorderWidth; // below the ::before border
         }
     }
-    BUTTON.miniButton {
+    button.miniButton {
         right: calc(50% + 60px);
         &.verySmallButtons {
             // normally right:60%, width: 30%.
             // We need the effect of 60% of the picture half, plus the 50%
             // occupied by the text, that is, 30%+50%
             right: 80%;
-            width: 15%
+            width: 15%;
         }
     }
     .bloom-imageContainer {
@@ -210,15 +212,16 @@ div.hoverUp {
     // image description tool is active.
     border-style: solid;
     border-color: @accordion-active-element;
-    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth @imageDescriptionBorderWidth;
+    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth
+        @imageDescriptionBorderWidth;
     background-repeat: no-repeat;
     // This rule produces the border and icon at the top of each image when the image description tool is active
     &::before {
-        content:"";
+        content: "";
         position: relative;
         height: @imageDescriptionTopBorderWidth;
-        width:100%;
-        display:block;
+        width: 100%;
+        display: block;
         background-color: @accordion-active-element;
         background-repeat: no-repeat;
         background-position: center;
