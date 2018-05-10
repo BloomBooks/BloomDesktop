@@ -46,9 +46,9 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
         this.state = { recording: false, countdown: 0, enabled: false };
     }
 
-    videoStream: MediaStream;
-    chunks: Blob[];
-    mediaRecorder: MediaRecorder;
+    private videoStream: MediaStream;
+    private chunks: Blob[];
+    private mediaRecorder: MediaRecorder;
 
     public render() {
         return (
@@ -83,14 +83,14 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
     }
 
     // callback from getUserMedia when it fails.
-    errorCallback(reason) {
+    private errorCallback(reason) {
         // something wrong! Developers note: Bloom and Firefox cannot both use it, so be careful about
         // "open in browser".
         alert("Could not access video camera...is something else using it? Details: " + reason);
     }
 
     // callback from getUserMedia when it succeeds; gives us a stream we can monitor and record from.
-    startMonitoring(stream: MediaStream) {
+    private startMonitoring(stream: MediaStream) {
         this.videoStream = stream;
         const videoMonitor = document.getElementById("videoMonitor") as HTMLVideoElement;
         videoMonitor.srcObject = stream;
@@ -98,7 +98,7 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
 
     // Called when the record button is clicked...depending on the current state it either starts
     // or ends the recording.
-    toggleRecording() {
+    private toggleRecording() {
         if (!this.videoStream) {
             return;
         }
@@ -153,26 +153,26 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
 }
 
 export class VideoTool implements ITool {
-    reactControls: VideoToolControls;
-    makeRootElement(): HTMLDivElement {
+    private reactControls: VideoToolControls;
+    public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "videoBody");
         this.reactControls = VideoToolControls.setup(root);
         return root as HTMLDivElement;
     }
-    isAlwaysEnabled(): boolean {
+    public isAlwaysEnabled(): boolean {
         return false;
     }
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();
         result.resolve();
         return result;
     }
-    showTool() {
+    public showTool() {
         this.updateMarkup();
     }
-    hideTool() {
+    public hideTool() {
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -185,12 +185,12 @@ export class VideoTool implements ITool {
         this.reactControls.turnOffVideo();
     }
 
-    id(): string {
+    public id(): string {
         return "video";
     }
 
     // This function is saved in a variable so we can remove the same listener we added.
-    containerClickListener: EventListener = (event: MouseEvent) => {
+    private containerClickListener: EventListener = (event: MouseEvent) => {
         // The reason for the listener: to select the current element
         const currentContainers = ToolBox.getPage().getElementsByClassName("bloom-videoContainer");
         for (var i = 0; i < currentContainers.length; i++) {
@@ -221,13 +221,14 @@ export class VideoTool implements ITool {
         }
     }
     // required for ITool interface
-    hasRestoredSettings: boolean;
+    public hasRestoredSettings: boolean;
     /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
-    configureElements(container: HTMLElement) { }
-    finishToolLocalization(pane: HTMLElement) { }
+    public configureElements(container: HTMLElement) { }
+    public finishToolLocalization(pane: HTMLElement) { }
+    public newPageReady() { }
     /* tslint:enable:no-empty */
 
-    updateMarkup() {
+    public updateMarkup() {
         const page = ToolBox.getPage();
         const containers = page.getElementsByClassName("bloom-videoContainer");
         if (containers.length === 0) {
