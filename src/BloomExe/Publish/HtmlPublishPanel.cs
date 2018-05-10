@@ -5,13 +5,14 @@ using SIL.PlatformUtilities;
 namespace Bloom.Publish
 {
 	/// <summary>
-	/// This class implements a panel that appears in the Publish tab, for which the UI is an html component.
+	/// This configurable class provides a C# wrapper for several of the publish option 
+	/// panels that appear in the Publish tab, for which the UI is an html component
 	/// </summary>
 	public partial class HtmlPublishPanel : UserControl
 	{
 		private Browser _browser;
 
-		public HtmlPublishPanel(NavigationIsolator isolator, string path)
+		public HtmlPublishPanel(NavigationIsolator isolator, string pathToHtmlFile)
 		{
 			InitializeComponent();
 
@@ -21,7 +22,7 @@ namespace Bloom.Publish
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.
 			_browser.BringToFront();
-			_browser.Navigate(path.ToLocalhost() + GetUrlParams(), false);
+			_browser.Navigate(pathToHtmlFile.ToLocalhost() + GetUrlParams(), false);
 
 			VisibleChanged += OnVisibleChanged;
 		}

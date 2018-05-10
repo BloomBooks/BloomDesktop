@@ -3,8 +3,7 @@ import * as ReactDOM from "react-dom";
 import { H1, Div, IUILanguageAwareProps } from "../../react_components/l10n";
 
 interface IComponentState {}
-// This is a screen of controls that gives the user instructions and controls
-// for creating epubs
+// This component shows a device with a live epub inside of it.
 export default class EpubPreview extends React.Component<
     IUILanguageAwareProps,
     IComponentState
