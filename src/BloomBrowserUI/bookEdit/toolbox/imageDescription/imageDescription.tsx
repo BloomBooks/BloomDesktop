@@ -213,8 +213,17 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 // from somewhere else I copied this as a typical default set of classes for a translation group,
                 // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
                 // textOverPicture) which might be nested in image containers.
+                // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
+                // anywhere. Image descriptions will get the book's default font and Bloom's default text size
+                // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
+                // Using a unique name serves to prevent image description from using the possibly very large
+                // text set for the main content (normal-style); this style will inherit the defaults independently.
+                // Including 'edit' in the name of the style is intended to convey that this style is only
+                // intended for use in editing; we will style it otherwise if we actually make it visible
+                // in an epub.
                 const newTg = getPageFrameExports()
-                    .makeElement("<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style'></div>")
+                    .makeElement("<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement"
+                        + " imageDescriptionEdit-style'></div>")
                     .get(0);
                 container.appendChild(newTg);
                 addedTranslationGroup = true;

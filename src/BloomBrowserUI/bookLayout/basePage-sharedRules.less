@@ -50,7 +50,8 @@ body {
         // inside image containers (above), but we want display:flex in Bloom, and display:block
         // in epubs. So that rule is elsewhere.
     }
-    img {
+    // Requiring a direct child helps prevent this from applying to things like the format cog
+    > img {
         width: 50%;
     }
 }

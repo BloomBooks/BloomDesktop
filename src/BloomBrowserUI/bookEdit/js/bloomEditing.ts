@@ -594,14 +594,12 @@ function SetupElements(container) {
 
     var editor = GetEditor();
 
-    $(container).find("div.bloom-editable:visible").each(function () {
-        // If the .bloom-editable or any of its ancestors (including <body>) has the class "bloom-userCannotModifyStyles",
-        // then the controls that allow the user to adjust the styles will not be shown.This does not prevent the user
-        // from doing character styling, e.g. CTRL+b for bold.
-        if ($(this).closest(".bloom-userCannotModifyStyles").length === 0) {
-            $(this).focus(function () {
-                editor.AttachToBox(this);
-            });
+    // Applying this to the body element allows it to work for any bloom-editable that can get
+    // focus, even ones that might not be visible (or might not exist yet) at the time we run this.
+    $(document.body).on("focusin", (e) => {
+        var editBox = $(e.target).closest(".bloom-editable");
+        if (editBox.length && editBox.closest(".bloom-userCannotModifyStyles").length === 0) {
+            editor.AttachToBox(editBox.get(0));
         }
     });
 
