@@ -2,16 +2,16 @@
 using System.Windows.Forms;
 using SIL.PlatformUtilities;
 
-namespace Bloom.Publish.Epub2
+namespace Bloom.Publish
 {
 	/// <summary>
-	/// This class implements the panel that appears in the Publish tab when the Epub button is selected.
+	/// This class implements a panel that appears in the Publish tab, for which the UI is an html component.
 	/// </summary>
-	public partial class EpubView2 : UserControl
+	public partial class HtmlPublishPanel : UserControl
 	{
 		private Browser _browser;
 
-		public EpubView2(NavigationIsolator isolator)
+		public HtmlPublishPanel(NavigationIsolator isolator, string path)
 		{
 			InitializeComponent();
 
@@ -21,10 +21,14 @@ namespace Bloom.Publish.Epub2
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.
 			_browser.BringToFront();
-			var path = BloomFileLocator.GetBrowserFile(false, "publish","epub", "EpubPublishUI.html");
-			_browser.Navigate(path.ToLocalhost(), false);
+			_browser.Navigate(path.ToLocalhost() + GetUrlParams(), false);
 
 			VisibleChanged += OnVisibleChanged;
+		}
+
+		private string GetUrlParams()
+		{
+			return $"?isLinux={Platform.IsLinux}";
 		}
 
 		private void OnVisibleChanged(object sender, EventArgs eventArgs)
@@ -40,5 +44,6 @@ namespace Bloom.Publish.Epub2
 			// This is important so the react stuff can do its cleanup
 			_browser.WebBrowser.Navigate("about:blank");
 		}
+
 	}
 }

@@ -15,7 +15,7 @@ namespace Bloom.Publish.BloomLibrary
 	/// <summary>
 	/// This class replaces the AdobeReaderControl in the PublishView when the Upload To BloomLibrary.org option is selected.
 	/// </summary>
-	public partial class BloomLibraryPublishControl : UserControl
+	public partial class BloomLibraryUploadControl : UserControl
 	{
 		private readonly PublishView _parentView;
 		private readonly LoginDialog _loginDialog;
@@ -31,7 +31,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		private readonly string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
-		public BloomLibraryPublishControl(PublishView parentView, BloomLibraryPublishModel model, LoginDialog dialog)
+		public BloomLibraryUploadControl(PublishView parentView, BloomLibraryPublishModel model, LoginDialog dialog)
 		{
 			_model = model;
 			_parentView = parentView;

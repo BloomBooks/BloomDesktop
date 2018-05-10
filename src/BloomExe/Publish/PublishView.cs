@@ -18,7 +18,6 @@ using System.Drawing;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
-using Bloom.Publish.Epub2;
 using Bloom.Publish.PDF;
 
 namespace Bloom.Publish
@@ -28,15 +27,15 @@ namespace Bloom.Publish
 		public readonly PublishModel _model;
 		private readonly ComposablePartCatalog _extensionCatalog;
 		private bool _activated;
-		private BloomLibraryPublishControl _publishControl;
+		private BloomLibraryUploadControl _uploadControl;
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
 		private EpubView _epubPreviewControl;
-		private EpubView2 _epubControl;
-		private AndroidView _androidControl;
+		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
 		private PublishToAndroidApi _publishApi;
+
 
 		public delegate PublishView Factory();//autofac uses this
 
@@ -133,7 +132,7 @@ namespace Bloom.Publish
 				_makePdfBackgroundWorker.CancelAsync();
 			// This allows various cleanup of controls which we won't use again, since we
 			// always switch to this state when we reactivate the view.
-			// In particular, it is part of the solution to BL-4901 that the AndroidView,
+			// In particular, it is part of the solution to BL-4901 that the HtmlPublishPanel,
 			// if it is active, is removed (hence deactivated) and disposed.
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
 			// This is only supposed to be active in one mode of PublishView.
@@ -410,39 +409,27 @@ namespace Bloom.Publish
 			// This is only supposed to be active in one mode of PublishView.
 			Browser.SuppressJavaScriptErrors = false;
 
-			if (displayMode != PublishModel.DisplayModes.Upload && _publishControl != null)
+			if (displayMode != PublishModel.DisplayModes.Upload && _uploadControl != null)
 			{
-				Controls.Remove(_publishControl);
-				_publishControl = null;
+				Controls.Remove(_uploadControl);
+				_uploadControl = null;
 			}
 			if (displayMode != PublishModel.DisplayModes.EPUB && _epubPreviewControl != null && Controls.Contains(_epubPreviewControl))
 			{
 				Controls.Remove(_epubPreviewControl);
 			}
-			if(displayMode != PublishModel.DisplayModes.Android && _androidControl != null && Controls.Contains(_androidControl))
+			if(displayMode != PublishModel.DisplayModes.Android || displayMode != PublishModel.DisplayModes.EPUB2 && _htmlControl != null && Controls.Contains(_htmlControl))
 			{
-				Controls.Remove(_androidControl);
+				Controls.Remove(_htmlControl);
 
 				// disposal of the browser is good but it hides a multitude of sins that we'd rather catch and fix during development. E.g. BL-4901
 				if(!ApplicationUpdateSupport.IsDevOrAlpha)
 				{
-					_androidControl.Dispose();
-					_androidControl = null;
+					_htmlControl.Dispose();
+					_htmlControl = null;
 				}
 			}
-			if (displayMode != PublishModel.DisplayModes.EPUB2 && _epubControl != null && Controls.Contains(_epubControl))
-			{
-				Controls.Remove(_epubControl);
-
-				// disposal of the browser is good but it hides a multitude of sins that we'd rather catch and fix during development. E.g. BL-4901
-				if (!ApplicationUpdateSupport.IsDevOrAlpha)
-				{
-					_epubControl.Dispose();
-					_epubControl = null;
-				}
-			}
-			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
-				_pdfViewer.Visible = true;
+				
 			switch (displayMode)
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
@@ -468,6 +455,7 @@ namespace Bloom.Publish
 						_saveButton.Enabled = true;
 						_printButton.Enabled = _pdfViewer.ShowPdf(_model.PdfFilePath);
 					}
+					_pdfViewer.Visible = true;
 					break;
 				case PublishModel.DisplayModes.Printing:
 					_simpleAllPagesRadio.Enabled = false;
@@ -477,6 +465,7 @@ namespace Bloom.Publish
 					_workingIndicator.Cursor = Cursors.WaitCursor;
 					Cursor = Cursors.WaitCursor;
 					_workingIndicator.Visible = true;
+					_pdfViewer.Visible = true;
 					break;
 				case PublishModel.DisplayModes.ResumeAfterPrint:
 					_simpleAllPagesRadio.Enabled = true;
@@ -485,6 +474,7 @@ namespace Bloom.Publish
 					Cursor = Cursors.Default;
 					_saveButton.Enabled = true;
 					_printButton.Enabled = true;
+					_pdfViewer.Visible = true;
 					break;
 				case PublishModel.DisplayModes.Upload:
 				{
@@ -494,7 +484,7 @@ namespace Bloom.Publish
 					_pdfViewer.Visible = false;
 					Cursor = Cursors.Default;
 
-					if (_publishControl == null)
+					if (_uploadControl == null)
 					{
 						SetupPublishControl();
 					}
@@ -528,49 +518,33 @@ namespace Bloom.Publish
 					break;
 				}
 				case PublishModel.DisplayModes.Android:
-				{
-					Logger.WriteEvent("Entering Publish Android Screen");
-					_workingIndicator.Visible = false;
-					_printButton.Enabled = false;
-					_pdfViewer.Visible = false;
-					Cursor = Cursors.WaitCursor;
-					_androidControl = new AndroidView(_isolator);
-					_androidControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
-						_pdfViewer.Width, _pdfViewer.Height);
-					_androidControl.Dock = _pdfViewer.Dock;
-					_androidControl.Anchor = _pdfViewer.Anchor;
-					var saveBackGround = _androidControl.BackColor; // changed to match parent during next statement
-					Controls.Add(_androidControl);
-					_androidControl.BackColor = saveBackGround; // keep own color.
-																// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
-					_androidControl.BringToFront();
-					Cursor = Cursors.Default;
-
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "android", "androidPublishUI.html"));
 					break;
-				}
 				case PublishModel.DisplayModes.EPUB2:
-				{
-					Logger.WriteEvent("Entering Publish EPUB2 Screen");
-					_workingIndicator.Visible = false;
-					_printButton.Enabled = false;
-					_pdfViewer.Visible = false;
-					Cursor = Cursors.WaitCursor;
-					_epubControl = new EpubView2(_isolator);
-					_epubControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
-						_pdfViewer.Width, _pdfViewer.Height);
-					_epubControl.Dock = _pdfViewer.Dock;
-					_epubControl.Anchor = _pdfViewer.Anchor;
-					var saveBackGround = _epubControl.BackColor; // changed to match parent during next statement
-					Controls.Add(_epubControl);
-					_epubControl.BackColor = saveBackGround; // keep own color.
-															 // Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
-					_epubControl.BringToFront();
-					Cursor = Cursors.Default;
-
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "epub", "EpubPublishUI.html"));
 					break;
-				}
 			}
 			UpdateSaveButton();
+		}
+
+		private void ShowHtmlPanel(string pathToHtml)
+		{
+			Logger.WriteEvent("Entering Publish Screen: "+ pathToHtml);
+			_workingIndicator.Visible = false;
+			_printButton.Enabled = false;
+			_pdfViewer.Visible = false;
+			Cursor = Cursors.WaitCursor;
+			_htmlControl = new HtmlPublishPanel(_isolator, pathToHtml);
+			_htmlControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+				_pdfViewer.Width, _pdfViewer.Height);
+			_htmlControl.Dock = _pdfViewer.Dock;
+			_htmlControl.Anchor = _pdfViewer.Anchor;
+			var saveBackGround = _htmlControl.BackColor; // changed to match parent during next statement
+			Controls.Add(_htmlControl);
+			_htmlControl.BackColor = saveBackGround; // keep own color.
+			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+			_htmlControl.BringToFront();
+			Cursor = Cursors.Default;
 		}
 
 		private void UpdateSaveButton()
@@ -583,23 +557,23 @@ namespace Bloom.Publish
 
 		private void SetupPublishControl()
 		{
-			if (_publishControl != null)
+			if (_uploadControl != null)
 			{
 				//we currently rebuild it to update contents, as currently the constructor is where setup logic happens (we could change that)
-				Controls.Remove(_publishControl); ;
+				Controls.Remove(_uploadControl); ;
 			}
 
 			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection);
-			_publishControl = new BloomLibraryPublishControl(this, libaryPublishModel, _loginDialog);
-			_publishControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _loginDialog);
+			_uploadControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 				_pdfViewer.Width, _pdfViewer.Height);
-			_publishControl.Dock = _pdfViewer.Dock;
-			_publishControl.Anchor = System.Windows.Forms.AnchorStyles.Left|System.Windows.Forms.AnchorStyles.Top|System.Windows.Forms.AnchorStyles.Right|System.Windows.Forms.AnchorStyles.Bottom;
-			var saveBackColor = _publishControl.BackColor;
-			Controls.Add(_publishControl); // somehow this changes the backcolor
-			_publishControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
+			_uploadControl.Dock = _pdfViewer.Dock;
+			_uploadControl.Anchor = System.Windows.Forms.AnchorStyles.Left|System.Windows.Forms.AnchorStyles.Top|System.Windows.Forms.AnchorStyles.Right|System.Windows.Forms.AnchorStyles.Bottom;
+			var saveBackColor = _uploadControl.BackColor;
+			Controls.Add(_uploadControl); // somehow this changes the backcolor
+			_uploadControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
 			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
-			_publishControl.BringToFront();
+			_uploadControl.BringToFront();
 		}
 
 		private void OnPublishRadioChanged(object sender, EventArgs e)

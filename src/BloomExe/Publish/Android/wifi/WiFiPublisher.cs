@@ -89,7 +89,7 @@ namespace Bloom.Publish.Android.wifi
 				BookVersion = Book.Book.MakeVersionCode(File.ReadAllText(pathHtmlFile), pathHtmlFile)
 			};
 
-			AndroidView.CheckBookLayout(book, _progress);
+			PublishToAndroidApi.CheckBookLayout(book, _progress);
 			_wifiAdvertiser.Start();
 
 			_progress.Message(id: "WifiInstructions1",

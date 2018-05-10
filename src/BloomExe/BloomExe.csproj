@@ -297,12 +297,6 @@
     <Compile Include="Collection\BrandingProject.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
     <Compile Include="Edit\PageControlsApi.cs" />
-    <Compile Include="Publish\Epub2\EpubView2.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\Epub2\EpubView2.Designer.cs">
-      <DependentUpon>EpubView2.cs</DependentUpon>
-    </Compile>
     <Compile Include="Publish\Android\usb\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
@@ -334,11 +328,11 @@
     <Compile Include="Publish\BloomLibrary\BloomLibraryPublishModel.cs" />
     <Compile Include="Publish\Epub\ElectronicPublishView.cs" />
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
-    <Compile Include="Publish\Android\AndroidView.cs">
+    <Compile Include="Publish\HtmlPublishPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\Android\AndroidView.Designer.cs">
-      <DependentUpon>AndroidView.cs</DependentUpon>
+    <Compile Include="Publish\HtmlPublishPanel.Designer.cs">
+      <DependentUpon>HtmlPublishPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
@@ -471,11 +465,11 @@
     <Compile Include="Publish\PDF\AdobeReaderControl.Designer.cs">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\BloomLibrary\BloomLibraryPublishControl.cs">
+    <Compile Include="Publish\BloomLibrary\BloomLibraryUploadControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\BloomLibrary\BloomLibraryPublishControl.Designer.cs">
-      <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
+    <Compile Include="Publish\BloomLibrary\BloomLibraryUploadControl.Designer.cs">
+      <DependentUpon>BloomLibraryUploadControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\BulkUploadProgressDlg.cs">
       <SubType>Form</SubType>
@@ -831,20 +825,17 @@
     <EmbeddedResource Include="MiscUI\TroubleShooterDialog.resx">
       <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\Epub2\EpubView2.resx">
-      <DependentUpon>EpubView2.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Publish\PDF\AdobeReaderControl.resx">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\BloomLibrary\BloomLibraryPublishControl.resx">
-      <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
+    <EmbeddedResource Include="Publish\BloomLibrary\BloomLibraryUploadControl.resx">
+      <DependentUpon>BloomLibraryUploadControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\Android\AndroidView.resx">
-      <DependentUpon>AndroidView.cs</DependentUpon>
+    <EmbeddedResource Include="Publish\HtmlPublishPanel.resx">
+      <DependentUpon>HtmlPublishPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\Epub\EpubView.resx">
       <DependentUpon>EpubView.cs</DependentUpon>

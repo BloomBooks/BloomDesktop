@@ -2,7 +2,7 @@
 
 namespace Bloom.Publish.BloomLibrary
 {
-	partial class BloomLibraryPublishControl
+	partial class BloomLibraryUploadControl
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -220,7 +220,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._titleLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._titleLabel, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._titleLabel, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._titleLabel, "PublishTab.Upload.BloomLibraryPublishControl._titleLabel");
+			this._L10NSharpExtender.SetLocalizingId(this._titleLabel, "PublishTab.Upload.BloomLibraryUploadControl._titleLabel");
 			this._titleLabel.Location = new System.Drawing.Point(3, 89);
 			this._titleLabel.Name = "_titleLabel";
 			this._titleLabel.Size = new System.Drawing.Size(27, 13);
@@ -235,7 +235,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._copyrightLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._copyrightLabel, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._copyrightLabel, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._copyrightLabel, "PublishTab.Upload.BloomLibraryPublishControl.label9");
+			this._L10NSharpExtender.SetLocalizingId(this._copyrightLabel, "PublishTab.Upload.BloomLibraryUploadControl.label9");
 			this._copyrightLabel.Location = new System.Drawing.Point(3, 182);
 			this._copyrightLabel.Name = "_copyrightLabel";
 			this._copyrightLabel.Size = new System.Drawing.Size(604, 15);
@@ -352,7 +352,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._licenseSuggestion, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._licenseSuggestion, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._licenseSuggestion, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._licenseSuggestion, "PublishTab.Upload.BloomLibraryPublishControl._licenseSuggestion");
+			this._L10NSharpExtender.SetLocalizingId(this._licenseSuggestion, "PublishTab.Upload.BloomLibraryUploadControl._licenseSuggestion");
 			this._licenseSuggestion.Location = new System.Drawing.Point(3, 276);
 			this._licenseSuggestion.Name = "_licenseSuggestion";
 			this._licenseSuggestion.Size = new System.Drawing.Size(604, 30);
@@ -383,7 +383,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._licenseNotesLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._licenseNotesLabel, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._licenseNotesLabel, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._licenseNotesLabel, "PublishTab.Upload.BloomLibraryPublishControl._licenseSuggestion");
+			this._L10NSharpExtender.SetLocalizingId(this._licenseNotesLabel, "PublishTab.Upload.BloomLibraryUploadControl._licenseSuggestion");
 			this._licenseNotesLabel.Location = new System.Drawing.Point(3, 246);
 			this._licenseNotesLabel.Name = "_licenseNotesLabel";
 			this._licenseNotesLabel.Size = new System.Drawing.Size(604, 30);
@@ -449,7 +449,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._progressBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._progressBox, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._progressBox, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._progressBox, "PublishTab.Upload.BloomLibraryPublishControl._progressBox");
+			this._L10NSharpExtender.SetLocalizingId(this._progressBox, "PublishTab.Upload.BloomLibraryUploadControl._progressBox");
 			this._progressBox.Location = new System.Drawing.Point(3, 497);
 			this._progressBox.Name = "_progressBox";
 			this._progressBox.ProgressIndicator = null;
@@ -468,7 +468,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._userId, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._userId, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._userId, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._userId, "PublishTab.Upload.BloomLibraryPublishControl._userId");
+			this._L10NSharpExtender.SetLocalizingId(this._userId, "PublishTab.Upload.BloomLibraryUploadControl._userId");
 			this._userId.Location = new System.Drawing.Point(439, 0);
 			this._userId.Name = "_userId";
 			this._userId.Size = new System.Drawing.Size(26, 13);
@@ -636,7 +636,7 @@ namespace Bloom.Publish.BloomLibrary
 			this.panel4.Size = new System.Drawing.Size(604, 18);
 			this.panel4.TabIndex = 29;
 			// 
-			// BloomLibraryPublishControl
+			// BloomLibraryUploadControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -645,8 +645,8 @@ namespace Bloom.Publish.BloomLibrary
 			this.ForeColor = System.Drawing.SystemColors.ControlText;
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
-			this._L10NSharpExtender.SetLocalizingId(this, "PublishTab.Upload.BloomLibraryPublishControl.BloomLibraryPublishControl");
-			this.Name = "BloomLibraryPublishControl";
+			this._L10NSharpExtender.SetLocalizingId(this, "PublishTab.Upload.BloomLibraryUploadControl.BloomLibraryUploadControl");
+			this.Name = "BloomLibraryUploadControl";
 			this.Size = new System.Drawing.Size(694, 585);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.tableLayoutPanel1.ResumeLayout(false);
