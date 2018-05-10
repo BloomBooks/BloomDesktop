@@ -123,12 +123,12 @@ mixin factoryStandard-outsideFrontCover
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
-	+page-cover("Credits Page").credits(data-export='front-matter-credits')&attributes(attributes)#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
+	+page-cover("Credits Page").credits(data-export='front-matter-credits', data-xmatter-page='credits')&attributes(attributes)#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
 		+credits-contents
 
 mixin factoryStandard-credits-interiorPage
 	// CREDITS PAGE
-	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits')&attributes(attributes)#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')&attributes(attributes)#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
 		+credits-contents
 
 mixin block-licenseAndCopyright
@@ -157,16 +157,16 @@ mixin credits-contents(includeIsbn = true)
 		+field-credits-branding
 
 mixin factoryStandard-titlePage
-	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+title-page-contents
 
 mixin standard-titlePage-inside-front-cover
-	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#aacd48aa-aaab-4a07-afd4-6a24d03983aa
+	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#aacd48aa-aaab-4a07-afd4-6a24d03983aa
 		+title-page-contents
 
 mixin standard-creditsPage-back-cover
 	//re data-export: if we export this, we still want to export it as front matter
-	+page-xmatter('Inside Back Cover').cover.coverColor.credits.bloom-backMatter(data-export='front-matter-credits-page')&attributes(attributes)#bbcd48aa-bbab-4a07-afd4-6a24d03983bb
+	+page-xmatter('Inside Back Cover').cover.coverColor.credits.bloom-backMatter(data-export='front-matter-credits-page', data-xmatter-page='credits')&attributes(attributes)#bbcd48aa-bbab-4a07-afd4-6a24d03983bb
 		+credits-contents
 
 mixin title-page-contents
@@ -192,19 +192,19 @@ mixin title-page-contents
 	+field-title-page-branding
 
 mixin standard-blankInsideFrontCover
-	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
+	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover', data-xmatter-page='insideFrontCover')#BA00DE13-734C-4036-9901-7040275B9000
 		+field-mono-meta("N1","insideFontCover").Inside-Front-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.
 
 mixin factoryStandard-insideBackCover
 	// Inside Back Cover
-	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')&attributes(attributes)#502BE62F-A4D0-4225-A598-1A203FA73239
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover', data-xmatter-page='insideBackCover')&attributes(attributes)#502BE62F-A4D0-4225-A598-1A203FA73239
 		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
-	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
