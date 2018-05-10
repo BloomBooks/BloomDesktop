@@ -211,9 +211,13 @@ function AddEditKeyHandlers(container) {
     // so that it can be caught even when the focus isn't on the browser
 }
 
-// Add little language tags
+// Add little language tags. (At one point we limited this to visible .bloom-editable divs,
+// probably as an optimzation since there can be other-language divs present but hidden.
+// But there may be yet others that are not visible when we run this but which soon will be,
+// such as image descriptions. We don't seem to need the optimization, so let's just do
+// them all.)
 function AddLanguageTags(container) {
-    $(container).find(".bloom-editable:visible[contentEditable=true]").each(function () {
+    $(container).find(".bloom-editable[contentEditable=true]").each(function () {
         var $this = $(this);
 
         // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
