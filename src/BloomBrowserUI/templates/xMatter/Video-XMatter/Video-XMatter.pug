@@ -28,20 +28,20 @@ html
 
 
 	// Credits at the end
-	+page-xmatter("Credits Page 1").bloom-backMatter.credits1#a4bd3950-26b9-437b-822f-4c3cb46d060c
+	+page-xmatter("Credits Page 1").bloom-backMatter.credits1#a4bd3950-26b9-437b-822f-4c3cb46d060c(data-xmatter-page='credits1')
 		+block-licenseAndCopyright#versoLicenseAndCopyright
 		+field-acknowledgments-originalVersion
 		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
 		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
 		+field-acknowledgments-localizedVersion
 
-	+page-xmatter('Credits Page 2').bloom-backMatter.credits2#786140ba-981a-44d4-a0cf-510f7367aff3
+	+page-xmatter('Credits Page 2').bloom-backMatter.credits2#786140ba-981a-44d4-a0cf-510f7367aff3(data-xmatter-page='credits2')
 		+field-prototypeDeclaredExplicity("N1")#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Original-Contributors-On-Title-Page-style(data-book='originalContributions')
 		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
 			+editable(kLanguageForPrototypeOnly).funding.Funding-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
-	+page-xmatter('The End').bloom-backMatter.theEndPage#aaa140ba-981a-44d4-a0cf-510f7367aaaa
+	+page-xmatter('The End').bloom-backMatter.theEndPage#aaa140ba-981a-44d4-a0cf-510f7367aaaa(data-xmatter-page='theEndPage')
 			+editable('en').theEnd(data-hint='Something to tell the reader/viewer that this is the end.')
 				p The End
