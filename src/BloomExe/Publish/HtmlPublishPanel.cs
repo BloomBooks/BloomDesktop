@@ -11,7 +11,7 @@ namespace Bloom.Publish
 	{
 		private Browser _browser;
 
-		public HtmlPublishPanel(NavigationIsolator isolator, string path)
+		public HtmlPublishPanel(NavigationIsolator isolator, string pathToHtmlFile)
 		{
 			InitializeComponent();
 
@@ -21,7 +21,7 @@ namespace Bloom.Publish
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.
 			_browser.BringToFront();
-			_browser.Navigate(path.ToLocalhost() + GetUrlParams(), false);
+			_browser.Navigate(pathToHtmlFile.ToLocalhost() + GetUrlParams(), false);
 
 			VisibleChanged += OnVisibleChanged;
 		}
