@@ -41,7 +41,8 @@ namespace Bloom.Publish
 			EPUB,
 			Printing,
 			ResumeAfterPrint,
-			Android
+			Android,
+			EPUB2
 		}
 
 		public enum BookletPortions
@@ -94,6 +95,7 @@ namespace Bloom.Publish
 
 		// True when showing an ePUB preview.
 		public bool EpubMode { get; set; }
+		public bool Epub2Mode;
 
 		public bool PdfGenerationSucceeded { get; set; }
 

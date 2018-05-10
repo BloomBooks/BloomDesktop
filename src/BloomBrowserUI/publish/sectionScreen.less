@@ -38,9 +38,12 @@ body {
         // the react root
         height: 100%;
     }
+    @verticalFudgeHack: 50px;
     .sections {
         margin-top: 1em;
-        height: calc(100% - (@header-height + @screen-padding)); // enhance:
+        height: calc(
+            100% - (@verticalFudgeHack + @header-height + @screen-padding)
+        ); // enhance: is there a way to just fill to bottom?
         display: flex;
         flex-direction: row;
         .column {

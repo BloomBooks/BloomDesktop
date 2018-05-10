@@ -300,7 +300,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private void _showTermsOfUse_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			Process.Start(BloomLibraryPublishControl.BloomLibraryUrlPrefix + "/terms");
+			Process.Start(BloomLibraryUploadControl.BloomLibraryUrlPrefix + "/terms");
 		}
 	}
 }

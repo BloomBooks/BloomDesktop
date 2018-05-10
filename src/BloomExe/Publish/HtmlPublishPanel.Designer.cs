@@ -1,6 +1,6 @@
-﻿namespace Bloom.Publish.Android
+﻿namespace Bloom.Publish
 {
-	partial class AndroidView
+	partial class HtmlPublishPanel
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -30,11 +30,11 @@
 		{
 			this.SuspendLayout();
 			// 
-			// AndroidView
+			// HtmlPublishPanel
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Name = "AndroidView";
+			this.Name = "HtmlPublishPanel";
 			this.Size = new System.Drawing.Size(448, 214);
 			this.ResumeLayout(false);
 
