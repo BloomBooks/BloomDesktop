@@ -33,8 +33,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // audio file name (relative to the audio folder) and the volume (a fraction
     // of full volume).
     private static musicAttrName = "data-backgroundaudio";
-    private static musicVolumeAttrName = MusicToolControls.musicAttrName +
-    "volume";
+    private static musicVolumeAttrName = MusicToolControls.musicAttrName + "volume";
     private static kDefaultVolumeFraction = 0.5;
     private static narrationPlayer: AudioRecording;
     private addedListenerToPlayer: boolean;
@@ -53,6 +52,10 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         this.updateBasedOnContentsOfPage();
     }
 
+    public newPageReady() {
+        // getting ready for ITool update
+    }
+
     public updateMarkup() {
         // This isn't exactly updating the markup, but it needs to happen when we switch pages,
         // just like updating markup. Using this hook does mean it will (unnecessarily) happen
@@ -60,6 +63,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         // to be editing the book and configuring background music at the same time, so I'm not
         // too worried. If it becomes a performance problem, we could enhance ITool with a
         // function that is called just when the page switches.
+        // Now that we have a new page hook we don't need updateBasedOnContentsOfPage() here.
+        // When 4.1 is merged to 4.2, we can move this up to newPageReady() and delete a bunch of comments.
         this.updateBasedOnContentsOfPage();
     }
     public getStateFromHtmlOfPage(): IMusicState {

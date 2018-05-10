@@ -253,6 +253,9 @@ export class MotionTool implements ITool {
         }
         this.setupResizeObserver();
     }
+    public newPageReady() {
+        // getting ready for ITool update
+    }
     public showTool() {
         this.updateMarkup();
     }
