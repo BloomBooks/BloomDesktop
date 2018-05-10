@@ -193,7 +193,8 @@ div.hoverUp {
         }
     }
     .bloom-imageContainer {
-        img {
+        // Requiring a direct child helps prevent this from applying to things like the format cog
+        > img {
             height: calc(100% - @imageDescriptionTopBorderWidth);
         }
         .bloom-imageDescription {
