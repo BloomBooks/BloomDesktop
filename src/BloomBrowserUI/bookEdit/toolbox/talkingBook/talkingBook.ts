@@ -26,8 +26,14 @@ export default class TalkingBookModel implements ITabModel {
         }
     }
 
+    // Called whenever the user edits text.
     updateMarkup() {
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
+    }
+
+    // Called when a new page is loaded.
+    newPageReady() {
+        AudioRecorder.theOneAudioRecorder.addAudioLevelListener(); // keeps the peak audio level monitor functioning.
     }
 
     name() { return "talkingBook"; }
