@@ -31,6 +31,7 @@ namespace Bloom.Publish.Android.file
 					dlg.InitialDirectory = Settings.Default.BloomDeviceFileExportFolder;
 					//(otherwise leave to default save location)
 				}
+				dlg.OverwritePrompt = true;
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(dlg.FileName);
