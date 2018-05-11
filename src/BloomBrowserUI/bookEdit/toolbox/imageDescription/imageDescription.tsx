@@ -171,6 +171,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     public hideTool() {
         ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
     }
+    public newPageReady() {
+        // do nothing?
+    }
 
     public id(): string {
         return "imageDescription";
@@ -188,6 +191,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // Most if not all of this doesn't need doing every time text is edited on the page.
     // But it's the only way currently to get it called at some critical moments like
     // when we switch pages or add a new picture with origami.
+    // After merging in the ITool change from 4.1, this method contents should be swapped with newPageReady().
     public updateMarkup() {
         this.reactControls.checkForChangePage();
         var page = ToolBox.getPage();
