@@ -41,6 +41,7 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
         for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
             const index = i; // in case 'i' changing affects earlier checkboxes
             checkBoxes.push(<Checkbox l10nKey={"EditTab.Toolbox.ImageDescriptionTool." + ImageDescriptionToolControls.i18ids[i]}
+                className="imageDescriptionCheck"
                 name=""
                 checked={this.state.checkBoxes[index]}
                 onCheckChanged={checked => this.onCheckChanged(checked, index)}
@@ -56,7 +57,7 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
         return (
             <div className={"imageDescriptionTool" + (this.state.enabled ? "" : " disabled")}>
                 <div className="imgDescLabelBlock">
-                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">Learn to make effective image descriptions</Label>
+                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">Learn to make effective image descriptions:</Label>
                     <div className="indentPoet">
                         <Link id="poetDiagram"
                             href="https://poet.diagramcenter.org"
@@ -64,7 +65,7 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
                             l10nComment="English text is the actual link. May not need translation?" >poet.diagramcenter.org</Link>
                     </div>
                     <div className="wrapPlayVideo disabled">
-                        <img id="playBloomTrainingVideo" src="/bloom/images/play-light-blue.svg"></img>
+                        <img id="playBloomTrainingVideo" src="/bloom/images/play.svg"></img>
                         <Link id="bloomImageDescritionTraining"
                             className="disabled"
                             href=""

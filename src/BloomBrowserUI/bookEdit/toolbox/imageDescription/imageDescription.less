@@ -1,19 +1,21 @@
 @import "../../../bloomUI.less";
+@textColor: @bloom-buff;
 
 .ui-accordion
     h3[data-toolId="imageDescriptionTool"]
     span.ui-accordion-header-icon {
     background-image: url("/bloom/images/ImageDescriptionToolIcon.svg") !important;
 }
+.imageDescriptionTool {
+    *, a{color: @textColor;}
+}
 
 .imgDescLabelBlock {
     margin: 20px;
-    color: @bloom-lightblue;
-    // This seems as if it should just be inherited, but we need the extra specificity to
-    // beat some other rules.
-    a {
-        color: @bloom-lightblue;
-    }
+}
+
+.imageDescriptionCheck {
+    margin-left: 20px;
 }
 @playVideoIconWidth: 16px;
 @playVideoIconMargin: 5px;
