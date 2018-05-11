@@ -71,6 +71,7 @@ export default class AudioRecording {
 
     listenerFunction: (MessageEvent) => void;
 
+    // Class method called by exported function of the same name.
     public initializeTalkingBookTool() {
         // I've sometimes observed events like click being handled repeatedly for a single click.
         // Adding thse .off calls seems to help...it's as if something causes this show event to happen
@@ -129,6 +130,8 @@ export default class AudioRecording {
             this.playEnded(); //move to the next one
         });
     }
+
+    // Called by TalkingBookModel.showTool() when a different tool is added/chosen.
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
         this.hiddenSourceBubbles = this.getPage().find(
@@ -145,6 +148,11 @@ export default class AudioRecording {
 
         this.changeStateAndSetExpected("record");
 
+        this.addAudioLevelListener();
+    }
+
+    // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
+    public addAudioLevelListener(): void {
         this.listenerFunction = event => {
             var e = JSON.parse(event.data);
             if (e.id == "peakAudioLevel") this.setstaticPeakLevel(e.payload);
@@ -157,6 +165,8 @@ export default class AudioRecording {
         }
     }
 
+    // Called by TalkingBookModel.hideTool(), which is called when changing tools, hiding the toolbox,
+    // or saving (leaving) pages.
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
@@ -215,6 +225,7 @@ export default class AudioRecording {
         this.setCurrentSpan(current, $(next));
         this.changeStateAndSetExpected("record");
     }
+
     private getNextSpan(): HTMLElement {
         var current: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
@@ -573,6 +584,7 @@ export default class AudioRecording {
         return $(page.contentWindow.document.body);
     }
 
+    // Called on initial setup and on toolbox updateMarkup()
     public updateMarkupAndControlsToCurrentText() {
         var editable = this.getRecordableDivs();
         if (editable.length === 0) {
