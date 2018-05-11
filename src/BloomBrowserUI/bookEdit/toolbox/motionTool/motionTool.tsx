@@ -62,10 +62,10 @@ export class MotionTool implements ITool {
 
     // required for ITool interface
     public hasRestoredSettings: boolean; // We need these to implement the interface, but don't need them to do anything.
-    public configureElements(container: HTMLElement) {}
-    public finishToolLocalization(pane: HTMLElement) {}
+    public configureElements(container: HTMLElement) { }
+    public finishToolLocalization(pane: HTMLElement) { }
 
-    public updateMarkup() {
+    public newPageReady() {
         // This isn't exactly updating the markup, but it needs to happen when we switch pages,
         // just like updating markup. Using this hook does mean it will (unnecessarily) happen
         // every time the user pauses typing while this tool is active. I don't much expect people
@@ -253,11 +253,11 @@ export class MotionTool implements ITool {
         }
         this.setupResizeObserver();
     }
-    public newPageReady() {
-        // getting ready for ITool update
+    public updateMarkup() {
+        // nothing to do here.
     }
     public showTool() {
-        this.updateMarkup();
+        this.newPageReady();
     }
     public hideTool() {
         const page = this.getPage();
