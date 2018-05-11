@@ -25,11 +25,12 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
         result.resolve();
         return result;
     }
-    public showTool() {}
-    public hideTool() {}
-    public updateMarkup() {}
-    public configureElements(container: HTMLElement) {}
-    public finishToolLocalization(pane: HTMLElement) {}
+    public showTool() { }
+    public hideTool() { }
+    public updateMarkup() { }
+    public newPageReady() { }
+    public configureElements(container: HTMLElement) { }
+    public finishToolLocalization(pane: HTMLElement) { }
 
     public static getPageFrame(): HTMLIFrameElement {
         return parent.window.document.getElementById(

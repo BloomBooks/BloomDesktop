@@ -35,6 +35,7 @@ export default class TalkingBookTool implements ITool {
         ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
     }
 
+    // Called whenever the user edits text.
     updateMarkup() {
         this.showImageDescriptionsIfAny();
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
@@ -55,6 +56,11 @@ export default class TalkingBookTool implements ITool {
                 }
             }
         }
+    }
+
+    // Called when a new page is loaded.
+    newPageReady() {
+        AudioRecorder.theOneAudioRecorder.addAudioLevelListener(); // keeps the peak audio level monitor functioning.
     }
 
     id() { return "talkingBook"; }
