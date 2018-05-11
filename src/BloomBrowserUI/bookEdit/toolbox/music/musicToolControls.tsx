@@ -53,19 +53,11 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 
     public newPageReady() {
-        // getting ready for ITool update
+        this.updateBasedOnContentsOfPage();
     }
 
     public updateMarkup() {
-        // This isn't exactly updating the markup, but it needs to happen when we switch pages,
-        // just like updating markup. Using this hook does mean it will (unnecessarily) happen
-        // every time the user pauses typing while this tool is active. I don't much expect people
-        // to be editing the book and configuring background music at the same time, so I'm not
-        // too worried. If it becomes a performance problem, we could enhance ITool with a
-        // function that is called just when the page switches.
-        // Now that we have a new page hook we don't need updateBasedOnContentsOfPage() here.
-        // When 4.1 is merged to 4.2, we can move this up to newPageReady() and delete a bunch of comments.
-        this.updateBasedOnContentsOfPage();
+        // nothing to do here.
     }
     public getStateFromHtmlOfPage(): IMusicState {
         let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
