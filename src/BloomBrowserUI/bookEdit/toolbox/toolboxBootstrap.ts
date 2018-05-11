@@ -12,7 +12,7 @@ import { BookSettings } from "./bookSettings/bookSettings";
 import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
 import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
-import { MotionTool } from "./motionTool/motionTool";
+import { MotionTool } from "./motion/motionTool";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 
@@ -52,7 +52,7 @@ export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     getTheOneToolbox().initialize();
 });
 
