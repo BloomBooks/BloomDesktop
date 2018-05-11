@@ -169,7 +169,7 @@ namespace Bloom.Book
 				}
 				else if (reduceImages && ImageFileExtensions.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 				{
-					modifiedContent = GetBytesOfReducedImage(filePath);
+					modifiedContent = GetImageBytesForElectronicPub(filePath);
 					newEntry.Size = modifiedContent.Length;
 				}
 				else if (reduceImages && (bookFile == filePath))
@@ -369,16 +369,23 @@ namespace Bloom.Book
 		private const int kMaxHeight = 600;
 
 		/// <summary>
-		/// For electronic books, we want to minimize the actual size of images since they'll
-		/// be displayed on small screens anyway.  So before zipping up the file, we replace its
-		/// bytes with the bytes of a reduced copy of itself.  If the original image is already
-		/// small enough, we return its bytes directly.
-		/// We also make png images have transparent backgrounds. This is currently only necessary
-		/// for cover pages, but it's an additional complication to detect which those are,
-		/// and doesn't seem likely to cost much extra to do.
+		/// For electronic books, we want to limit the dimensions of images since they'll be displayed
+		/// on small screens anyway.  So rather than merely zipping up an image file, we set its
+		/// dimensions to within our desired limit (currently 600x600px) and generate the bytes in
+		/// the desired format.  If the original image is already small enough, we retain its dimensions.
+		/// We also make png images have transparent backgrounds so that they will work for cover pages.
+		/// Although the code for epubs could detect when an image is from a cover page, it would be
+		/// more difficult for Bloom books (.bloomd) because those just zip up a folder rather than
+		/// work from inside the book's DOM.
 		/// </summary>
-		/// <returns>The bytes of the (possibly) reduced image.</returns>
-		internal static byte[] GetBytesOfReducedImage(string filePath)
+		/// <remarks>
+		/// Note that we have to write png files with 32-bit color even if the orginal file used 1-bit
+		/// 4-bit, or 8-bit grayscale.  So .png files may come out bigger even when the dimensions
+		/// shrink, and likely will when the dimensions stay the same.  This is a limitation of the
+		/// underlying .Net/Windows and Mono/Linux code, not of Bloom itself.
+		/// </remarks>
+		/// <returns>The bytes of the (possibly) adjusted image.</returns>
+		internal static byte[] GetImageBytesForElectronicPub(string filePath)
 		{
 			using (var originalImage = PalasoImage.FromFileRobustly(filePath))
 			{
