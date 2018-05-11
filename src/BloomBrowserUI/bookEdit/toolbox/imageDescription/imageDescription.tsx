@@ -228,7 +228,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 // in an epub.
                 const newTg = getPageFrameExports()
                     .makeElement("<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement"
-                        + " imageDescriptionEdit-style'></div>")
+                        + " ImageDescriptionEdit-style'></div>")
                     .get(0);
                 container.appendChild(newTg);
                 addedTranslationGroup = true;
