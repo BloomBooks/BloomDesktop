@@ -24,9 +24,10 @@ var keypressTimer: any = null;
 export interface ITool {
     beginRestoreSettings(settings: string): JQueryPromise<void>;
     configureElements(container: HTMLElement);
-    showTool();
-    hideTool();
-    updateMarkup();
+    showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
+    hideTool(); // called when changing tools, hiding the toolbox, or saving (leaving) pages.
+    updateMarkup(); // called on every keypress AND after newPageReady
+    newPageReady(); // called when a new page is displayed
     id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
@@ -231,7 +232,10 @@ export function restoreToolboxSettings() {
 
 export function applyToolboxStateToUpdatedPage() {
     if (currentTool != null && toolbox.toolboxIsShowing()) {
-        doWhenPageReady(() => currentTool.updateMarkup());
+        doWhenPageReady(() => {
+            currentTool.newPageReady();
+            currentTool.updateMarkup();
+        });
     }
 }
 
