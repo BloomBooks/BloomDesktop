@@ -491,6 +491,9 @@ namespace Bloom.Edit
 			Analytics.Track("Change Content Languages");
 		}
 
+		// Get current MultilingualContentLanguage settings based on what's been recently checked/unchecked.
+		// N.B. Unless we're calling this from a more general display update we do NOT want to update ContentLanguages
+		// first, as that will change the 'checked' status back to what it was.
 		private void GetMultilingualContentLanguages(out string lang2iso, out string lang3iso)
 		{
 			lang2iso = null;
@@ -554,6 +557,12 @@ namespace Bloom.Edit
 		{
 			if(_currentlyDisplayedBook != CurrentBook)
 			{
+				if (_contentLanguages.Count == 0)
+				{
+					// BL-5973 GetMultilingualContentLanguages() doesn't want to update _contentLanguages
+					// normally, but in this case we do.
+					var dummy = ContentLanguages; // updates _contentLanguages based on CurrentBook and collection settings
+				}
 				// Reset the book's languages in case the user changed the collection's languages.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5444.
 				string lang2iso, lang3iso;
