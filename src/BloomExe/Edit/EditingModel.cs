@@ -478,7 +478,7 @@ namespace Bloom.Edit
 			Logger.WriteEvent("Changing Content Languages");
 			string l2 = null;
 			string l3 = null;
-			GetMultilingualContentLanguages(out l2, out l3);
+			GetMultilingualContentLanguages(out l2, out l3, true);
 
 			//Reload to display these changes
 			SaveNow();
@@ -491,8 +491,14 @@ namespace Bloom.Edit
 			Analytics.Track("Change Content Languages");
 		}
 
-		private void GetMultilingualContentLanguages(out string lang2iso, out string lang3iso)
+		private void GetMultilingualContentLanguages(out string lang2iso, out string lang3iso, bool inContentLgsChanged)
 		{
+			// BL-5973: the fix for BL-5444 caused problems if _contentLanguages was not yet loaded,
+			// but if we're in ContentLanguagesSelectionChanged we don't want to reload _contentLanguages.
+			if (!inContentLgsChanged && _contentLanguages.Count == 0)
+			{
+				var dummy = ContentLanguages; // Causes _contentLanguages to be updated.
+			}
 			lang2iso = null;
 			lang3iso = null;
 			foreach (var language in _contentLanguages)
@@ -557,7 +563,7 @@ namespace Bloom.Edit
 				// Reset the book's languages in case the user changed the collection's languages.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5444.
 				string lang2iso, lang3iso;
-				GetMultilingualContentLanguages(out lang2iso, out lang3iso);
+				GetMultilingualContentLanguages(out lang2iso, out lang3iso, false);
 				CurrentBook.SetMultilingualContentLanguages(lang2iso, lang3iso);
 				CurrentBook.PrepareForEditing();
 			}
