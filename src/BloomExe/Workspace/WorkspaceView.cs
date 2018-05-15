@@ -624,7 +624,7 @@ namespace Bloom.Workspace
 
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start(UrlLookup.LookupUrl(UrlType.LibrarySite));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite));
 		}
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
@@ -638,12 +638,12 @@ namespace Bloom.Workspace
 
 		private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start(UrlLookup.LookupUrl(UrlType.UserSuggestions));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.UserSuggestions));
 		}
 
 		private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start(UrlLookup.LookupUrl(UrlType.Support));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.Support));
 		}
 
 		private void _showLogMenuItem_Click(object sender, EventArgs e)

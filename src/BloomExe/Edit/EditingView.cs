@@ -562,7 +562,7 @@ namespace Bloom.Edit
 						return;
 					}
 
-					Process.Start(anchor.Href);
+					SIL.Program.Process.SafeStart(anchor.Href);
 					ge.Handled = true;
 					return;
 				}

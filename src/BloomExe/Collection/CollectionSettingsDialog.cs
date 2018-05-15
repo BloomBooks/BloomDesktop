@@ -531,7 +531,7 @@ namespace Bloom.Collection
 
 		private void _enterpriseInformationLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			Process.Start("http://bit.ly/2zTQHfM");
+			SIL.Program.Process.SafeStart("http://bit.ly/2zTQHfM");
 		}
 
 		private void _numberStyleCombo_SelectedIndexChanged(object sender, EventArgs e)
