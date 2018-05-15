@@ -6,6 +6,7 @@ import {
     IUILanguageAwareProps,
     Label
 } from "../../../react_components/l10n";
+import { HelpLink } from "../../../react_components/helpLink";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
@@ -1114,6 +1115,12 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                             </Checkbox>
                         </div>
                     </div>
+                </div>
+                <div className="helpLinkWrapper">
+                    <HelpLink
+                        helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm"
+                        l10nKey="Common.Help"
+                    >Help</HelpLink>
                 </div>
                 <audio id="pzMusicPlayer" preload="none" />
             </div>
