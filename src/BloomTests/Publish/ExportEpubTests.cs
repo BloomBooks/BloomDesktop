@@ -1812,14 +1812,14 @@ namespace BloomTests.Publish
 			AudioProcessor._compressorMethod = EpubMakerAdjusted.PretendMakeCompressedAudio;
 		}
 
-		internal override void CopyFile(string srcPath, string dstPath, bool reduceImageIfPossible=false)
+		internal override void CopyFile(string srcPath, string dstPath, bool reduceImageIfPossible=false, bool needsTransparentBackground=false)
 		{
 			if (srcPath.Contains("notareallocation"))
 			{
 				File.WriteAllText(dstPath, "This is a test fake");
 				return;
 			}
-			base.CopyFile(srcPath, dstPath, reduceImageIfPossible);
+			base.CopyFile(srcPath, dstPath, reduceImageIfPossible, needsTransparentBackground);
 		}
 
 		// We can't test real compression because (a) the wave file is fake to begin with

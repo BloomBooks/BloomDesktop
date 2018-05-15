@@ -16,6 +16,7 @@ using BloomTemp;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
+using System.Collections.Generic;
 
 namespace Bloom.Book
 {
@@ -127,7 +128,19 @@ namespace Bloom.Book
 				return;
 			var files = Directory.GetFiles(directoryToCompress);
 			var bookFile = BookStorage.FindBookHtmlInFolder(directoryToCompress);
-
+			XmlDocument dom = null;
+			List<string> coverImageFiles = null;
+			// Tests can result in bookFile being null.
+			if (!String.IsNullOrEmpty(bookFile))
+			{
+				var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
+				dom = XmlHtmlConverter.GetXmlDomFromHtml(originalContent);
+				coverImageFiles = FindCoverImages(dom);
+			}
+			else
+			{
+				coverImageFiles = new List<string>();
+			}
 			foreach (var filePath in files)
 			{
 				if (ExcludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
@@ -169,13 +182,13 @@ namespace Bloom.Book
 				}
 				else if (reduceImages && ImageFileExtensions.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 				{
-					modifiedContent = GetImageBytesForElectronicPub(filePath);
+					// Cover images should be transparent if possible.  Others don't need to be.
+					var isCoverImage = coverImageFiles.Contains(Path.GetFileName(filePath));
+					modifiedContent = GetImageBytesForElectronicPub(filePath, isCoverImage);
 					newEntry.Size = modifiedContent.Length;
 				}
 				else if (reduceImages && (bookFile == filePath))
 				{
-					var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
-					var dom = XmlHtmlConverter.GetXmlDomFromHtml(originalContent);
 					StripImagesWithMissingSrc(dom, bookFile);
 					StripContentEditable(dom);
 					InsertReaderStylesheet(dom);
@@ -233,6 +246,14 @@ namespace Bloom.Book
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
 			}
+		}
+
+		private static List<string> FindCoverImages (XmlDocument xmlDom)
+		{
+			var transparentImageFiles = new List<string>();
+			foreach (var img in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]//img[@src]").Cast<XmlElement>())
+				transparentImageFiles.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+			return transparentImageFiles;
 		}
 
 		private static void MakeExtraEntry(ZipOutputStream zipStream, string name, string content)
@@ -370,23 +391,25 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// For electronic books, we want to limit the dimensions of images since they'll be displayed
-		/// on small screens anyway.  So rather than merely zipping up an image file, we set its
-		/// dimensions to within our desired limit (currently 600x600px) and generate the bytes in
-		/// the desired format.  If the original image is already small enough, we retain its dimensions.
-		/// We also make png images have transparent backgrounds so that they will work for cover pages.
-		/// Although the code for epubs could detect when an image is from a cover page, it would be
-		/// more difficult for Bloom books (.bloomd) because those just zip up a folder rather than
-		/// work from inside the book's DOM.
+		/// on small screens.  More importantly, we want to limit the size of the image file since it
+		/// will often be transmitted over slow network connections.  So rather than merely zipping up
+		/// an image file, we set its dimensions to within our desired limit (currently 600x600px) and
+		/// generate the bytes in the desired format.  If the original image is already small enough, we
+		/// retain its dimensions.  We also make png images have transparent backgrounds if requested so
+		/// that they will work for cover pages.  If transparency is not needed, the original image file
+		/// bytes are returned if that results in a smaller final image file.
 		/// </summary>
 		/// <remarks>
 		/// Note that we have to write png files with 32-bit color even if the orginal file used 1-bit
 		/// 4-bit, or 8-bit grayscale.  So .png files may come out bigger even when the dimensions
-		/// shrink, and likely will when the dimensions stay the same.  This is a limitation of the
-		/// underlying .Net/Windows and Mono/Linux code, not of Bloom itself.
+		/// shrink, and likely will be bigger when the dimensions stay the same.  This might be a
+		/// limitation of the underlying .Net/Windows and Mono/Linux code, or might be needed for
+		/// transparent backgrounds.
 		/// </remarks>
 		/// <returns>The bytes of the (possibly) adjusted image.</returns>
-		internal static byte[] GetImageBytesForElectronicPub(string filePath)
+		internal static byte[] GetImageBytesForElectronicPub(string filePath, bool needsTransparentBackground)
 		{
+			var originalBytes = RobustFile.ReadAllBytes(filePath);
 			using (var originalImage = PalasoImage.FromFileRobustly(filePath))
 			{
 				var image = originalImage.Image;
@@ -442,7 +465,7 @@ namespace Bloom.Book
 								imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
 
 								// In addition to possibly scaling, we want PNG images to have transparent backgrounds.
-								if (!appearsToBeJpeg)
+								if (!appearsToBeJpeg && needsTransparentBackground)
 								{
 									// This specifies that all white or very-near-white pixels (all color components at least 253/255)
 									// will be made transparent.
@@ -471,12 +494,14 @@ namespace Bloom.Book
 							var metadata = SIL.Windows.Forms.ClearShare.Metadata.FromFile(filePath);
 							if (!metadata.IsEmpty)
 								metadata.Write(tempFile.Path);
-							return RobustFile.ReadAllBytes(tempFile.Path);
+							var newBytes = RobustFile.ReadAllBytes(tempFile.Path);
+							if (newBytes.Length < originalBytes.Length || (needsTransparentBackground && !appearsToBeJpeg))
+								return newBytes;
 						}
 					}
 				}
 			}
-			return RobustFile.ReadAllBytes(filePath);
+			return originalBytes;
 		}
 	}
 }
