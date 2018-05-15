@@ -1,26 +1,26 @@
 @import "../../../templates/common-mixins.less";
 @textColor: @bloom-buff; // #0C8597;
 @toolboxBackgroundColor: @DarkBackgroundColor;
+@motionBodyPadding: 15px;
 @buttonColumnWidth: 40px;
+@previewSettingsMargin: 15px;
+@helpLinkMargin: 45px;
 
 .ui-motionBody {
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: @motionBodyPadding;
+    padding-right: @motionBodyPadding;
 
-    .intro {
-        margin-bottom: 2em;
-    }
-    *,
-    a {
+    *, a {
         color: @textColor;
     }
-    background-color: @toolboxBackgroundColor;
 
+    background-color: @toolboxBackgroundColor;
     background-position: center;
 
     .intro {
         margin-bottom: 2em;
     }
+
     .ui-motion-button {
         height: @buttonColumnWidth;
         width: @buttonColumnWidth;
@@ -37,6 +37,7 @@
         // I can't get FF to open with tools anymore, so I can't really investigate
         margin-left: -4px;
     }
+
     .motion-label {
         display: inline-block;
         max-width: 100px;
@@ -59,6 +60,7 @@
     .button-label-wrapper {
         margin-top: 10px;
     }
+
     .button-wrapper {
         display: flex;
         min-width: 60px;
@@ -66,12 +68,16 @@
     }
 
     .previewSettingsWrapper {
-        margin-top: 15px; // move down so that Preview alings with point of the Play triangle
+        margin-top: @previewSettingsMargin; // move down so that Preview aligns with point of the Play triangle
         display: inline-block;
 
         .motion-label {
             margin-bottom: 1em;
         }
+    }
+
+    .helpLinkWrapper {
+        margin-top: @helpLinkMargin; // put some space before the Help link
     }
 }
 
