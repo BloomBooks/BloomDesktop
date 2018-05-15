@@ -885,12 +885,12 @@ export default class StyleEditor {
     }
 
     setupSelectControls(fonts, current, styleName) {
-        this.populateSelect(fonts, current.fontName, "font-select", false, 25);
-        this.populateSelect(this.getPointSizes(), current.ptSize, "size-select", true, 99);
-        this.populateSelect(this.getLineSpaceOptions(), current.lineHeight, "line-height-select", true);
-        this.populateSelect(this.getWordSpaceOptions(), current.wordSpacing, "word-space-select", false);
+        this.populateSelect(fonts, current.fontName, "font-select", true, false, 25);
+        this.populateSelect(this.getPointSizes(), current.ptSize, "size-select", true, true, 99);
+        this.populateSelect(this.getLineSpaceOptions(), current.lineHeight, "line-height-select", true, true);
+        this.populateSelect(this.getWordSpaceOptions(), current.wordSpacing, "word-space-select", false, false);
         this.asyncPopulateSelect("styleSelect", this.styles, this.getStylePromises(this.styles), styleName, "normal");
-        this.populateSelect(this.getParagraphSpaceOptions(), current.paraSpacing, "para-spacing-select", true);
+        this.populateSelect(this.getParagraphSpaceOptions(), current.paraSpacing, "para-spacing-select", true, true);
     }
 
     getButtonIds() {
@@ -1111,7 +1111,7 @@ export default class StyleEditor {
         });
     }
 
-    populateSelect(items: string[], current, id, useNumericSort: boolean, maxlength?: number) {
+    populateSelect(items: string[], current, id, doSort: boolean, useNumericSort: boolean, maxlength?: number) {
         // Rather than selectively call this method for only those select elements which need
         // to be initialized, we call it for all of them. That makes the calling code a little simpler.
 
@@ -1126,10 +1126,14 @@ export default class StyleEditor {
             items.push(current.toString());
         }
         var sortedItems: string[];
-        if (useNumericSort) {
-            sortedItems = items.sort((a: string, b: string) => { return Number(a) - Number(b) });
+        if (doSort) {
+            if (useNumericSort) {
+                sortedItems = items.sort((a: string, b: string) => { return Number(a) - Number(b) });
+            } else {
+                sortedItems = this.stringSort(items);
+            }
         } else {
-            sortedItems = this.stringSort(items);
+            sortedItems = items;
         }
         if (!current) {
             current = items[0];
