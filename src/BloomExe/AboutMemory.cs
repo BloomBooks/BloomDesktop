@@ -62,13 +62,13 @@ namespace Bloom
 		private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			if (!String.IsNullOrEmpty(FirstLinkUrl))
-				Process.Start(FirstLinkUrl);
+				SIL.Program.Process.SafeStart(FirstLinkUrl);
 		}
 
 		private void _linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			if (!String.IsNullOrEmpty(SecondLinkUrl))
-				Process.Start(SecondLinkUrl);
+				SIL.Program.Process.SafeStart(SecondLinkUrl);
 		}
 	}
 }

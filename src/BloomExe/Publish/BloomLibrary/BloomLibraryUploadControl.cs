@@ -163,7 +163,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		void _progressBox_LinkClicked(object sender, LinkClickedEventArgs e)
 		{
-			Process.Start(e.LinkText);
+			SIL.Program.Process.SafeStart(e.LinkText);
 		}
 
 		protected override void OnSizeChanged(EventArgs e)
@@ -261,7 +261,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void _termsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			Process.Start(BloomLibraryUrlPrefix + "/terms");
+			SIL.Program.Process.SafeStart(BloomLibraryUrlPrefix + "/terms");
 		}
 
 		private void _signUpLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -435,7 +435,7 @@ namespace Bloom.Publish.BloomLibrary
 				return;
 			try
 			{
-				Process.Start(new ProcessStartInfo(url));
+				SIL.Program.Process.SafeStart(url);
 			}
 			catch (Exception)
 			{

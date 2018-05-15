@@ -492,7 +492,7 @@ namespace Bloom.Publish
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
 			else
-				Process.Start("xdg-open", '"' + htmlFilePath + '"');
+				SIL.Program.Process.SafeStart("xdg-open", '"' + htmlFilePath + '"');
 		}
 
 		public void RefreshValuesUponActivation()

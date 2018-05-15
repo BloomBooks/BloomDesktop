@@ -84,7 +84,7 @@ namespace Bloom.web
 			{
 				try
 				{
-					Process.Start(browser, "\"file:///" + cleanUrl + queryPart + "\"");
+					SIL.Program.Process.SafeStart(browser, "\"file:///" + cleanUrl + queryPart + "\"");
 					request.ExternalLinkSucceeded();
 					return;
 				}
@@ -95,7 +95,7 @@ namespace Bloom.web
 				}
 			}
 			// If the above failed, either for lack of default browser or exception, try this:
-			Process.Start("\"" + cleanUrl + "\"");
+			SIL.Program.Process.SafeStart("\"" + cleanUrl + "\"");
 
 			request.ExternalLinkSucceeded();
 		}

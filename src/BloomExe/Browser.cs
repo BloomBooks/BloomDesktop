@@ -705,7 +705,7 @@ namespace Bloom
 				if (isWindows)
 					Process.Start("Firefox.exe", '"' + _url + '"');
 				else
-					Process.Start("xdg-open", Uri.EscapeUriString(_url));
+					SIL.Program.Process.SafeStart("xdg-open", Uri.EscapeUriString(_url));
 			}
 			catch (Win32Exception)
 			{
@@ -760,7 +760,7 @@ namespace Bloom
 			if ((!url.StartsWith(Bloom.Api.ServerBase.ServerUrlWithBloomPrefixEndingInSlash)) && (url.StartsWith("http")))
 			{
 				e.Cancel = true;
-				Process.Start(e.Uri.OriginalString); //open in the system browser instead
+				SIL.Program.Process.SafeStart(e.Uri.OriginalString); //open in the system browser instead
 				Debug.WriteLine("Navigating " + e.Uri);
 			}
 			// Check for a simulated file that has been replaced before being displayed.
@@ -1249,7 +1249,7 @@ namespace Bloom
 			Debug.Assert(!InvokeRequired);
 			if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
 			{
-				Process.Start(anchor.Href);
+				SIL.Program.Process.SafeStart(anchor.Href);
 				eventArgs.Handled = true;
 				return;
 			}
