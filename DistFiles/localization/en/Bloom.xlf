@@ -2230,6 +2230,11 @@
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
+        <source xml:lang="en">About Motion Books</source>
+        <note>ID: PublishTab.Android.AboutMotionBooks</note>
+        <note>Help link under Motion Book checkbox</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
@@ -2250,6 +2255,11 @@
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
         <source xml:lang="en">Copy to Clipboard</source>
         <note>ID: PublishTab.Android.CopyToClipboard</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
+        <source xml:lang="en">Here you can send your book to the Bloom Reader Android app.</source>
+        <note>ID: PublishTab.Android.Intro</note>
+        <note>This is displayed at the top of the Android screen.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
@@ -2300,6 +2310,11 @@
         <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
+        <source xml:lang="en">Motion Book</source>
+        <note>ID: PublishTab.Android.MotionBookMode</note>
+        <note>Motion Book checkbox label</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
