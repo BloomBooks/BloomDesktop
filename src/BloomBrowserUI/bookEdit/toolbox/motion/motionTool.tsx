@@ -17,7 +17,7 @@ import AudioRecording from "../talkingBook/audioRecording";
 import { Checkbox } from "../../../react_components/checkbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { MusicToolControls } from "../music/musicToolControls";
-import "../motion/motion.less";
+import "./motion.less";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
