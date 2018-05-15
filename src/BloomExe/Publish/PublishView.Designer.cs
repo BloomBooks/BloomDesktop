@@ -116,7 +116,7 @@ namespace Bloom.Publish
 			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._saveButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._saveButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._saveButton, "PublishView._saveButton");
+			this._L10NSharpExtender.SetLocalizingId(this._saveButton, "PublishTab.SaveButton");
 			this._saveButton.Location = new System.Drawing.Point(139, 0);
 			this._saveButton.Name = "_saveButton";
 			this._saveButton.Size = new System.Drawing.Size(185, 71);

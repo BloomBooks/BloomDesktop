@@ -2897,10 +2897,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
       </trans-unit>
-      <trans-unit id="PublishView._saveButton">
-        <source xml:lang="en">Save stub</source>
-        <note>ID: PublishView._saveButton</note>
-      </trans-unit>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
         <source xml:lang="en">Add Level</source>
         <note>ID: ReaderSetup.AddLevel</note>
