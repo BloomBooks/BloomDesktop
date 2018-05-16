@@ -160,12 +160,12 @@ class AndroidPublishUI extends React.Component<
                                 );
                         }}
                     />
-                    <div>
+                    <div className="motionBookWrapper">
                         <Checkbox
                             id="motionBookModeCheckbox"
                             wrapClassName="motionBookModeCheckbox"
                             name="motionBookMode"
-                            l10nKey="PublishTab.Android.motionBookMode"
+                            l10nKey="PublishTab.Android.MotionBookMode"
                             // tslint:disable-next-line:max-line-length
                             l10nComment="Motion Books are Talking Books in which the picture fils the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
                             checked={this.state.motionBookMode}
@@ -184,6 +184,14 @@ class AndroidPublishUI extends React.Component<
                         >
                             Motion Book
                         </Checkbox>
+                        <div className="aboutMotionLink">
+                            <HelpLink
+                                helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm"
+                                l10nKey="PublishTab.Android.AboutMotionBooks"
+                            >
+                                About Motion Books
+                            </HelpLink>
+                        </div>
                     </div>
                 </div>
                 <H1

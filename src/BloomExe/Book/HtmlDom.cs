@@ -75,8 +75,10 @@ namespace Bloom.Book
 
 				//so we set the xhtml (not the text) of the node
 				titleNode.InnerXml = t;
-				//then ask it for the text again (will drop the xhtml)
-				var justTheText = titleNode.InnerText.Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
+				// then ask it for the text again (which drops the xhtml) and ensure that each run of whitespace
+				// (which includes newline characters) is condensed to a single space character.
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5979.
+				var justTheText = Regex.Replace(titleNode.InnerText, "\\s+", " ");
 				//then clear it
 				titleNode.InnerXml = "";
 				//and set the text again!
