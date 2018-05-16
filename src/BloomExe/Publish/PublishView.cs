@@ -768,6 +768,7 @@ namespace Bloom.Publish
 				{
 					using (var dlg = new SamplePrintNotification())
 					{
+						dlg.StartPosition = FormStartPosition.CenterParent;
 #if __MonoCS__
 						_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
 						dlg.ShowDialog(this);
