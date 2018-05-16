@@ -1,7 +1,9 @@
+@import "../../templates/common-mixins.less";
+
 @between-sections : 2em;
 
-a:hover {
-    color: blue;
+a {
+    color: @bloom-blue;
 }
 
 h1 {
@@ -26,13 +28,18 @@ body {
 .settings-row {
     display: flex;
 }
-.motionBookModeCheckbox {
+.motionBookWrapper {
     margin-left: 50px;
-    label {
-        width: 300px;
-        // this makes the second line indented.. I don't know why
-        display: inline-block;
-        vertical-align: top;
+    .motionBookModeCheckbox {
+        label {
+            width: 300px;
+            // this makes the second line indented.. I don't know why
+            display: inline-block;
+            vertical-align: top;
+        }
+    }
+    .aboutMotionLink {
+        margin-left: 3px; // to get checkbox and link to line up
     }
 }
 
