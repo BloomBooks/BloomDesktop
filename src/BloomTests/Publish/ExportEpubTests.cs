@@ -105,6 +105,25 @@ namespace BloomTests.Publish
 			return SetupBookLong(text, lang, images: images);
 		}
 
+		[Test]
+		public void ImageDescriptions_ImageDescriptionPublishingNone_AreRemoved()
+		{
+			var book = SetupBookLong("This is a simple page", "xyz", images: new[] {"image1"},
+				imageDescriptions: new[] {"This describes image 1"});
+			MakeEpub("output", "ImageDescriptions_PublishInPageNone_AreRemoved", book);
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+		}
+
+		[Test]
+		public void ImageDescriptions_ImageDescriptionPublishingOnPage_ConvertedToAsides()
+		{
+			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
+				imageDescriptions: new[] { "This describes image 1" });
+			MakeEpub("output", "ImageDescriptions_PublishInPageOnPage_ConvertedToAsides", book, EpubMaker.ImageDescriptionPublishing.OnPage);
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:aside[.='This describes image 1']", _ns, 1);
+		}
+
 		/// <summary>
 		/// Set up a book with the typical content most of our tests need. It has the standard three stylesheets
 		/// (and empty files for them). It has one bloom editable div, in the specified language, with the specified text.
@@ -132,13 +151,24 @@ namespace BloomTests.Publish
 		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = " numberedPage' data-page-number='1", string extraContent = "", string extraContentOutsideTranslationGroup = "",
 			string parentDivId = "somewrapper", string extraPages="", string[] images = null,
 			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto", bool createPhysicalFile = false,
-			string optionalDataDiv = "")
+			string optionalDataDiv = "", string[] imageDescriptions = null)
 		{
 			if (images == null)
 				images = new string[0];
 			string imageDivs = "";
+			int imgIndex = -1;
 			foreach (var image in images)
-				imageDivs += "<div><img src='" + image + ".png'></img></div>\n";
+			{
+				++imgIndex;
+				var imgDesc = "";
+				if (imageDescriptions != null && imgIndex < imageDescriptions.Length)
+					imgDesc = @"<div class='bloom-translationGroup bloom-imageDescription'>"
+						+ "<div class='bloom-editable bloom-content1' lang='" + lang + "'>" + imageDescriptions[imgIndex] + "</div>"
+					+ "</div>";
+				imageDivs += "<div class='bloom-imageContainer'><img src='" + image + ".png'></img>" + imgDesc + "</div>\n";
+			}
+
+			string containedImageDivs = "";
 			var body = optionalDataDiv + string.Format(@"<div class='bloom-page" + extraPageClass + @"'>
 						<div id='" + parentDivId + @"' class='marginBox'>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang='' data-default-languages='{8}'>
@@ -459,7 +489,8 @@ namespace BloomTests.Publish
 		/// <param name="folderName"></param>
 		/// <param name="book"></param>
 		/// <returns></returns>
-		private ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book)
+		private ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
+			EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.None)
 		{
 			var epubFolder = new TemporaryFolder(folderName);
 			var epubName = mainFileName + ".epub";
@@ -467,6 +498,7 @@ namespace BloomTests.Publish
 			using (var maker = CreateEpubMaker(book))
 			{
 				maker.Unpaginated = true; // Currently we always make unpaginated epubs.
+				maker.PublishImageDescriptions = howToPublishImageDescriptions;
 				maker.SaveEpub(epubPath);
 			}
 			Assert.That(File.Exists(epubPath));
@@ -1615,7 +1647,8 @@ namespace BloomTests.Publish
 						<div class=""marginBox""><img class=""branding"" src=""back-cover-outside.png"" type=""image/png"" onerror=""this.style.display='none'""></img></div>
 					</div>");
 			MakeImageFiles(book, "DevilsSlide", "SteveAtMalad", "back-cover-outside");
-			MakeEpub("output", "XMatterAndContentRolesAreMarked", book);
+			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
+			MakeEpub("output", "XMatterAndContentRolesAreMarked", book, EpubMaker.ImageDescriptionPublishing.OnPage);
 			CheckBasicsInPage("DevilsSlide");
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(false, true, _defaultSourceValue, false); // no sound files, but some image files
@@ -1651,7 +1684,7 @@ namespace BloomTests.Publish
 		{
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby]", _ns, 1);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc"+figureNumber+"' and @id='bookfig"+figureNumber+"']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@id='figdesc"+figureNumber+"']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:aside[@id='figdesc"+figureNumber+"']", _ns, 1);
 		}
 
 		/// <summary>

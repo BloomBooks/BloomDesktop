@@ -328,6 +328,7 @@
     <Compile Include="Publish\BloomLibrary\BloomLibraryPublishModel.cs" />
     <Compile Include="Publish\Epub\ElectronicPublishView.cs" />
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
+    <Compile Include="Publish\Epub\PublishEpubApi.cs" />
     <Compile Include="Publish\HtmlPublishPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
