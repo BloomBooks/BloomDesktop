@@ -2576,6 +2576,10 @@
         <source xml:lang="en">Preparing document</source>
         <note>ID: PublishTab.Epub.PreparingDoc</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.PreparingPreview">
+        <source xml:lang="en">Preparing preview</source>
+        <note>ID: PublishTab.Epub.PreparingPreview</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.Saving">
         <source xml:lang="en">Saving</source>
         <note>ID: PublishTab.Epub.Saving</note>

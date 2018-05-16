@@ -16,7 +16,7 @@ namespace Bloom.Publish.Epub
 	/// <summary>
 	/// Handles API requests from the Epub publishing HTML UI
 	/// </summary>
-	class PublishEpubApi
+	public class PublishEpubApi
 	{
 		private const string kApiUrlPart = "publish/epub/"; // common prefix of requests this class handles
 		private EpubMaker _epubMaker;
@@ -32,6 +32,8 @@ namespace Bloom.Publish.Epub
 		// This constant must match the ID that is used for the listener set up in the React component ProgressBox
 		private const string kWebsocketProgressId = "progress";
 
+		public PublishView CurrentView { get; set; }
+
 		public PublishEpubApi(BookThumbNailer thumbNailer, NavigationIsolator isolator, BookServer bookServer,
 			BookSelection bookSelection, CollectionSettings collectionSettings, BloomWebSocketServer webSocketServer)
 		{
@@ -46,7 +48,12 @@ namespace Bloom.Publish.Epub
 		// Message is presumed already localized.
 		private void ReportProgress(string message)
 		{
-			_webSocketServer.Send(kWebsocketProgressId, message);
+			ReportProgress(_webSocketServer, message);
+		}
+
+		public static void ReportProgress(BloomWebSocketServer server, string message)
+		{
+			server.Send(kWebsocketProgressId, message);
 			// This seems to be necessary for the message to appear reasonably promptly.
 			Application.DoEvents();
 		}
@@ -56,24 +63,6 @@ namespace Bloom.Publish.Epub
 			server.RegisterEndpointHandler(kApiUrlPart + "save", request =>
 			{
 				{
-					_epubMaker = new EpubMaker(_thumbNailer, _isolator, _bookServer);
-					_epubMaker.Book = _bookSelection.CurrentSelection;
-					_epubMaker.Unpaginated = true; // Enhance: UI?
-					var howToPublishImageDescriptions = request.Parameters["publishImageDescription"];
-					switch (howToPublishImageDescriptions)
-					{
-						case "none":
-						default:
-							_epubMaker.PublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.None;
-							break;
-						case "onPage":
-							_epubMaker.PublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.OnPage;
-							break;
-						case "links":
-							_epubMaker.PublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.Links;
-							break;
-					}
-
 					string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
 						_collectionSettings.GetLanguage1Name("en"));
 					using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
@@ -86,18 +75,65 @@ namespace Bloom.Publish.Epub
 						if (DialogResult.OK == dlg.ShowDialog())
 						{
 							_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-							ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingDoc","Preparing document"));
-							_epubMaker.StageEpub();
-							ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Saving", "Saving"));
-							_epubMaker.FinishEpub(dlg.FileName);
-							ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingDoc", "Done"));
-							ReportAnalytics("Save ePUB");
+							var savePath = dlg.FileName;
+							if (CurrentView != null)
+							{
+								// Typically, the user has checked the current preview and Save can take advantage of all the work
+								// that has already been done to produce it. If not, this waits until an up-to-date preview is ready.
+								CurrentView.RequestPreviewOutput(maker =>
+								{
+									_epubMaker = maker;
+									CompleteSave(savePath);
+								});
+							}
+							else
+							{
+								// Keeping this prior code just in case, but I don't think it is currently used.
+								_epubMaker = new EpubMaker(_thumbNailer, _isolator, _bookServer);
+								_epubMaker.Book = _bookSelection.CurrentSelection;
+								_epubMaker.Unpaginated = true; // Enhance: UI?
+								_epubMaker.PublishImageDescriptions = GetPublishMode(request);
+								ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingDoc", "Preparing document"));
+								_epubMaker.StageEpub();
+								CompleteSave(savePath);
+							}
+
 						}
 					}
 
 					request.PostSucceeded();
 				}
 			}, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "imageDescription", request =>
+			{
+				var mode = GetPublishMode(request);
+				if (CurrentView != null)
+					CurrentView.UpdatePreview(mode);
+				request.PostSucceeded();
+			}, true);
+		}
+
+		private void CompleteSave(string savePath)
+		{
+			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Saving", "Saving"));
+			_epubMaker.FinishEpub(savePath);
+			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
+			ReportAnalytics("Save ePUB");
+		}
+
+		private static EpubMaker.ImageDescriptionPublishing GetPublishMode(ApiRequest request)
+		{
+			var howToPublishImageDescriptions = request.Parameters["publishImageDescription"];
+			switch (howToPublishImageDescriptions)
+			{
+				case "none":
+				default:
+					return EpubMaker.ImageDescriptionPublishing.None;
+				case "onPage":
+					return EpubMaker.ImageDescriptionPublishing.OnPage;
+				case "links":
+					return EpubMaker.ImageDescriptionPublishing.Links;
+			}
 		}
 
 		public void ReportAnalytics(string eventName)
