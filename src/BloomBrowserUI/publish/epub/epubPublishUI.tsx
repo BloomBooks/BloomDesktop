@@ -17,16 +17,21 @@ import {
 import WebSocketManager from "../../utils/WebSocketManager";
 import "./epubPublishUI.less";
 import EpubPreview from "./EpubPreview";
+import { RadioGroup, Radio } from "../../react_components/radio";
 
 const kWebSocketLifetime = "publish-epub";
 
+interface IState {
+    publishImageDescriptions: string; // one of "none", "onPage", "links"
+}
+
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
-class EpubPublishUI extends React.Component<IUILanguageAwareProps> {
+class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private isLinux: boolean;
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = { publishImageDescriptions: "none" };
 
         WebSocketManager.addListener(kWebSocketLifetime, event => {
             // var e = JSON.parse(event.data);
@@ -69,8 +74,8 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps> {
                         <H1 l10nKey="PublishTab.Publish">Publish</H1>
                         <BloomButton
                             className="save-button"
-                            enabled={false}
-                            clickEndpoint="TODO"
+                            enabled={true}
+                            clickEndpoint={"publish/epub/save?publishImageDescription=" + this.state.publishImageDescriptions}
                             hasText={true}
                             l10nKey="PublishTab.Save"
                         >
@@ -114,10 +119,30 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps> {
                             {/* todo: pick correct l10nkey */}
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
+                        <H1 l10nKey="PublishTab.Epub.BooksForBlind">Books for the Blind</H1>
+                        <RadioGroup
+                            onChange={val => this.setPublishRadio(val)}
+                            value={this.state.publishImageDescriptions}>
+                            <Radio
+                                l10nKey="PublishTab.Epub.NoAudioDescriptions"
+                                value="none">
+                                No recorded audio image descriptions
+                            </Radio>
+                            <Radio
+                                l10nKey="PublishTab.Epub.IncludeOnPage"
+                                value="onPage">
+                                Include image descriptions on page
+                            </Radio>
+                        </RadioGroup>
                     </div>
                 </div>
             </div>
         );
+    }
+
+    private setPublishRadio(val: string) {
+        if (val === this.state.publishImageDescriptions) return;
+        this.setState({ publishImageDescriptions: val });
     }
 }
 

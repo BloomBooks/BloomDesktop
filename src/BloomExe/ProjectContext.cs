@@ -17,6 +17,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
 using Bloom.Publish.Android;
+using Bloom.Publish.Epub;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTests.web.controllers;
@@ -111,6 +112,7 @@ namespace Bloom
 							typeof (AudioRecording),
 							typeof(BookSettingsApi),
 							typeof(PublishToAndroidApi),
+							typeof(PublishEpubApi),
 							typeof(PageControlsApi),
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
@@ -287,6 +289,7 @@ namespace Bloom
 			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
 			_scope.Resolve<PublishToAndroidApi>().RegisterWithServer(server);
+			_scope.Resolve<PublishEpubApi>().RegisterWithServer(server);
 			_scope.Resolve<PageControlsApi>().RegisterWithServer(server);
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);

@@ -139,6 +139,13 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
+		public enum ImageDescriptionPublishing
+		{
+			None, OnPage, Links
+		}
+
+		public ImageDescriptionPublishing PublishImageDescriptions { get; set; }
+
 		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator, BookServer bookServer)
 		{
 			_thumbNailer = thumbNailer;
@@ -677,6 +684,8 @@ namespace Bloom.Publish.Epub
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
 			}
 
+			HandleImageDescriptions(pageDom);
+
 			RemoveUnwantedContent(pageDom);
 
 			pageDom.SortStyleSheetLinks();
@@ -725,6 +734,32 @@ namespace Bloom.Publish.Epub
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
 			RobustFile.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
 			return pageDom;
+		}
+
+		private void HandleImageDescriptions(HtmlDom pageDom)
+		{
+			if (PublishImageDescriptions == ImageDescriptionPublishing.OnPage)
+			{
+				var imageDescriptions = pageDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
+				foreach (XmlElement description in imageDescriptions)
+				{
+					var activeDescription = description.SelectSingleNode("div[contains(@class, 'bloom-content1')]");
+					if (activeDescription != null)
+					{
+						var aside = description.OwnerDocument.CreateElement("aside");
+						// We want to preserve all the inner markup, especially the audio spans.
+						aside.InnerXml = activeDescription.InnerXml;
+						// As well as potentially being used by stylesheets, this is used by the AddAriaAccessibilityMarkup
+						// to identify the aside as an image description (and tie the image to it).
+						aside.SetAttribute("class", "imageDescription");
+						// For now we will insert the aside after the image container, thus not interfering with the reader's
+						// placement of the image itself.
+						description.ParentNode.ParentNode.InsertAfter(aside, description.ParentNode);
+					}
+				}
+			}
+			// Todo: handle ImageDescriptionPublishing.Links
+			// If none, leave alone, and they will be deleted as invisible.
 		}
 
 		/// <summary>
@@ -1033,10 +1068,11 @@ namespace Bloom.Publish.Epub
 				div = img.SelectSingleNode("parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]") as XmlElement;
 				if (div != null)
 				{
-					var desc = div.SelectSingleNode("./div[contains(concat(' ',@class,' '), ' bloom-imageDescription ')]/div[@lang='" + Book.CollectionSettings.Language1Iso639Code + "']") as XmlElement;
-					if (desc != null && !String.IsNullOrWhiteSpace (desc.InnerText))
+					// Typically by this point we've converted the image description into an aside that is the next sibling
+					// of the image container.
+					var desc = div.NextSibling as XmlElement;
+					if (desc != null && desc.Attributes["class"]?.Value == "imageDescription" && !String.IsNullOrWhiteSpace (desc.InnerText))
 					{
-						// This isn't really useful until BL-5952 is implemented.
 						++_imgCount;
 						var bookFigId = "bookfig" + _imgCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
 						img.SetAttribute("id", bookFigId);
@@ -1418,8 +1454,6 @@ namespace Bloom.Publish.Epub
 
 		private bool IsDisplayed (XmlElement elt)
 		{
-			if (HasClass(elt, "bloom-imageDescription"))
-				return true;
 			var id = elt.Attributes ["id"].Value;
 			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
 			return display != "none";
