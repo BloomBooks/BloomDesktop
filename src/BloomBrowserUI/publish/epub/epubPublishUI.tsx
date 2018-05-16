@@ -34,10 +34,10 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
         this.state = { publishImageDescriptions: "none" };
 
         WebSocketManager.addListener(kWebSocketLifetime, event => {
-            // var e = JSON.parse(event.data);
-            // if (e.id === "publish/epub/state") {
-            //     this.handleUpdateState(e.payload);
-            // }
+            var e = JSON.parse(event.data);
+            if (e.id === "publish/epub/state") {
+                this.setState({ publishImageDescriptions: e.payload });
+            }
         });
     }
 
@@ -67,7 +67,7 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                 <div className="sections">
                     <section className="preview-section">
                         <H1 l10nKey="PublishTab.Preview">Preview</H1>
-                        <EpubPreview />
+                        <EpubPreview lifetimeLabel={kWebSocketLifetime} />
                     </section>
                     <section className="publish-section">
                         {/* todo: pick correct l10nkey... same as tab? */}
@@ -143,6 +143,7 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private setPublishRadio(val: string) {
         if (val === this.state.publishImageDescriptions) return;
         this.setState({ publishImageDescriptions: val });
+        axios.post("/bloom/api/publish/epub/imageDescription?publishImageDescription=" + val);
     }
 }
 

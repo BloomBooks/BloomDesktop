@@ -129,6 +129,8 @@ namespace Bloom.Publish.Epub
 		private bool _firstNumberedPageSeen;
 		// image counter for creating id values
 		private int _imgCount;
+		public Control ControlForInvoke { get; set; }
+		public bool AbortRequested { get; set; }
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -198,6 +200,9 @@ namespace Bloom.Publish.Epub
 			_firstContentPageItem = null;
 			foreach(XmlElement pageElement in Book.GetPageElements())
 			{
+				// We could check for this in a few more places, but once per page seems enough in practice.
+				if (AbortRequested)
+					break;
 				var pageDom = MakePageFile(pageElement);
 				if (pageDom == null)
 					continue;	// page was blank, so we're not adding it to the ePUB.
@@ -686,7 +691,12 @@ namespace Bloom.Publish.Epub
 
 			HandleImageDescriptions(pageDom);
 
-			RemoveUnwantedContent(pageDom);
+			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
+			// but things freeze up if we don't do it on the uI thread.
+			if (ControlForInvoke != null)
+				ControlForInvoke.Invoke((Action)(() => RemoveUnwantedContent(pageDom)));
+			else
+				RemoveUnwantedContent(pageDom);
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
