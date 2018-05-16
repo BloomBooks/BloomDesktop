@@ -2541,6 +2541,30 @@
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.BooksForBlind">
+        <source xml:lang="en">Books for the Blind</source>
+        <note>ID: PublishTab.Epub.BooksForBlind</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Done">
+        <source xml:lang="en">Done</source>
+        <note>ID: PublishTab.Epub.Done</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.IncludeOnPage">
+        <source xml:lang="en">Include image descriptions on page</source>
+        <note>ID: PublishTab.Epub.IncludeOnPage</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
+        <source xml:lang="en">No recorded audio image descriptions</source>
+        <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.PreparingDoc">
+        <source xml:lang="en">Preparing document</source>
+        <note>ID: PublishTab.Epub.PreparingDoc</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Saving">
+        <source xml:lang="en">Saving</source>
+        <note>ID: PublishTab.Epub.Saving</note>
+      </trans-unit>
       <trans-unit id="PublishTab.EpubButton">
         <source xml:lang="en">ePUB</source>
         <note>ID: PublishTab.EpubButton</note>
