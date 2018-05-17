@@ -25,9 +25,10 @@ export interface ITool {
     beginRestoreSettings(settings: string): JQueryPromise<void>;
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
-    hideTool(); // called when changing tools, hiding the toolbox, or saving (leaving) pages.
+    hideTool(); // called when changing tools or hiding the toolbox.
     updateMarkup(); // called on every keypress AND after newPageReady
     newPageReady(); // called when a new page is displayed
+    detachFromPage(); // called when a page is going away (or we are hiding the tool)
     id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
@@ -324,10 +325,10 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
     });
 }
 
-// Remove any markup the toolbox is inserting (called before saving page)
+// Remove any markup the toolbox is inserting (called by EditingView before saving page)
 export function removeToolboxMarkup() {
     if (currentTool != null) {
-        currentTool.hideTool();
+        currentTool.detachFromPage();
     }
 }
 

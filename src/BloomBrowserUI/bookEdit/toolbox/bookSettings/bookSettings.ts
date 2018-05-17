@@ -54,6 +54,7 @@ export class BookSettings implements ITool {
     hideTool() { }
     updateMarkup() { }
     newPageReady() { }
+    detachFromPage() { }
     finishToolLocalization(pane: HTMLElement) { }
     /* tslint:enable:no-empty */
 }

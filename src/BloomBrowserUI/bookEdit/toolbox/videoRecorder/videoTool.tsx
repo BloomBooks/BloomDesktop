@@ -178,6 +178,10 @@ export class VideoTool implements ITool {
     }
 
     public hideTool() {
+        this.detachFromPage();
+    }
+
+    public detachFromPage() {
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -231,10 +235,10 @@ export class VideoTool implements ITool {
     /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
     public configureElements(container: HTMLElement) { }
     public finishToolLocalization(pane: HTMLElement) { }
-    public newPageReady() { }
+    public updateMarkup() { }
     /* tslint:enable:no-empty */
 
-    public updateMarkup() {
+    public newPageReady() {
         const page = ToolBox.getPage();
         const containers = page.getElementsByClassName("bloom-videoContainer");
         if (containers.length === 0) {

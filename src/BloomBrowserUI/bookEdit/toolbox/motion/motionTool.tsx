@@ -257,6 +257,10 @@ export class MotionTool implements ITool {
     }
 
     public hideTool() {
+        this.detachFromPage();
+    }
+
+    public detachFromPage() {
         const page = this.getPage();
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
@@ -460,7 +464,7 @@ export class MotionTool implements ITool {
                 );
                 firstImage.removeAttribute("data-initialrect");
             }
-            this.hideTool();
+            this.detachFromPage();
         }
     }
 

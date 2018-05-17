@@ -166,12 +166,19 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
             />
         );
     }
+
     public showTool() {
-        this.updateMarkup();
+        this.newPageReady();
     }
+
     public hideTool() {
+        this.detachFromPage();
+    }
+
+    public detachFromPage() {
         ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
     }
+
     public updateMarkup() {
         // do nothing?
     }

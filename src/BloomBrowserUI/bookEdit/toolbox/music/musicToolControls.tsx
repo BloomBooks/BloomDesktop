@@ -41,7 +41,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         super({});
         this.state = this.getStateFromHtmlOfPage();
     }
-    public hideTool() {
+
+    public detachFromPage() {
         const rawPlayer = document.getElementById(
             "musicPlayer"
         ) as HTMLMediaElement;
@@ -49,7 +50,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 
     public showTool() {
-        this.updateBasedOnContentsOfPage();
+        this.newPageReady();
     }
 
     public newPageReady() {
@@ -401,6 +402,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
 
 export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     private controlsElement: MusicToolControls;
+
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
             <MusicToolControls
@@ -410,15 +412,23 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
             />
         );
     }
+
     public id(): string {
         return "music";
     }
+
     public showTool() {
         this.controlsElement.showTool();
     }
+
     public hideTool() {
-        this.controlsElement.hideTool();
+        this.detachFromPage();
     }
+
+    public detachFromPage() {
+        this.controlsElement.detachFromPage();
+    }
+
     public updateMarkup() {
         this.controlsElement.updateMarkup();
     }

@@ -38,12 +38,16 @@ export class LeveledReaderToolboxTool implements ITool {
     }
 
     hideTool() {
+        this.detachFromPage();
+    }
+
+    detachFromPage() {
         getTheOneReaderToolsModel().setMarkupType(0);
     }
 
     newPageReady() {
         // Most cases don't require setMarkupType(), but when switching pages
-        // it will have been set to 0 by hideTool() on the old page.
+        // it will have been set to 0 by detachFromPage() on the old page.
         getTheOneReaderToolsModel().setMarkupType(2);
     }
 
