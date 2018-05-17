@@ -247,12 +247,15 @@ export class MotionTool implements ITool {
         }
         this.setupResizeObserver();
     }
+
     public updateMarkup() {
         // nothing to do here.
     }
+
     public showTool() {
         this.newPageReady();
     }
+
     public hideTool() {
         const page = this.getPage();
         this.removeElt(page.getElementById("animationStart"));
@@ -271,6 +274,7 @@ export class MotionTool implements ITool {
             this.sizeObserver.disconnect();
         }
     }
+
     private removeCurrentAudioMarkup(): void {
         const currentAudioElts = this.getPage().getElementsByClassName(
             "ui-audioCurrent"
