@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using BloomTemp;
-using Newtonsoft.Json;
-using SIL.Code;
-using SIL.IO;
-using SIL.Xml;
 
 namespace Bloom.Edit
 {

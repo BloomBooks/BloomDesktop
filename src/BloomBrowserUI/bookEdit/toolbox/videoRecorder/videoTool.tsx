@@ -154,24 +154,29 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
 
 export class VideoTool implements ITool {
     private reactControls: VideoToolControls;
+
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "videoBody");
         this.reactControls = VideoToolControls.setup(root);
         return root as HTMLDivElement;
     }
+
     public isAlwaysEnabled(): boolean {
         return false;
     }
+
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();
         result.resolve();
         return result;
     }
+
     public showTool() {
         this.updateMarkup();
     }
+
     public hideTool() {
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
@@ -220,6 +225,7 @@ export class VideoTool implements ITool {
             event.preventDefault();
         }
     }
+
     // required for ITool interface
     public hasRestoredSettings: boolean;
     /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.

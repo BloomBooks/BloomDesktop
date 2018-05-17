@@ -172,7 +172,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     public hideTool() {
         ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
     }
-    public newPageReady() {
+    public updateMarkup() {
         // do nothing?
     }
 
@@ -189,11 +189,8 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // bloom-imageDescription (group), but the target (actually clicked) will be a bloom-editable or one of its children.
     private descriptionGotFocus = (e: Event) => this.reactControls.selectImageDescription(e.currentTarget as Element);
 
-    // Most if not all of this doesn't need doing every time text is edited on the page.
-    // But it's the only way currently to get it called at some critical moments like
-    // when we switch pages or add a new picture with origami.
-    // After merging in the ITool change from 4.1, this method contents should be swapped with newPageReady().
-    public updateMarkup() {
+    // Update image descriptions, not on every edit, but whenever a new page is displayed.
+    public newPageReady() {
         this.reactControls.checkForChangePage();
         var page = ToolBox.getPage();
         // turn on special layout to make image descriptions visible (might already be on)
