@@ -455,7 +455,6 @@ namespace Bloom.Publish
 						_saveButton.Enabled = true;
 						_printButton.Enabled = _pdfViewer.ShowPdf(_model.PdfFilePath);
 					}
-					_pdfViewer.Visible = true;
 					break;
 				case PublishModel.DisplayModes.Printing:
 					_simpleAllPagesRadio.Enabled = false;
@@ -763,6 +762,7 @@ namespace Bloom.Publish
 				_previewBox.Image = Image.FromFile(printSettingsSampleName);
 				_previewBox.Bounds = GetPreviewBounds();
 				_previewBox.SizeMode = PictureBoxSizeMode.Zoom;
+				_previewBox.BringToFront(); // prevents BL-6001
 				_previewBox.Show();
 				if (!Settings.Default.DontShowPrintNotification)
 				{
