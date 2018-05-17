@@ -25,7 +25,7 @@ import "./motion.less";
 // ToolBox.registerTool(new MotionTool());
 
 /// The motion tool lets you define two rectangles; Bloom Reader will pan & zoom from one to the other
-export class MotionTool implements ITool {
+export class MotionTool extends ToolboxToolReactAdaptor {
     private rootControl: MotionControl;
     private animationStyleElement: HTMLStyleElement;
     private animationWrapDiv: HTMLElement;
@@ -60,11 +60,6 @@ export class MotionTool implements ITool {
     public isAlwaysEnabled(): boolean {
         return false;
     }
-
-    // required for ITool interface
-    public hasRestoredSettings: boolean; // We need these to implement the interface, but don't need them to do anything.
-    public configureElements(container: HTMLElement) { }
-    public finishToolLocalization(pane: HTMLElement) { }
 
     public newPageReady() {
         // First, abort any preview that's in progress.
@@ -248,15 +243,7 @@ export class MotionTool implements ITool {
         this.setupResizeObserver();
     }
 
-    public updateMarkup() {
-        // nothing to do here.
-    }
-
-    public showTool() {
-        this.newPageReady();
-    }
-
-    public hideTool() {
+    public detachFromPage() {
         const page = this.getPage();
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
@@ -460,7 +447,7 @@ export class MotionTool implements ITool {
                 );
                 firstImage.removeAttribute("data-initialrect");
             }
-            this.hideTool();
+            this.detachFromPage();
         }
     }
 

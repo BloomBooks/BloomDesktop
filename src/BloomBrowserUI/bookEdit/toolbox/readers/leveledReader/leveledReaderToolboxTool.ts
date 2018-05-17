@@ -34,17 +34,22 @@ export class LeveledReaderToolboxTool implements ITool {
     showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!getTheOneReaderToolsModel().setMarkupType(2)) getTheOneReaderToolsModel().doMarkup();
     }
 
     hideTool() {
+        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
+    }
+
+    detachFromPage() {
         getTheOneReaderToolsModel().setMarkupType(0);
     }
 
     newPageReady() {
         // Most cases don't require setMarkupType(), but when switching pages
-        // it will have been set to 0 by hideTool() on the old page.
+        // it will have been set to 0 by detachFromPage() on the old page.
         getTheOneReaderToolsModel().setMarkupType(2);
+        // usually updateMarkup will do this, unless we are coming from showTool
+        getTheOneReaderToolsModel().doMarkup();
     }
 
     updateMarkup() {

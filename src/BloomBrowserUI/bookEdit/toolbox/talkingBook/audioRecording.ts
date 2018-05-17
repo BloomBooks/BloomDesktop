@@ -165,7 +165,7 @@ export default class AudioRecording {
         }
     }
 
-    // Called by TalkingBookModel.hideTool(), which is called when changing tools, hiding the toolbox,
+    // Called by TalkingBookModel.detachFromPage(), which is called when changing tools, hiding the toolbox,
     // or saving (leaving) pages.
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();

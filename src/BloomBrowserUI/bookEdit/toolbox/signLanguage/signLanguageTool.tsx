@@ -170,9 +170,13 @@ export class SignLanguageTool implements ITool {
         return result;
     }
     public showTool() {
-        this.updateMarkup();
+        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
     }
     public hideTool() {
+        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
+    }
+
+    public detachFromPage() {
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -225,10 +229,10 @@ export class SignLanguageTool implements ITool {
     /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
     public configureElements(container: HTMLElement) { }
     public finishToolLocalization(pane: HTMLElement) { }
-    public newPageReady() { }
+    public updateMarkup() { }
     /* tslint:enable:no-empty */
 
-    public updateMarkup() {
+    public newPageReady() {
         const page = ToolBox.getPage();
         const containers = page.getElementsByClassName("bloom-videoContainer");
         if (containers.length === 0) {

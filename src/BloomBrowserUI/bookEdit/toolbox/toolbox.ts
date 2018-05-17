@@ -25,9 +25,10 @@ export interface ITool {
     beginRestoreSettings(settings: string): JQueryPromise<void>;
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
-    hideTool(); // called when changing tools, hiding the toolbox, or saving (leaving) pages.
+    hideTool(); // called when changing tools or hiding the toolbox.
     updateMarkup(); // called on every keypress AND after newPageReady
-    newPageReady(); // called when a new page is displayed
+    newPageReady(); // called when a new page is displayed AND after showTool
+    detachFromPage(); // called when a page is going away AND before hideTool
     id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
@@ -324,10 +325,10 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
     });
 }
 
-// Remove any markup the toolbox is inserting (called before saving page)
+// Remove any markup the toolbox is inserting (called by EditingView before saving page)
 export function removeToolboxMarkup() {
     if (currentTool != null) {
-        currentTool.hideTool();
+        currentTool.detachFromPage();
     }
 }
 
@@ -358,8 +359,10 @@ function switchTool(newToolName: string) {
         }
     }
     if (currentTool !== newTool) {
-        if (currentTool)
+        if (currentTool) {
+            currentTool.detachFromPage();
             currentTool.hideTool();
+        }
         activateTool(newTool);
         currentTool = newTool;
     }
@@ -374,10 +377,12 @@ function activateTool(newTool: ITool) {
             newTool.beginRestoreSettings(savedSettings).then(() => {
                 newTool.finishToolLocalization(getToolElement(newTool));
                 newTool.showTool();
+                newTool.newPageReady();
             });
         } else {
             newTool.finishToolLocalization(getToolElement(newTool));
             newTool.showTool();
+            newTool.newPageReady();
         }
     }
 }
@@ -687,8 +692,12 @@ function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: bool
 function showToolboxChanged(wasShowing: boolean): void {
     ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "visibility\t" + (wasShowing ? "" : "visible"));
     if (currentTool) {
-        if (wasShowing) currentTool.hideTool();
-        else activateTool(currentTool);
+        if (wasShowing) {
+            currentTool.detachFromPage();
+            currentTool.hideTool();
+        } else {
+            activateTool(currentTool);
+        }
     } else {
         // starting up for the very first time in this book...no tool is current,
         // so select and properly initialize the first one.

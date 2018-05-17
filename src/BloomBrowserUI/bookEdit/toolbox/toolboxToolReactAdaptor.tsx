@@ -29,6 +29,7 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
     public hideTool() { }
     public updateMarkup() { }
     public newPageReady() { }
+    public detachFromPage() { }
     public configureElements(container: HTMLElement) { }
     public finishToolLocalization(pane: HTMLElement) { }
 

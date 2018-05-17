@@ -127,11 +127,8 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
         this.setState({ enabled: true, checkBoxes: newCheckStates });
     }
 
-    public checkForChangePage(): void {
+    public setStateForNewPage(): void {
         var page = ToolboxToolReactAdaptor.getPage();
-        if (this.activeEditable && page.contains(this.activeEditable)) {
-            return; // no page change.
-        }
         // If we're still on the same page, it must be one without images.
         // We might also have switched TO one without images.
         var imageContainers = page.getElementsByClassName("bloom-imageContainer");
@@ -166,14 +163,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
             />
         );
     }
-    public showTool() {
-        this.updateMarkup();
-    }
-    public hideTool() {
+
+    public detachFromPage() {
         ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
-    }
-    public updateMarkup() {
-        // do nothing?
     }
 
     public id(): string {
@@ -189,9 +181,10 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // bloom-imageDescription (group), but the target (actually clicked) will be a bloom-editable or one of its children.
     private descriptionGotFocus = (e: Event) => this.reactControls.selectImageDescription(e.currentTarget as Element);
 
-    // Update image descriptions, not on every edit, but whenever a new page is displayed.
+    // Make sure the page has the elements used to store image descriptions,
+    // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
-        this.reactControls.checkForChangePage();
+        this.reactControls.setStateForNewPage();
         var page = ToolBox.getPage();
         // turn on special layout to make image descriptions visible (might already be on)
         page.classList.add("bloom-showImageDescriptions");
