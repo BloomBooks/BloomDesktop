@@ -245,6 +245,11 @@ function AddLanguageTags(container) {
         if (key !== undefined && (key === "*" || key.length < 1)) {
             return; //seeing a "*" was confusing even to me
         }
+        // z is not a real language, it is used for prototype blocks, which are NEVER visible.
+        // Searching for it causes missing-localization toasts if attempted.
+        if (key === "z") {
+            return;
+        }
 
         // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
         // first usage (for instance) was turning off language tags for a whole page
