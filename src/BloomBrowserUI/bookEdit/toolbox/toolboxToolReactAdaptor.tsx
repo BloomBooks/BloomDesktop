@@ -19,6 +19,9 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
     public isAlwaysEnabled(): boolean {
         return false;
     }
+    public isExperimental(): boolean {
+        return false;
+    }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();

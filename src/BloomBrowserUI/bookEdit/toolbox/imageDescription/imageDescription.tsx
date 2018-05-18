@@ -166,6 +166,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
             />
         );
     }
+    public isExperimental(): boolean {
+        return true;
+    }
     public showTool() {
         this.updateMarkup();
     }
