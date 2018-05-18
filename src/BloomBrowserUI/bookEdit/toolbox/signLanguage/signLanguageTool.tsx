@@ -7,9 +7,9 @@ import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
 import { getPageFrameExports } from "../../js/bloomFrames";
-import "./videoRecorder.less";
+import "./signLanguage.less";
 
-interface IVideoState {
+interface IComponentState {
     recording: boolean;
     countdown: number;
     enabled: boolean;
@@ -35,12 +35,12 @@ declare var MediaRecorder: {
     new(s: MediaStream, options: any): MediaRecorder;
 };
 
-// This react class implements the UI for the video toolbox.
+// This react class implements the UI for the sign language (video) toolbox.
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
-// which passes an instance of VideoTool to ToolBox.registerTool().
-export class VideoToolControls extends React.Component<{}, IVideoState> {
+// which passes an instance of SignLanguageTool to ToolBox.registerTool().
+export class SignLanguageToolControls extends React.Component<{}, IComponentState> {
     constructor() {
         super({});
         this.state = { recording: false, countdown: 0, enabled: false };
@@ -52,7 +52,7 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
 
     public render() {
         return (
-            <div className={"videoBody" + (this.state.enabled ? "" : " disabled")}>
+            <div className={"signLanguageBody" + (this.state.enabled ? "" : " disabled")}>
                 <div className="button-label-wrapper">
                     <div id="videoPlayAndLabelWrapper">
                         <div className="videoButtonWrapper">
@@ -144,20 +144,20 @@ export class VideoToolControls extends React.Component<{}, IVideoState> {
         this.mediaRecorder.start();
     }
 
-    public static setup(root): VideoToolControls {
+    public static setup(root): SignLanguageToolControls {
         return ReactDOM.render(
-            <VideoToolControls />,
+            <SignLanguageToolControls />,
             root
         );
     }
 }
 
-export class VideoTool implements ITool {
-    private reactControls: VideoToolControls;
+export class SignLanguageTool implements ITool {
+    private reactControls: SignLanguageToolControls;
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        root.setAttribute("class", "videoBody");
-        this.reactControls = VideoToolControls.setup(root);
+        root.setAttribute("class", "signLanguageBody");
+        this.reactControls = SignLanguageToolControls.setup(root);
         return root as HTMLDivElement;
     }
     public isAlwaysEnabled(): boolean {
@@ -186,7 +186,7 @@ export class VideoTool implements ITool {
     }
 
     public id(): string {
-        return "video";
+        return "signLanguage";
     }
 
     // This function is saved in a variable so we can remove the same listener we added.

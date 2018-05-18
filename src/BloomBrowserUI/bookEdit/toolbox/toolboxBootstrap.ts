@@ -15,7 +15,7 @@ import { MusicToolAdaptor } from "./music/musicToolControls";
 import { MotionTool } from "./motion/motionTool";
 import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
-import { VideoTool } from "./videoRecorder/videoTool";
+import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
@@ -67,5 +67,5 @@ ToolBox.registerTool(new LeveledReaderToolboxTool());
 ToolBox.registerTool(new MusicToolAdaptor());
 ToolBox.registerTool(new MotionTool());
 ToolBox.registerTool(new TalkingBookTool());
-ToolBox.registerTool(new VideoTool());
+ToolBox.registerTool(new SignLanguageTool());
 ToolBox.registerTool(new ImageDescriptionAdapter());

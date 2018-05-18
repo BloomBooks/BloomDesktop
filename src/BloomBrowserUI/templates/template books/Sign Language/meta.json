@@ -5,11 +5,11 @@
     "suitableForMakingShells": "true",
     "tools": [
         {
-            "name": "video",
+            "name": "signLanguage",
             "enabled": true,
             "state": null
         }
     ],
-    "currentTool": "videoTool",
+    "currentTool": "signLanguageTool",
     "toolboxIsOpen": true
 }
