@@ -1,32 +1,101 @@
+@import "../../../bloomUI.less";
+@buttonColor: @accordion-active-element;
+@recordingColor: @bloom-yellow;
 #videoMonitorWrapper {
     width: 100%;
-    height: 200px;
+    height: 160px;
 }
 #videoMonitor {
     width: 100%;
     height: 100%;
 }
 
+@videoButtonSize: 40px;
+@videoButtonBorder: @videoButtonSize/3;
+@videoButtonRimThickness: 3px;
+
 #videoToggleRecording {
-    background-image: url(/bloom/images/record_expected.svg);
-    height: 40px;
-    width: 40px;
-    border: none;
-    background-size: contain;
+    // These properties make a blue circle, with the border thickness equal to the center diameter
+    height: @videoButtonSize;
+    width: @videoButtonSize;
+    border-style: solid;
+    border-width: @videoButtonBorder;
+    border-color: @buttonColor;
+    border-radius: @videoButtonSize/2; // circle
     background-color: transparent;
-    background-repeat: no-repeat;
-    &.recording {
-        background-image: url(/bloom/images/record_active.svg);
+    position: relative;
+    &.started {
+        background-color: @recordingColor;
     }
-    &.disabled {
-        // This is an unfortunate naming, but we're borrowing the talking book icons.
-        // The video recorder doesn't (yet) have multiple buttons or the idea of an
-        // expected one, but the record-expected icon is the thing the user is used to
-        // seeing when making a recording is expected. record-enabled is less inviting,
-        // just used when he COULD record over an existing one. So we use that
-        // (in combination with the general dimming) when DISabled here.
-        background-image: url(/bloom/images/record_enabled.svg);
+    &.recordingNow::after {
+        position: absolute;
+        content:"";
+        box-sizing: border-box;
+        height: @videoButtonSize;
+        width: @videoButtonSize;
+        border-style: solid;
+        border-width: @videoButtonRimThickness;
+        border-color: @recordingColor;
+        left: -@videoButtonBorder;
+        top:-@videoButtonBorder;
+        border-radius: @videoButtonSize/2;
+        background-color:transparent;     
     }
+}
+
+@stopBorderThickness: @videoButtonSize/10;
+@stopCenterBlockSize: @videoButtonSize/3;
+#videoStopRecording {
+    // These properties make a thin blue circle
+    position: relative;
+    height: @videoButtonSize;
+    width: @videoButtonSize;
+    border-width: @stopBorderThickness;
+    border-color: @buttonColor;
+    border-radius: @videoButtonSize/2; // circle
+    border-style: solid;
+    background-color: transparent;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    &::after {
+        // And this lot put a blue square in the middle of it.
+        content:"";
+        position: absolute;
+        height: @stopCenterBlockSize;
+        width: @stopCenterBlockSize;
+        background-color: @buttonColor;
+        left:  (@videoButtonSize - @stopCenterBlockSize)/2 - @stopBorderThickness;
+        top: (@videoButtonSize - @stopCenterBlockSize)/2 - @stopBorderThickness;
+    }
+}
+.videoButtonWrapper {
+    display: flex;
+    align-items: center;
+    // giving it a fixed height prevents a slight jump when showing the large numbers, which otherwise
+    // make the containing box a little bigger than when it just contains the button and small text.
+    height: @videoButtonSize + 2;
+}
+
+.startRecording, .recordingLabel {margin-left: 10px;}
+.countdownNumber {
+    margin-left: 40px;
+    font-size: 40px;
+    margin-top: -6px; // experimentally, makes it look centered on the button.
+}
+.countdownNumber, .recordingLabel {
+    color: @recordingColor;
+}
+.recordingLabel, .stopLabel {
+    font-size: 20px;
+}
+
+.stopLabel {
+    color: @buttonColor;
+}
+
+.signLanguageFrame {
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 .disabled{
@@ -35,4 +104,21 @@
 
 .ui-accordion h3[data-toolId="signLanguageTool"] span.ui-accordion-header-icon {
     background-image:url('/bloom/images/signLanguageTool.svg') !important;
+}
+
+// state management
+.waiting {
+    .countdown3, .countdown2, .countdown1, .counting, .recording, .notWaiting {display:none}
+}
+.countdown3 {
+    .waiting, .countdown2, .countdown1, .recording {display:none}
+}
+.countdown2 {
+    .waiting, .countdown3, .countdown1, .recording {display:none}
+}
+.countdown1 {
+    .waiting, .countdown3, .countdown2, .recording {display:none}
+}
+.recording {
+    .waiting, .countdown3, .countdown2, .countdown1, .counting {display:none}
 }

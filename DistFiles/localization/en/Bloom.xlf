@@ -1744,6 +1744,26 @@
         <source xml:lang="en">Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
+        <source xml:lang="en">Press any key to cancel</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.PressCancel</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.PressStop" sil:dynamic="true">
+        <source xml:lang="en">Press any key to stop</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.PressStop</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
+        <source xml:lang="en">Recording</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Recording</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
+        <source xml:lang="en">Start Recording</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
+        <source xml:lang="en">Here is what your camera sees:</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.BadState">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
