@@ -26,7 +26,16 @@ export default class TalkingBookTool implements ITool {
         AudioRecorder.theOneAudioRecorder.setupForRecording();
     }
 
+    // Called when a new page is loaded.
+    newPageReady() {
+        AudioRecorder.theOneAudioRecorder.addAudioLevelListener(); // keeps the peak audio level monitor functioning.
+    }
+
     hideTool() {
+        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
+    }
+
+    detachFromPage() {
         // not quite sure how this can be called when never initialized, but if
         // we don't have the object we certainly can't use it.
         if (AudioRecorder.theOneAudioRecorder) {
@@ -56,11 +65,6 @@ export default class TalkingBookTool implements ITool {
                 }
             }
         }
-    }
-
-    // Called when a new page is loaded.
-    newPageReady() {
-        AudioRecorder.theOneAudioRecorder.addAudioLevelListener(); // keeps the peak audio level monitor functioning.
     }
 
     id() { return "talkingBook"; }
