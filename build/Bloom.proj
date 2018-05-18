@@ -105,7 +105,6 @@
   </Target>
 
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
-	<Error Text="Set Channel to empty string for Release build" Condition="'$(channel)'=='Release'"/>
 	<MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
 			 Properties="Configuration=$(Configuration)" />
