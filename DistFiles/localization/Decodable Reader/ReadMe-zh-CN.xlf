@@ -17,6 +17,9 @@
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
         <target xml:lang="zh-CN">您还可以制作包含一系列<g id="genid-6" ctype="x-html-em">模板</g>的Bloom资料包，这样别人可以用这些由识字教育专家事先设定好的等级和细分阶段快速创建书籍。</target>
         <note>ID: decodable.templates</note>
+        <alt-trans>
+          <target xml:lang="zh-CN">您还可以制作包含一系列<g id="genid-6" ctype="x-html-em">模板</g>的“Bloom资料包”，这样别人可以用这些由识字教育专家事先设定好的等级和细分阶段快速创建书籍。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
