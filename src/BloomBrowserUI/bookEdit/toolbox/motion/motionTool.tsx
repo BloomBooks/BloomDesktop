@@ -60,6 +60,9 @@ export class MotionTool implements ITool {
     public isAlwaysEnabled(): boolean {
         return false;
     }
+    public isExperimental(): boolean {
+        return false;
+    }
 
     // required for ITool interface
     public hasRestoredSettings: boolean; // We need these to implement the interface, but don't need them to do anything.

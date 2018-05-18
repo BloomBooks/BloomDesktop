@@ -48,6 +48,9 @@ export class BookSettings implements ITool {
     isAlwaysEnabled(): boolean {
         return true;
     }
+    isExperimental(): boolean {
+        return false;
+    }
     /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
     configureElements(container: HTMLElement) { }
     showTool() { }

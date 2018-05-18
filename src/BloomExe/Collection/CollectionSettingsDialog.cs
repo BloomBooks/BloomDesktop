@@ -45,7 +45,7 @@ namespace Bloom.Collection
 			}
 
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
-			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
+			_showExperimentalFeatures.Checked = Settings.Default.ShowExperimentalFeatures;
 			// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				_automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
@@ -429,7 +429,7 @@ namespace Bloom.Collection
 
 		private void checkBox1_CheckedChanged(object sender, EventArgs e)
 		{
-			Settings.Default.ShowExperimentalCommands = _showExperimentCommands.Checked;
+			Settings.Default.ShowExperimentalFeatures = _showExperimentalFeatures.Checked;
 			ChangeThatRequiresRestart();
 		}
 
