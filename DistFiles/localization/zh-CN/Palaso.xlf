@@ -6,7 +6,7 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="zh-CN" state="needs-translation">Built on {0}</target>
+        <target xml:lang="zh-CN" state="translated">创建于 {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
@@ -17,7 +17,7 @@
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="zh-CN" state="needs-translation">About {0}</target>
+        <target xml:lang="zh-CN" state="translated">关于 {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
@@ -65,7 +65,7 @@
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="zh-CN" state="needs-translation">&amp;Abort</target>
+        <target xml:lang="zh-CN" state="translated">&amp;取消</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -75,7 +75,7 @@
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="zh-CN" state="needs-translation">&amp;Ignore</target>
+        <target xml:lang="zh-CN" state="translated">&amp;忽略</target>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
@@ -85,7 +85,7 @@
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="zh-CN" state="needs-translation">&amp;No</target>
+        <target xml:lang="zh-CN" state="translated">&amp;否</target>
       </trans-unit>
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
@@ -95,7 +95,7 @@
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="zh-CN" state="needs-translation">&amp;Retry</target>
+        <target xml:lang="zh-CN" state="translated">&amp;重试</target>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
@@ -105,7 +105,7 @@
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="zh-CN" state="needs-translation">&amp;Yes</target>
+        <target xml:lang="zh-CN" state="translated">&amp;是</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -176,6 +176,9 @@
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
         <target xml:lang="zh-CN">这里是“读物图库”。在上方的搜索框里输入要搜索的对象，然后按Enter。用英语个印尼语输入都可以。</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">这里是“读物图库”。在上方的搜索框里输入要搜索的对象，然后按“进入”。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
@@ -186,12 +189,12 @@
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="zh-CN" state="needs-translation">Choose Picture File</target>
+        <target xml:lang="zh-CN" state="translated">选择图片</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
-        <target xml:lang="zh-CN" state="needs-translation">Galleries</target>
+        <target xml:lang="zh-CN" state="translated">图库</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
@@ -211,7 +214,7 @@
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="zh-CN" state="needs-translation">Image Galleries</target>
+        <target xml:lang="zh-CN" state="translated">图片库</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
@@ -243,7 +246,7 @@
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="zh-CN" state="needs-translation">This computer doesn't appear to have any galleries installed yet.</target>
+        <target xml:lang="zh-CN" state="translated">这台电脑没有安装图库。</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
@@ -389,6 +392,9 @@
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
         <target xml:lang="zh-CN">您必须提供版权标识和作者、画家等等的姓名或名称。</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">您必须提供版权标识和作者、画家等人的信息。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
@@ -424,7 +430,7 @@
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="zh-CN" state="needs-translation">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</target>
+        <target xml:lang="zh-CN" state="translated">可以复制、修改、传播本作品，也可将其用于商业用途，无需申请许可。</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
@@ -455,7 +461,7 @@
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="zh-CN" state="needs-translation">Copyright Year</target>
+        <target xml:lang="zh-CN" state="translated">版权年份</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
@@ -465,7 +471,7 @@
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="zh-CN" state="needs-translation">Intergovernmental Version</target>
+        <target xml:lang="zh-CN" state="translated">政府间组织</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
@@ -480,7 +486,7 @@
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="zh-CN" state="needs-translation">License</target>
+        <target xml:lang="zh-CN" state="translated">许可证</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -581,7 +587,7 @@
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="zh-CN" state="needs-translation">Release Notes</target>
+        <target xml:lang="zh-CN" state="translated">发布日志</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -646,7 +652,7 @@
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="zh-CN" state="needs-translation">Set up keyboards</target>
+        <target xml:lang="zh-CN" state="translated">设置键盘</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
@@ -666,12 +672,12 @@
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="zh-CN" state="needs-translation">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</target>
+        <target xml:lang="zh-CN" state="translated">程序无法连接到SIL的局域数据存储库(SIL Locale Data Repository)，无法调取有关该语言的最新信息。如果创建新书写系统，其默认设置可能是错误或过时的。是否仍然想要创建新书写系统？</target>
       </trans-unit>
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="zh-CN" state="needs-translation">[Missing] {0} ({1})</target>
+        <target xml:lang="zh-CN" state="translated">[缺失] {0} ({1})</target>
       </trans-unit>
     </body>
   </file>

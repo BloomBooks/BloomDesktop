@@ -114,7 +114,7 @@
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</target>
+        <target xml:lang="zh-CN" state="translated">Bloom在读取本书时遇到问题, 现已恢复到最近的一次备份。请检查近期对本书的修改。如果没有任何明显原因导致该情况发生, 请单击下面的“详细信息“向我们报告。</target>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved" approved="yes">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
@@ -135,7 +135,7 @@
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="zh-CN" state="needs-translation">About the Bloom Enterprise Service</target>
+        <target xml:lang="zh-CN" state="translated">关于Bloom Enterprise服务</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -329,7 +329,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
-        <target xml:lang="zh-CN" state="needs-translation">Page Numbering Style</target>
+        <target xml:lang="zh-CN" state="translated">页码样式</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" sil:dynamic="true">
         <source xml:lang="en">Persian</source>
@@ -409,6 +409,9 @@
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
         <note>If there is no third language specified, the link changes to this.</note>
         <target xml:lang="zh-CN">设立...</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">设置...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
         <source xml:lang="en">Local Language</source>
@@ -435,7 +438,7 @@
         <source xml:lang="en">Bloom Enterprise Project</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom Enterprise Project</target>
+        <target xml:lang="zh-CN" state="translated">Bloom Enterprise项目</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
@@ -498,7 +501,7 @@
         <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="zh-CN" state="needs-translation">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</target>
+        <target xml:lang="zh-CN" state="translated">注意：Bloom图书馆里有壳书。但是当前丛书属于“资源集合”，您只能用它制作壳书，不能把它们翻译成当地语言。</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
         <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
@@ -626,6 +629,9 @@
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
         <target xml:lang="zh-CN">因为这是一个资源集合， Bloom的现有壳书不能作为新壳书的来源.如果你想给壳书增加一种语言,你应该修改包含该壳书的资源集合,而不是直接复制该壳书.而且在现阶段,挂历也不能被用于制作新壳书.</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">因为这是一个资源集合， Bloom的现有壳书不能作为新壳书的来源. 如果你想给壳书增加一种语言, 你应该编辑该壳书所在的资源集合, 而不是直接复制该壳书. 而且在现阶段, 挂历也不能被用于制作新壳书.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
@@ -701,6 +707,9 @@
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
         <target xml:lang="zh-CN">新框架书资源</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">新壳书资源</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.Templates" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Templates</source>
@@ -860,6 +869,9 @@
         <note>ID: Download.GenericNetworkProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9): There was a problem downloading your book.</note>
         <target xml:lang="zh-CN">下载书时出现问题。</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">下载书时出现问题。可以换个时间再试一次，如果在当地搞不定也可以写邮件给issues@bloomlibrary.org求助。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
@@ -1011,6 +1023,9 @@
         <note>ID: EditTab.CopyImageIPMetadataQuestion</note>
         <note>get this after you edit the metadata of an image</note>
         <target xml:lang="zh-CN">要把该信息复制到本书中的所有图片里吗？</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">要把该信息复制到本书的所有其他图片里吗？</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CopyPage">
         <source xml:lang="en">Copy Page</source>
@@ -1092,19 +1107,19 @@
         <source xml:lang="en">Italic</source>
         <note>ID: EditTab.DirectFormatting.Italic</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Italic</target>
+        <target xml:lang="zh-CN" state="translated">斜体</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true">
         <source xml:lang="en">Superscript</source>
         <note>ID: EditTab.DirectFormatting.Superscript</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Superscript</target>
+        <target xml:lang="zh-CN" state="translated">上标</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true">
         <source xml:lang="en">Underline</source>
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Underline</target>
+        <target xml:lang="zh-CN" state="translated">下划线</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton" approved="yes">
         <source xml:lang="en">Duplicate Page</source>
@@ -1158,7 +1173,7 @@
         <source xml:lang="en">Video files</source>
         <note>ID: EditTab.FileDialogVideoFiles</note>
         <note>Used to identify the kind of files wanted in a file Open dialog</note>
-        <target xml:lang="zh-CN" state="needs-translation">Video files</target>
+        <target xml:lang="zh-CN" state="translated">视频文件</target>
       </trans-unit>
       <trans-unit id="EditTab.FontMissing" approved="yes">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
@@ -1168,7 +1183,7 @@
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.FormatDialog.Alignment</note>
-        <target xml:lang="zh-CN" state="needs-translation">Alignment</target>
+        <target xml:lang="zh-CN" state="translated">对齐方式</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true" approved="yes">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
@@ -1199,61 +1214,64 @@
         <source xml:lang="en">Big Words</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="zh-CN" state="needs-translation">Big Words</target>
+        <target xml:lang="zh-CN" state="translated">大号字体</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
         <source xml:lang="en">Cover Default</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Cover-Default-style</note>
         <note>A default style for various fields usually on the Front Cover</note>
-        <target xml:lang="zh-CN" state="needs-translation">Cover Default</target>
+        <target xml:lang="zh-CN" state="translated">默认封面样式</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Credits-Page-style" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Credits-Page-style</note>
         <note>Used on the Credits page of most Front/Back Matter packs</note>
-        <target xml:lang="zh-CN" state="needs-translation">Credits Page</target>
+        <target xml:lang="zh-CN" state="translated">版权页</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
         <source xml:lang="en">Equation</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="zh-CN" state="needs-translation">Equation</target>
+        <target xml:lang="zh-CN" state="translated">公式</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading1-style" sil:dynamic="true">
         <source xml:lang="en">Heading 1</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading1-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="zh-CN" state="needs-translation">Heading 1</target>
+        <target xml:lang="zh-CN" state="translated">标题 1</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading2-style" sil:dynamic="true">
         <source xml:lang="en">Heading 2</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading2-style</note>
         <note>A default style</note>
-        <target xml:lang="zh-CN" state="needs-translation">Heading 2</target>
+        <target xml:lang="zh-CN" state="translated">标题 2</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.normal-style" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.normal-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="zh-CN" state="needs-translation">Normal</target>
+        <target xml:lang="zh-CN" state="translated">普通样式</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">普通</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Multimedia template</note>
-        <target xml:lang="zh-CN" state="needs-translation">Quiz</target>
+        <target xml:lang="zh-CN" state="translated">问答样式</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
         <note>Used on the Front Cover page of most Front/Back Matter packs</note>
-        <target xml:lang="zh-CN" state="needs-translation">Title On Cover</target>
+        <target xml:lang="zh-CN" state="translated">封面标题</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style" sil:dynamic="true">
         <source xml:lang="en">Title On Title Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
         <note>Used on the Title Page of most Front/Back Matter packs</note>
-        <target xml:lang="zh-CN" state="needs-translation">Title On Title Page</target>
+        <target xml:lang="zh-CN" state="translated">标题页上的标题</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
@@ -1293,7 +1311,7 @@
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
-        <target xml:lang="zh-CN" state="needs-translation">Indent</target>
+        <target xml:lang="zh-CN" state="translated">缩进</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between lines of text</source>
@@ -1308,12 +1326,12 @@
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing" sil:dynamic="true">
         <source xml:lang="en">Space Between Paragraphs</source>
         <note>ID: EditTab.FormatDialog.ParagraphSpacing</note>
-        <target xml:lang="zh-CN" state="needs-translation">Space Between Paragraphs</target>
+        <target xml:lang="zh-CN" state="translated">段落间距</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphTab" sil:dynamic="true">
         <source xml:lang="en">Paragraph</source>
         <note>ID: EditTab.FormatDialog.ParagraphTab</note>
-        <target xml:lang="zh-CN" state="needs-translation">Paragraph</target>
+        <target xml:lang="zh-CN" state="translated">段落</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
@@ -1369,13 +1387,16 @@
         <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
         <target xml:lang="zh-CN">用框架书制作读物时,请在这个方框中注明译者</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">用壳书制作读物时, 请在这个方框中注明译者</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookSingleCredit">
         <source xml:lang="en">Images by {0}.</source>
         <note>ID: EditTab.FrontMatter.BookSingleCredit</note>
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked and all the images in the book are by one illustrator. Put {0} in the translation where the image credits should go. For example in English, 'Images by {0}.' comes out like 'Images by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="zh-CN" state="needs-translation">Images by {0}.</target>
+        <target xml:lang="zh-CN" state="translated">图/{0}</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book title in {lang}</source>
@@ -1392,7 +1413,7 @@
         <source xml:lang="en">Name of the translator, in {lang}</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Name of the translator, in {lang}</target>
+        <target xml:lang="zh-CN" state="translated">{lang} 翻译/译者名</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
@@ -1424,12 +1445,15 @@
       <trans-unit id="EditTab.FrontMatter.MarkTheBookEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end of the book.</source>
         <note>ID: EditTab.FrontMatter.MarkTheBookEnd</note>
-        <target xml:lang="zh-CN" state="translated">告诉读者这是书的结尾。</target>
+        <target xml:lang="zh-CN" state="translated">告诉读者这是书的结尾标志</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">告诉读者这是书的结尾。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MarkTheVideoEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end.</source>
         <note>ID: EditTab.FrontMatter.MarkTheVideoEnd</note>
-        <target xml:lang="zh-CN" state="translated">告诉读者这是结尾。</target>
+        <target xml:lang="zh-CN" state="translated">告诉读者这是书的结尾的标志</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MultipleImageCredit">
         <source xml:lang="en">Images on pages {0} by {1}.</source>
@@ -1448,6 +1472,9 @@
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
         <target xml:lang="zh-CN">用{lang}语言写成的原书(或框架书)致谢词</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">用{lang} 语言写成的原书(或壳书) 致谢词</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
@@ -1475,20 +1502,17 @@
       <trans-unit id="EditTab.FrontMatter.PasteImageCreditsLink" sil:dynamic="true">
         <source xml:lang="en">Paste Image Credits</source>
         <note>ID: EditTab.FrontMatter.PasteImageCreditsLink</note>
-        <target xml:lang="zh-CN" state="translated">粘贴图片版权信息</target>
+        <target xml:lang="zh-CN" state="translated">粘贴图片作者信息</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.PasteMissingCredits">
         <source xml:lang="en">Missing credits:</source>
         <note>ID: EditTab.FrontMatter.PasteMissingCredits</note>
-        <target xml:lang="zh-CN" state="translated">缺少作者信息</target>
-        <alt-trans>
-          <target xml:lang="zh-CN">缺少版权信息</target>
-        </alt-trans>
+        <target xml:lang="zh-CN" state="translated">缺少作者信息：</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="zh-CN" state="translated">简单的线条图看起来最好。您可以制作自己的thumbnail. png 文件, 并将其设置为只读模式, 这样Bloom就不能在其上覆写了。</target>
+        <target xml:lang="zh-CN" state="translated">简单的线条画看起来最好。您可以自己制作thumbnail. png 文件, 并将其设置为只读模式, 这样Bloom就不能在其上覆写了。</target>
         <alt-trans>
           <target xml:lang="zh-CN">简单的线条图看起来最好。您可以制作自己的thumbnail. png 文件, 并将其设置为只读模式, 这样Bloom就不能改动它了。</target>
         </alt-trans>
@@ -1535,7 +1559,7 @@
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
         <note>ID: EditTab.Image.CopyImageFailed</note>
-        <target xml:lang="zh-CN" state="translated">Bloom在访问您计算机上的剪贴板时出现问题。可能受到其他程序的干扰。</target>
+        <target xml:lang="zh-CN" state="translated">Bloom在访问您计算机上的剪贴板时出现问题。可能受到其他程序干扰。</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
@@ -1609,7 +1633,7 @@
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
         <note>ID: EditTab.NeverLocked.ToolTip</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
-        <target xml:lang="zh-CN" state="translated">资源集合里的书都没有上锁。</target>
+        <target xml:lang="zh-CN" state="translated">资源集合里的书都不上锁。</target>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName" approved="yes">
         <source xml:lang="en">Book</source>
@@ -1697,7 +1721,7 @@
       <trans-unit id="EditTab.TextBoxProperties.BorderSides" sil:dynamic="true">
         <source xml:lang="en">Border Sides</source>
         <note>ID: EditTab.TextBoxProperties.BorderSides</note>
-        <target xml:lang="zh-CN" state="needs-translation">Border Sides</target>
+        <target xml:lang="zh-CN" state="translated">边框四边</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.BorderStyle" sil:dynamic="true">
         <source xml:lang="en">Border Style</source>
@@ -1713,7 +1737,7 @@
         <source xml:lang="en">Hint Bubbles</source>
         <note>ID: EditTab.TextBoxProperties.HintBubbles</note>
         <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
-        <target xml:lang="zh-CN" state="needs-translation">Hint Bubbles</target>
+        <target xml:lang="zh-CN" state="translated">提示框</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.IncludeLang" sil:dynamic="true">
         <source xml:lang="en">Include the name of the language using {lang}. For example: "Enter color in {lang}".</source>
@@ -1760,7 +1784,7 @@
         <source xml:lang="en">Show the hint bubble</source>
         <note>ID: EditTab.TextBoxProperties.ShowHintBubble</note>
         <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
-        <target xml:lang="zh-CN" state="needs-translation">Show the hint bubble</target>
+        <target xml:lang="zh-CN" state="translated">显示提示框</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowOnEach" sil:dynamic="true">
         <source xml:lang="en">On each language-field in the group</source>
@@ -1781,7 +1805,7 @@
         <source xml:lang="en">Vertical Alignment</source>
         <note>ID: EditTab.TextBoxProperties.VerticalAlignment</note>
         <note>Label above the set of options, Top/Center/Bottom</note>
-        <target xml:lang="zh-CN" state="needs-translation">Vertical Alignment</target>
+        <target xml:lang="zh-CN" state="translated">纵向排列</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.WhatToPut" sil:dynamic="true">
         <source xml:lang="en">What should authors put in this box?</source>
@@ -1793,91 +1817,94 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="zh-CN">图片知识产权信息</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Heading" sil:dynamic="true">
+        <source xml:lang="en">Motion Tool</source>
+        <note>ID: EditTab.Toolbox.Motion.Heading</note>
+        <note>Used as the overall title of the toolbox panel</note>
+        <target xml:lang="zh-CN" state="needs-translation">Motion Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
+        <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
+        <note>ID: EditTab.Toolbox.Motion.Intro</note>
+        <target xml:lang="zh-CN" state="needs-translation">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: EditTab.Toolbox.Motion.Preview</note>
+        <target xml:lang="zh-CN" state="needs-translation">Preview</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Motion" sil:dynamic="true">
+        <source xml:lang="en">Motion</source>
+        <note>ID: EditTab.Toolbox.Motion.Preview.Motion</note>
+        <note>The label of a checkbox indicating whether motion is included in Preview (currently it always is, so the box is always checked)</note>
+        <target xml:lang="zh-CN" state="needs-translation">Motion</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Music" sil:dynamic="true">
+        <source xml:lang="en">Music</source>
+        <note>ID: EditTab.Toolbox.Motion.Preview.Music</note>
+        <note>The label of a checkbox indicating whether background music is played during Preview.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Music</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Voice" sil:dynamic="true">
+        <source xml:lang="en">Voice</source>
+        <note>ID: EditTab.Toolbox.Motion.Preview.Voice</note>
+        <note>The label of a checkbox controlling whether voice narration plays during Preview.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Voice</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">Enable motion on this page</source>
+        <note>ID: EditTab.Toolbox.Motion.ThisPage</note>
+        <target xml:lang="zh-CN" state="needs-translation">Enable motion on this page</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
-        <target xml:lang="zh-CN" state="needs-translation">Choose...</target>
+        <target xml:lang="zh-CN" state="translated">选择……</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
         <source xml:lang="en">Continue music from previous page</source>
         <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
-        <target xml:lang="zh-CN" state="needs-translation">Continue music from previous page</target>
+        <target xml:lang="zh-CN" state="translated">继续前一页的音乐</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
         <source xml:lang="en">Sound files</source>
         <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
-        <target xml:lang="zh-CN" state="needs-translation">Sound files</target>
+        <target xml:lang="zh-CN" state="translated">音频文件</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.Music.Heading</note>
-        <target xml:lang="zh-CN" state="needs-translation">Music Tool</target>
+        <target xml:lang="zh-CN" state="translated">音乐工具</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
         <note>ID: EditTab.Toolbox.Music.InvalidMp3File</note>
         <note>The {0} is replaced by the filename.</note>
-        <target xml:lang="zh-CN" state="needs-translation">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</target>
+        <target xml:lang="zh-CN" state="translated">Bloom无法播放选中的音频文件“{0}”。请选择其他音频文件。</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle">
         <source xml:lang="en">Choose Another Sound File</source>
         <note>ID: EditTab.Toolbox.Music.InvalidMp3FileTitle</note>
         <note>Title for a message box</note>
-        <target xml:lang="zh-CN" state="needs-translation">Choose Another Sound File</target>
+        <target xml:lang="zh-CN" state="translated">选择其他音频文件</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
         <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
         <note>ID: EditTab.Toolbox.Music.Overview</note>
-        <target xml:lang="zh-CN" state="needs-translation">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</target>
+        <target xml:lang="zh-CN" state="translated">用Bloom阅读器看这本书的时候，可以为此页面设置背景音乐。</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.NewMusic" sil:dynamic="true">
         <source xml:lang="en">Start new music</source>
         <note>ID: EditTab.Toolbox.Music.NewMusic</note>
-        <target xml:lang="zh-CN" state="needs-translation">Start new music</target>
+        <target xml:lang="zh-CN" state="translated">播放新的音乐</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.NoMusic" sil:dynamic="true">
         <source xml:lang="en">No Music</source>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
-        <target xml:lang="zh-CN" state="needs-translation">No Music</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
-        <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
-        <target xml:lang="zh-CN" state="needs-translation">Choose an image to activate the Pan and Zoom controls</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom Tool</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
-        <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
-        <target xml:lang="zh-CN" state="needs-translation">Pan and Zoom Tool</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
-        <source xml:lang="en">Preview</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
-        <target xml:lang="zh-CN" state="translated">预览</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Music" sil:dynamic="true">
-        <source xml:lang="en">Background Music</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
-        <note>The label of a checkbox controlling whether music plays during preview.</note>
-        <target xml:lang="zh-CN" state="translated">背景音乐</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
-        <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
-        <target xml:lang="zh-CN" state="needs-translation">Pan and Zoom</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
-        <source xml:lang="en">Voice</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voice</note>
-        <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Voice</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom this page</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.ThisPage</note>
-        <target xml:lang="zh-CN" state="needs-translation">Pan and Zoom this page</target>
+        <target xml:lang="zh-CN" state="translated">不播放音乐</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">不要音乐</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -1974,6 +2001,64 @@
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
         <target xml:lang="zh-CN">，总共</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">总共</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
+        <source xml:lang="en">Image Description Tool</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
+        <target xml:lang="zh-CN" state="needs-translation">Image Description Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
+        <source xml:lang="en">Be Concise</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
+        <target xml:lang="zh-CN" state="needs-translation">Be Concise</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true">
+        <source xml:lang="en">Be Objective</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
+        <target xml:lang="zh-CN" state="needs-translation">Be Objective</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
+        <source xml:lang="en">bloom training video</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
+        <target xml:lang="zh-CN" state="needs-translation">bloom training video</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
+        <source xml:lang="en">Check your image description against each of these reminders</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
+        <target xml:lang="zh-CN" state="needs-translation">Check your image description against each of these reminders</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
+        <source xml:lang="en">Consider your Audience</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience</note>
+        <target xml:lang="zh-CN" state="needs-translation">Consider your Audience</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ContextKey" sil:dynamic="true">
+        <source xml:lang="en">Context is Key</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ContextKey</note>
+        <target xml:lang="zh-CN" state="needs-translation">Context is Key</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific" sil:dynamic="true">
+        <source xml:lang="en">General to Specific</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific</note>
+        <target xml:lang="zh-CN" state="needs-translation">General to Specific</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true">
+        <source xml:lang="en">Learn to make effective image descriptions</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.LearnToMake</note>
+        <target xml:lang="zh-CN" state="needs-translation">Learn to make effective image descriptions</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram" sil:dynamic="true">
+        <source xml:lang="en">poet.diagramcenter.org</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
+        <target xml:lang="zh-CN" state="needs-translation">poet.diagramcenter.org</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
+        <source xml:lang="en">Write your image description on the left, in the box to the right of the picture</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
+        <target xml:lang="zh-CN" state="needs-translation">Write your image description on the left, in the box to the right of the picture</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
@@ -2091,6 +2176,9 @@
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>
         <target xml:lang="zh-CN">允许修改这本框架书</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">允许修改这本壳书</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
@@ -2172,7 +2260,7 @@
       <trans-unit id="EditTab.Toolbox.Video.Heading" sil:dynamic="true">
         <source xml:lang="en">Video Recorder Tool</source>
         <note>ID: EditTab.Toolbox.Video.Heading</note>
-        <target xml:lang="zh-CN" state="needs-translation">Video Recorder Tool</target>
+        <target xml:lang="zh-CN" state="translated">录像工具</target>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual" approved="yes">
         <source xml:lang="en">Three Languages</source>
@@ -2199,12 +2287,12 @@
         <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
-        <target xml:lang="zh-CN" state="needs-translation">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</target>
+        <target xml:lang="zh-CN" state="translated">本书处于“只能翻译“模式。如需做其他修改，点击这里为本书解锁。</target>
       </trans-unit>
       <trans-unit id="EditTab.Video.ChangeVideo" sil:dynamic="true">
         <source xml:lang="en">Change Video</source>
         <note>ID: EditTab.Video.ChangeVideo</note>
-        <target xml:lang="zh-CN" state="needs-translation">Change Video</target>
+        <target xml:lang="zh-CN" state="translated">更换视频</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -2215,7 +2303,7 @@
         <source xml:lang="en">Cannot access {0}</source>
         <note>ID: Errors.CannotAccessFile</note>
         <note>displays as a "toast", {0} is the URL/filename</note>
-        <target xml:lang="zh-CN" state="needs-translation">Cannot access {0}</target>
+        <target xml:lang="zh-CN" state="translated">无法访问 {0}</target>
       </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer" approved="yes">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
@@ -2226,19 +2314,19 @@
       <trans-unit id="Errors.CouldNotSavePage">
         <source xml:lang="en">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
         <note>ID: Errors.CouldNotSavePage</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</target>
+        <target xml:lang="zh-CN" state="translated">Bloom在保存页面时遇到困难。请点击下面的“详细信息“向我们报告。退出并重启Bloom后查看刚才编辑的网页是否有内容丢失。非常抱歉！</target>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtection">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
         <note>ID: Errors.DefenderFolderProtection</note>
         <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
-        <target xml:lang="zh-CN" state="needs-translation">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</target>
+        <target xml:lang="zh-CN" state="translated">该问题可能由Windows Defender的“受控文件夹”功能或他杀毒软件引起</target>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtectionHeading">
         <source xml:lang="en">This program cannot write to the folder {0}.</source>
         <note>ID: Errors.DefenderFolderProtectionHeading</note>
         <note>This only happens on Windows after an October 2017 update, {0} is the folder that Bloom failed to write to.</note>
-        <target xml:lang="zh-CN" state="needs-translation">This program cannot write to the folder {0}.</target>
+        <target xml:lang="zh-CN" state="translated">本程序无法写入文件夹 {0}。</target>
       </trans-unit>
       <trans-unit id="Errors.DeniedAccess" approved="yes">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
@@ -2277,7 +2365,7 @@
       <trans-unit id="Errors.ProblemImportingVideo">
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom had a problem importing this video.</target>
+        <target xml:lang="zh-CN" state="translated">Bloom在导入视频时遇到问题。</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton" approved="yes">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -2293,7 +2381,7 @@
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
         <note>ID: Errors.SpecifiedXMatterNotFound</note>
         <note xml:lang="en">Not found in version 3.9 or later)</note>
-        <target xml:lang="zh-CN" state="needs-translation">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</target>
+        <target xml:lang="zh-CN" state="translated">这本书需要名为‘{0} 的’前/后封资料包，但Bloom无法在此电脑上找到该资料包。您可以安装含有‘{0}’的Bloom资料包，也可以修改本书的前/后封设置。</target>
       </trans-unit>
       <trans-unit id="Errors.XMatterNotFound" approved="yes">
         <source xml:lang="en">This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.</source>
@@ -2305,12 +2393,12 @@
         <source xml:lang="en">Front/Back Matter Problem</source>
         <note>ID: Errors.XMatterProblemLabel</note>
         <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Front/Back Matter Problem</target>
+        <target xml:lang="zh-CN" state="translated">前封/后封出现问题</target>
       </trans-unit>
       <trans-unit id="Errors.XMatterSpecifiedByBookNotFound">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
         <note>ID: Errors.XMatterSpecifiedByBookNotFound</note>
-        <target xml:lang="zh-CN" state="needs-translation">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</target>
+        <target xml:lang="zh-CN" state="translated">这本书需要名为‘{0} 的’前/后封资料包，但当前的Bloom版本不含该资料包，且无法在此电脑上找到。该书前/后封页的设置已改用“丛书”里的设置。</target>
       </trans-unit>
       <trans-unit id="Errors.ZoneAlarm" approved="yes">
         <source xml:lang="en">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</source>
@@ -2321,7 +2409,7 @@
         <source xml:lang="en">Ask a Question</source>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Ask a Question (web)</note>
-        <target xml:lang="zh-CN" state="needs-translation">Ask a Question</target>
+        <target xml:lang="zh-CN" state="translated">提出问题</target>
       </trans-unit>
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem" approved="yes">
         <source xml:lang="en">Building Reader Templates</source>
@@ -2343,6 +2431,9 @@
         <source xml:lang="en">Documentation</source>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
         <target xml:lang="zh-CN">帮助，各种各样的帮助！</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">帮助手册</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu" approved="yes">
         <source xml:lang="en">Help</source>
@@ -2352,7 +2443,7 @@
       <trans-unit id="HelpMenu.Help Menu_ToolTip_">
         <source xml:lang="en">Get Help</source>
         <note>ID: HelpMenu.Help Menu_ToolTip_</note>
-        <target xml:lang="zh-CN" state="needs-translation">Get Help</target>
+        <target xml:lang="zh-CN" state="translated">获取帮助</target>
       </trans-unit>
       <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem" approved="yes">
         <source xml:lang="en">Key Bloom Concepts</source>
@@ -2364,6 +2455,9 @@
         <note>ID: HelpMenu.MakeASuggestionMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, shortened): Request a Feature (web)</note>
         <target xml:lang="zh-CN">提意见</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">向我们提议新功能</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.RegistrationMenuItem" approved="yes">
         <source xml:lang="en">Registration...</source>
@@ -2396,6 +2490,9 @@
         <note>ID: HelpMenu.WebSiteMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Web Site</note>
         <target xml:lang="zh-CN">网站</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.trainingVideos" approved="yes">
         <source xml:lang="en">Training Videos</source>
@@ -2427,7 +2524,7 @@
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
         <source xml:lang="en">A3Landscape</source>
         <note>ID: LayoutChoices.A3Landscape</note>
-        <target xml:lang="zh-CN" state="needs-translation">A3Landscape</target>
+        <target xml:lang="zh-CN" state="translated">A3横向</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape</source>
@@ -2477,12 +2574,12 @@
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
         <source xml:lang="en">Device16x9Landscape</source>
         <note>ID: LayoutChoices.Device16x9Landscape</note>
-        <target xml:lang="zh-CN" state="needs-translation">Device16x9Landscape</target>
+        <target xml:lang="zh-CN" state="translated">设备16x9横向</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
         <source xml:lang="en">Device16x9Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
-        <target xml:lang="zh-CN" state="needs-translation">Device16x9Portrait</target>
+        <target xml:lang="zh-CN" state="translated">设备16x9纵向</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetterPortrait</source>
@@ -2507,7 +2604,7 @@
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom {0}</target>
+        <target xml:lang="zh-CN" state="translated">Bloom {0}</target>
       </trans-unit>
       <trans-unit id="LicenseDialog._acceptButton" approved="yes">
         <source xml:lang="en">I accept the terms of the license agreement</source>
@@ -2593,7 +2690,7 @@
         <source xml:lang="en">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</source>
         <note>ID: NewCollectionWizard.FinishPageContent</note>
         <note>{0} is the name of the new collection</note>
-        <target xml:lang="zh-CN" state="needs-translation">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</target>
+        <target xml:lang="zh-CN" state="translated">已完成创建新丛书‘{0}’的所有步骤。\n请点击“完成”。</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FontAndScriptPage" approved="yes">
         <source xml:lang="en">Font and Script</source>
@@ -2619,6 +2716,9 @@
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
         <target xml:lang="zh-CN">用广泛使用的语言编写的框架书丛书。您可以将这些框架书上传到BloomLibrary.org，也可以制成Bloom资料包，让别人用框架书制作当地语言读物。</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">用广泛使用的语言编写的壳书丛书。您可以将这些壳书上传到BloomLibrary.org，也可以制成Bloom资料包，让别人用壳书制作当地语言读物。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
         <source xml:lang="en">Local Language Collection</source>
@@ -2756,7 +2856,7 @@
       <trans-unit id="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_">
         <source xml:lang="en">Change user interface language</source>
         <note>ID: OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_</note>
-        <target xml:lang="zh-CN" state="needs-translation">Change user interface language</target>
+        <target xml:lang="zh-CN" state="translated">更改用户界面语言</target>
       </trans-unit>
       <trans-unit id="PageList.CantMoveWhenTranslating" approved="yes">
         <source xml:lang="en">Pages can not be re-ordered when you are translating a book.</source>
@@ -2767,7 +2867,7 @@
         <source xml:lang="en">Adobe Color Profile License Agreement</source>
         <note>ID: PublishTab.AdobeEulaTitle</note>
         <note>dialog title for license agreement</note>
-        <target xml:lang="zh-CN" state="needs-translation">Adobe Color Profile License Agreement</target>
+        <target xml:lang="zh-CN" state="translated">Adobe 颜色配置文件许可证协议</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
@@ -2783,62 +2883,77 @@
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
         <target xml:lang="zh-CN">抱歉，Adobe Reader不无法显示，看不到已完成的书。请卸载并重装“Adobe Reader”。在问题解决之前可以把书保存成PDF格式，用其他软件打开。</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">抱歉，Adobe Reader无法显示，看不到已完成的书。请卸载并重装“Adobe Reader”。在问题解决之前可以把书保存成PDF格式，用其他软件打开。</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
+        <source xml:lang="en">About Motion Books</source>
+        <note>ID: PublishTab.Android.AboutMotionBooks</note>
+        <note>Help link under Motion Book checkbox</note>
+        <target xml:lang="zh-CN" state="needs-translation">About Motion Books</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
-        <target xml:lang="zh-CN" state="needs-translation">Save Bloom Reader File</target>
+        <target xml:lang="zh-CN" state="translated">保存成可用于Bloom阅读器的文档</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
         <source xml:lang="en">Send over USB Cable</source>
         <note>ID: PublishTab.Android.ChooseUSB</note>
-        <target xml:lang="zh-CN" state="needs-translation">Send over USB Cable</target>
+        <target xml:lang="zh-CN" state="translated">通过USB数据线发送</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
         <source xml:lang="en">Serve on WiFi Network</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-        <target xml:lang="zh-CN" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="zh-CN" state="translated">通过WiFi推送</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
         <source xml:lang="en">Control</source>
         <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Control</target>
+        <target xml:lang="zh-CN" state="translated">控制选项</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
         <source xml:lang="en">Copy to Clipboard</source>
         <note>ID: PublishTab.Android.CopyToClipboard</note>
-        <target xml:lang="zh-CN" state="needs-translation">Copy to Clipboard</target>
+        <target xml:lang="zh-CN" state="translated">复制到剪切板</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
+        <source xml:lang="en">Here you can send your book to the Bloom Reader Android app.</source>
+        <note>ID: PublishTab.Android.Intro</note>
+        <note>This is displayed at the top of the Android screen.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Here you can send your book to the Bloom Reader Android app.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
         <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
         <note>{0} is a font name</note>
-        <target xml:lang="zh-CN" state="needs-translation">Checking {0} font: License OK for embedding.</target>
+        <target xml:lang="zh-CN" state="translated">正在检查 {0} 字体: 许可证允许嵌入。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true">
         <source xml:lang="en">Embedding font {0} at a cost of {1} megs</source>
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
-        <target xml:lang="zh-CN" state="needs-translation">Embedding font {0} at a cost of {1} megs</target>
+        <target xml:lang="zh-CN" state="translated">嵌入{0} 字体将占用{1} 兆空间</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License does not permit embedding.</source>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
         <note>{0} is a font name</note>
-        <target xml:lang="zh-CN" state="needs-translation">Checking {0} font: License does not permit embedding.</target>
+        <target xml:lang="zh-CN" state="translated">正在检查 {0} 字体: 许可证不允许嵌入。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: No font found to embed.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
-        <target xml:lang="zh-CN" state="needs-translation">Checking {0} font: No font found to embed.</target>
+        <target xml:lang="zh-CN" state="translated">正在检查 {0} 字体: 没找要嵌入的字体。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.File.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="zh-CN" state="needs-translation">Packaging "{0}" for use with Bloom Reader...</target>
+        <target xml:lang="zh-CN" state="translated">正在生成Bloom阅读器上可用的“{0}”</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.Saving" sil:dynamic="true">
         <source xml:lang="en">Saving as {0}</source>
@@ -2850,7 +2965,7 @@
         <source xml:lang="en">Substituting "{0}" for "{1}"</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} and {1} are font names</note>
-        <target xml:lang="zh-CN" state="needs-translation">Substituting "{0}" for "{1}"</target>
+        <target xml:lang="zh-CN" state="translated">把{1} 换成{0}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -2862,13 +2977,19 @@
         <source xml:lang="en">Media</source>
         <note>ID: PublishTab.Android.Media</note>
         <note>A heading in the Publish to Android screen.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Media</target>
+        <target xml:lang="zh-CN" state="translated">多媒体</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
         <source xml:lang="en">Method Choices</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-        <target xml:lang="zh-CN" state="translated">选择推送方式</target>
+        <target xml:lang="zh-CN" state="translated">选择方式</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
+        <source xml:lang="en">Motion Book</source>
+        <note>ID: PublishTab.Android.MotionBookMode</note>
+        <note>Motion Book checkbox label</note>
+        <target xml:lang="zh-CN" state="needs-translation">Motion Book</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
@@ -2879,178 +3000,184 @@
       <trans-unit id="PublishTab.Android.ThumbnailColor" sil:dynamic="true">
         <source xml:lang="en">Thumbnail Color</source>
         <note>ID: PublishTab.Android.ThumbnailColor</note>
-        <target xml:lang="zh-CN" state="needs-translation">Thumbnail Color</target>
+        <target xml:lang="zh-CN" state="translated">缩略图颜色</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
-        <target xml:lang="zh-CN" state="needs-translation">Troubleshooting Tips</target>
+        <target xml:lang="zh-CN" state="translated">故障排除技巧</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
         <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
         <note>{0} is a book title</note>
-        <target xml:lang="zh-CN" state="needs-translation">You can now read "{0}" in Bloom Reader!</target>
+        <target xml:lang="zh-CN" state="translated">现在可以在Bloom阅读器上读 "{0}" 了!</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.Connected" sil:dynamic="true">
         <source xml:lang="en">Connected to {0} via USB...</source>
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
-        <target xml:lang="zh-CN" state="needs-translation">Connected to {0} via USB...</target>
+        <target xml:lang="zh-CN" state="translated">已通过 USB 连接 {0}...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
         <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
         <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
-        <target xml:lang="zh-CN" state="needs-translation">The device reported that it does not have enough space for this book. The book is {0} MB.</target>
+        <target xml:lang="zh-CN" state="translated">设备报告空间不够容纳这本书。此书 {0} MB 。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader</note>
-        <target xml:lang="zh-CN" state="needs-translation">The following devices are connected but do not seem to have Bloom Reader running:</target>
+        <target xml:lang="zh-CN" state="translated">下列设备已成功连接, 但Bloom阅读器似乎并未运行:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend" sil:dynamic="true">
         <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
         <note>ID: PublishTab.Android.Usb.Progress.FailureToSend</note>
-        <target xml:lang="zh-CN" state="needs-translation">An error occurred and the book was not sent to your Android device.</target>
+        <target xml:lang="zh-CN" state="translated">出现错误, 该书未发送到您的 Android 设备。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice" sil:dynamic="true">
         <source xml:lang="en">Looking for an Android device connected by USB cable and set up for MTP...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
         <note>This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Looking for an Android device connected by USB cable and set up for MTP...</target>
+        <target xml:lang="zh-CN" state="translated">正在寻找通过USB数据线连接的 Android 设备并进行MTP设置。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" sil:dynamic="true">
         <source xml:lang="en">Looking for an existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
         <note>{0} is a book title</note>
-        <target xml:lang="zh-CN" state="needs-translation">Looking for an existing "{0}"...</target>
+        <target xml:lang="zh-CN" state="translated">正在寻找现有的 "{0}"...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne" sil:dynamic="true">
         <source xml:lang="en">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</source>
         <note>ID: PublishTab.Android.Usb.Progress.MoreThanOne</note>
         <note>{0} is a book title</note>
-        <target xml:lang="zh-CN" state="needs-translation">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</target>
+        <target xml:lang="zh-CN" state="translated">下列已连接设备都安装了Bloom阅读器。请选择一个进行连接。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound" sil:dynamic="true">
         <source xml:lang="en">No device found. Still looking...</source>
         <note>ID: PublishTab.Android.Usb.Progress.NoDeviceFound</note>
-        <target xml:lang="zh-CN" state="needs-translation">No device found. Still looking...</target>
+        <target xml:lang="zh-CN" state="translated">设备没找到。仍在搜索...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook" sil:dynamic="true">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="zh-CN" state="needs-translation">Packaging "{0}" for use with Bloom Reader...</target>
+        <target xml:lang="zh-CN" state="translated">正在生成在Bloom阅读器上可用的“{0}”</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.ReplacingBook" sil:dynamic="true">
         <source xml:lang="en">Replacing existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.ReplacingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="zh-CN" state="needs-translation">Replacing existing "{0}"...</target>
+        <target xml:lang="zh-CN" state="translated">替换现有的 "{0}"...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook" sil:dynamic="true">
         <source xml:lang="en">Sending "{0}" to your Android device...</source>
         <note>ID: PublishTab.Android.Usb.Progress.SendingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="zh-CN" state="needs-translation">Sending "{0}" to your Android device...</target>
+        <target xml:lang="zh-CN" state="translated">正在发送 "{0}" 到您的 Android 设备...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.Stopped" sil:dynamic="true">
         <source xml:lang="en">Stopped</source>
         <note>ID: PublishTab.Android.Usb.Progress.Stopped</note>
-        <target xml:lang="zh-CN" state="needs-translation">Stopped</target>
+        <target xml:lang="zh-CN" state="translated">已停止</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect" sil:dynamic="true">
         <source xml:lang="en">Unable to connect to any Android device which has Bloom Reader.</source>
         <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
-        <target xml:lang="zh-CN" state="needs-translation">Unable to connect to any Android device which has Bloom Reader.</target>
+        <target xml:lang="zh-CN" state="translated">无法连接到装有Bloom阅读器的安卓设备</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Start" sil:dynamic="true">
         <source xml:lang="en">Connect with USB cable</source>
         <note>ID: PublishTab.Android.Usb.Start</note>
         <note>Button that tells Bloom to send the book to a device via USB cable.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Connect with USB cable</target>
+        <target xml:lang="zh-CN" state="translated">通过USB数据线发送</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Stop" sil:dynamic="true">
         <source xml:lang="en">Stop Trying</source>
         <note>ID: PublishTab.Android.Usb.Stop</note>
-        <target xml:lang="zh-CN" state="needs-translation">Stop Trying</target>
+        <target xml:lang="zh-CN" state="translated">停止发送</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest" sil:dynamic="true">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
         <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
-        <target xml:lang="zh-CN" state="needs-translation">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</target>
+        <target xml:lang="zh-CN" state="translated">有一个图书请求无法处理，可能因为设备运行的Bloom阅读器版本不兼容。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Failed" sil:dynamic="true">
         <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Failed</note>
-        <target xml:lang="zh-CN" state="needs-translation">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</target>
+        <target xml:lang="zh-CN" state="translated">图书发送失败。设备是否没有连接成功？如果找不到发送失败的理由，下文将帮助你向软件开发者报错。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Finished" sil:dynamic="true">
         <source xml:lang="en">Finished sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="zh-CN" state="needs-translation">Finished sending "{0}" to device {1}</target>
+        <target xml:lang="zh-CN" state="translated">“{0}”已经发送到设备“{1}”</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">发送“{0}”到设备“{1}”完成</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Sending" sil:dynamic="true">
         <source xml:lang="en">Sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="zh-CN" state="needs-translation">Sending "{0}" to device {1}</target>
+        <target xml:lang="zh-CN" state="translated">正在发送“{0}”到设备{1}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped" sil:dynamic="true">
         <source xml:lang="en">Stopped Advertising.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
-        <target xml:lang="zh-CN" state="needs-translation">Stopped Advertising.</target>
+        <target xml:lang="zh-CN" state="translated">停止推送</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1" sil:dynamic="true">
         <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
-        <target xml:lang="zh-CN" state="needs-translation">On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.</target>
+        <target xml:lang="zh-CN" state="translated">在安卓设备上运行Bloom阅读器，打开菜单并选择“从电脑接收图书”。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2" sil:dynamic="true">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
-        <target xml:lang="zh-CN" state="needs-translation">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</target>
+        <target xml:lang="zh-CN" state="translated">只要设备和这台电脑连接在同一网络上，就可以在任意数量的设备上执行此操作。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.beginAdvertising" sil:dynamic="true">
         <source xml:lang="en">Advertising book to Bloom Readers on local network...</source>
         <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
-        <target xml:lang="zh-CN" state="needs-translation">Advertising book to Bloom Readers on local network...</target>
+        <target xml:lang="zh-CN" state="translated">通过本地网络把图书推送到Bloom阅读器上</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
         <source xml:lang="en">Start Serving</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Start Serving</target>
+        <target xml:lang="zh-CN" state="translated">开始推送</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Stop" sil:dynamic="true">
         <source xml:lang="en">Stop Serving</source>
         <note>ID: PublishTab.Android.Wifi.Stop</note>
         <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Stop Serving</target>
+        <target xml:lang="zh-CN" state="translated">停止推送</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
         <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
         <note>ID: PublishTab.Android.WrongLayout.Message</note>
         <note>{0} and {1} are book layout tags.</note>
-        <target xml:lang="zh-CN" state="needs-translation">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</target>
+        <target xml:lang="zh-CN" state="translated">这本书现在用的布局是“{0}”。在Bloom阅读器上显示时将使用布局“{1}”，可能导致文字内容不再合适。要检查是否需要调整，可以返回“编辑”将排版改为“{1}”。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
         <source xml:lang="en">Bloom Book for Devices</source>
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom Book for Devices</target>
+        <target xml:lang="zh-CN" state="translated">适用于电子设备的Bloom图书</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">适用于电子设备的Bloom图书。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton">
         <source xml:lang="en">Android</source>
         <note>ID: PublishTab.AndroidButton</note>
-        <target xml:lang="zh-CN" state="needs-translation">Android</target>
+        <target xml:lang="zh-CN" state="translated">安卓</target>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
         <source xml:lang="en">Publish to an Android device.</source>
         <note>ID: PublishTab.AndroidButton-tooltip</note>
-        <target xml:lang="zh-CN" state="needs-translation">Publish to an Android device.</target>
+        <target xml:lang="zh-CN" state="translated">发布到 Android 设备。</target>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Insides</source>
@@ -3068,6 +3195,9 @@
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Upload</note>
         <target xml:lang="zh-CN">上传</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">上传到网络</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
@@ -3084,10 +3214,45 @@
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
         <target xml:lang="zh-CN">把书的封皮部分（封面和封二，封三和封底）做成PDF，以便用彩纸单独打印。</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.BooksForBlind">
+        <source xml:lang="en">Books for the Blind</source>
+        <note>ID: PublishTab.Epub.BooksForBlind</note>
+        <target xml:lang="zh-CN" state="needs-translation">Books for the Blind</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Done">
+        <source xml:lang="en">Done</source>
+        <note>ID: PublishTab.Epub.Done</note>
+        <target xml:lang="zh-CN" state="needs-translation">Done</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.IncludeOnPage">
+        <source xml:lang="en">Include image descriptions on page</source>
+        <note>ID: PublishTab.Epub.IncludeOnPage</note>
+        <target xml:lang="zh-CN" state="needs-translation">Include image descriptions on page</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
+        <source xml:lang="en">No recorded audio image descriptions</source>
+        <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
+        <target xml:lang="zh-CN" state="needs-translation">No recorded audio image descriptions</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.PreparingDoc">
+        <source xml:lang="en">Preparing document</source>
+        <note>ID: PublishTab.Epub.PreparingDoc</note>
+        <target xml:lang="zh-CN" state="needs-translation">Preparing document</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.PreparingPreview">
+        <source xml:lang="en">Preparing preview</source>
+        <note>ID: PublishTab.Epub.PreparingPreview</note>
+        <target xml:lang="zh-CN" state="needs-translation">Preparing preview</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Saving">
+        <source xml:lang="en">Saving</source>
+        <note>ID: PublishTab.Epub.Saving</note>
+        <target xml:lang="zh-CN" state="needs-translation">Saving</target>
+      </trans-unit>
       <trans-unit id="PublishTab.EpubButton">
         <source xml:lang="en">ePUB</source>
         <note>ID: PublishTab.EpubButton</note>
-        <target xml:lang="zh-CN" state="needs-translation">ePUB</target>
+        <target xml:lang="zh-CN" state="translated">ePUB</target>
       </trans-unit>
       <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
@@ -3109,7 +3274,7 @@
         <source xml:lang="en">Use less memory (slower)</source>
         <note>ID: PublishTab.LessMemoryPdfMode</note>
         <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Use less memory (slower)</target>
+        <target xml:lang="zh-CN" state="translated">占用内存较少（速度会更慢）</target>
       </trans-unit>
       <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation" approved="yes">
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
@@ -3136,19 +3301,19 @@
         <source xml:lang="en">Options</source>
         <note>ID: PublishTab.Options</note>
         <note>menu header in the Publish tab</note>
-        <target xml:lang="zh-CN" state="needs-translation">Options</target>
+        <target xml:lang="zh-CN" state="translated">选项</target>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
         <source xml:lang="en">Size/Layout</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
         <note>Header for a region of the menu which lists various standard page layout sizes</note>
-        <target xml:lang="zh-CN" state="needs-translation">Size/Layout</target>
+        <target xml:lang="zh-CN" state="translated">尺寸/布局</target>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
         <source xml:lang="en">Choose a page size and orientation</source>
         <note>ID: PublishTab.Options_ToolTip_</note>
         <note>menu header in the Publish tab</note>
-        <target xml:lang="zh-CN" state="needs-translation">Choose a page size and orientation</target>
+        <target xml:lang="zh-CN" state="translated">请选择页面大小和方向</target>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton" approved="yes">
         <source xml:lang="en">Replace Existing</source>
@@ -3169,68 +3334,74 @@
         <source xml:lang="en">Compressing PDF</source>
         <note>ID: PublishTab.PdfMaker.Compress</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="zh-CN" state="needs-translation">Compressing PDF</target>
+        <target xml:lang="zh-CN" state="translated">正在压缩PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.CompressConvertColor">
         <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
         <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="zh-CN" state="needs-translation">Compressing PDF &amp; Converting Color to CMYK</target>
+        <target xml:lang="zh-CN" state="translated">正在压缩 PDF &amp; 正将颜色转换为 CMYK</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Creating">
         <source xml:lang="en">Creating PDF...</source>
         <note>ID: PublishTab.PdfMaker.Creating</note>
         <note>Message displayed in a progress report dialog box</note>
         <note xml:lang="en">OLD TEXT (before 4.0, removed space): Creating PDF ...</note>
-        <target xml:lang="zh-CN" state="needs-translation">Creating PDF...</target>
+        <target xml:lang="zh-CN" state="translated">正在创建 PDF...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="zh-CN" state="needs-translation">Error creating, compressing, or recoloring the PDF file</target>
+        <target xml:lang="zh-CN" state="translated">创建、压缩或给PDF 文件重新上色时出错</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ErrorSaving">
         <source xml:lang="en">Error compressing or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="zh-CN" state="needs-translation">Error compressing or recoloring the PDF file</target>
+        <target xml:lang="zh-CN" state="translated">压缩或给PDF 文件重新上色时出错</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Finished">
         <source xml:lang="en">Finished making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.Finished</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="zh-CN" state="needs-translation">Finished making PDF from HTML</target>
+        <target xml:lang="zh-CN" state="translated">已完成从 HTML 制作 PDF</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">完成从 HTML 制作 PDF</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="zh-CN" state="needs-translation">Making PDF from HTML</target>
+        <target xml:lang="zh-CN" state="translated">正在从 HTML 制作 PDF</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">从 HTML 制作 PDF</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingPageOfPdf">
         <source xml:lang="en">Making Page {0} of the PDF</source>
         <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
-        <target xml:lang="zh-CN" state="needs-translation">Making Page {0} of the PDF</target>
+        <target xml:lang="zh-CN" state="translated">正在制作 PDF 的第 {0} 页</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
         <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
         <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
-        <target xml:lang="zh-CN" state="needs-translation">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</target>
+        <target xml:lang="zh-CN" state="translated">使用CMYK颜色的PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
         <source xml:lang="en">PDF with RGB color</source>
         <note>ID: PublishTab.PdfMaker.PdfWithRGB</note>
         <note>displayed as file type for Save File dialog. 'RGB' may not be translatable, it is a standard.</note>
-        <target xml:lang="zh-CN" state="needs-translation">PDF with RGB color</target>
+        <target xml:lang="zh-CN" state="translated">使用RGB颜色的PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Saving">
         <source xml:lang="en">Saving PDF...</source>
         <note>ID: PublishTab.PdfMaker.Saving</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="zh-CN" state="needs-translation">Saving PDF...</target>
+        <target xml:lang="zh-CN" state="translated">正在保存 PDF...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.TryMoreMemory" approved="yes">
         <source xml:lang="en">Try doing this on a computer with more memory</source>
@@ -3251,13 +3422,13 @@
         <source xml:lang="en">PDF Not Saved</source>
         <note>ID: PublishTab.PdfNotSaved</note>
         <note>title for the message box</note>
-        <target xml:lang="zh-CN" state="needs-translation">PDF Not Saved</target>
+        <target xml:lang="zh-CN" state="translated">PDF未保存</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
-        <target xml:lang="zh-CN" state="needs-translation">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</target>
+        <target xml:lang="zh-CN" state="translated">PDF文档没有保存成功，因为您选择的是不允许“生成可打印的PDF”</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrintButton" approved="yes">
         <source xml:lang="en">&amp;Print...</source>
@@ -3268,7 +3439,7 @@
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</target>
+        <target xml:lang="zh-CN" state="translated">Bloom使用 Adobe 颜色配置文件将 PDF 文件从使用 RGB 颜色转换为使用 CMYK 颜色。 这是“生成可打印的PDF”文件的一个环节。 为了完成此任务, 您必须允许以下许可证。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>
@@ -3303,12 +3474,12 @@
       <trans-unit id="PublishTab.Upload.Cancelled">
         <source xml:lang="en">Upload was cancelled</source>
         <note>ID: PublishTab.Upload.Cancelled</note>
-        <target xml:lang="zh-CN" state="needs-translation">Upload was cancelled</target>
+        <target xml:lang="zh-CN" state="translated">上传被取消</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
-        <target xml:lang="zh-CN" state="needs-translation">CC-BY-NC</target>
+        <target xml:lang="zh-CN" state="translated">CC BY-ND</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
@@ -3354,18 +3525,18 @@
       <trans-unit id="PublishTab.Upload.GiveBack">
         <source xml:lang="en">It’s easy to “give back”</source>
         <note>ID: PublishTab.Upload.GiveBack</note>
-        <target xml:lang="zh-CN" state="needs-translation">It’s easy to “give back”</target>
+        <target xml:lang="zh-CN" state="translated">便于分享</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.HelpEachOther">
         <source xml:lang="en">In the Bloom community, we help each other by sharing both new and newly translated books on the Bloom Library.</source>
         <note>ID: PublishTab.Upload.HelpEachOther</note>
-        <target xml:lang="zh-CN" state="needs-translation">In the Bloom community, we help each other by sharing both new and newly translated books on the Bloom Library.</target>
+        <target xml:lang="zh-CN" state="translated">在Bloom大家庭中我们互相帮助，把新做好和新翻译好的书都分享到Bloom图书馆里。</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.IncompleteTranslation">
         <source xml:lang="en">(incomplete translation)</source>
         <note>ID: PublishTab.Upload.IncompleteTranslation</note>
         <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
-        <target xml:lang="zh-CN" state="needs-translation">(incomplete translation)</target>
+        <target xml:lang="zh-CN" state="translated">（部分未翻译）</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Languages" approved="yes">
         <source xml:lang="en">Languages</source>
@@ -3545,7 +3716,7 @@
         <note xml:lang="en">OLD TEXT (before 4.0, mark newlines properly): This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.
 
 Do you want to go ahead?</note>
-        <target xml:lang="zh-CN" state="needs-translation">This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.\n\nDo you want to go ahead?</target>
+        <target xml:lang="zh-CN" state="translated">这本书好像是模板，也就是说它只有用于做书的空白页面没有可供翻译的内容。如果您的意图不是上传模板，请在上传前寻求专家的帮助。\n\n是否要继续？</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TermsLink" approved="yes">
         <source xml:lang="en">Show Terms of Use</source>
@@ -3602,11 +3773,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
         <target xml:lang="zh-CN">正在上传{0}</target>
-      </trans-unit>
-      <trans-unit id="PublishView._saveButton">
-        <source xml:lang="en">Save stub</source>
-        <note>ID: PublishView._saveButton</note>
-        <target xml:lang="zh-CN" state="needs-translation">Save stub</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Level</source>
@@ -3769,7 +3935,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true">
         <source xml:lang="en">Punctuation</source>
         <note>ID: ReaderSetup.Punctuation</note>
-        <target xml:lang="zh-CN" state="needs-translation">Punctuation</target>
+        <target xml:lang="zh-CN" state="translated">标点符号</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
@@ -3829,12 +3995,15 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="zh-CN" state="needs-translation">Special Sentence-Ending Punctuation</target>
+        <target xml:lang="zh-CN" state="translated">特殊的断句符号</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">特殊的句尾标点</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</target>
+        <target xml:lang="zh-CN" state="translated">Bloom已经知道世界各种语言中常见的断句符号。如果要加入其它断句符号，在这里输入该符号的统一码（Unicode）代码。如在泰文中，输入\U0020就能让Bloom知道普通空格可用于断句。</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
@@ -3879,7 +4048,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
         <source xml:lang="en">SynPhony</source>
         <note>ID: ReaderSetup.Synphony</note>
-        <target xml:lang="zh-CN" state="needs-translation">SynPhony</target>
+        <target xml:lang="zh-CN" state="translated">SynPhony</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Things to remember for this level:</source>
@@ -4070,6 +4239,9 @@ Do you want to go ahead?</note>
         <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Zipping up book...</note>
         <target xml:lang="zh-CN">正在压缩书……</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">正在上传书……</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
         <source xml:lang="en">Will not be private</source>
@@ -4089,33 +4261,33 @@ Do you want to go ahead?</note>
       <trans-unit id="SamplePrintNotification.WindowTitle">
         <source xml:lang="en">Sample Print Settings</source>
         <note>ID: SamplePrintNotification.WindowTitle</note>
-        <target xml:lang="zh-CN" state="needs-translation">Sample Print Settings</target>
+        <target xml:lang="zh-CN" state="translated">样本打印设置</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true">
         <source xml:lang="en">Default line spacing</source>
         <note>ID: ScriptSettingsDialog.DefaultLineSpacing</note>
-        <target xml:lang="zh-CN" state="needs-translation">Default line spacing</target>
+        <target xml:lang="zh-CN" state="translated">默认行间距</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox">
         <source xml:lang="en">This script is right to left</source>
         <note>ID: ScriptSettingsDialog.RightToLeftScriptCheckBox</note>
-        <target xml:lang="zh-CN" state="needs-translation">This script is right to left</target>
+        <target xml:lang="zh-CN" state="translated">该字体从右至左书写</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle">
         <source xml:lang="en">Special Script Settings...</source>
         <note>ID: ScriptSettingsDialog.ScriptSettingsWindowTitle</note>
-        <target xml:lang="zh-CN" state="needs-translation">Special Script Settings...</target>
+        <target xml:lang="zh-CN" state="translated">特殊文字设置...</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox">
         <source xml:lang="en">This script requires taller lines</source>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
-        <target xml:lang="zh-CN" state="needs-translation">This script requires taller lines</target>
+        <target xml:lang="zh-CN" state="translated">该字体需要更大的行间距</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Template</source>
         <note>ID: TemplateBooks.BookName.Arithmetic Template</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Arithmetic</note>
-        <target xml:lang="zh-CN" state="needs-translation">Arithmetic Template</target>
+        <target xml:lang="zh-CN" state="translated">算术模板</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
@@ -4140,7 +4312,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Multimedia" sil:dynamic="true">
         <source xml:lang="en">Multimedia</source>
         <note>ID: TemplateBooks.BookName.Multimedia</note>
-        <target xml:lang="zh-CN" state="needs-translation">Multimedia</target>
+        <target xml:lang="zh-CN" state="translated">多媒体</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
@@ -4150,12 +4322,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
-        <target xml:lang="zh-CN" state="needs-translation">Template Starter</target>
+        <target xml:lang="zh-CN" state="translated">模板设计器</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.The Moon and the Cap" sil:dynamic="true">
         <source xml:lang="en">The Moon and the Cap</source>
         <note>ID: TemplateBooks.BookName.The Moon and the Cap</note>
-        <target xml:lang="zh-CN" state="needs-translation">The Moon and the Cap</target>
+        <target xml:lang="zh-CN" state="translated">月亮和帽子</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Vaccinations</source>
@@ -4175,7 +4347,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
         <note>ID: TemplateBooks.PageDescription.Flyleaf</note>
-        <target xml:lang="zh-CN" state="needs-translation">This page was automatically inserted because the following page is marked as part of a two page spread.</target>
+        <target xml:lang="zh-CN" state="translated">本页是系统自动插入的, 因为下一页被标记为横跨两个页面的一部分。</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with a picture on top and a large, centered word below.</source>
@@ -4186,12 +4358,12 @@ Do you want to go ahead?</note>
         <source xml:lang="en">For use with Landscape orientation.</source>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="zh-CN" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="zh-CN" state="translated">用于横向页面</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
         <source xml:lang="en">1</source>
         <note>ID: TemplateBooks.PageLabel.1</note>
-        <target xml:lang="zh-CN" state="needs-translation">1</target>
+        <target xml:lang="zh-CN" state="translated">1</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1 Problem" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1 Problem</source>
@@ -4202,57 +4374,57 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.10" sil:dynamic="true">
         <source xml:lang="en">10</source>
         <note>ID: TemplateBooks.PageLabel.10</note>
-        <target xml:lang="zh-CN" state="needs-translation">10</target>
+        <target xml:lang="zh-CN" state="translated">10</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.11" sil:dynamic="true">
         <source xml:lang="en">11</source>
         <note>ID: TemplateBooks.PageLabel.11</note>
-        <target xml:lang="zh-CN" state="needs-translation">11</target>
+        <target xml:lang="zh-CN" state="translated">11</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.12" sil:dynamic="true">
         <source xml:lang="en">12</source>
         <note>ID: TemplateBooks.PageLabel.12</note>
-        <target xml:lang="zh-CN" state="needs-translation">12</target>
+        <target xml:lang="zh-CN" state="translated">12</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.13" sil:dynamic="true">
         <source xml:lang="en">13</source>
         <note>ID: TemplateBooks.PageLabel.13</note>
-        <target xml:lang="zh-CN" state="needs-translation">13</target>
+        <target xml:lang="zh-CN" state="translated">13</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.14" sil:dynamic="true">
         <source xml:lang="en">14</source>
         <note>ID: TemplateBooks.PageLabel.14</note>
-        <target xml:lang="zh-CN" state="needs-translation">14</target>
+        <target xml:lang="zh-CN" state="translated">14</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.15" sil:dynamic="true">
         <source xml:lang="en">15</source>
         <note>ID: TemplateBooks.PageLabel.15</note>
-        <target xml:lang="zh-CN" state="needs-translation">15</target>
+        <target xml:lang="zh-CN" state="translated">15</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.16" sil:dynamic="true">
         <source xml:lang="en">16</source>
         <note>ID: TemplateBooks.PageLabel.16</note>
-        <target xml:lang="zh-CN" state="needs-translation">16</target>
+        <target xml:lang="zh-CN" state="translated">16</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.17" sil:dynamic="true">
         <source xml:lang="en">17</source>
         <note>ID: TemplateBooks.PageLabel.17</note>
-        <target xml:lang="zh-CN" state="needs-translation">17</target>
+        <target xml:lang="zh-CN" state="translated">17</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.18" sil:dynamic="true">
         <source xml:lang="en">18</source>
         <note>ID: TemplateBooks.PageLabel.18</note>
-        <target xml:lang="zh-CN" state="needs-translation">18</target>
+        <target xml:lang="zh-CN" state="translated">18</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.19" sil:dynamic="true">
         <source xml:lang="en">19</source>
         <note>ID: TemplateBooks.PageLabel.19</note>
-        <target xml:lang="zh-CN" state="needs-translation">19</target>
+        <target xml:lang="zh-CN" state="translated">19</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.2" sil:dynamic="true">
         <source xml:lang="en">2</source>
         <note>ID: TemplateBooks.PageLabel.2</note>
-        <target xml:lang="zh-CN" state="needs-translation">2</target>
+        <target xml:lang="zh-CN" state="translated">2</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.2 Problems" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2 Problems</source>
@@ -4263,17 +4435,17 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.20" sil:dynamic="true">
         <source xml:lang="en">20</source>
         <note>ID: TemplateBooks.PageLabel.20</note>
-        <target xml:lang="zh-CN" state="needs-translation">20</target>
+        <target xml:lang="zh-CN" state="translated">20</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.21" sil:dynamic="true">
         <source xml:lang="en">21</source>
         <note>ID: TemplateBooks.PageLabel.21</note>
-        <target xml:lang="zh-CN" state="needs-translation">21</target>
+        <target xml:lang="zh-CN" state="translated">21</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true">
         <source xml:lang="en">3</source>
         <note>ID: TemplateBooks.PageLabel.3</note>
-        <target xml:lang="zh-CN" state="needs-translation">3</target>
+        <target xml:lang="zh-CN" state="translated">3</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.3 Problems" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3 Problems</source>
@@ -4284,7 +4456,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
         <source xml:lang="en">4</source>
         <note>ID: TemplateBooks.PageLabel.4</note>
-        <target xml:lang="zh-CN" state="needs-translation">4</target>
+        <target xml:lang="zh-CN" state="translated">4</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.4 Problems" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4 Problems</source>
@@ -4295,33 +4467,33 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true">
         <source xml:lang="en">5</source>
         <note>ID: TemplateBooks.PageLabel.5</note>
-        <target xml:lang="zh-CN" state="needs-translation">5</target>
+        <target xml:lang="zh-CN" state="translated">5</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true">
         <source xml:lang="en">6</source>
         <note>ID: TemplateBooks.PageLabel.6</note>
-        <target xml:lang="zh-CN" state="needs-translation">6</target>
+        <target xml:lang="zh-CN" state="translated">6</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true">
         <source xml:lang="en">7</source>
         <note>ID: TemplateBooks.PageLabel.7</note>
-        <target xml:lang="zh-CN" state="needs-translation">7</target>
+        <target xml:lang="zh-CN" state="translated">7</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.8" sil:dynamic="true">
         <source xml:lang="en">8</source>
         <note>ID: TemplateBooks.PageLabel.8</note>
-        <target xml:lang="zh-CN" state="needs-translation">8</target>
+        <target xml:lang="zh-CN" state="translated">8</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.9" sil:dynamic="true">
         <source xml:lang="en">9</source>
         <note>ID: TemplateBooks.PageLabel.9</note>
-        <target xml:lang="zh-CN" state="needs-translation">9</target>
+        <target xml:lang="zh-CN" state="translated">9</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.About" sil:dynamic="true">
         <source xml:lang="en">About</source>
         <note>ID: TemplateBooks.PageLabel.About</note>
         <note>Caption of 2nd page in books made from Template Starter</note>
-        <target xml:lang="zh-CN" state="needs-translation">About</target>
+        <target xml:lang="zh-CN" state="translated">关于</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alphabet</source>
@@ -4341,7 +4513,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
-        <target xml:lang="zh-CN" state="needs-translation">Bloom Reader Quiz</target>
+        <target xml:lang="zh-CN" state="translated">Bloom阅读器测试</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
@@ -4407,7 +4579,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Image For Thumbnail</source>
         <note>ID: TemplateBooks.PageLabel.Image For Thumbnail</note>
         <note>Caption of first page in books made from Template Starter</note>
-        <target xml:lang="zh-CN" state="needs-translation">Image For Thumbnail</target>
+        <target xml:lang="zh-CN" state="translated">缩略图图像</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image On Bottom</source>
@@ -4478,13 +4650,16 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Picture on Left</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="zh-CN" state="needs-translation">Picture on Left</target>
+        <target xml:lang="zh-CN" state="translated">图像在左边</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">图片在左边</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Quiz</note>
         <note>Used in page preview for Comprehension Question pages. Should be short.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Quiz</target>
+        <target xml:lang="zh-CN" state="translated">测试</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-Cameroon</source>
@@ -4499,7 +4674,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.The End" sil:dynamic="true">
         <source xml:lang="en">The End</source>
         <note>ID: TemplateBooks.PageLabel.The End</note>
-        <target xml:lang="zh-CN" state="needs-translation">The End</target>
+        <target xml:lang="zh-CN" state="translated">结局</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Page Is Intentionally Blank</source>
@@ -4515,6 +4690,12 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Traditional</source>
         <note>ID: TemplateBooks.PageLabel.Traditional</note>
         <target xml:lang="zh-CN">传统的</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Translation Instructions" sil:dynamic="true">
+        <source xml:lang="en">Translation Instructions</source>
+        <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
+        <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Translation Instructions</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>
@@ -4639,19 +4820,19 @@ Do you want to go ahead?</note>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="zh-CN" state="needs-translation">Warning</target>
+        <target xml:lang="zh-CN" state="translated">警告</target>
       </trans-unit>
       <trans-unit id="WebServer.Warning.NoFile">
         <source xml:lang="en">Cannot Find File</source>
         <note>ID: WebServer.Warning.NoFile</note>
         <note>displays as a "toast"</note>
-        <target xml:lang="zh-CN" state="needs-translation">Cannot Find File</target>
+        <target xml:lang="zh-CN" state="translated">找不到文件</target>
       </trans-unit>
       <trans-unit id="WebServer.Warning.NoImageFile">
         <source xml:lang="en">Cannot Find Image File</source>
         <note>ID: WebServer.Warning.NoImageFile</note>
         <note>displays as a "toast"</note>
-        <target xml:lang="zh-CN" state="needs-translation">Cannot Find Image File</target>
+        <target xml:lang="zh-CN" state="translated">找不到图像文件</target>
       </trans-unit>
     </body>
   </file>
