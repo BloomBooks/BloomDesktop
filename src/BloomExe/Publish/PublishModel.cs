@@ -22,7 +22,8 @@ using SIL.Progress;
 namespace Bloom.Publish
 {
 	/// <summary>
-	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and letting you print it.
+	/// Contains the logic behind the PublishView control, which involves creating a pdf from the html book and letting you print it,
+	/// making epubs, and various other publication paths.
 	/// </summary>
 	public class PublishModel : IDisposable
 	{
@@ -651,6 +652,49 @@ namespace Bloom.Publish
 				{"BookId", BookSelection.CurrentSelection.ID},
 				{"Country", _collectionSettings.Country}
 			});
+		}
+
+		public string UpdateEpubControlContent()
+		{
+			// Enhance: this could be optimized (but it will require changes to EpubMaker, it assumes it only stages once)
+			var publishImageDescriptions = EpubMaker.PublishImageDescriptions; // before we dispose it
+			PrepareToStageEpub();
+			EpubMaker.PublishImageDescriptions = publishImageDescriptions; // restore on new one
+			return SetupEpubControlContent();
+		}
+
+		public string SetupEpubControlContent()
+		{
+			// This gets called on a background thread but one step needs to happen on the UI thread,
+			// so the Maker needs a control to Invoke on.
+			EpubMaker.ControlForInvoke = View;
+			EpubMaker.StageEpub();
+
+			var fileLocator = BookSelection.CurrentSelection.GetFileLocator();
+			var root = fileLocator.LocateDirectoryWithThrow("Readium");
+			var tempFolder = Path.GetDirectoryName(StagingDirectory);
+			// This is kludge. I hope it can be improved. To make a preview we currently need all the Readium
+			// files in a folder that is a parent of the staging folder containing the book content.
+			// This allows us to tell Readium about the book by passing the name of the folder using the ?ePUB=
+			// URL parameter. It doesn't work to use the original Readium file and make the parameter a full path.
+			// It's possible that there is some variation that would work, e.g., make the param a full file:/// url
+			// to the book folder. It's also possible we could get away with only copying the HTML file itself,
+			// if we modified it to have localhost: links to the JS and CSS. Haven't tried this yet. The current
+			// approach at least works.
+			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
+
+			// Not sure if we will need this. The current UI does not appear to have a way to indicate whether
+			// we have a talking book, a book without audio, or one that has audio but it is not being published.
+			//var audioSituationClass = "noAudioAvailable";
+			//if (EpubMaker.PublishWithoutAudio)
+			//	audioSituationClass = "haveAudioButNotMakingTalkingBook";
+			//else if (BookHasAudio)
+			//	audioSituationClass = "isTalkingBook";
+
+			var targetFile = Path.Combine(tempFolder, "readium-cloudreader.htm");
+
+			var iframeSource = targetFile.ToLocalhost() + "?epub=" + Path.GetFileName(StagingDirectory);
+			return iframeSource;
 		}
 	}
 }

@@ -27,6 +27,8 @@ namespace Bloom.Publish
 			VisibleChanged += OnVisibleChanged;
 		}
 
+		public Browser Browser => _browser;
+
 		private string GetUrlParams()
 		{
 			return $"?isLinux={Platform.IsLinux}";

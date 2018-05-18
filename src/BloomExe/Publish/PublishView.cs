@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition.Primitives;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -15,10 +16,13 @@ using L10NSharp;
 using SIL.Reporting;
 using SIL.IO;
 using System.Drawing;
+using Bloom.Api;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
+using Fleck;
+using RestSharp.Extensions;
 
 namespace Bloom.Publish
 {
@@ -35,18 +39,30 @@ namespace Bloom.Publish
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
 		private PublishToAndroidApi _publishApi;
+		private BloomWebSocketServer _webSocketServer;
+		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
+		private const string kWebsocketPreviewId = "epubPreview";
+		private EpubMaker.ImageDescriptionPublishing _desiredImageDescriptionPublishing = EpubMaker.ImageDescriptionPublishing.None;
+		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
+		private Action<EpubMaker> _doWhenPreviewComplete; // Something to do when the current preview is complete (e.g., save it)
+		private BackgroundWorker _previewWorker;
+		private string _previewSrc;
 
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator,
-			PublishToAndroidApi publishApi)
+			PublishToAndroidApi publishApi, BloomWebSocketServer webSocketServer, PublishEpubApi publishEpubApi)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
 			_publishApi = publishApi;
+			_webSocketServer = webSocketServer;
+			// This works as long as we only have one PublishView. If we one day support multiple windows, we'll need to do something
+			// to tell it the current one.
+			publishEpubApi.CurrentView = this;
 
 			InitializeComponent();
 
@@ -520,10 +536,172 @@ namespace Bloom.Publish
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "android", "androidPublishUI.html"));
 					break;
 				case PublishModel.DisplayModes.EPUB2:
-					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "epub", "EpubPublishUI.html"));
+					// We rather mangled the Readium code in the process of cutting away its own navigation
+					// and other controls. It produces all kinds of JavaScript errors, but it seems to do
+					// what we want in our preview. So just suppress the toasts for all of them. This is unfortunate because
+					// we'll lose them for all the other JS code in this pane. But I don't have a better solution.
+					// We still get them in the output window, in case we really want to look for one.
+					Browser.SuppressJavaScriptErrors = true;
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "epub", "epubPublishUI.html"));
+					bool firstTime = true;
+					_htmlControl.Browser.WebBrowser.DocumentCompleted += (sender, args) =>
+					{
+						// Wait until the document is sufficiently initialized to receive websocket broadcasts
+						if (firstTime)
+						{
+							// We get multiple DocumentCompleted events, e.g., when setting a new preview.
+							// Just do this the first time.
+							firstTime = false;
+							PublishEpubApi.ReportProgress(_webSocketServer,
+								LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
+							_webSocketServer.Send("publish/epub/state", GetImageDescriptionState(_desiredImageDescriptionPublishing));
+						}
+					};
+					_model.PrepareToStageEpub(); // let's get the epub maker and its browser created on the UI thread
+					_model.EpubMaker.PublishImageDescriptions = _desiredImageDescriptionPublishing;
+					_previewWorker = new BackgroundWorker();
+					_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
+					_previewWorker.DoWork += (sender, args) => SetupEpubPreview();
+					_previewWorker.RunWorkerAsync();
 					break;
 			}
 			UpdateSaveButton();
+		}
+
+		string GetImageDescriptionState(EpubMaker.ImageDescriptionPublishing input)
+		{
+			switch (input)
+			{
+				case EpubMaker.ImageDescriptionPublishing.None: return "none";
+				case EpubMaker.ImageDescriptionPublishing.OnPage: return "onPage";
+				case EpubMaker.ImageDescriptionPublishing.Links: return "links";
+				default: throw new InvalidOperationException("enumeration in invalid state");
+			}
+		}
+
+		public void UpdatePreview(EpubMaker.ImageDescriptionPublishing newImageMode, bool retry = false)
+		{
+			lock (this)
+			{
+				if (_desiredImageDescriptionPublishing == newImageMode && !retry)
+					return; // getting a request really from the browser, and already in that state.
+				_desiredImageDescriptionPublishing = newImageMode;
+				if (_previewWorker != null)
+				{
+					// Something changed before we even finished generating the preview! abort the current attempt, which will lead
+					// to trying again.
+					_model.EpubMaker.AbortRequested = true;
+					return;
+				}
+
+				if (_doWhenPreviewComplete != null)
+				{
+					// We're committed to doing something with a completed preview...and we're done making the preview...
+					// so probably we're in the middle of doing the completed preview action.
+					// We need to let it complete; THEN we should update the preview again.
+					_needNewPreview = true;
+					return;
+				}
+			}
+
+			_model.EpubMaker.PublishImageDescriptions = newImageMode;
+			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
+			// we will really be changing the src attr in the preview iframe so the display will update.
+			_webSocketServer.Send(kWebsocketPreviewId, "");
+			Invoke((Action) (() =>
+			{
+				PublishEpubApi.ReportProgress(_webSocketServer,
+					LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
+			}));
+			_previewWorker = new BackgroundWorker();
+			_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
+			_previewWorker.DoWork += (sender, args) =>
+			{
+				_previewSrc = _model.UpdateEpubControlContent();
+			};
+			_previewWorker.RunWorkerAsync();
+		}
+
+		private void _previewWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			bool abortRequested;
+			// I'm not absolutely sure that this and UpdatePreview will always run on the UI thread.
+			// So there is a possible race condition:
+			// while we are running this method, the user does something which results in
+			// a new UpdatePreview on another thread.
+			// If updatePreview gets the lock first, it will set the abort flag and quit;
+			// this method will clean up and call UpdatePreview again.
+			// If this method gets the lock first, it will proceed to update the preview
+			// with the successful results it obtained. The new update will proceed in the background.
+			// That should be OK, though there is probably a rare pathological case where progress shows
+			// two Preparing messages followed by two Done messages.
+			lock (this)
+			{
+				_previewWorker.Dispose();
+				_previewWorker = null; // allows UpdatePrevew to know nothing is in progress
+				abortRequested = _model.EpubMaker.AbortRequested;
+				// Either we just made a successful preview, or we're just about to try again.
+				// Either way, we don't need yet another new one later (unless another change happens)
+				_needNewPreview = false;
+			}
+
+			if (abortRequested || _model.EpubMaker.PublishImageDescriptions != _desiredImageDescriptionPublishing)
+			{
+				UpdatePreview(_desiredImageDescriptionPublishing, true);
+				return;
+			}
+
+			if (_doWhenPreviewComplete != null)
+			{
+				Debug.Assert(!_model.EpubMaker.AbortRequested);
+				Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredImageDescriptionPublishing);
+				_doWhenPreviewComplete(_model.EpubMaker);
+				_doWhenPreviewComplete = null;
+
+				if (_needNewPreview)
+				{
+					// We got a request somewhere in the process of running the action.
+					UpdatePreview(_desiredImageDescriptionPublishing, true);
+					return;
+				}
+			}
+
+			Invoke((Action) (() =>
+			{
+				_webSocketServer.Send(kWebsocketPreviewId, _previewSrc);
+				PublishEpubApi.ReportProgress(_webSocketServer,
+					LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
+			}));
+		}
+
+		/// <summary>
+		/// Perform the requested action (currently the only example is, save the epub) when we have an up-to-date
+		/// preview. Pass it the EpubMaker that generated the preview.
+		/// </summary>
+		/// <param name="doWhenReady"></param>
+		public void RequestPreviewOutput(Action<EpubMaker> doWhenReady)
+		{
+			lock (this)
+			{
+				_doWhenPreviewComplete = doWhenReady;
+				if (_previewWorker != null)
+					return; // in process of making, can't do it now; will be done in _previewWorker_RunWorkerCompleted.
+			}
+
+			Debug.Assert(!_model.EpubMaker.AbortRequested);
+			Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredImageDescriptionPublishing);
+			_doWhenPreviewComplete(_model.EpubMaker);
+
+			_doWhenPreviewComplete = null;
+
+			if (_needNewPreview) // we got a request during action processing
+				UpdatePreview(_desiredImageDescriptionPublishing, true);
+		}
+
+		private void SetupEpubPreview()
+		{
+			_model.DoAnyNeededAudioCompression();
+			_previewSrc = _model.SetupEpubControlContent();
 		}
 
 		private void ShowHtmlPanel(string pathToHtml)
