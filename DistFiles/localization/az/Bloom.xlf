@@ -2823,6 +2823,12 @@
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
         <target xml:lang="az" state="needs-translation">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
+        <source xml:lang="en">About Motion Books</source>
+        <note>ID: PublishTab.Android.AboutMotionBooks</note>
+        <note>Help link under Motion Book checkbox</note>
+        <target xml:lang="az" state="needs-translation">About Motion Books</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
@@ -2848,6 +2854,12 @@
         <source xml:lang="en">Copy to Clipboard</source>
         <note>ID: PublishTab.Android.CopyToClipboard</note>
         <target xml:lang="az" state="needs-translation">Copy to Clipboard</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
+        <source xml:lang="en">Here you can send your book to the Bloom Reader Android app.</source>
+        <note>ID: PublishTab.Android.Intro</note>
+        <note>This is displayed at the top of the Android screen.</note>
+        <target xml:lang="az" state="needs-translation">Here you can send your book to the Bloom Reader Android app.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
@@ -2908,6 +2920,12 @@
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
         <target xml:lang="az" state="needs-translation">Method Choices</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
+        <source xml:lang="en">Motion Book</source>
+        <note>ID: PublishTab.Android.MotionBookMode</note>
+        <note>Motion Book checkbox label</note>
+        <target xml:lang="az" state="needs-translation">Motion Book</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
@@ -3122,6 +3140,41 @@
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
         <target xml:lang="az" state="needs-translation">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.BooksForBlind">
+        <source xml:lang="en">Books for the Blind</source>
+        <note>ID: PublishTab.Epub.BooksForBlind</note>
+        <target xml:lang="az" state="needs-translation">Books for the Blind</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Done">
+        <source xml:lang="en">Done</source>
+        <note>ID: PublishTab.Epub.Done</note>
+        <target xml:lang="az" state="needs-translation">Done</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.IncludeOnPage">
+        <source xml:lang="en">Include image descriptions on page</source>
+        <note>ID: PublishTab.Epub.IncludeOnPage</note>
+        <target xml:lang="az" state="needs-translation">Include image descriptions on page</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
+        <source xml:lang="en">No recorded audio image descriptions</source>
+        <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
+        <target xml:lang="az" state="needs-translation">No recorded audio image descriptions</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.PreparingDoc">
+        <source xml:lang="en">Preparing document</source>
+        <note>ID: PublishTab.Epub.PreparingDoc</note>
+        <target xml:lang="az" state="needs-translation">Preparing document</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.PreparingPreview">
+        <source xml:lang="en">Preparing preview</source>
+        <note>ID: PublishTab.Epub.PreparingPreview</note>
+        <target xml:lang="az" state="needs-translation">Preparing preview</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Saving">
+        <source xml:lang="en">Saving</source>
+        <note>ID: PublishTab.Epub.Saving</note>
+        <target xml:lang="az" state="needs-translation">Saving</target>
       </trans-unit>
       <trans-unit id="PublishTab.EpubButton">
         <source xml:lang="en">ePUB</source>
