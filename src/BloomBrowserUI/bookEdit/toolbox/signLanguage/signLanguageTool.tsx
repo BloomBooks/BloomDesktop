@@ -310,8 +310,10 @@ export class SignLanguageTool implements ITool {
                 container.removeEventListener("click", this.containerClickListener);
                 container.addEventListener("click", this.containerClickListener);
             }
+            // we turn it off when we leave a page, so even if we already have enabled:true,
+            // we need to turn it on for this page now we know there is something to record.
+            this.reactControls.turnOnVideo();
             if (!this.reactControls.state.enabled) {
-                this.reactControls.turnOnVideo();
                 this.reactControls.setState({ enabled: true });
             }
         }
