@@ -18,6 +18,10 @@ export default class TalkingBookTool implements ITool {
         return true;
     }
 
+    isExperimental(): boolean {
+        return false;
+    }
+
     configureElements(container: HTMLElement) { }
 
     showTool() {

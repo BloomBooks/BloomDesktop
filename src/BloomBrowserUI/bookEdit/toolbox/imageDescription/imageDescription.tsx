@@ -227,6 +227,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
     }
 
+    public isExperimental(): boolean {
+        return true;
+    }
     public id(): string {
         return "imageDescription";
     }

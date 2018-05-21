@@ -35,7 +35,7 @@
     <Setting Name="DontShowThisAgain" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ShowExperimentalCommands" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowExperimentalFeatures" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="WebUserId" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
