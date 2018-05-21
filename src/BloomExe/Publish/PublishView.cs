@@ -552,7 +552,7 @@ namespace Bloom.Publish
 							// We get multiple DocumentCompleted events, e.g., when setting a new preview.
 							// Just do this the first time.
 							firstTime = false;
-							PublishEpubApi.ReportProgress(_webSocketServer,
+							PublishEpubApi.ReportProgress(this,_webSocketServer,
 								LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
 							_webSocketServer.Send("publish/epub/state", GetImageDescriptionState(_desiredImageDescriptionPublishing));
 						}
@@ -608,11 +608,8 @@ namespace Bloom.Publish
 			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 			// we will really be changing the src attr in the preview iframe so the display will update.
 			_webSocketServer.Send(kWebsocketPreviewId, "");
-			Invoke((Action) (() =>
-			{
-				PublishEpubApi.ReportProgress(_webSocketServer,
-					LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
-			}));
+			PublishEpubApi.ReportProgress(this, _webSocketServer,
+				LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
 			_previewWorker = new BackgroundWorker();
 			_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
 			_previewWorker.DoWork += (sender, args) =>
@@ -669,7 +666,7 @@ namespace Bloom.Publish
 			Invoke((Action) (() =>
 			{
 				_webSocketServer.Send(kWebsocketPreviewId, _previewSrc);
-				PublishEpubApi.ReportProgress(_webSocketServer,
+				PublishEpubApi.ReportProgress(this,_webSocketServer,
 					LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
 			}));
 		}
