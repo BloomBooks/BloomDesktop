@@ -554,7 +554,7 @@ namespace BloomTests.Book
 
 			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
 			byte[] originalBytes = File.ReadAllBytes(path);
-			byte[] reducedBytes = BookCompressor.GetBytesOfReducedImage(path);
+			byte[] reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path,true);
 			Assert.That(reducedBytes, Is.Not.EqualTo(originalBytes)); // no easy way to check it was made transparent, but should be changed.
 			// Size should not change much.
 			Assert.That(reducedBytes.Length, Is.LessThan(originalBytes.Length * 11/10));
@@ -585,7 +585,7 @@ namespace BloomTests.Book
 
 			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetBytesOfReducedImage(path);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
 			Assert.AreEqual(originalBytes, reducedBytes, "man.jpg is already small enough (118x154)");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
@@ -613,7 +613,7 @@ namespace BloomTests.Book
 
 			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetBytesOfReducedImage(path);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "shirt.png is reduced from 2208x2400");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
@@ -641,7 +641,7 @@ namespace BloomTests.Book
 
 			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "LakePendOreille.jpg");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetBytesOfReducedImage(path);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "LakePendOreille.jpg is reduced from 3264x2448");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
@@ -669,7 +669,7 @@ namespace BloomTests.Book
 
 			var path = FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "lady24b.png");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetBytesOfReducedImage(path);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
 			// Is it reduced, even tho' we switched from 24bit depth to 32bit depth?
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "lady24b.png is reduced from 3632x3872");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))

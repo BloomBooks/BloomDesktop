@@ -242,7 +242,7 @@ namespace Bloom.Publish.Epub
 					throw new FileNotFoundException("Could not find or create thumbnail for cover page (BL-3209)", coverPageImageFile);
 				}
 			}
-			CopyFileToEpub(coverPageImagePath);
+			CopyFileToEpub(coverPageImagePath, true, true);
 
 			EmbedFonts(); // must call after copying stylesheets
 			MakeNavPage();
@@ -819,7 +819,8 @@ namespace Bloom.Publish.Epub
 				}
 				else
 				{
-					CopyFileToEpub(srcPath);
+					var isCoverImage = img.SafeSelectNodes("parent::div[contains(@class, 'bloom-imageContainer')]/ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]").Cast<XmlElement>().Count() != 0;
+					CopyFileToEpub(srcPath, limitImageDimensions: true, needTransparentBackground: isCoverImage);
 					if (isBrandingFile)
 						img.SetAttribute("src", Path.GetFileName(srcPath));
 				}
@@ -1536,7 +1537,7 @@ namespace Bloom.Publish.Epub
 		// that it is a necessary manifest item. Return the path of the copied file
 		// (which may be different in various ways from the original; we suppress various dubious
 		// characters and return something that doesn't depend on url decoding.
-		private string CopyFileToEpub (string srcPath)
+		private string CopyFileToEpub (string srcPath, bool limitImageDimensions=false, bool needTransparentBackground=false)
 		{
 			string existingFile;
 			if (_mapSrcPathToDestFileName.TryGetValue (srcPath, out existingFile))
@@ -1569,7 +1570,7 @@ namespace Bloom.Publish.Epub
 			if (originalFileName != fileName)
 				_mapChangedFileNames [originalFileName] = fileName;
 			Directory.CreateDirectory (Path.GetDirectoryName (dstPath));
-			CopyFile (srcPath, dstPath);
+			CopyFile (srcPath, dstPath, limitImageDimensions, needTransparentBackground);
 			_manifestItems.Add (fileName);
 			_mapSrcPathToDestFileName [srcPath] = fileName;
 			return dstPath;
@@ -1578,11 +1579,15 @@ namespace Bloom.Publish.Epub
 		/// <summary>
 		/// This supports testing without actually copying files.
 		/// </summary>
-		/// <param name="srcPath"></param>
-		/// <param name="dstPath"></param>
-		internal virtual void CopyFile (string srcPath, string dstPath)
+		internal virtual void CopyFile(string srcPath, string dstPath, bool limitImageDimensions=false, bool needTransparentBackground=false)
 		{
-			RobustFile.Copy (srcPath, dstPath);
+			if (limitImageDimensions && BookCompressor.ImageFileExtensions.Contains(Path.GetExtension(srcPath.ToLowerInvariant())))
+			{
+				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground);
+				RobustFile.WriteAllBytes(dstPath, imageBytes);
+				return;
+			}
+			RobustFile.Copy(srcPath, dstPath);
 		}
 
 		// The validator is (probably excessively) upset about IDs that start with numbers.
