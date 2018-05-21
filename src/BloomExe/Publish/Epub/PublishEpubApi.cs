@@ -48,11 +48,22 @@ namespace Bloom.Publish.Epub
 		// Message is presumed already localized.
 		private void ReportProgress(string message)
 		{
-			ReportProgress(_webSocketServer, message);
+			ReportProgress(CurrentView, _webSocketServer, message);
 		}
 
-		public static void ReportProgress(BloomWebSocketServer server, string message)
+		public static void ReportProgress(Control invokeControl, BloomWebSocketServer server, string message)
 		{
+			if (invokeControl != null && invokeControl.InvokeRequired)
+			{
+				invokeControl.Invoke((Action) (() => ReportProgressCore(server, message)));
+			}
+			else
+			{
+				ReportProgressCore(server, message);
+			}
+		}
+
+		private static void ReportProgressCore(BloomWebSocketServer server, string message) {
 			server.Send(kWebsocketProgressId, message);
 			// This seems to be necessary for the message to appear reasonably promptly.
 			Application.DoEvents();
