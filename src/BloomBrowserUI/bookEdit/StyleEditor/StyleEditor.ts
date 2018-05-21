@@ -288,6 +288,9 @@ export default class StyleEditor {
             case "Title-On-Title-Page":
                 displayName = "Title On Title Page";
                 break;
+            case "ImageDescriptionEdit":
+                displayName = "Image Description Edit";
+                break;
             case "Equation": // If the id is the same as the English, just fall through to default.
             default:
                 displayName = ruleId;
@@ -768,7 +771,7 @@ export default class StyleEditor {
 
                 editor.styles = editor.getFormattingStyles();
                 if (editor.styles.every(style => !style.hasStyleId(styleName))) {
-                    editor.styles.push(new FormattingStyle(styleName, styleName));
+                    editor.styles.push(new FormattingStyle(styleName, editor.getDisplayName(styleName)));
                 }
 
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
