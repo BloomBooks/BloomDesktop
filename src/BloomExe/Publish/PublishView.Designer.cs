@@ -158,7 +158,7 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
 			this.tableLayoutPanel1.Controls.Add(this._androidRadio, 0, 7);
-			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 7);
+			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 8);
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 2);
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 4);
@@ -171,6 +171,7 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
 			this.tableLayoutPanel1.RowCount = 9;
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());

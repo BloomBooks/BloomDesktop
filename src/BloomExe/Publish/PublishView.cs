@@ -23,6 +23,7 @@ using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
 using Fleck;
 using RestSharp.Extensions;
+using SIL.PlatformUtilities;
 
 namespace Bloom.Publish
 {
@@ -493,6 +494,8 @@ namespace Bloom.Publish
 					break;
 				case PublishModel.DisplayModes.Upload:
 				{
+					if (Platform.IsLinux)
+						_pdfViewer.Visible = true;		// ensure proper size is set for Linux/Mono (BL-6006)
 					Logger.WriteEvent("Entering Publish Upload Screen");
 					_workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
@@ -508,6 +511,8 @@ namespace Bloom.Publish
 				}
 				case PublishModel.DisplayModes.EPUB:
 				{
+					if (Platform.IsLinux)
+						_pdfViewer.Visible = true;		// ensure proper size is set for Linux/Mono (BL-6006)
 					Logger.WriteEvent("Entering Publish Epub Screen");
 					// We may reuse this for the process of generating the ePUB staging files. For now, skip it.
 					_workingIndicator.Visible = false;
@@ -703,6 +708,8 @@ namespace Bloom.Publish
 
 		private void ShowHtmlPanel(string pathToHtml)
 		{
+			if (Platform.IsLinux)
+				_pdfViewer.Visible = true;		// ensure proper size is set for Linux/Mono (BL-6006)
 			Logger.WriteEvent("Entering Publish Screen: "+ pathToHtml);
 			_workingIndicator.Visible = false;
 			_printButton.Enabled = false;
