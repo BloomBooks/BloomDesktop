@@ -9,10 +9,19 @@ import AudioRecording from "../talkingBook/audioRecording";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import "./signLanguage.less";
 
+// The recording process can be in one of these states:
+// waiting...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
+// countdown{3,2,1}...record button has been pressed, top label shows countdown, not recording, stop button shows,
+//  "press any key to cancel" shows in bottom label
+// recording...top label shows "Recording", stop button shows, recording is happening, bottom label shows "press any key to stop"
+// Transitions:
+// Start recording button: state waiting -> countdown{3}, * -> waiting (save video if any)
+// Stop button or any key: * -> waiting
 interface IComponentState {
     recording: boolean;
     countdown: number;
     enabled: boolean;
+    stateClass: string; // one of waiting, countdown3, countdown2, countdown1, recording
 }
 
 // incomplete typescript definitions for MediaRecorder and related types.
@@ -43,26 +52,41 @@ declare var MediaRecorder: {
 export class SignLanguageToolControls extends React.Component<{}, IComponentState> {
     constructor() {
         super({});
-        this.state = { recording: false, countdown: 0, enabled: false };
+        this.state = { recording: false, countdown: 0, enabled: false, stateClass: "waiting" };
     }
 
     private videoStream: MediaStream;
     private chunks: Blob[];
     private mediaRecorder: MediaRecorder;
+    private timerId: number;
 
     public render() {
         return (
-            <div className={"signLanguageBody" + (this.state.enabled ? "" : " disabled")}>
+            <div className={"signLanguageFrame " + this.state.stateClass + (this.state.enabled ? "" : " disabled")}>
+                <Label l10nKey="Toolbox.SignLanguage.WhatCameraSees">Here is what your camera sees:</Label>
+                <div id="videoMonitorWrapper"><video id="videoMonitor" autoPlay></video></div>
                 <div className="button-label-wrapper">
                     <div id="videoPlayAndLabelWrapper">
                         <div className="videoButtonWrapper">
                             <button id="videoToggleRecording" className={"video-button ui-button"
-                                + (this.state.recording ? " recording" : "") + (this.state.enabled ? " enabled" : " disabled")}
+                                + (this.state.stateClass !== "waiting" ? " started" : "")
+                                + (this.state.recording ? " recordingNow" : "")
+                                + (this.state.enabled ? " enabled" : " disabled")}
                                 onClick={() => this.toggleRecording()} />
+                            <Label className="startRecording waiting" l10nKey="Toolbox.SignLanguage.StartRecording">Start Recording</Label>
+                            <span className="countdown3 countdownNumber">3</span>
+                            <span className="countdown2 countdownNumber">2</span>
+                            <span className="countdown1 countdownNumber">1</span>
+                            <Label className="recording recordingLabel" l10nKey="Toolbox.SignLanguage.Recording">Recording</Label>
                         </div>
                     </div>
                 </div>
-                <div id="videoMonitorWrapper"><video id="videoMonitor" autoPlay></video></div>
+                <div>
+                    <button id="videoStopRecording" className={"video-button ui-button notWaiting"}
+                        onClick={() => this.toggleRecording()} />
+                </div>
+                <Label l10nKey="Toolbox.SignLanguage.PressCancel" className="counting stopLabel">Press any key to cancel</Label>
+                <Label l10nKey="Toolbox.SignLanguage.PressStop" className="recording stopLabel">Press any key to stop</Label>
             </div>
         );
     }
@@ -96,19 +120,50 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
         videoMonitor.srcObject = stream;
     }
 
-    // Called when the record button is clicked...depending on the current state it either starts
-    // or ends the recording.
+    // Not just a normal function definition, because then when we pass it to addEventListener,
+    // 'this' is not what we expect. Nor can we just pass a locally-defined function, because
+    // we have to be able to remove it later.
+    private onKeyPress = () => {
+        this.toggleRecording();
+    }
+
+    // Called when the record or stop button is clicked, or if a key is pressed while not in the waiting state
+    // ...depending on the current state it either starts or ends the recording. It works as the action function
+    // for things that only stop the recording because those controls are not enabled in the waiting state.
     private toggleRecording() {
         if (!this.videoStream) {
             return;
         }
-        var wasRecording = this.state.recording; // technically we should get this from prevState in the following function
-        this.setState(prevState => { return { recording: !prevState.recording }; });
+        var oldState = this.state.stateClass;
+        var wasRecording = this.state.recording;
         if (wasRecording) {
+            document.removeEventListener("keydown", this.onKeyPress);
+            this.setState({ recording: false, stateClass: "waiting" });
             // triggers all the interesting behavior defined in onstop below.
             this.mediaRecorder.stop();
             return;
         }
+        if (oldState === "waiting") {
+            document.addEventListener("keydown", this.onKeyPress);
+            this.setState({ stateClass: "countdown3" });
+            this.timerId = window.setTimeout(() => {
+                this.setState({ stateClass: "countdown2" });
+                this.timerId = window.setTimeout(() => {
+                    this.setState({ stateClass: "countdown1" });
+                    this.timerId = window.setTimeout(() => {
+                        this.setState({ stateClass: "recording", recording: true });
+                        this.startRecording();
+                    }, 1000);
+                }, 1000);
+            }, 1000);
+            return;
+        }
+        // we're in one of the countdown states. Back to waiting.
+        document.removeEventListener("keydown", this.onKeyPress);
+        window.clearTimeout(this.timerId);
+        this.setState({ stateClass: "waiting" });
+    }
+    private startRecording() {
         // OK, we want to start recording.
         this.chunks = [];
         var options = {
