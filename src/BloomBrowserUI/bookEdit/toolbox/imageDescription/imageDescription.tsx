@@ -24,15 +24,29 @@ interface IImageDescriptionState {
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of ImageDescriptionTool to ToolBox.registerTool().
-export class ImageDescriptionToolControls extends React.Component<{}, IImageDescriptionState> {
-
+export class ImageDescriptionToolControls extends React.Component<
+    {},
+    IImageDescriptionState
+> {
     constructor() {
         super({});
         this.state = { enabled: true, checkBoxes: [] };
     }
 
-    private static i18ids = ["ContextKey", "ConsiderAudience", "BeConcise", "BeObjective", "GeneralSpecific"];
-    private static defaultText = ["Context is Key", "Consider your Audience", "Be Concise", "Be Objective", "General to Specific"];
+    private static i18ids = [
+        "ContextKey",
+        "ConsiderAudience",
+        "BeConcise",
+        "BeObjective",
+        "GeneralSpecific"
+    ];
+    private static defaultText = [
+        "Context is Key",
+        "Consider your Audience",
+        "Be Concise",
+        "Be Objective",
+        "General to Specific"
+    ];
 
     private activeEditable: Element;
 
@@ -40,12 +54,22 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
         let checkBoxes = [];
         for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
             const index = i; // in case 'i' changing affects earlier checkboxes
-            checkBoxes.push(<Checkbox l10nKey={"EditTab.Toolbox.ImageDescriptionTool." + ImageDescriptionToolControls.i18ids[i]}
-                className="imageDescriptionCheck"
-                name=""
-                checked={this.state.checkBoxes[index]}
-                onCheckChanged={checked => this.onCheckChanged(checked, index)}
-            >{ImageDescriptionToolControls.defaultText[index]}</Checkbox>);
+            checkBoxes.push(
+                <Checkbox
+                    l10nKey={
+                        "EditTab.Toolbox.ImageDescriptionTool." +
+                        ImageDescriptionToolControls.i18ids[i]
+                    }
+                    className="imageDescriptionCheck"
+                    name=""
+                    checked={this.state.checkBoxes[index]}
+                    onCheckChanged={checked =>
+                        this.onCheckChanged(checked, index)
+                    }
+                >
+                    {ImageDescriptionToolControls.defaultText[index]}
+                </Checkbox>
+            );
         }
         return checkBoxes;
     }
@@ -55,31 +79,53 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
     // to the link destination?)
     public render() {
         return (
-            <div className={"imageDescriptionTool" + (this.state.enabled ? "" : " disabled")}>
+            <div
+                className={
+                    "imageDescriptionTool" +
+                    (this.state.enabled ? "" : " disabled")
+                }
+            >
                 <div className="imgDescLabelBlock">
-                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">Learn to make effective image descriptions:</Label>
+                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
+                        Learn to make effective image descriptions:
+                    </Label>
                     <div className="indentPoet">
-                        <Link id="poetDiagram"
+                        <Link
+                            id="poetDiagram"
                             href="https://poet.diagramcenter.org"
                             l10nKey="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram"
-                            l10nComment="English text is the actual link. May not need translation?" >poet.diagramcenter.org</Link>
+                            l10nComment="English text is the actual link. May not need translation?"
+                        >
+                            poet.diagramcenter.org
+                        </Link>
                     </div>
                     <div className="wrapPlayVideo disabled">
-                        <img id="playBloomTrainingVideo" src="/bloom/images/play.svg"></img>
-                        <Link id="bloomImageDescritionTraining"
+                        <img
+                            id="playBloomTrainingVideo"
+                            src="/bloom/images/play.svg"
+                        />
+                        <Link
+                            id="bloomImageDescritionTraining"
                             className="disabled"
                             href=""
                             l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
-                            l10nComment="Link that launces the video" >bloom training video</Link>
+                            l10nComment="Link that launces the video"
+                        >
+                            bloom training video
+                        </Link>
                     </div>
                 </div>
                 <div className="imgDescLabelBlock">
-                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.WriteYours">Write your image description on the left,
-                        in the box to the right of the picture</Label>
+                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.WriteYours">
+                        Write your image description on the left, in the box
+                        next to the picture.
+                    </Label>
                 </div>
                 <div className="imgDescLabelBlock">
-                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckDescription">Check your image description against
-                        each of these reminders</Label>
+                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckDescription">
+                        Check your image description against each of these
+                        reminders:
+                    </Label>
                 </div>
                 {this.createCheckboxes()}
             </div>
@@ -92,26 +138,34 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
             newCheckedBoxes[index] = checked;
             return { checkBoxes: newCheckedBoxes };
         });
-        let checkListAttr = (this.activeEditable.getAttribute("data-descriptionCheckList") || "")
+        let checkListAttr = (
+            this.activeEditable.getAttribute("data-descriptionCheckList") || ""
+        )
             .replace(ImageDescriptionToolControls.i18ids[index], "")
             .replace("  ", " ")
             .trim();
 
         if (checked) {
-            checkListAttr = (checkListAttr + " " + ImageDescriptionToolControls.i18ids[index]).trim();
+            checkListAttr = (
+                checkListAttr +
+                " " +
+                ImageDescriptionToolControls.i18ids[index]
+            ).trim();
         }
-        this.activeEditable.setAttribute("data-descriptionCheckList", checkListAttr);
-    }
-
-    public static setup(root): ImageDescriptionToolControls {
-        return ReactDOM.render(
-            <ImageDescriptionToolControls />,
-            root
+        this.activeEditable.setAttribute(
+            "data-descriptionCheckList",
+            checkListAttr
         );
     }
 
+    public static setup(root): ImageDescriptionToolControls {
+        return ReactDOM.render(<ImageDescriptionToolControls />, root);
+    }
+
     public selectImageDescription(description: Element): void {
-        var activeEditableList = description.getElementsByClassName("bloom-content1");
+        var activeEditableList = description.getElementsByClassName(
+            "bloom-content1"
+        );
         if (activeEditableList.length === 0) {
             // pathological
             this.activeEditable = null;
@@ -119,10 +173,13 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
             return;
         }
         this.activeEditable = activeEditableList[0];
-        var checkedList = this.activeEditable.getAttribute("data-descriptionCheckList") || "";
+        var checkedList =
+            this.activeEditable.getAttribute("data-descriptionCheckList") || "";
         var newCheckStates = [];
         for (var i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
-            newCheckStates.push(checkedList.indexOf(ImageDescriptionToolControls.i18ids[i]) >= 0);
+            newCheckStates.push(
+                checkedList.indexOf(ImageDescriptionToolControls.i18ids[i]) >= 0
+            );
         }
         this.setState({ enabled: true, checkBoxes: newCheckStates });
     }
@@ -131,7 +188,9 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
         var page = ToolboxToolReactAdaptor.getPage();
         // If we're still on the same page, it must be one without images.
         // We might also have switched TO one without images.
-        var imageContainers = page.getElementsByClassName("bloom-imageContainer");
+        var imageContainers = page.getElementsByClassName(
+            "bloom-imageContainer"
+        );
         if (imageContainers.length === 0) {
             // This is OK whether we switched from a page without images or just stayed on one.
             this.activeEditable = null;
@@ -141,7 +200,9 @@ export class ImageDescriptionToolControls extends React.Component<{}, IImageDesc
         // We switched to a page that has at least one image. Make the first one active
         // (as far as the check boxes are concerned).
         var firstContainer = imageContainers[0];
-        var imageDescriptions = firstContainer.getElementsByClassName("bloom-imageDescription");
+        var imageDescriptions = firstContainer.getElementsByClassName(
+            "bloom-imageDescription"
+        );
         if (imageDescriptions.length === 0) {
             // other code will add an imageDescription, and we will be called again
             this.activeEditable = null;
@@ -157,9 +218,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
             <ImageDescriptionToolControls
-                ref={renderedElement =>
-                    (this.reactControls = renderedElement)
-                }
+                ref={renderedElement => (this.reactControls = renderedElement)}
             />
         );
     }
@@ -179,7 +238,8 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // }
     // We use currentTarget (the thing the event was attached to) because we're looking for the
     // bloom-imageDescription (group), but the target (actually clicked) will be a bloom-editable or one of its children.
-    private descriptionGotFocus = (e: Event) => this.reactControls.selectImageDescription(e.currentTarget as Element);
+    private descriptionGotFocus = (e: Event) =>
+        this.reactControls.selectImageDescription(e.currentTarget as Element);
 
     // Make sure the page has the elements used to store image descriptions,
     // not on every edit, but whenever a new page is displayed.
@@ -189,20 +249,31 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         // turn on special layout to make image descriptions visible (might already be on)
         page.classList.add("bloom-showImageDescriptions");
         // Make sure every image container has a child bloom-translationGroup to hold the image description.
-        var imageContainers = page.getElementsByClassName("bloom-imageContainer");
+        var imageContainers = page.getElementsByClassName(
+            "bloom-imageContainer"
+        );
         var addedTranslationGroup = false;
         for (var i = 0; i < imageContainers.length; i++) {
             const container = imageContainers[i];
-            var imageDescriptions = container.getElementsByClassName("bloom-imageDescription");
+            var imageDescriptions = container.getElementsByClassName(
+                "bloom-imageDescription"
+            );
 
             // Arrange to change which image the check boxes refer to when an image's description
             // gets focus. Note that we do not change this or disable them if something other
             // than an image description gets focus; this potentially allows the user to do things like
             // moving the focus and selecting a check box using the keyboard.
             for (let i = 0; i < imageDescriptions.length; i++) {
-                imageDescriptions[i].removeEventListener("focus", this.descriptionGotFocus); // prevent duplicates
+                imageDescriptions[i].removeEventListener(
+                    "focus",
+                    this.descriptionGotFocus
+                ); // prevent duplicates
                 // look for it in capture phase so we see child elements getting focus
-                imageDescriptions[i].addEventListener("focus", this.descriptionGotFocus, true);
+                imageDescriptions[i].addEventListener(
+                    "focus",
+                    this.descriptionGotFocus,
+                    true
+                );
             }
             if (imageDescriptions.length === 0) {
                 // from somewhere else I copied this as a typical default set of classes for a translation group,
@@ -217,8 +288,10 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 // intended for use in editing; we will style it otherwise if we actually make it visible
                 // in an epub.
                 const newTg = getPageFrameExports()
-                    .makeElement("<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement"
-                        + " ImageDescriptionEdit-style'></div>")
+                    .makeElement(
+                        "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement" +
+                            " ImageDescriptionEdit-style'></div>"
+                    )
                     .get(0);
                 container.appendChild(newTg);
                 addedTranslationGroup = true;

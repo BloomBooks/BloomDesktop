@@ -1990,9 +1990,9 @@
         <target xml:lang="sw" state="needs-translation">bloom training video</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
-        <source xml:lang="en">Check your image description against each of these reminders</source>
+        <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
-        <target xml:lang="sw" state="needs-translation">Check your image description against each of these reminders</target>
+        <target xml:lang="sw" state="needs-translation">Check your image description against each of these reminders:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
         <source xml:lang="en">Consider your Audience</source>
@@ -2020,9 +2020,9 @@
         <target xml:lang="sw" state="needs-translation">poet.diagramcenter.org</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
-        <source xml:lang="en">Write your image description on the left, in the box to the right of the picture</source>
+        <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
-        <target xml:lang="sw" state="needs-translation">Write your image description on the left, in the box to the right of the picture</target>
+        <target xml:lang="sw" state="needs-translation">Write your image description on the left, in the box next to the picture.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>

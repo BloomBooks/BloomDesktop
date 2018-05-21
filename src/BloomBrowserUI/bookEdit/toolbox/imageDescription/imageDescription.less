@@ -1,5 +1,4 @@
 @import "../../../bloomUI.less";
-@textColor: @bloom-buff;
 
 .ui-accordion
     h3[data-toolId="imageDescriptionTool"]
@@ -7,7 +6,10 @@
     background-image: url("/bloom/images/ImageDescriptionToolIcon.svg") !important;
 }
 .imageDescriptionTool {
-    *, a{color: @textColor;}
+    *,
+    a {
+        color: @bloom-toolboxWhite;
+    }
 }
 
 .imgDescLabelBlock {

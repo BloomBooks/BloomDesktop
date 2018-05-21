@@ -1620,7 +1620,7 @@
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
-        <source xml:lang="en">Check your image description against each of these reminders</source>
+        <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
@@ -1644,7 +1644,7 @@
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
-        <source xml:lang="en">Write your image description on the left, in the box to the right of the picture</source>
+        <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
