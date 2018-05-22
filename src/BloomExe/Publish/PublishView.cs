@@ -449,6 +449,8 @@ namespace Bloom.Publish
 			switch (displayMode)
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
+					// _pdfViewer.Visible must be set true at least once momentarily for other display controls to get the right size.  (BL-6006)
+					_pdfViewer.Visible = true;
 					_printButton.Enabled = _saveButton.Enabled = false;
 					Cursor = Cursors.Default;
 					_workingIndicator.Visible = false;
