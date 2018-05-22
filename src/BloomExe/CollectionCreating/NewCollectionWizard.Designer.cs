@@ -96,7 +96,7 @@ namespace Bloom.CollectionCreating
 			this._kindOfCollectionPage.NextPage = this._vernacularLanguagePage;
 			this._kindOfCollectionPage.Size = new System.Drawing.Size(702, 310);
 			this._kindOfCollectionPage.TabIndex = 0;
-			this._kindOfCollectionPage.Text = "Choose the Collection Type";
+			this._kindOfCollectionPage.Text = "Choose the collection type.";
 			//
 			// _vernacularLanguagePage
 			//
@@ -105,7 +105,7 @@ namespace Bloom.CollectionCreating
 			this._vernacularLanguagePage.NextPage = this._languageFontPage;
 			this._vernacularLanguagePage.Size = new System.Drawing.Size(712, 309);
 			this._vernacularLanguagePage.TabIndex = 1;
-			this._vernacularLanguagePage.Text = "Choose the Vernacular / Local Language For This Collection";
+			this._vernacularLanguagePage.Text = "Choose the main language for this collection.";
 			//
 			// _languageFontPage
 			//

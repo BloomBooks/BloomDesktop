@@ -86,12 +86,12 @@ namespace Bloom.CollectionCreating
 		{
 			Text = LocalizationManager.GetString("NewCollectionWizard.NewCollectionWindowTitle", "Create New Bloom Collection");
 			_welcomePage.Text = LocalizationManager.GetString("NewCollectionWizard.WelcomePage", "Welcome To Bloom!");
-			_kindOfCollectionPage.Text = LocalizationManager.GetString("NewCollectionWizard.KindOfCollectionPage", "Choose the Collection Type");
+			_kindOfCollectionPage.Text = LocalizationManager.GetString("NewCollectionWizard.KindOfCollectionPage", "Choose the collection type.");
 			_collectionNamePage.Text = LocalizationManager.GetString("NewCollectionWizard.ProjectName", "Project Name");
 			_collectionNameProblemPage.Text = LocalizationManager.GetString("NewCollectionWizard.CollectionNameProblem", "Collection Name Problem");
 			_languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage", "Give Language Location");
 			_languageFontPage.Text = LocalizationManager.GetString("NewCollectionWizard.FontAndScriptPage", "Font and Script");
-			_vernacularLanguagePage.Text = LocalizationManager.GetString("NewCollectionWizard.ChooseLanguagePage", "Choose the Main Language For This Collection");
+			_vernacularLanguagePage.Text = LocalizationManager.GetString("NewCollectionWizard.ChooseLanguagePage", "Choose the main language for this collection.");
 			_finishPage.Text = LocalizationManager.GetString("NewCollectionWizard.FinishPage", "Ready To Create New Collection");
 			_wizardControl.NextButtonText = LocalizationManager.GetString("Common.Next", "&Next", "Used for the Next button in wizards, like that used for making a New Collection");
 			_wizardControl.FinishButtonText = LocalizationManager.GetString("Common.Finish", "&Finish", "Used for the Finish button in wizards, like that used for making a New Collection");
