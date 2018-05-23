@@ -74,9 +74,10 @@
     // giving it a fixed height prevents a slight jump when showing the large numbers, which otherwise
     // make the containing box a little bigger than when it just contains the button and small text.
     height: @videoButtonSize + 2;
+    margin-bottom: 20px;
 }
 
-.startRecording, .recordingLabel {margin-left: 10px;}
+.startRecording, .recordingLabel, .commandLabel {margin-left: 10px;}
 .countdownNumber {
     margin-left: 40px;
     font-size: 40px;
@@ -104,6 +105,27 @@
 
 .ui-accordion h3[data-toolId="signLanguageTool"] span.ui-accordion-header-icon {
     background-image:url('/bloom/images/signLanguageTool.svg') !important;
+}
+
+#editOutsideButton, #restoreOriginalButton {
+    height: @videoButtonSize;
+    width: @videoButtonSize;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: transparent;
+    border: none;
+}
+
+#editOutsideButton {
+    background-image: url('/bloom/images/blue pencil.svg');
+}
+
+#restoreOriginalButton {
+    background-image: url('/bloom/images/restore-original.svg');
+}
+
+#restoreOriginalWrapper.disabled {
+    display: none;
 }
 
 // state management

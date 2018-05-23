@@ -1762,6 +1762,10 @@
         <source xml:lang="en">Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Recording</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true">
+        <source xml:lang="en">Restore Original</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.RestoreOriginal</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
         <source xml:lang="en">Start Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
