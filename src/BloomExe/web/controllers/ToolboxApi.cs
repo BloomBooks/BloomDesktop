@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 
@@ -20,6 +21,7 @@ namespace BloomTests.web.controllers
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
 			server.RegisterEndpointHandler("toolbox/enabledTools", HandleEnabledToolsRequest, true);
+			server.RegisterEndpointHandler("toolbox/fileExists", HandleFileExistsRequest, true);
 		}
 
 		private Bloom.Book.Book CurrentBook => _bookSelection.CurrentSelection;
@@ -29,6 +31,16 @@ namespace BloomTests.web.controllers
 			lock (request)
 			{
 				request.ReplyWithText(string.Join(",",CurrentBook.BookInfo.Tools.Where(t =>t.Enabled).Select(t => t.ToolId)));
+			}
+		}
+
+		public void HandleFileExistsRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var fileName = request.RequiredParam("filename");
+				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
+				request.ReplyWithText(File.Exists(path) ? "true" : "false");
 			}
 		}
 	}
