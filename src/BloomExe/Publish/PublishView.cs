@@ -561,10 +561,19 @@ namespace Bloom.Publish
 					};
 					_model.PrepareToStageEpub(); // let's get the epub maker and its browser created on the UI thread
 					_model.EpubMaker.PublishImageDescriptions = _desiredImageDescriptionPublishing;
-					_previewWorker = new BackgroundWorker();
-					_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
-					_previewWorker.DoWork += (sender, args) => SetupEpubPreview();
-					_previewWorker.RunWorkerAsync();
+					lock (this)
+					{
+						if (_previewWorker != null)
+						{
+							// Something has generated another preview worker already.
+							_model.EpubMaker.AbortRequested = true;
+							return;
+						}
+						_previewWorker = new BackgroundWorker();
+						_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
+						_previewWorker.DoWork += (sender, args) => SetupEpubPreview();
+						_previewWorker.RunWorkerAsync();
+					}
 					break;
 			}
 			UpdateSaveButton();
@@ -604,6 +613,7 @@ namespace Bloom.Publish
 					_needNewPreview = true;
 					return;
 				}
+				_previewWorker = new BackgroundWorker();
 			}
 
 			_model.EpubMaker.PublishImageDescriptions = newImageMode;
@@ -612,7 +622,6 @@ namespace Bloom.Publish
 			_webSocketServer.Send(kWebsocketPreviewId, "");
 			PublishEpubApi.ReportProgress(this, _webSocketServer,
 				LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
-			_previewWorker = new BackgroundWorker();
 			_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
 			_previewWorker.DoWork += (sender, args) =>
 			{
