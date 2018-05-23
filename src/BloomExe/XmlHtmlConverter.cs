@@ -383,7 +383,7 @@ namespace Bloom
 
 			html = RestoreSvgs(html, removedSvgs);
 
-			html = html.Replace(BrPlaceholder, "<br>");
+			html = html.Replace(BrPlaceholder, "<br/>");
 			html = RemoveFillerInEmptyElements(html);
 			return html;
 		}

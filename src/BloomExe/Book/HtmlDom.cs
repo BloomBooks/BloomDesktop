@@ -1521,7 +1521,7 @@ namespace Bloom.Book
 				srcElement = videoElt.AppendChild("source");
 				srcElement.SetAttribute("type", "video/mp4");
 			}
-			srcElement.SetAttribute("src", url.UrlEncoded);
+			srcElement.SetAttribute("src", url.UrlEncodedForHttpPath); // We need the fwd slash to come through unencoded
 			// Hides the placeholder.
 			
 			videoContainer.SetAttribute("class", RemoveClass("bloom-noVideoSelected", videoContainer.GetAttribute("class")));
@@ -1544,6 +1544,11 @@ namespace Bloom.Book
 		{
 			return element.SelectNodes(".//span[contains(@class,'audio-sentence')] | " +
 				".//div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]");
+		}
+
+		public static XmlNodeList SelectChildVideoElements(XmlElement element)
+		{
+			return element.SelectNodes(".//div[contains(@class,'bloom-videoContainer')]");
 		}
 
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)
