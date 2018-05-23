@@ -1394,7 +1394,8 @@ namespace Bloom.Edit
 			{
 				var bytes = request.RawPostData;
 				var fileName = GetNewVideoFileName();
-				var path = Path.Combine(CurrentBook.FolderPath, fileName);
+				var videoFolder = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
+				var path = Path.Combine(videoFolder, fileName);
 				RobustFile.WriteAllBytes(path, bytes);
 				var root = _view.Browser.WebBrowser.Document;
 				var page = root.GetElementById("page") as GeckoIFrameElement;

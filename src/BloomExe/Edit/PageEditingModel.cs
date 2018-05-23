@@ -3,7 +3,6 @@ using System.IO;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using SIL.IO;
-using SIL.Network;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 
@@ -32,14 +31,16 @@ namespace Bloom.Edit
 			IProgress progress)
 		{
 			var videoFileName = Path.GetFileName(videoPath);
-			var destPath = Path.Combine(bookFolderPath, videoFileName);
+			var destPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(bookFolderPath), videoFileName);
 			if (destPath != videoPath && !File.Exists(destPath))
 			{
 				RobustFile.Copy(videoPath, destPath);
 			}
 			// Enhance: if destination exists and content does not match pick a new name and copy to that.
 
-			HtmlDom.SetVideoElementUrl(videoContainer, UrlPathString.CreateFromUnencodedString(videoFileName));
+			// BL-5866 To get video to work while storing it in a separate folder we must include the video folder name here.
+			var videoUrlUnencoded = BookStorage.GetVideoFolderName + videoFileName;
+			HtmlDom.SetVideoElementUrl(videoContainer, UrlPathString.CreateFromUnencodedString(videoUrlUnencoded));
 			// Enhance: do we need to do something here about metadata, when we figure out how to handle that
 			// for videos?
 		}
