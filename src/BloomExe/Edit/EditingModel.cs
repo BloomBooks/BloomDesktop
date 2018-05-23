@@ -1378,25 +1378,24 @@ namespace Bloom.Edit
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
 			server.RegisterEndpointHandler("toolbox/recordedVideo", HandleRecordedVideoRequest, true);
+			server.RegisterEndpointHandler("toolbox/editVideo", HandleEditVideoRequest, true);
+			server.RegisterEndpointHandler("toolbox/restoreOriginal", HandleRestoreOriginalRequest, true);
 			server.RegisterEndpointHandler("toolbox/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt,true);
 		}
 
-		// Request from video recorder tool, issued when a complete recording has been captured.
+		// Request from sign language tool, issued when a complete recording has been captured.
 		// It is passed as a binary blob that is the actual content that needs to be made into
 		// an mp4 file. (At this point we don't try to handle recordings too big for this approach.)
 		// We make a file (with an arbitrary guid name) and attempt to make it the recording for the
 		// first page element with class bloom-videoContainer.
-		// Enhance: we need a way to know (and show) which bloom-videoContainer is selected, and
-		// apply it to that one.
 		private void HandleRecordedVideoRequest(ApiRequest request)
 		{
 			lock (request)
 			{
 				var bytes = request.RawPostData;
-				var fileName = Guid.NewGuid().ToString() + ".mp4";
+				var fileName = GetNewVideoFileName();
 				var path = Path.Combine(CurrentBook.FolderPath, fileName);
-				File.WriteAllBytes(path, bytes);
-				// Todo: we should somehow know which video container is selected, if there is more than one.
+				RobustFile.WriteAllBytes(path, bytes);
 				var root = _view.Browser.WebBrowser.Document;
 				var page = root.GetElementById("page") as GeckoIFrameElement;
 				var pageDoc = page.ContentWindow.Document;
@@ -1421,6 +1420,156 @@ namespace Bloom.Edit
 				SaveChangedVideo(videoContainer, path, "Bloom had a problem including that video");
 				request.PostSucceeded();
 			}
+		}
+
+		public static string GetNewVideoFileName()
+		{
+			return Guid.NewGuid().ToString() + ".mp4";
+		}
+
+		// Request from sign language tool to restore the original video.
+		private void HandleRestoreOriginalRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var videoContainer = GetSelectedVideoContainer();
+				string fileName;
+				if (!GetFileNameFromVideoContainer(request, videoContainer, out fileName))
+					return; // method reports failure
+				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
+				var originalPath = Path.ChangeExtension(videoPath, "orig");
+				if (!RobustFile.Exists(originalPath))
+				{
+					request.Failed("no original");
+					return;
+				}
+				var newVideoPath = Path.Combine(CurrentBook.FolderPath, GetNewVideoFileName()); // Use a new name to defeat caching.
+				var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
+				RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
+				RobustFile.Copy(newOriginalPath, newVideoPath);
+				// I'm not absolutely sure we need to get the Video container again on the UI thread, but have had some problems
+				// with COM interfaces in a similar situation so it seems safest.
+				_view.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
+				request.PostSucceeded();
+			}
+		}
+
+		// Request from sign language tool to edit the selected video.
+		private void HandleEditVideoRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var videoContainer = GetSelectedVideoContainer();
+				string fileName;
+				if (!GetFileNameFromVideoContainer(request, videoContainer, out fileName)) return;
+				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
+				var originalPath = Path.ChangeExtension(videoPath, "orig");
+				if (!RobustFile.Exists(videoPath))
+				{
+					if (RobustFile.Exists(originalPath))
+					{
+						RobustFile.Copy(originalPath, videoPath);
+					}
+					else
+					{
+						request.Failed("missing video");
+						return;
+					}
+				}
+
+				var proc = new Process()
+				{
+					StartInfo = new ProcessStartInfo()
+					{
+						FileName = videoPath,
+						UseShellExecute = true
+					},
+					EnableRaisingEvents = true
+				};
+				var begin = DateTime.Now;
+				proc.Exited += (sender, args) =>
+				{
+					var lastModifiedFile = new DirectoryInfo(CurrentBook.FolderPath)
+						.GetFiles("*.mp4")
+						.OrderByDescending(f => GetRealLastModifiedTime(f))
+						.First();
+					if (GetRealLastModifiedTime(lastModifiedFile) > begin)
+					{
+						var newVideoPath = Path.Combine(CurrentBook.FolderPath, GetNewVideoFileName()); // Use a new name to defeat caching; prefer our standard type of name.
+						RobustFile.Move(Path.Combine(CurrentBook.FolderPath, lastModifiedFile.Name), newVideoPath);
+						var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
+						if (RobustFile.Exists(originalPath))
+						{
+							RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
+							RobustFile.Delete(videoPath);
+						} else
+						{
+							RobustFile.Move(videoPath, newOriginalPath); // Set up original for the first time.
+						}
+						// I'm not sure why it fails if we use the videoContainer variable we set above,
+						// but somehow QueryInterface on the underlying COM object fails. It's probably something to
+						// do with the COM threading model that forbids using it on a thread other than the
+						// one that created it.
+						_view.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
+						//_view.Invoke((Action)(()=> RethinkPageAndReloadIt()));
+					}
+				};
+				proc.Start();
+				request.PostSucceeded();
+			}
+		}
+
+		private bool GetFileNameFromVideoContainer(ApiRequest request, GeckoHtmlElement videoContainer, out string fileName)
+		{
+			fileName = null;
+			if (videoContainer == null)
+			{
+				// Enhance: if we end up needing this it should be localizable. But the current plan is that the button should be
+				// disabled if we don't have a recording to edit.
+				request.Failed("no video container");
+				return false;
+			}
+
+			if (_view.WarnIfVideoCantChange(videoContainer))
+			{
+				request.Failed("editing not allowed");
+				return false;
+			}
+
+			var videos = videoContainer.GetElementsByTagName("video");
+			if (videos.Length == 0)
+			{
+				request.Failed("no existing video to edit");
+				return false;
+			}
+
+			var sources = videos[0].GetElementsByTagName("source");
+			if (sources.Length == 0 || string.IsNullOrWhiteSpace(sources[0].GetAttribute("src")))
+			{
+				request.Failed("current video has no source");
+				return false;
+			}
+
+			fileName = sources[0].GetAttribute("src");
+			return true;
+		}
+
+		private GeckoHtmlElement GetSelectedVideoContainer()
+		{
+			var root = _view.Browser.WebBrowser.Document;
+			var page = root.GetElementById("page") as GeckoIFrameElement;
+			var pageDoc = page.ContentWindow.Document;
+			var videoContainer =
+				pageDoc.GetElementsByClassName("bloom-videoContainer bloom-selected").FirstOrDefault() as GeckoHtmlElement;
+			return videoContainer;
+		}
+
+		DateTime GetRealLastModifiedTime(FileInfo info)
+		{
+			if (info.LastWriteTime > info.CreationTime)
+				return info.LastWriteTime;
+			else
+				return info.CreationTime;
 		}
 
 		internal void SaveChangedVideo(GeckoHtmlElement videoElement, string videoPath, string exceptionMsg)

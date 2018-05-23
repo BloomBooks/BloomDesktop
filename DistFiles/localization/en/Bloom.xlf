@@ -1746,6 +1746,10 @@
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true">
+        <source xml:lang="en">Edit outside of Bloom</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Heading" sil:dynamic="true">
         <source xml:lang="en">Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
@@ -1761,6 +1765,10 @@
       <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
         <source xml:lang="en">Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Recording</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true">
+        <source xml:lang="en">Restore Original</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.RestoreOriginal</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
         <source xml:lang="en">Start Recording</source>

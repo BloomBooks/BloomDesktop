@@ -22,6 +22,8 @@ interface IComponentState {
     countdown: number;
     enabled: boolean;
     stateClass: string; // one of waiting, countdown3, countdown2, countdown1, recording
+    haveRecording: boolean;
+    originalExists: boolean;
 }
 
 // incomplete typescript definitions for MediaRecorder and related types.
@@ -52,7 +54,7 @@ declare var MediaRecorder: {
 export class SignLanguageToolControls extends React.Component<{}, IComponentState> {
     constructor() {
         super({});
-        this.state = { recording: false, countdown: 0, enabled: false, stateClass: "waiting" };
+        this.state = { recording: false, countdown: 0, enabled: false, stateClass: "waiting", haveRecording: false, originalExists: false };
     }
 
     private videoStream: MediaStream;
@@ -81,6 +83,14 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                         </div>
                     </div>
                 </div>
+                <div id="editOutsideWrapper" className={"videoButtonWrapper" + (this.state.haveRecording ? "" : " disabled ")}>
+                    <button id="editOutsideButton" onClick={() => this.editOutside()} />
+                    <Label className="commandLabel" l10nKey="Toolbox.SignLanguage.EditOutside">Edit outside of Bloom</Label>
+                </div>
+                <div id="restoreOriginalWrapper" className={"videoButtonWrapper" + (this.state.originalExists ? "" : " disabled ")}>
+                    <button id="restoreOriginalButton" onClick={() => this.restoreOriginal()} />
+                    <Label className="commandLabel" l10nKey="Toolbox.SignLanguage.RestoreOriginal">Restore Original</Label>
+                </div>
                 <div>
                     <button id="videoStopRecording" className={"video-button ui-button notWaiting"}
                         onClick={() => this.toggleRecording()} />
@@ -89,6 +99,14 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                 <Label l10nKey="Toolbox.SignLanguage.PressStop" className="recording stopLabel">Press any key to stop</Label>
             </div>
         );
+    }
+
+    private editOutside() {
+        axios.post("/bloom/api/toolbox/editVideo");
+    }
+
+    private restoreOriginal() {
+        axios.post("/bloom/api/toolbox/restoreOriginal");
     }
 
     public turnOnVideo() {
@@ -260,6 +278,7 @@ export class SignLanguageTool implements ITool {
         }
         var container = (event.currentTarget as HTMLElement);
         container.classList.add("bloom-selected");
+        this.updateStateForSelected(container);
         // And now in most locations we want to prevent the default behavior where click starts playback.
         // This may need adjustment for zoom.
         // The idea here is that it should be possible to select a video by clicking it
@@ -302,8 +321,12 @@ export class SignLanguageTool implements ITool {
             // We want one video container to be selected, so pick the first.
             // If one is already marked selected, presumably from a previous use of this page,
             // we'll leave that one active.
-            if (page.getElementsByClassName("bloom-videoContainer bloom-selected").length === 0) {
+            const selectedVideos = page.getElementsByClassName("bloom-videoContainer bloom-selected");
+            if (selectedVideos.length === 0) {
                 containers[0].classList.add("bloom-selected");
+                this.updateStateForSelected(containers[0]);
+            } else {
+                this.updateStateForSelected(selectedVideos[0]);
             }
             for (var i = 0; i < containers.length; i++) {
                 const container = containers[i];
@@ -320,5 +343,31 @@ export class SignLanguageTool implements ITool {
                 this.reactControls.setState({ enabled: true });
             }
         }
+    }
+
+    private updateStateForSelected(container: Element) {
+        var videos = container.getElementsByTagName("video");
+        if (videos.length === 0) {
+            this.reactControls.setState({ haveRecording: false, originalExists: false });
+            return;
+        }
+        var sources = videos[0].getElementsByTagName("source");
+
+        if (sources.length === 0) {
+            this.reactControls.setState({ haveRecording: false, originalExists: false });
+            return;
+        }
+
+        var src = sources[0].getAttribute("src");
+        if (!src) {
+            this.reactControls.setState({ haveRecording: false, originalExists: false });
+            return;
+        }
+        axios.get("/bloom/api/toolbox/fileExists?filename=" + src).then(result => {
+            this.reactControls.setState({ haveRecording: (result.data) });
+        });
+        axios.get("/bloom/api/toolbox/fileExists?filename=" + src.replace(".mp4", ".orig")).then(result => {
+            this.reactControls.setState({ originalExists: (result.data) });
+        });
     }
 }
