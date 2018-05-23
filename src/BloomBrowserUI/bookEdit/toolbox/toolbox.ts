@@ -17,10 +17,12 @@ var savedSettings: string;
 
 var keypressTimer: any = null;
 
+var showExperimentalTools: boolean;  // set by Toolbox.initialize()
+
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
 // can be asked to do by the rest of the system.
-// See TooboxView.cs class comment for a summary of how to add a new tool.
+// See ToolboxView.cs class comment for a summary of how to add a new tool.
 export interface ITool {
     beginRestoreSettings(settings: string): JQueryPromise<void>;
     configureElements(container: HTMLElement);
@@ -32,6 +34,7 @@ export interface ITool {
     id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
+    isExperimental(): boolean;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
@@ -136,6 +139,13 @@ export class ToolBox {
 
     static registerTool(tool: ITool) { masterToolList.push(tool); }
 
+    private getShowAdvancedFeatures() {
+        return axios.get("/bloom/api/featurecontrol/showAdvancedFeatures");
+    }
+    private getEnabledTools() {
+        return axios.get("/bloom/api/toolbox/enabledTools");
+    }
+
     // Called from document.ready, initializes the whole toolbox.
     initialize(): void {
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
@@ -144,8 +154,20 @@ export class ToolBox {
         $(parent.window.document).ready(function () {
             $(parent.window.document).find("#pure-toggle-right").change(function () { showToolboxChanged(!this.checked); });
         });
-        axios.get("/bloom/api/toolbox/enabledTools").then(result => {
-            const toolsToLoad = result.data.split(",");
+
+        axios.all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
+            .then(axios.spread(function(showAdvancedFeatures, enabledTools) {
+            // Both requests are complete
+            // remove the experimental tools if the user doesn't want them
+            showExperimentalTools = showAdvancedFeatures.data.toString() === "true";
+            if (!showExperimentalTools) {
+                for (var i = masterToolList.length - 1; i >= 0; i--) {
+                    if (masterToolList[i].isExperimental()) {
+                        masterToolList.splice(i, 1);
+                    }
+                }
+            }
+            const toolsToLoad = enabledTools.data.split(",");
             // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
             for (var i = toolsToLoad.length - 1; i >= 0; i--) {
                 if (!masterToolList.some(mod => mod.id() === toolsToLoad[i])) {
@@ -189,7 +211,7 @@ export class ToolBox {
                 }
             };
             loadNextTool();
-        });
+        }));
 
     }
 }
@@ -663,6 +685,9 @@ function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: bool
 
     var toolboxElt = $("#toolbox");
     var label = header.text();
+    if (toolId === "settingsTool" && !showExperimentalTools) {
+        content.addClass("hideExperimental");
+    }
 
     // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
     // so insert before the first one with text alphabetically greater than this (if any).

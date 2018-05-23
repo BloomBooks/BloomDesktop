@@ -45,6 +45,9 @@ export class DecodableReaderToolboxTool implements ITool {
     isAlwaysEnabled(): boolean {
         return false;
     }
+    isExperimental(): boolean {
+        return false;
+    }
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.

@@ -169,12 +169,12 @@ namespace Bloom.Properties {
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ShowExperimentalCommands {
+        public bool ShowExperimentalFeatures {
             get {
-                return ((bool)(this["ShowExperimentalCommands"]));
+                return ((bool)(this["ShowExperimentalFeatures"]));
             }
             set {
-                this["ShowExperimentalCommands"] = value;
+                this["ShowExperimentalFeatures"] = value;
             }
         }
         

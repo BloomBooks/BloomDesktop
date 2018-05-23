@@ -60,6 +60,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     public isAlwaysEnabled(): boolean {
         return false;
     }
+    public isExperimental(): boolean {
+        return false;
+    }
 
     public newPageReady() {
         // First, abort any preview that's in progress.

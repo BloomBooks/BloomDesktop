@@ -93,9 +93,9 @@ namespace Bloom.CollectionTab
 
 			_showHistoryMenu.Visible = _showNotesMenu.Visible = Settings.Default.ShowSendReceive;
 
-			if(Settings.Default.ShowExperimentalCommands)
+			if(Settings.Default.ShowExperimentalFeatures)
 				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restricting it because it opens a folder from which the user could do damage
-			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalCommands;
+			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalFeatures;
 
 			SetupBookDropdownIcon();
 			_bookContextMenu.Closed += _bookContextMenu_Closed;

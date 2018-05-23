@@ -30,6 +30,9 @@ export class LeveledReaderToolboxTool implements ITool {
     isAlwaysEnabled(): boolean {
         return false;
     }
+    isExperimental(): boolean {
+        return false;
+    }
 
     showTool() {
         // change markup based on visible options
