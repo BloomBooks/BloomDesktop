@@ -561,19 +561,10 @@ namespace Bloom.Publish
 					};
 					_model.PrepareToStageEpub(); // let's get the epub maker and its browser created on the UI thread
 					_model.EpubMaker.PublishImageDescriptions = _desiredImageDescriptionPublishing;
-					lock (this)
-					{
-						if (_previewWorker != null)
-						{
-							// Something has generated another preview worker already.
-							_model.EpubMaker.AbortRequested = true;
-							return;
-						}
-						_previewWorker = new BackgroundWorker();
-						_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
-						_previewWorker.DoWork += (sender, args) => SetupEpubPreview();
-						_previewWorker.RunWorkerAsync();
-					}
+					_previewWorker = new BackgroundWorker();
+					_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
+					_previewWorker.DoWork += (sender, args) => SetupEpubPreview();
+					_previewWorker.RunWorkerAsync();
 					break;
 			}
 			UpdateSaveButton();
@@ -764,6 +755,14 @@ namespace Bloom.Publish
 		private void OnPublishRadioChanged(object sender, EventArgs e)
 		{
 			if (!_activated)
+				return;
+
+			// This method is triggered both by a radio button being set and by a button being cleared.
+			// Since we share the same method across all radio buttons, it gets called twice whenever
+			// a user changes the publish mode, once for the new mode being set and once for the old
+			// mode being cleared.  We want to respond only to the new mode being set.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6009.
+			if (!((RadioButton)sender).Checked)
 				return;
 
 			// BL-625: One of the RadioButtons is now checked, so it is safe to re-enable AutoCheck.
