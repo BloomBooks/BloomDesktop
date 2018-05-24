@@ -71,6 +71,62 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CleanupUnusedVideoFiles_BookHadUnusedVideo_VideosRemoved()
+		{
+			const string usedVideoGuid = "f57db6b0-3bbe-42be-ab09-2a67b2e6f0d7";   //The files to keep.
+			const string usedVideo2Guid = "3c4557eb-e644-4b48-82e0-443fcca62a6b";   //The files to keep.
+			const string unusedVideoGuid = "746b30ce-2fc7-4c84-9ef0-1036d6883cba"; //The files to drop.
+			const string usedVidMp4 = usedVideoGuid + ".mp4";
+			const string usedVid2Mp4 = usedVideo2Guid + ".mp4";
+			const string unusedVidMp4 = unusedVideoGuid + ".mp4";
+			var videoPath = Path.Combine(_folder.Path, "video");              //Path to the video files.
+			Directory.CreateDirectory(videoPath);
+			var storage =
+				GetInitialStorageWithCustomHtml(@"
+		<html><body>
+			<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual'
+				data-page='' id='566c4a7a-0789-43f5-abcb-e4a16532dedd' data-page-number='1' lang=''>
+				<div class='marginBox'>
+					<div>
+						<div class='bloom-videoContainer bloom-leadingElement bloom-selected'>
+							<video controls='controls'>
+								<source src='video/" + usedVidMp4 + @"' type='video/mp4'></source>
+							</video>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual'
+				data-page='' id='11623f8e-77c2-4718-a594-abd787a37458' data-page-number='2' lang=''>
+				<div class='marginBox'>
+					<div>
+						<div class='bloom-videoContainer bloom-leadingElement bloom-selected'>
+							<video controls='controls'>
+								<source src='video/" + usedVid2Mp4 + @"' type='video/mp4'></source>
+							</video>
+						</div>
+					</div>
+				</div>
+			</div>
+		</body></html>");
+			var usedOrigFilename = usedVideoGuid + ".orig";
+			var usedVidMp4Path = MakeSampleMp4Video(Path.Combine(videoPath, usedVidMp4), true);
+			var usedVid2Mp4Path = MakeSampleMp4Video(Path.Combine(videoPath, usedVid2Mp4), false);
+			var uncreatedOrigFilename = usedVideo2Guid + ".orig";
+			var usedVidOrigPath = Path.Combine(videoPath, usedOrigFilename);
+			var uncreatedVidOrigPath = Path.Combine(videoPath, uncreatedOrigFilename);
+			var unusedVidMp4Path = MakeSampleMp4Video(Path.Combine(videoPath, unusedVidMp4), true);
+			var unusedVidOrigPath = unusedVideoGuid + ".orig";
+			storage.CleanupUnusedVideoFiles();
+			Assert.IsTrue(File.Exists(usedVidMp4Path.Path));
+			Assert.IsTrue(File.Exists(usedVidOrigPath));
+			Assert.IsTrue(File.Exists(usedVid2Mp4Path.Path));
+			Assert.IsFalse(File.Exists(unusedVidMp4Path.Path));
+			Assert.IsFalse(File.Exists(uncreatedVidOrigPath));
+			Assert.IsFalse(File.Exists(unusedVidOrigPath));
+		}
+
+		[Test]
 		public  void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved()
 		{
 			const string usedAudioGuid = "i3afb14d9-6362-40bf-9dca-de1b24d793f3";   //The files to keep.
@@ -148,6 +204,7 @@ namespace BloomTests.Book
 			storage.CleanupUnusedImageFiles();
 			Assert.IsTrue(File.Exists(keepTemp.Path));
 		}
+
 		[Test]
 		public void CleanupUnusedImageFiles_ImageOnlyReferencedInDataDiv_ImageNotRemoved()
 		{
@@ -164,6 +221,7 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(keepTemp.Path));
 			Assert.IsTrue(File.Exists(keepTempJPG.Path));
 		}
+
 		[Test]
 		public void CleanupUnusedImageFiles_ThumbnailsAndPlaceholdersNotRemoved()
 		{
@@ -181,6 +239,7 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(p3.Path));
 			Assert.IsFalse(File.Exists(dropmeTemp.Path));
 		}
+
 		[Test]
 		public void CleanupUnusedImageFiles_UnusedImageIsLocked_NotException()
 		{
@@ -192,12 +251,14 @@ namespace BloomTests.Book
 				storage.CleanupUnusedImageFiles();
 			}
 		}
+
 		[Test]
 		public void Save_BookHasMissingImages_NoCrash()
 		{
 			var storage = GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='marginBox'><img src='keepme.png'></img></div></div></body></html>");
 			storage.Save();
 		}
+
 		private TempFile MakeSamplePngImage(string name)
 		{
 			var temp = TempFile.WithFilename(name);
@@ -206,6 +267,7 @@ namespace BloomTests.Book
 			x.Dispose();
 			return temp;
 		}
+
 		private TempFile MakeSampleWavAudio(string name, bool makeMp3Also=false)
 		{
 			var temp = TempFile.WithFilename(name);
@@ -216,16 +278,17 @@ namespace BloomTests.Book
 			}
 			return temp;
 		}
-		//
-		//        [Test]
-		//        public void Delete_IsDeleted()
-		//        {
-		//            BookStorage storage = GetInitialStorageWithCustomHtml();
-		//            Assert.IsTrue(Directory.Exists(_folder.Path));
-		//            Assert.IsTrue(storage.DeleteBook());
-		//            Thread.Sleep(2000);
-		//            Assert.IsFalse(Directory.Exists(_folder.Path));
-		//        }
+
+		private TempFile MakeSampleMp4Video(string name, bool makeOrigAlso = false)
+		{
+			var temp = TempFile.WithFilename(name);
+			var ext = Path.GetExtension(name);
+			if (makeOrigAlso && ext == ".mp4")
+			{
+				TempFile.WithFilename(Path.ChangeExtension(name, ".orig"));
+			}
+			return temp;
+		}
 
 		[Test]
 		[Platform(Exclude = "Linux", Reason = "UNC paths for network drives are only used on Windows")]
