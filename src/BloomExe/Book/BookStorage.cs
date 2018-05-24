@@ -58,6 +58,7 @@ namespace Bloom.Book
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles();
 		void CleanupUnusedAudioFiles();
+		void CleanupUnusedVideoFiles();
         BookInfo BookInfo { get; set; }
 		string NormalBaseForRelativepaths { get; }
 		string InitialLoadErrors { get; }
@@ -300,6 +301,8 @@ namespace Bloom.Book
 			return folderPath.Replace('\\','/').Contains("/browser/templates/");
 		}
 
+		#region Image Files
+
 		/// <summary>
 		/// Compare the images we find in the top level of the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
@@ -355,7 +358,22 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Compare the audio we find in the top level of the book folder to those referenced
+		/// Return the paths, relative to the book folder, of all the images referred to in the element.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
+		internal static List<string> GetImagePathsRelativeToBook(XmlElement element)
+		{
+			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
+				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
+		#endregion Image Files
+
+		#region Audio Files
+
+		/// <summary>
+		/// Compare the audio we find in the audio folder in the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
 		public void CleanupUnusedAudioFiles()
@@ -408,16 +426,87 @@ namespace Bloom.Book
 				var path = Path.Combine(audioFolderPath, fileName);
 				try
 				{
-					Debug.WriteLine("Removed unused audio file: "+path);
+					Debug.WriteLine("Removed unused audio file: " + path);
 					Logger.WriteEvent("Removed unused audio file: " + path);
 					RobustFile.Delete(path);
 				}
-				catch (Exception)
+				catch (Exception ex) when (ex is IOException || ex is SecurityException)
 				{
+					// It's not worth bothering the user about, we'll get it someday.
+					// We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
 					Debug.WriteLine("Could not remove unused audio file: " + path);
 					Logger.WriteEvent("Could not remove unused audio file: " + path);
-					//It's not worth bothering the user about, we'll get it someday.
-					//We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+				}
+			}
+		}
+
+		internal static List<string> GetAudioPathsRelativeToBook(XmlElement element)
+		{
+			return (from XmlElement audio in HtmlDom.SelectChildAudioAndBackgroundMusicElements(element)
+				select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
+		#endregion Audio Files
+
+		#region Video Files
+
+		/// <summary>
+		/// Compare the video we find in the video folder in the book folder to those referenced
+		/// in the dom, and remove any unreferenced ones.
+		/// </summary>
+		public void CleanupUnusedVideoFiles()
+		{
+			if (IsStaticContent(_folderPath))
+				return;
+
+			//Collect up all the video files in our book's video directory
+			var videoFolderPath = GetVideoFolderPath(_folderPath);
+			var videoFilesToDeleteIfNotUsed = new List<string>();
+			const string videoExtension = ".mp4";  // .mov, .avi...?
+
+			if (Directory.Exists(videoFolderPath))
+			{
+				foreach (var path in Directory.EnumerateFiles(videoFolderPath, "*" + videoExtension))
+				{
+					videoFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+				}
+			}
+
+			//Remove from that list each video file actually in use
+			var element = Dom.RawDom.DocumentElement;
+			var usedVideoPaths = GetVideoPathsRelativeToBook(element);
+
+			foreach (var relativeFilePath in usedVideoPaths) // relativeFilePath includes "video/"
+			{
+				if (Path.GetExtension(relativeFilePath).Length > 0)
+				{
+					if (Path.GetExtension(relativeFilePath).ToLowerInvariant() == videoExtension)
+					{
+						videoFilesToDeleteIfNotUsed.Remove(Path.GetFileName(GetNormalizedPathForOS(relativeFilePath)));  //This call just returns false if not found, which is fine.
+					}
+				}
+
+				// if there is a .orig version of the used file, keep it too (by removing it from this list).
+				const string origExt = ".orig";
+				var tempfileName = Path.ChangeExtension(relativeFilePath, origExt);
+				videoFilesToDeleteIfNotUsed.Remove(Path.GetFileName(GetNormalizedPathForOS(tempfileName)));
+			}
+			//Delete any files still in the list
+			foreach (var fileName in videoFilesToDeleteIfNotUsed)
+			{
+				var path = Path.Combine(videoFolderPath, fileName);
+				try
+				{
+					Debug.WriteLine("Removed unused video file: " + path);
+					Logger.WriteEvent("Removed unused video file: " + path);
+					RobustFile.Delete(path);
+				}
+				catch (Exception ex) when (ex is IOException || ex is SecurityException)
+				{
+					// It's not worth bothering the user about, we'll get it someday.
+					// We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+					Debug.WriteLine("Could not remove unused video file: " + path);
+					Logger.WriteEvent("Could not remove unused video file: " + path);
 				}
 			}
 		}
@@ -450,28 +539,13 @@ namespace Bloom.Book
 			return videoFolder;
 		}
 
-		/// <summary>
-		/// Return the paths, relative to the book folder, of all the images referred to in the element.
-		/// </summary>
-		/// <param name="element"></param>
-		/// <returns></returns>
-		internal static List<string> GetImagePathsRelativeToBook(XmlElement element)
-		{
-			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
-				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
-		}
-
-		internal static List<string> GetAudioPathsRelativeToBook(XmlElement element)
-		{
-			return (from XmlElement audio in HtmlDom.SelectChildAudioAndBackgroundMusicElements(element)
-					select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
-		}
-
 		internal static List<string> GetVideoPathsRelativeToBook(XmlElement element)
 		{
 			return (from XmlElement video in HtmlDom.SelectChildVideoElements(element)
 				select HtmlDom.GetVideoElementUrl(new ElementProxy(video as XmlElement)).PathOnly.NotEncoded).Distinct().ToList();
 		}
+
+		#endregion Video Files
 
 		private string GetNormalizedPathForOS(string path)
 		{
@@ -726,7 +800,6 @@ namespace Bloom.Book
 			}
 		}
 
-
 		#region Static Helper Methods
 		public static string FindBookHtmlInFolder(string folderPath)
 		{
@@ -816,7 +889,6 @@ namespace Bloom.Book
 
 
 		#endregion
-
 
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
@@ -953,6 +1025,7 @@ namespace Bloom.Book
 					UpdateSupportFiles();
 					CleanupUnusedImageFiles();
 					CleanupUnusedAudioFiles();
+					CleanupUnusedVideoFiles();
 				}
 			}
 		}
@@ -1263,37 +1336,6 @@ namespace Bloom.Book
 			}
 			dom.AddStyleSheet(path);
 		}
-
-//		/// <summary>
-//		/// Creates a relative path from one file or folder to another.
-//		/// </summary>
-//		/// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
-//		/// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
-//		/// <param name="dontEscape">Boolean indicating whether to add uri safe escapes to the relative path</param>
-//		/// <returns>The relative path from the start directory to the end path.</returns>
-//		/// <exception cref="ArgumentNullException"></exception>
-//		public static String MakeRelativePath(String fromPath, String toPath)
-//		{
-//			if (String.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
-//			if (String.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
-//
-//			//the stuff later on needs to see directory names trailed by a "/" or "\".
-//			fromPath = fromPath.Trim();
-//			if (!fromPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-//			{
-//				if (Directory.Exists(fromPath))
-//				{
-//					fromPath = fromPath + Path.DirectorySeparatorChar;
-//				}
-//			}
-//			Uri fromUri = new Uri(fromPath);
-//			Uri toUri = new Uri(toPath);
-//
-//			Uri relativeUri = fromUri.MakeRelativeUri(toUri);
-//			String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
-//
-//			return relativePath.Replace('/', Path.DirectorySeparatorChar);
-//		}
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
