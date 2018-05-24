@@ -770,11 +770,9 @@ namespace Bloom.Publish
 				SetAutoCheck(true);
 
 			var oldPortion = _model.BookletPortion;
-			var oldCrop = _model.ShowCropMarks; // changing to or from cloud radio CAN change this.
 			SetModelFromButtons();
-			if (oldPortion == _model.BookletPortion && oldCrop == _model.ShowCropMarks)
+			if (oldPortion == _model.BookletPortion || _model.BookletPortion == PublishModel.BookletPortions.None)
 			{
-				// no changes detected
 				if (_uploadRadio.Checked)
 				{
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
@@ -799,7 +797,7 @@ namespace Bloom.Publish
 						? PublishModel.DisplayModes.ShowPdf
 						: PublishModel.DisplayModes.WaitForUserToChooseSomething;
 				}
-				else if (_model.DisplayMode == PublishModel.DisplayModes.WaitForUserToChooseSomething)
+				if (_model.DisplayMode == PublishModel.DisplayModes.WaitForUserToChooseSomething)
 				{
 					// This happens if user went directly to Upload and then chooses Simple layout
 					// We haven't actually built a pdf yet, so do it.
@@ -807,7 +805,7 @@ namespace Bloom.Publish
 				}
 				return;
 			}
-
+			Debug.Assert(_simpleAllPagesRadio.Checked || _bookletCoverRadio.Checked || _bookletBodyRadio.Checked || _uploadRadio.Checked);
 			ControlsChanged();
 		}
 
