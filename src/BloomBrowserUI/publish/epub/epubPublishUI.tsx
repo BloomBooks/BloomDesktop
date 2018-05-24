@@ -133,6 +133,11 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                 value="onPage">
                                 Include image descriptions on page
                             </Radio>
+                            <Radio
+                                l10nKey="PublishTab.Epub.Links"
+                                value="links">
+                                Image description links
+                            </Radio>
                         </RadioGroup>
                     </div>
                 </div>

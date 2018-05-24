@@ -2590,6 +2590,11 @@
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.BackLinkLabel">
+        <source xml:lang="en">Back</source>
+        <note>ID: PublishTab.Epub.BackLinkLabel</note>
+        <note>Used in Epubs as the text of a link that leads from the image description back to the main page</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.BooksForBlind">
         <source xml:lang="en">Books for the Blind</source>
         <note>ID: PublishTab.Epub.BooksForBlind</note>
@@ -2598,9 +2603,19 @@
         <source xml:lang="en">Done</source>
         <note>ID: PublishTab.Epub.Done</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel">
+        <source xml:lang="en">Image Description</source>
+        <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
+        <note>Used in Epubs as the text of a link that leads to the description of an image</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Links">
+        <source xml:lang="en">Image description links</source>
+        <note>ID: PublishTab.Epub.Links</note>
+        <note>Used in the Epub publish page as the text of a radio button indicating that image descriptions should be published as web-type hot links leading to the description</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
         <source xml:lang="en">No recorded audio image descriptions</source>
