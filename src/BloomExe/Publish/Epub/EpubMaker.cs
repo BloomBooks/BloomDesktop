@@ -332,7 +332,11 @@ namespace Bloom.Publish.Epub
 				metadataElt.Add(new XElement(opf + "meta",
 					new XAttribute("property", "media:duration"),
 					new XText(bookDuration.ToString())));
+				metadataElt.Add(new XElement(opf + "meta",
+					new XAttribute("property", "media:active-class"),
+					new XText("-epub-media-overlay-active")));
 			}
+
 			MakeSpine(opf, rootElt, manifestPath);
 		}
 
@@ -543,11 +547,12 @@ namespace Bloom.Publish.Epub
 				var spanId = span.Attributes["id"].Value;
 				var path = AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, spanId);
 				var dataDurationAttr = span.Attributes["data-duration"];
+				TimeSpan clipTimeSpan;
 				if(dataDurationAttr != null)
 				{
 					// Make sure we parse "3.14159" properly since that's the form we'll see regardless of current locale.
 					// (See http://issues.bloomlibrary.org/youtrack/issue/BL-4374.)
-					pageDuration += TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value, System.Globalization.CultureInfo.InvariantCulture));
+					clipTimeSpan = TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value, System.Globalization.CultureInfo.InvariantCulture));
 				}
 				else
 				{
@@ -560,10 +565,10 @@ namespace Bloom.Publish.Epub
 					if(RobustFile.Exists(wavPath))
 					{
 #if __MonoCS__
-						pageDuration += new TimeSpan(new FileInfo(path).Length);	// TODO: this needs to be fixed for Linux/Mono
+						clipTimeSpan = new TimeSpan(new FileInfo(path).Length*7*10000000/61000);	// TODO: this needs to be fixed for Linux/Mono
 #else
 						using(WaveFileReader wf = RobustIO.CreateWaveFileReader(wavPath))
-							pageDuration += wf.TotalTime;
+							clipTimeSpan = wf.TotalTime;
 #endif
 					}
 					else
@@ -574,9 +579,10 @@ namespace Bloom.Publish.Epub
 						// So, multiply by 7 and divide by 61K to get seconds.
 						// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
 						// hence the 10000000.
-						pageDuration += new TimeSpan(new FileInfo(path).Length*7*10000000/61000);
+						clipTimeSpan = new TimeSpan(new FileInfo(path).Length*7*10000000/61000);
 					}
 				}
+				pageDuration += clipTimeSpan;
 				var epubPath = CopyFileToEpub(path);
 				seq.Add(new XElement(smil + "par",
 					new XAttribute("id", "s" + index++),
@@ -586,7 +592,9 @@ namespace Bloom.Publish.Epub
 						// Note that we don't need to preserve any audio/ in the path.
 						// We now mangle file names so as to replace any / (with _2f) so all files
 						// are at the top level in the ePUB. Makes one less complication for readers.
-						new XAttribute("src", Path.GetFileName(epubPath)))));
+						new XAttribute("src", Path.GetFileName(epubPath)),
+						new XAttribute("clipBegin", "0:00:00.000"),
+						new XAttribute("clipEnd", clipTimeSpan.ToString(@"h\:mm\:ss\.fff")))));
 			}
 			_pageDurations[GetIdOfFile(overlayName)] = pageDuration;
 			var overlayPath = Path.Combine(_contentFolder, overlayName);
