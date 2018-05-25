@@ -1381,6 +1381,7 @@ namespace Bloom.Edit
 			server.RegisterEndpointHandler("toolbox/editVideo", HandleEditVideoRequest, true);
 			server.RegisterEndpointHandler("toolbox/restoreOriginal", HandleRestoreOriginalRequest, true);
 			server.RegisterEndpointHandler("toolbox/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt,true);
+			server.RegisterEndpointHandler("toolbox/recordingStart", HandleRecordingStart, true);
 		}
 
 		// Request from sign language tool, issued when a complete recording has been captured.
@@ -1397,10 +1398,7 @@ namespace Bloom.Edit
 				var videoFolder = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
 				var path = Path.Combine(videoFolder, fileName);
 				RobustFile.WriteAllBytes(path, bytes);
-				var root = _view.Browser.WebBrowser.Document;
-				var page = root.GetElementById("page") as GeckoIFrameElement;
-				var pageDoc = page.ContentWindow.Document;
-				var videoContainer = pageDoc.GetElementsByClassName("bloom-videoContainer bloom-selected").FirstOrDefault() as GeckoHtmlElement;
+				var videoContainer = GetSelectedVideoContainer();
 				if (videoContainer == null)
 				{
 					// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
@@ -1451,6 +1449,23 @@ namespace Bloom.Edit
 				// I'm not absolutely sure we need to get the Video container again on the UI thread, but have had some problems
 				// with COM interfaces in a similar situation so it seems safest.
 				_view.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
+				request.PostSucceeded();
+			}
+		}
+
+		// Notification from sign language tool that recording has begun.
+		// We need to get a localized "Recording" message and insert it in the video overlay covering the current video.
+		private void HandleRecordingStart(ApiRequest request)
+		{
+			lock (request)
+			{
+				var videoContainer = GetSelectedVideoContainer();
+				var overlayLabelNode = videoContainer.Parent.SelectFirst("//div[contains(@class, 'bloom-videoOverlay')]/label");
+				if (overlayLabelNode != null)
+				{
+					var recordingMessage = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.Recording", "Recording");
+					overlayLabelNode.TextContent = recordingMessage;
+				}
 				request.PostSucceeded();
 			}
 		}
