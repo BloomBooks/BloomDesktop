@@ -471,13 +471,13 @@ h2 {
         height: ~"calc(100% - 2px)";
         width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
     }
-    /* other rules normally make bloom-editable divs height: 100%. That won't work for a bilingual or trilingual block. 
-    This rule makes them start out the size they need to be, then whatever space is left over is divided between them. 
-    */ 
-    &.bloom-bilingual, &.bloom-trilingual { 
+    /* other rules normally make bloom-editable divs height: 100%. That won't work for a bilingual or trilingual block.
+    This rule makes them start out the size they need to be, then whatever space is left over is divided between them.
+    */
+    &.bloom-bilingual, &.bloom-trilingual {
         .bloom-editable {
             height: auto;
-            flex-grow: 1; 
+            flex-grow: 1;
         }
     }
 

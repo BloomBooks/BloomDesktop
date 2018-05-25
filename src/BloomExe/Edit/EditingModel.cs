@@ -1397,10 +1397,7 @@ namespace Bloom.Edit
 				var videoFolder = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
 				var path = Path.Combine(videoFolder, fileName);
 				RobustFile.WriteAllBytes(path, bytes);
-				var root = _view.Browser.WebBrowser.Document;
-				var page = root.GetElementById("page") as GeckoIFrameElement;
-				var pageDoc = page.ContentWindow.Document;
-				var videoContainer = pageDoc.GetElementsByClassName("bloom-videoContainer bloom-selected").FirstOrDefault() as GeckoHtmlElement;
+				var videoContainer = GetSelectedVideoContainer();
 				if (videoContainer == null)
 				{
 					// Enhance: if we end up needing this it should be localizable. But the current plan is to disable

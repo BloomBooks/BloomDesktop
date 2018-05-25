@@ -574,3 +574,19 @@ div.cke_float {
 div.long-press-popup {
     z-index: 15005;
 } // in front of hint bubbles
+
+.bloom-videoOverlay {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1; // the whole point is to hide the video underneath
+    border: 4px dashed @bloom-blue;
+    background: aliceblue;
+    color: @bloom-blue;
+    font-size: 40px;
+    z-index: @imageContainerZIndex + 50; // stay above videoContainer
+}
