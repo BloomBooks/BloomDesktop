@@ -756,6 +756,27 @@ namespace Bloom.Publish.Epub
 
 		private void HandleImageDescriptions(HtmlDom pageDom)
 		{
+			// Set img alt attributes to the description, or erase them if no description (BL-6035)
+			foreach (var img in pageDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
+			{
+				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
+				{
+					img.SetAttribute("alt", "");   // signal no accessibility need
+					continue;
+				}
+				var desc = img.SelectSingleNode("following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]") as XmlElement;
+				if (desc != null)
+				{
+					var text = desc.InnerText.Trim();
+					if (!String.IsNullOrEmpty(text))
+					{
+						img.SetAttribute("alt", text);
+						continue;
+					}
+				}
+				img.RemoveAttribute("alt");    // signal missing accessibility information
+			}
+			// Put the image descriptions on the page following the images.
 			if (PublishImageDescriptions == ImageDescriptionPublishing.OnPage)
 			{
 				var imageDescriptions = pageDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
@@ -1077,13 +1098,11 @@ namespace Bloom.Publish.Epub
 					_firstNumberedPageSeen = true;
 				}
 			}
+			// Note that the alt attribute is handled elsewhere.
 			foreach (var img in pageDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
 			{
 				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
-				{
-					img.SetAttribute("alt", "");   // signal no accessibility need
 					continue;
-				}
 				div = img.SelectSingleNode("parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]") as XmlElement;
 				if (div != null)
 				{
@@ -1098,13 +1117,9 @@ namespace Bloom.Publish.Epub
 						var figDescId = "figdesc" + _imgCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
 						desc.SetAttribute("id", figDescId);
 						img.SetAttribute("aria-describedby", figDescId);
-						// Simplest implementation of BL-5892...  It may be redundant, but it's certainly safe.
-						var text = desc.InnerText.Trim();
-						img.SetAttribute("alt", text);
 						continue;
 					}
 				}
-				img.RemoveAttribute("alt");    // signal missing accessibility information
 			}
 			// Provide the general language of this document.
 			// (Required for intermediate (AA) conformance with WCAG 2.0.)
@@ -1443,6 +1458,13 @@ namespace Bloom.Publish.Epub
 				div.RemoveAttribute("aria-label");			// don't want this without a role
 				div.RemoveAttribute("spellcheck");			// too late for spell checking in an ebook
 				div.RemoveAttribute("content-editable");	// too late for editing in an ebook
+			}
+
+			// Clean up img attributes (BL-6035)
+			foreach (var img in pageDom.Body.SelectNodes("//img").Cast<XmlElement>())
+			{
+				// Ensuring a proper alt attribute is handled elsewhere
+				img.RemoveAttribute("title");	// We don't want this tooltip in published books.
 			}
 		}
 
