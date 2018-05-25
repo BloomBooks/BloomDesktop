@@ -19,6 +19,7 @@ using Bloom.web;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
+using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
@@ -57,6 +58,7 @@ namespace Bloom.Book
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles();
 		void CleanupUnusedAudioFiles();
+		void CleanupUnusedVideoFiles();
         BookInfo BookInfo { get; set; }
 		string NormalBaseForRelativepaths { get; }
 		string InitialLoadErrors { get; }
@@ -107,12 +109,12 @@ namespace Bloom.Book
 			set { _metaData = value; }
 		}
 
-		public BookStorage(string folderPath, SIL.IO.IChangeableFileLocator baseFileLocator,
+		public BookStorage(string folderPath, IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
 			:this(folderPath, true, baseFileLocator, bookRenamedEvent, collectionSettings)
 		{ }
 
-		public BookStorage(string folderPath, bool forSelectedBook, SIL.IO.IChangeableFileLocator baseFileLocator,
+		public BookStorage(string folderPath, bool forSelectedBook, IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
 		{
 			_folderPath = folderPath;
@@ -157,7 +159,7 @@ namespace Bloom.Book
 		{
 			string path = Path.Combine(_folderPath, fileName);
 			if(RobustFile.Exists(path) &&
-			 (new System.IO.FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
+			 (new FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
 			{
 				return false;
 			}
@@ -217,12 +219,12 @@ namespace Bloom.Book
 
 		public bool GetLooksOk()
 		{
-			return RobustFile.Exists(PathToExistingHtml) && string.IsNullOrEmpty(ErrorMessagesHtml);
+			return RobustFile.Exists(PathToExistingHtml) && String.IsNullOrEmpty(ErrorMessagesHtml);
 		}
 
 		public void Save()
 		{
-			if (!string.IsNullOrEmpty(ErrorMessagesHtml))
+			if (!String.IsNullOrEmpty(ErrorMessagesHtml))
 			{
 				return; //too dangerous to try and save
 			}
@@ -299,6 +301,8 @@ namespace Bloom.Book
 			return folderPath.Replace('\\','/').Contains("/browser/templates/");
 		}
 
+		#region Image Files
+
 		/// <summary>
 		/// Compare the images we find in the top level of the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
@@ -310,7 +314,7 @@ namespace Bloom.Book
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
-			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license","video-placeholder" });
+			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license", "video-placeholder" });
 			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
@@ -354,7 +358,22 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Compare the audio we find in the top level of the book folder to those referenced
+		/// Return the paths, relative to the book folder, of all the images referred to in the element.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
+		internal static List<string> GetImagePathsRelativeToBook(XmlElement element)
+		{
+			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
+				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
+		#endregion Image Files
+
+		#region Audio Files
+
+		/// <summary>
+		/// Compare the audio we find in the audio folder in the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
 		public void CleanupUnusedAudioFiles()
@@ -407,36 +426,126 @@ namespace Bloom.Book
 				var path = Path.Combine(audioFolderPath, fileName);
 				try
 				{
-					Debug.WriteLine("Removed unused audio file: "+path);
+					Debug.WriteLine("Removed unused audio file: " + path);
 					Logger.WriteEvent("Removed unused audio file: " + path);
 					RobustFile.Delete(path);
 				}
-				catch (Exception)
+				catch (Exception ex) when (ex is IOException || ex is SecurityException)
 				{
+					// It's not worth bothering the user about, we'll get it someday.
+					// We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
 					Debug.WriteLine("Could not remove unused audio file: " + path);
 					Logger.WriteEvent("Could not remove unused audio file: " + path);
-					//It's not worth bothering the user about, we'll get it someday.
-					//We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
 				}
 			}
-		}
-
-		/// <summary>
-		/// Return the paths, relative to the book folder, of all the images referred to in the element.
-		/// </summary>
-		/// <param name="element"></param>
-		/// <returns></returns>
-		internal static List<string> GetImagePathsRelativeToBook(XmlElement element)
-		{
-			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
-				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
 		}
 
 		internal static List<string> GetAudioPathsRelativeToBook(XmlElement element)
 		{
 			return (from XmlElement audio in HtmlDom.SelectChildAudioAndBackgroundMusicElements(element)
-					select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
+				select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
 		}
+
+		#endregion Audio Files
+
+		#region Video Files
+
+		/// <summary>
+		/// Compare the video we find in the video folder in the book folder to those referenced
+		/// in the dom, and remove any unreferenced ones.
+		/// </summary>
+		public void CleanupUnusedVideoFiles()
+		{
+			if (IsStaticContent(_folderPath))
+				return;
+
+			//Collect up all the video files in our book's video directory
+			var videoFolderPath = GetVideoFolderPath(_folderPath);
+			var videoFilesToDeleteIfNotUsed = new List<string>();
+			const string videoExtension = ".mp4";  // .mov, .avi...?
+
+			if (Directory.Exists(videoFolderPath))
+			{
+				foreach (var path in Directory.EnumerateFiles(videoFolderPath, "*" + videoExtension))
+				{
+					videoFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+				}
+			}
+
+			//Remove from that list each video file actually in use
+			var element = Dom.RawDom.DocumentElement;
+			var usedVideoPaths = GetVideoPathsRelativeToBook(element);
+
+			foreach (var relativeFilePath in usedVideoPaths) // relativeFilePath includes "video/"
+			{
+				if (Path.GetExtension(relativeFilePath).Length > 0)
+				{
+					if (Path.GetExtension(relativeFilePath).ToLowerInvariant() == videoExtension)
+					{
+						videoFilesToDeleteIfNotUsed.Remove(Path.GetFileName(GetNormalizedPathForOS(relativeFilePath)));  //This call just returns false if not found, which is fine.
+					}
+				}
+
+				// if there is a .orig version of the used file, keep it too (by removing it from this list).
+				const string origExt = ".orig";
+				var tempfileName = Path.ChangeExtension(relativeFilePath, origExt);
+				videoFilesToDeleteIfNotUsed.Remove(Path.GetFileName(GetNormalizedPathForOS(tempfileName)));
+			}
+			//Delete any files still in the list
+			foreach (var fileName in videoFilesToDeleteIfNotUsed)
+			{
+				var path = Path.Combine(videoFolderPath, fileName);
+				try
+				{
+					Debug.WriteLine("Removed unused video file: " + path);
+					Logger.WriteEvent("Removed unused video file: " + path);
+					RobustFile.Delete(path);
+				}
+				catch (Exception ex) when (ex is IOException || ex is SecurityException)
+				{
+					// It's not worth bothering the user about, we'll get it someday.
+					// We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+					Debug.WriteLine("Could not remove unused video file: " + path);
+					Logger.WriteEvent("Could not remove unused video file: " + path);
+				}
+			}
+		}
+
+		internal static string GetVideoFolderName
+		{
+			get { return "video/"; }
+		}
+
+		internal static string GetVideoFolderPath(string bookFolderPath)
+		{
+			return Path.Combine(bookFolderPath, GetVideoFolderName);
+		}
+
+		internal static string GetVideoDirectoryAndEnsureExistence(string bookFolder)
+		{
+			var videoFolder = GetVideoFolderPath(bookFolder);
+			if (!Directory.Exists(videoFolder))
+			{
+				try
+				{
+					Directory.CreateDirectory(videoFolder);
+				}
+				catch (IOException error)
+				{
+					ErrorReport.NotifyUserOfProblem(error, error.Message);
+				}
+			}
+
+			return videoFolder;
+		}
+
+		internal static List<string> GetVideoPathsRelativeToBook(XmlElement element)
+		{
+			return (from XmlElement video in HtmlDom.SelectChildVideoElements(element)
+				select HtmlDom.GetVideoElementUrl(new ElementProxy(video as XmlElement)).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
+		#endregion Video Files
 
 		private string GetNormalizedPathForOS(string path)
 		{
@@ -456,7 +565,7 @@ namespace Bloom.Book
 			AssertIsAlreadyInitialized();
 			string tempPath = GetNameForATempFileInStorageFolder();
 			MakeCssLinksAppropriateForStoredFile(dom);
-			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
+			SetBaseForRelativePaths(dom, String.Empty);// remove any dependency on this computer, and where files are on it.
 			//CopyXMatterStylesheetsIntoFolder
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
@@ -511,9 +620,9 @@ namespace Bloom.Book
 			{
 				var msg = LocalizationManager.GetString("BookStorage.FolderMoved",
 					"It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.");
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+				ErrorReport.NotifyUserOfProblem(
 					new ApplicationException(
-						string.Format(
+						String.Format(
 							"In SetBookName('{0}'), BookStorage thinks the existing folder is '{1}', but that does not exist. (ref bl-290)",
 							name, _folderPath)),
 					msg);
@@ -573,7 +682,7 @@ namespace Bloom.Book
 
 		public string GetValidateErrors()
 		{
-			if (!string.IsNullOrEmpty(ErrorMessagesHtml))
+			if (!String.IsNullOrEmpty(ErrorMessagesHtml))
 				return "";
 			if (!Directory.Exists(_folderPath))
 			{
@@ -598,7 +707,7 @@ namespace Bloom.Book
 		public void CheckBook(IProgress progress, string pathToFolderOfReplacementImages = null)
 		{
 			var error = GetValidateErrors();
-			if(!string.IsNullOrEmpty(error))
+			if(!String.IsNullOrEmpty(error))
 				progress.WriteError(error);
 
 			//check for missing images
@@ -606,7 +715,7 @@ namespace Bloom.Book
 			foreach (XmlElement imgNode in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.Body))
 			{
 				var imageFileName = HtmlDom.GetImageElementUrl(imgNode).PathOnly.NotEncoded;
-				if (string.IsNullOrEmpty(imageFileName))
+				if (String.IsNullOrEmpty(imageFileName))
 				{
 					var classNames=imgNode.GetAttribute("class");
 					if (classNames == null || !classNames.Contains("licenseImage"))//bit of hack... it's ok for licenseImages to be blank
@@ -637,16 +746,16 @@ namespace Bloom.Book
 
 				if (!RobustFile.Exists(Path.Combine(_folderPath, imageFileName)))
 				{
-					if (!string.IsNullOrEmpty(pathToFolderOfReplacementImages))
+					if (!String.IsNullOrEmpty(pathToFolderOfReplacementImages))
 					{
 						if (!AttemptToReplaceMissingImage(imageFileName, pathToFolderOfReplacementImages, progress))
 						{
-							progress.WriteWarning(string.Format("Could not find replacement for image {0} in {1}", imageFileName, _folderPath));
+							progress.WriteWarning(String.Format("Could not find replacement for image {0} in {1}", imageFileName, _folderPath));
 						}
 					}
 					else
 					{
-						progress.WriteWarning(string.Format("Image {0} is missing from the folder {1}", imageFileName, _folderPath));
+						progress.WriteWarning(String.Format("Image {0} is missing from the folder {1}", imageFileName, _folderPath));
 					}
 				}
 			}
@@ -659,7 +768,7 @@ namespace Bloom.Book
 				foreach (var imageFilePath in Directory.GetFiles(pathToFolderOfReplacementImages, missingFile))
 				{
 					RobustFile.Copy(imageFilePath, Path.Combine(_folderPath, missingFile));
-					progress.WriteMessage(string.Format("Replaced image {0} from a copy in {1}", missingFile,
+					progress.WriteMessage(String.Format("Replaced image {0} from a copy in {1}", missingFile,
 														pathToFolderOfReplacementImages));
 					return true;
 				}
@@ -691,7 +800,6 @@ namespace Bloom.Book
 			}
 		}
 
-
 		#region Static Helper Methods
 		public static string FindBookHtmlInFolder(string folderPath)
 		{
@@ -706,8 +814,8 @@ namespace Bloom.Book
 			{
 				//in version 1.012 I got this because I had tried to delete the folder on disk that had a book
 				//open in Bloom.
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem("There's a problem; Bloom can't save this book. Did you perhaps delete or rename the folder that this book is (was) in?");
-				throw new ApplicationException(string.Format("In FindBookHtmlInFolder('{0}'), the folder does not exist. (ref bl-291)", folderPath));
+				ErrorReport.NotifyUserOfProblem("There's a problem; Bloom can't save this book. Did you perhaps delete or rename the folder that this book is (was) in?");
+				throw new ApplicationException(String.Format("In FindBookHtmlInFolder('{0}'), the folder does not exist. (ref bl-291)", folderPath));
 			}
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
@@ -732,7 +840,7 @@ namespace Bloom.Book
 			if (RobustFile.Exists(p))
 				return p;
 
-			return string.Empty;
+			return String.Empty;
 		}
 
 		public static void SetBaseForRelativePaths(HtmlDom dom, string folderPath)
@@ -751,7 +859,7 @@ namespace Bloom.Book
 		private static string GetBaseForRelativePaths(string folderPath)
 		{
 			string path = "";
-			if (!string.IsNullOrEmpty(folderPath))
+			if (!String.IsNullOrEmpty(folderPath))
 			{
 				//this is only used by relative paths, and only img src's are left relative.
 				//we are redirecting through our build-in httplistener in order to make white backgrounds transparent
@@ -773,22 +881,21 @@ namespace Bloom.Book
 
 		private string ValidateBook(HtmlDom dom, string path)
 		{
-			Debug.WriteLine(string.Format("ValidateBook({0})", path));
+			Debug.WriteLine(String.Format("ValidateBook({0})", path));
 			var msg= GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(dom,path);
-			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path, !BookInfo.IsSuitableForMakingTemplates);
+			return !String.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path, !BookInfo.IsSuitableForMakingTemplates);
 		}
 
 
 
 		#endregion
 
-
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
 		/// </summary>
 		private void ExpensiveInitialization(bool forSelectedBook = false)
 		{
-			Debug.WriteLine(string.Format("ExpensiveInitialization({0})", _folderPath));
+			Debug.WriteLine(String.Format("ExpensiveInitialization({0})", _folderPath));
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(_folderPath);
@@ -864,7 +971,7 @@ namespace Bloom.Book
 				// Hopefully this is OK since another old comment said,
 				// we did in fact change things so that storage isn't used until we've shown all the thumbnails we can (then we go back and update in background)
 				InitialLoadErrors = ValidateBook(Dom, pathToExistingHtml);
-				if (forSelectedBook && !string.IsNullOrEmpty(InitialLoadErrors))
+				if (forSelectedBook && !String.IsNullOrEmpty(InitialLoadErrors))
 				{
 					XmlDocument possibleBackupDom;
 					if (TryGetValidXmlDomFromHtmlFile(backupPath, out possibleBackupDom))
@@ -878,7 +985,7 @@ namespace Bloom.Book
 				//For now, we really need to do this check, at least. This will get picked up by the Book later (feeling kludgy!)
 				//I assume the following will never trigger (I also note that the dom isn't even loaded):
 
-				if (!string.IsNullOrEmpty(ErrorMessagesHtml))
+				if (!String.IsNullOrEmpty(ErrorMessagesHtml))
 				{
 					Dom.RawDom.LoadXml(
 						"<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
@@ -890,7 +997,7 @@ namespace Bloom.Book
 				else
 				{
 					var incompatibleVersionMessage = GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(Dom,this.PathToExistingHtml);
-					if (!string.IsNullOrWhiteSpace(incompatibleVersionMessage))
+					if (!String.IsNullOrWhiteSpace(incompatibleVersionMessage))
 					{
 						ErrorMessagesHtml = incompatibleVersionMessage;
 						Logger.WriteEvent("*** ERROR: " + incompatibleVersionMessage);
@@ -918,6 +1025,7 @@ namespace Bloom.Book
 					UpdateSupportFiles();
 					CleanupUnusedImageFiles();
 					CleanupUnusedAudioFiles();
+					CleanupUnusedVideoFiles();
 				}
 			}
 		}
@@ -943,7 +1051,7 @@ namespace Bloom.Book
 			try
 			{
 				xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
-				return string.IsNullOrEmpty(ValidateBook(new HtmlDom(xmlDomFromHtmlFile), path));
+				return String.IsNullOrEmpty(ValidateBook(new HtmlDom(xmlDomFromHtmlFile), path));
 			}
 			catch (Exception error)
 			{
@@ -961,7 +1069,7 @@ namespace Bloom.Book
 			message = WebUtility.HtmlEncode(message);
 			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
 			var seeAlso = WebUtility.HtmlEncode(LocalizationManager.GetString("Common.SeeWebPage", "See {0}."));
-			message += "<br></br>" + string.Format(seeAlso, "<a href='" + helpUrl + "'>" + helpUrl + "</a>");
+			message += "<br></br>" + String.Format(seeAlso, "<a href='" + helpUrl + "'>" + helpUrl + "</a>");
 			ErrorMessagesHtml = message;
 			_errorAlreadyContainsInstructions = true;
 		}
@@ -1042,7 +1150,7 @@ namespace Bloom.Book
 
 			// do not attempt to copy files to the installation directory
 			var targetDirInfo = new DirectoryInfo(_folderPath);
-			if (SIL.PlatformUtilities.Platform.IsMono)
+			if (Platform.IsMono)
 			{
 				// do not attempt to copy files to the "/usr" directory
 				if (targetDirInfo.FullName.StartsWith("/usr")) return;
@@ -1051,7 +1159,7 @@ namespace Bloom.Book
 			{
 				// do not attempt to copy files to the "Program Files" directory
 				var programFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-				if (!string.IsNullOrEmpty(programFolderPath))
+				if (!String.IsNullOrEmpty(programFolderPath))
 				{
 					var programsDirInfo = new DirectoryInfo(programFolderPath);
 					if (String.Compare(targetDirInfo.FullName, programsDirInfo.FullName, StringComparison.InvariantCultureIgnoreCase) == 0) return;
@@ -1061,7 +1169,7 @@ namespace Bloom.Book
 				if (Environment.Is64BitOperatingSystem)
 				{
 					programFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-					if (!string.IsNullOrEmpty(programFolderPath))
+					if (!String.IsNullOrEmpty(programFolderPath))
 					{
 						var programsDirInfo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
 						if (String.Compare(targetDirInfo.FullName, programsDirInfo.FullName, StringComparison.InvariantCultureIgnoreCase) == 0) return;
@@ -1072,11 +1180,11 @@ namespace Bloom.Book
 			string documentPath="notSet";
 			try
 			{
-				if(string.IsNullOrEmpty(factoryPath))
+				if(String.IsNullOrEmpty(factoryPath))
 				{
 					factoryPath = _fileLocator.LocateFile(fileName);
 				}
-				if(string.IsNullOrEmpty(factoryPath))//happens during unit testing
+				if(String.IsNullOrEmpty(factoryPath))//happens during unit testing
 					return;
 
 				documentPath = Path.Combine(_folderPath, fileName);
@@ -1098,9 +1206,9 @@ namespace Bloom.Book
 					return; // no point in trying to update self!
 				if (IsPathReadonly(documentPath))
 				{
-					var msg = string.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
+					var msg = String.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
 					Logger.WriteEvent(msg);
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(msg);
+					ErrorReport.NotifyUserOfProblem(msg);
 					return;
 				}
 				Logger.WriteMinorEvent("BookStorage.Update() Copying file {0} to {1}", factoryPath, documentPath);
@@ -1111,7 +1219,7 @@ namespace Bloom.Book
 			}
 			catch (Exception e)
 			{
-				if(documentPath.Contains(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles))
+				if(documentPath.Contains(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles))
 					|| documentPath.ToLowerInvariant().Contains("program"))//english only
 				{
 					Logger.WriteEvent("Could not update file {0} because it was in the program directory.", documentPath);
@@ -1152,7 +1260,7 @@ namespace Bloom.Book
 			{
 				if(_folderPath.Contains(Path.GetTempPath()))
 					return true;
-				if(string.IsNullOrEmpty(_collectionSettings.FolderPath))
+				if(String.IsNullOrEmpty(_collectionSettings.FolderPath))
 				{
 					//this happens when we are just hydrating the book via a command-line command
 					return true;
@@ -1228,37 +1336,6 @@ namespace Bloom.Book
 			}
 			dom.AddStyleSheet(path);
 		}
-
-//		/// <summary>
-//		/// Creates a relative path from one file or folder to another.
-//		/// </summary>
-//		/// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
-//		/// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
-//		/// <param name="dontEscape">Boolean indicating whether to add uri safe escapes to the relative path</param>
-//		/// <returns>The relative path from the start directory to the end path.</returns>
-//		/// <exception cref="ArgumentNullException"></exception>
-//		public static String MakeRelativePath(String fromPath, String toPath)
-//		{
-//			if (String.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
-//			if (String.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
-//
-//			//the stuff later on needs to see directory names trailed by a "/" or "\".
-//			fromPath = fromPath.Trim();
-//			if (!fromPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-//			{
-//				if (Directory.Exists(fromPath))
-//				{
-//					fromPath = fromPath + Path.DirectorySeparatorChar;
-//				}
-//			}
-//			Uri fromUri = new Uri(fromPath);
-//			Uri toUri = new Uri(toPath);
-//
-//			Uri relativeUri = fromUri.MakeRelativeUri(toUri);
-//			String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
-//
-//			return relativePath.Replace('/', Path.DirectorySeparatorChar);
-//		}
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.
