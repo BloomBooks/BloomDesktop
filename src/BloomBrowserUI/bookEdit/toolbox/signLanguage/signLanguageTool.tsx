@@ -4,6 +4,7 @@ import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
+import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
 import { getPageFrameExports } from "../../js/bloomFrames";
@@ -65,7 +66,7 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
     public render() {
         return (
             <div className={"signLanguageFrame " + this.state.stateClass + (this.state.enabled ? "" : " disabled")}>
-                <Label l10nKey="Toolbox.SignLanguage.WhatCameraSees">Here is what your camera sees:</Label>
+                <Label l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees">Here is what your camera sees:</Label>
                 <div id="videoMonitorWrapper"><video id="videoMonitor" autoPlay></video></div>
                 <div className="button-label-wrapper">
                     <div id="videoPlayAndLabelWrapper">
@@ -75,31 +76,33 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                                 + (this.state.recording ? " recordingNow" : "")
                                 + (this.state.enabled ? " enabled" : " disabled")}
                                 onClick={() => this.toggleRecording()} />
-                            <Label className="startRecording waiting" l10nKey="Toolbox.SignLanguage.StartRecording"
+                            <Label className="startRecording waiting"
+                                l10nKey="EditTab.Toolbox.SignLanguage.StartRecording"
                                 onClick={() => this.toggleRecording()}>Start Recording</Label>
                             <span className="countdown3 countdownNumber">3</span>
                             <span className="countdown2 countdownNumber">2</span>
                             <span className="countdown1 countdownNumber">1</span>
-                            <Label className="recording recordingLabel" l10nKey="Toolbox.SignLanguage.Recording">Recording</Label>
+                            <Label className="recording recordingLabel"
+                                l10nKey="EditTab.Toolbox.SignLanguage.Recording">Recording</Label>
                         </div>
                     </div>
                 </div>
                 <div id="editOutsideWrapper" className={"videoButtonWrapper" + (this.state.haveRecording ? "" : " disabled ")}>
                     <button id="editOutsideButton" onClick={() => this.editOutside()} />
-                    <Label className="commandLabel" l10nKey="Toolbox.SignLanguage.EditOutside"
+                    <Label className="commandLabel" l10nKey="EditTab.Toolbox.SignLanguage.EditOutside"
                         onClick={() => this.editOutside()}>Edit outside of Bloom</Label>
                 </div>
                 <div id="restoreOriginalWrapper" className={"videoButtonWrapper" + (this.state.originalExists ? "" : " disabled ")}>
                     <button id="restoreOriginalButton" onClick={() => this.restoreOriginal()} />
-                    <Label className="commandLabel" l10nKey="Toolbox.SignLanguage.RestoreOriginal"
+                    <Label className="commandLabel" l10nKey="EditTab.Toolbox.SignLanguage.RestoreOriginal"
                         onClick={() => this.restoreOriginal()}>Restore Original</Label>
                 </div>
                 <div>
                     <button id="videoStopRecording" className={"video-button ui-button notWaiting"}
                         onClick={() => this.toggleRecording()} />
                 </div>
-                <Label l10nKey="Toolbox.SignLanguage.PressCancel" className="counting stopLabel">Press any key to cancel</Label>
-                <Label l10nKey="Toolbox.SignLanguage.PressStop" className="recording stopLabel">Press any key to stop</Label>
+                <Label l10nKey="EditTab.Toolbox.SignLanguage.PressCancel" className="counting stopLabel">Press any key to cancel</Label>
+                <Label l10nKey="EditTab.Toolbox.SignLanguage.PressStop" className="recording stopLabel">Press any key to stop</Label>
             </div>
         );
     }
@@ -184,6 +187,29 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
         window.clearTimeout(this.timerId);
         this.setState({ stateClass: "waiting" });
     }
+
+    public componentDidUpdate(prevProps, prevState: IComponentState) {
+        const currentState = this.state.stateClass;
+        const previousState = prevState.stateClass;
+        if (currentState === previousState) {
+            return; // some other part of state changing?
+        }
+        switch (currentState) {
+            case "countdown3":
+            case "countdown2":
+            case "countdown1":
+                SignLanguageTool.showOverlayToHideVideo();
+                break;
+            case "recording":
+                SignLanguageTool.showOverlayToHideVideo();
+                SignLanguageTool.addRecordingLabelToOverlay(document);
+                break;
+            default: // back to 'waiting'
+                SignLanguageTool.removeVideoOverlay();
+                break;
+        }
+    }
+
     private startRecording() {
         // OK, we want to start recording.
         this.chunks = [];
@@ -228,31 +254,34 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
     }
 }
 
-export class SignLanguageTool implements ITool {
+export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private reactControls: SignLanguageToolControls;
+
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "signLanguageBody");
         this.reactControls = SignLanguageToolControls.setup(root);
         return root as HTMLDivElement;
     }
-    public isAlwaysEnabled(): boolean {
-        return false;
-    }
+
     public isExperimental(): boolean {
         return true;
     }
+
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();
         result.resolve();
         return result;
     }
-    public showTool() {
-        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
-    }
-    public hideTool() {
-        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
+
+    // Specify 'true' to get only containers marked as selected
+    private static getVideoContainers(selected?: boolean): NodeListOf<Element> {
+        let classes = "bloom-videoContainer";
+        if (selected) {
+            classes += " bloom-selected";
+        }
+        return ToolBox.getPage().getElementsByClassName(classes);
     }
 
     public detachFromPage() {
@@ -260,7 +289,7 @@ export class SignLanguageTool implements ITool {
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
         // page after selecting or recording a video.
-        const containers = ToolBox.getPage().getElementsByClassName("bloom-videoContainer");
+        const containers = SignLanguageTool.getVideoContainers(false);
         for (var i = 0; i < containers.length; i++) {
             containers[i].removeEventListener("click", this.containerClickListener);
         }
@@ -275,7 +304,7 @@ export class SignLanguageTool implements ITool {
     // This function is saved in a variable so we can remove the same listener we added.
     private containerClickListener: EventListener = (event: MouseEvent) => {
         // The reason for the listener: to select the current element
-        const currentContainers = ToolBox.getPage().getElementsByClassName("bloom-videoContainer");
+        const currentContainers = SignLanguageTool.getVideoContainers(false);
         for (var i = 0; i < currentContainers.length; i++) {
             currentContainers[i].classList.remove("bloom-selected");
         }
@@ -304,17 +333,9 @@ export class SignLanguageTool implements ITool {
             event.preventDefault();
         }
     }
-    // required for ITool interface
-    public hasRestoredSettings: boolean;
-    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
-    public configureElements(container: HTMLElement) { }
-    public finishToolLocalization(pane: HTMLElement) { }
-    public updateMarkup() { }
-    /* tslint:enable:no-empty */
 
     public newPageReady() {
-        const page = ToolBox.getPage();
-        const containers = page.getElementsByClassName("bloom-videoContainer");
+        const containers = SignLanguageTool.getVideoContainers(false);
         if (containers.length === 0) {
             if (this.reactControls.state.enabled) {
                 this.reactControls.turnOffVideo();
@@ -324,7 +345,7 @@ export class SignLanguageTool implements ITool {
             // We want one video container to be selected, so pick the first.
             // If one is already marked selected, presumably from a previous use of this page,
             // we'll leave that one active.
-            const selectedVideos = page.getElementsByClassName("bloom-videoContainer bloom-selected");
+            const selectedVideos = SignLanguageTool.getVideoContainers(true);
             if (selectedVideos.length === 0) {
                 containers[0].classList.add("bloom-selected");
                 this.updateStateForSelected(containers[0]);
@@ -372,5 +393,46 @@ export class SignLanguageTool implements ITool {
         axios.get("/bloom/api/toolbox/fileExists?filename=" + src.replace(".mp4", ".orig")).then(result => {
             this.reactControls.setState({ originalExists: (result.data) });
         });
+    }
+
+    private static overlayClass: string = "bloom-videoOverlay";
+
+    // Make an overlay and slap it over the selected edit pane video still while we're recording
+    public static showOverlayToHideVideo(): void {
+        const container = SignLanguageTool.getVideoContainers(true)[0]; // 'true' gets only the selected video
+        if (!container.previousElementSibling.classList.contains(SignLanguageTool.overlayClass)) {
+            // bloom-ui class makes sure this div is removed before saving
+            const overlayDiv = "<div class='" + SignLanguageTool.overlayClass + " bloom-ui'><label></label></div";
+            container.parentElement.insertBefore(
+                SignLanguageTool.createNode(container.ownerDocument, overlayDiv),
+                container);
+        }
+    }
+
+    // Grab the "Recording" label in React-land and stick it in the edit pane overlay
+    public static addRecordingLabelToOverlay(reactDoc: Document): void {
+        const container = SignLanguageTool.getVideoContainers(true)[0];
+        const recordingLabel = SignLanguageTool.getRecordingLabel(reactDoc);
+        container.previousElementSibling.firstChild.textContent = recordingLabel;
+    }
+
+    // Remove the overlay hiding the video, now that we're done recording
+    public static removeVideoOverlay(): void {
+        const container = SignLanguageTool.getVideoContainers(true)[0];
+        var overlayElement = container.previousElementSibling;
+        if (overlayElement && overlayElement.classList.contains(SignLanguageTool.overlayClass)) {
+            container.previousElementSibling.remove();
+        }
+    }
+
+    private static createNode(doc: Document, html: string): Node {
+        var template = doc.createElement("template");
+        template.innerHTML = html.trim();
+        return template.content.firstChild;
+    }
+
+    private static getRecordingLabel(doc: Document): string {
+        const labelElement = doc.getElementsByClassName("recordingLabel")[0]; // should only be one
+        return labelElement !== null ? labelElement.textContent.trim() : null;
     }
 }

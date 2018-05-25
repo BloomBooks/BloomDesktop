@@ -1524,7 +1524,9 @@ namespace Bloom.Book
 			srcElement.SetAttribute("src", url.UrlEncodedForHttpPath); // We need the fwd slash to come through unencoded
 			// Hides the placeholder.
 			
-			videoContainer.SetAttribute("class", RemoveClass("bloom-noVideoSelected", videoContainer.GetAttribute("class")));
+			videoContainer.SetAttribute("class",
+				RemoveClass("bloom-noVideoSelected",
+					videoContainer.GetAttribute("class")));
 		}
 
 		public static string RemoveClass(string className, string input)
