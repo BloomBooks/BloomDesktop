@@ -22,9 +22,19 @@ export default class ProgressBox extends React.Component<IProgressBoxProps, IPro
             var e = JSON.parse(event.data);
             if (e.id === "progress") {
                 if (e.style) {
-                    self.setState({progress: self.state.progress + "<br/>" + "<span style='" + e.style +"'>" + e.payload + "</span>"});
+                    self.setState({
+                        progress:
+                            self.state.progress +
+                            "<span style='" +
+                            e.style +
+                            "'>" +
+                            e.payload +
+                            "</span><br/>"
+                    });
                 } else {
-                    self.setState({ progress: self.state.progress + "<br/>" + e.payload });
+                    self.setState({
+                        progress: self.state.progress + e.payload + "<br/>"
+                    });
                 }
                 this.tryScrollToBottom();
             }
