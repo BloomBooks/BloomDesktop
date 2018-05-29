@@ -1,0 +1,121 @@
+
+include ../../xMatter/bloom-xmatter-mixins.pug
+// The above filepath could be simplified if this xmatter ever becomes an official Bloom xmatter pack
+// since it will get moved from customXMatter to xMatter
+
+mixin field-author
+	//.aeiLabel author
+	+field-prototypeDeclaredExplicity("N1").author
+		block authorLabel
+			label.bubble
+				| Name of the author(s), in {lang}
+		+editable("N1").author.Credits-Page-style(data-book="author")
+
+mixin field-editor
+	//.aeiLabel editor
+	+field-prototypeDeclaredExplicity("N1").editor
+		block editorLabel
+			label.bubble
+				| Name of the editor(s), in {lang}
+		+editable("N1").editor.Credits-Page-style(data-book="editor")
+
+mixin field-illustrator
+	//.aeiLabel illustrator
+	+field-prototypeDeclaredExplicity("N1").illustrator
+		block illustratorLabel
+			label.bubble
+				| Name of the illustrator(s), in {lang}
+		+editable("N1").editor.Credits-Page-style(data-book="illustrator")
+
+mixin afg-author-editor-illustrator
+	+page-xmatter('Credits').credits.bloom-frontMatter(data-export='front-matter-credits')&attributes(attributes)#7fbc9510-3749-4f29-88ff-2614950d5fe4
+		+field-author
+		+field-editor
+		+field-illustrator
+		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+		+field-acknowledgments-originalVersion
+		+field-ISBN
+		+field-prototypeDeclaredExplicity("N1")#funding
+			label.bubble Use this to acknowledge any funding agencies.
+			+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+		+field-title-page-branding
+
+mixin underLogo
+	.underLogoBlock
+		p.underLogoHeader د پوهنې وزارت
+		p.underLogoBody د تعليمي نصاب د پراختيا او د ښوونکو
+		p.underLogoBody د روزنې معينيت
+		p.underLogoBody د تعليمي نصاب د پراختيا او درسي
+		p.underLogoBody کتابونو د تاليف لوی رياست
+
+mixin afg-outsideFrontCover
+	// FRONT COVER
+	+page-cover('Front Cover')(data-export='front-matter-cover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
+		+field-prototypeDeclaredExplicity("V,N1").bookTitle
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
+		+underLogo
+
+		.bloom-imageContainer.bloom-backgroundImage(data-book='coverImage', style="background-image:url('placeHolder.png')")
+
+		// 2 columns: first for an optional logo, then text content
+		.bottomBlock
+			+field-bottom-left-branding.bottom-left-branding
+			.bottomTextContent
+				.creditsRow(data-hint='Level information')
+					+field-prototypeDeclaredExplicity("N1")
+						+editable(kLanguageForPrototypeOnly).Cover-Default-style(data-book='levelInformation')
+				.bottomRow
+					.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
+					+chooser-topic.coverBottomBookTopic
+
+mixin afg-titlePage
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5db161c1-bfc0-4d4e-aeb6-c415a1ab6da2
+		// TITLE PAGE
+		+field-prototypeDeclaredExplicity("V")#titlePageTitleBlock
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+		+field-prototypeDeclaredExplicity("V")#titlePageSubTitleBlock
+			label.bubble Book subtitle in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Subtitle-On-Title-Page-style(data-book='bookSubtitle')
+		+field-prototypeDeclaredExplicity("V,N1")#titlePageExtraBlock
+			label.bubble Anything extra you want in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Extra-On-Title-Page-style(data-book='extraTitle')
+		+underLogo
+		#languageInformation.Content-On-Title-Page-style
+		.languagesOfBook(data-book='languagesOfBook')
+		//- review: can we get rid of these "langName" classes?
+		.langName('data-library'='dialect')
+		.langName(data-library='languageLocation').bloom-writeOnly
+		+field-prototypeDeclaredExplicity("N1")#titlePagePrintInfo
+			label.bubble print information
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.printInfo.Printinfo-On-Title-Page-style(data-book='printInfo')
+		+field-title-page-branding
+
+mixin afg-extra-image-page
+	+page-xmatter('Bismillah').bismallah.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#eb1aa708-fe1f-4b5c-8afc-2e7f5fce91bc
+		+image-xmatter('bishmallah')
+
+mixin afg-outsideBackCover
+	// Outside Back Cover
+	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+		.ownership
+			p درسي کتابونه په پوهنې وزارت پورې اړه لري. پېرودل او پلورل يې په
+			p کلکه منع دي. له سرغړوونکو سره به قانوني چلند وشي.
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title Afghanistan Front & Back Matter
+		+stylesheets('Afghanistan-XMatter.css')
+	body
+		+afg-outsideFrontCover
+		+standard-blankInsideFrontCover
+		+afg-titlePage
+		+afg-author-editor-illustrator
+		+afg-extra-image-page
+		+factoryStandard-insideBackCover
+		+afg-outsideBackCover
+
