@@ -21,36 +21,12 @@ using SIL.Extensions;
 namespace BloomTests.Publish
 {
 	[TestFixture]
-	public class ExportEpubTests : BookTestsBase
+	public class ExportEpubTests : ExportEpubTestsBaseClass
 	{
-		private readonly XNamespace _xhtml = "http://www.w3.org/1999/xhtml";
-		private ZipFile _epub; // The ePUB that the test created, converted to a zip file.
-		private string _manifestFile; // The path in _epub to the main manifest file.
-		private string _manifestContent; // the contents of _manifestFile (as a string)
-		private XDocument _manifestDoc; // the contents of _manifestFile as an XDocument.
-		private string _page1Data; // contents of the file "1.xhtml" (the main content of the test book, typically)
-		private XmlNamespaceManager _ns; // Set up with all the namespaces we use (See GetNamespaceManager())
-		private static EnhancedImageServer s_testServer;
-		private static BookSelection s_bookSelection;
-		private BookServer _bookServer;
-		private string _defaultSourceValue;
-
-		[OneTimeSetUp]
-		public void OneTimeSetup()
-		{
-			s_testServer = GetTestServer();
-		}
-
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
-		{
-			s_testServer.Dispose();
-		}
-
 		public override void Setup()
 		{
 			base.Setup();
-			GetNamespaceManager();
+			_ns = ExportEpubTestsBaseClass.GetNamespaceManager();
 			_bookServer = CreateBookServer();
 		}
 
@@ -124,103 +100,12 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:aside[.='This describes image 1']", _ns, 1);
 		}
 
-		/// <summary>
-		/// Set up a book with the typical content most of our tests need. It has the standard three stylesheets
-		/// (and empty files for them). It has one bloom editable div, in the specified language, with the specified text.
-		/// It has a 'lang='*' div which is ignored.
-		/// It may have extra content in various places.
-		/// It may have an arbitrary number of images, with the specified names.
-		/// The image files are not created in this method, because the exact correspondence between the
-		/// image names inserted into the HTML and the files created (or sometimes purposely not created)
-		/// is an important aspect of many tests.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <param name="lang"></param>
-		/// <param name="extraPageClass"></param>
-		/// <param name="extraContent"></param>
-		/// <param name="extraContentOutsideTranslationGroup"></param>
-		/// <param name="parentDivId"></param>
-		/// <param name="extraPages"></param>
-		/// <param name="images"></param>
-		/// <param name="extraEditGroupClasses"></param>
-		/// <param name="extraEditDivClasses"></param>
-		/// <param name="defaultLanguages"></param>
-		/// <param name="createPhysicalFile"></param>
-		/// <param name="optionalDataDiv"></param>
-		/// <returns></returns>
-		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = " numberedPage' data-page-number='1", string extraContent = "", string extraContentOutsideTranslationGroup = "",
-			string parentDivId = "somewrapper", string extraPages="", string[] images = null,
-			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto", bool createPhysicalFile = false,
-			string optionalDataDiv = "", string[] imageDescriptions = null)
-		{
-			if (images == null)
-				images = new string[0];
-			string imageDivs = "";
-			int imgIndex = -1;
-			foreach (var image in images)
-			{
-				++imgIndex;
-				var imgDesc = "";
-				if (imageDescriptions != null && imgIndex < imageDescriptions.Length)
-					imgDesc = @"<div class='bloom-translationGroup bloom-imageDescription'>"
-						+ "<div class='bloom-editable bloom-content1' lang='" + lang + "'>" + imageDescriptions[imgIndex] + "</div>"
-					+ "</div>";
-				imageDivs += "<div class='bloom-imageContainer'><img src='" + image + ".png'></img>" + imgDesc + "</div>\n";
-			}
-
-			string containedImageDivs = "";
-			var body = optionalDataDiv + string.Format(@"<div class='bloom-page" + extraPageClass + @"'>
-						<div id='" + parentDivId + @"' class='marginBox'>
-							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang='' data-default-languages='{8}'>
-								<div class='bloom-editable {6}' lang='{0}' contenteditable='true'>
-									{1}
-								</div>
-								{2}
-								<div lang = '*'>more text</div>
-							</div>
-							{3}
-							{4}
-						</div>
-					</div>
-					{5}",
-				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
-			Bloom.Book.Book book;
-			string head = @"<meta charset='UTF-8'/>
-				<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
-				<link rel='stylesheet' href='basePage.css' type='text/css'/>
-				<link rel='stylesheet' href='languageDisplay.css' type='text/css'/>
-				<link rel='stylesheet' href='../customCollectionStyles.css'/>
-				<link rel='stylesheet' href='customBookStyles.css'/>";
-			if (createPhysicalFile)
-			{
-				book = CreateBookWithPhysicalFile(MakeBookHtml(body, head));
-			}
-			else
-			{
-				SetDom(body, head);
-				book = CreateBook();
-			}
-			CreateCommonCssFiles(book);
-			s_bookSelection.SelectBook(book);
-
-			// Set up the visibility classes correctly
-			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
-
-			return book;
-		}
-
-		void MakeImageFiles(Bloom.Book.Book book, params string[] images)
-		{
-			foreach (var image in images)
-				MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath(image + ".png"));
-		}
-
 		private string CheckNavPage()
 		{
 			XNamespace opf = "http://www.idpf.org/2007/opf";
 
 			var navPage = _manifestDoc.Root.Element(opf + "manifest").Elements(opf + "item").Last().Attribute("href").Value;
-			var navPageData = StripXmlHeader(GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + navPage));
+			var navPageData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + navPage));
 			AssertThatXmlIn.String(navPageData)
 				.HasAtLeastOneMatchForXpath(
 					"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml']", _ns);
@@ -229,7 +114,7 @@ namespace BloomTests.Publish
 
 		private void CheckFontStylesheet()
 		{
-			var fontCssData = GetZipContent(_epub, "content/fonts.css");
+			var fontCssData = ExportEpubTestsBaseClass.GetZipContent(_epub, "content/fonts.css");
 			Assert.That(fontCssData,
 				Is.StringContaining(
 					"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:normal; src:url(AndikaNewBasic-R.ttf) format('opentype');}"));
@@ -447,39 +332,8 @@ namespace BloomTests.Publish
 			var files = _manifestDoc.Root.Element(opf + "manifest").Elements(opf + "item").Select(item => item.Attribute("href").Value);
 			foreach (var file in files)
 			{
-				GetZipEntry(_epub, Path.GetDirectoryName(_manifestFile) + "/" + file);
+				ExportEpubTestsBaseClass.GetZipEntry(_epub, Path.GetDirectoryName(_manifestFile) + "/" + file);
 			}
-		}
-
-		void GetPageOneData()
-		{
-			_page1Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "1.xhtml");
-		}
-
-		private XmlNamespaceManager GetNamespaceManager()
-		{
-			_ns = new XmlNamespaceManager(new NameTable());
-			_ns.AddNamespace("dc", "http://purl.org/dc/elements/1.1/");
-			_ns.AddNamespace("opf", "http://www.idpf.org/2007/opf");
-			_ns.AddNamespace("epub", "http://www.idpf.org/2007/ops");
-			_ns.AddNamespace("xhtml", "http://www.w3.org/1999/xhtml");
-			_ns.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
-			return _ns;
-		}
-
-		// Do some basic checks and get a path to the main manifest (open package format) file, typically content.opf
-		private string GetManifestFile(ZipFile zip)
-		{
-			// Every ePUB must have a mimetype at the root
-			GetZipContent(zip, "mimetype");
-
-			// Every ePUB must have a "META-INF/container.xml." (case matters). Most things we could check about its content
-			// would be redundant with the code that produces it, but we can at least verify that it is valid
-			// XML and extract the manifest data.
-			var containerData = GetZipContent(zip, "META-INF/container.xml");
-			var doc = XDocument.Parse(containerData);
-			XNamespace ns = doc.Root.Attribute("xmlns").Value;
-			return doc.Root.Element(ns + "rootfiles").Element(ns + "rootfile").Attribute("full-path").Value;
 		}
 
 		/// <summary>
@@ -489,31 +343,12 @@ namespace BloomTests.Publish
 		/// <param name="folderName"></param>
 		/// <param name="book"></param>
 		/// <returns></returns>
-		private ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
+		protected override ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
 			EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.None)
 		{
-			var epubFolder = new TemporaryFolder(folderName);
-			var epubName = mainFileName + ".epub";
-			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = CreateEpubMaker(book))
-			{
-				maker.Unpaginated = true; // Currently we always make unpaginated epubs.
-				maker.PublishImageDescriptions = howToPublishImageDescriptions;
-				maker.SaveEpub(epubPath);
-			}
-			Assert.That(File.Exists(epubPath));
-			_epub= new ZipFile(epubPath);
-			_manifestFile = GetManifestFile(_epub);
-			_manifestContent = StripXmlHeader(GetZipContent(_epub, _manifestFile));
-			_manifestDoc = XDocument.Parse(_manifestContent);
+			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions);
 			GetPageOneData();
-			_defaultSourceValue = String.Format("created from Bloom book on {0} with page size A5 Portrait", DateTime.Now.ToString("yyyy-MM-dd"));
-			return _epub;
-		}
-
-		private EpubMakerAdjusted CreateEpubMaker(Bloom.Book.Book book)
-		{
-			return new EpubMakerAdjusted(book, new BookThumbNailer(_thumbnailer.Object), _bookServer);
+			return result;
 		}
 
 		[Test]
@@ -538,7 +373,7 @@ namespace BloomTests.Publish
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
 
-			var smilData = StripXmlHeader(GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var mgr = new XmlNamespaceManager(new NameTable());
 			mgr.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
 			mgr.AddNamespace("epub", "http://www.idpf.org/2007/ops");
@@ -549,7 +384,7 @@ namespace BloomTests.Publish
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp4']", mgr);
 			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
 
-			GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
 		}
 
 		[Test]
@@ -571,7 +406,7 @@ namespace BloomTests.Publish
 				if (entry == null)
 					break;
 				++pageCount;
-				currentPage = GetZipContent(_epub, entryPath);
+				currentPage = ExportEpubTestsBaseClass.GetZipContent(_epub, entryPath);
 				switch (i)
 				{
 				case 1:
@@ -645,7 +480,7 @@ namespace BloomTests.Publish
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
 
-			var smilData = StripXmlHeader(GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var mgr = new XmlNamespaceManager(new NameTable());
 			mgr.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
 			mgr.AddNamespace("epub", "http://www.idpf.org/2007/ops");
@@ -656,7 +491,7 @@ namespace BloomTests.Publish
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", mgr);
 			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
 
-			GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
 		}
 
 		/// <summary>
@@ -697,7 +532,7 @@ namespace BloomTests.Publish
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, null);
 
-			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
+			var page2Data = ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
 			CheckPageBreakMarker(page2Data, "pg2", "2");
 			CheckEpubTypeAttributes(page2Data, null);
@@ -796,26 +631,6 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img[@src='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//div[@class='bloom-ui rubbish']");
-		}
-
-		// Set up some typical CSS files we DO want to include, even in 'unpaginated' mode
-		private static void CreateCommonCssFiles(Bloom.Book.Book book)
-		{
-			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
-			var settingsCollectionPath = Path.Combine(collectionFolder, "settingsCollectionStyles.css");
-			File.WriteAllText(settingsCollectionPath, "body:{font-family: 'Andika New Basic';}");
-			var customCollectionPath = Path.Combine(collectionFolder, "customCollectionStyles.css");
-			File.WriteAllText(customCollectionPath, "body:{font-family: 'Andika New Basic';}");
-			var customBookPath = Path.Combine(book.FolderPath, "customBookStyles.css");
-			File.WriteAllText(customBookPath, "body:{font-family: 'Andika New Basic';}");
-		}
-
-		protected override Bloom.Book.Book CreateBook(bool bringBookUpToDate = false)
-		{
-			var book = base.CreateBook(bringBookUpToDate);
-			// Export requires us to have a thumbnail.
-			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("thumbnail-256.png"));
-			return book;
 		}
 
 		[Test]
@@ -966,25 +781,6 @@ namespace BloomTests.Publish
 			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
-		}
-
-		private static EnhancedImageServer GetTestServer()
-		{
-			var server = new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, GetTestBookSelection(), GetTestFileLocator());
-			server.StartListening();
-			return server;
-		}
-
-		private static BookSelection GetTestBookSelection()
-		{
-			s_bookSelection = new BookSelection();
-			return s_bookSelection;
-		}
-
-		private static BloomFileLocator GetTestFileLocator()
-		{
-			return new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new [] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
-				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 
 		/// <summary>
@@ -1287,7 +1083,7 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='audio_2fa23' and @href='audio_2fa23.mp3' and @media-type='audio^slash^mpeg']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='audio_2fa123' and @href='audio_2fa123.mp4' and @media-type='audio^slash^mp4']");
 
-			var smilData = StripXmlHeader(GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var assertThatSmil = AssertThatXmlIn.String(smilData);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", _ns);
@@ -1297,8 +1093,8 @@ namespace BloomTests.Publish
 
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
 
-			GetZipEntry(_epub, "content/audio_2fa123.mp4");
-			GetZipEntry(_epub, "content/audio_2fa23.mp3");
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_2fa123.mp4");
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_2fa23.mp3");
 		}
 
 		/// <summary>
@@ -1332,7 +1128,7 @@ namespace BloomTests.Publish
 			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.4000000']");
 #endif
 
-			var smilData = StripXmlHeader(GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var assertSmil = AssertThatXmlIn.String(smilData);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", _ns);
@@ -1340,8 +1136,8 @@ namespace BloomTests.Publish
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp4']", _ns);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", _ns);
 
-			GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
-			GetZipEntry(_epub, "content/audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
 		}
 
 		// Sometimes the tests were failing on TeamCity because the file was in use by another process
@@ -1359,31 +1155,6 @@ namespace BloomTests.Publish
 				var wavSrc = Path.ChangeExtension(src, ".wav");
 				File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
 			}
-		}
-
-		private string GetZipContent(ZipFile zip, string path)
-		{
-			var entry = GetZipEntry(zip, path);
-			var buffer = new byte[entry.Size];
-			var stream = zip.GetInputStream(entry);
-			stream.Read(buffer, 0, (int) entry.Size);
-			return Encoding.UTF8.GetString(buffer);
-		}
-
-		private static ZipEntry GetZipEntry(ZipFile zip, string path)
-		{
-			var entry = zip.GetEntry(path);
-			Assert.That(entry, Is.Not.Null, "Should have found entry at " + path);
-			Assert.That(entry.Name, Is.EqualTo(path), "Expected entry has wrong case");
-			return entry;
-		}
-
-		private string StripXmlHeader(string data)
-		{
-			var index = data.IndexOf("?>");
-			if (index > 0)
-				return data.Substring(index + 2);
-			return data;
 		}
 
 		[TestCase("abc", ExpectedResult = "abc")]
@@ -1439,8 +1210,8 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//img[@src='12.png']");
 			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//img[@src='f12.png']", 2);
 
-			GetZipEntry(_epub, "content/12.png");
-			GetZipEntry(_epub, "content/f12.png");
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/12.png");
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/f12.png");
 		}
 
 		/// <summary>
@@ -1657,22 +1428,22 @@ namespace BloomTests.Publish
 			XmatterPageHasContentInfoNotMain(_page1Data);
 			ImageDescriptionIsMarkedForAccessibility(_page1Data, "1");
 
-			var page2Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
+			var page2Data = ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
 			FirstContentPageHasCorrectAriaRolesAndLabels(page2Data);
 			ContentPageHasNoContentInfo(page2Data);
 			ImageDescriptionIsMarkedForAccessibility(page2Data, "2");
 
-			var page3Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "3.xhtml");
+			var page3Data = ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "3.xhtml");
 			TitlePageHasCorrectAriaRolesAndLabels(page3Data);
 			XmatterPageHasContentInfoNotMain(_page1Data);
 			EpubBackmatterPageHasNoDescribableImage(page3Data);
 
-			var page4Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "4.xhtml");
+			var page4Data = ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "4.xhtml");
 			CreditsPageHasCorrectAriaRolesAndLabels(page4Data);
 			XmatterPageHasContentInfoNotMain(_page1Data);
 			EpubBackmatterPageHasNoDescribableImage(page4Data);
 
-			var page5Data = GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "5.xhtml");
+			var page5Data = ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "5.xhtml");
 			EndPageHasMinimalAriaRolesAndLabels(page5Data);
 			EpubBackmatterPageHasNoDescribableImage(page5Data);
 		}
