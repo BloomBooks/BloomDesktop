@@ -798,7 +798,7 @@ export function bootstrap() {
     complicatedFind += ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']";
     $("div.bloom-page").find(complicatedFind).each(function () {
         if ($(this).hasClass("bloom-userCannotModifyStyles") ||
-            $(this).parent().hasClass("bloom-userCannotModifyStyles"))
+            $(this).parentsUntil(".marginBox").hasClass("bloom-userCannotModifyStyles"))
             return; // equivalent to 'continue'
 
         if ($(this).css("cursor") === "not-allowed")
