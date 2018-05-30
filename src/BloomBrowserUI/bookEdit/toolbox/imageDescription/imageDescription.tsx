@@ -111,7 +111,7 @@ export class ImageDescriptionToolControls extends React.Component<
                             l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
                             l10nComment="Link that launces the video"
                         >
-                            bloom training video
+                            Bloom training video
                         </Link>
                     </div>
                 </div>

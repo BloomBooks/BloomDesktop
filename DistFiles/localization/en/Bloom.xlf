@@ -1617,7 +1617,7 @@
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
-        <source xml:lang="en">bloom training video</source>
+        <source xml:lang="en">Bloom training video</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
