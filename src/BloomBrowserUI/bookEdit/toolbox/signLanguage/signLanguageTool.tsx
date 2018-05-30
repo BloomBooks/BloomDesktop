@@ -75,7 +75,8 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                                 + (this.state.recording ? " recordingNow" : "")
                                 + (this.state.enabled ? " enabled" : " disabled")}
                                 onClick={() => this.toggleRecording()} />
-                            <Label className="startRecording waiting" l10nKey="Toolbox.SignLanguage.StartRecording">Start Recording</Label>
+                            <Label className="startRecording waiting" l10nKey="Toolbox.SignLanguage.StartRecording"
+                                onClick={() => this.toggleRecording()}>Start Recording</Label>
                             <span className="countdown3 countdownNumber">3</span>
                             <span className="countdown2 countdownNumber">2</span>
                             <span className="countdown1 countdownNumber">1</span>
@@ -85,11 +86,13 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                 </div>
                 <div id="editOutsideWrapper" className={"videoButtonWrapper" + (this.state.haveRecording ? "" : " disabled ")}>
                     <button id="editOutsideButton" onClick={() => this.editOutside()} />
-                    <Label className="commandLabel" l10nKey="Toolbox.SignLanguage.EditOutside">Edit outside of Bloom</Label>
+                    <Label className="commandLabel" l10nKey="Toolbox.SignLanguage.EditOutside"
+                        onClick={() => this.editOutside()}>Edit outside of Bloom</Label>
                 </div>
                 <div id="restoreOriginalWrapper" className={"videoButtonWrapper" + (this.state.originalExists ? "" : " disabled ")}>
                     <button id="restoreOriginalButton" onClick={() => this.restoreOriginal()} />
-                    <Label className="commandLabel" l10nKey="Toolbox.SignLanguage.RestoreOriginal">Restore Original</Label>
+                    <Label className="commandLabel" l10nKey="Toolbox.SignLanguage.RestoreOriginal"
+                        onClick={() => this.restoreOriginal()}>Restore Original</Label>
                 </div>
                 <div>
                     <button id="videoStopRecording" className={"video-button ui-button notWaiting"}

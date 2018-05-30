@@ -1444,7 +1444,7 @@ namespace Bloom.Edit
 					request.Failed("no original");
 					return;
 				}
-				var newVideoPath = Path.Combine(CurrentBook.FolderPath, GetNewVideoFileName()); // Use a new name to defeat caching.
+				var newVideoPath = Path.Combine(BookStorage.GetVideoFolderPath(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
 				RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
 				RobustFile.Copy(newOriginalPath, newVideoPath);
@@ -1490,14 +1490,15 @@ namespace Bloom.Edit
 				var begin = DateTime.Now;
 				proc.Exited += (sender, args) =>
 				{
-					var lastModifiedFile = new DirectoryInfo(CurrentBook.FolderPath)
+					var videoFolderPath = BookStorage.GetVideoFolderPath(CurrentBook.FolderPath);
+					var lastModifiedFile = new DirectoryInfo(videoFolderPath)
 						.GetFiles("*.mp4")
 						.OrderByDescending(f => GetRealLastModifiedTime(f))
-						.First();
-					if (GetRealLastModifiedTime(lastModifiedFile) > begin)
+						.FirstOrDefault();
+					if (lastModifiedFile != null && GetRealLastModifiedTime(lastModifiedFile) > begin)
 					{
-						var newVideoPath = Path.Combine(CurrentBook.FolderPath, GetNewVideoFileName()); // Use a new name to defeat caching; prefer our standard type of name.
-						RobustFile.Move(Path.Combine(CurrentBook.FolderPath, lastModifiedFile.Name), newVideoPath);
+						var newVideoPath = Path.Combine(videoFolderPath, GetNewVideoFileName()); // Use a new name to defeat caching; prefer our standard type of name.
+						RobustFile.Move(Path.Combine(videoFolderPath, lastModifiedFile.Name), newVideoPath);
 						var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
 						if (RobustFile.Exists(originalPath))
 						{
