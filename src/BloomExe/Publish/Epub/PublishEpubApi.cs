@@ -103,6 +103,7 @@ namespace Bloom.Publish.Epub
 								_epubMaker = new EpubMaker(_thumbNailer, _isolator, _bookServer);
 								_epubMaker.Book = _bookSelection.CurrentSelection;
 								_epubMaker.Unpaginated = true; // Enhance: UI?
+								_epubMaker.OneAudioPerPage = true;
 								_epubMaker.PublishImageDescriptions = GetPublishMode(request);
 								ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingDoc", "Preparing document"));
 								_epubMaker.StageEpub();

@@ -91,7 +91,7 @@ namespace Bloom.Publish
 		/// <param name="id"></param>
 		/// <returns></returns>
 		// internal and virtual for testing.
-		private static string MakeCompressedAudio(string wavPath)
+		public static string MakeCompressedAudio(string wavPath)
 		{
 			// We have a recording, but not compressed. Possibly the LAME package was installed after
 			// the recordings were made. Compress it now.
@@ -110,6 +110,9 @@ namespace Bloom.Publish
 		public static string GetOrCreateCompressedAudioIfWavExists(string bookFolderPath, string recordingSegmentId)
 		{
 			var root = GetAudioFolderPath(bookFolderPath);
+			var wavPath = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, "wav"));
+			if (!RobustFile.Exists(wavPath))
+				return null; // recording never created or deleted, don't use even if compressed exists.
 			var extensions = new[] {"mp3", "mp4"}; // .ogg,, .wav, ...?
 
 			foreach(var ext in extensions)
@@ -118,9 +121,6 @@ namespace Bloom.Publish
 				if(RobustFile.Exists(path))
 					return path;
 			}
-			var wavPath = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, "wav"));
-			if(!RobustFile.Exists(wavPath))
-				return null;
 			return _compressorMethod(wavPath);
 		}
 

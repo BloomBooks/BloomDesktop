@@ -344,9 +344,10 @@ namespace BloomTests.Publish
 		/// <param name="book"></param>
 		/// <returns></returns>
 		protected override ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
-			EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.None)
+			EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.None,
+			Action<EpubMaker> extraInit = null)
 		{
-			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions);
+			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, extraInit);
 			GetPageOneData();
 			return result;
 		}
@@ -1088,13 +1089,41 @@ namespace BloomTests.Publish
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", _ns);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fa123.mp4']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fa23.mp3']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fa123.mp4' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fa23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
 
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
 
 			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_2fa123.mp4");
 			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_2fa23.mp3");
+		}
+
+		[Test]
+		public void BookWithAudio_OneAudioPerPage_ProducesOneMp3()
+		{
+			var book = SetupBook("<span id='a123' recordingmd5='undefined'>This is some text.</span><span id='a23'>Another sentence</span>", "xyz");
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
+			MakeEpub("output", "BookWithAudio_MergeAudio_ProducesOneMp3", book,
+				extraInit: maker => maker.OneAudioPerPage = true);
+
+			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
+			var assertThatManifest = AssertThatXmlIn.String(_manifestContent.Replace("application/smil", "application^slash^smil").Replace("audio/", "audio^slash^"));
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='audio_page1' and @href='audio_page1.mp3' and @media-type='audio^slash^mpeg']");
+
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var assertThatSmil = AssertThatXmlIn.String(smilData);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_page1.mp3' and @clipBegin='0:00:01.700' and @clipEnd='0:00:03.400']", _ns);
+
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
+
+			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_page1.mp3");
 		}
 
 		/// <summary>

@@ -13,10 +13,13 @@ using Bloom.Book;
 using Bloom.ToPalaso;
 using BloomTemp;
 using L10NSharp;
+using SIL.CommandLineProcessing;
 #if !__MonoCS__
 using NAudio.Wave;
 #endif
 using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
 
@@ -144,6 +147,14 @@ namespace Bloom.Publish.Epub
 		private int _imgCount;
 		public Control ControlForInvoke { get; set; }
 		public bool AbortRequested { get; set; }
+		// Only make one audio file per page. This means if there are multiple recorded sentences on a page,
+		// Epubmaker will squash them into one, compress it, and make smil entries with appropriate offsets.
+		// This is closer to how the standard Moby Dick example is done, and at least one epub reader
+		// (Simply Reading by Daisy) skips a lot of audio segments if we do one per sentence, but works
+		// better with this approach. Nothing that we know of does less well, so for now, this is always
+		// set true in real epub creation. Most of our unit tests predate it, however, and rather than
+		// try to update all that would be affected I am leaving the default false.
+		public bool OneAudioPerPage { get; set; }
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -559,6 +570,35 @@ namespace Bloom.Publish.Epub
 					seq));
 			int index = 1;
 			TimeSpan pageDuration = new TimeSpan();
+			bool mergeAudio = OneAudioPerPage && spansWithAudio.Count() > 1;
+			string mergedAudioPath = null;
+			if (mergeAudio)
+			{
+				var combinedAudioPath = Path.Combine(_contentFolder, "audio_page" + _pageIndex + ".wav");
+				var soxPath = FileLocationUtilities.GetFileDistributedWithApplication("sox/sox.exe");
+				var argsBuilder = new StringBuilder();
+				foreach (var span in spansWithAudio)
+				{
+					var path = AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, span.Attributes["id"].Value);
+					argsBuilder.Append("\"" + Path.ChangeExtension(path, "wav") + "\" ");
+				}
+
+				argsBuilder.Append("\"" + combinedAudioPath + "\"");
+				var result = CommandLineRunner.Run(soxPath, argsBuilder.ToString(), "", 60 * 10, new NullProgress());
+				if (result.StandardError.Contains("FAIL"))
+				{
+					Logger.WriteEvent("Failed to merge audio files for page " + _pageIndex + " " + result.StandardError);
+					RobustFile.Delete(mergedAudioPath);
+					// and we will do it the old way. Works for some readers.
+					mergeAudio = false;
+				}
+				else
+				{
+					mergedAudioPath = AudioProcessor.MakeCompressedAudio(combinedAudioPath);
+					RobustFile.Delete(combinedAudioPath);
+					_manifestItems.Add(Path.GetFileName(mergedAudioPath));
+				}
+			}
 			foreach(var span in spansWithAudio)
 			{
 				var spanId = span.Attributes["id"].Value;
@@ -599,8 +639,10 @@ namespace Bloom.Publish.Epub
 						clipTimeSpan = new TimeSpan(new FileInfo(path).Length*7*10000000/61000);
 					}
 				}
+
+				var clipStart = pageDuration;	
 				pageDuration += clipTimeSpan;
-				var epubPath = CopyFileToEpub(path);
+				string epubPath = mergeAudio ? mergedAudioPath : CopyFileToEpub(path);
 				seq.Add(new XElement(smil + "par",
 					new XAttribute("id", "s" + index++),
 					new XElement(smil + "text",
@@ -610,8 +652,8 @@ namespace Bloom.Publish.Epub
 						// We now mangle file names so as to replace any / (with _2f) so all files
 						// are at the top level in the ePUB. Makes one less complication for readers.
 						new XAttribute("src", Path.GetFileName(epubPath)),
-						new XAttribute("clipBegin", "0:00:00.000"),
-						new XAttribute("clipEnd", clipTimeSpan.ToString(@"h\:mm\:ss\.fff")))));
+						new XAttribute("clipBegin", mergeAudio ? clipStart.ToString(@"h\:mm\:ss\.fff") : "0:00:00.000"),
+						new XAttribute("clipEnd", mergeAudio ? pageDuration.ToString(@"h\:mm\:ss\.fff") : clipTimeSpan.ToString(@"h\:mm\:ss\.fff")))));
 			}
 			_pageDurations[GetIdOfFile(overlayName)] = pageDuration;
 			var overlayPath = Path.Combine(_contentFolder, overlayName);

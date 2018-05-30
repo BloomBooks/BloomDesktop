@@ -124,7 +124,7 @@ namespace BloomTests.Publish
 		/// <param name="book"></param>
 		/// <returns></returns>
 		protected virtual ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
-			EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.None)
+			EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.None, Action<EpubMaker> extraInit = null)
 		{
 			var epubFolder = new TemporaryFolder(folderName);
 			var epubName = mainFileName + ".epub";
@@ -133,6 +133,7 @@ namespace BloomTests.Publish
 			{
 				maker.Unpaginated = true; // Currently we always make unpaginated epubs.
 				maker.PublishImageDescriptions = howToPublishImageDescriptions;
+				extraInit?.Invoke(maker);
 				maker.SaveEpub(epubPath);
 			}
 			Assert.That(File.Exists(epubPath));
