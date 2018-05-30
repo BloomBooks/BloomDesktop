@@ -169,7 +169,11 @@ export interface ILabelProps extends ILocalizationProps {
 export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
     render() {
         return (
-            <label className={this.getClassName()} onClick={() => this.props.onClick()}>
+            <label className={this.getClassName()} onClick={() => {
+                if (this.props.onClick) {
+                    this.props.onClick();
+                }
+            }}>
                 {this.getLocalizedContent()}
             </label>
         );
