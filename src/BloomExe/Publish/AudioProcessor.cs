@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using Bloom.Edit;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
@@ -91,7 +94,7 @@ namespace Bloom.Publish
 		/// <param name="id"></param>
 		/// <returns></returns>
 		// internal and virtual for testing.
-		private static string MakeCompressedAudio(string wavPath)
+		public static string MakeCompressedAudio(string wavPath)
 		{
 			// We have a recording, but not compressed. Possibly the LAME package was installed after
 			// the recordings were made. Compress it now.
@@ -110,6 +113,9 @@ namespace Bloom.Publish
 		public static string GetOrCreateCompressedAudioIfWavExists(string bookFolderPath, string recordingSegmentId)
 		{
 			var root = GetAudioFolderPath(bookFolderPath);
+			var wavPath = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, "wav"));
+			if (!RobustFile.Exists(wavPath))
+				return null; // recording never created or deleted, don't use even if compressed exists.
 			var extensions = new[] {"mp3", "mp4"}; // .ogg,, .wav, ...?
 
 			foreach(var ext in extensions)
@@ -118,9 +124,6 @@ namespace Bloom.Publish
 				if(RobustFile.Exists(path))
 					return path;
 			}
-			var wavPath = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, "wav"));
-			if(!RobustFile.Exists(wavPath))
-				return null;
 			return _compressorMethod(wavPath);
 		}
 
@@ -136,6 +139,31 @@ namespace Bloom.Publish
 					return true;
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// Merge the specified input wav files into the specified output file. Returns null if successful,
+		/// a string that may be useful in debugging if not.
+		/// </summary>
+		/// <param name="mergeFiles"></param>
+		/// <param name="combinedAudioPath"></param>
+		/// <returns></returns>
+		public static string MergeAudioFiles(IEnumerable<string> mergeFiles, string combinedAudioPath)
+		{
+			var soxPath = FileLocationUtilities.GetFileDistributedWithApplication("sox/sox.exe");
+			var argsBuilder = new StringBuilder();
+			foreach (var path in mergeFiles)
+				argsBuilder.Append("\"" + path + "\" ");
+
+			argsBuilder.Append("\"" + combinedAudioPath + "\"");
+			var result = CommandLineRunner.Run(soxPath, argsBuilder.ToString(), "", 60 * 10, new NullProgress());
+			var output = result.StandardError.Contains("FAIL") ? result.StandardError : null;
+			if (output != null)
+			{
+				RobustFile.Delete(combinedAudioPath);
+			}
+
+			return output;
 		}
 	}
 }
