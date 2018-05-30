@@ -140,6 +140,13 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
         );
     }
 
+    // To restore the image description links option, add
+    // <Radio
+    //     l10nKey="PublishTab.Epub.Links"
+    //     value="links">
+    //     Image description links
+    // </Radio>
+
     private setPublishRadio(val: string) {
         if (val === this.state.publishImageDescriptions) return;
         this.setState({ publishImageDescriptions: val });
