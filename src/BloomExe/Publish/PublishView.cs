@@ -769,76 +769,83 @@ namespace Bloom.Publish
 			if (SIL.PlatformUtilities.Platform.IsMono)
 				SetAutoCheck(true);
 
-			var oldPortion = _model.BookletPortion;
-			var oldCrop = _model.ShowCropMarks; // changing to or from cloud radio CAN change this.
 			SetModelFromButtons();
-			if (oldPortion == _model.BookletPortion && oldCrop == _model.ShowCropMarks)
+		}
+
+		/// <summary>
+		/// This method sets up the model from the current state of the radio buttons.  It is called on
+		/// two occasions: all the buttons have just been cleared or one of the buttons has just been
+		/// selected.  The code assumes that no more than one button can be selected at a time.
+		/// </summary>
+		private void SetModelFromButtons()
+		{
+			_model.UploadMode = _uploadRadio.Checked;
+			_model.EpubMode = _epubRadio.Checked;
+			_model.Epub2Mode = _epub2Radio.Checked;
+			bool pdfPreviewMode = false;
+			if (_simpleAllPagesRadio.Checked)
 			{
-				// no changes detected
-				if (_uploadRadio.Checked)
+				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
+				pdfPreviewMode = true;
+			}
+			else if (_bookletCoverRadio.Checked)
+			{
+				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
+				pdfPreviewMode = true;
+			}
+			else if (_bookletBodyRadio.Checked)
+			{
+				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
+				pdfPreviewMode = true;
+			}
+			else if (_epubRadio.Checked)
+			{
+				_model.DisplayMode = PublishModel.DisplayModes.EPUB;
+			}
+			else if (_epub2Radio.Checked)
+			{
+				_model.DisplayMode = PublishModel.DisplayModes.EPUB2;
+			}
+			else if (_uploadRadio.Checked)
+			{
+				// We want to upload the simple PDF with the book, but we don't make it
+				// until we actually start the upload.
+				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
+				_model.DisplayMode = PublishModel.DisplayModes.Upload;
+			}
+			else if (_androidRadio.Checked)
+			{
+				_model.DisplayMode = PublishModel.DisplayModes.Android;
+			}
+			else // no buttons selected
+			{
+				_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
+			}
+			if (pdfPreviewMode)
+			{
+				if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
 				{
-					_model.DisplayMode = PublishModel.DisplayModes.Upload;
-				}
-				else if (_epubRadio.Checked)
-				{
-					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
-				}
-				else if (_epub2Radio.Checked)
-				{
-					_model.DisplayMode = PublishModel.DisplayModes.EPUB2;
-				}
-				else if (_androidRadio.Checked)
-				{
-					_model.DisplayMode = PublishModel.DisplayModes.Android;
-				}
-				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
-				{
-					// no change because the PREVIOUS button was the cloud one. Need to restore the appropriate
-					// non-cloud display
+					// We've transitioned away from upload to a PDF preview.
 					_model.DisplayMode = _model.PdfGenerationSucceeded
 						? PublishModel.DisplayModes.ShowPdf
 						: PublishModel.DisplayModes.WaitForUserToChooseSomething;
 				}
-				else if (_model.DisplayMode == PublishModel.DisplayModes.WaitForUserToChooseSomething)
+				if (IsMakingPdf)
 				{
-					// This happens if user went directly to Upload and then chooses Simple layout
-					// We haven't actually built a pdf yet, so do it.
-					ControlsChanged();
+					_makePdfBackgroundWorker.CancelAsync();
+					UpdateDisplay();
 				}
-				return;
+				else
+				{
+					MakeBooklet();
+				}
 			}
-
-			ControlsChanged();
-		}
-
-		private void ControlsChanged()
-		{
-			if (IsMakingPdf || _model.BookletPortion == PublishModel.BookletPortions.None)
+			else // not PDF preview mode
 			{
-				_makePdfBackgroundWorker.CancelAsync();
-				UpdateDisplay(); // We may need to uncheck a layout item here
+				if (_model.DisplayMode != PublishModel.DisplayModes.Upload)
+					_model.BookletPortion = PublishModel.BookletPortions.None;
 			}
-			else
-				MakeBooklet();
-		}
-
-		private void SetModelFromButtons()
-		{
-			if (_bookletCoverRadio.Checked)
-				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
-			else if (_bookletBodyRadio.Checked)
-				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-			// The version we want to upload for web previews is the one that is shown for
-			// the _simpleAllPagesRadio button, so pick AllPagesNoBooklet for both of these.
-			else if (_simpleAllPagesRadio.Checked || _uploadRadio.Checked)
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-			// otherwise, we don't yet know what version to show, so we don't show one.
-			else
-				_model.BookletPortion = PublishModel.BookletPortions.None;
-			_model.UploadMode = _uploadRadio.Checked;
-			_model.EpubMode = _epubRadio.Checked;
-			_model.Epub2Mode = _epub2Radio.Checked;
-			_model.ShowCropMarks = false; // obsolete: _showCropMarks.Checked && !_uploadRadio.Checked; // don't want crop-marks on upload PDF
+			_model.ShowCropMarks = false;
 		}
 
 		internal string PdfPreviewPath { get { return _model.PdfFilePath; } }
