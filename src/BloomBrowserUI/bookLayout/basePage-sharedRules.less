@@ -29,33 +29,6 @@ body {
     display: none;
 }
 
-// When bloom-showImageDescriptions is set (typically only when the relevant toolbox is showing, currently,
-// but we'd like to be able to turn it on in the end result, too), we make the picture shrink to fit
-// in the left half and show the translation group in the right half.
-.bloom-showImageDescriptions .bloom-imageContainer {
-    background-size: 50% auto;
-    background-position-x: 0;
-    .bloom-imageDescription {
-        width:50%;
-        // not needed in content pages, but for some reason on cover.
-        // Overridden in edit mode to make room for special border on top.
-        height: 100%;
-        top:0;
-        
-        position: absolute;
-        left: 50%;
-        box-sizing: border-box;
-        border-left: solid lightgray 1px;
-        // We also want to turn off the display:none that usually applies to translation groups
-        // inside image containers (above), but we want display:flex in Bloom, and display:block
-        // in epubs. So that rule is elsewhere.
-    }
-    // Requiring a direct child helps prevent this from applying to things like the format cog
-    > img {
-        width: 50%;
-    }
-}
-
 //This is needed to support captioned, inline images, as in  SIL LEAD's Uganda P4 Pupils Books.
 //In these cases, the captions went from 1 to many lines, and
 //the container needs to grow to hold the caption (else the text doesn't flow around the caption). But as it
