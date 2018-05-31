@@ -308,5 +308,195 @@ namespace BloomTests.Publish
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("thumbnail-256.png"));
 			return book;
 		}
+
+		protected void CheckBasicsInPage(params string[] images)
+		{
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@aria-describedby and not(@id)]");
+			// Not sure why we sometimes have these, but validator doesn't like them.
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@lang='']");
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:script", _ns);
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@lang='*']");
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[@contenteditable]", _ns);
+
+			foreach (var image in images)
+				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//img[@src='" +image + ".png']");
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='settingsCollectionStyles.css']", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customCollectionStyles.css']", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='fonts.css']", _ns);
+
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:body/*[@role]", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:body/*[@aria-label]", _ns);
+		}
+
+		protected void CheckBasicsInManifest(params string[] imageFiles)
+		{
+			VerifyThatFilesInManifestArePresent();
+			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
+			var assertThatManifest = AssertThatXmlIn.String(_manifestContent.Replace("application/", "application^slash^"));
+			assertThatManifest.HasAtLeastOneMatchForXpath("package[@version='3.0']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package[@unique-identifier]");
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:title", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:language", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:identifier", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:source", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='dcterms:modified']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessMode']", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessModeSufficient']", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityFeature']", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityHazard']", _ns);
+			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/opf:meta[@property='schema:accessibilitySummary']", _ns);
+
+			// This is not absolutely required, but it's true for all our test cases and the way we generate books.
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml']");
+			// And that one page must be in the spine
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/spine/itemref[@idref='f1']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='nav']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='cover-image']");
+
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='settingsCollectionStyles' and @href='settingsCollectionStyles.css']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='customCollectionStyles.css']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='customBookStyles.css']");
+
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf' and @media-type='application^slash^vnd.ms-opentype']");
+			// This used to be a test that it DOES include the bold (along with italic and BI) variants. But we decided not to...see BL-4202 and comments in EpubMaker.EmbedFonts().
+			// So this is now a negative to check that they don't creep back in (unless we change our minds).
+			assertThatManifest.HasNoMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf' and @media-type='application^slash^vnd.ms-opentype']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fonts' and @href='fonts.css']");
+
+			foreach (var image in imageFiles)
+				assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='" + image + "' and @href='" + image + ".png']");
+		}
+
+		/// <summary>
+		/// Check that all the files referenced in the manifest are actually present in the zip.
+		/// </summary>
+		void VerifyThatFilesInManifestArePresent()
+		{
+			XNamespace opf = "http://www.idpf.org/2007/opf";
+			var files = _manifestDoc.Root.Element(opf + "manifest").Elements(opf + "item").Select(item => item.Attribute("href").Value);
+			foreach (var file in files)
+			{
+				ExportEpubTestsBaseClass.GetZipEntry(_epub, Path.GetDirectoryName(_manifestFile) + "/" + file);
+			}
+		}
+
+		protected void CheckAccessibilityInManifest(bool hasAudio, bool hasImages, string desiredSource, bool hasFullAudio = false)
+		{
+			var xdoc = new XmlDocument();
+			xdoc.LoadXml(_manifestContent);
+			var source = xdoc.SelectSingleNode("opf:package/opf:metadata/dc:source", _ns);
+			Assert.AreEqual(desiredSource, source.InnerXml);
+
+			var foundTextual = false;
+			var foundAudio = false;
+			var foundVisual = false;
+			var foundOther = false;
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessMode']", _ns))
+			{
+				switch (node.InnerXml)
+				{
+				case "textual":		foundTextual = true;	break;
+				case "auditory":	foundAudio = true;		break;
+				case "visual":		foundVisual = true;		break;
+				default:			foundOther = true;		break;
+				}
+			}
+			Assert.IsFalse(foundOther, "Unrecognized accessMode in manifest");
+			Assert.IsTrue(foundTextual, "Failed to find expected 'textual' accessMode in manifest");
+			Assert.AreEqual(hasAudio, foundAudio, (hasAudio ? "Failed to find expected 'auditory' accessMode in manifest" : "Unexpected 'auditory' accessMode in manifest"));
+			Assert.AreEqual(hasImages, foundVisual, (hasImages ? "Failed to find expected 'visual' accessMode in manifest" : "Unexpected 'visual' accessMode in manifest"));
+
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessModeSufficient']", _ns))
+			{
+				foundTextual = foundAudio = foundVisual = foundOther = false;
+				var modes =  node.InnerXml.Split(',');
+				foreach (var mode in modes)
+				{
+					switch (mode)
+					{
+					case "textual":		foundTextual = true;	break;
+					case "auditory":	foundAudio = true;		break;
+					case "visual":		foundVisual = true;		break;
+					default:			foundOther = true;		break;
+					}
+				}
+				Assert.IsFalse(foundOther, "Unrecognized mode in accessModeSufficient in manifest");
+				if (!hasFullAudio)
+					// If hasFullAudio is false, then every accessModeSufficient must contain textual.
+					Assert.IsTrue(foundTextual, "Failed to find expected 'textual' in accessModeSufficient in manifest");
+				else
+					// If hasFullAudio is true, then every accessModeSufficient must contain either textual or auditory (or both).
+					Assert.IsTrue(foundTextual || foundAudio, "Failed to find either 'textual' or 'auditory' in accessModeSufficient in manifest");
+				if (!hasAudio)
+					Assert.IsFalse(foundAudio, "Unexpected 'auditory' in accessModeSufficient in manifest");
+				if (!hasImages)
+					Assert.IsFalse(foundVisual, "Unexpected 'visual' in accessModeSufficient in manifest");
+			}
+
+			foundOther = false;
+			bool foundSynchronizedAudio = false;
+			bool foundResizeText = false;
+			bool foundPageNumbers = false;
+			bool foundUnlocked = false;
+			bool foundReadingOrder = false;
+			bool foundTableOfContents = false;
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityFeature']", _ns))
+			{
+				switch (node.InnerXml)
+				{
+				case "synchronizedAudioText":				foundSynchronizedAudio = true;	break;
+				case "displayTransformability/resizeText":	foundResizeText = true;			break;
+				case "printPageNumbers":					foundPageNumbers = true;		break;
+				case "unlocked":							foundUnlocked = true;			break;
+				case "readingOrder":						foundReadingOrder = true;		break;
+				case "tableOfContents":						foundTableOfContents = true;	break;
+				default:									foundOther = true;				break;
+				}
+			}
+			Assert.IsFalse(foundOther, "Unrecognized accessibilityFeature value in manifest");
+			Assert.AreEqual(hasAudio, foundSynchronizedAudio, "Bloom Audio is synchronized iff it exists (which it does{0}) [manifest accessibilityFeature]", hasAudio ? "" : " not");
+			Assert.IsTrue(foundResizeText, "Bloom text should always be resizable [manifest accessibilityFeature]");
+			Assert.IsTrue(foundPageNumbers, "Bloom books provide page number mapping to the print edition [manifest accessibilityFeature]");
+			Assert.IsTrue(foundUnlocked, "Bloom books are always unlocked [manifest accessibilityFeature]");
+			Assert.IsTrue(foundReadingOrder, "Bloom books have simple formats that are always in reading order [manifest accessibilityFeature]");
+			Assert.IsTrue(foundTableOfContents, "Bloom books have a trivial table of contents [manifest accessibilityFeature]");
+
+			foundOther = false;
+			bool foundNone = false;
+			bool foundNoMotionHazard = false;
+			bool foundNoFlashingHazard = false;
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityHazard']", _ns))
+			{
+				switch (node.InnerXml)
+				{
+				case "none":						foundNone = true;				break;
+				case "noMotionSimulationHazard":	foundNoMotionHazard = true;		break;
+				case "noFlashingHazard":			foundNoFlashingHazard = true;	break;
+				default:							foundOther = true;				break;
+				}
+			}
+			Assert.IsFalse(foundOther, "Unrecognized accessibilityHazard value in manifest");
+			if (hasAudio)
+			{
+				Assert.IsFalse(foundNone, "If we have Audio, then accessibilityHazard is not 'none' in manifest");
+				Assert.IsTrue(foundNoMotionHazard, "If we have Audio, then accessibilityHazard includes 'noMotionHazard' in manifest");
+				Assert.IsTrue(foundNoFlashingHazard, "If we have Audio, then accessibilityHazard includes 'noFlashingHazard' in manifest");
+			}
+			else
+			{
+				Assert.IsTrue(foundNone, "If we do not have Audio, then accessibilityHazard is 'none' in manifest");
+				Assert.IsFalse(foundNoMotionHazard, "If we do not have Audio, then accessibilityHazard is 'none', not 'noMotionHazard' in manifest");
+				Assert.IsFalse(foundNoFlashingHazard, "If we do not have Audio, then accessibilityHazard is 'none', not 'noFlashingHazard' in manifest");
+			}
+
+			int summaryCount = 0;
+			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilitySummary']", _ns))
+			{
+				++summaryCount;
+			}
+			Assert.AreEqual(1, summaryCount, "Expected a single accessibilitySummary item in the manifest, but found {0}", summaryCount);
+		}
+
 	}
 }
