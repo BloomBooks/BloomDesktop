@@ -326,6 +326,12 @@
     <Compile Include="Publish\Android\wifi\WiFiPublisher.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\BloomLibrary\BloomLibraryPublishModel.cs" />
+    <Compile Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.Designer.cs">
+      <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Publish\Epub\ElectronicPublishView.cs" />
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
@@ -598,6 +604,7 @@
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
+    <Compile Include="web\controllers\AccessibilityCheckApi.cs" />
     <Compile Include="web\controllers\ApiRequest.cs" />
     <Compile Include="WebLibraryIntegration\ProblemBookUploader.cs" />
     <Compile Include="web\BloomWebSocketServer.cs" />
@@ -827,6 +834,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\TroubleShooterDialog.resx">
       <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.resx">
+      <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PDF\AdobeReaderControl.resx">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>

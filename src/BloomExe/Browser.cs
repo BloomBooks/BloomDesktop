@@ -618,6 +618,12 @@ namespace Bloom
 			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
 			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
 			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
+			e.ContextMenu.MenuItems.Add("Refresh", OnRefresh);
+		}
+
+		private void OnRefresh(object sender, EventArgs e)
+		{
+			_browser.Reload();
 		}
 
 		private void OnOpenAboutMemory(object sender, EventArgs e)

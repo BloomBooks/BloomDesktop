@@ -25,6 +25,7 @@
     "license": "MIT",
     "dependencies": {
         "@types/rc-slider": "^8.2.2",
+        "@types/react-tabs": "^1.0.4",
         "@types/webrtc": "^0.0.23",
         "axios": "^0.16.2",
         "css-element-queries": "^0.3.2",
@@ -35,6 +36,7 @@
         "react": "16.2.0",
         "react-desktop": "^0.3.1",
         "react-dom": "16.2.0",
+        "react-tabs": "^2.2.2",
         "requirejs": "^2.1.22",
         "select2": "^4.0.2",
         "time-require": "^0.1.2",

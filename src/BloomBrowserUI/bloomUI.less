@@ -13,6 +13,7 @@
 @bloom-yellow : #FEBF00;
 @bloom-gray: #575757; // used for disabled controls and EPub preview controls
 @bloom-lightgray: lightgray;
+@bloom-red: #d65649;
 @bloom-darkestgray: #363333; // used for borders and backgrounds... this is the darker main panel background
 @bloom-buff: #d2d2d2; // used for various unrelated things like hovered/disabled controls, text on dark background, borders, etc.
 @bloom-toolboxWhite: @bloom-buff;
@@ -29,3 +30,23 @@
 // Naming it here allows us to make various things match it.
 @accordion-active-element: #59b4d4;
 @form-background: #f0f0f0;
+
+.react-tabs {
+    margin: 20px;
+}
+.react-tabs__tab-list {
+    margin-bottom: 0;
+}
+.react-tabs__tab {
+    background-color: @bloom-lightgray;
+    margin-right: 5px; // separate the tabs
+}
+.react-tabs__tab--selected {
+    background-color: white;
+    font-weight: bold;
+}
+.react-tabs__tab-panel--selected div {
+    padding: 10px;
+    height: 500px; //todo
+    background-color: white;
+}

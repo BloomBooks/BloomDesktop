@@ -16,6 +16,7 @@ using Bloom.ImageProcessing;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
+using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
 using Bloom.web;
@@ -113,6 +114,7 @@ namespace Bloom
 							typeof(BookSettingsApi),
 							typeof(PublishToAndroidApi),
 							typeof(PublishEpubApi),
+							typeof(AccessibilityCheckApi),
 							typeof(PageControlsApi),
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
@@ -265,6 +267,9 @@ namespace Bloom
 						return factory(c.Resolve<LibraryView>());
 //					}
 					});
+
+					builder.RegisterType<AccessibilityCheckWindow>();
+
 				});
 
 				/*
@@ -291,6 +296,7 @@ namespace Bloom
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
 			_scope.Resolve<PublishToAndroidApi>().RegisterWithServer(server);
 			_scope.Resolve<PublishEpubApi>().RegisterWithServer(server);
+			_scope.Resolve<AccessibilityCheckApi>().RegisterWithServer(server);
 			_scope.Resolve<PageControlsApi>().RegisterWithServer(server);
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);
