@@ -17,6 +17,7 @@ using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
+using SIL.PlatformUtilities;
 
 namespace BloomTests.Publish
 {
@@ -1089,8 +1090,17 @@ namespace BloomTests.Publish
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", _ns);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fa123.mp4' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fa23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+			if (Platform.IsLinux)
+			{
+				// Approximate audio time calculations on Linux don't work very well, but are at least consistent.
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fa123.mp4' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fa23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
+			}
+			else
+			{
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fa123.mp4' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fa23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+			}
 
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
 
@@ -1118,9 +1128,17 @@ namespace BloomTests.Publish
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", _ns);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_page1.mp3' and @clipBegin='0:00:01.700' and @clipEnd='0:00:03.400']", _ns);
-
+			if (Platform.IsLinux)
+			{
+				// Approximate audio time calculations on Linux don't work very well, but are at least consistent.
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_page1.mp3' and @clipBegin='0:00:01.534' and @clipEnd='0:00:03.069']", _ns);
+			}
+			else
+			{
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_page1.mp3' and @clipBegin='0:00:01.700' and @clipEnd='0:00:03.400']", _ns);
+			}
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
 
 			ExportEpubTestsBaseClass.GetZipEntry(_epub, "content/audio_page1.mp3");
@@ -1147,16 +1165,18 @@ namespace BloomTests.Publish
 			var assertManifest = AssertThatXmlIn.String(_manifestContent.Replace("application/smil", "application^slash^smil"));
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
-#if __MonoCS__
-			// Fake audio time calculations on Linux don't work very well, but at least seem to be consistent.
-			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:00.0026746']");
-			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:00.0026746']");
-#else
-			// We don't much care how many decimals follow the 03.4 but this is what the default TimeSpan.ToString currently does.
-			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.4000000']");
-			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.4000000']");
-#endif
-
+			if (Platform.IsLinux)
+			{
+				// Approximate audio time calculations on Linux don't work very well, but are at least consistent.
+				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.0692130']");
+				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.0692130']");
+			}
+			else
+			{
+				// We don't much care how many decimals follow the 03.4 but this is what the default TimeSpan.ToString currently does.
+				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.4000000']");
+				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.4000000']");
+			}
 			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var assertSmil = AssertThatXmlIn.String(smilData);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);

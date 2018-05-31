@@ -150,7 +150,9 @@ namespace Bloom.Publish
 		/// <returns></returns>
 		public static string MergeAudioFiles(IEnumerable<string> mergeFiles, string combinedAudioPath)
 		{
-			var soxPath = FileLocationUtilities.GetFileDistributedWithApplication("sox/sox.exe");
+			string soxPath = "/usr/bin/sox";	// standard Linux location
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				soxPath = FileLocationUtilities.GetFileDistributedWithApplication("sox/sox.exe");
 			var argsBuilder = new StringBuilder();
 			foreach (var path in mergeFiles)
 				argsBuilder.Append("\"" + path + "\" ");
