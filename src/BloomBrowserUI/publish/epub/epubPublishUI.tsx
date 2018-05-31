@@ -23,6 +23,7 @@ const kWebSocketLifetime = "publish-epub";
 
 interface IState {
     publishImageDescriptions: string; // one of "none", "onPage", "links"
+    prioritizeUserSize: boolean;
 }
 
 // This is a screen of controls that gives the user instructions and controls
@@ -31,12 +32,16 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private isLinux: boolean;
     constructor(props) {
         super(props);
-        this.state = { publishImageDescriptions: "none" };
+        this.state = { publishImageDescriptions: "none", prioritizeUserSize: false };
 
         WebSocketManager.addListener(kWebSocketLifetime, event => {
             var e = JSON.parse(event.data);
             if (e.id === "publish/epub/state") {
-                this.setState({ publishImageDescriptions: e.payload });
+                var payload = JSON.parse(e.payload);
+                this.setState({
+                    publishImageDescriptions: payload.imageDescriptionPublishing,
+                    prioritizeUserSize: payload.prioritizeUserSize
+                });
             }
         });
     }
@@ -120,20 +125,12 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
                         <H1 l10nKey="PublishTab.Epub.BooksForBlind">Books for the Blind</H1>
-                        <RadioGroup
-                            onChange={val => this.setPublishRadio(val)}
-                            value={this.state.publishImageDescriptions}>
-                            <Radio
-                                l10nKey="PublishTab.Epub.NoAudioDescriptions"
-                                value="none">
-                                No recorded audio image descriptions
-                            </Radio>
-                            <Radio
-                                l10nKey="PublishTab.Epub.IncludeOnPage"
-                                value="onPage">
-                                Include image descriptions on page
-                            </Radio>
-                        </RadioGroup>
+                        <Checkbox name="includeImageDesc" checked={this.state.publishImageDescriptions === "onPage"}
+                            onCheckChanged={val => this.setPublishRadio(val ? "onPage" : "none")}
+                            l10nKey="PublishTab.Epub.IncludeOnPage">Include image descriptions on page</Checkbox>
+                        <Checkbox name="prioritizeUserSize" checked={this.state.prioritizeUserSize}
+                            onCheckChanged={val => this.setPrioritizeSize(val)}
+                            l10nKey="PublishTab.Epub.PrioritizeUserSize">Prioritize user control of text size</Checkbox>
                         {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                         <Link
                             l10nKey="AccessibilityCheck.ShowAccessibilityChecker"
@@ -159,10 +156,17 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     //     Image description links
     // </Radio>
 
+    // This slightly obsolete name reflects the possibility of more than two modes requiring a set of radio buttons
+    // (e.g., the implemented but not shipped "links" option)
     private setPublishRadio(val: string) {
         if (val === this.state.publishImageDescriptions) return;
         this.setState({ publishImageDescriptions: val });
         axios.post("/bloom/api/publish/epub/imageDescription?publishImageDescription=" + val);
+    }
+
+    private setPrioritizeSize(val: boolean): void {
+        this.setState({ prioritizeUserSize: val });
+        axios.post("/bloom/api/publish/epub/prioritizeUserSize?prioritizeUserSize=" + (val ? "true" : "false"));
     }
 }
 
