@@ -4,8 +4,8 @@ import * as ReactDOM from "react-dom";
 import { ILocalizationProps, LocalizableElement } from "./l10n";
 
 interface ILinkProps extends ILocalizationProps {
-    id: string;
-    href: string;
+    id?: string;
+    href?: string;
     onClick?: any;
 }
 
@@ -13,7 +13,7 @@ interface ILinkProps extends ILocalizationProps {
 export class Link extends LocalizableElement<ILinkProps, {}> {
     public render() {
         return (
-            <a id={this.props.id} href={this.props.href} onClick={this.props.onClick}>
+            <a id={"" + this.props.id} href={this.props.href} onClick={this.props.onClick}>
                 {this.getLocalizedContent()}
             </a>
         );

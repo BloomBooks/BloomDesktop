@@ -134,6 +134,18 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                 Include image descriptions on page
                             </Radio>
                         </RadioGroup>
+                        {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
+                        <Link
+                            l10nKey="AccessibilityCheck.ShowAccessibilityChecker"
+                            href=""
+                            onClick={() =>
+                                axios.post(
+                                    "/bloom/api/accessibilityCheck/showAccessibilityChecker"
+                                )
+                            }
+                        >
+                            Accessibility Checker
+                        </Link>
                     </div>
                 </div>
             </div>

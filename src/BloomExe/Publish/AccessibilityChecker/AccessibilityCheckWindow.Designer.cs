@@ -30,7 +30,7 @@
 			this._browser.Isolator = null;
 			this._browser.Location = new System.Drawing.Point(0, 0);
 			this._browser.Name = "_browser";
-			this._browser.Size = new System.Drawing.Size(800, 450);
+			this._browser.Size = new System.Drawing.Size(908, 585);
 			this._browser.TabIndex = 0;
 			this._browser.VerticalScrollDistance = 0;
 			// 
@@ -38,7 +38,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(800, 450);
+			this.ClientSize = new System.Drawing.Size(908, 585);
 			this.Controls.Add(this._browser);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.KeyPreview = true;

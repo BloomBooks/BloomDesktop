@@ -33,7 +33,7 @@ namespace Bloom.Publish.AccessibilityChecker
 			InitializeComponent();
 			_browser.Isolator = new NavigationIsolator();
 			var path = BloomFileLocator.GetBrowserFile(false, "publish", "accessibilityCheck", "accessibilityCheckScreen.html");
-			_browser.Navigate(path, false);
+			_browser.Navigate(path.ToLocalhost(),false);
 		}
 
 		private void AccessibilityCheckWindow_FormClosed(object sender, FormClosedEventArgs e)

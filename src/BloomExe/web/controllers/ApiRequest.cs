@@ -84,6 +84,12 @@ namespace Bloom.Api
 			_requestInfo.WriteCompleteOutput(text);
 		}
 
+		public void ReplyWithHtml(string html)
+		{
+			_requestInfo.ContentType = "text/html";
+			_requestInfo.WriteCompleteOutput(html);
+		}
+
 		public void ReplyWithJson(string json)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + json);

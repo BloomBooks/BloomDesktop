@@ -21,6 +21,7 @@ using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
+using Bloom.web.controllers;
 using Fleck;
 using RestSharp.Extensions;
 

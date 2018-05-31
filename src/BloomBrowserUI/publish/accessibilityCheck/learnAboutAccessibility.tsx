@@ -10,11 +10,7 @@ import "./learnAboutAccessibility.less";
 export class LearnAboutAccessibility extends React.Component<
     IUILanguageAwareProps
 > {
-    constructor(props) {
-        super(props);
-    }
-
     public render() {
-        return <div>Accessibility is good.</div>;
+        return <div>Happy learning!</div>;
     }
 }

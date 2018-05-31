@@ -1,19 +1,15 @@
-﻿import axios from "axios";
-import * as React from "react";
+﻿import * as React from "react";
 import * as ReactDOM from "react-dom";
 import "./accessibilityCheckScreen.less";
 import { TabList, Tab, Tabs, TabPanel } from "react-tabs";
 import { LearnAboutAccessibility } from "./learnAboutAccessibility";
 import { AccessibilityChecklist } from "./accessibilityChecklist";
 import { IUILanguageAwareProps } from "../../react_components/l10n";
+import { DaisyChecks } from "./daisyChecks";
 
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
-class AccessibilityCheckUI extends React.Component<IUILanguageAwareProps> {
-    constructor(props) {
-        super(props);
-    }
-
+class AccessibilityCheckScreen extends React.Component<IUILanguageAwareProps> {
     public render() {
         return (
             <div id="accessibilityCheckReactRoot" className={"screen-root"}>
@@ -31,7 +27,7 @@ class AccessibilityCheckUI extends React.Component<IUILanguageAwareProps> {
                         <AccessibilityChecklist />
                     </TabPanel>
                     <TabPanel>
-                        <LearnAboutAccessibility />
+                        <DaisyChecks />
                     </TabPanel>
                 </Tabs>
             </div>
@@ -39,12 +35,12 @@ class AccessibilityCheckUI extends React.Component<IUILanguageAwareProps> {
     }
 }
 
-// a bit goofy... currently the html loads everying in publishUIBundlejs. So all the publish screens
+// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
 // get any code that isn't in a class called, the following. But it only makes sense to get wired up
 // if that html has the root page we need.
-if (document.getElementById("accessibilityCheckUI")) {
+if (document.getElementById("accessibilityCheckScreen")) {
     ReactDOM.render(
-        <AccessibilityCheckUI />,
-        document.getElementById("accessibilityCheckUI")
+        <AccessibilityCheckScreen />,
+        document.getElementById("accessibilityCheckScreen")
     );
 }
