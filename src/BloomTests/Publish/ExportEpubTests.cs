@@ -567,6 +567,62 @@ namespace BloomTests.Publish
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
 		}
 
+		[Test]
+		public void PrioritizeUserSize_CausesFontSizesInEmbeddedStylesheets_ToBeRemoved()
+		{
+			var userStyleSheet = @"/*<![CDATA[*/
+    .BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+    .normal-style[lang=""en""] { font-size: 18pt ! important; }
+				.normal-style { font-size: 18pt ! important; }
+			/*]]>*/";
+			var book = SetupBookLong("Content unimportant for this test", "en",
+				extraHeadContent: "<style type='text/css' title='userModifiedStyles'>" + userStyleSheet + "</style>"
+			);
+
+			MakeEpub("output", "PrioritizeUserSize_CausesFontSizesInEmbeddedStylesheets_ToBeRemoved", book,
+				extraInit: maker => maker.PrioritizeUserSize = true);
+			Assert.That(_page1Data, Does.Not.Contain("font-size"));
+			Assert.That(_page1Data, Does.Not.Contain("18pt"));
+			// And a few checks to try to make sure it doesn't take out too much.
+			Assert.That(_page1Data.Contains("/*<![CDATA[*/"));
+			Assert.That(_page1Data.Contains("/*]]>*/"));
+			Assert.That(_page1Data.Contains(".BigWords-style { text-align: center ! important; }"));
+		}
+
+		[Test]
+		public void NoPrioritizeUserSize_FontSizesNotRemoved()
+		{
+			var userStyleSheet = @"/*<![CDATA[*/
+    .BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+    .normal-style[lang=""en""] { font-size: 18pt ! important; }
+				.normal-style { font-size: 18pt ! important; }
+			/*]]>*/";
+			var book = SetupBookLong("Content unimportant for this test", "en",
+				extraHeadContent: "<style type='text/css' title='userModifiedStyles'>" + userStyleSheet + "</style>"
+			);
+
+			MakeEpub("output", "NoPrioritizeUserSize_FontSizesNotRemoved", book);
+			// This is a bit too strong, because some whitespace changes would be harmless.
+			Assert.That(_page1Data, Does.Contain(userStyleSheet));
+		}
+
+
+		[Test]
+		public void HeadingN_convertedToHN()
+		{
+			var book = SetupBookLong("Content of level 1 heading", "xyz", extraEditDivClasses: "Heading1",
+				extraContentOutsideTranslationGroup: @"<div class='bloom-translationGroup'><div class='bloom-editable Heading2' lang='xyz'>Level 2 heading</div></div>
+							<div class='bloom-translationGroup'><div class='bloom-editable Heading3' lang='xyz'>Level 3 heading</div></div>"
+			);
+
+			MakeEpub("output", "HeadingN_convertedToHN", book);
+			// This is a bit too strong, because some whitespace changes would be harmless.
+			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h1[contains(@class, 'bloom-editable') and contains(@class, 'Heading1') and contains(text(), 'Content of level 1 heading')]",_ns, 1);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h2[contains(@class,'bloom-editable Heading2') and text()='Level 2 heading']", _ns, 1);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()='Level 3 heading']", _ns, 1);
+		}
+
 		/// <summary>
 		/// The critical point here is that passing defaultLanguages:N1 makes N1 the value of the data-default-languages attribute
 		/// of the translation group, which makes only N1 (English) visible. We want to verify that this results in only that

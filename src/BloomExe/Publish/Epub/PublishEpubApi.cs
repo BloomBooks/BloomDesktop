@@ -121,7 +121,14 @@ namespace Bloom.Publish.Epub
 			{
 				var mode = GetPublishMode(request);
 				if (CurrentView != null)
-					CurrentView.UpdatePreview(mode);
+					CurrentView.UpdatePreview(mode, CurrentView.CurrentPrioritizeUserSize, false);
+				request.PostSucceeded();
+			}, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "prioritizeUserSize", request =>
+			{
+				var prioritizeUserSize = request.Parameters["prioritizeUserSize"] == "true";
+				if (CurrentView != null)
+					CurrentView.UpdatePreview(CurrentView.CurrentImageDescriptionPublishing, prioritizeUserSize, false);
 				request.PostSucceeded();
 			}, true);
 		}
