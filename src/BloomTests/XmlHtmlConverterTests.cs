@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom;
-using Bloom.Book;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -219,7 +217,7 @@ namespace BloomTests
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
 				var text = File.ReadAllText(temp.Path);
-				Assert.That(text, Does.Contain("<br>"));
+				Assert.That(text, Does.Contain("<br />"));
 				Assert.That(text, Does.Not.Contain("</br>"));
 			}
 		}
