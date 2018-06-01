@@ -1625,7 +1625,7 @@ namespace BloomTests.Publish
 		// So I think all the tests are currently passing null for the bookserver, which disables the
 		// device xmatter code.
 		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer, BookServer bookServer) :
-			base(thumbNailer, new NavigationIsolator(),
+			base(thumbNailer, NavigationIsolator.GetOrCreateTheOneNavigationIsolator(),
 				string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
 		{
 			this.Book = book;
