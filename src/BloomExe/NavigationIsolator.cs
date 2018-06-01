@@ -55,7 +55,7 @@ namespace Bloom
 		private DateTime _startNavigation;
 		public static NavigationIsolator _sTheOneNavigationIsolator;
 
-		public NavigationIsolator()
+		private NavigationIsolator()
 		{
 			Debug.Assert(NavigationIsolator._sTheOneNavigationIsolator == null,
 				"There should only be one NavigationIsolator... that's the whole point of it.");
@@ -66,7 +66,7 @@ namespace Bloom
 		{
 			if (_sTheOneNavigationIsolator ==  null)
 			{
-				return new NavigationIsolator();
+				return new NavigationIsolator(); // the static instance variable is set in the constructor
 			}
 
 			return _sTheOneNavigationIsolator;

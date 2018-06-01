@@ -31,7 +31,6 @@ namespace Bloom.Publish.AccessibilityChecker
 		public AccessibilityCheckWindow()
 		{
 			InitializeComponent();
-			_browser.Isolator = new NavigationIsolator();
 			var path = BloomFileLocator.GetBrowserFile(false, "publish", "accessibilityCheck", "accessibilityCheckScreen.html");
 			_browser.Navigate(path.ToLocalhost(),false);
 		}

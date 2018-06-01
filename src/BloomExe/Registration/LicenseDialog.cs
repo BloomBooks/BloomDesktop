@@ -36,7 +36,6 @@ namespace Bloom.Registration
 				prolog = String.Format("<p>{0}</p>{1}<hr>{1}", prolog, Environment.NewLine);
 
 			_licenseBrowser = new Browser();
-			_licenseBrowser.Isolator = new NavigationIsolator(); // never used while other browsers are around
 			_licenseBrowser.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			_licenseBrowser.Location = new Point(12, 12);
 			_licenseBrowser.Name = "licenseBrowser";

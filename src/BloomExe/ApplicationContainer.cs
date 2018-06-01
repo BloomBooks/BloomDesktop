@@ -41,9 +41,11 @@ namespace Bloom
 				}
 				builder.RegisterInstance(Settings.Default.MruProjects).SingleInstance();
 
-				//this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
-				//HtmlThumbnailer & ConfigurationDialog, at least, use this.
-				builder.Register(c => new NavigationIsolator()).InstancePerLifetimeScope();
+			//this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
+			//HtmlThumbnailer & ConfigurationDialog, at least, use this.
+			// June 2018: we decided that actually no code other than the Browser class even needs to know that
+			// this thing exists, so lots of code using this can be removed. But that will be done with BL-6069.
+			builder.Register(c =>  NavigationIsolator.GetOrCreateTheOneNavigationIsolator()).InstancePerLifetimeScope();
 
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<NavigationIsolator>())).SingleInstance();
 				builder.Register<BookThumbNailer>(c => new BookThumbNailer(c.Resolve<HtmlThumbNailer>())).SingleInstance();
