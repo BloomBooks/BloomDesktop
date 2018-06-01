@@ -20,15 +20,8 @@ namespace Bloom.web.controllers
 		private readonly NavigationIsolator _isolator;
 		private readonly BookServer _bookServer;
 		public const string kApiUrlPart = "accessibilityCheck/";
-		private AccessibilityCheckWindow _accessibilityCheckerWindow = null;
 		private static string _epubPath;
 		
-		public AccessibilityCheckApi(Bloom.Publish.AccessibilityChecker.AccessibilityCheckWindow.Factory createAccessibilityChecker)
-		{
-			// TODO: call this from autofac setup somehow
-			AccessibilityCheckWindow.StaticSetFactory(createAccessibilityChecker);
-		}
-
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
 			server.RegisterEndpointHandler(kApiUrlPart + "setEpubPath", request =>
