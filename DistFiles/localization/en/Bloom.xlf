@@ -1604,9 +1604,9 @@
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescription.Heading" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
+        <note>ID: EditTab.Toolbox.ImageDescription.Heading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
         <source xml:lang="en">Be Concise</source>
