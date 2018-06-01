@@ -181,6 +181,7 @@ namespace Bloom
 		public Browser()
 		{
 			InitializeComponent();
+			Isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 		}
 
 		/// <summary>
@@ -193,7 +194,19 @@ namespace Bloom
 		/// Should be set by every caller of the constructor before attempting navigation. The only reason we don't make it a constructor argument
 		/// is so that Browser can be used in designer.
 		/// </summary>
-		public NavigationIsolator Isolator { get; set; }
+		private NavigationIsolator _isolator;
+		public NavigationIsolator Isolator
+		{
+			get { return _isolator;}
+			set
+			{
+				// windows.designer code sets to null, *after* our constructor sets this. Don't let it.
+				if (_isolator == null)
+				{
+					_isolator = value;
+				}
+			}
+		}
 
 		public void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{

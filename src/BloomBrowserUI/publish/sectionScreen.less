@@ -5,124 +5,124 @@ having various sections, including settings and help on the right */
 @screen-padding: 1em;
 @header-height: 40px;
 
-html {
+html.publishTabScreen {
     height: 100%;
-    margin: 0;
+    margin: 1em;
     padding: @screen-padding;
-}
 
-body {
-    margin: 0;
-    background-color: @form-background;
-    font-family: @ui-fonts;
-    font-size: 10pt;
-    height: 100%;
+    body {
+        margin: 0;
+        background-color: @form-background;
+        font-family: @ui-fonts;
+        font-size: 10pt;
+        height: 100%;
 
-    header {
-        height: @header-height;
-        img {
-            vertical-align: middle;
-        }
-        h1 {
-            margin-top: 0;
-            font-size: 12pt;
-            font-weight: bold;
-            display: inline-block;
-            vertical-align: unset;
-        }
-    }
-    .screen-root {
-        height: 100%;
-    }
-    & > div {
-        // the react root
-        height: 100%;
-    }
-    @verticalFudgeHack: 50px;
-    .sections {
-        margin-top: 1em;
-        height: calc(
-            100% - (@verticalFudgeHack + @header-height + @screen-padding)
-        ); // enhance: is there a way to just fill to bottom?
-        display: flex;
-        flex-direction: row;
-        .column {
-            display: block;
-        }
-        section {
-            // section labels
-            & > h1 {
-                background-color: @bloom-lightgray;
-                text-align: center;
-                margin-bottom: 2em;
+        header {
+            height: @header-height;
+            img {
+                vertical-align: middle;
+            }
+            h1 {
                 margin-top: 0;
+                font-size: 12pt;
+                font-weight: bold;
+                display: inline-block;
+                vertical-align: unset;
+            }
+        }
+        .screen-root {
+            height: 100%;
+        }
+        & > div {
+            // the react root
+            height: 100%;
+        }
+        @verticalFudgeHack: 50px;
+        .sections {
+            margin-top: 1em;
+            height: calc(
+                100% - (@verticalFudgeHack + @header-height + @screen-padding)
+            ); // enhance: is there a way to just fill to bottom?
+            display: flex;
+            flex-direction: row;
+            .column {
+                display: block;
+            }
+            section {
+                // section labels
+                & > h1 {
+                    background-color: @bloom-lightgray;
+                    text-align: center;
+                    margin-bottom: 2em;
+                    margin-top: 0;
+                }
             }
         }
     }
-}
 
-.preview-section {
-    width: 400px;
-    flex: 0 0 auto; // fixed size
-    margin-right: 25px;
-}
-.publish-section {
-    display: flex;
+    .preview-section {
+        width: 400px;
+        flex: 0 0 auto; // fixed size
+        margin-right: 25px;
+    }
+    .publish-section {
+        display: flex;
 
-    flex-direction: column;
-    flex: 1 1 auto; // take up remaining size
-    margin-right: 25px;
-}
-.help-section {
-    flex: 0 0 auto; // fixed size
-    display: block; // each link on a new line
+        flex-direction: column;
+        flex: 1 1 auto; // take up remaining size
+        margin-right: 25px;
+    }
+    .help-section {
+        flex: 0 0 auto; // fixed size
+        display: block; // each link on a new line
 
+        a {
+            margin-bottom: 1em;
+        }
+    }
+    // bit of a hack... needed when two sections are in the same column
+    .section-below-another {
+        margin-top: 2em;
+    }
+    #progress-box {
+        min-height: 100px;
+        width: 100%;
+        border: solid thin darkgray;
+        overflow-x: auto;
+        overflow-y: scroll;
+        // see note on #progress-section about growing to take up whatever is left.
+        // It is the parent of this and it does that, then this must itself must do it, too.
+        flex: 1;
+        box-sizing: border-box;
+        padding: 10px;
+    }
+
+    button {
+        background-color: white;
+        &:disabled {
+            color: gray;
+        }
+        padding: 0.5em;
+    }
+
+    button + button {
+        margin-left: 1em;
+    }
+
+    .hidden {
+        display: none;
+    }
     a {
-        margin-bottom: 1em;
-    }
-}
-// bit of a hack... needed when two sections are in the same column
-.section-below-another {
-    margin-top: 2em;
-}
-#progress-box {
-    min-height: 100px;
-    width: 100%;
-    border: solid thin darkgray;
-    overflow-x: auto;
-    overflow-y: scroll;
-    // see note on #progress-section about growing to take up whatever is left.
-    // It is the parent of this and it does that, then this must itself must do it, too.
-    flex: 1;
-    box-sizing: border-box;
-    padding: 10px;
-}
-
-button {
-    background-color: white;
-    &:disabled {
-        color: gray;
-    }
-    padding: 0.5em;
-}
-
-button + button {
-    margin-left: 1em;
-}
-
-.hidden {
-    display: none;
-}
-a {
-    display: block;
-    color: @bloom-blue;
-    &:hover {
+        display: block;
         color: @bloom-blue;
+        &:hover {
+            color: @bloom-blue;
+        }
     }
-}
-h2 {
-    &.label {
-        margin-bottom: 0;
+    h2 {
+        &.label {
+            margin-bottom: 0;
+        }
+        font-size: 12pt;
     }
-    font-size: 12pt;
 }

@@ -2,43 +2,38 @@
 
 namespace Bloom.Publish.AccessibilityChecker
 {
+	/// <summary>
+	/// This is a separate window that the AccessibilityApi opens. In contains a web browser
+	/// that loads up some html that then shows some tabs related to ensuring that the epub is accessible.
+	/// </summary>
 	public partial class AccessibilityCheckWindow : Form
 	{
-		public delegate AccessibilityCheckWindow Factory();//autofac uses this
-		private static AccessibilityCheckWindow.Factory _createAccessibilityCheckerFactory;
-		private static AccessibilityCheckWindow _sAccessibilityCheckerWindow;
+		private static AccessibilityCheckWindow _sTheOneAccessibilityCheckerWindow;
 		private bool _disposed;
-
-
-		public static void StaticSetFactory(Factory createAccessibilityChecker)
-		{
-			_createAccessibilityCheckerFactory = createAccessibilityChecker;
-		}
 
 		public static void StaticShow()
 		{
-			if (_sAccessibilityCheckerWindow == null)
+			if (_sTheOneAccessibilityCheckerWindow == null)
 			{
-				_sAccessibilityCheckerWindow = _createAccessibilityCheckerFactory();
-				_sAccessibilityCheckerWindow.Show();
+				_sTheOneAccessibilityCheckerWindow = new AccessibilityCheckWindow();
+				_sTheOneAccessibilityCheckerWindow.Show();
 			}
 			else
 			{
-				_sAccessibilityCheckerWindow.BringToFront();
+				_sTheOneAccessibilityCheckerWindow.BringToFront();
 			}
 		}
 
 		public AccessibilityCheckWindow()
 		{
 			InitializeComponent();
-			_browser.Isolator = new NavigationIsolator();
 			var path = BloomFileLocator.GetBrowserFile(false, "publish", "accessibilityCheck", "accessibilityCheckScreen.html");
-			_browser.Navigate(path, false);
+			_browser.Navigate(path.ToLocalhost(),false);
 		}
 
 		private void AccessibilityCheckWindow_FormClosed(object sender, FormClosedEventArgs e)
 		{
-			_sAccessibilityCheckerWindow = null;
+			_sTheOneAccessibilityCheckerWindow = null;
 		}
 
 		protected override void Dispose(bool disposing)

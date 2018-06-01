@@ -53,6 +53,24 @@ namespace Bloom
 		private NavigationTask _current;
 		private Timer _timer;
 		private DateTime _startNavigation;
+		public static NavigationIsolator _sTheOneNavigationIsolator;
+
+		private NavigationIsolator()
+		{
+			Debug.Assert(NavigationIsolator._sTheOneNavigationIsolator == null,
+				"There should only be one NavigationIsolator... that's the whole point of it.");
+			NavigationIsolator._sTheOneNavigationIsolator = this;
+		}
+
+		public static NavigationIsolator GetOrCreateTheOneNavigationIsolator()
+		{
+			if (_sTheOneNavigationIsolator ==  null)
+			{
+				return new NavigationIsolator(); // the static instance variable is set in the constructor
+			}
+
+			return _sTheOneNavigationIsolator;
+		}
 
 		/// <summary>
 		/// Navigate the specified browser to the specified url as soon as it is safe to do so (that is,

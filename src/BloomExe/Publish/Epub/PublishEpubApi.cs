@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 
@@ -131,6 +132,9 @@ namespace Bloom.Publish.Epub
 			_epubMaker.FinishEpub(savePath);
 			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
 			ReportAnalytics("Save ePUB");
+
+			// Tell the accessibility checker about this new thing it can check
+			AccessibilityCheckApi.SetEpubPath(savePath);
 		}
 
 		private static EpubMaker.ImageDescriptionPublishing GetPublishMode(ApiRequest request)

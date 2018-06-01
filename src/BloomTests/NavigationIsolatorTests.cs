@@ -19,7 +19,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			browser.NormalTermination();
@@ -31,7 +31,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			string target2 = "http://some other web address";
@@ -47,7 +47,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			var browser2 = new BrowserStub();
@@ -73,7 +73,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			string target2 = "http://some other web address";
@@ -110,7 +110,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 
@@ -137,7 +137,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			browser.IsBusy = false; // clear state without raising event
@@ -156,7 +156,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			var browser2 = new BrowserStub();
@@ -181,7 +181,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			Assert.That(isolator.NavigateIfIdle(browser, target), Is.True);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			browser.NormalTermination();
@@ -193,7 +193,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			string target2 = "http://some other web address";
@@ -208,7 +208,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			Assert.That(isolator.NavigateIfIdle(browser, target), Is.True);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 
@@ -231,7 +231,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 
@@ -259,7 +259,7 @@ namespace BloomTests
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 
@@ -281,7 +281,7 @@ namespace BloomTests
 		[Test]
 		public void SameBrowser_ReplacesPending()
 		{
-			var isolator = new NavigationIsolator();
+			var isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 			var browser = new BrowserStub();
 			string target = "http://whatever";
 			isolator.Navigate(browser, target);

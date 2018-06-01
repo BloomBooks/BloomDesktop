@@ -362,6 +362,17 @@ namespace Bloom.Api
 				{
 					rawurl = context.Request.RawUrl;
 
+					// Enhance: the DAISY ACE accessibility report points at images in the epub, correctly and raw, like "tiger.png"
+					// However by the time they get here, the look like "/bloom/C$3A/dev/b43/output/browser/publish/accessibilityCheck/%5C%22tiger.png%5C%22"
+					// In other words, we (humans) can tell what it wants, but this code doesn't have chance.
+					// So for now, we just say "sorry, can't find it".
+					if (rawurl.Contains("accessibilityCheck") && (rawurl.Contains(".png") || rawurl.Contains(".jpg") || rawurl.Contains(".svg")))
+					{
+						var r = new RequestInfo(new BloomHttpListenerContext(context));
+						r.WriteError(404);
+						return;
+					}
+					
 					// set lower priority for thumbnails in order to have less impact on the UI thread
 					if (rawurl.Contains("thumbnail=1"))
 						Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
