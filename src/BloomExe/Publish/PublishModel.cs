@@ -659,8 +659,10 @@ namespace Bloom.Publish
 		{
 			// Enhance: this could be optimized (but it will require changes to EpubMaker, it assumes it only stages once)
 			var publishImageDescriptions = EpubMaker.PublishImageDescriptions; // before we dispose it
+			var removeFontSizes = EpubMaker.RemoveFontSizes;
 			PrepareToStageEpub();
 			EpubMaker.PublishImageDescriptions = publishImageDescriptions; // restore on new one
+			EpubMaker.RemoveFontSizes = removeFontSizes;
 			return SetupEpubControlContent();
 		}
 

@@ -213,7 +213,7 @@ namespace BloomTests.Publish
 		protected Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = " numberedPage' data-page-number='1", string extraContent = "", string extraContentOutsideTranslationGroup = "",
 			string parentDivId = "somewrapper", string extraPages = "", string[] images = null,
 			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto", bool createPhysicalFile = false,
-			string optionalDataDiv = "", string[] imageDescriptions = null)
+			string optionalDataDiv = "", string[] imageDescriptions = null, string extraHeadContent = "")
 		{
 			if (images == null)
 				images = new string[0];
@@ -254,7 +254,7 @@ namespace BloomTests.Publish
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
 				<link rel='stylesheet' href='languageDisplay.css' type='text/css'/>
 				<link rel='stylesheet' href='../customCollectionStyles.css'/>
-				<link rel='stylesheet' href='customBookStyles.css'/>";
+				<link rel='stylesheet' href='customBookStyles.css'/>" + extraHeadContent;
 			if (createPhysicalFile)
 			{
 				book = CreateBookWithPhysicalFile(MakeBookHtml(body, head));

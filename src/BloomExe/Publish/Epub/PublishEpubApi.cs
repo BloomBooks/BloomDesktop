@@ -98,31 +98,26 @@ namespace Bloom.Publish.Epub
 									CompleteSave(savePath);
 								});
 							}
-							else
-							{
-								// Keeping this prior code just in case, but I don't think it is currently used.
-								_epubMaker = new EpubMaker(_thumbNailer, _isolator, _bookServer);
-								_epubMaker.Book = _bookSelection.CurrentSelection;
-								_epubMaker.Unpaginated = true; // Enhance: UI?
-								_epubMaker.OneAudioPerPage = true;
-								_epubMaker.PublishImageDescriptions = GetPublishMode(request);
-								ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingDoc", "Preparing document"));
-								_epubMaker.StageEpub();
-								CompleteSave(savePath);
-							}
-
 						}
 					}
 
 					request.PostSucceeded();
 				}
 			}, true);
-			server.RegisterEndpointHandler(kApiUrlPart + "imageDescription", request =>
+
+			server.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
 			{
-				var mode = GetPublishMode(request);
-				if (CurrentView != null)
-					CurrentView.UpdatePreview(mode);
-				request.PostSucceeded();
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithJson(CurrentView.GetEpubState());
+				} else { // post
+					var settings = DynamicJson.Parse(request.RequiredPostJson());
+					var mode = howToPublishImageDescriptions(settings.imageDescriptionPublishing);
+					bool removeFontSizes = settings.removeFontSizes;
+					if (CurrentView != null)
+						CurrentView.UpdatePreview(mode, removeFontSizes, false);
+					request.PostSucceeded();
+				}
 			}, true);
 		}
 
@@ -137,9 +132,8 @@ namespace Bloom.Publish.Epub
 			AccessibilityCheckApi.SetEpubPath(savePath);
 		}
 
-		private static EpubMaker.ImageDescriptionPublishing GetPublishMode(ApiRequest request)
+		private static EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions(string howToPublishImageDescriptions)
 		{
-			var howToPublishImageDescriptions = request.Parameters["publishImageDescription"];
 			switch (howToPublishImageDescriptions)
 			{
 				case "none":
