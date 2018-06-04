@@ -46,7 +46,7 @@ namespace Bloom.Publish
 		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
 		private const string kWebsocketPreviewId = "epubPreview";
 		private EpubMaker.ImageDescriptionPublishing _desiredImageDescriptionPublishing = EpubMaker.ImageDescriptionPublishing.None;
-		private Boolean _desiredPrioritizeUserSize = false;
+		private Boolean _desiredRemoveFontSizes = false;
 		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
 		private Action<EpubMaker> _doWhenPreviewComplete; // Something to do when the current preview is complete (e.g., save it)
 		private BackgroundWorker _previewWorker;
@@ -137,7 +137,7 @@ namespace Bloom.Publish
 		}
 
 		public EpubMaker.ImageDescriptionPublishing CurrentImageDescriptionPublishing => _desiredImageDescriptionPublishing;
-		public bool CurrentPrioritizeUserSize => _desiredPrioritizeUserSize;
+		public bool CurrentRemoveFontSizes => _desiredRemoveFontSizes;
 
 		public void SetStateOfNonUploadRadios(bool enable)
 		{
@@ -563,12 +563,11 @@ namespace Bloom.Publish
 							firstTime = false;
 							PublishEpubApi.ReportProgress(this,_webSocketServer,
 								LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
-							_webSocketServer.Send("publish/epub/state", GetEpubState(_desiredImageDescriptionPublishing, _desiredPrioritizeUserSize));
 						}
 					};
 					_model.PrepareToStageEpub(); // let's get the epub maker and its browser created on the UI thread
 					_model.EpubMaker.PublishImageDescriptions = _desiredImageDescriptionPublishing;
-					_model.EpubMaker.PrioritizeUserSize = _desiredPrioritizeUserSize;
+					_model.EpubMaker.RemoveFontSizes = _desiredRemoveFontSizes;
 					_previewWorker = new BackgroundWorker();
 					_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
 					_previewWorker.DoWork += (sender, args) => SetupEpubPreview();
@@ -578,11 +577,11 @@ namespace Bloom.Publish
 			UpdateSaveButton();
 		}
 
-		string GetEpubState(EpubMaker.ImageDescriptionPublishing input, bool prioritizeUserSize)
+		internal string GetEpubState()
 		{
 			dynamic state = new ExpandoObject();
-			state.imageDescriptionPublishing = GetImageDescriptionState(input);
-			state.prioritizeUserSize = prioritizeUserSize;
+			state.imageDescriptionPublishing = GetImageDescriptionState(_desiredImageDescriptionPublishing);
+			state.removeFontSizes = _desiredRemoveFontSizes;
 			return JsonConvert.SerializeObject(state);
 		}
 
@@ -597,14 +596,14 @@ namespace Bloom.Publish
 			}
 		}
 
-		public void UpdatePreview(EpubMaker.ImageDescriptionPublishing newImageMode, bool newPrioritizeUserSize, bool retry)
+		public void UpdatePreview(EpubMaker.ImageDescriptionPublishing newImageMode, bool newRemoveFontSizes, bool retry)
 		{
 			lock (this)
 			{
-				if (_desiredImageDescriptionPublishing == newImageMode && _desiredPrioritizeUserSize == newPrioritizeUserSize && !retry)
+				if (_desiredImageDescriptionPublishing == newImageMode && _desiredRemoveFontSizes == newRemoveFontSizes && !retry)
 					return; // getting a request really from the browser, and already in that state.
 				_desiredImageDescriptionPublishing = newImageMode;
-				_desiredPrioritizeUserSize = newPrioritizeUserSize;
+				_desiredRemoveFontSizes = newRemoveFontSizes;
 				if (_previewWorker != null)
 				{
 					// Something changed before we even finished generating the preview! abort the current attempt, which will lead
@@ -625,7 +624,7 @@ namespace Bloom.Publish
 			}
 
 			_model.EpubMaker.PublishImageDescriptions = newImageMode;
-			_model.EpubMaker.PrioritizeUserSize = newPrioritizeUserSize;
+			_model.EpubMaker.RemoveFontSizes = newRemoveFontSizes;
 			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 			// we will really be changing the src attr in the preview iframe so the display will update.
 			_webSocketServer.Send(kWebsocketPreviewId, "");
@@ -663,9 +662,9 @@ namespace Bloom.Publish
 			}
 
 			if (abortRequested || _model.EpubMaker.PublishImageDescriptions != _desiredImageDescriptionPublishing
-				|| _model.EpubMaker.PrioritizeUserSize != _desiredPrioritizeUserSize)
+				|| _model.EpubMaker.RemoveFontSizes != _desiredRemoveFontSizes)
 			{
-				UpdatePreview(_desiredImageDescriptionPublishing, _desiredPrioritizeUserSize, true);
+				UpdatePreview(_desiredImageDescriptionPublishing, _desiredRemoveFontSizes, true);
 				return;
 			}
 
@@ -673,14 +672,14 @@ namespace Bloom.Publish
 			{
 				Debug.Assert(!_model.EpubMaker.AbortRequested);
 				Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredImageDescriptionPublishing);
-				Debug.Assert(_model.EpubMaker.PrioritizeUserSize == _desiredPrioritizeUserSize);
+				Debug.Assert(_model.EpubMaker.RemoveFontSizes == _desiredRemoveFontSizes);
 				_doWhenPreviewComplete(_model.EpubMaker);
 				_doWhenPreviewComplete = null;
 
 				if (_needNewPreview)
 				{
 					// We got a request somewhere in the process of running the action.
-					UpdatePreview(_desiredImageDescriptionPublishing, _desiredPrioritizeUserSize, true);
+					UpdatePreview(_desiredImageDescriptionPublishing, _desiredRemoveFontSizes, true);
 					return;
 				}
 			}
@@ -709,13 +708,13 @@ namespace Bloom.Publish
 
 			Debug.Assert(!_model.EpubMaker.AbortRequested);
 			Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredImageDescriptionPublishing);
-			Debug.Assert(_model.EpubMaker.PrioritizeUserSize == _desiredPrioritizeUserSize);
+			Debug.Assert(_model.EpubMaker.RemoveFontSizes == _desiredRemoveFontSizes);
 			_doWhenPreviewComplete(_model.EpubMaker);
 
 			_doWhenPreviewComplete = null;
 
 			if (_needNewPreview) // we got a request during action processing
-				UpdatePreview(_desiredImageDescriptionPublishing, _desiredPrioritizeUserSize, true);
+				UpdatePreview(_desiredImageDescriptionPublishing, _desiredRemoveFontSizes, true);
 		}
 
 		private void SetupEpubPreview()

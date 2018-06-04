@@ -21,9 +21,13 @@ import { RadioGroup, Radio } from "../../react_components/radio";
 
 const kWebSocketLifetime = "publish-epub";
 
+interface PublishSettings {
+    imageDescriptionPublishing: string; // one of "none", "onPage", "links"
+    removeFontSizes: boolean;
+}
+
 interface IState {
-    publishImageDescriptions: string; // one of "none", "onPage", "links"
-    prioritizeUserSize: boolean;
+    settings: PublishSettings;
 }
 
 // This is a screen of controls that gives the user instructions and controls
@@ -32,17 +36,10 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private isLinux: boolean;
     constructor(props) {
         super(props);
-        this.state = { publishImageDescriptions: "none", prioritizeUserSize: false };
+        this.state = { settings: { imageDescriptionPublishing: "none", removeFontSizes: false } };
 
-        WebSocketManager.addListener(kWebSocketLifetime, event => {
-            var e = JSON.parse(event.data);
-            if (e.id === "publish/epub/state") {
-                var payload = JSON.parse(e.payload);
-                this.setState({
-                    publishImageDescriptions: payload.imageDescriptionPublishing,
-                    prioritizeUserSize: payload.prioritizeUserSize
-                });
-            }
+        axios.get("/bloom/api/publish/epub/epubSettings").then(result => {
+            this.setState({ settings: result.data });
         });
     }
 
@@ -80,7 +77,7 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                         <BloomButton
                             className="save-button"
                             enabled={true}
-                            clickEndpoint={"publish/epub/save?publishImageDescription=" + this.state.publishImageDescriptions}
+                            clickEndpoint={"publish/epub/save"}
                             hasText={true}
                             l10nKey="PublishTab.Save"
                         >
@@ -125,12 +122,12 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
                         <H1 l10nKey="PublishTab.Epub.BooksForBlind">Books for the Blind</H1>
-                        <Checkbox name="includeImageDesc" checked={this.state.publishImageDescriptions === "onPage"}
+                        <Checkbox name="includeImageDesc" checked={this.state.settings.imageDescriptionPublishing === "onPage"}
                             onCheckChanged={val => this.setPublishRadio(val ? "onPage" : "none")}
                             l10nKey="PublishTab.Epub.IncludeOnPage">Include image descriptions on page</Checkbox>
-                        <Checkbox name="prioritizeUserSize" checked={this.state.prioritizeUserSize}
+                        <Checkbox name="removeFontSizes" checked={this.state.settings.removeFontSizes}
                             onCheckChanged={val => this.setPrioritizeSize(val)}
-                            l10nKey="PublishTab.Epub.PrioritizeUserSize">Prioritize user control of text size</Checkbox>
+                            l10nKey="PublishTab.Epub.RemoveFontSizes">Remove Font Sizes</Checkbox>
                         {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                         <Link
                             l10nKey="AccessibilityCheck.ShowAccessibilityChecker"
@@ -159,14 +156,18 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     // This slightly obsolete name reflects the possibility of more than two modes requiring a set of radio buttons
     // (e.g., the implemented but not shipped "links" option)
     private setPublishRadio(val: string) {
-        if (val === this.state.publishImageDescriptions) return;
-        this.setState({ publishImageDescriptions: val });
-        axios.post("/bloom/api/publish/epub/imageDescription?publishImageDescription=" + val);
+        if (val === this.state.settings.imageDescriptionPublishing) return;
+        // We want to keep the old settings except for the one we want to modify.
+        // SetState will do this itself at the top level, but we are changing something one level down.
+        var merged = { ...this.state.settings, imageDescriptionPublishing: val };
+        this.setState({ settings: merged });
+        axios.post("/bloom/api/publish/epub/epubSettings", merged); // not this.state.settings, which is updated asynchronously later
     }
 
     private setPrioritizeSize(val: boolean): void {
-        this.setState({ prioritizeUserSize: val });
-        axios.post("/bloom/api/publish/epub/prioritizeUserSize?prioritizeUserSize=" + (val ? "true" : "false"));
+        var merged = { ...this.state.settings, removeFontSizes: val };
+        this.setState({ settings: merged });
+        axios.post("/bloom/api/publish/epub/epubSettings", merged);
     }
 }
 

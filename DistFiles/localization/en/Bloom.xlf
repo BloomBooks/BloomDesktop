@@ -2613,13 +2613,13 @@
         <source xml:lang="en">Preparing document</source>
         <note>ID: PublishTab.Epub.PreparingDoc</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.PrioritizeUserSize">
-        <source xml:lang="en">Prioritize user control of text size</source>
-        <note>ID: PublishTab.Epub.PrioritizeUserSize</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Epub.PreparingPreview">
         <source xml:lang="en">Preparing preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.RemoveFontSizes">
+        <source xml:lang="en">Remove font sizes</source>
+        <note>ID: PublishTab.Epub.RemoveFontSizes</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Saving">
         <source xml:lang="en">Saving</source>

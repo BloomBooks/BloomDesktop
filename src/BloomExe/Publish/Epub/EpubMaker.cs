@@ -171,7 +171,7 @@ namespace Bloom.Publish.Epub
 		}
 
 		public ImageDescriptionPublishing PublishImageDescriptions { get; set; }
-		public bool PrioritizeUserSize { get; set; }
+		public bool RemoveFontSizes { get; set; }
 
 		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator, BookServer bookServer)
 		{
@@ -770,9 +770,9 @@ namespace Bloom.Publish.Epub
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
-			if (PrioritizeUserSize)
+			if (RemoveFontSizes)
 			{
-				RemoveFontSizes(pageDom);
+				DoRemoveFontSizes(pageDom);
 			}
 
 			MakeCssLinksAppropriateForEpub(pageDom);
@@ -859,7 +859,7 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
-		private void RemoveFontSizes(HtmlDom pageDom)
+		private void DoRemoveFontSizes(HtmlDom pageDom)
 		{
 			// Find the special styles element which contains the user-defined styles.
 			// These are the only elements I can find that set explicit font sizes.
