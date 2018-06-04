@@ -22,7 +22,7 @@ import { RadioGroup, Radio } from "../../react_components/radio";
 const kWebSocketLifetime = "publish-epub";
 
 interface PublishSettings {
-    imageDescriptionPublishing: string; // one of "none", "onPage", "links"
+    imageDescriptionPublishing: string; // one of "None", "OnPage", "Links"
     removeFontSizes: boolean;
 }
 
@@ -36,7 +36,7 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private isLinux: boolean;
     constructor(props) {
         super(props);
-        this.state = { settings: { imageDescriptionPublishing: "none", removeFontSizes: false } };
+        this.state = { settings: { imageDescriptionPublishing: "None", removeFontSizes: false } };
 
         axios.get("/bloom/api/publish/epub/epubSettings").then(result => {
             this.setState({ settings: result.data });
@@ -122,8 +122,8 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
                         <H1 l10nKey="PublishTab.Epub.BooksForBlind">Books for the Blind</H1>
-                        <Checkbox name="includeImageDesc" checked={this.state.settings.imageDescriptionPublishing === "onPage"}
-                            onCheckChanged={val => this.setPublishRadio(val ? "onPage" : "none")}
+                        <Checkbox name="includeImageDesc" checked={this.state.settings.imageDescriptionPublishing === "OnPage"}
+                            onCheckChanged={val => this.setPublishRadio(val ? "OnPage" : "None")}
                             l10nKey="PublishTab.Epub.IncludeOnPage">Include image descriptions on page</Checkbox>
                         <Checkbox name="removeFontSizes" checked={this.state.settings.removeFontSizes}
                             onCheckChanged={val => this.setPrioritizeSize(val)}

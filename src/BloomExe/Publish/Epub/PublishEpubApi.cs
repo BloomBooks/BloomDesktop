@@ -11,6 +11,7 @@ using Bloom.Collection;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 
 namespace Bloom.Publish.Epub
 {
@@ -111,11 +112,9 @@ namespace Bloom.Publish.Epub
 				{
 					request.ReplyWithJson(CurrentView.GetEpubState());
 				} else { // post
-					var settings = DynamicJson.Parse(request.RequiredPostJson());
-					var mode = howToPublishImageDescriptions(settings.imageDescriptionPublishing);
-					bool removeFontSizes = settings.removeFontSizes;
+					var settings = (EpubPublishUiSettings)JsonConvert.DeserializeObject(request.RequiredPostJson(), typeof(EpubPublishUiSettings));
 					if (CurrentView != null)
-						CurrentView.UpdatePreview(mode, removeFontSizes, false);
+						CurrentView.UpdatePreview(settings, false);
 					request.PostSucceeded();
 				}
 			}, true);
@@ -130,20 +129,6 @@ namespace Bloom.Publish.Epub
 
 			// Tell the accessibility checker about this new thing it can check
 			AccessibilityCheckApi.SetEpubPath(savePath);
-		}
-
-		private static EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions(string howToPublishImageDescriptions)
-		{
-			switch (howToPublishImageDescriptions)
-			{
-				case "none":
-				default:
-					return EpubMaker.ImageDescriptionPublishing.None;
-				case "onPage":
-					return EpubMaker.ImageDescriptionPublishing.OnPage;
-				case "links":
-					return EpubMaker.ImageDescriptionPublishing.Links;
-			}
 		}
 
 		public void ReportAnalytics(string eventName)
