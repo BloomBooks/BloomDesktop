@@ -568,7 +568,7 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
-		public void PrioritizeUserSize_CausesFontSizesInEmbeddedStylesheets_ToBeRemoved()
+		public void RemoveFontSizes_CausesFontSizesInEmbeddedStylesheets_ToBeRemoved()
 		{
 			var userStyleSheet = @"/*<![CDATA[*/
     .BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
@@ -579,8 +579,8 @@ namespace BloomTests.Publish
 				extraHeadContent: "<style type='text/css' title='userModifiedStyles'>" + userStyleSheet + "</style>"
 			);
 
-			MakeEpub("output", "PrioritizeUserSize_CausesFontSizesInEmbeddedStylesheets_ToBeRemoved", book,
-				extraInit: maker => maker.PrioritizeUserSize = true);
+			MakeEpub("output", "RemoveFontSizes_CausesFontSizesInEmbeddedStylesheets_ToBeRemoved", book,
+				extraInit: maker => maker.RemoveFontSizes = true);
 			Assert.That(_page1Data, Does.Not.Contain("font-size"));
 			Assert.That(_page1Data, Does.Not.Contain("18pt"));
 			// And a few checks to try to make sure it doesn't take out too much.
@@ -590,7 +590,7 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
-		public void NoPrioritizeUserSize_FontSizesNotRemoved()
+		public void NoRemoveFontSizes_FontSizesNotRemoved()
 		{
 			var userStyleSheet = @"/*<![CDATA[*/
     .BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
@@ -601,7 +601,7 @@ namespace BloomTests.Publish
 				extraHeadContent: "<style type='text/css' title='userModifiedStyles'>" + userStyleSheet + "</style>"
 			);
 
-			MakeEpub("output", "NoPrioritizeUserSize_FontSizesNotRemoved", book);
+			MakeEpub("output", "NoRemoveFontSizes_FontSizesNotRemoved", book);
 			// This is a bit too strong, because some whitespace changes would be harmless.
 			Assert.That(_page1Data, Does.Contain(userStyleSheet));
 		}
