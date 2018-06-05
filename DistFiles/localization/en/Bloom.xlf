@@ -1746,6 +1746,10 @@
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true">
+        <source xml:lang="en">Delete Video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.DeleteVideo</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true">
         <source xml:lang="en">Edit outside of Bloom</source>
         <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
@@ -1769,6 +1773,11 @@
       <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true">
         <source xml:lang="en">Restore Original</source>
         <note>ID: EditTab.Toolbox.SignLanguage.RestoreOriginal</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectedVideo" sil:dynamic="true">
+        <source xml:lang="en">The selected video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
+        <note>Appears in the context "X will be moved to the recycle bin"</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
         <source xml:lang="en">Start Recording</source>

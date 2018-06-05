@@ -97,6 +97,11 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                     <Label className="commandLabel" l10nKey="EditTab.Toolbox.SignLanguage.RestoreOriginal"
                         onClick={() => this.restoreOriginal()}>Restore Original</Label>
                 </div>
+                <div id="deleteRecordingWrapper" className={"videoButtonWrapper" + (this.state.haveRecording ? "" : " disabled ")}>
+                    <button id="videoDelete" onClick={() => this.deleteRecording()} >X</button>
+                    <Label className="commandLabel" l10nKey="EditTab.Toolbox.SignLanguage.DeleteVideo"
+                        onClick={() => this.deleteRecording()}>Delete Video</Label>
+                </div>
                 <div>
                     <button id="videoStopRecording" className={"video-button ui-button notWaiting"}
                         onClick={() => this.toggleRecording()} />
@@ -105,6 +110,10 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                 <Label l10nKey="EditTab.Toolbox.SignLanguage.PressStop" className="recording stopLabel">Press any key to stop</Label>
             </div>
         );
+    }
+
+    private deleteRecording() {
+        axios.post("/bloom/api/toolbox/deleteVideo");
     }
 
     private editOutside() {

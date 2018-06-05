@@ -23,6 +23,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.FileSystem;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
 
@@ -1379,6 +1380,7 @@ namespace Bloom.Edit
 		{
 			server.RegisterEndpointHandler("toolbox/recordedVideo", HandleRecordedVideoRequest, true);
 			server.RegisterEndpointHandler("toolbox/editVideo", HandleEditVideoRequest, true);
+			server.RegisterEndpointHandler("toolbox/deleteVideo", HandleDeleteVideoRequest, true);
 			server.RegisterEndpointHandler("toolbox/restoreOriginal", HandleRestoreOriginalRequest, true);
 			server.RegisterEndpointHandler("toolbox/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt,true);
 		}
@@ -1514,6 +1516,41 @@ namespace Bloom.Edit
 					}
 				};
 				proc.Start();
+				request.PostSucceeded();
+			}
+		}
+
+		// Request from sign language tool to edit the selected video.
+		private void HandleDeleteVideoRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var videoContainer = GetSelectedVideoContainer();
+				string fileName;
+				if (!GetFileNameFromVideoContainer(request, videoContainer, out fileName))
+				{
+					request.Failed("no file found");
+					return;
+				}
+
+				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
+				var originalPath = Path.ChangeExtension(videoPath, "orig");
+				var label = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.SelectedVideo", "The selected video", "Appears in the contest \"X will be moved to the recycle bin\"");
+				var didDelete = ConfirmRecycleDialog.ConfirmThenRecycle(label, videoPath);
+				if (!didDelete)
+				{
+					request.Failed("user canceled");
+					return;
+
+				}
+				ConfirmRecycleDialog.Recycle(originalPath);
+				_view.Invoke((Action)(()=>{
+					var video = videoContainer.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
+					video.ParentNode.RemoveChild(video);
+					SaveNow();
+					_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+					_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+				}));
 				request.PostSucceeded();
 			}
 		}
