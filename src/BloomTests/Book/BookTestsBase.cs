@@ -235,16 +235,16 @@ namespace BloomTests.Book
 
 		public BookServer CreateBookServer()
 		{
-			var collectionSettings = CreateDefaultCollectionsSettings();
+			_collectionSettings = CreateDefaultCollectionsSettings();
 			var xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });
-			var fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
-			var starter = new BookStarter(fileLocator, (dir, forSelectedBook) => new BookStorage(dir, fileLocator, new BookRenamedEvent(), collectionSettings), collectionSettings);
+			var fileLocator = new BloomFileLocator(_collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
+			var starter = new BookStarter(fileLocator, (dir, forSelectedBook) => new BookStorage(dir, fileLocator, new BookRenamedEvent(), _collectionSettings), _collectionSettings);
 
 			return new BookServer(
 				//book factory
 				(bookInfo, storage) =>
 				{
-					return new Bloom.Book.Book(bookInfo, storage, null, collectionSettings,
+					return new Bloom.Book.Book(bookInfo, storage, null, _collectionSettings,
 						new PageSelection(),
 						new PageListChangedEvent(), new BookRefreshEvent());
 				},
@@ -252,7 +252,7 @@ namespace BloomTests.Book
 				// storage factory
 				(path, forSelectedBook) =>
 				{
-					var storage = new BookStorage(path, fileLocator, null, collectionSettings);
+					var storage = new BookStorage(path, fileLocator, null, _collectionSettings);
 					storage.BookInfo = new BookInfo(path, true);
 					return storage;
 				},

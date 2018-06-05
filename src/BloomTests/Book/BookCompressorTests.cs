@@ -24,7 +24,6 @@ namespace BloomTests.Book
 	{
 		private BookServer _bookServer;
 		private TemporaryFolder _projectFolder;
-		private Mock<CollectionSettings> _librarySettings;
 		private BookStarter _starter;
 
 		private string kMinimumValidBookHtml =

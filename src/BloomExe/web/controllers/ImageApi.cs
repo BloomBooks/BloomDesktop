@@ -257,7 +257,7 @@ namespace Bloom.web.controllers
 			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(domBody as XmlElement))
 			{
 				var name = HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded;
-				var pageNum = GetPageNumberForImageElement(img);
+				var pageNum = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(img);
 				if (string.IsNullOrWhiteSpace(pageNum))
 					continue; // This image is on a page with no pagenumber or something is drastically wrong.
 				List<string> currentList;
@@ -274,25 +274,6 @@ namespace Bloom.web.controllers
 				}
 			}
 			return imageNameToPages;
-		}
-
-		private static string GetPageNumberForImageElement(XmlElement img)
-		{
-			const string pgNbrXpath = "ancestor::div[@data-page-number]";
-			var pageNumNode = img.SelectSingleNode(pgNbrXpath);
-			var pgNbr = pageNumNode?.GetStringAttribute("data-page-number");
-			if (!string.IsNullOrWhiteSpace(pgNbr) && !IsBackMatter(pageNumNode))
-			{
-				return pgNbr;
-			}
-			const string pgLabelXpath = "ancestor::div/div[@class='pageLabel']";
-			var labelNode = img.SelectSingleNode(pgLabelXpath);
-			return labelNode?.InnerText.Trim();
-		}
-
-		private static bool IsBackMatter(XmlNode node)
-		{
-			return ((XmlElement) node).Attributes["class"].InnerText.Contains("bloom-backMatter");
 		}
 
 		/// <summary>

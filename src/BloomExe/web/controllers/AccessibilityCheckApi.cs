@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Bloom.Api;
 using Bloom.Book;
@@ -29,6 +30,7 @@ namespace Bloom.web.controllers
 			{
 				_epubPath = request.RequiredPostString();
 			}, false);
+
 			server.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>
 			{
 				AccessibilityCheckWindow.StaticShow();
@@ -37,12 +39,14 @@ namespace Bloom.web.controllers
 
 			server.RegisterEndpointHandler(kApiUrlPart+"audioForAllText", request =>
 			{
-				request.ReplyWithJson(new {result="passed", problems=new string[0]});
+				request.Failed("not implemented");
 			}, false);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "descriptionsForAllImages", request =>
 			{
-				request.ReplyWithJson(new { result = "failed", problems = new [] {"this reason", "that reason"} });
+				var problems = AccessibilityCheckers.CheckDescriptionsForAllImages(request.CurrentBook);
+				var resultClass = problems.Any() ? "failed" : "passed";
+				request.ReplyWithJson(new {resultClass = resultClass, problems = problems});
 			}, false);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "audioForAllImageDescriptions", request =>

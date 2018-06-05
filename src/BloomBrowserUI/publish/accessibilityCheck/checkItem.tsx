@@ -10,42 +10,46 @@ interface IProps extends IUILanguageAwareProps {
 // Each "CheckItem" conveys the status and results of a single automated accessibility test.
 
 interface CheckResult {
-    result: string;
+    // this is passed, failed, unknown, or pending. Only the stylesheet cares, this code doesn't.
+    resultClass: string;
+    // for now, simple strings. Someday may be links to problem items.
     problems: string[];
 }
 
 interface IState {
-    checkStatus: CheckResult;
+    checkResult: CheckResult;
 }
 export class CheckItem extends React.Component<IProps, IState> {
     constructor(props) {
         super(props);
         this.state = {
-            checkStatus: { result: "pending", problems: [] }
+            checkResult: { resultClass: "pending", problems: [] }
         };
     }
     public componentDidMount() {
         axios
             .get(`/bloom/api/accessibilityCheck/${this.props.apiCheckName}`)
             .then(result => {
-                this.setState({ checkStatus: result.data });
+                this.setState({ checkResult: result.data });
             })
             .catch(error => {
                 this.setState({
-                    checkStatus: {
-                        result: "unknown",
+                    checkResult: {
+                        resultClass: "unknown",
                         problems: [error.response.statusText]
                     }
                 });
             });
     }
     public render() {
-        var line = this.props.label;
         return (
-            <li className={`checkItem ${this.state.checkStatus.result}`}>
-                {line}
+            <li className={`checkItem ${this.state.checkResult.resultClass}`}>
+                {
+                    this.props.label // TODO Make localizable, just based on our props.apiCheckName
+                }
                 <ul>
-                    {this.state.checkStatus.problems.map((problem, index) => (
+                    {// problem descriptions are already localized by the backend
+                    this.state.checkResult.problems.map((problem, index) => (
                         //react requires unique keys on each
                         <li key={"p" + index}>{problem}</li>
                     ))}
