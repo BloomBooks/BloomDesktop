@@ -6,6 +6,7 @@ using System.Runtime.ExceptionServices;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Newtonsoft.Json;
+using SIL.Code;
 
 namespace Bloom.Api
 {
@@ -220,6 +221,21 @@ namespace Bloom.Api
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have post string");
 		}
 
+		/// <summary>
+		/// Get a boolean value that was passed as application/json
+		/// </summary>
+		/// <remarks>requires something like this:
+		///    axios.post("api/bloom/foo", myBool, {
+		///       headers: { "Content-Type": "application/json" }});
+		/// </remarks>
+		/// <returns></returns>
+		public bool RequiredPostBooleanAsJson()
+		{
+			// There isn't an obvious choice for passing a simple true/false, but a plain true/false counts as json:
+			// https://tools.ietf.org/html/rfc7493#section-4.1  Note we don't have to be compatible with old parsers. so we can just return true or false
+			return RequiredPostJson() == "true";
+		}
+
 		public string RequiredPostValue(string key)
 		{
 			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
@@ -230,5 +246,11 @@ namespace Bloom.Api
 		}
 
 		public byte[] RawPostData => _requestInfo.GetRawPostData();
+
+		public void ReplyWithBoolean(bool value)
+		{
+			// https://tools.ietf.org/html/rfc7493#section-4.1  Note we don't have to be compatible with old parsers. so we can just return true or false
+			ReplyWithJson(value);
+		}
 	}
 }

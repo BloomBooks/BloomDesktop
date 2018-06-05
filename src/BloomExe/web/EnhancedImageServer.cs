@@ -76,6 +76,26 @@ namespace Bloom.Api
 			};
 		}
 
+		/// <summary>
+		/// Handle simple boolean reads/writes
+		/// </summary>
+		public void RegisterBooleanEndpointHandler(string pattern, Func<ApiRequest, bool> readAction, Action<ApiRequest, bool> writeAction,
+			bool handleOnUiThread)
+		{
+			RegisterEndpointHandler(pattern, request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithBoolean(readAction(request));
+				}
+				else // post
+				{
+					writeAction(request, request.RequiredPostBooleanAsJson());
+					request.PostSucceeded();
+				}
+			}, handleOnUiThread);
+		}
+
 		// We use two different locks to synchronize access to the methods of this class.
 		// This allows certain methods to run concurrently.
 
