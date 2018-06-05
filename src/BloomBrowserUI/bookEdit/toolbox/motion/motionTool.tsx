@@ -8,7 +8,6 @@ import {
 } from "../../../react_components/l10n";
 import { HelpLink } from "../../../react_components/helpLink";
 import { RadioGroup, Radio } from "../../../react_components/radio";
-import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 // These are for Motion:
