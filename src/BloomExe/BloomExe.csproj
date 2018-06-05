@@ -606,6 +606,7 @@
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
     <Compile Include="web\controllers\AccessibilityCheckApi.cs" />
+    <Compile Include="Book\AccessibilityCheckers.cs" />
     <Compile Include="web\controllers\ApiRequest.cs" />
     <Compile Include="WebLibraryIntegration\ProblemBookUploader.cs" />
     <Compile Include="web\BloomWebSocketServer.cs" />

@@ -62,17 +62,12 @@ namespace Bloom.Book
 			get
 			{
 				return XmlUtils.GetTitleOfHtml(_dom, null);
-				;
 			}
 			set
 			{
 				var t = value.Trim();
-				//if (!String.IsNullOrEmpty(t))
-				//{
-				var makeSureItsThere = Head;
 				var titleNode = XmlUtils.GetOrCreateElement(_dom, "html/head", "title");
 				//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
-
 				//so we set the xhtml (not the text) of the node
 				titleNode.InnerXml = t;
 				// then ask it for the text again (which drops the xhtml) and ensure that each run of whitespace
@@ -83,7 +78,6 @@ namespace Bloom.Book
 				titleNode.InnerXml = "";
 				//and set the text again!
 				titleNode.InnerText = justTheText;
-				//}
 			}
 		}
 
@@ -1785,6 +1779,29 @@ namespace Bloom.Book
 			{
 				SetImageAltAttrFromDescription(img, descriptionLang);
 			}
+		}
+
+		public static string GetNumberOrLabelOfPageWhereElementLives(XmlElement childElement)
+		{
+			var pageElement = childElement.SelectSingleNode("ancestor::div[contains(@class,'bloom-page')]") as XmlElement;
+			var pageNumber = pageElement.GetStringAttribute("data-page-number");
+			if (
+				// front matter won't have a pageNumber
+				string.IsNullOrWhiteSpace(pageNumber)
+
+			    // back matter pages actually have page numbers (maybe that's an oversight in some other code?)
+			    // but it's clearer to just call them by name.
+			    || HtmlDom.IsBackMatterPage(pageElement))
+			{
+				var labelNode = childElement.SelectSingleNode("ancestor::div/div[@class='pageLabel']");
+				return labelNode?.InnerText.Trim();
+			}
+			return pageNumber;
+		}
+
+		public static bool IsBackMatterPage(XmlElement pageElement)
+		{
+			return HtmlDom.HasClass(pageElement, "bloom-backMatter");
 		}
 
 		// Make the image's alt attr match the image description for the specified language.
