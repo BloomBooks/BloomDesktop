@@ -9,7 +9,7 @@ import {
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
-    name: string;
+    name?: string;
     checked: boolean;
     onCheckChanged?: (boolean) => void;
     className?: string;
@@ -19,14 +19,14 @@ interface ICheckboxProps extends ILocalizationProps {
 
 // A checkbox that is localizable.
 export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
-    input: HTMLInputElement;
-    onLabelClicked() {
+    private input: HTMLInputElement;
+    private onLabelClicked() {
         // We expect the effect of clicking the label will be to set the check to the
         // opposite state, so that's what we pass. (But whether it really changes is
         // up to the owner changing the prop value. So it won't have happened yet.)
         this.props.onCheckChanged(!this.input.checked);
     }
-    render() {
+    public render() {
         return (
             <div className={this.props.wrapClassName}>
                 <input
