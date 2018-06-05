@@ -65,7 +65,7 @@ namespace Bloom.Publish
 			this.label1 = new System.Windows.Forms.Label();
 			this._bookletBodyRadio = new System.Windows.Forms.RadioButton();
 			this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
-			this._epub2Radio = new System.Windows.Forms.RadioButton();
+			this._epubRadio = new System.Windows.Forms.RadioButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
@@ -161,7 +161,7 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this._simpleAllPagesRadio, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this._epub2Radio, 0, 6);
+			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 6);
 			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
 			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
@@ -399,16 +399,16 @@ namespace Bloom.Publish
 			this._simpleAllPagesRadio.UseVisualStyleBackColor = true;
 			this._simpleAllPagesRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
 			// 
-			// _epub2Radio
+			// _epubRadio
 			// 
-			this._epub2Radio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._epub2Radio.Image = global::Bloom.Properties.Resources.epubPublishButton;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._epub2Radio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._epub2Radio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._epub2Radio, "PublishTab.EpubButton");
-			this._epub2Radio.Location = new System.Drawing.Point(3, 327);
-			this._epub2Radio.Name = "_epub2Radio";
-			this._epub2Radio.Size = new System.Drawing.Size(105, 76);
+			this._epubRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._epubRadio.Image = global::Bloom.Properties.Resources.epubPublishButton;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._epubRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
+			this._epubRadio.Location = new System.Drawing.Point(3, 327);
+			this._epubRadio.Name = "_epubRadio";
+			this._epubRadio.Size = new System.Drawing.Size(105, 76);
 			superToolTipInfo6.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo6.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo6.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
@@ -418,14 +418,14 @@ namespace Bloom.Publish
 			superToolTipInfo6.ShowHeader = false;
 			superToolTipInfoWrapper6.SuperToolTipInfo = superToolTipInfo6;
 			superToolTipInfoWrapper6.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._epub2Radio, superToolTipInfoWrapper6);
-			this._epub2Radio.TabIndex = 23;
-			this._epub2Radio.TabStop = true;
-			this._epub2Radio.Text = "ePUB";
-			this._epub2Radio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this._epub2Radio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._epub2Radio.UseVisualStyleBackColor = true;
-			this._epub2Radio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper6);
+			this._epubRadio.TabIndex = 23;
+			this._epubRadio.TabStop = true;
+			this._epubRadio.Text = "ePUB";
+			this._epubRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._epubRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._epubRadio.UseVisualStyleBackColor = true;
+			this._epubRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
 			// 
 			// _L10NSharpExtender
 			// 
@@ -498,6 +498,6 @@ namespace Bloom.Publish
         private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.RadioButton _androidRadio;
 		private System.Windows.Forms.RadioButton _uploadRadio;
-		private System.Windows.Forms.RadioButton _epub2Radio;
+		private System.Windows.Forms.RadioButton _epubRadio;
 	}
 }

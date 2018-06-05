@@ -39,11 +39,10 @@ namespace Bloom.Publish
 			Working,
 			ShowPdf,
 			Upload,
-			EPUB,
 			Printing,
 			ResumeAfterPrint,
 			Android,
-			EPUB2
+			EPUB
 		}
 
 		public enum BookletPortions
@@ -95,8 +94,7 @@ namespace Bloom.Publish
 		public bool UploadMode { get; set; }
 
 		// True when showing an ePUB preview.
-		public bool EpubMode { get; set; }
-		public bool Epub2Mode;
+		public bool EpubMode;
 
 		public bool PdfGenerationSucceeded { get; set; }
 
@@ -323,18 +321,6 @@ namespace Bloom.Publish
 
 		public void Save()
 		{
-			if (EpubMode)
-			{
-				try
-				{
-					SaveAsEpub();
-				}
-				catch (Exception err)
-				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the ePUB.  {0}", err.Message);
-				}
-				return;
-			}
 			try
 			{
 				// Give a slight preference to USB keys, though if they used a different directory last time, we favor that.

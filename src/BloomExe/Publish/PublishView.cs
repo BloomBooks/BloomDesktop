@@ -136,7 +136,7 @@ namespace Bloom.Publish
 
 		public void SetStateOfNonUploadRadios(bool enable)
 		{
-			_epub2Radio.Enabled = enable;
+			_epubRadio.Enabled = enable;
 			_bookletBodyRadio.Enabled = enable;
 			_bookletCoverRadio.Enabled = enable;
 			_simpleAllPagesRadio.Enabled = enable;
@@ -178,7 +178,7 @@ namespace Bloom.Publish
 			_bookletCoverRadio.AutoCheck = autoCheck;
 			_bookletBodyRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
-			_epub2Radio.AutoCheck = autoCheck;
+			_epubRadio.AutoCheck = autoCheck;
 			_androidRadio.AutoCheck = autoCheck;
 		}
 
@@ -252,7 +252,7 @@ namespace Bloom.Publish
 		private void ClearRadioButtons()
 		{
 			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epub2Radio.Checked = _androidRadio.Checked = false;
+				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _androidRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -320,8 +320,8 @@ namespace Bloom.Publish
 				// If any of the other buttons is checked, we display the preview IF we have it.
 				if (_uploadRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
-				else if (_epub2Radio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.EPUB2;
+				else if (_epubRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 				else if (_androidRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Android;
 				else if (_model.PdfGenerationSucceeded)
@@ -347,7 +347,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
 			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
 			_uploadRadio.Checked = _model.UploadMode;
-			_epub2Radio.Checked = _model.Epub2Mode;
+			_epubRadio.Checked = _model.EpubMode;
 
 			if (!_model.AllowUpload)
 			{
@@ -426,7 +426,7 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
 			}
-			if(displayMode != PublishModel.DisplayModes.Android || displayMode != PublishModel.DisplayModes.EPUB2 && _htmlControl != null && Controls.Contains(_htmlControl))
+			if(displayMode != PublishModel.DisplayModes.Android || displayMode != PublishModel.DisplayModes.EPUB && _htmlControl != null && Controls.Contains(_htmlControl))
 			{
 				Controls.Remove(_htmlControl);
 
@@ -503,7 +503,7 @@ namespace Bloom.Publish
 				case PublishModel.DisplayModes.Android:
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "android", "androidPublishUI.html"));
 					break;
-				case PublishModel.DisplayModes.EPUB2:
+				case PublishModel.DisplayModes.EPUB:
 					// We rather mangled the Readium code in the process of cutting away its own navigation
 					// and other controls. It produces all kinds of JavaScript errors, but it seems to do
 					// what we want in our preview. So just suppress the toasts for all of them. This is unfortunate because
@@ -742,7 +742,7 @@ namespace Bloom.Publish
 		private void SetModelFromButtons()
 		{
 			_model.UploadMode = _uploadRadio.Checked;
-			_model.Epub2Mode = _epub2Radio.Checked;
+			_model.EpubMode = _epubRadio.Checked;
 			bool pdfPreviewMode = false;
 			if (_simpleAllPagesRadio.Checked)
 			{
@@ -759,9 +759,9 @@ namespace Bloom.Publish
 				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
 				pdfPreviewMode = true;
 			}
-			else if (_epub2Radio.Checked)
+			else if (_epubRadio.Checked)
 			{
-				_model.DisplayMode = PublishModel.DisplayModes.EPUB2;
+				_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 			}
 			else if (_uploadRadio.Checked)
 			{
