@@ -83,20 +83,20 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
-		public void ImageDescriptions_ImageDescriptionPublishingNone_AreRemoved()
+		public void ImageDescriptions_HowToPublishImageDescriptionsNone_AreRemoved()
 		{
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] {"image1"},
 				imageDescriptions: new[] {"This describes image 1"});
-			MakeEpub("output", "ImageDescriptions_PublishInPageNone_AreRemoved", book);
+			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsNone_AreRemoved", book);
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 		}
 
 		[Test]
-		public void ImageDescriptions_ImageDescriptionPublishingOnPage_ConvertedToAsides()
+		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides()
 		{
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
 				imageDescriptions: new[] { "This describes image 1" });
-			MakeEpub("output", "ImageDescriptions_PublishInPageOnPage_ConvertedToAsides", book, EpubMaker.ImageDescriptionPublishing.OnPage);
+			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, EpubMaker.HowToPublishImageDescriptions.OnPage);
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:aside[.='This describes image 1']", _ns, 1);
 		}
@@ -156,7 +156,7 @@ namespace BloomTests.Publish
 		/// <param name="book"></param>
 		/// <returns></returns>
 		protected override ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
-			EpubMaker.ImageDescriptionPublishing howToPublishImageDescriptions = EpubMaker.ImageDescriptionPublishing.None,
+			EpubMaker.HowToPublishImageDescriptions howToPublishImageDescriptions = EpubMaker.HowToPublishImageDescriptions.None,
 			Action<EpubMaker> extraInit = null)
 		{
 			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, extraInit);

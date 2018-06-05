@@ -22,7 +22,7 @@ import { RadioGroup, Radio } from "../../react_components/radio";
 const kWebSocketLifetime = "publish-epub";
 
 interface PublishSettings {
-    imageDescriptionPublishing: string; // one of "None", "OnPage", "Links"
+    howToPublishImageDescriptions: string; // one of "None", "OnPage", "Links"
     removeFontSizes: boolean;
 }
 
@@ -36,7 +36,7 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private isLinux: boolean;
     constructor(props) {
         super(props);
-        this.state = { settings: { imageDescriptionPublishing: "None", removeFontSizes: false } };
+        this.state = { settings: { howToPublishImageDescriptions: "None", removeFontSizes: false } };
 
         axios.get("/bloom/api/publish/epub/epubSettings").then(result => {
             this.setState({ settings: result.data });
@@ -122,12 +122,12 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
                         <H1 l10nKey="PublishTab.Epub.BooksForBlind">Books for the Blind</H1>
-                        <Checkbox name="includeImageDesc" checked={this.state.settings.imageDescriptionPublishing === "OnPage"}
+                        <Checkbox name="includeImageDesc" checked={this.state.settings.howToPublishImageDescriptions === "OnPage"}
                             onCheckChanged={val => this.setPublishRadio(val ? "OnPage" : "None")}
                             l10nKey="PublishTab.Epub.IncludeOnPage">Include image descriptions on page</Checkbox>
                         <Checkbox name="removeFontSizes" checked={this.state.settings.removeFontSizes}
-                            onCheckChanged={val => this.setPrioritizeSize(val)}
-                            l10nKey="PublishTab.Epub.RemoveFontSizes">Remove Font Sizes</Checkbox>
+                            onCheckChanged={val => this.setRemoveFontSizes(val)}
+                            l10nKey="PublishTab.Epub.RemoveFontSizes">Use epub reader's text size</Checkbox>
                         {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                         <Link
                             l10nKey="AccessibilityCheck.ShowAccessibilityChecker"
@@ -156,16 +156,18 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     // This slightly obsolete name reflects the possibility of more than two modes requiring a set of radio buttons
     // (e.g., the implemented but not shipped "links" option)
     private setPublishRadio(val: string) {
-        if (val === this.state.settings.imageDescriptionPublishing) return;
+        if (val === this.state.settings.howToPublishImageDescriptions) return;
         // We want to keep the old settings except for the one we want to modify.
         // SetState will do this itself at the top level, but we are changing something one level down.
-        var merged = { ...this.state.settings, imageDescriptionPublishing: val };
+        var merged = { ...this.state.settings }; // clone, keep other settings
+        merged.howToPublishImageDescriptions = val;
         this.setState({ settings: merged });
         axios.post("/bloom/api/publish/epub/epubSettings", merged); // not this.state.settings, which is updated asynchronously later
     }
 
-    private setPrioritizeSize(val: boolean): void {
-        var merged = { ...this.state.settings, removeFontSizes: val };
+    private setRemoveFontSizes(val: boolean): void {
+        var merged = { ...this.state.settings }; // clone
+        merged.removeFontSizes = val;
         this.setState({ settings: merged });
         axios.post("/bloom/api/publish/epub/epubSettings", merged);
     }

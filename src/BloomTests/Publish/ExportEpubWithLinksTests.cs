@@ -50,7 +50,7 @@ namespace BloomTests.Publish
 						+ image3
 					+ @"</div>");
 			MakeImageFiles(book, "image1", "image2", "image3");
-			MakeEpub("output", "ExportEpubWithLinksTests", book, EpubMaker.ImageDescriptionPublishing.Links);
+			MakeEpub("output", "ExportEpubWithLinksTests", book, EpubMaker.HowToPublishImageDescriptions.Links);
 			GetPageOneData();
 			_page2Data = GetPageNData(2);
 			_assertThatPage1Data = AssertThatXmlIn.String(_page1Data);

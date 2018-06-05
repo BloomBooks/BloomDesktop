@@ -169,12 +169,12 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
-		public enum ImageDescriptionPublishing
+		public enum HowToPublishImageDescriptions
 		{
 			None, OnPage, Links
 		}
 
-		public ImageDescriptionPublishing PublishImageDescriptions { get; set; }
+		public HowToPublishImageDescriptions PublishImageDescriptions { get; set; }
 		public bool RemoveFontSizes { get; set; }
 
 		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator, BookServer bookServer)
@@ -808,7 +808,7 @@ namespace Bloom.Publish.Epub
 
 			// Do this as the last cleanup step, since other things may be looking for these elements
 			// expecting them to be divs.
-			ConvertHeadingStylesToMarkup(pageDom);
+			ConvertHeadingStylesToHeadingElements(pageDom);
 
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
@@ -854,7 +854,7 @@ namespace Bloom.Publish.Epub
 			return pageDom;
 		}
 
-		private void ConvertHeadingStylesToMarkup(HtmlDom pageDom)
+		private void ConvertHeadingStylesToHeadingElements(HtmlDom pageDom)
 		{
 			foreach (var div in pageDom.SafeSelectNodes(".//div[contains(@class, 'Heading')]").Cast<XmlElement>().ToArray())
 			{
@@ -921,7 +921,7 @@ namespace Bloom.Publish.Epub
 				img.RemoveAttribute("alt");    // signal missing accessibility information
 			}
 			// Put the image descriptions on the page following the images.
-			if (PublishImageDescriptions == ImageDescriptionPublishing.OnPage)
+			if (PublishImageDescriptions == HowToPublishImageDescriptions.OnPage)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
 				foreach (XmlElement description in imageDescriptions)
@@ -941,7 +941,7 @@ namespace Bloom.Publish.Epub
 					}
 				}
 			}
-			else if (PublishImageDescriptions == ImageDescriptionPublishing.Links)
+			else if (PublishImageDescriptions == HowToPublishImageDescriptions.Links)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
 				foreach (XmlElement description in imageDescriptions)
@@ -1045,7 +1045,7 @@ namespace Bloom.Publish.Epub
 					}
 				}
 			}
-			// If ImageDescriptionPublishing.None, leave alone, and they will be deleted as invisible. (Todo: that's apparently wrong)
+			// If HowToPublishImageDescriptions.None, leave alone, and they will be deleted as invisible. (Todo: that's apparently wrong)
 		}
 
 		/// <summary>

@@ -15,7 +15,7 @@ namespace Bloom.Publish.Epub
 	public class EpubPublishUiSettings
 	{
 		[JsonConverter(typeof(StringEnumConverter))]
-		public EpubMaker.ImageDescriptionPublishing imageDescriptionPublishing;
+		public EpubMaker.HowToPublishImageDescriptions howToPublishImageDescriptions;
 		public bool removeFontSizes;
 
 		public override bool Equals(object obj)
@@ -23,13 +23,13 @@ namespace Bloom.Publish.Epub
 			var other = obj as EpubPublishUiSettings;
 			if (other == null)
 				return false;
-			return other.imageDescriptionPublishing == this.imageDescriptionPublishing
+			return other.howToPublishImageDescriptions == this.howToPublishImageDescriptions
 			       && other.removeFontSizes == this.removeFontSizes;
 		}
 
 		public override int GetHashCode()
 		{
-			return imageDescriptionPublishing.GetHashCode() ^ removeFontSizes.GetHashCode();
+			return howToPublishImageDescriptions.GetHashCode() ^ removeFontSizes.GetHashCode();
 		}
 
 		public static bool operator ==(EpubPublishUiSettings a, EpubPublishUiSettings b)

@@ -2627,7 +2627,7 @@
         <note>ID: PublishTab.Epub.PreparingPreview</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
-        <source xml:lang="en">Remove font sizes</source>
+        <source xml:lang="en">Use epub reader's text size</source>
         <note>ID: PublishTab.Epub.RemoveFontSizes</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Saving">

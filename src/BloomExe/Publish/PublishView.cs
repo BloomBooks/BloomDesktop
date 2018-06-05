@@ -563,7 +563,7 @@ namespace Bloom.Publish
 						}
 					};
 					_model.PrepareToStageEpub(); // let's get the epub maker and its browser created on the UI thread
-					_model.EpubMaker.PublishImageDescriptions = _desiredEpubSettings.imageDescriptionPublishing;
+					_model.EpubMaker.PublishImageDescriptions = _desiredEpubSettings.howToPublishImageDescriptions;
 					_model.EpubMaker.RemoveFontSizes = _desiredEpubSettings.removeFontSizes;
 					_previewWorker = new BackgroundWorker();
 					_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
@@ -605,7 +605,7 @@ namespace Bloom.Publish
 				_previewWorker = new BackgroundWorker();
 			}
 
-			_model.EpubMaker.PublishImageDescriptions = newSettings.imageDescriptionPublishing;
+			_model.EpubMaker.PublishImageDescriptions = newSettings.howToPublishImageDescriptions;
 			_model.EpubMaker.RemoveFontSizes = newSettings.removeFontSizes;
 			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 			// we will really be changing the src attr in the preview iframe so the display will update.
@@ -643,7 +643,7 @@ namespace Bloom.Publish
 				_needNewPreview = false;
 			}
 
-			if (abortRequested || _model.EpubMaker.PublishImageDescriptions != _desiredEpubSettings.imageDescriptionPublishing
+			if (abortRequested || _model.EpubMaker.PublishImageDescriptions != _desiredEpubSettings.howToPublishImageDescriptions
 				|| _model.EpubMaker.RemoveFontSizes != _desiredEpubSettings.removeFontSizes)
 			{
 				UpdatePreview(_desiredEpubSettings, true);
@@ -653,7 +653,7 @@ namespace Bloom.Publish
 			if (_doWhenPreviewComplete != null)
 			{
 				Debug.Assert(!_model.EpubMaker.AbortRequested);
-				Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredEpubSettings.imageDescriptionPublishing);
+				Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredEpubSettings.howToPublishImageDescriptions);
 				Debug.Assert(_model.EpubMaker.RemoveFontSizes == _desiredEpubSettings.removeFontSizes);
 				_doWhenPreviewComplete(_model.EpubMaker);
 				_doWhenPreviewComplete = null;
@@ -689,7 +689,7 @@ namespace Bloom.Publish
 			}
 
 			Debug.Assert(!_model.EpubMaker.AbortRequested);
-			Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredEpubSettings.imageDescriptionPublishing);
+			Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredEpubSettings.howToPublishImageDescriptions);
 			Debug.Assert(_model.EpubMaker.RemoveFontSizes == _desiredEpubSettings.removeFontSizes);
 			_doWhenPreviewComplete(_model.EpubMaker);
 
