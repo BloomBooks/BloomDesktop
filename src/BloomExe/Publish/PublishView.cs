@@ -583,7 +583,7 @@ namespace Bloom.Publish
 		{
 			lock (this)
 			{
-				if (_desiredEpubSettings == newSettings)
+				if (_desiredEpubSettings == newSettings && !retry)
 					return; // getting a request really from the browser, and already in that state.
 				_desiredEpubSettings = newSettings;
 				if (_previewWorker != null)
