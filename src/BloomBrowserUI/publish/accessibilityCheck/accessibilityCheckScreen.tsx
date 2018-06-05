@@ -14,7 +14,7 @@ class AccessibilityCheckScreen extends React.Component<IUILanguageAwareProps> {
         return (
             <div id="accessibilityCheckReactRoot" className={"screen-root"}>
                 <div className="overall-status">Status: TODO</div>
-                <Tabs>
+                <Tabs defaultIndex={1}>
                     <TabList>
                         <Tab>Learn About Accessibility</Tab>
                         <Tab>Accessibility Checklist</Tab>
@@ -35,12 +35,7 @@ class AccessibilityCheckScreen extends React.Component<IUILanguageAwareProps> {
     }
 }
 
-// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
-// get any code that isn't in a class called, the following. But it only makes sense to get wired up
-// if that html has the root page we need.
-if (document.getElementById("accessibilityCheckScreen")) {
-    ReactDOM.render(
-        <AccessibilityCheckScreen />,
-        document.getElementById("accessibilityCheckScreen")
-    );
-}
+// allow plain 'ol javascript in the html to connect up react
+(window as any).connectAccessibilityCheckScreen = function(element) {
+    ReactDOM.render(<AccessibilityCheckScreen />, element);
+};

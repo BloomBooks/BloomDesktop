@@ -1,1 +1,32 @@
 @import "../../bloomUI.less";
+
+.checkList {
+    li {
+        list-style: none;
+        font-size: 12pt;
+
+        &::before {
+            font-weight: bold;
+        }
+        &.pending::before {
+            content: "⧖ ";
+            //color: @bloom-purple;
+        }
+        &.unknown::before {
+            content: "? ";
+            color: @bloom-purple;
+        }
+        &.passed::before {
+            content: "✔ ";
+            color: @bloom-blue;
+        }
+        &.failed::before {
+            content: "X ";
+            color: @bloom-red;
+        }
+        // problem list
+        ul {
+            margin: 0;
+        }
+    }
+}

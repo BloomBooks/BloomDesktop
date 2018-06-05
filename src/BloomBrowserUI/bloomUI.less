@@ -17,8 +17,9 @@
 @bloom-darkestgray: #363333; // used for borders and backgrounds... this is the darker main panel background
 @bloom-buff: #d2d2d2; // used for various unrelated things like hovered/disabled controls, text on dark background, borders, etc.
 @bloom-toolboxWhite: @bloom-buff;
+@bloom-purple: #96668f;
 @DisabledButtonColor: @bloom-gray;
-@ControlColor: #96668f;
+@ControlColor: @bloom-purple;
 @DarkBackgroundColor: #404040; // side panels; toolbox and page thumbs
 @WarningColor: #d65649;
 @OrigamiActiveColor: #e48c84;
@@ -46,7 +47,6 @@
     font-weight: bold;
 }
 .react-tabs__tab-panel--selected div {
-    padding: 10px;
-    height: 500px; //todo
+    padding-left: 20px;
     background-color: white;
 }

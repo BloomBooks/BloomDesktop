@@ -10,6 +10,13 @@
     <div id="accessibilityCheckScreen"></div>
     <script src="../../commonBundle.js"></script>
     <script src="../../publishUIBundle.js"></script>
+    <script type="text/javascript">
+        var reactRoot = document.getElementById("accessibilityCheckScreen")
+        //If we could do jsx here: ReactDOM.render(<AccessibilityCheckScreen/>, reactRoot);
+        //If we could access ReactDOM here: ReactDOM.render(React.createElement(AccessibilityCheckScreen, null), reactRoot);
+        // But withtout some new webpack wizardry, this will have to do in the meantime:
+        window.connectAccessibilityCheckScreen(reactRoot);
+    </script>
 </body>
 
 </html>
