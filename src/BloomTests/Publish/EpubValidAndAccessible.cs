@@ -143,7 +143,7 @@ namespace BloomTests.Publish
 			MakeImageFiles(book, "DevilsSlide", "SteveAtMalad");
 			MakeSampleSvgImage(book.FolderPath.CombineForPath("back-cover-outside.svg"));
 			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
-			MakeEpub("output", "ExportEpubWithSvgTests", book, EpubMaker.ImageDescriptionPublishing.OnPage);
+			MakeEpub("output", "ExportEpubWithSvgTests", book, EpubMaker.HowToPublishImageDescriptions.OnPage);
 			GetPageOneData();
 			_ns = GetNamespaceManager();
 		}

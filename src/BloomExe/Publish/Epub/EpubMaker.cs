@@ -169,12 +169,13 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
-		public enum ImageDescriptionPublishing
+		public enum HowToPublishImageDescriptions
 		{
 			None, OnPage, Links
 		}
 
-		public ImageDescriptionPublishing PublishImageDescriptions { get; set; }
+		public HowToPublishImageDescriptions PublishImageDescriptions { get; set; }
+		public bool RemoveFontSizes { get; set; }
 
 		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator, BookServer bookServer)
 		{
@@ -789,6 +790,10 @@ namespace Bloom.Publish.Epub
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
+			if (RemoveFontSizes)
+			{
+				DoRemoveFontSizes(pageDom);
+			}
 
 			MakeCssLinksAppropriateForEpub(pageDom);
 			RemoveBloomUiElements(pageDom);
@@ -800,6 +805,10 @@ namespace Bloom.Publish.Epub
 			// Check for a blank page before storing any data from this page or copying any files on disk.
 			if (IsBlankPage(pageDom.RawDom.DocumentElement))
 				return null;
+
+			// Do this as the last cleanup step, since other things may be looking for these elements
+			// expecting them to be divs.
+			ConvertHeadingStylesToHeadingElements(pageDom);
 
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
@@ -845,6 +854,50 @@ namespace Bloom.Publish.Epub
 			return pageDom;
 		}
 
+		private void ConvertHeadingStylesToHeadingElements(HtmlDom pageDom)
+		{
+			foreach (var div in pageDom.SafeSelectNodes(".//div[contains(@class, 'Heading')]").Cast<XmlElement>().ToArray())
+			{
+				var classes = div.Attributes["class"].Value;
+				var regex = new Regex(@"\bHeading([0-9])\b");
+				var match = regex.Match(classes);
+				if (!match.Success)
+					continue; // not a precisely matching class
+				var level = match.Groups[1]; // the number
+				var tag = "h" + level;
+				var replacement = div.OwnerDocument.CreateElement(tag);
+				foreach (var attr in div.Attributes.Cast<XmlAttribute>().ToArray())
+				{
+					replacement.Attributes.Append(attr);
+				}
+
+				foreach (var child in div.ChildNodes.Cast<XmlNode>().ToArray())
+				{
+					replacement.AppendChild(child);
+				}
+
+				div.ParentNode.ReplaceChild(replacement, div);
+			}
+		}
+
+		private void DoRemoveFontSizes(HtmlDom pageDom)
+		{
+			// Find the special styles element which contains the user-defined styles.
+			// These are the only elements I can find that set explicit font sizes.
+			// A few of our css rules apply percentage sizes, but that should be OK.
+			var userStyles = pageDom.Head.ChildNodes.Cast<XmlNode>()
+				.Where(x => x is XmlElement && x.Attributes["title"]?.Value == "userModifiedStyles").FirstOrDefault();
+			if (userStyles != null)
+			{
+				var userStylesCData = userStyles.ChildNodes.Cast<XmlNode>().Where(x => x is XmlCDataSection).FirstOrDefault();
+				if (userStylesCData != null)
+				{
+					var regex = new Regex(@"font-size\s*:[^;}]*;?");
+					userStylesCData.InnerText = regex.Replace(userStylesCData.InnerText, "").Replace("  ", " ");
+				}
+			}
+		}
+
 		private void HandleImageDescriptions(HtmlDom bookDom)
 		{
 			// Set img alt attributes to the description, or erase them if no description (BL-6035)
@@ -868,7 +921,7 @@ namespace Bloom.Publish.Epub
 				img.RemoveAttribute("alt");    // signal missing accessibility information
 			}
 			// Put the image descriptions on the page following the images.
-			if (PublishImageDescriptions == ImageDescriptionPublishing.OnPage)
+			if (PublishImageDescriptions == HowToPublishImageDescriptions.OnPage)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
 				foreach (XmlElement description in imageDescriptions)
@@ -888,7 +941,7 @@ namespace Bloom.Publish.Epub
 					}
 				}
 			}
-			else if (PublishImageDescriptions == ImageDescriptionPublishing.Links)
+			else if (PublishImageDescriptions == HowToPublishImageDescriptions.Links)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
 				foreach (XmlElement description in imageDescriptions)
@@ -992,7 +1045,7 @@ namespace Bloom.Publish.Epub
 					}
 				}
 			}
-			// If ImageDescriptionPublishing.None, leave alone, and they will be deleted as invisible. (Todo: that's apparently wrong)
+			// If HowToPublishImageDescriptions.None, leave alone, and they will be deleted as invisible. (Todo: that's apparently wrong)
 		}
 
 		/// <summary>

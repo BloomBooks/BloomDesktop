@@ -16,6 +16,7 @@ using L10NSharp;
 using SIL.Reporting;
 using SIL.IO;
 using System.Drawing;
+using System.Dynamic;
 using Bloom.Api;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
@@ -23,6 +24,7 @@ using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
 using Bloom.web.controllers;
 using Fleck;
+using Newtonsoft.Json;
 using RestSharp.Extensions;
 
 namespace Bloom.Publish
@@ -43,7 +45,8 @@ namespace Bloom.Publish
 		private BloomWebSocketServer _webSocketServer;
 		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
 		private const string kWebsocketPreviewId = "epubPreview";
-		private EpubMaker.ImageDescriptionPublishing _desiredImageDescriptionPublishing = EpubMaker.ImageDescriptionPublishing.None;
+
+		private EpubPublishUiSettings _desiredEpubSettings = new EpubPublishUiSettings();
 		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
 		private Action<EpubMaker> _doWhenPreviewComplete; // Something to do when the current preview is complete (e.g., save it)
 		private BackgroundWorker _previewWorker;
@@ -557,11 +560,11 @@ namespace Bloom.Publish
 							firstTime = false;
 							PublishEpubApi.ReportProgress(this,_webSocketServer,
 								LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
-							_webSocketServer.Send("publish/epub/state", GetImageDescriptionState(_desiredImageDescriptionPublishing));
 						}
 					};
 					_model.PrepareToStageEpub(); // let's get the epub maker and its browser created on the UI thread
-					_model.EpubMaker.PublishImageDescriptions = _desiredImageDescriptionPublishing;
+					_model.EpubMaker.PublishImageDescriptions = _desiredEpubSettings.howToPublishImageDescriptions;
+					_model.EpubMaker.RemoveFontSizes = _desiredEpubSettings.removeFontSizes;
 					_previewWorker = new BackgroundWorker();
 					_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
 					_previewWorker.DoWork += (sender, args) => SetupEpubPreview();
@@ -571,24 +574,18 @@ namespace Bloom.Publish
 			UpdateSaveButton();
 		}
 
-		string GetImageDescriptionState(EpubMaker.ImageDescriptionPublishing input)
+		internal string GetEpubState()
 		{
-			switch (input)
-			{
-				case EpubMaker.ImageDescriptionPublishing.None: return "none";
-				case EpubMaker.ImageDescriptionPublishing.OnPage: return "onPage";
-				case EpubMaker.ImageDescriptionPublishing.Links: return "links";
-				default: throw new InvalidOperationException("enumeration in invalid state");
-			}
+			return JsonConvert.SerializeObject(_desiredEpubSettings);
 		}
 
-		public void UpdatePreview(EpubMaker.ImageDescriptionPublishing newImageMode, bool retry = false)
+		public void UpdatePreview(EpubPublishUiSettings newSettings, bool retry)
 		{
 			lock (this)
 			{
-				if (_desiredImageDescriptionPublishing == newImageMode && !retry)
+				if (_desiredEpubSettings == newSettings)
 					return; // getting a request really from the browser, and already in that state.
-				_desiredImageDescriptionPublishing = newImageMode;
+				_desiredEpubSettings = newSettings;
 				if (_previewWorker != null)
 				{
 					// Something changed before we even finished generating the preview! abort the current attempt, which will lead
@@ -608,7 +605,8 @@ namespace Bloom.Publish
 				_previewWorker = new BackgroundWorker();
 			}
 
-			_model.EpubMaker.PublishImageDescriptions = newImageMode;
+			_model.EpubMaker.PublishImageDescriptions = newSettings.howToPublishImageDescriptions;
+			_model.EpubMaker.RemoveFontSizes = newSettings.removeFontSizes;
 			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 			// we will really be changing the src attr in the preview iframe so the display will update.
 			_webSocketServer.Send(kWebsocketPreviewId, "");
@@ -645,23 +643,25 @@ namespace Bloom.Publish
 				_needNewPreview = false;
 			}
 
-			if (abortRequested || _model.EpubMaker.PublishImageDescriptions != _desiredImageDescriptionPublishing)
+			if (abortRequested || _model.EpubMaker.PublishImageDescriptions != _desiredEpubSettings.howToPublishImageDescriptions
+				|| _model.EpubMaker.RemoveFontSizes != _desiredEpubSettings.removeFontSizes)
 			{
-				UpdatePreview(_desiredImageDescriptionPublishing, true);
+				UpdatePreview(_desiredEpubSettings, true);
 				return;
 			}
 
 			if (_doWhenPreviewComplete != null)
 			{
 				Debug.Assert(!_model.EpubMaker.AbortRequested);
-				Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredImageDescriptionPublishing);
+				Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredEpubSettings.howToPublishImageDescriptions);
+				Debug.Assert(_model.EpubMaker.RemoveFontSizes == _desiredEpubSettings.removeFontSizes);
 				_doWhenPreviewComplete(_model.EpubMaker);
 				_doWhenPreviewComplete = null;
 
 				if (_needNewPreview)
 				{
 					// We got a request somewhere in the process of running the action.
-					UpdatePreview(_desiredImageDescriptionPublishing, true);
+					UpdatePreview(_desiredEpubSettings, true);
 					return;
 				}
 			}
@@ -689,13 +689,14 @@ namespace Bloom.Publish
 			}
 
 			Debug.Assert(!_model.EpubMaker.AbortRequested);
-			Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredImageDescriptionPublishing);
+			Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredEpubSettings.howToPublishImageDescriptions);
+			Debug.Assert(_model.EpubMaker.RemoveFontSizes == _desiredEpubSettings.removeFontSizes);
 			_doWhenPreviewComplete(_model.EpubMaker);
 
 			_doWhenPreviewComplete = null;
 
 			if (_needNewPreview) // we got a request during action processing
-				UpdatePreview(_desiredImageDescriptionPublishing, true);
+				UpdatePreview(_desiredEpubSettings, true);
 		}
 
 		private void SetupEpubPreview()

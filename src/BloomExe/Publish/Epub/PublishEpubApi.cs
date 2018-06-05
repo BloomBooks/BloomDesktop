@@ -11,6 +11,7 @@ using Bloom.Collection;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 
 namespace Bloom.Publish.Epub
 {
@@ -98,31 +99,24 @@ namespace Bloom.Publish.Epub
 									CompleteSave(savePath);
 								});
 							}
-							else
-							{
-								// Keeping this prior code just in case, but I don't think it is currently used.
-								_epubMaker = new EpubMaker(_thumbNailer, _isolator, _bookServer);
-								_epubMaker.Book = _bookSelection.CurrentSelection;
-								_epubMaker.Unpaginated = true; // Enhance: UI?
-								_epubMaker.OneAudioPerPage = true;
-								_epubMaker.PublishImageDescriptions = GetPublishMode(request);
-								ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingDoc", "Preparing document"));
-								_epubMaker.StageEpub();
-								CompleteSave(savePath);
-							}
-
 						}
 					}
 
 					request.PostSucceeded();
 				}
 			}, true);
-			server.RegisterEndpointHandler(kApiUrlPart + "imageDescription", request =>
+
+			server.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
 			{
-				var mode = GetPublishMode(request);
-				if (CurrentView != null)
-					CurrentView.UpdatePreview(mode);
-				request.PostSucceeded();
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithJson(CurrentView.GetEpubState());
+				} else { // post
+					var settings = (EpubPublishUiSettings)JsonConvert.DeserializeObject(request.RequiredPostJson(), typeof(EpubPublishUiSettings));
+					if (CurrentView != null)
+						CurrentView.UpdatePreview(settings, false);
+					request.PostSucceeded();
+				}
 			}, true);
 		}
 
@@ -135,21 +129,6 @@ namespace Bloom.Publish.Epub
 
 			// Tell the accessibility checker about this new thing it can check
 			AccessibilityCheckApi.SetEpubPath(savePath);
-		}
-
-		private static EpubMaker.ImageDescriptionPublishing GetPublishMode(ApiRequest request)
-		{
-			var howToPublishImageDescriptions = request.Parameters["publishImageDescription"];
-			switch (howToPublishImageDescriptions)
-			{
-				case "none":
-				default:
-					return EpubMaker.ImageDescriptionPublishing.None;
-				case "onPage":
-					return EpubMaker.ImageDescriptionPublishing.OnPage;
-				case "links":
-					return EpubMaker.ImageDescriptionPublishing.Links;
-			}
 		}
 
 		public void ReportAnalytics(string eventName)
