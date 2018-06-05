@@ -60,7 +60,7 @@ export class AccessibilityChecklist extends React.Component<
                 l10nKey={"Accessibility." + key}
                 apiPath={"/bloom/api/accessibilityCheck/" + key}
             >
-                No essential information by color
+                {english}
             </ApiBackedCheckbox>
         );
     }
