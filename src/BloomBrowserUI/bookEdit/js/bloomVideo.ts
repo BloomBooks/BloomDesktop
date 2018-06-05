@@ -8,13 +8,47 @@ import { GetButtonModifier } from "./bloomImages";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
+const mouseOverFunction = e => {
+    var target = e.target as HTMLElement;
+    if (!target) {
+        return; // can this happen?
+    }
+    if ((target).tagName.toLowerCase() === "video") {
+        target.setAttribute("controls", "true");
+    }
+};
+
+const mouseOutFunction = e => {
+    var target = e.target as HTMLElement;
+    if (!target) {
+        return; // can this happen?
+    }
+    if ((target).tagName.toLowerCase() === "video") {
+        target.removeAttribute("controls");
+    }
+};
+
 export function SetupVideoEditing(container) {
     $(container).find(".bloom-videoContainer").each((index, vc) => {
         SetupVideoContainer(vc);
     });
+    // We use mouseover rather than mouseenter and mouseout rather than mouseleave
+    // and attach to the body rather than individual videos so that we only have
+    // to do it once, and don't have to worry about attaching them to newly
+    // created videos. However, this function can be called again, and we only
+    // want one, so we remove before adding.
+    document.body.removeEventListener("mouseover", mouseOverFunction);
+    document.body.addEventListener("mouseover", mouseOverFunction);
+    document.body.removeEventListener("mouseout", mouseOutFunction);
+    document.body.addEventListener("mouseout", mouseOutFunction);
 }
 
-function SetupVideoContainer(containerDiv) {
+function SetupVideoContainer(containerDiv: Element) {
+    // Early sign language code included this; now we do it only on hover.
+    var videoElts = containerDiv.getElementsByTagName("video");
+    for (var i = 0; i < videoElts.length; i++) {
+        videoElts[i].removeAttribute("controls");
+    }
     $(containerDiv).mouseenter(function () {
         var $this = $(this);
 
