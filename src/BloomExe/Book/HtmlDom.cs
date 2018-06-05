@@ -1512,7 +1512,6 @@ namespace Bloom.Book
 			if (videoElt == null)
 			{
 				videoElt = videoContainer.AppendChild("video");
-				videoElt.SetAttribute("controls", "controls");
 			}
 
 			var srcElement = videoElt.GetChildWithName("source");
