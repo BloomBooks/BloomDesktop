@@ -103,6 +103,10 @@ namespace Bloom.Publish.Epub
 		Dictionary<string, string> _mapChangedFileNames = new Dictionary<string, string>();
 		// All the things (files) we need to list in the manifest
 		private List<string> _manifestItems;
+		// xhtml files with <script> element or onxxx= attributes
+		private List<string> _scriptedItems;
+		// xhtml files that refer to an svg image
+		private List<string> _svgItems;
 		// Duration of each item of type application/smil+xml (key is ID of item)
 		Dictionary<string, TimeSpan> _pageDurations = new Dictionary<string, TimeSpan>();
 		// The things we need to list in the 'spine'...defines the normal reading order of the book
@@ -224,6 +228,8 @@ namespace Bloom.Publish.Epub
 			_nonLinearSpineItems = new HashSet<string>();
 			_pendingBackLinks = new Dictionary<XmlElement, List<Tuple<XmlElement, string>>>();
 			_desiredNameMap = new Dictionary<XmlElement, string>();
+			_scriptedItems = new List<string>();
+			_svgItems = new List<string>();
 			_firstContentPageItem = null;
 			HandleImageDescriptions(Book.OurHtmlDom);
 			foreach (XmlElement pageElement in Book.GetPageElements())
@@ -291,6 +297,12 @@ namespace Bloom.Publish.Epub
 					</container>");
 
 			MakeManifest(coverPageImageFile);
+
+			foreach (var filename in Directory.EnumerateFiles(_contentFolder, "*.*"))
+			{
+				if (Path.GetExtension(filename).ToLowerInvariant() == ".svg")
+					PruneSvgFileOfCruft(filename);
+			}
 		}
 
 		private void MakeManifest(string coverPageImageFile)
@@ -330,12 +342,20 @@ namespace Bloom.Publish.Epub
 					new XAttribute("id", idOfFile),
 					new XAttribute("href", item),
 					new XAttribute("media-type", mediaType));
+				var properties = new StringBuilder();
+				if (_scriptedItems.Contains(item))
+					properties.Append("scripted");
+				if (_svgItems.Contains(item))
+					properties.Append(" svg");
 				// This isn't very useful but satisfies a validator requirement until we think of
 				// something better.
-				if(item == _navFileName)
-					itemElt.SetAttributeValue("properties", "nav");
-				if(item == coverPageImageFile)
-					itemElt.SetAttributeValue("properties", "cover-image");
+				if (item == _navFileName)
+					properties.Append(" nav");
+				if (item == coverPageImageFile)
+					properties.Append(" cover-image");
+				var propertiesValue = properties.ToString().Trim();
+				if (propertiesValue.Length > 0)
+					itemElt.SetAttributeValue("properties", propertiesValue);
 				if(Path.GetExtension(item).ToLowerInvariant() == ".xhtml")
 				{
 					var overlay = GetOverlayName(item);
@@ -797,6 +817,7 @@ namespace Bloom.Publish.Epub
 			AddPageBreakSpan(pageDom, pageDocName);
 			AddEpubTypeAttributes(pageDom);
 			AddAriaAccessibilityMarkup(pageDom);
+			CheckForEpubProperties(pageDom, pageDocName);
 
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
@@ -1328,6 +1349,69 @@ namespace Bloom.Publish.Epub
 			return false;
 		}
 
+
+		private void CheckForEpubProperties (HtmlDom pageDom, string filename)
+		{
+			// check for any script elements in the DOM
+			var scripts = pageDom.SafeSelectNodes("//script");
+			if (scripts.Count > 0)
+			{
+				_scriptedItems.Add(filename);
+			}
+			else
+			{
+				// Check for any of the HTML event attributes in the DOM.  They would each contain a script.
+				bool foundEventAttr = false;
+				foreach (var attr in pageDom.SafeSelectNodes("//*/@*").Cast<XmlAttribute>())
+				{
+					switch (attr.Name)
+					{
+					case "onafterprint":
+					case "onbeforeprint":
+					case "onbeforeunload":
+					case "onerror":
+					case "onhashchange":
+					case "onload":
+					case "onmessage":
+					case "onoffline":
+					case "ononline":
+					case "onpagehide":
+					case "onpageshow":
+					case "onpopstate":
+					case "onresize":
+					case "onstorage":
+					case "onunload":
+						_scriptedItems.Add(filename);
+						foundEventAttr = true;
+						break;
+					default:
+						break;
+					}
+					if (foundEventAttr)
+						break;
+				}
+				// Check for any embedded SVG images.  (Bloom doesn't have any yet, but who knows? someday?)
+				var svgs = pageDom.SafeSelectNodes("//svg");
+				if (svgs.Count > 0)
+				{
+					_svgItems.Add(filename);
+				}
+				else
+				{
+					// check for any references to SVG image files.  (If we miss one, it's not critical: files with
+					// only references to SVG images are optionally marked in the opf file.)
+					foreach (var imgsrc in pageDom.SafeSelectNodes("//img/@src").Cast<XmlAttribute>())
+					{
+						if (imgsrc.Value.ToLowerInvariant().EndsWith(".svg", StringComparison.InvariantCulture))
+						{
+							_svgItems.Add(filename);
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		// Combines staging and finishing (currently just used in tests).
 		public void SaveEpub(string destinationEpubPath)
 		{
@@ -1633,16 +1717,88 @@ namespace Bloom.Publish.Epub
 				div.RemoveAttribute("content-editable");	// too late for editing in an ebook
 			}
 
-			// Clean up img attributes (BL-6035)
+			// Clean up img elements (BL-6035/BL-6036)
 			foreach (var img in pageDom.Body.SelectNodes("//img").Cast<XmlElement>())
 			{
 				// Ensuring a proper alt attribute is handled elsewhere
-				img.RemoveAttribute("title");	// We don't want this tooltip in published books.
+				var src = img.GetOptionalStringAttribute("src", null);
+				if (String.IsNullOrEmpty(src))
+				{
+					// If the image file doesn't exist, we want to find out about it.  But if there is no
+					// image file, epubcheck complains and it doesn't do any good anyway.
+					img.ParentNode.RemoveChild(img);
+				}
+				else
+				{
+					img.RemoveAttribute("title");	// We don't want this tooltip in published books.
+					img.RemoveAttribute("type");	// This is invalid, but has appeared for svg branding images.
+				}
+			}
+			// epub-check doesn't like these attributes (BL-6036)
+			foreach (var div in pageDom.Body.SelectNodes("//div[contains(@class, 'split-pane-component-inner')]").Cast<XmlElement>())
+			{
+				div.RemoveAttribute("min-height");
+				div.RemoveAttribute("min-width");
 			}
 		}
 
 		/// <summary>
-		/// The epub-visiblity class and the ebubVisibility.css stylesheet
+		/// Inkscape adds a lot of custom attributes and elements that the epubcheck program
+		/// objects to.  These may make life easier for editing with inkscape, but aren't needed
+		/// to display the image.  So we remove those elements and attributes from the .svg
+		/// files when exporting to an ePUB.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6046.
+		/// </remarks>
+		private void PruneSvgFileOfCruft(string filename)
+		{
+			var xdoc = new XmlDocument();
+			xdoc.Load(filename);
+			var unwantedElements = new List<XmlElement>();
+			var unwantedAttrsCount = 0;
+			foreach (var xel in xdoc.SelectNodes("//*").Cast<XmlElement>())
+			{
+				if (xel.Name.StartsWith("inkscape:") ||
+					xel.Name.StartsWith("sodipodi:") ||
+					xel.Name.StartsWith("rdf:") ||
+					xel.Name == "flowRoot")	// epubcheck objects to this: must be from a newer version of SVG?
+				{
+					// Some of the unwanted elements may be children of this element, and
+					// deleting this element at this point could disrupt the enumerator and
+					// terminate the loop.  So we postpone deleting the element for now.
+					unwantedElements.Add(xel);
+				}
+				else
+				{
+					// Removing the attribute here requires working from the end of the list of attributes.
+					for (int i = xel.Attributes.Count - 1; i >= 0; --i)
+					{
+						var attr = xel.Attributes[i];
+						if (attr.Name.StartsWith("inkscape:") ||
+							attr.Name.StartsWith("sodipodi:") ||
+							attr.Name.StartsWith("rdf:"))
+						{
+							xel.RemoveAttributeAt(i);
+							++unwantedAttrsCount;
+						}
+					}
+				}
+			}
+			foreach (var xel in unwantedElements)
+			{
+				var parent = (XmlElement)xel.ParentNode;
+				parent.RemoveChild(xel);
+			}
+			//System.Diagnostics.Debug.WriteLine($"PruneSvgFileOfCruft(\"{filename}\"): removed {unwantedElements.Count} elements and {unwantedAttrsCount} attributes");
+			using (var writer = new XmlTextWriter(filename, new UTF8Encoding(false)))
+			{
+				xdoc.Save(writer);
+			}
+		}
+
+		/// <summary>
+		/// The epub-visiblity class and the epubVisibility.css stylesheet
 		/// are only used to determine the visibility of items.
 		/// They allow us to use the browser to determine visibility rules
 		/// and then remove unwanted content from the dom completely since
