@@ -47,8 +47,6 @@ namespace Bloom.Publish
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
@@ -68,7 +66,6 @@ namespace Bloom.Publish
 			this._bookletBodyRadio = new System.Windows.Forms.RadioButton();
 			this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
 			this._epub2Radio = new System.Windows.Forms.RadioButton();
-			this._epubRadio = new System.Windows.Forms.RadioButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
@@ -165,7 +162,6 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this._simpleAllPagesRadio, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this._epub2Radio, 0, 6);
-			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 5);
 			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
 			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
@@ -226,7 +222,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._androidRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._androidRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._androidRadio, "PublishTab.AndroidButton");
-			this._androidRadio.Location = new System.Drawing.Point(3, 497);
+			this._androidRadio.Location = new System.Drawing.Point(3, 409);
 			this._androidRadio.Name = "_androidRadio";
 			this._androidRadio.Size = new System.Drawing.Size(105, 71);
 			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -253,7 +249,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._uploadRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			this._uploadRadio.Location = new System.Drawing.Point(3, 574);
+			this._uploadRadio.Location = new System.Drawing.Point(3, 486);
 			this._uploadRadio.Name = "_uploadRadio";
 			this._uploadRadio.Size = new System.Drawing.Size(105, 89);
 			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -410,7 +406,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._epub2Radio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._epub2Radio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._epub2Radio, "PublishTab.EpubButton");
-			this._epub2Radio.Location = new System.Drawing.Point(3, 415);
+			this._epub2Radio.Location = new System.Drawing.Point(3, 327);
 			this._epub2Radio.Name = "_epub2Radio";
 			this._epub2Radio.Size = new System.Drawing.Size(105, 76);
 			superToolTipInfo6.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -425,39 +421,11 @@ namespace Bloom.Publish
 			this._superToolTip.SetSuperStuff(this._epub2Radio, superToolTipInfoWrapper6);
 			this._epub2Radio.TabIndex = 23;
 			this._epub2Radio.TabStop = true;
-			this._epub2Radio.Text = "ePUB2";
+			this._epub2Radio.Text = "ePUB";
 			this._epub2Radio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._epub2Radio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._epub2Radio.UseVisualStyleBackColor = true;
 			this._epub2Radio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
-			// 
-			// _epubRadio
-			// 
-			this._epubRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._epubRadio.Image = global::Bloom.Properties.Resources.epubPublishButton;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._epubRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
-			this._epubRadio.Location = new System.Drawing.Point(3, 327);
-			this._epubRadio.Name = "_epubRadio";
-			this._epubRadio.Size = new System.Drawing.Size(105, 82);
-			superToolTipInfo7.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo7.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo7.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo7.BodyText = "Make an ePUB (electronic book) out of this book, allowing it to be read on variou" +
-    "s electronic reading devices.";
-			superToolTipInfo7.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo7.ShowHeader = false;
-			superToolTipInfoWrapper7.SuperToolTipInfo = superToolTipInfo7;
-			superToolTipInfoWrapper7.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper7);
-			this._epubRadio.TabIndex = 18;
-			this._epubRadio.TabStop = true;
-			this._epubRadio.Text = "ePUB";
-			this._epubRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this._epubRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._epubRadio.UseVisualStyleBackColor = true;
-			this._epubRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
 			// 
 			// _L10NSharpExtender
 			// 
@@ -528,7 +496,6 @@ namespace Bloom.Publish
 		private SIL.Windows.Forms.SuperToolTip.SuperToolTip _superToolTip;
 		private System.Windows.Forms.ToolStripMenuItem _openPDF;
         private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.RadioButton _epubRadio;
 		private System.Windows.Forms.RadioButton _androidRadio;
 		private System.Windows.Forms.RadioButton _uploadRadio;
 		private System.Windows.Forms.RadioButton _epub2Radio;
