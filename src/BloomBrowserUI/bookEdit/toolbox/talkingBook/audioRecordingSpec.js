@@ -16,7 +16,7 @@ describe("audio recording tests", function () {
         expect(spans.last().attr('class')).toBe('audio-sentence');
     });
     it("retains matching sentence spans with same ids.keeps md5s and adds missing ones", function () {
-        var div = $('<div><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</div>');
+        var div = $('<div><p><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</p></div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
@@ -31,7 +31,7 @@ describe("audio recording tests", function () {
         expect(spans.last().attr('class')).toBe('audio-sentence');
     });
     it("retains markup within sentences", function () {
-        var div = $('<div><span id="abc" class="audio-sentence">This <b>is</b> a sentence.</span> This <i>is</i> another</div>');
+        var div = $('<div><p><span id="abc" class="audio-sentence">This <b>is</b> a sentence.</span> This <i>is</i> another</p></div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
@@ -40,7 +40,7 @@ describe("audio recording tests", function () {
         expect(spans[1].innerHTML).toBe('This <i>is</i> another');
     });
     it("keeps id with unchanged recorded sentence when new inserted before", function () {
-        var div = $('<div>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></div>');
+        var div = $('<div><p>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></p></div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
@@ -55,7 +55,7 @@ describe("audio recording tests", function () {
         expect(spans.last().attr('class')).toBe('audio-sentence');
     });
     it("keeps ids and md5s when inserted between", function () {
-        var div = $('<div><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first sentence.</span> This is inserted. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> Inserted after.</div>');
+        var div = $('<div><p><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first sentence.</span> This is inserted. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> Inserted after.</p></div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
@@ -80,7 +80,7 @@ describe("audio recording tests", function () {
 
     // We can get something like this when we paste from Word
     it("ignores empty span", function () {
-        var div = $('<div>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></div>');
+        var div = $('<div><p>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></p></div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
@@ -107,7 +107,7 @@ describe("audio recording tests", function () {
         var recording = new AudioRecording();
         recording.makeSentenceSpans(p);
         var spans = p.find("span");
-        // Should have removed the outer span and left the two inner ones.
+        // Should have removed the outer span and left the two inner ones and added a third one.
         expect(spans.length).toBe(3);
         expect(spans.first().attr("id")).toBe("abcd");
         expect(spans.first().next().attr("id")).toBe("abde");
@@ -119,21 +119,19 @@ describe("audio recording tests", function () {
         expect(spans.first().next().next().attr('class')).toBe('audio-sentence');
     });
 
-    //reviewSlog: this is broken because it now emits more spaces.
-    /* it("handles leading space and <br>", function() {
-         var div = $("<div>\
-             <br class=''></br>\
-             <br></br>\
-             Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.</div>");
-         var recording = new AudioRecording();
-         recording.makeSentenceSpans(div);
-         var spans = div.find("span");
-         expect(spans.length).toBe(2);
-         // I'm not sure why we get this leading space in the first span; somehow that's how stuff currently comes
-         // out of the libsynphony.stringToSentences code. It doesn't seem to cause a problem in Bloom.
-         expect(spans[0].innerHTML).toBe('            Long dispela taim i gat wanpela bikpela taun i gat planti manmeri.');
-         expect(spans[1].innerHTML).toBe('Nem bilong dispela taun em Nineveh.');
-         // Again, I'm a bit surprised that it works out to so much leading space, but it looks right in the running program.
-         expect(div.text()).toBe('                                    Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.');
-     });*/
+    it("ensures full span coverage of paragraph", function () {
+        // based on BL-6038 user data
+        var p = $('<p>Random text <strong><span data-duration="9.400227" id="abcd" class="audio-sentence" recordingmd5="undefined"><u>underlined</u></span></strong> finish the sentence. Another sentence <u><strong>boldunderlined</strong></u> finish the second.</p>');
+        var recording = new AudioRecording();
+        recording.makeSentenceSpans(p);
+        var spans = p.find("span");
+        // Should have expanded the first span and created one for the second sentence.
+        expect(spans.length).toBe(2);
+        expect(spans.first().attr("id")).toBe("abcd");
+        // expect(spans.first().next().attr("id")).toBe("abde");
+        expect(spans[0].innerHTML).toBe('Random text <strong><u>underlined</u></strong> finish the sentence.');
+        expect(spans[1].innerHTML).toBe('Another sentence <u><strong>boldunderlined</strong></u> finish the second.');
+        expect(spans.first().attr('class')).toBe('audio-sentence');
+        expect(spans.first().next().attr('class')).toBe('audio-sentence');
+    });
 });
