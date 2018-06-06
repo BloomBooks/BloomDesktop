@@ -39,6 +39,7 @@ namespace Bloom.Edit
 		private readonly UndoCommand _undoCommand;
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
+		private readonly SignLanguageApi _signLanguageApi;
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
@@ -51,7 +52,7 @@ namespace Bloom.Edit
 
 		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
 			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
-			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
+			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, SignLanguageApi signLanguageApi)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -69,6 +70,11 @@ namespace Bloom.Edit
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
 			SetupThumnailLists();
 			_model.SetView(this);
+			// We will need to handle this in another way if we ever have multiple projects open and thus
+			// multiple models and views.
+			_signLanguageApi = signLanguageApi;
+			signLanguageApi.Model = _model;
+			signLanguageApi.View = this;
 			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
 			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
@@ -529,7 +535,7 @@ namespace Bloom.Edit
 			if(target.ClassName.Contains("editMetadataButton"))
 				OnEditImageMetdata(ge);
 			if (target.ClassName.Contains("changeVideoButton"))
-				OnChangeVideo(ge);
+				_signLanguageApi.OnChangeVideo(ge);
 
 			var anchor = target as GeckoAnchorElement;
 			if (anchor == null)
@@ -868,7 +874,7 @@ namespace Bloom.Edit
 		/// </summary>
 		/// <param name="imagePath"></param>
 		/// <returns></returns>
-		private bool CheckIfLockedAndWarn(string imagePath)
+		internal bool CheckIfLockedAndWarn(string imagePath)
 		{
 			// Enhance: we may want to reinstate some sort of (disableable) warning when they edit a picture while translating.
 			// Original comment:  this would let them set it once without us bugging them, but after that if they
@@ -986,57 +992,6 @@ namespace Bloom.Edit
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
 			imageInfo.Dispose(); // ensure memory doesn't leak
-		}
-
-		internal bool WarnIfVideoCantChange(GeckoHtmlElement videoContainer)
-		{
-			if (!_model.CanChangeImages())
-			{
-				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
-						"Sorry, this book is locked down so that images cannot be changed.")); // Is it worth another LM string so we can say "videos can't be changed?
-				return true;
-			}
-			string currentPath = HtmlDom.GetVideoElementUrl(videoContainer).NotEncoded;
-
-			if (!CheckIfLockedAndWarn(currentPath))
-				return true;
-			return false;
-		}
-		void OnChangeVideo(DomEventArgs ge)
-		{
-			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
-			var videoContainer = target.Parent;
-			if (videoContainer == null)
-				return; // should never happen
-			if (WarnIfVideoCantChange(videoContainer))
-				return;
-
-			var videoFiles = LocalizationManager.GetString("EditTab.FileDialogVideoFiles", "Video files");
-			using (var dlg = new DialogAdapters.OpenFileDialogAdapter
-			{
-				Multiselect = false,
-				CheckFileExists = true,
-				// rather restrictive, but the only type that works in all browsers.
-				Filter = String.Format("{0} (*.mp4)|*.mp4", videoFiles)
-			})
-			{
-				var result = dlg.ShowDialog();
-				if (result == DialogResult.OK)
-				{
-					// Check memory for the benefit of developers.  The user won't see anything.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
-					if (DialogResult.OK == result)
-					{
-						// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-						_model.SaveChangedVideo(videoContainer, dlg.FileName, "Bloom had a problem including that video");
-						// Warn the user if we're starting to use too much memory.
-						SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
-					}
-				}
-			}
-
-			Logger.WriteMinorEvent("Changed Video");
 		}
 
 		void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)

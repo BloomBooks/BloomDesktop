@@ -125,7 +125,8 @@ namespace Bloom
 							typeof(MusicApi),
 							typeof(ToolboxApi),
 							typeof(BrandingApi),
-							typeof(FeatureControlApi)
+							typeof(FeatureControlApi),
+							typeof(SignLanguageApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -306,6 +307,7 @@ namespace Bloom
 			_scope.Resolve<MusicApi>().RegisterWithServer(server);
 			_scope.Resolve<ToolboxApi>().RegisterWithServer(server);
 			_scope.Resolve<FeatureControlApi>().RegisterWithServer(server);
+			_scope.Resolve<SignLanguageApi>().RegisterWithServer(server);
 		}
 
 
