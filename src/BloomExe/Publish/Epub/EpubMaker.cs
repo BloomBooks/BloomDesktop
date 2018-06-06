@@ -1783,7 +1783,9 @@ namespace Bloom.Publish.Epub
 				}
 				else
 				{
-					img.RemoveAttribute("title");	// We don't want this tooltip in published books.
+					var parent = img.ParentNode as XmlElement;
+					parent.RemoveAttribute("title");	// We don't want this in published books.
+					img.RemoveAttribute("title");	// We don't want this in published books.  (probably doesn't exist)
 					img.RemoveAttribute("type");	// This is invalid, but has appeared for svg branding images.
 				}
 			}
