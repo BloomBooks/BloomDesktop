@@ -9,7 +9,8 @@
     // This should open the page in Firefox or Chrome. Breakpoints should point to the typescript.
     //
     // Firefox Troubleshooting tips
-    // Note: as of Sept 20 2016, I haven't gotten Firefox breakpoints to work, for TS or JS. So this is pretty worthless.
+    // Make sure you have loaded the VSCode Extension Debugger for Firefox (hbenl.vscode-firefox-debug)
+    // This works now (as of 6 June 2018). Yay! You may still have to refresh Firefox after running the debugger.
     //
     // Chrome Troubleshooting tips
     // Note: you cannot (yet?) have the chrome inspector open at the same time (!!!) https://github.com/Microsoft/vscode-chrome-debug/issues/83,
@@ -30,8 +31,15 @@
             "name": "Launch in Firefox",
             "type": "firefox",
             "request": "launch",
+            "reAttach": true,
             "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
-            "webRoot": "${workspaceRoot}",
+            "webRoot": "${workspaceFolder}",
+            "pathMappings": [
+                {
+                    "url": "webpack://FrameExports",
+                    "path": "${workspaceFolder}"
+                }
+            ],
             "log": {
                 "consoleLevel": {
                     "PathConversion": "Debug",
@@ -43,15 +51,18 @@
             "name": "Launch in Chrome",
             "type": "chrome",
             "request": "launch",
-            "externalConsole": true, // so console.log shows up in vscode "Debug Console"
             "runtimeExecutable": "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
             // these args don't appear to work... trying to get it to not offer to restore previous pages
             //"runtimeArgs": [ "--no-first-run --kiosk --disable-session-crashed-bubble --disable-infobars --incognito --disable-extensions"],
             "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
-            "webRoot": "${workspaceRoot}",
+            "webRoot": "${workspaceFolder}",
             "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/output/chrome"
-            //,"diagnosticLogging": true
+            "userDataDir": "${workspaceFolder}/output/chrome",
+            "breakOnLoad": true,
+            "sourceMapPathOverrides": {
+                "webpack://FrameExports/./*": "${workspaceFolder}/*"
+            },
+            // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
         },
         {
             // Note the changed Port number.  I don't know why Linux successfully uses the first port tested, while Windows apparently
@@ -74,24 +85,28 @@
             "name": "Launch Linux Chromium",
             "type": "chrome",
             "request": "launch",
-            "externalConsole": true, // so console.log shows up in vscode "Debug Console"
             "runtimeExecutable": "/usr/bin/chromium-browser",
             "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
             "webRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/output/chrome"
         },
-        { // Note: you have to launch the test runner separately (karma start --browsers Chrome)
+        {
+            // Note: you have to launch the test runner separately (karma start --browsers Chrome)
             // and you may have to do a browser REFRESH before breakpoints are caught
             // Enhance: could we get it to attach to the chrome that karma starts? Maybe need to have karma start one with the debug port open?
             "name": "Debug Unit Tests",
-            "type": "Chrome",
+            "type": "chrome",
             "request": "launch",
-            "webRoot": "${workspaceRoot}",
+            "webRoot": "${workspaceFolder}",
             "sourceMaps": true,
             "url": "http://localhost:9876/debug.html",
-            "userDataDir": "${workspaceRoot}/output/chrome"
-            //,"diagnosticLogging": true
-        }
+            "userDataDir": "${workspaceFolder}/output/chrome",
+            "breakOnLoad": true,
+            "sourceMapPathOverrides": {
+                "webpack://FrameExports/./*": "${workspaceFolder}/*"
+            },
+            // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
+        },
     ]
 }
