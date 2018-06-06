@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Bloom.Api;
@@ -36,18 +37,40 @@ namespace Bloom.web.controllers
 
 			server.RegisterEndpointHandler(kApiUrlPart+"audioForAllText", request =>
 			{
-				request.ReplyWithText("not implemented");
-			}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "descriptionsForAllImages", request =>
-			{
-				request.ReplyWithText("not implemented");
-			}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "audioForAllImageDescriptions", request =>
-			{
-				request.ReplyWithText("not implemented");
+				request.ReplyWithJson(new {result="passed", problems=new string[0]});
 			}, false);
 
-			//todo: this will have to become async to work on large books on slow computers
+			server.RegisterEndpointHandler(kApiUrlPart + "descriptionsForAllImages", request =>
+			{
+				request.ReplyWithJson(new { result = "failed", problems = new [] {"this reason", "that reason"} });
+			}, false);
+
+			server.RegisterEndpointHandler(kApiUrlPart + "audioForAllImageDescriptions", request =>
+			{
+				request.Failed("not implemented");
+			}, false);
+
+			// Just a checkbox that the user ticks to say "yes, I checked this"
+			// At this point, we don't have a way to clear that when the book changes.
+			server.RegisterBooleanEndpointHandler(kApiUrlPart + "noEssentialInfoByColor",
+				request => request.CurrentBook.BookInfo.MetaData.A11y_NoEssentialInfoByColor,
+				(request, b) => {
+					request.CurrentBook.BookInfo.MetaData.A11y_NoEssentialInfoByColor = b;
+					request.CurrentBook.Save();
+				},
+				false);
+
+			// Just a checkbox that the user ticks to say "yes, I checked this"
+			// At this point, we don't have a way to clear that when the book changes.
+			server.RegisterBooleanEndpointHandler(kApiUrlPart + "noTextIncludedInAnyImages",
+				request => request.CurrentBook.BookInfo.MetaData.A11y_NoTextIncludedInAnyImages,
+				(request, b) => {
+					request.CurrentBook.BookInfo.MetaData.A11y_NoTextIncludedInAnyImages = b;
+					request.CurrentBook.Save();
+				},
+				false);
+			
+			//enhance: this might have to become async to work on large books on slow computers
 			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request =>
 			{
 				if (string.IsNullOrEmpty(_epubPath) || !File.Exists((_epubPath)))

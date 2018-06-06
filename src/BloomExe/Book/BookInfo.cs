@@ -30,7 +30,7 @@ namespace Bloom.Book
 
 		private BookMetaData _metadata;
 
-		private BookMetaData MetaData
+		public BookMetaData MetaData
 		{
 			get { return _metadata ?? (_metadata = new BookMetaData()); }
 		}
@@ -521,7 +521,7 @@ namespace Bloom.Book
 	/// create the object for us out of the pathname.
 	/// Also, separating them like this means we don't have to be careful to mark things we don't want in the json.
 	/// </summary>
-	internal class BookMetaData
+	public class BookMetaData
 	{
 		public BookMetaData()
 		{
@@ -784,6 +784,18 @@ namespace Bloom.Book
 		[JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool BookletMakingIsAppropriate { get; set; }
+
+		/// <summary>
+		/// This is a item the user checks-off as part of claiming that the book is fully accessible
+		/// </summary>
+		[JsonProperty("a11y_NoEssentialInfoByColor")]
+		public bool A11y_NoEssentialInfoByColor;
+
+		/// <summary>
+		/// This is a item the user checks-off as part of claiming that the book is fully accessible
+		/// </summary>
+		[JsonProperty("a11y_NoTextIncludedInAnyImages")]
+		public bool A11y_NoTextIncludedInAnyImages;
 
 		public ToolboxToolState LeveledReaderTool => Tools?.SingleOrDefault(t => t.ToolId == "leveledReader");
 
