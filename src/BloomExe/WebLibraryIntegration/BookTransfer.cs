@@ -741,7 +741,7 @@ namespace Bloom.WebLibraryIntegration
 				var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection);
 				currentEditableCollectionSelection.SelectCollection(collection);
 
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer, null);
+				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null, null, null);
 				var blPublishModel = new BloomLibraryPublishModel(this, book);

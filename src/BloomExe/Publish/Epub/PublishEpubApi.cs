@@ -34,7 +34,7 @@ namespace Bloom.Publish.Epub
 		// This constant must match the ID that is used for the listener set up in the React component ProgressBox
 		private const string kWebsocketProgressId = "progress";
 
-		public PublishView CurrentView { get; set; }
+		public EpubPublishPanel CurrentView { get; set; }
 
 		public PublishEpubApi(BookThumbNailer thumbNailer, NavigationIsolator isolator, BookServer bookServer,
 			BookSelection bookSelection, CollectionSettings collectionSettings, BloomWebSocketServer webSocketServer)

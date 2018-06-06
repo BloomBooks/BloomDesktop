@@ -333,6 +333,9 @@
       <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
+    <Compile Include="Publish\EpubPublishPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
     <Compile Include="Publish\HtmlPublishPanel.cs">
