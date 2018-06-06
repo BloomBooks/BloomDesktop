@@ -40,6 +40,9 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
 
         axios.get("/bloom/api/publish/epub/epubSettings").then(result => {
             this.setState({ settings: result.data });
+            // This is a way of kicking off the request for a preview. We need the forcePreview
+            // parameter to make it happen even though we aren't actually changing the settings.
+            axios.post("/bloom/api/publish/epub/epubSettings?forcePreview=true", result.data);
         });
     }
 
