@@ -2160,9 +2160,15 @@ namespace Bloom.Publish.Epub
 			return output;
 		}
 
-		private string GetMediaType (string item)
+		private string GetMediaType(string item)
 		{
-			switch (Path.GetExtension (item).Substring (1)) {
+			var extension = String.Empty;
+			if (!String.IsNullOrEmpty(item))
+				extension = Path.GetExtension(item);
+			if (!String.IsNullOrEmpty(extension))
+				extension = extension.Substring(1);	// ignore the .
+			switch (extension)
+			{
 			case "xml": // Review
 			case "xhtml":
 				return "application/xhtml+xml";
@@ -2193,7 +2199,7 @@ namespace Bloom.Publish.Epub
 			case "mp3":
 				return "audio/mpeg";
 			}
-			throw new ApplicationException ("unexpected file type in file " + item);
+			throw new ApplicationException ("unexpected/nonexistent file type in file " + item);
 		}
 
 		private static void MakeCssLinksAppropriateForEpub (HtmlDom dom)
