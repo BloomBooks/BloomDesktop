@@ -13,7 +13,7 @@ const mouseOverFunction = e => {
     if (!target) {
         return; // can this happen?
     }
-    if ((target).tagName.toLowerCase() === "video") {
+    if (target.tagName.toLowerCase() === "video") {
         target.setAttribute("controls", "true");
     }
 };
@@ -23,15 +23,17 @@ const mouseOutFunction = e => {
     if (!target) {
         return; // can this happen?
     }
-    if ((target).tagName.toLowerCase() === "video") {
+    if (target.tagName.toLowerCase() === "video") {
         target.removeAttribute("controls");
     }
 };
 
 export function SetupVideoEditing(container) {
-    $(container).find(".bloom-videoContainer").each((index, vc) => {
-        SetupVideoContainer(vc);
-    });
+    $(container)
+        .find(".bloom-videoContainer")
+        .each((index, vc) => {
+            SetupVideoContainer(vc);
+        });
     // We use mouseover rather than mouseenter and mouseout rather than mouseleave
     // and attach to the body rather than individual videos so that we only have
     // to do it once, and don't have to worry about attaching them to newly
@@ -49,38 +51,46 @@ function SetupVideoContainer(containerDiv: Element) {
     for (var i = 0; i < videoElts.length; i++) {
         videoElts[i].removeAttribute("controls");
     }
-    $(containerDiv).mouseenter(function () {
-        var $this = $(this);
+    $(containerDiv)
+        .mouseenter(function() {
+            var $this = $(this);
 
-        var buttonModifier = GetButtonModifier($this);
+            var buttonModifier = GetButtonModifier($this);
 
-        // The code that executes when this button is clicked is currently C#.
-        // See EditingView._browser1_OnBrowserClick for the start of the chain.
-        $this.prepend("<button class='changeVideoButton imageButton " + buttonModifier +
-            "' title='" + theOneLocalizationManager.getText("EditTab.Video.ChangeVideo") + "'></button>");
+            // The code that executes when this button is clicked is currently C#.
+            // See EditingView._browser1_OnBrowserClick for the start of the chain.
+            $this.prepend(
+                "<button class='changeVideoButton imageButton " +
+                    buttonModifier +
+                    "' title='" +
+                    theOneLocalizationManager.getText(
+                        "EditTab.Video.ChangeVideo"
+                    ) +
+                    "'></button>"
+            );
 
-        //SetImageTooltip(containerDiv, img);
+            //SetImageTooltip(containerDiv, img);
 
-        // Enhance: we will have to do something about license information for videos, but it's complicated.
-        // I don't think we have fully determined how to store the information with the video, though I believe
-        // we can embed EXIF data as we do for pictures. But rights over a video are more complicated.
-        // Many people may have rights if they haven't been explicitly given up...producer, videographer,
-        // copyright owner of script, actors, owners of music used, copyright owner of work script is based on,
-        // possibly some subject matter may be copyright (the Eiffel tower at night is a notorious example).
-        // if (IsImageReal(img)) {
-        //     $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' +
-        //         theOneLocalizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
-        //     $this.find('.miniButton').each(function () {
-        //         $(this).removeClass('disabled');
-        //     });
-        // }
+            // Enhance: we will have to do something about license information for videos, but it's complicated.
+            // I don't think we have fully determined how to store the information with the video, though I believe
+            // we can embed EXIF data as we do for pictures. But rights over a video are more complicated.
+            // Many people may have rights if they haven't been explicitly given up...producer, videographer,
+            // copyright owner of script, actors, owners of music used, copyright owner of work script is based on,
+            // possibly some subject matter may be copyright (the Eiffel tower at night is a notorious example).
+            // if (IsImageReal(img)) {
+            //     $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' +
+            //         theOneLocalizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
+            //     $this.find('.miniButton').each(function () {
+            //         $(this).removeClass('disabled');
+            //     });
+            // }
 
-        $this.addClass("hoverUp");
-    })
-        .mouseleave(function () {
+            $this.addClass("hoverUp");
+        })
+        .mouseleave(function() {
             var $this = $(this);
             $this.removeClass("hoverUp");
-            $this.find(".changeVideoButton").each(function () {
+            $this.find(".changeVideoButton").each(function() {
                 $(this).remove();
             });
 
