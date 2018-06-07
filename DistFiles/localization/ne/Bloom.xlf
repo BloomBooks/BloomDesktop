@@ -2609,7 +2609,7 @@
         <target xml:lang="ne-NP">&lt;a href='file://{0}'&gt;{0}&lt;/a&gt; मा सो नामको सङ्ग्रह पहिले नै छ।\nकृपया विशेष वा फरक नाम छान्नुहोस्।</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="ne-NP">यस सङ्ग्रहको लागि मुख्य भाषा छान्नुहोस्</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="ne-NP">फन्ट र लिपि</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="ne-NP">सङ्ग्रहको प्रकार चयन गर्नुहोस्</target>
       </trans-unit>

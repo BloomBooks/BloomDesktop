@@ -2609,7 +2609,7 @@
         <target xml:lang="sw">Tayari kuna mkusanyiko ulio na jina kama hilo, kwenye &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nTafadhali chagua jina la kipekee.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="sw">Chagua lugha kuu ya Mkusanyiko huu</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="sw">Fonti na Hati</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="sw">Chagua Aina ya Mkusanyiko</target>
       </trans-unit>

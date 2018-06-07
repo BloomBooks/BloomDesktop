@@ -2882,7 +2882,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <target xml:lang="fr">Une collection de ce nom existe déjà sur&lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nMerci de choisir un seul nom.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="fr">Sélectionner la langue principale applicable à cette collection</target>
       </trans-unit>
@@ -2926,7 +2926,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <target xml:lang="fr">Police et écriture</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="fr">Sélectionner le type de collection</target>
       </trans-unit>

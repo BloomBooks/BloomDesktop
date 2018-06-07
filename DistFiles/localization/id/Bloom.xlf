@@ -2609,7 +2609,7 @@
         <target xml:lang="id">Koleksi dengan nama itu sudah ada, di &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\n Pilih nama yang unik.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="id">Pilih Bahasa Utama untuk Koleksi Ini</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="id">Huruf dan Tulisan</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="id">Pilih Jenis Koleksi</target>
       </trans-unit>

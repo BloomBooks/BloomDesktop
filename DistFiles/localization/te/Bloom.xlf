@@ -2609,7 +2609,7 @@
         <target xml:lang="te">ఆ పేరు తో ఒక సేకరణ ఇప్పటికే ఉంది, at &lt;a href='file;//{0}'&gt;{0}&lt;/a&gt;.\n Please pick a unique name.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="te">ఈ సేకరణ ప్రధాన భాషను ఎంచుకోండి</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="te" state="needs-translation">Font and Script</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="te">సేకరణ రకం ఎంచుకోండి</target>
       </trans-unit>

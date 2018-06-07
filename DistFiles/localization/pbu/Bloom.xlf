@@ -2804,7 +2804,7 @@
         <target xml:lang="pbu">د‏ ‏&lt;a href='file: //{0}'&gt;{0}&lt;/a&gt;.\n‏ په نوم تیاره یوه ټولګه شته، هیله ده یو بل بنظیره نوم انتخاب کړئ.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="pbu">دې ټولګې لپاره اصلي ژبه وټاکئ</target>
       </trans-unit>
@@ -2845,7 +2845,7 @@
         <target xml:lang="pbu">لیکبڼه او خط</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="pbu">د ټولګې ډول انتخاب کړئ</target>
       </trans-unit>

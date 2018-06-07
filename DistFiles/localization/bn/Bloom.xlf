@@ -2609,7 +2609,7 @@
         <target xml:lang="bn">সেখানে ঐ নামে ইতোমধ্যেই একটি সংগ্রহ আছে, এখানে &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;।\nঅনুগ্রহ করে একটি অনন্য নাম নির্বাচন করুন।</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="bn">এই সংগ্রহের জন্য মূল ভাষা নির্বাচন করুন</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="bn">ফন্ট এবং স্ক্রিপ্ট</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="bn">সংগ্রহের ধরন পছন্দ করুন</target>
       </trans-unit>

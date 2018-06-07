@@ -2609,7 +2609,7 @@
         <target xml:lang="ha">Akwai wani tarin bayanan da ke da wannan sunan, a &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\n Don Allah ka ɗauki sunan da babu irinsa.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="ha">Ka zaɓi jigon harshe don wannan tarin bayanai</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="ha">Girman Harafi da rubutu</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="ha">Zaɓi irin tarin bayanai</target>
       </trans-unit>

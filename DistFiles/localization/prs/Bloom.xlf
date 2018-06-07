@@ -2915,7 +2915,7 @@
         <target xml:lang="prs">یک مجموعه با این نام وجود دارد، در ‏&lt;a href='file: //{0}'&gt;{0}&lt;/a&gt;‏.‏\n‏ لطفاٌ یک نام بی نظیر را انتخاب نمائید.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="prs">لسان اساسی را برای این مجموعه انتخاب نمائید</target>
       </trans-unit>
@@ -2956,7 +2956,7 @@
         <target xml:lang="prs">خط و دستخط</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="prs">نوع مجموعه را نتخاب نمائید</target>
       </trans-unit>

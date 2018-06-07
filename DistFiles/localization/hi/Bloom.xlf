@@ -2609,7 +2609,7 @@
         <target xml:lang="hi">&lt;a href='file://{0}'&gt;{0}&lt;/a&gt;पर उस नाम के साथ एक संग्रह पहले से ही है।\nकृपया एक अद्वितीय नाम चुनें।</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="hi">इस संग्रह के लिए मुख्य भाषा चुनें</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="hi" state="needs-translation">Font and Script</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="hi">संग्रह के प्रकार का चयन</target>
       </trans-unit>

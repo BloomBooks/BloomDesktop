@@ -2657,7 +2657,7 @@
         <target xml:lang="zh-CN">该丛书名已被使用：&lt;a href='file://{0}'&gt;{0}&gt;/a&gt;。\n请选择其他名称。</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="zh-CN">请选择该丛书的主要语言</target>
       </trans-unit>
@@ -2698,7 +2698,7 @@
         <target xml:lang="zh-CN">字体和文字</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="zh-CN">请选择丛书类型</target>
       </trans-unit>

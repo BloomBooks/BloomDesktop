@@ -2609,7 +2609,7 @@
         <target xml:lang="ru">Уже существует коллекция с таким именем, &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nПожалуйста, придумайте уникальное имя.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="ru">Выберите основной язык для этой коллекции</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="ru">Шрифт и система письма</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="ru">Выберите тип коллекции</target>
       </trans-unit>
