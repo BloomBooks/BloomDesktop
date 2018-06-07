@@ -13,6 +13,7 @@ using DesktopAnalytics;
 using Gecko;
 using Gecko.DOM;
 using L10NSharp;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -80,7 +81,29 @@ namespace Bloom.web.controllers
 				var fileName = GetNewVideoFileName();
 				var videoFolder = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
 				var path = Path.Combine(videoFolder, fileName);
-				RobustFile.WriteAllBytes(path, bytes);
+				var ffmpeg = "/usr/bin/ffmpeg";		// standard Linux location
+				if (SIL.PlatformUtilities.Platform.IsWindows)
+					ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
+				if (RobustFile.Exists(ffmpeg))
+				{
+					var rawVideo = TempFile.CreateAndGetPathButDontMakeTheFile();
+					RobustFile.WriteAllBytes(rawVideo.Path, bytes);
+					// -hide_banner = don't write all the version and build information to the console
+					// -y = always overwrite output file
+					// -v 20 = verbosity level reports only errors
+					// -i <path> = specify input file
+					// -force_key_frames "expr:gte(t,n_forced*0.5)" = insert keyframe every 0.5 seconds in the output file
+					var result = CommandLineRunner.Run(ffmpeg, $"-hide_banner -y -v 20 -i \"{rawVideo.Path}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"", "", 60 * 10, new NullProgress());
+					var output = result.StandardError;
+					if (!String.IsNullOrWhiteSpace(output))
+						Console.WriteLine("WARNING: output from ffmpeg: {0}", output);
+					if (output.StartsWith(rawVideo.Path+": ", StringComparison.InvariantCulture) || output.StartsWith(path+": ", StringComparison.InvariantCulture))
+						RobustFile.WriteAllBytes(path, bytes);		// use the original, hoping it's better than nothing.
+				}
+				else
+				{
+					RobustFile.WriteAllBytes(path, bytes);
+				}
 				var videoContainer = GetSelectedVideoContainer();
 				if (videoContainer == null)
 				{
