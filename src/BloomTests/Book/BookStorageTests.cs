@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using Bloom;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -514,6 +515,26 @@ namespace BloomTests.Book
 			var newPath = newFolder.Combine(newBookName + ".htm");
 			Assert.IsTrue(Directory.Exists(newFolder.Path), "Expected folder:" + newFolder.Path);
 			Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+		}
+
+
+		[Test]
+		public void Duplicate_CopyGetsNewGuid()
+		{
+			var storage = GetInitialStorage();
+			var originalInstanceId = "aaaaaa-bbbb-cccc-dddd-eeeeeeeeee";
+			File.WriteAllText(Path.Combine(storage.FolderPath, "meta.json"),
+				$"{{'some':'thing', 'bookInstanceId':'{originalInstanceId}', 'other':'stuff'}}".Replace("'","\""));
+
+			var folderForDuplicate  = storage.Duplicate();
+			Assert.AreNotEqual(folderForDuplicate, storage.FolderPath, "Should have a new name");
+			Assert.AreEqual(Path.GetDirectoryName(folderForDuplicate), Path.GetDirectoryName(storage.FolderPath), "Should be in same collection folder");
+			var metaPath = Path.Combine(folderForDuplicate, "meta.json");
+			var meta = DynamicJson.Parse(File.ReadAllText(metaPath));
+			Assert.AreNotEqual(originalInstanceId, meta.bookInstanceId, "The Duplicate should have a new InstanceId");
+			Assert.AreEqual("thing", meta.some, "rest of meta.json should be preserved");
+			Assert.AreEqual("stuff", meta.other, "rest of meta.json should be preserved");
+			Guid.Parse(meta.bookInstanceId); // will throw if we didn't actually get a guid
 		}
 	}
 }
