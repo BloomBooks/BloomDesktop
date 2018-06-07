@@ -256,13 +256,13 @@ namespace Bloom.web.controllers
 				if (result == DialogResult.OK)
 				{
 					// Check memory for the benefit of developers.  The user won't see anything.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
+					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "video chosen or canceled", false);
 					if (DialogResult.OK == result)
 					{
 						// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 						SaveChangedVideo(videoContainer, dlg.FileName, "Bloom had a problem including that video");
 						// Warn the user if we're starting to use too much memory.
-						SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
+						SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "video chosen and saved", true);
 					}
 				}
 			}
