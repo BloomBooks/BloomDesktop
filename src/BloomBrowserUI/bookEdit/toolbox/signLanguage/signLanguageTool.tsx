@@ -1,6 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
+import {
+    H1,
+    Div,
+    IUILanguageAwareProps,
+    Label
+} from "../../../react_components/l10n";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
@@ -35,7 +40,7 @@ interface BlobEvent {
 }
 
 interface MediaRecorder {
-    new(source: MediaStream, options: any);
+    new (source: MediaStream, options: any);
     start(): void;
     stop(): void;
     ondataavailable: (ev: BlobEvent) => void;
@@ -44,7 +49,7 @@ interface MediaRecorder {
 
 declare var MediaRecorder: {
     prototype: MediaRecorder;
-    new(s: MediaStream, options: any): MediaRecorder;
+    new (s: MediaStream, options: any): MediaRecorder;
 };
 
 // This react class implements the UI for the sign language (video) toolbox.
@@ -52,10 +57,20 @@ declare var MediaRecorder: {
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of SignLanguageTool to ToolBox.registerTool().
-export class SignLanguageToolControls extends React.Component<{}, IComponentState> {
+export class SignLanguageToolControls extends React.Component<
+    {},
+    IComponentState
+> {
     constructor() {
         super({});
-        this.state = { recording: false, countdown: 0, enabled: false, stateClass: "waiting", haveRecording: false, originalExists: false };
+        this.state = {
+            recording: false,
+            countdown: 0,
+            enabled: false,
+            stateClass: "waiting",
+            haveRecording: false,
+            originalExists: false
+        };
     }
 
     private videoStream: MediaStream;
@@ -65,49 +80,141 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
 
     public render() {
         return (
-            <div className={"signLanguageFrame " + this.state.stateClass + (this.state.enabled ? "" : " disabled")}>
-                <Label l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees">Here is what your camera sees:</Label>
-                <div id="videoMonitorWrapper"><video id="videoMonitor" autoPlay></video></div>
+            <div
+                className={
+                    "signLanguageFrame " +
+                    this.state.stateClass +
+                    (this.state.enabled ? "" : " disabled")
+                }
+            >
+                <Label l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees">
+                    Here is what your camera sees:
+                </Label>
+                <div id="videoMonitorWrapper">
+                    <video id="videoMonitor" autoPlay />
+                </div>
                 <div className="button-label-wrapper">
                     <div id="videoPlayAndLabelWrapper">
                         <div className="videoButtonWrapper">
-                            <button id="videoToggleRecording" className={"video-button ui-button"
-                                + (this.state.stateClass !== "waiting" ? " started" : "")
-                                + (this.state.recording ? " recordingNow" : "")
-                                + (this.state.enabled ? " enabled" : " disabled")}
-                                onClick={() => this.toggleRecording()} />
-                            <Label className="startRecording waiting"
+                            <button
+                                id="videoToggleRecording"
+                                className={
+                                    "video-button ui-button" +
+                                    (this.state.stateClass !== "waiting"
+                                        ? " started"
+                                        : "") +
+                                    (this.state.recording
+                                        ? " recordingNow"
+                                        : "") +
+                                    (this.state.enabled
+                                        ? " enabled"
+                                        : " disabled")
+                                }
+                                onClick={() => this.toggleRecording()}
+                            />
+                            <Label
+                                className="startRecording waiting"
                                 l10nKey="EditTab.Toolbox.SignLanguage.StartRecording"
-                                onClick={() => this.toggleRecording()}>Start Recording</Label>
-                            <span className="countdown3 countdownNumber">3</span>
-                            <span className="countdown2 countdownNumber">2</span>
-                            <span className="countdown1 countdownNumber">1</span>
-                            <Label className="recording recordingLabel"
-                                l10nKey="EditTab.Toolbox.SignLanguage.Recording">Recording</Label>
+                                onClick={() => this.toggleRecording()}
+                            >
+                                Start Recording
+                            </Label>
+                            <span className="countdown3 countdownNumber">
+                                3
+                            </span>
+                            <span className="countdown2 countdownNumber">
+                                2
+                            </span>
+                            <span className="countdown1 countdownNumber">
+                                1
+                            </span>
+                            <Label
+                                className="recording recordingLabel"
+                                l10nKey="EditTab.Toolbox.SignLanguage.Recording"
+                            >
+                                Recording
+                            </Label>
                         </div>
                     </div>
                 </div>
-                <div id="editOutsideWrapper" className={"videoButtonWrapper" + (this.state.haveRecording ? "" : " disabled ")}>
-                    <button id="editOutsideButton" onClick={() => this.editOutside()} />
-                    <Label className="commandLabel" l10nKey="EditTab.Toolbox.SignLanguage.EditOutside"
-                        onClick={() => this.editOutside()}>Edit outside of Bloom</Label>
+                <div
+                    id="editOutsideWrapper"
+                    className={
+                        "videoButtonWrapper" +
+                        (this.state.haveRecording ? "" : " disabled ")
+                    }
+                >
+                    <button
+                        id="editOutsideButton"
+                        onClick={() => this.editOutside()}
+                    />
+                    <Label
+                        className="commandLabel"
+                        l10nKey="EditTab.Toolbox.SignLanguage.EditOutside"
+                        onClick={() => this.editOutside()}
+                    >
+                        Edit outside of Bloom
+                    </Label>
                 </div>
-                <div id="restoreOriginalWrapper" className={"videoButtonWrapper" + (this.state.originalExists ? "" : " disabled ")}>
-                    <button id="restoreOriginalButton" onClick={() => this.restoreOriginal()} />
-                    <Label className="commandLabel" l10nKey="EditTab.Toolbox.SignLanguage.RestoreOriginal"
-                        onClick={() => this.restoreOriginal()}>Restore Original</Label>
+                <div
+                    id="restoreOriginalWrapper"
+                    className={
+                        "videoButtonWrapper" +
+                        (this.state.originalExists ? "" : " disabled ")
+                    }
+                >
+                    <button
+                        id="restoreOriginalButton"
+                        onClick={() => this.restoreOriginal()}
+                    />
+                    <Label
+                        className="commandLabel"
+                        l10nKey="EditTab.Toolbox.SignLanguage.RestoreOriginal"
+                        onClick={() => this.restoreOriginal()}
+                    >
+                        Restore Original
+                    </Label>
                 </div>
-                <div id="deleteRecordingWrapper" className={"videoButtonWrapper" + (this.state.haveRecording ? "" : " disabled ")}>
-                    <button id="videoDelete" onClick={() => this.deleteRecording()} >X</button>
-                    <Label className="commandLabel" l10nKey="EditTab.Toolbox.SignLanguage.DeleteVideo"
-                        onClick={() => this.deleteRecording()}>Delete Video</Label>
+                <div
+                    id="deleteRecordingWrapper"
+                    className={
+                        "videoButtonWrapper" +
+                        (this.state.haveRecording ? "" : " disabled ")
+                    }
+                >
+                    <button
+                        id="videoDelete"
+                        onClick={() => this.deleteRecording()}
+                    >
+                        X
+                    </button>
+                    <Label
+                        className="commandLabel"
+                        l10nKey="EditTab.Toolbox.SignLanguage.DeleteVideo"
+                        onClick={() => this.deleteRecording()}
+                    >
+                        Delete Video
+                    </Label>
                 </div>
                 <div>
-                    <button id="videoStopRecording" className={"video-button ui-button notWaiting"}
-                        onClick={() => this.toggleRecording()} />
+                    <button
+                        id="videoStopRecording"
+                        className={"video-button ui-button notWaiting"}
+                        onClick={() => this.toggleRecording()}
+                    />
                 </div>
-                <Label l10nKey="EditTab.Toolbox.SignLanguage.PressCancel" className="counting stopLabel">Press any key to cancel</Label>
-                <Label l10nKey="EditTab.Toolbox.SignLanguage.PressStop" className="recording stopLabel">Press any key to stop</Label>
+                <Label
+                    l10nKey="EditTab.Toolbox.SignLanguage.PressCancel"
+                    className="counting stopLabel"
+                >
+                    Press any key to cancel
+                </Label>
+                <Label
+                    l10nKey="EditTab.Toolbox.SignLanguage.PressStop"
+                    className="recording stopLabel"
+                >
+                    Press any key to stop
+                </Label>
             </div>
         );
     }
@@ -126,7 +233,9 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
 
     public turnOnVideo() {
         const constraints = { video: true };
-        navigator.mediaDevices.getUserMedia(constraints).then(stream => this.startMonitoring(stream))
+        navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(stream => this.startMonitoring(stream))
             .catch(reason => this.errorCallback(reason));
     }
 
@@ -143,13 +252,18 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
     private errorCallback(reason) {
         // something wrong! Developers note: Bloom and Firefox cannot both use it, so be careful about
         // "open in browser".
-        alert("Could not access video camera...is something else using it? Details: " + reason);
+        alert(
+            "Could not access video camera...is something else using it? Details: " +
+                reason
+        );
     }
 
     // callback from getUserMedia when it succeeds; gives us a stream we can monitor and record from.
     private startMonitoring(stream: MediaStream) {
         this.videoStream = stream;
-        const videoMonitor = document.getElementById("videoMonitor") as HTMLVideoElement;
+        const videoMonitor = document.getElementById(
+            "videoMonitor"
+        ) as HTMLVideoElement;
         videoMonitor.srcObject = stream;
     }
 
@@ -158,7 +272,7 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
     // we have to be able to remove it later.
     private onKeyPress = () => {
         this.toggleRecording();
-    }
+    };
 
     // Called when the record or stop button is clicked, or if a key is pressed while not in the waiting state
     // ...depending on the current state it either starts or ends the recording. It works as the action function
@@ -184,7 +298,10 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                 this.timerId = window.setTimeout(() => {
                     this.setState({ stateClass: "countdown1" });
                     this.timerId = window.setTimeout(() => {
-                        this.setState({ stateClass: "recording", recording: true });
+                        this.setState({
+                            stateClass: "recording",
+                            recording: true
+                        });
                         this.startRecording();
                     }, 1000);
                 }, 1000);
@@ -213,7 +330,8 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
                 SignLanguageTool.showOverlayToHideVideo();
                 SignLanguageTool.addRecordingLabelToOverlay(document);
                 break;
-            default: // back to 'waiting'
+            default:
+                // back to 'waiting'
                 SignLanguageTool.removeVideoOverlay();
                 break;
         }
@@ -256,10 +374,7 @@ export class SignLanguageToolControls extends React.Component<{}, IComponentStat
     }
 
     public static setup(root): SignLanguageToolControls {
-        return ReactDOM.render(
-            <SignLanguageToolControls />,
-            root
-        );
+        return ReactDOM.render(<SignLanguageToolControls />, root);
     }
 }
 
@@ -300,7 +415,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // page after selecting or recording a video.
         const containers = SignLanguageTool.getVideoContainers(false);
         for (var i = 0; i < containers.length; i++) {
-            containers[i].removeEventListener("click", this.containerClickListener);
+            containers[i].removeEventListener(
+                "click",
+                this.containerClickListener
+            );
         }
 
         this.reactControls.turnOffVideo();
@@ -317,7 +435,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         for (var i = 0; i < currentContainers.length; i++) {
             currentContainers[i].classList.remove("bloom-selected");
         }
-        var container = (event.currentTarget as HTMLElement);
+        var container = event.currentTarget as HTMLElement;
         container.classList.add("bloom-selected");
         this.updateStateForSelected(container);
         // And now in most locations we want to prevent the default behavior where click starts playback.
@@ -334,14 +452,17 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         var clientRect = container.getBoundingClientRect();
         var x = event.clientX - clientRect.left;
         var y = event.clientY - clientRect.top;
-        if (y < container.offsetHeight - 40 // above the control bar across the bottom
-            && (y < container.offsetHeight / 2 - buttonRadius // above the play button
-                || y > container.offsetHeight / 2 + buttonRadius // below the play button
-                || x < container.offsetWidth / 2 - buttonRadius // left of play button
-                || x > container.offsetWidth / 2 + buttonRadius)) {// right of play button
+        if (
+            y < container.offsetHeight - 40 && // above the control bar across the bottom
+            (y < container.offsetHeight / 2 - buttonRadius || // above the play button
+            y > container.offsetHeight / 2 + buttonRadius || // below the play button
+            x < container.offsetWidth / 2 - buttonRadius || // left of play button
+                x > container.offsetWidth / 2 + buttonRadius)
+        ) {
+            // right of play button
             event.preventDefault();
         }
-    }
+    };
 
     public newPageReady() {
         const containers = SignLanguageTool.getVideoContainers(false);
@@ -366,8 +487,14 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 // UpdateMarkup is called fairlyfrequently. Not sure what effect having
                 // the same listener attached multiple times might have, so play safe by
                 // removing it before adding.
-                container.removeEventListener("click", this.containerClickListener);
-                container.addEventListener("click", this.containerClickListener);
+                container.removeEventListener(
+                    "click",
+                    this.containerClickListener
+                );
+                container.addEventListener(
+                    "click",
+                    this.containerClickListener
+                );
             }
             // we turn it off when we leave a page, so even if we already have enabled:true,
             // we need to turn it on for this page now we know there is something to record.
@@ -381,27 +508,43 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private updateStateForSelected(container: Element) {
         var videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
-            this.reactControls.setState({ haveRecording: false, originalExists: false });
+            this.reactControls.setState({
+                haveRecording: false,
+                originalExists: false
+            });
             return;
         }
         var sources = videos[0].getElementsByTagName("source");
 
         if (sources.length === 0) {
-            this.reactControls.setState({ haveRecording: false, originalExists: false });
+            this.reactControls.setState({
+                haveRecording: false,
+                originalExists: false
+            });
             return;
         }
 
         var src = sources[0].getAttribute("src");
         if (!src) {
-            this.reactControls.setState({ haveRecording: false, originalExists: false });
+            this.reactControls.setState({
+                haveRecording: false,
+                originalExists: false
+            });
             return;
         }
-        axios.get("/bloom/api/toolbox/fileExists?filename=" + src).then(result => {
-            this.reactControls.setState({ haveRecording: (result.data) });
-        });
-        axios.get("/bloom/api/toolbox/fileExists?filename=" + src.replace(".mp4", ".orig")).then(result => {
-            this.reactControls.setState({ originalExists: (result.data) });
-        });
+        axios
+            .get("/bloom/api/toolbox/fileExists?filename=" + src)
+            .then(result => {
+                this.reactControls.setState({ haveRecording: result.data });
+            });
+        axios
+            .get(
+                "/bloom/api/toolbox/fileExists?filename=" +
+                    src.replace(".mp4", ".orig")
+            )
+            .then(result => {
+                this.reactControls.setState({ originalExists: result.data });
+            });
     }
 
     private static overlayClass: string = "bloom-videoOverlay";
@@ -409,12 +552,23 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     // Make an overlay and slap it over the selected edit pane video still while we're recording
     public static showOverlayToHideVideo(): void {
         const container = SignLanguageTool.getVideoContainers(true)[0]; // 'true' gets only the selected video
-        if (!container.previousElementSibling.classList.contains(SignLanguageTool.overlayClass)) {
+        if (
+            !container.previousElementSibling.classList.contains(
+                SignLanguageTool.overlayClass
+            )
+        ) {
             // bloom-ui class makes sure this div is removed before saving
-            const overlayDiv = "<div class='" + SignLanguageTool.overlayClass + " bloom-ui'><label></label></div";
+            const overlayDiv =
+                "<div class='" +
+                SignLanguageTool.overlayClass +
+                " bloom-ui'><label></label></div";
             container.parentElement.insertBefore(
-                SignLanguageTool.createNode(container.ownerDocument, overlayDiv),
-                container);
+                SignLanguageTool.createNode(
+                    container.ownerDocument,
+                    overlayDiv
+                ),
+                container
+            );
         }
     }
 
@@ -429,7 +583,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     public static removeVideoOverlay(): void {
         const container = SignLanguageTool.getVideoContainers(true)[0];
         var overlayElement = container.previousElementSibling;
-        if (overlayElement && overlayElement.classList.contains(SignLanguageTool.overlayClass)) {
+        if (
+            overlayElement &&
+            overlayElement.classList.contains(SignLanguageTool.overlayClass)
+        ) {
             container.previousElementSibling.remove();
         }
     }

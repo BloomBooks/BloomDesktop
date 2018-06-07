@@ -11,7 +11,7 @@
 }
 
 @videoButtonSize: 40px;
-@videoButtonBorder: @videoButtonSize/3;
+@videoButtonBorder: @videoButtonSize / 3;
 @videoButtonRimThickness: 3px;
 
 #videoToggleRecording {
@@ -21,7 +21,7 @@
     border-style: solid;
     border-width: @videoButtonBorder;
     border-color: @buttonColor;
-    border-radius: @videoButtonSize/2; // circle
+    border-radius: @videoButtonSize / 2; // circle
     background-color: transparent;
     position: relative;
     &.started {
@@ -29,7 +29,7 @@
     }
     &.recordingNow::after {
         position: absolute;
-        content:"";
+        content: "";
         box-sizing: border-box;
         height: @videoButtonSize;
         width: @videoButtonSize;
@@ -37,14 +37,14 @@
         border-width: @videoButtonRimThickness;
         border-color: @recordingColor;
         left: -@videoButtonBorder;
-        top:-@videoButtonBorder;
-        border-radius: @videoButtonSize/2;
-        background-color:transparent;     
+        top: -@videoButtonBorder;
+        border-radius: @videoButtonSize / 2;
+        background-color: transparent;
     }
 }
 
-@stopBorderThickness: @videoButtonSize/10;
-@stopCenterBlockSize: @videoButtonSize/3;
+@stopBorderThickness: @videoButtonSize / 10;
+@stopCenterBlockSize: @videoButtonSize / 3;
 #videoStopRecording {
     // These properties make a thin blue circle
     position: relative;
@@ -52,19 +52,19 @@
     width: @videoButtonSize;
     border-width: @stopBorderThickness;
     border-color: @buttonColor;
-    border-radius: @videoButtonSize/2; // circle
+    border-radius: @videoButtonSize / 2; // circle
     border-style: solid;
     background-color: transparent;
     margin-top: 20px;
     margin-bottom: 30px;
     &::after {
         // And this lot put a blue square in the middle of it.
-        content:"";
+        content: "";
         position: absolute;
         height: @stopCenterBlockSize;
         width: @stopCenterBlockSize;
         background-color: @buttonColor;
-        left:  (@videoButtonSize - @stopCenterBlockSize)/2 - @stopBorderThickness;
+        left: (@videoButtonSize - @stopCenterBlockSize)/2 - @stopBorderThickness;
         top: (@videoButtonSize - @stopCenterBlockSize)/2 - @stopBorderThickness;
     }
 }
@@ -77,16 +77,22 @@
     margin-bottom: 20px;
 }
 
-.startRecording, .recordingLabel, .commandLabel {margin-left: 10px;}
+.startRecording,
+.recordingLabel,
+.commandLabel {
+    margin-left: 10px;
+}
 .countdownNumber {
     margin-left: 40px;
     font-size: 40px;
     margin-top: -6px; // experimentally, makes it look centered on the button.
 }
-.countdownNumber, .recordingLabel {
+.countdownNumber,
+.recordingLabel {
     color: @recordingColor;
 }
-.recordingLabel, .stopLabel {
+.recordingLabel,
+.stopLabel {
     font-size: 20px;
 }
 
@@ -99,15 +105,16 @@
     margin-right: 20px;
 }
 
-.disabled{
+.disabled {
     opacity: 0.4;
 }
 
 .ui-accordion h3[data-toolId="signLanguageTool"] span.ui-accordion-header-icon {
-    background-image:url('/bloom/images/signLanguageTool.svg') !important;
+    background-image: url("/bloom/images/signLanguageTool.svg") !important;
 }
 
-#editOutsideButton, #restoreOriginalButton {
+#editOutsideButton,
+#restoreOriginalButton {
     height: @videoButtonSize;
     width: @videoButtonSize;
     background-repeat: no-repeat;
@@ -117,11 +124,11 @@
 }
 
 #editOutsideButton {
-    background-image: url('/bloom/images/blue pencil.svg');
+    background-image: url("/bloom/images/blue pencil.svg");
 }
 
 #restoreOriginalButton {
-    background-image: url('/bloom/images/restore-original.svg');
+    background-image: url("/bloom/images/restore-original.svg");
 }
 
 #restoreOriginalWrapper.disabled {
@@ -139,17 +146,45 @@
 
 // state management
 .waiting {
-    .countdown3, .countdown2, .countdown1, .counting, .recording, .notWaiting {display:none}
+    .countdown3,
+    .countdown2,
+    .countdown1,
+    .counting,
+    .recording,
+    .notWaiting {
+        display: none;
+    }
 }
 .countdown3 {
-    .waiting, .countdown2, .countdown1, .recording {display:none}
+    .waiting,
+    .countdown2,
+    .countdown1,
+    .recording {
+        display: none;
+    }
 }
 .countdown2 {
-    .waiting, .countdown3, .countdown1, .recording {display:none}
+    .waiting,
+    .countdown3,
+    .countdown1,
+    .recording {
+        display: none;
+    }
 }
 .countdown1 {
-    .waiting, .countdown3, .countdown2, .recording {display:none}
+    .waiting,
+    .countdown3,
+    .countdown2,
+    .recording {
+        display: none;
+    }
 }
 .recording {
-    .waiting, .countdown3, .countdown2, .countdown1, .counting {display:none}
+    .waiting,
+    .countdown3,
+    .countdown2,
+    .countdown1,
+    .counting {
+        display: none;
+    }
 }
