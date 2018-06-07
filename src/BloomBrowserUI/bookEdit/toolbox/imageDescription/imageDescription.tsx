@@ -9,6 +9,7 @@ import { Label } from "../../../react_components/l10n";
 import { Checkbox } from "../../../react_components/checkbox";
 import Link from "../../../react_components/link";
 import HelpLink from "../../../react_components/helpLink";
+import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -25,7 +26,7 @@ interface IImageDescriptionState {
 export class ImageDescriptionToolControls extends React.Component<
     {},
     IImageDescriptionState
-> {
+    > {
     constructor() {
         super({});
         this.state = { enabled: true, checkBoxes: [] };
@@ -77,24 +78,25 @@ export class ImageDescriptionToolControls extends React.Component<
     // to the link destination?)
     public render() {
         return (
-            <div
-                className={
-                    "imageDescriptionTool" +
-                    (this.state.enabled ? "" : " disabled")
-                }
-            >
-                <div className="imgDescLabelBlock">
-                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
-                        Learn to make effective image descriptions:
+            <RequiresBloomEnterpriseWrapper>
+                <div
+                    className={
+                        "imageDescriptionTool" +
+                        (this.state.enabled ? "" : " disabled")
+                    }
+                >
+                    <div className="imgDescLabelBlock">
+                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
+                            Learn to make effective image descriptions:
                     </Label>
-                    <div className="indentPoet">
-                        <Link
-                            id="poetDiagram"
-                            href="https://poet.diagramcenter.org"
-                            l10nKey="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram"
-                            l10nComment="English text is the actual link. May not need translation?"
-                        >
-                            poet.diagramcenter.org
+                        <div className="indentPoet">
+                            <Link
+                                id="poetDiagram"
+                                href="https://poet.diagramcenter.org"
+                                l10nKey="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram"
+                                l10nComment="English text is the actual link. May not need translation?"
+                            >
+                                poet.diagramcenter.org
                         </Link>
                     </div>
                     <div className="wrapPlayVideo disabled invisible">
@@ -111,28 +113,29 @@ export class ImageDescriptionToolControls extends React.Component<
                         >
                             Bloom training video
                         </Link>
+                        </div>
+                    </div>
+                    <div className="imgDescLabelBlock">
+                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.WriteYours">
+                            Write your image description on the left, in the box
+                            next to the picture.
+                    </Label>
+                    </div>
+                    <div className="imgDescLabelBlock">
+                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckDescription">
+                            Check your image description against each of these
+                            reminders:
+                    </Label>
+                    </div>
+                    {this.createCheckboxes()}
+                    <div className="helpLinkWrapper imgDescLabelBlock">
+                        <HelpLink
+                            helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
+                            l10nKey="Common.Help"
+                        >Help</HelpLink>
                     </div>
                 </div>
-                <div className="imgDescLabelBlock">
-                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.WriteYours">
-                        Write your image description on the left, in the box
-                        next to the picture.
-                    </Label>
-                </div>
-                <div className="imgDescLabelBlock">
-                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckDescription">
-                        Check your image description against each of these
-                        reminders:
-                    </Label>
-                </div>
-                {this.createCheckboxes()}
-                <div className="helpLinkWrapper imgDescLabelBlock">
-                    <HelpLink
-                        helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
-                        l10nKey="Common.Help"
-                    >Help</HelpLink>
-                </div>
-            </div>
+            </RequiresBloomEnterpriseWrapper>
         );
     }
 
@@ -297,7 +300,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 const newTg = getPageFrameExports()
                     .makeElement(
                         "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement" +
-                            " ImageDescriptionEdit-style'></div>"
+                        " ImageDescriptionEdit-style'></div>"
                     )
                     .get(0);
                 container.appendChild(newTg);
