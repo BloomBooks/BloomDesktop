@@ -46,10 +46,15 @@ export function SetupVideoEditing(container) {
 }
 
 function SetupVideoContainer(containerDiv: Element) {
-    // Early sign language code included this; now we do it only on hover.
     var videoElts = containerDiv.getElementsByTagName("video");
     for (var i = 0; i < videoElts.length; i++) {
+        // Early sign language code included this; now we do it only on hover.
         videoElts[i].removeAttribute("controls");
+
+        videoElts[i].addEventListener("ended", e => {
+            var video = e.target as HTMLVideoElement;
+            video.load(); // reset to the beginning
+        });
     }
     $(containerDiv)
         .mouseenter(function() {
