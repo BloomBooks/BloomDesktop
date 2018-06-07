@@ -40,14 +40,18 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
 
         axios.get("/bloom/api/publish/epub/epubSettings").then(result => {
             this.setState({ settings: result.data });
-            // This is a way of kicking off the request for a preview. We need the forcePreview
-            // parameter to make it happen even though we aren't actually changing the settings.
-            axios.post("/bloom/api/publish/epub/epubSettings?forcePreview=true", result.data);
         });
     }
 
     public componentDidMount() {
         window.addEventListener("beforeunload", this.componentCleanup);
+    }
+
+    private readyToReceiveProgress() {
+        // once the progress box is ready, we can start generating a preview.
+        // If we don't wait for that, it's pretty random whether we get the
+        // "preparing preview" message.
+        axios.post("/bloom/api/publish/epub/updatePreview", this.state.settings);
     }
 
     // Apparently, we have to rely on the window event when closing or refreshing the page.
@@ -93,7 +97,7 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                             <H2 className="label" l10nKey="Common.Progress">
                                 Progress
                             </H2>
-                            <ProgressBox lifetimeLabel={kWebSocketLifetime} />
+                            <ProgressBox lifetimeLabel={kWebSocketLifetime} onReadyToReceive={() => this.readyToReceiveProgress()} />
                         </div>
                     </section>
                     <div className="column">

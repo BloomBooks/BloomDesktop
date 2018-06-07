@@ -46,10 +46,6 @@ namespace Bloom.Publish.Epub
 		// This constant must match the ID that is used for the listener set up in the React component ProgressBox
 		private const string kWebsocketProgressId = "progress";
 
-		public Control CurrentView { get; set; }
-
-		public PublishModel Model { get; set; }
-
 		private EpubMaker EpubMaker { get; set; }
 
 		public PublishEpubApi(BookThumbNailer thumbNailer, NavigationIsolator isolator, BookServer bookServer,
@@ -66,25 +62,7 @@ namespace Bloom.Publish.Epub
 		// Message is presumed already localized.
 		private void ReportProgress(string message)
 		{
-			ReportProgress(CurrentView, _webSocketServer, message);
-		}
-
-		private static void ReportProgress(Control invokeControl, BloomWebSocketServer server, string message)
-		{
-			if (invokeControl != null && invokeControl.InvokeRequired)
-			{
-				invokeControl.Invoke((Action) (() => ReportProgressCore(server, message)));
-			}
-			else
-			{
-				ReportProgressCore(server, message);
-			}
-		}
-
-		private static void ReportProgressCore(BloomWebSocketServer server, string message) {
-			server.Send(kWebsocketProgressId, message);
-			// This seems to be necessary for the message to appear reasonably promptly.
-			Application.DoEvents();
+			_webSocketServer.Send(kWebsocketProgressId, message);
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -121,13 +99,19 @@ namespace Bloom.Publish.Epub
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
-					request.ReplyWithJson(GetEpubState());
+					request.ReplyWithJson(GetEpubSettings());
 				} else { // post
 					var settings = (EpubPublishUiSettings)JsonConvert.DeserializeObject(request.RequiredPostJson(), typeof(EpubPublishUiSettings));
-					var forcePreview = request.Parameters.AllKeys.Contains("forcePreview");
-					UpdatePreview(settings, forcePreview);
+					UpdatePreview(settings, false);
 					request.PostSucceeded();
 				}
+			}, true);
+
+			server.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
+			{
+				var settings = (EpubPublishUiSettings)JsonConvert.DeserializeObject(request.RequiredPostJson(), typeof(EpubPublishUiSettings));
+				UpdatePreview(settings, true);
+				request.PostSucceeded();
 			}, true);
 		}
 
@@ -188,8 +172,8 @@ namespace Bloom.Publish.Epub
 		{
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
-				if (!string.IsNullOrEmpty(Model.LastDirectory) && Directory.Exists(Model.LastDirectory))
-					dlg.InitialDirectory = Model.LastDirectory;
+				if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
+					dlg.InitialDirectory = _lastDirectory;
 
 				string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
 					_collectionSettings.GetLanguage1Name("en"));
@@ -198,9 +182,9 @@ namespace Bloom.Publish.Epub
 				dlg.OverwritePrompt = true;
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
-					Model.LastDirectory = Path.GetDirectoryName(dlg.FileName);
+					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
 					EpubMaker.FinishEpub(dlg.FileName);
-					Model.ReportAnalytics("Save ePUB");
+					ReportAnalytics("Save ePUB");
 				}
 			}
 		}
@@ -220,7 +204,7 @@ namespace Bloom.Publish.Epub
 		{
 			// This gets called on a background thread but one step needs to happen on the UI thread,
 			// so the Maker needs a control to Invoke on.
-			EpubMaker.ControlForInvoke = CurrentView;
+			EpubMaker.ControlForInvoke = Form.ActiveForm;
 			EpubMaker.StageEpub();
 
 			var fileLocator = _bookSelection.CurrentSelection.GetFileLocator();
@@ -250,16 +234,16 @@ namespace Bloom.Publish.Epub
 			return iframeSource;
 		}
 
-		internal string GetEpubState()
+		internal string GetEpubSettings()
 		{
 			return JsonConvert.SerializeObject(_desiredEpubSettings);
 		}
 
-		public void UpdatePreview(EpubPublishUiSettings newSettings, bool retry)
+		public void UpdatePreview(EpubPublishUiSettings newSettings, bool force)
 		{
 			lock (this)
 			{
-				if (_desiredEpubSettings == newSettings && !retry)
+				if (_desiredEpubSettings == newSettings && !force)
 					return; // getting a request really from the browser, and already in that state.
 				_desiredEpubSettings = newSettings;
 				if (_previewWorker != null)
@@ -279,6 +263,20 @@ namespace Bloom.Publish.Epub
 					return;
 				}
 				_previewWorker = new BackgroundWorker();
+			}
+
+			// If we've changed books we can't reuse this EpubMaker.
+			if (EpubMaker != null && EpubMaker.Book != _bookSelection.CurrentSelection)
+			{
+				EpubMaker.Dispose();
+				EpubMaker = null;
+			}
+
+			// I believe initialization of the EpubMaker needs to happen on the UI thread,
+			// something to do with navigating its embedded browser.
+			if (EpubMaker == null)
+			{
+				Form.ActiveForm.Invoke((Action)(() => PrepareToStageEpub()));
 			}
 
 			EpubMaker.PublishImageDescriptions = newSettings.howToPublishImageDescriptions;
@@ -341,11 +339,8 @@ namespace Bloom.Publish.Epub
 				}
 			}
 
-			CurrentView.Invoke((Action)(() =>
-			{
-				_webSocketServer.Send(kWebsocketPreviewId, _previewSrc);
-				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
-			}));
+			_webSocketServer.Send(kWebsocketPreviewId, _previewSrc);
+			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
 		}
 
 		/// <summary>
@@ -371,12 +366,6 @@ namespace Bloom.Publish.Epub
 
 			if (_needNewPreview) // we got a request during action processing
 				UpdatePreview(_desiredEpubSettings, true);
-		}
-
-		private void SetupEpubPreview()
-		{
-			Model.DoAnyNeededAudioCompression();
-			_previewSrc = SetupEpubControlContent();
 		}
 	}
 }

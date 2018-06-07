@@ -42,21 +42,19 @@ namespace Bloom.Publish
 		private NavigationIsolator _isolator;
 		private PublishToAndroidApi _publishApi;
 		private BloomWebSocketServer _webSocketServer;
-		private PublishEpubApi _publishEpubApi;
 
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator,
-			PublishToAndroidApi publishApi, BloomWebSocketServer webSocketServer, PublishEpubApi publishEpubApi)
+			PublishToAndroidApi publishApi, BloomWebSocketServer webSocketServer)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
 			_publishApi = publishApi;
 			_webSocketServer = webSocketServer;
-			_publishEpubApi = publishEpubApi;
 
 			InitializeComponent();
 
@@ -501,11 +499,6 @@ namespace Bloom.Publish
 					// we'll lose them for all the other JS code in this pane. But I don't have a better solution.
 					// We still get them in the output window, in case we really want to look for one.
 					Browser.SuppressJavaScriptErrors = true;
-					// This works as long as we only have one PublishView. If we one day support multiple windows, we'll need to do something
-					// to tell it the current one whenever we switch active publish views.
-					_publishEpubApi.CurrentView = this;
-					_publishEpubApi.Model = _model;
-					_publishEpubApi.SetupForCurrentBook();
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "epub", "epubPublishUI.html"));
 					break;
 			}

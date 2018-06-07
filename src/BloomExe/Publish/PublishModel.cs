@@ -310,15 +310,6 @@ namespace Bloom.Publish
 			}
 		}
 
-		/// <summary>
-		/// The most recent directory where the user saved something.
-		/// </summary>
-		internal string LastDirectory
-		{
-			get { return _lastDirectory; }
-			set { _lastDirectory = value; }
-		}
-
 		public void Save()
 		{
 			try
