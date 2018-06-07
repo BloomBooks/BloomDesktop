@@ -2609,9 +2609,9 @@
         <target xml:lang="km" state="needs-translation">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
-        <target xml:lang="km" state="needs-translation">Choose the Main Language For This Collection</target>
+        <target xml:lang="km" state="needs-translation">Choose the main language for this collection.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
@@ -2650,9 +2650,9 @@
         <target xml:lang="km" state="needs-translation">Font and Script</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-        <target xml:lang="km" state="needs-translation">Choose the Collection Type</target>
+        <target xml:lang="km" state="needs-translation">Choose the collection type.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
         <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>

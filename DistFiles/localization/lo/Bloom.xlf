@@ -2609,7 +2609,7 @@
         <target xml:lang="lo">ແລ້ວມີການເກັບກໍາທີ່ມີຊື່ວ່າໄດ້ທີ່ &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\n ກະລຸນາເລືອກເອົາຊື່ເປັນເອກະລັກ</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="lo">ເລືອກພາສາຂອງທ່ານສໍາລັບການເກັບກໍານີ້.</target>
       </trans-unit>
@@ -2650,7 +2650,7 @@
         <target xml:lang="lo" state="needs-translation">Font and Script</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="lo">ເລືອກປະເພດCollection</target>
       </trans-unit>

@@ -3955,7 +3955,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES">Ya hay una colección con ese nombre, en &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPor favor elija un nombre único.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="es-ES">Elija el idioma principal para esta Colección</target>
         <alt-trans>
@@ -4014,7 +4014,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES">Fuente y Escritura</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="es-ES">Elija el tipo de Colección</target>
         <alt-trans>

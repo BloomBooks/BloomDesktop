@@ -2158,7 +2158,7 @@
         <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
@@ -2191,7 +2191,7 @@
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">

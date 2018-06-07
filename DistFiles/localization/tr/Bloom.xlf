@@ -2696,7 +2696,7 @@
         <target xml:lang="tr" state="translated">Bu isimde bir kolleksiyon zaten mevcut, &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nLütfen yeni bir benzersiz isim seçiniz.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="tr" state="translated">Bu Koleksiyonun ana dili seçin</target>
       </trans-unit>
@@ -2737,7 +2737,7 @@
         <target xml:lang="tr" state="translated">Yazı tipi ve komut dosyası</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="tr" state="translated">Koleksiyon Türü'nü seçin</target>
       </trans-unit>

@@ -2879,7 +2879,7 @@
         <target xml:lang="pt-PT" state="translated">Já existe uma coleção com esse nome, em &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;..\nPor favor escolha um nome único.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
-        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="pt-PT" state="translated">Escolha o idioma principal para esta coleção</target>
       </trans-unit>
@@ -2920,7 +2920,7 @@
         <target xml:lang="pt-PT" state="translated">Fonte e Escrita</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
-        <source xml:lang="en">Choose the Collection Type</source>
+        <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="pt-PT" state="translated">Escolha o tipo de coleção</target>
       </trans-unit>
