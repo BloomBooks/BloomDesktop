@@ -1456,12 +1456,16 @@ namespace Bloom.Book
 		}
 
 		//enchance: move to SIL.IO.RobustIO
-		public static void CopyDirectory(string sourceDir, string targetDir)
+		public static void CopyDirectory(string sourceDir, string targetDir, string[] skipFileExtensionsLowerCase = null)
 		{
 			Directory.CreateDirectory(targetDir);
 
 			foreach (var file in Directory.GetFiles(sourceDir))
+			{
+				if (skipFileExtensionsLowerCase != null && skipFileExtensionsLowerCase.Contains(Path.GetExtension(file.ToLowerInvariant())))
+					continue;
 				RobustFile.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
+			}
 
 			foreach (var directory in Directory.GetDirectories(sourceDir))
 				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
@@ -1511,7 +1515,7 @@ namespace Bloom.Book
 			Directory.CreateDirectory(newBookDir);
 
 			// copy files
-			BookStorage.CopyDirectory(FolderPath, newBookDir);
+			BookStorage.CopyDirectory(FolderPath, newBookDir, new[]{".bak", ".bloombookorder", ".pdf"});
 			var metaPath = Path.Combine(newBookDir, "meta.json");
 
 			// Update the InstanceId. This was not done prior to Bloom 4.2.104

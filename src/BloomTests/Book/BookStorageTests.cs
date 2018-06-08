@@ -599,5 +599,19 @@ namespace BloomTests.Book
 			Assert.AreEqual("stuff", meta.other, "rest of meta.json should be preserved");
 			Guid.Parse(meta.bookInstanceId); // will throw if we didn't actually get a guid
 		}
+
+		[Test]
+		public void Duplicate_UnwantedFilesDropped()
+		{
+			var storage = GetInitialStorage();
+			File.WriteAllText(Path.Combine(storage.FolderPath, "something.bak"), "hello");
+			File.WriteAllText(Path.Combine(storage.FolderPath, "something.bloombookorder"), "hello");
+			File.WriteAllText(Path.Combine(storage.FolderPath, "something.pdf"), "hello");
+
+			var folderForDuplicate = storage.Duplicate();
+			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.bak")));
+			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.bloombookorder")));
+			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.pdf")));
+		}
 	}
 }
