@@ -1,16 +1,14 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-//import { H1, Div, IUILanguageAwareProps, Label } from "../../../react_components/l10n";
-//import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import "./imageDescription.less";
-import { fireCSharpEditEvent } from "../../js/bloomEditing";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10n";
 import { Checkbox } from "../../../react_components/checkbox";
 import Link from "../../../react_components/link";
+import HelpLink from "../../../react_components/helpLink";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -128,6 +126,12 @@ export class ImageDescriptionToolControls extends React.Component<
                     </Label>
                 </div>
                 {this.createCheckboxes()}
+                <div className="helpLinkWrapper imgDescLabelBlock">
+                    <HelpLink
+                        helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
+                        l10nKey="Common.Help"
+                    >Help</HelpLink>
+                </div>
             </div>
         );
     }
