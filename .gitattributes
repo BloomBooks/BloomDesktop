@@ -29,6 +29,7 @@
 *.bmml -whitespace
 *.DotSettings -whitespace
 *.mdpolicy -whitespace
+*.proj -whitespace
 
 # These files are mainly imported from other projects, better not to enforce our system
 *.d.ts -whitespace
