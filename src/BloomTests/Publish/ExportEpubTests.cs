@@ -611,8 +611,8 @@ namespace BloomTests.Publish
 		public void HeadingN_convertedToHN()
 		{
 			var book = SetupBookLong("Content of level 1 heading", "xyz", extraEditDivClasses: "Heading1",
-				extraContentOutsideTranslationGroup: @"<div class='bloom-translationGroup'><div class='bloom-editable Heading2' lang='xyz'>Level 2 heading</div></div>
-							<div class='bloom-translationGroup'><div class='bloom-editable Heading3' lang='xyz'>Level 3 heading</div></div>"
+				extraContentOutsideTranslationGroup: @"<div class='bloom-translationGroup'><div class='bloom-editable Heading2' lang='xyz'><p>Level 2 heading</p></div></div>
+							<div class='bloom-translationGroup'><div class='bloom-editable Heading3' lang='xyz'><p><span id='xyzzy'>Level</span> 3 heading</p></div></div>"
 			);
 
 			MakeEpub("output", "HeadingN_convertedToHN", book);
@@ -620,7 +620,11 @@ namespace BloomTests.Publish
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h1[contains(@class, 'bloom-editable') and contains(@class, 'Heading1') and contains(text(), 'Content of level 1 heading')]",_ns, 1);
 			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h2[contains(@class,'bloom-editable Heading2') and text()='Level 2 heading']", _ns, 1);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()='Level 3 heading']", _ns, 1);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()=' 3 heading']", _ns, 1);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()=' 3 heading']/xhtml:span[@id='xyzzy' and text()='Level']", _ns, 1);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:h1/xhtml:p", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:h2/xhtml:p", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:h3/xhtml:p", _ns);
 		}
 
 		/// <summary>
@@ -1223,6 +1227,33 @@ namespace BloomTests.Publish
 			MakeEpub("output", "HasFullAudioCoverage_IgnoresOtherLanguage", book);
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+		}
+
+		[Test]
+		public void BogusCkeMaterial_Removed()
+		{
+			var book = SetupBookLong(@"<div class='split-pane-component-inner'>
+  <div data-initialrect='0.0449438202247191 0.1414790996784566 0.6825842696629213 0.6816720257234726' style='' data-finalrect='0.3455056179775281 0.21221864951768488 0.49719101123595505 0.4983922829581994' class='bloom-imageContainer bloom-leadingElement'>
+  <img data-license='cc-by-nc-nd' data-creator='Sue Newland' data-copyright='Copyright © 2018, Sue Newland' src='DSC08193.png' alt='An eagle taking off.' height='238' width='357' id='bookfig1' aria-describedby='figdesc1' />
+  </div>
+  <aside class='imageDescription' id='figdesc1'>
+    <p><span data-duration='3.900227' id='i92ebf7a6-0786-4480-89b2-dcefb56d7782' class='audio-sentence'>An eagle taking off.</span></p>
+    <div data-cke-hidden-sel='1' data-cke-temp='1' style='position:fixed;top:0;left:-1000px'>
+      <br />
+    </div>
+  </aside>
+</div>",
+				"xyz");
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i92ebf7a6-0786-4480-89b2-dcefb56d7782.mp3"));
+			MakeImageFiles(book, "DSC08193");
+			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			Assert.IsTrue(hasFullAudio);
+			MakeEpub("output", "BogusCkeMaterial_Removed", book);
+			CheckBasicsInManifest();
+			CheckAccessibilityInManifest(true, true, _defaultSourceValue, hasFullAudio);
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@data-cke-hidden-sel]");
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//aside/p/span", 1);
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//aside/div");
 		}
 	}
 

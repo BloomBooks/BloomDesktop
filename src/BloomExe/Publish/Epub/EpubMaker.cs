@@ -871,9 +871,25 @@ namespace Bloom.Publish.Epub
 					replacement.Attributes.Append(attr);
 				}
 
+				var paragraphSeen = false;
 				foreach (var child in div.ChildNodes.Cast<XmlNode>().ToArray())
 				{
-					replacement.AppendChild(child);
+					// paragraph elements are not valid inside heading elements, so we need to
+					// remove any paragraph markup by copying only the content, not the markup
+					if (child.Name == "p")
+					{
+						// If there are multiple paragraphs, the paragraph breaks disappear with
+						// the paragraph markup, so insert line breaks instead.
+						if (paragraphSeen)
+							replacement.AppendChild(div.OwnerDocument.CreateElement("br"));
+						foreach (var grandchild in child.ChildNodes.Cast<XmlNode>().ToArray())
+							replacement.AppendChild(grandchild);
+						paragraphSeen = true;
+					}
+					else
+					{
+						replacement.AppendChild(child);
+					}
 				}
 
 				div.ParentNode.ReplaceChild(replacement, div);
@@ -1794,6 +1810,15 @@ namespace Bloom.Publish.Epub
 			{
 				div.RemoveAttribute("min-height");
 				div.RemoveAttribute("min-width");
+			}
+
+			// These elements are inserted and supposedly removed by the ckeditor javascript code.
+			// But at least one book created by our test team still has one output to an epub.  If it
+			// exists, it probably has a style attribute (position:fixed) that epubcheck won't like.
+			// (fixed position way off the screen to hide it)
+			foreach (var div in pageDom.Body.SelectNodes("//*[@data-cke-hidden-sel]").Cast<XmlElement>())
+			{
+				div.ParentNode.RemoveChild(div);
 			}
 		}
 
