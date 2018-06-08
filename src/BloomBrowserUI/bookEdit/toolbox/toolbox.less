@@ -4,6 +4,7 @@
 @import "../../bloomUI.less";
 
 @toolboxBackgroundColor: @DarkBackgroundColor;
+@helpLinkTopMargin: 45px;
 
 div.toolboxRoot {
     display: inline-block;
@@ -21,6 +22,11 @@ div.toolboxRoot {
         background: none; // clear out the backgroudn image jquery-ui adds
         background-color: @toolboxBackgroundColor;
         border: none;
+    }
+
+    // multiple tools add a Help link after the rest of the tool content
+    .helpLinkWrapper {
+        margin-top: @helpLinkTopMargin; // put some space before the Help link
     }
 }
 
