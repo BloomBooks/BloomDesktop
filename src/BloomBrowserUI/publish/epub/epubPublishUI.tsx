@@ -34,7 +34,7 @@ interface IState {
 // for creating epubs
 class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private isLinux: boolean;
-    constructor(props) {
+    constructor(props: IUILanguageAwareProps) {
         super(props);
         this.state = {
             settings: {
@@ -48,10 +48,6 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
         });
     }
 
-    public componentDidMount() {
-        window.addEventListener("beforeunload", this.componentCleanup);
-    }
-
     private readyToReceiveProgress() {
         // once the progress box is ready, we can start generating a preview.
         // If we don't wait for that, it's pretty random whether we get the
@@ -62,18 +58,6 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
         );
     }
 
-    // Apparently, we have to rely on the window event when closing or refreshing the page.
-    // componentWillUnmount will not get called in those cases.
-    public componentWillUnmount() {
-        this.componentCleanup();
-        window.removeEventListener("beforeunload", this.componentCleanup);
-    }
-
-    private componentCleanup() {
-        // axios.post("/bloom/api/publish/epub/cleanup").then(result => {
-        //     WebSocketManager.closeSocket(kWebSocketLifetime);
-        // });
-    }
     public render() {
         return (
             <div id="epubPublishReactRoot" className={"screen-root"}>

@@ -222,7 +222,6 @@ namespace Bloom.Book
 
 		public bool IsEditable { get; private set; }
 
-
 		/// <summary>
 		/// Normally, we get the xmatter from our collection. But this can be overridden here
 		/// </summary>
@@ -329,6 +328,17 @@ namespace Bloom.Book
 			set { MetaData.Summary = value; }
 		}
 
+		public string PublishImageDescriptionsInEpub
+		{
+			get { return MetaData.Epub_IncludeImageDescriptions; }
+			set { MetaData.Epub_IncludeImageDescriptions = value; }
+		}
+
+		public bool RemoveFontSizesInEpub
+		{
+			get { return MetaData.Epub_RemoveFontStyles; }
+			set { MetaData.Epub_RemoveFontStyles = value; }
+		}
 
 		string[] SplitList(string list)
 		{
@@ -680,7 +690,7 @@ namespace Bloom.Book
 		[JsonProperty("suitableForVernacularLibrary")]
 		public bool IsSuitableForVernacularLibrary { get; set; }
 
-		//SeeAlso: commeted IsExperimental on Book
+		//SeeAlso: commented IsExperimental on Book
 		[JsonProperty("experimental")]
 		public bool IsExperimental { get; set; }
 
@@ -786,16 +796,29 @@ namespace Bloom.Book
 		public bool BookletMakingIsAppropriate { get; set; }
 
 		/// <summary>
-		/// This is a item the user checks-off as part of claiming that the book is fully accessible
+		/// This is an item the user checks-off as part of claiming that the book is fully accessible
 		/// </summary>
 		[JsonProperty("a11y_NoEssentialInfoByColor")]
 		public bool A11y_NoEssentialInfoByColor;
 
 		/// <summary>
-		/// This is a item the user checks-off as part of claiming that the book is fully accessible
+		/// This is an item the user checks-off as part of claiming that the book is fully accessible
 		/// </summary>
 		[JsonProperty("a11y_NoTextIncludedInAnyImages")]
 		public bool A11y_NoTextIncludedInAnyImages;
+
+		/// <summary>
+		/// This item indicates how the user would like Epubs of this book to handle Image Descriptions
+		/// Current possibilities are 'None', 'OnPage', and 'Links'.
+		/// </summary>
+		[JsonProperty("epub_IncludeImageDescriptions")]
+		public string Epub_IncludeImageDescriptions;
+
+		/// <summary>
+		/// This corresponds to a checkbox indicating that the user wants to use the eReader's native font styles.
+		/// </summary>
+		[JsonProperty("epub_RemoveFontStyles")]
+		public bool Epub_RemoveFontStyles;
 
 		public ToolboxToolState LeveledReaderTool => Tools?.SingleOrDefault(t => t.ToolId == "leveledReader");
 

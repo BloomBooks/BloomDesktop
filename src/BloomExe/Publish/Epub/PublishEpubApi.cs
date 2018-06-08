@@ -99,9 +99,17 @@ namespace Bloom.Publish.Epub
 				if (request.HttpMethod == HttpMethods.Get)
 				{
 					request.ReplyWithJson(GetEpubSettings());
-				} else { // post
+				}
+				else
+				{
+					// post
 					var settings = (EpubPublishUiSettings)JsonConvert.DeserializeObject(request.RequiredPostJson(), typeof(EpubPublishUiSettings));
+					// gjm 12 Jun 2018: I wanted to have a separate call to save settings when the React page was shutting down,
+					// but nothing I tried called such a function reliably. So we save the checkbox settings to the bookinfo
+					// whenever they change.
+					UpdateAndSaveBookInfo(settings);
 					UpdatePreview(settings, false);
+
 					request.PostSucceeded();
 				}
 			}, true);
@@ -112,6 +120,16 @@ namespace Bloom.Publish.Epub
 				UpdatePreview(settings, true);
 				request.PostSucceeded();
 			}, true);
+		}
+
+		private void UpdateAndSaveBookInfo(EpubPublishUiSettings settings)
+		{
+			if (_bookSelection == null)
+				return;
+			var info = _bookSelection.CurrentSelection.BookInfo;
+			info.PublishImageDescriptionsInEpub = settings.GetImageDescriptionSettingAsString();
+			info.RemoveFontSizesInEpub = settings.removeFontSizes;
+			info.Save();
 		}
 
 		private void CompleteSave(string savePath)
@@ -231,6 +249,13 @@ namespace Bloom.Publish.Epub
 
 		internal string GetEpubSettings()
 		{
+			if (_bookSelection != null)
+			{
+				var info = _bookSelection.CurrentSelection.BookInfo;
+				_desiredEpubSettings.howToPublishImageDescriptions = EpubPublishUiSettings.GetImageDescriptionSettingFromString(info.PublishImageDescriptionsInEpub);
+				_desiredEpubSettings.removeFontSizes = info.RemoveFontSizesInEpub;
+			}
+
 			return JsonConvert.SerializeObject(_desiredEpubSettings);
 		}
 
