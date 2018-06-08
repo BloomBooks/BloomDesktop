@@ -1314,36 +1314,12 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+
 		private void _copyBook_Click(object sender, EventArgs e)
 		{
 			if (SelectedBook == null) return;
 
-			// get the book name and copy number of the current directory
-			var collectionDir = SelectedBook.CollectionSettings.FolderPath;
-			var baseName = Path.GetFileName(SelectedBook.FolderPath);
-			var regex = new Regex(@"^(.+)(\s-\sCopy)(\s[0-9]+)?$");
-			var match = regex.Match(baseName);
-			var copyNum = 1;
-
-			if (match.Success)
-			{
-				baseName = match.Groups[1].Value;
-				if (match.Groups[3].Success)
-					copyNum += int.Parse(match.Groups[3].Value.Trim());
-			}
-
-			// directory for the new book
-			var newBookName = GetAvailableDirectory(collectionDir, baseName, copyNum);
-			var newBookDir = Path.Combine(collectionDir, newBookName);
-			Directory.CreateDirectory(newBookDir);
-
-			// copy files
-			BookStorage.CopyDirectory(SelectedBook.FolderPath, newBookDir);
-
-			// rename the book htm file
-			var oldName = Path.Combine(newBookDir, Path.GetFileName(SelectedBook.GetPathHtmlFile()));
-			var newName = Path.Combine(newBookDir, newBookName + ".htm");
-			RobustFile.Move(oldName, newName);
+			var newBookDir = SelectedBook.Storage.Duplicate();
 
 			// reload the collection
 			_model.ReloadCollections();
@@ -1356,30 +1332,6 @@ namespace Bloom.CollectionTab
 				SelectBook(bookInfo);
 				HighlightBookButtonAndShowContextMenuButton(bookInfo);
 			}
-		}
-
-		/// <summary>
-		/// Get an avaialble directory name for a new copy of a book
-		/// </summary>
-		/// <param name="collectionDir"></param>
-		/// <param name="baseName"></param>
-		/// <param name="copyNum"></param>
-		/// <returns></returns>
-		private static string GetAvailableDirectory(string collectionDir, string baseName, int copyNum)
-		{
-			string newName;
-			if (copyNum == 1)
-				newName = baseName + " - Copy";
-			else
-				newName = baseName + " - Copy " + copyNum;
-
-			while (Directory.Exists(Path.Combine(collectionDir, newName)))
-			{
-				copyNum++;
-				newName = baseName + " - Copy " + copyNum;
-			}
-
-			return newName;
 		}
 	}
 

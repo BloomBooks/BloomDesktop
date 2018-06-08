@@ -9,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
@@ -17,6 +18,7 @@ using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -64,6 +66,7 @@ namespace Bloom.Book
 		string InitialLoadErrors { get; }
 		void UpdateSupportFiles();
 		void Update(string fileName, string factoryPath = "");
+		string Duplicate();
 	}
 
 	public class BookStorage : IBookStorage
@@ -1476,6 +1479,80 @@ namespace Bloom.Book
 			var custom = Path.Combine(collectionDir, "customCollectionStyles.css");
 			if (File.Exists(custom))
 				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"));
+		}
+
+
+		/// <summary>
+		/// Makes a copy of the book on disk and gives the new copy a unique guid
+		/// </summary>
+		/// <returns>a path to the directory containing the duplicate</returns>
+		public string Duplicate()
+		{
+			// get the book name and copy number of the current directory
+			var baseName = Path.GetFileName(FolderPath);
+
+			// see if this already has a name like "foo Copy 3"
+			// If it does, we will use that number plus 1 as the starting point for looking for a new unique folder name
+			var regexToGetCopyNumber = new Regex(@"^(.+)(\s-\sCopy)(\s[0-9]+)?$");
+			var match = regexToGetCopyNumber.Match(baseName);
+			var copyNum = 1;
+
+			if (match.Success)
+			{
+				baseName = match.Groups[1].Value;
+				if (match.Groups[3].Success)
+					copyNum = 1 + Int32.Parse(match.Groups[3].Value.Trim());
+			}
+
+			// directory for the new book
+			var collectionDir = Path.GetDirectoryName(FolderPath);
+			var newBookName = GetAvailableDirectory(collectionDir, baseName, copyNum);
+			var newBookDir = Path.Combine(collectionDir, newBookName);
+			Directory.CreateDirectory(newBookDir);
+
+			// copy files
+			BookStorage.CopyDirectory(FolderPath, newBookDir);
+			var metaPath = Path.Combine(newBookDir, "meta.json");
+
+			// Update the InstanceId. This was not done prior to Bloom 4.2.104
+			// If the meta.json file is missing, ok that's weird but that means we
+			// don't have a duplicate bookInstanceId to worry about.
+			if (RobustFile.Exists(metaPath))
+			{
+				var meta = DynamicJson.Parse(File.ReadAllText(metaPath));
+				meta.bookInstanceId = Guid.NewGuid().ToString();
+				RobustFile.WriteAllText(metaPath, JsonConvert.SerializeObject(meta));
+			}
+
+			// rename the book htm file
+			var oldName = Path.Combine(newBookDir, Path.GetFileName(PathToExistingHtml));
+			var newName = Path.Combine(newBookDir, newBookName + ".htm");
+			RobustFile.Move(oldName, newName);
+			return newBookDir;
+		}
+
+		/// <summary>
+		/// Get an available directory name for a new copy of a book
+		/// </summary>
+		/// <param name="collectionDir"></param>
+		/// <param name="baseName"></param>
+		/// <param name="copyNum"></param>
+		/// <returns></returns>
+		private static string GetAvailableDirectory(string collectionDir, string baseName, int copyNum)
+		{
+			string newName;
+			if (copyNum == 1)
+				newName = baseName + " - Copy";
+			else
+				newName = baseName + " - Copy " + copyNum;
+
+			while (Directory.Exists(Path.Combine(collectionDir, newName)))
+			{
+				copyNum++;
+				newName = baseName + " - Copy " + copyNum;
+			}
+
+			return newName;
 		}
 	}
 }
