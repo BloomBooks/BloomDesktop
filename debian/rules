@@ -35,6 +35,7 @@ override_dh_auto_build:
 	fi && \
 	export HOME=/tmp && \
 	. ./environ && \
+		xbuild /t:RestoreBuildTasks build/Bloom.proj && \
 		xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
 		xbuild /p:Configuration=$(BUILD) "Bloom.sln" && \
 		xbuild /p:Configuration=$(BUILD) src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
