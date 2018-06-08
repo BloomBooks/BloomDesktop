@@ -1,7 +1,5 @@
-import axios from "axios";
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 
 // This would be used by a control that doesn't have any text of its own,
