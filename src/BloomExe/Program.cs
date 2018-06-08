@@ -202,7 +202,7 @@ namespace Bloom
 
 				//default is to allow tracking
 				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
-					|| feedbackSetting.ToLowerInvariant() == "true";
+					|| feedbackSetting.ToLowerInvariant() == "true" || feedbackSetting.ToLowerInvariant() == "on";
 				_supressRegistrationDialog = _supressRegistrationDialog || !allowTracking;
 
 				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, allowTracking))
