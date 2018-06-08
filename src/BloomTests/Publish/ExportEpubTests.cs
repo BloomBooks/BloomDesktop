@@ -611,8 +611,8 @@ namespace BloomTests.Publish
 		public void HeadingN_convertedToHN()
 		{
 			var book = SetupBookLong("Content of level 1 heading", "xyz", extraEditDivClasses: "Heading1",
-				extraContentOutsideTranslationGroup: @"<div class='bloom-translationGroup'><div class='bloom-editable Heading2' lang='xyz'>Level 2 heading</div></div>
-							<div class='bloom-translationGroup'><div class='bloom-editable Heading3' lang='xyz'>Level 3 heading</div></div>"
+				extraContentOutsideTranslationGroup: @"<div class='bloom-translationGroup'><div class='bloom-editable Heading2' lang='xyz'><p>Level 2 heading</p></div></div>
+							<div class='bloom-translationGroup'><div class='bloom-editable Heading3' lang='xyz'><p><span id='xyzzy'>Level</span> 3 heading</p></div></div>"
 			);
 
 			MakeEpub("output", "HeadingN_convertedToHN", book);
@@ -620,7 +620,11 @@ namespace BloomTests.Publish
 			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h1[contains(@class, 'bloom-editable') and contains(@class, 'Heading1') and contains(text(), 'Content of level 1 heading')]",_ns, 1);
 			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h2[contains(@class,'bloom-editable Heading2') and text()='Level 2 heading']", _ns, 1);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()='Level 3 heading']", _ns, 1);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()=' 3 heading']", _ns, 1);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()=' 3 heading']/xhtml:span[@id='xyzzy' and text()='Level']", _ns, 1);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:h1/xhtml:p", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:h2/xhtml:p", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:h3/xhtml:p", _ns);
 		}
 
 		/// <summary>
