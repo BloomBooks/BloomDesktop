@@ -37,11 +37,6 @@ namespace Bloom.web.controllers
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart+"audioForAllText", request =>
-			{
-				request.Failed("not implemented");
-			}, false);
-
 			server.RegisterEndpointHandler(kApiUrlPart + "descriptionsForAllImages", request =>
 			{
 				var problems = AccessibilityCheckers.CheckDescriptionsForAllImages(request.CurrentBook);
@@ -51,7 +46,16 @@ namespace Bloom.web.controllers
 
 			server.RegisterEndpointHandler(kApiUrlPart + "audioForAllImageDescriptions", request =>
 			{
-				request.Failed("not implemented");
+				var problems = AccessibilityCheckers.CheckAudioForAllImageDescriptions(request.CurrentBook);
+				var resultClass = problems.Any() ? "failed" : "passed";
+				request.ReplyWithJson(new { resultClass = resultClass, problems = problems });
+			}, false);
+
+			server.RegisterEndpointHandler(kApiUrlPart + "audioForAllText", request =>
+			{
+				var problems = AccessibilityCheckers.CheckAudioForAllText(request.CurrentBook);
+				var resultClass = problems.Any() ? "failed" : "passed";
+				request.ReplyWithJson(new { resultClass = resultClass, problems = problems });
 			}, false);
 
 			// Just a checkbox that the user ticks to say "yes, I checked this"
