@@ -20,9 +20,14 @@
             content: "✔ ";
             color: @bloom-blue;
         }
-        &.failed::before {
-            content: "X ";
-            color: @bloom-red;
+        &.failed {
+            &::before {
+                content: "X ";
+                color: @bloom-red;
+            }
+            &.failed li {
+                color: @bloom-red;
+            }
         }
         // problem list
         ul {

@@ -57,7 +57,12 @@ namespace Bloom.web.controllers
 		/// <returns>returns an enumerator of strings describing any problems it finds</returns>
 		public static IEnumerable<string> CheckAudioForAllImageDescriptions(Book.Book book)
 		{
-			yield break;
+			var messageTemplate = L10NSharp.LocalizationManager.GetString("Accessibility.AudioForAllImageDescriptions.MissingOnPage",
+				"Some text is missing a recording for an image description on page {0}",
+				"The {0} is where the page number will be inserted.");
+
+			foreach (var p in InnerCheckAudio(book, messageTemplate, "contains(@class, 'bloom-imageDescription')"))
+				yield return p;
 		}
 
 		/// <summary>
@@ -70,19 +75,18 @@ namespace Bloom.web.controllers
 				"Some text is missing a recording on page {0}",
 				"The {0} is where the page number will be inserted.");
 
+			foreach (var p in InnerCheckAudio(book, messageTemplate, "not(contains(@class, 'bloom-imageDescription'))"))
+				yield return p;
+		}
 
+		private static IEnumerable<string> InnerCheckAudio(Book.Book book, string messageTemplate, string translationGroupConstraint)
+		{
 			var audioFolderPath = AudioProcessor.GetAudioFolderPath(book.FolderPath);
-			// I don't even know if this can happen, but just in case
-			if (!Directory.Exists(audioFolderPath))
-			{
-				yield return String.Format(messageTemplate, "All");
-				yield break;
-			}
 
 			var audioFolderInfo = new DirectoryInfo(audioFolderPath);
-			foreach (XmlElement page in  book.OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement page in book.OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
-				if (PageHasMissingAudio(book, page, audioFolderInfo))
+				if (PageHasMissingAudio(book, page, audioFolderInfo, translationGroupConstraint))
 				{
 					var pageLabel = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(page);
 					yield return String.Format(messageTemplate, pageLabel);
@@ -90,10 +94,11 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private static bool PageHasMissingAudio(Book.Book book, XmlElement page, DirectoryInfo audioFolderInfo)
+		private static bool PageHasMissingAudio(Book.Book book, XmlElement page, DirectoryInfo audioFolderInfo,
+			string translationGroupConstraint)
 		{
 			var elementsInTheRightLanguage = page.SelectNodes(
-					$"//div[contains(@class, 'bloom-editable') and @lang='{book.CollectionSettings.Language1Iso639Code}']")
+					$"//div[contains(@class, 'bloom-translationGroup') and {translationGroupConstraint}]/div[contains(@class, 'bloom-editable') and @lang='{book.CollectionSettings.Language1Iso639Code}']")
 				.Cast<XmlElement>();
 
 			return elementsInTheRightLanguage
@@ -120,7 +125,8 @@ namespace Bloom.web.controllers
 						{
 							var id = childElement.GetAttribute("id");
 							//Whatever the audio extension, here we assume other parts of Bloom are taking care of that,
-							// and just want to see some file with a base name that matches the id
+							// and just want to see some file with a base name that matches the id.
+							// Note: GlobFiles handles the case of the audioFolder being non-existant just fine.
 							if (!audioFolderInfo.GlobFiles(id + ".*").Any())
 								return true;
 							// else go on to the sibling of this child
