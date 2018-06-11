@@ -148,10 +148,11 @@
         <target xml:lang="az" state="needs-translation">Automatically update Bloom</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
-        <source xml:lang="en">Show Experimental Commands</source>
+        <source xml:lang="en">Show Experimental Features</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
+        <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="az" state="needs-translation">Show Experimental Commands</target>
+        <target xml:lang="az" state="translated">Təcrübə Əmrlər Göstər</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
@@ -413,7 +414,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="az" state="needs-translation">Local Language</target>
+        <target xml:lang="az" state="translated">Yerli Dil</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
@@ -859,7 +860,7 @@
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.GenericNetworkProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9): There was a problem downloading your book.</note>
-        <target xml:lang="az" state="needs-translation">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</target>
+        <target xml:lang="az" state="translated">Kitab yüklənərkən bir problem var idi.</target>
       </trans-unit>
       <trans-unit id="Download.ProblemNotice">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
@@ -963,13 +964,13 @@
         <source xml:lang="en">Really Remove Page?</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): Really Delete Page?</note>
-        <target xml:lang="az" state="needs-translation">Really Remove Page?</target>
+        <target xml:lang="az" state="translated">Səhifəni doğrudan sil?</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
         <source xml:lang="en">&amp;Remove</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): &amp;Delete</note>
-        <target xml:lang="az" state="needs-translation">&amp;Remove</target>
+        <target xml:lang="az" state="translated">&amp;Sil</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
         <source xml:lang="en">This page will be permanently removed.</source>
@@ -1213,6 +1214,12 @@
         <note>Used on the Credits page of most Front/Back Matter packs</note>
         <target xml:lang="az" state="needs-translation">Credits Page</target>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style" sil:dynamic="true">
+        <source xml:lang="en">Image Description Edit</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style</note>
+        <note>Style appears when editing image descriptions. The trailing 'edit' indicates that it is just used for editing the description, not for publishing it.</note>
+        <target xml:lang="az" state="needs-translation">Image Description Edit</target>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
         <source xml:lang="en">Equation</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
@@ -1278,7 +1285,7 @@
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
-        <target xml:lang="az" state="needs-translation">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</target>
+        <target xml:lang="az">Bütün '{0}' üslub və dil '{1}' daşıyan qutuları üçün mətn ölçünü dəyişdirir.\nİndiki ölçüsü {2}pt -dir.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font size</source>
@@ -1508,7 +1515,7 @@
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="az" state="needs-translation">To unlock this shellbook, click the lock icon in the lower left corner.</target>
+        <target xml:lang="az" state="translated">Bu şablon kitabı kilidi açmaq üçün, sağ tərəfdəki olan alət qutusuna girərək və 'Bu şablon kitabda dəyişliklər icazə ver' tıklayın.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" sil:dynamic="true">
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
@@ -1787,6 +1794,45 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="az" state="needs-translation">Picture Intellectual Property Information</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Heading" sil:dynamic="true">
+        <source xml:lang="en">Motion Tool</source>
+        <note>ID: EditTab.Toolbox.Motion.Heading</note>
+        <note>Used as the overall title of the toolbox panel</note>
+        <target xml:lang="az" state="needs-translation">Motion Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
+        <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
+        <note>ID: EditTab.Toolbox.Motion.Intro</note>
+        <target xml:lang="az" state="needs-translation">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: EditTab.Toolbox.Motion.Preview</note>
+        <target xml:lang="az" state="needs-translation">Preview</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Motion" sil:dynamic="true">
+        <source xml:lang="en">Motion</source>
+        <note>ID: EditTab.Toolbox.Motion.Preview.Motion</note>
+        <note>The label of a checkbox indicating whether motion is included in Preview (currently it always is, so the box is always checked)</note>
+        <target xml:lang="az" state="needs-translation">Motion</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Music" sil:dynamic="true">
+        <source xml:lang="en">Music</source>
+        <note>ID: EditTab.Toolbox.Motion.Preview.Music</note>
+        <note>The label of a checkbox indicating whether background music is played during Preview.</note>
+        <target xml:lang="az" state="needs-translation">Music</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Voice" sil:dynamic="true">
+        <source xml:lang="en">Voice</source>
+        <note>ID: EditTab.Toolbox.Motion.Preview.Voice</note>
+        <note>The label of a checkbox controlling whether voice narration plays during Preview.</note>
+        <target xml:lang="az" state="needs-translation">Voice</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Motion.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">Enable motion on this page</source>
+        <note>ID: EditTab.Toolbox.Motion.ThisPage</note>
+        <target xml:lang="az" state="needs-translation">Enable motion on this page</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
@@ -1833,45 +1879,6 @@
         <source xml:lang="en">No Music</source>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
         <target xml:lang="az" state="needs-translation">No Music</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.ChooseImage" sil:dynamic="true">
-        <source xml:lang="en">Choose an image to activate the Pan and Zoom controls</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.ChooseImage</note>
-        <target xml:lang="az" state="needs-translation">Choose an image to activate the Pan and Zoom controls</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Heading" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom Tool</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Heading</note>
-        <note>Used as the overall title of the toolbox panel and also as the label of the check box inside it</note>
-        <target xml:lang="az" state="needs-translation">Pan and Zoom Tool</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview" sil:dynamic="true">
-        <source xml:lang="en">Preview</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview</note>
-        <target xml:lang="az" state="needs-translation">Preview</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Music" sil:dynamic="true">
-        <source xml:lang="en">Background Music</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Music</note>
-        <note>The label of a checkbox controlling whether music plays during preview.</note>
-        <target xml:lang="az" state="needs-translation">Background Music</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.PanAndZoom</note>
-        <note>The label of a checkbox indicating whether pan and zoom is included in Preview (currently it always is, so the box is always checked)</note>
-        <target xml:lang="az" state="needs-translation">Pan and Zoom</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.Preview.Voice" sil:dynamic="true">
-        <source xml:lang="en">Voice</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.Preview.Voice</note>
-        <note>The label of a checkbox controlling whether voice narration plays during preview.</note>
-        <target xml:lang="az" state="needs-translation">Voice</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.PanAndZoom.ThisPage" sil:dynamic="true">
-        <source xml:lang="en">Pan and Zoom this page</source>
-        <note>ID: EditTab.Toolbox.PanAndZoom.ThisPage</note>
-        <target xml:lang="az" state="needs-translation">Pan and Zoom this page</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -1932,7 +1939,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
-        <target xml:lang="az" state="needs-translation">Generate a letter and word list report</target>
+        <target xml:lang="az" state="translated">Hərf və Söz Siyahı Fayl Aç</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
@@ -1968,6 +1975,61 @@
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
         <target xml:lang="az" state="needs-translation">of</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescription.Heading" sil:dynamic="true">
+        <source xml:lang="en">Image Description Tool</source>
+        <note>ID: EditTab.Toolbox.ImageDescription.Heading</note>
+        <target xml:lang="az" state="needs-translation">Image Description Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
+        <source xml:lang="en">Be Concise</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
+        <target xml:lang="az" state="needs-translation">Be Concise</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true">
+        <source xml:lang="en">Be Objective</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
+        <target xml:lang="az" state="needs-translation">Be Objective</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
+        <source xml:lang="en">Bloom training video</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
+        <target xml:lang="az" state="needs-translation">Bloom training video</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
+        <source xml:lang="en">Check your image description against each of these reminders:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
+        <target xml:lang="az" state="needs-translation">Check your image description against each of these reminders:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
+        <source xml:lang="en">Consider your Audience</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience</note>
+        <target xml:lang="az" state="needs-translation">Consider your Audience</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ContextKey" sil:dynamic="true">
+        <source xml:lang="en">Context is Key</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ContextKey</note>
+        <target xml:lang="az" state="needs-translation">Context is Key</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific" sil:dynamic="true">
+        <source xml:lang="en">General to Specific</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific</note>
+        <target xml:lang="az" state="needs-translation">General to Specific</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true">
+        <source xml:lang="en">Learn to make effective image descriptions</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.LearnToMake</note>
+        <target xml:lang="az" state="needs-translation">Learn to make effective image descriptions</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram" sil:dynamic="true">
+        <source xml:lang="en">poet.diagramcenter.org</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
+        <target xml:lang="az" state="needs-translation">poet.diagramcenter.org</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
+        <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
+        <target xml:lang="az" state="needs-translation">Write your image description on the left, in the box next to the picture.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader Tool</source>
@@ -2091,6 +2153,57 @@
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
         <target xml:lang="az" state="needs-translation">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true">
+        <source xml:lang="en">Delete Video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.DeleteVideo</note>
+        <target xml:lang="az" state="needs-translation">Delete Video</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true">
+        <source xml:lang="en">Edit outside of Bloom</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
+        <target xml:lang="az" state="needs-translation">Edit outside of Bloom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sign Language Tool</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
+        <target xml:lang="az" state="needs-translation">Sign Language Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
+        <source xml:lang="en">Press any key to cancel</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.PressCancel</note>
+        <target xml:lang="az" state="needs-translation">Press any key to cancel</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.PressStop" sil:dynamic="true">
+        <source xml:lang="en">Press any key to stop</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.PressStop</note>
+        <target xml:lang="az" state="needs-translation">Press any key to stop</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
+        <source xml:lang="en">Recording</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Recording</note>
+        <target xml:lang="az" state="needs-translation">Recording</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true">
+        <source xml:lang="en">Restore Original</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.RestoreOriginal</note>
+        <target xml:lang="az" state="needs-translation">Restore Original</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectedVideo" sil:dynamic="true">
+        <source xml:lang="en">The selected video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
+        <note>Appears in the context "X will be moved to the recycle bin"</note>
+        <target xml:lang="az" state="needs-translation">The selected video</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
+        <source xml:lang="en">Start Recording</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
+        <target xml:lang="az" state="needs-translation">Start Recording</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
+        <source xml:lang="en">Here is what your camera sees:</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
+        <target xml:lang="az" state="needs-translation">Here is what your camera sees:</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.BadState">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
@@ -2162,11 +2275,6 @@
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
         <target xml:lang="az" state="needs-translation">Make an e-book that can play recordings while highlighting sentences.</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Video.Heading" sil:dynamic="true">
-        <source xml:lang="en">Video Recorder Tool</source>
-        <note>ID: EditTab.Toolbox.Video.Heading</note>
-        <target xml:lang="az" state="needs-translation">Video Recorder Tool</target>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual">
         <source xml:lang="en">Three Languages</source>
@@ -3096,6 +3204,7 @@
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
         <target xml:lang="az" state="needs-translation">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</target>
       </trans-unit>
+      <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.BooksForBlind">
         <source xml:lang="en">Books for the Blind</source>
         <note>ID: PublishTab.Epub.BooksForBlind</note>
@@ -3106,11 +3215,13 @@
         <note>ID: PublishTab.Epub.Done</note>
         <target xml:lang="az" state="needs-translation">Done</target>
       </trans-unit>
+      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>
         <target xml:lang="az" state="needs-translation">Include image descriptions on page</target>
       </trans-unit>
+      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
@@ -3125,6 +3236,11 @@
         <source xml:lang="en">Preparing preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
         <target xml:lang="az" state="needs-translation">Preparing preview</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.RemoveFontSizes">
+        <source xml:lang="en">Use epub reader's text size</source>
+        <note>ID: PublishTab.Epub.RemoveFontSizes</note>
+        <target xml:lang="az" state="needs-translation">Use epub reader's text size</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Saving">
         <source xml:lang="en">Saving</source>
@@ -3649,11 +3765,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
         <target xml:lang="az" state="needs-translation">Uploading {0}</target>
-      </trans-unit>
-      <trans-unit id="PublishView._saveButton">
-        <source xml:lang="en">Save stub</source>
-        <note>ID: PublishView._saveButton</note>
-        <target xml:lang="az" state="needs-translation">Save stub</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
         <source xml:lang="en">Add Level</source>
@@ -4519,7 +4630,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
-        <target xml:lang="az" state="needs-translation">Picture on Bottom</target>
+        <target xml:lang="az">Aşağısında Şəkil</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true">
         <source xml:lang="en">Picture on Left</source>
@@ -4562,6 +4673,12 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Traditional</source>
         <note>ID: TemplateBooks.PageLabel.Traditional</note>
         <target xml:lang="az" state="needs-translation">Traditional</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Translation Instructions" sil:dynamic="true">
+        <source xml:lang="en">Translation Instructions</source>
+        <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
+        <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
+        <target xml:lang="az" state="needs-translation">Translation Instructions</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
         <source xml:lang="en">Setup</source>
