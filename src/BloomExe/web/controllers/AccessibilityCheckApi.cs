@@ -3,10 +3,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish.AccessibilityChecker;
 using BloomTemp;
+using SIL.Code;
 using SIL.CommandLineProcessing;
 using SIL.Progress;
 
@@ -79,46 +81,135 @@ namespace Bloom.web.controllers
 				false);
 			
 			//enhance: this might have to become async to work on large books on slow computers
-			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request =>
+			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); }, false);
+		}
+
+		private static void MakeAceByDaisyReport(ApiRequest request)
+		{
+			if (string.IsNullOrEmpty(_epubPath) || !File.Exists((_epubPath)))
 			{
-				if (string.IsNullOrEmpty(_epubPath) || !File.Exists((_epubPath)))
-				{
-					request.ReplyWithHtml("Please save the epub first.");
-					return;
-				}
-				// while HOME Is available from windows cmd prompt, this fails: var homePath = Environment.GetEnvironmentVariable(("HOME"));
-				var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-				// not at all clear we're going to ship to users this way, but the following will help testers
-				var nodeModulesDirectory = Path.Combine(homePath, "node_modules");
-				var instructionsHtml= "Please follow the <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >steps under \"Installation\"</a>";
-				if (!Directory.Exists((nodeModulesDirectory)))
-				{
-					request.ReplyWithHtml($"Could could not find {nodeModulesDirectory}. {instructionsHtml}");
-					return;
-				}
-				// not at all clear we're going to ship to users this way, but the following will help testers
-				var daisyCliDirectory = Path.Combine(homePath, "node_modules/@daisy/ace-cli/bin/");
-				if (!Directory.Exists((daisyCliDirectory)))
-				{
-					request.ReplyWithHtml($"Could could not find daisy-ace at {daisyCliDirectory}. {instructionsHtml}");
-					return;
-				}
-				var progress = new NullProgress();
-				var runner = new CommandLineRunner();
-				var reportDirectory = Path.Combine(System.IO.Path.GetTempPath(), "daisy-ace-report");
-				TemporaryFolder.DeleteFolderThatMayBeInUse(reportDirectory);
+				request.ReplyWithHtml("Please save the epub first.");
+				return;
+			}
+
+			var daisyDirectory = FindAceByDaisyOrTellUser(request);
+			if (string.IsNullOrEmpty(daisyDirectory))
+				return;
+
+			var reportRootDirectory = Path.Combine(System.IO.Path.GetTempPath(), "daisy-ace-reports");
+			// Do our best at clearing out previous runs.
+			// This call is ok if the directory does not exist at all.
+			SIL.IO.RobustIO.DeleteDirectoryAndContents(reportRootDirectory);
+			// This call is ok if the above failed and it still exists
+			Directory.CreateDirectory(reportRootDirectory);
+
+			// was having a problem with some files from previous reports getting locked.
+			// so give new folder names if needed
+			var haveReportedError = false;
+			var errorMessage = "Unknown Error";
+			for (var i = 0; i < 20; i++)
+			{
+				var reportDirectory = Path.Combine(reportRootDirectory, "report" + i);
+				// This call is ok if the directory does not exist at all.
+				SIL.IO.RobustIO.DeleteDirectoryAndContents(reportDirectory);
+
+				if (Directory.Exists(reportDirectory))
+					continue; // something is locking this one, start over
+
+				Guard.Against(Directory.Exists(reportDirectory), "Could not come up with a temp directory name to use for the ace report");
+
 				var arguments = $"ace.js  -o \"{reportDirectory}\" \"{_epubPath}\"";
 				const int kSecondsBeforeTimeout = 60;
-				var res = runner.Start("node", arguments, Encoding.UTF8, daisyCliDirectory, kSecondsBeforeTimeout, progress,
+				var progress = new NullProgress();
+				var res = CommandLineRunner.Run("node", arguments, Encoding.UTF8, daisyDirectory, kSecondsBeforeTimeout, progress,
 					(dummy) => { });
 				if (res.DidTimeOut)
 				{
-					request.ReplyWithHtml($"Daisy Ace timed out after {kSecondsBeforeTimeout} seconds.");
-					return;
+					errorMessage = $"Daisy Ace timed out after {kSecondsBeforeTimeout} seconds.";
+					continue;
 				}
+
 				var answerPath = Path.Combine(reportDirectory, "report.html");
-				request.ReplyWithText("/bloom/"+answerPath);
-			}, false);
+				if (!File.Exists(answerPath))
+				{
+					// This hasn't been effectively reproduced, but there was a case where this would fail at least
+					// half the time on a book, reproducable. That book had 2 pages pointing at placeholder.png,
+					// and we were getting an error related to it being locked. So we deduce that ace was trying
+					// to copy the file twice, at the same time (normal nodejs code is highly async).
+					// Now the problem is not reproducable, but I'm leaving in this code that tried to deal with it.
+					errorMessage = $"Exit code{res.ExitCode}{Environment.NewLine}" +
+					               $"Standard Error{Environment.NewLine}{res.StandardError}{Environment.NewLine}" +
+					               $"Standard Out{res.StandardOutput}";
+
+					if (!haveReportedError) // don't want to put up 50 toasts
+					{
+						haveReportedError = true;
+						NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Ace By Daisy error",
+							errorMessage);
+					}
+
+					continue; // something went wrong, try again
+				}
+
+				// The html client is set to treat a text reply as a url of the report
+				request.ReplyWithText("/bloom/" + answerPath);
+				return;
+			}
+
+			// If we get this far, we give up.
+			// The html client is set to treat an html reply as an error message.
+			request.ReplyWithHtml(errorMessage);
+		}
+
+		private static string FindAceByDaisyOrTellUser(ApiRequest request)
+		{
+			var instructionsHtml =
+				"Please follow the <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >steps under \"Installation\"</a>";
+
+			var whereResult = CommandLineRunner.Run("where", "npm.cmd", Encoding.ASCII, "", 2, new NullProgress());
+
+			if (!whereResult.StandardOutput.Contains("npm.cmd"))
+			{
+				request.ReplyWithHtml($"Could could not find npm. {System.Environment.NewLine}{instructionsHtml}");
+				return null;
+			}
+
+			var fullNpmPath = whereResult.StandardOutput.Split('\n')[0].Trim();
+			// note: things like nvm will mess with where the global node_modules lives. The best way seems to be
+			// to ask npm:
+			var result = CommandLineRunner.Run("npm.cmd", "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
+				new NullProgress());
+
+			if (!result.StandardOutput.Contains("node_modules"))
+			{
+				request.ReplyWithHtml(
+					$"Could could not get npm -g root to work. It said {result.StandardOutput} {result.StandardError}. {System.Environment.NewLine}{instructionsHtml}");
+				return null;
+			}
+
+			var nodeModulesDirectory = result.StandardOutput.Trim();
+
+			if (!Directory.Exists((nodeModulesDirectory)))
+			{
+				request.ReplyWithHtml(
+					$"Could could not find global node_modules directory at {nodeModulesDirectory}. {instructionsHtml}");
+				return null;
+			}
+
+			// if they installed via npm install -g  @daisy/ace
+			var daisyDirectory = Path.Combine(nodeModulesDirectory, "@daisy/ace/bin/");
+			if (!Directory.Exists((daisyDirectory)))
+			{
+				// if they just installed via npm install -g  @daisy/ace-cli
+				daisyDirectory = Path.Combine(nodeModulesDirectory, "@daisy/ace-cli/bin/");
+				if (!Directory.Exists((daisyDirectory)))
+				{
+					request.ReplyWithHtml($"Could could not find daisy-ace at {daisyDirectory}. {instructionsHtml}");
+					return null;
+				}
+			}
+
+			return daisyDirectory;
 		}
 
 		public static void SetEpubPath(string previewSrc)

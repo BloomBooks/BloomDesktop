@@ -56,7 +56,12 @@ export class DaisyChecks extends React.Component<
                 {this.state.reportUrl.length > 0 ? (
                     <iframe src={this.state.reportUrl} />
                 ) : (
-                    <p id="statusMessage">{this.state.statusMessageHtml}</p>
+                    <p
+                        id="statusMessage"
+                        dangerouslySetInnerHTML={{
+                            __html: this.state.statusMessageHtml
+                        }}
+                    />
                 )}
             </div>
         );
