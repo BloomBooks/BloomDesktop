@@ -930,6 +930,8 @@ export default class AudioRecording {
                     name != "br" &&
                     name != "i" &&
                     name != "b" &&
+                    name != "strong" && // ckeditor uses this for bold
+                    name != "sup" && // better add this one too
                     name != "u" &&
                     $(child).attr("id") !== "formatButton"
                 ) {
