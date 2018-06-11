@@ -14,6 +14,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.describe</note>
         <alt-trans>
@@ -25,6 +26,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="tr">Bu kitabınızın <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-kitap) halidir. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ses barındırır böylece yeni okuyucular okurken dinleyebilirler.</g>
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -49,13 +62,6 @@
         <alt-trans>
           <target xml:lang="tr">Bu kitabınızın <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-kitap) halidir. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ses barındırır böylece yeni okuyucular okurken dinleyebilirler.</g>
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">Bu kitabınızın <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-kitap) halidir. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ses barındırır böylece yeni okuyucular okurken dinleyebilirler.</g>
       
       
       
@@ -89,6 +95,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.readium</note>
         <alt-trans>
@@ -100,6 +107,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="tr">Bu sayfa <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB okuyucuyu kullanır. Kitaplar büyük ihtimalle farklı okuyucularda farklı gözüküceklerdir. 
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -124,13 +143,6 @@
         <alt-trans>
           <target xml:lang="tr">Bu sayfa <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB okuyucuyu kullanır. Kitaplar büyük ihtimalle farklı okuyucularda farklı gözüküceklerdir. 
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">Bu sayfa <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB okuyucuyu kullanır. Kitaplar büyük ihtimalle farklı okuyucularda farklı gözüküceklerdir. 
       
       
       
@@ -141,6 +153,7 @@
         <source xml:lang="en">The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> e-book reader.
       </source>
         <target xml:lang="tr" state="translated">Buradaki örnek daha Konuşan Kitapları çalamaz. Adobe'nin Bedava <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Dijital Sürüm</g> e-kitap okuyucusunu kullanarak dinleyebilirsiniz.
+      
       
       
       
@@ -160,6 +173,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="tr">Buradaki örnek daha Konuşan Kitapları çalamaz. Adobe'nin Bedava <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Dijital Sürüm</g> e-kitap okuyucusunu kullanarak dinleyebilirsiniz.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -184,13 +209,6 @@
         <alt-trans>
           <target xml:lang="tr">Buradaki örnek daha Konuşan Kitapları çalamaz. Adobe'nin Bedava <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Dijital Sürüm</g> e-kitap okuyucusunu kullanarak dinleyebilirsiniz.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">Buradaki örnek daha Konuşan Kitapları çalamaz. Adobe'nin Bedava <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Dijital Sürüm</g> e-kitap okuyucusunu kullanarak dinleyebilirsiniz.
       
       
       
@@ -214,6 +232,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
         <alt-trans>
@@ -225,6 +244,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="tr">Kitapları telefonunuza almanın kullanışlı bir yolu Dropbox ya da benzeri servisleri hem bilgisayarınıza hemde telefonunuza/tabletinize kurmaktir. Sadece ePUB'ı Kaydet tuşuna basın ve sonrasında Dropbox klasörünüzü seçin. Telefonunuzda, Dropbox uygulamasını açın ve kitabınızı seçin. Eğer dizüstü bilgisayar kullanıyorsanız bilgisayarınızdan telefonunuza ya da tabletinize dosya göndermek için ayrıca bedava <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> programını da kullanabilirsiniz.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -249,13 +280,6 @@
         <alt-trans>
           <target xml:lang="tr">Kitapları telefonunuza almanın kullanışlı bir yolu Dropbox ya da benzeri servisleri hem bilgisayarınıza hemde telefonunuza/tabletinize kurmaktir. Sadece ePUB'ı Kaydet tuşuna basın ve sonrasında Dropbox klasörünüzü seçin. Telefonunuzda, Dropbox uygulamasını açın ve kitabınızı seçin. Eğer dizüstü bilgisayar kullanıyorsanız bilgisayarınızdan telefonunuza ya da tabletinize dosya göndermek için ayrıca bedava <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> programını da kullanabilirsiniz.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">Kitapları telefonunuza almanın kullanışlı bir yolu Dropbox ya da benzeri servisleri hem bilgisayarınıza hemde telefonunuza/tabletinize kurmaktir. Sadece ePUB'ı Kaydet tuşuna basın ve sonrasında Dropbox klasörünüzü seçin. Telefonunuzda, Dropbox uygulamasını açın ve kitabınızı seçin. Eğer dizüstü bilgisayar kullanıyorsanız bilgisayarınızdan telefonunuza ya da tabletinize dosya göndermek için ayrıca bedava <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> programını da kullanabilirsiniz.
       
       
       
@@ -279,6 +303,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.gitden.okay</note>
         <alt-trans>
@@ -290,6 +315,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="tr">Testlerimiz <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Okuyucu</g>'nun Android ve IOS (iPhone &amp; iPad) cihazlar için iyi bir tercih olduğunu göstermiştir.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -314,13 +351,6 @@
         <alt-trans>
           <target xml:lang="tr">Testlerimiz <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Okuyucu</g>'nun Android ve IOS (iPhone &amp; iPad) cihazlar için iyi bir tercih olduğunu göstermiştir.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">Testlerimiz <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Okuyucu</g>'nun Android ve IOS (iPhone &amp; iPad) cihazlar için iyi bir tercih olduğunu göstermiştir.
       
       
       
@@ -350,6 +380,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talking.book.tool</note>
         <alt-trans>
@@ -361,6 +392,18 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="tr">Yeni okuyucuların olurken dinleyebileceği "Konuşan Kitaplar" yapmak isterseniz, ses kayıtları eklemek için Bloom'un <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Konuşan Kitaplar Aracı</g>'nı kullanın.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -385,13 +428,6 @@
         <alt-trans>
           <target xml:lang="tr">Yeni okuyucuların olurken dinleyebileceği "Konuşan Kitaplar" yapmak isterseniz, ses kayıtları eklemek için Bloom'un <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Konuşan Kitaplar Aracı</g>'nı kullanın.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">Yeni okuyucuların olurken dinleyebileceği "Konuşan Kitaplar" yapmak isterseniz, ses kayıtları eklemek için Bloom'un <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Konuşan Kitaplar Aracı</g>'nı kullanın.
       
       
       
