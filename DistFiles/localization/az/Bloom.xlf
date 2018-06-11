@@ -1515,6 +1515,7 @@
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
+        <note>OLD TEXT: To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</note>
         <target xml:lang="az" state="translated">Bu şablon kitabı kilidi açmaq üçün, sağ tərəfdəki olan alət qutusuna girərək və 'Bu şablon kitabda dəyişliklər icazə ver' tıklayın.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" sil:dynamic="true">
