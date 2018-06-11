@@ -375,6 +375,8 @@ namespace Bloom.Book
 
 		#region Audio Files
 
+		public static string[] AudioExtensions =  new []{ ".wav", ".mp3" };  // .ogg, .wav, ...?
+
 		/// <summary>
 		/// Compare the audio we find in the audio folder in the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
@@ -387,12 +389,11 @@ namespace Bloom.Book
 			//Collect up all the audio files in our book's audio directory
 			var audioFolderPath = AudioProcessor.GetAudioFolderPath(_folderPath);
 			var audioFilesToDeleteIfNotUsed = new List<string>();
-			var audioExtensions = new HashSet<string>(new []{ ".wav", ".mp3" });  // .ogg, .wav, ...?
 
 			if (Directory.Exists(audioFolderPath))
 			{
 				foreach (var path in Directory.EnumerateFiles(audioFolderPath).Where(
-					s => audioExtensions.Contains(Path.GetExtension(s).ToLowerInvariant())))
+					s => AudioExtensions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 				{
 					audioFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
 				}
@@ -412,12 +413,12 @@ namespace Bloom.Book
 			{
 				if (Path.GetExtension(fileName).Length > 0)
 				{
-					if (audioExtensions.Contains(Path.GetExtension(fileName).ToLowerInvariant()))
+					if (AudioExtensions.Contains(Path.GetExtension(fileName).ToLowerInvariant()))
 					{
 						audioFilesToDeleteIfNotUsed.Remove(GetNormalizedPathForOS(fileName));  //This call just returns false if not found, which is fine.
 					}
 				}
-				foreach (var ext in audioExtensions)
+				foreach (var ext in AudioExtensions)
 				{
 					var tempfileName = Path.ChangeExtension(fileName, ext);
 					audioFilesToDeleteIfNotUsed.Remove(GetNormalizedPathForOS(tempfileName));

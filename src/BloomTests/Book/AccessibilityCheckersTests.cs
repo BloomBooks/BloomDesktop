@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
+using Bloom.Publish;
 using Bloom.web.controllers;
 using NUnit.Framework;
 
@@ -70,7 +72,7 @@ namespace BloomTests.Book
 				</div>",
 				pageNumber, pageLabel);
 			var results = AccessibilityCheckers.CheckDescriptionsForAllImages(testBook);
-			Assert.AreEqual(1, results.Count(), "Should point out missing language description");
+			Assert.AreEqual(1, results.Count(), "Should point out missing image description");
 			var expected = pageNumber ?? pageLabel;
 
 			Assert.AreEqual($"Missing image description on page {expected}", results.First());
@@ -94,25 +96,77 @@ namespace BloomTests.Book
 				</div>";
 		
 			var html = $@"<html> <body>
-					{GetHtmlForPageWithImage(divWithDescription)}
-					{GetHtmlForPageWithImage(divWithoutCorrectLangDescription)}
-					{GetHtmlForPageWithImage(divWithDescription)}
-					{GetHtmlForPageWithImage(divWithoutCorrectLangDescription)}
+					{MakeHtmlForPageWithImage(divWithDescription)}
+					{MakeHtmlForPageWithImage(divWithoutCorrectLangDescription)}
+					{MakeHtmlForPageWithImage(divWithDescription)}
+					{MakeHtmlForPageWithImage(divWithoutCorrectLangDescription)}
 				</body> </html>";
 			var testBook = CreateBookWithPhysicalFile(html);
 			var results = AccessibilityCheckers.CheckDescriptionsForAllImages(testBook);
-			Assert.AreEqual(2, results.Count(), "Should point out missing language description");
+			Assert.AreEqual(2, results.Count(), "Should point out missing image description");
+		}
+
+		/* -----------------------------------------------------------------------------------*/
+		/* ----------------------CheckAudioForAllText-----------------------------------------*/
+		/* -----------------------------------------------------------------------------------*/
+
+		[TestCase("<p><span id='iExist' class='audio-sentence'>A flower.</span></p>")]
+		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span>
+					<span id='iExist' class='audio-sentence'>A dog.</span></p>")]
+		public void CheckAudioForAllText_NoErrors(string content)
+		{
+			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup bloom-imageDescription'>
+										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{_collectionSettings.Language1Iso639Code}'>
+											{content}
+										</div>
+									</div>
+								</div>");
+			
+			var results = AccessibilityCheckers.CheckAudioForAllText(testBook);
+			Assert.AreEqual(0, results.Count(), "No errors were expected");
+		}
+
+		[TestCase("<p>A flower.</p>")]
+		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span>
+					A dog.</p>")]
+		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span></p>
+					<p>A dog.</p>")]
+		public void CheckAudioForAllText_TextWithoutSpans(string content)
+		{
+			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup bloom-imageDescription'>
+										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{_collectionSettings.Language1Iso639Code}'>
+											{content}
+										</div>
+									</div>
+								</div>");
+			var results = AccessibilityCheckers.CheckAudioForAllText(testBook);
+			Assert.Greater(results.Count(), 0, "Error should have been reported");
+		}
+
+		[TestCase("<p><span id='bogus123' class='audio-sentence'>A flower.</span></p>")]
+		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span></p>
+					<p><span id='bogus456' class='audio-sentence'>A dog.</span</p>")]
+		public void CheckAudioForAllText_SpansAudioMissing(string content)
+		{
+			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup bloom-imageDescription'>
+										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{_collectionSettings.Language1Iso639Code}'>
+											{content}
+										</div>
+									</div>
+								</div>");
+			var results = AccessibilityCheckers.CheckAudioForAllText(testBook);
+			Assert.Greater(results.Count(), 0, "Error should have been reported");
 		}
 
 		private Bloom.Book.Book GetBookWithImage(string translationGroupText, string pageNumber = "1", string pageLabel = "Some page label")
 		{
 			var html = $@"<html> <body>
-							{GetHtmlForPageWithImage(translationGroupText, pageNumber, pageLabel )}
+							{MakeHtmlForPageWithImage(translationGroupText, pageNumber, pageLabel )}
 						</body> </html>";
 			return CreateBookWithPhysicalFile(html);
 		}
 
-		private string GetHtmlForPageWithImage(string translationGroupText, string pageNumber = "1", string pageLabel = "Some page label")
+		private string MakeHtmlForPageWithImage(string translationGroupText, string pageNumber = "1", string pageLabel = "Some page label")
 		{
 			return $@"<div class='bloom-page' data-page-number='{pageNumber ?? ""}'>
 				<div class='pageLabel'>{pageLabel}</div>
@@ -122,6 +176,29 @@ namespace BloomTests.Book
 							{translationGroupText}
 						</div>
 					</div>
+				</div>";
+		}
+
+		private Bloom.Book.Book MakeBookWithOneAudioFile(string translationGroupText, string pageNumber = "1", string pageLabel = "Some page label")
+		{
+			var html = $@"<html> <body>
+							{GetHtmlForPage(translationGroupText, pageNumber, pageLabel)}
+						</body> </html>";
+			var book = CreateBookWithPhysicalFile(html);
+
+			var audioDir = AudioProcessor.GetAudioFolderPath(book.FolderPath);
+			Directory.CreateDirectory(audioDir);
+			File.WriteAllText(Path.Combine(audioDir, "iExist.mp3"), "hello");
+
+			return book;
+		}
+		private string GetHtmlForPage(string translationGroupText, string pageNumber = "1",
+			string pageLabel = "Some page label")
+		{
+			return $@"<div class='bloom-page' data-page-number='{pageNumber ?? ""}'>
+				<div class='pageLabel'>{pageLabel}</div>
+				<div class='marginBox'>
+							{translationGroupText}
 				</div>";
 		}
 	}
