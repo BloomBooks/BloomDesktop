@@ -166,11 +166,12 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
         <target xml:lang="my">အလိုအလျောက် ဘလွန်းကို ပြုပြင်မွမ်းမံ အပ်ဒိတ်လုပ်ပေးသည်။</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands" approved="yes">
-        <source xml:lang="en">Show Experimental Commands</source>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+        <source xml:lang="en">Show Experimental Features</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
+        <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="my">အစမ်းလုပ်ဆောင်ရန် ညွှန်ကြားချက်များ ပြသရန်</target>
+        <target xml:lang="my" state="translated">အစမ်းလုပ်ဆောင်ရန် ညွှန်ကြားချက်များ ပြသရန်</target>
         <alt-trans>
           <target xml:lang="my">အစမ်းလုပ်ဆောင်ရန်ညွှန်ကြားချက်များ ပြသရန်</target>
         </alt-trans>
@@ -1243,6 +1244,12 @@
         <note>Used on the Credits page of most Front/Back Matter packs</note>
         <target xml:lang="my" state="needs-translation">Credits Page</target>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style" sil:dynamic="true">
+        <source xml:lang="en">Image Description Edit</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style</note>
+        <note>Style appears when editing image descriptions. The trailing 'edit' indicates that it is just used for editing the description, not for publishing it.</note>
+        <target xml:lang="my" state="needs-translation">Image Description Edit</target>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
         <source xml:lang="en">Equation</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
@@ -1999,9 +2006,9 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
         <target xml:lang="my" state="needs-translation">of</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescription.Heading" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
+        <note>ID: EditTab.Toolbox.ImageDescription.Heading</note>
         <target xml:lang="my" state="needs-translation">Image Description Tool</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
@@ -2015,9 +2022,9 @@
         <target xml:lang="my" state="needs-translation">Be Objective</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
-        <source xml:lang="en">bloom training video</source>
+        <source xml:lang="en">Bloom training video</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
-        <target xml:lang="my" state="needs-translation">bloom training video</target>
+        <target xml:lang="my" state="needs-translation">Bloom training video</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
         <source xml:lang="en">Check your image description against each of these reminders</source>
@@ -2176,6 +2183,57 @@
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
         <target xml:lang="my" state="needs-translation">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true">
+        <source xml:lang="en">Delete Video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.DeleteVideo</note>
+        <target xml:lang="my" state="needs-translation">Delete Video</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true">
+        <source xml:lang="en">Edit outside of Bloom</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
+        <target xml:lang="my" state="needs-translation">Edit outside of Bloom</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sign Language Tool</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
+        <target xml:lang="my" state="needs-translation">Sign Language Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
+        <source xml:lang="en">Press any key to cancel</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.PressCancel</note>
+        <target xml:lang="my" state="needs-translation">Press any key to cancel</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.PressStop" sil:dynamic="true">
+        <source xml:lang="en">Press any key to stop</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.PressStop</note>
+        <target xml:lang="my" state="needs-translation">Press any key to stop</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
+        <source xml:lang="en">Recording</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Recording</note>
+        <target xml:lang="my" state="needs-translation">Recording</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true">
+        <source xml:lang="en">Restore Original</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.RestoreOriginal</note>
+        <target xml:lang="my" state="needs-translation">Restore Original</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectedVideo" sil:dynamic="true">
+        <source xml:lang="en">The selected video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
+        <note>Appears in the context "X will be moved to the recycle bin"</note>
+        <target xml:lang="my" state="needs-translation">The selected video</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
+        <source xml:lang="en">Start Recording</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
+        <target xml:lang="my" state="needs-translation">Start Recording</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
+        <source xml:lang="en">Here is what your camera sees:</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
+        <target xml:lang="my" state="needs-translation">Here is what your camera sees:</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.BadState">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
@@ -2247,11 +2305,6 @@
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
         <target xml:lang="my" state="needs-translation">Make an e-book that can play recordings while highlighting sentences.</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Video.Heading" sil:dynamic="true">
-        <source xml:lang="en">Video Recorder Tool</source>
-        <note>ID: EditTab.Toolbox.Video.Heading</note>
-        <target xml:lang="my" state="needs-translation">Video Recorder Tool</target>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual">
         <source xml:lang="en">Three Languages</source>
@@ -3181,6 +3234,7 @@
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
         <target xml:lang="my" state="needs-translation">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</target>
       </trans-unit>
+      <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.BooksForBlind">
         <source xml:lang="en">Books for the Blind</source>
         <note>ID: PublishTab.Epub.BooksForBlind</note>
@@ -3191,11 +3245,13 @@
         <note>ID: PublishTab.Epub.Done</note>
         <target xml:lang="my" state="needs-translation">Done</target>
       </trans-unit>
+      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>
         <target xml:lang="my" state="needs-translation">Include image descriptions on page</target>
       </trans-unit>
+      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
@@ -3210,6 +3266,11 @@
         <source xml:lang="en">Preparing preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
         <target xml:lang="my" state="needs-translation">Preparing preview</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.RemoveFontSizes">
+        <source xml:lang="en">Use epub reader's text size</source>
+        <note>ID: PublishTab.Epub.RemoveFontSizes</note>
+        <target xml:lang="my" state="needs-translation">Use epub reader's text size</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Saving">
         <source xml:lang="en">Saving</source>
