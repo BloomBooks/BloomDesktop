@@ -31,19 +31,16 @@ namespace Bloom.Publish
 
 		public string PdfFilePath { get; private set; }
 
-		public EpubMaker EpubMaker { get; set; }
-
 		public enum DisplayModes
 		{
 			WaitForUserToChooseSomething,
 			Working,
 			ShowPdf,
 			Upload,
-			EPUB,
 			Printing,
 			ResumeAfterPrint,
 			Android,
-			EPUB2
+			EPUB
 		}
 
 		public enum BookletPortions
@@ -70,10 +67,10 @@ namespace Bloom.Publish
 		private readonly BookServer _bookServer;
 		private readonly BookThumbNailer _thumbNailer;
 		private string _lastDirectory;
-		private NavigationIsolator _isoloator;
+
 
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings,
-			BookServer bookServer, BookThumbNailer thumbNailer, NavigationIsolator isolator)
+			BookServer bookServer, BookThumbNailer thumbNailer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
@@ -85,7 +82,6 @@ namespace Bloom.Publish
 			_bookServer = bookServer;
 			_thumbNailer = thumbNailer;
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
-			_isoloator = isolator;
 			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
 
@@ -95,8 +91,7 @@ namespace Bloom.Publish
 		public bool UploadMode { get; set; }
 
 		// True when showing an ePUB preview.
-		public bool EpubMode { get; set; }
-		public bool Epub2Mode;
+		public bool EpubMode;
 
 		public bool PdfGenerationSucceeded { get; set; }
 
@@ -268,11 +263,6 @@ namespace Bloom.Publish
 
 				}
 			}
-			if (EpubMaker != null)
-			{
-				EpubMaker.Dispose();
-				EpubMaker = null;
-			}
 
 			GC.SuppressFinalize(this);
 		}
@@ -320,21 +310,8 @@ namespace Bloom.Publish
 			}
 		}
 
-
 		public void Save()
 		{
-			if (EpubMode)
-			{
-				try
-				{
-					SaveAsEpub();
-				}
-				catch (Exception err)
-				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the ePUB.  {0}", err.Message);
-				}
-				return;
-			}
 			try
 			{
 				// Give a slight preference to USB keys, though if they used a different directory last time, we favor that.
@@ -554,7 +531,6 @@ namespace Bloom.Publish
 			}
 		}
 
-
 		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError)
 		{
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
@@ -595,55 +571,9 @@ namespace Bloom.Publish
 			}
 		}
 
-		internal bool BookHasAudio
-		{
-			get
-			{
-				Debug.Assert(EpubMaker !=null, "PrepareToStageEpub must be called first.");
-				return EpubMaker.GetBookHasAudio();
-			}
-		}
-
-		internal void PrepareToStageEpub()
-		{
-			if (EpubMaker != null)
-			{
-				//it has state that we don't want to reuse, so make a new one
-				EpubMaker.Dispose();
-				EpubMaker = null;
-			}
-			EpubMaker = new EpubMaker(_thumbNailer, _isoloator, _bookServer);
-			EpubMaker.Book = BookSelection.CurrentSelection;
-			EpubMaker.Unpaginated = true; // Enhance: UI?
-			EpubMaker.OneAudioPerPage = true;
-		}
-
 		internal bool DoAnyNeededAudioCompression()
 		{
 			return AudioProcessor.TryCompressingAudioAsNeeded(BookSelection.CurrentSelection.FolderPath, LoadBookIfNeeded().RawDom);
-		}
-
-		internal string StagingDirectory { get { return EpubMaker.BookInStagingFolder; } }
-
-		internal void SaveAsEpub()
-		{
-			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
-			{
-				if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
-					dlg.InitialDirectory = _lastDirectory;
-
-				string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(BookSelection.CurrentSelection.FolderPath),
-													 _collectionSettings.GetLanguage1Name("en"));
-				dlg.FileName = suggestedName;
-				dlg.Filter = "EPUB|*.epub";
-				dlg.OverwritePrompt = true;
-				if (DialogResult.OK == dlg.ShowDialog())
-				{
-					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-					EpubMaker.FinishEpub(dlg.FileName);
-					ReportAnalytics("Save ePUB");
-				}
-			}
 		}
 
 		public void ReportAnalytics(string eventName)
@@ -655,49 +585,5 @@ namespace Bloom.Publish
 			});
 		}
 
-		public string UpdateEpubControlContent()
-		{
-			// Enhance: this could be optimized (but it will require changes to EpubMaker, it assumes it only stages once)
-			var publishImageDescriptions = EpubMaker.PublishImageDescriptions; // before we dispose it
-			var removeFontSizes = EpubMaker.RemoveFontSizes;
-			PrepareToStageEpub();
-			EpubMaker.PublishImageDescriptions = publishImageDescriptions; // restore on new one
-			EpubMaker.RemoveFontSizes = removeFontSizes;
-			return SetupEpubControlContent();
-		}
-
-		public string SetupEpubControlContent()
-		{
-			// This gets called on a background thread but one step needs to happen on the UI thread,
-			// so the Maker needs a control to Invoke on.
-			EpubMaker.ControlForInvoke = View;
-			EpubMaker.StageEpub();
-
-			var fileLocator = BookSelection.CurrentSelection.GetFileLocator();
-			var root = fileLocator.LocateDirectoryWithThrow("Readium");
-			var tempFolder = Path.GetDirectoryName(StagingDirectory);
-			// This is kludge. I hope it can be improved. To make a preview we currently need all the Readium
-			// files in a folder that is a parent of the staging folder containing the book content.
-			// This allows us to tell Readium about the book by passing the name of the folder using the ?ePUB=
-			// URL parameter. It doesn't work to use the original Readium file and make the parameter a full path.
-			// It's possible that there is some variation that would work, e.g., make the param a full file:/// url
-			// to the book folder. It's also possible we could get away with only copying the HTML file itself,
-			// if we modified it to have localhost: links to the JS and CSS. Haven't tried this yet. The current
-			// approach at least works.
-			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
-
-			// Not sure if we will need this. The current UI does not appear to have a way to indicate whether
-			// we have a talking book, a book without audio, or one that has audio but it is not being published.
-			//var audioSituationClass = "noAudioAvailable";
-			//if (EpubMaker.PublishWithoutAudio)
-			//	audioSituationClass = "haveAudioButNotMakingTalkingBook";
-			//else if (BookHasAudio)
-			//	audioSituationClass = "isTalkingBook";
-
-			var targetFile = Path.Combine(tempFolder, "readium-cloudreader.htm");
-
-			var iframeSource = targetFile.ToLocalhost() + "?epub=" + Path.GetFileName(StagingDirectory);
-			return iframeSource;
-		}
 	}
 }

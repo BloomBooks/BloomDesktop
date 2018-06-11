@@ -38,35 +38,23 @@ namespace Bloom.Publish
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
-		private EpubView _epubPreviewControl;
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
 		private PublishToAndroidApi _publishApi;
 		private BloomWebSocketServer _webSocketServer;
-		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
-		private const string kWebsocketPreviewId = "epubPreview";
-
-		private EpubPublishUiSettings _desiredEpubSettings = new EpubPublishUiSettings();
-		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
-		private Action<EpubMaker> _doWhenPreviewComplete; // Something to do when the current preview is complete (e.g., save it)
-		private BackgroundWorker _previewWorker;
-		private string _previewSrc;
 
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator,
-			PublishToAndroidApi publishApi, BloomWebSocketServer webSocketServer, PublishEpubApi publishEpubApi)
+			PublishToAndroidApi publishApi, BloomWebSocketServer webSocketServer)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
 			_publishApi = publishApi;
 			_webSocketServer = webSocketServer;
-			// This works as long as we only have one PublishView. If we one day support multiple windows, we'll need to do something
-			// to tell it the current one.
-			publishEpubApi.CurrentView = this;
 
 			InitializeComponent();
 
@@ -133,13 +121,11 @@ namespace Bloom.Publish
 			_previewBox.Visible = false;
 			Controls.Add(_previewBox);
 			_previewBox.BringToFront();
-			_electronicPublishView = new ElectronicPublishView(_model);
 		}
 
 		public void SetStateOfNonUploadRadios(bool enable)
 		{
 			_epubRadio.Enabled = enable;
-			_epub2Radio.Enabled = enable;
 			_bookletBodyRadio.Enabled = enable;
 			_bookletCoverRadio.Enabled = enable;
 			_simpleAllPagesRadio.Enabled = enable;
@@ -181,7 +167,7 @@ namespace Bloom.Publish
 			_bookletCoverRadio.AutoCheck = autoCheck;
 			_bookletBodyRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
-			_epubRadio.AutoCheck = _epub2Radio.AutoCheck = autoCheck;
+			_epubRadio.AutoCheck = autoCheck;
 			_androidRadio.AutoCheck = autoCheck;
 		}
 
@@ -191,13 +177,11 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			LocalizeSuperToolTip(_epubRadio, "PublishTab.EpubRadio");
 			LocalizeSuperToolTip(_androidRadio, "PublishTab.AndroidButton");
 		}
 
 		// Used by LocalizeSuperToolTip to remember original English keys
 		Dictionary<Control, string> _originalSuperToolTips = new Dictionary<Control, string>();
-		private readonly ElectronicPublishView _electronicPublishView;
 
 		private void LocalizeSuperToolTip(Control controlThatHasSuperTooltipAttached, string l10nIdOfControl)
 		{
@@ -257,7 +241,7 @@ namespace Bloom.Publish
 		private void ClearRadioButtons()
 		{
 			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _epub2Radio.Checked = _androidRadio.Checked = false;
+				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _androidRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -327,8 +311,6 @@ namespace Bloom.Publish
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
-				else if (_epub2Radio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.EPUB2;
 				else if (_androidRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Android;
 				else if (_model.PdfGenerationSucceeded)
@@ -355,7 +337,6 @@ namespace Bloom.Publish
 			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
 			_uploadRadio.Checked = _model.UploadMode;
 			_epubRadio.Checked = _model.EpubMode;
-			_epub2Radio.Checked = _model.Epub2Mode;
 
 			if (!_model.AllowUpload)
 			{
@@ -434,11 +415,7 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
 			}
-			if (displayMode != PublishModel.DisplayModes.EPUB && _epubPreviewControl != null && Controls.Contains(_epubPreviewControl))
-			{
-				Controls.Remove(_epubPreviewControl);
-			}
-			if(displayMode != PublishModel.DisplayModes.Android || displayMode != PublishModel.DisplayModes.EPUB2 && _htmlControl != null && Controls.Contains(_htmlControl))
+			if(displayMode != PublishModel.DisplayModes.Android || displayMode != PublishModel.DisplayModes.EPUB && _htmlControl != null && Controls.Contains(_htmlControl))
 			{
 				Controls.Remove(_htmlControl);
 
@@ -512,36 +489,10 @@ namespace Bloom.Publish
 
 					break;
 				}
-				case PublishModel.DisplayModes.EPUB:
-				{
-					Logger.WriteEvent("Entering Publish Epub Screen");
-					// We may reuse this for the process of generating the ePUB staging files. For now, skip it.
-					_workingIndicator.Visible = false;
-					_printButton.Enabled = false; // don't know how to print an ePUB
-					_pdfViewer.Visible = false;
-					Cursor = Cursors.WaitCursor;
-					_epubPreviewControl = ElectronicPublishView.SetupEpubControl(_epubPreviewControl, _isolator, () => _saveButton.Enabled = _model.EpubMaker.ReadyToSave());
-					_epubPreviewControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
-							_pdfViewer.Width, _pdfViewer.Height);
-					_epubPreviewControl.Dock = _pdfViewer.Dock;
-					_epubPreviewControl.Anchor = _pdfViewer.Anchor;
-					var saveBackGround = _epubPreviewControl.BackColor; // changed to match parent during next statement
-					Controls.Add(_epubPreviewControl);
-					_epubPreviewControl.BackColor = saveBackGround; // keep own color.
-														// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
-					_epubPreviewControl.BringToFront();
-					Cursor = Cursors.Default;
-
-					// We rather mangled the Readium code in the process of cutting away its own navigation
-					// and other controls. It produces all kinds of JavaScript errors, but it seems to do
-					// what we want. So just suppress the toasts for all of them.
-					Browser.SuppressJavaScriptErrors = true;
-					break;
-				}
 				case PublishModel.DisplayModes.Android:
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "android", "androidPublishUI.html"));
 					break;
-				case PublishModel.DisplayModes.EPUB2:
+				case PublishModel.DisplayModes.EPUB:
 					// We rather mangled the Readium code in the process of cutting away its own navigation
 					// and other controls. It produces all kinds of JavaScript errors, but it seems to do
 					// what we want in our preview. So just suppress the toasts for all of them. This is unfortunate because
@@ -549,160 +500,9 @@ namespace Bloom.Publish
 					// We still get them in the output window, in case we really want to look for one.
 					Browser.SuppressJavaScriptErrors = true;
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "epub", "epubPublishUI.html"));
-					bool firstTime = true;
-					_htmlControl.Browser.WebBrowser.DocumentCompleted += (sender, args) =>
-					{
-						// Wait until the document is sufficiently initialized to receive websocket broadcasts
-						if (firstTime)
-						{
-							// We get multiple DocumentCompleted events, e.g., when setting a new preview.
-							// Just do this the first time.
-							firstTime = false;
-							PublishEpubApi.ReportProgress(this,_webSocketServer,
-								LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
-						}
-					};
-					_model.PrepareToStageEpub(); // let's get the epub maker and its browser created on the UI thread
-					_model.EpubMaker.PublishImageDescriptions = _desiredEpubSettings.howToPublishImageDescriptions;
-					_model.EpubMaker.RemoveFontSizes = _desiredEpubSettings.removeFontSizes;
-					_previewWorker = new BackgroundWorker();
-					_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
-					_previewWorker.DoWork += (sender, args) => SetupEpubPreview();
-					_previewWorker.RunWorkerAsync();
 					break;
 			}
 			UpdateSaveButton();
-		}
-
-		internal string GetEpubState()
-		{
-			return JsonConvert.SerializeObject(_desiredEpubSettings);
-		}
-
-		public void UpdatePreview(EpubPublishUiSettings newSettings, bool retry)
-		{
-			lock (this)
-			{
-				if (_desiredEpubSettings == newSettings && !retry)
-					return; // getting a request really from the browser, and already in that state.
-				_desiredEpubSettings = newSettings;
-				if (_previewWorker != null)
-				{
-					// Something changed before we even finished generating the preview! abort the current attempt, which will lead
-					// to trying again.
-					_model.EpubMaker.AbortRequested = true;
-					return;
-				}
-
-				if (_doWhenPreviewComplete != null)
-				{
-					// We're committed to doing something with a completed preview...and we're done making the preview...
-					// so probably we're in the middle of doing the completed preview action.
-					// We need to let it complete; THEN we should update the preview again.
-					_needNewPreview = true;
-					return;
-				}
-				_previewWorker = new BackgroundWorker();
-			}
-
-			_model.EpubMaker.PublishImageDescriptions = newSettings.howToPublishImageDescriptions;
-			_model.EpubMaker.RemoveFontSizes = newSettings.removeFontSizes;
-			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
-			// we will really be changing the src attr in the preview iframe so the display will update.
-			_webSocketServer.Send(kWebsocketPreviewId, "");
-			PublishEpubApi.ReportProgress(this, _webSocketServer,
-				LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
-			_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
-			_previewWorker.DoWork += (sender, args) =>
-			{
-				_previewSrc = _model.UpdateEpubControlContent();
-			};
-			_previewWorker.RunWorkerAsync();
-		}
-
-		private void _previewWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-		{
-			bool abortRequested;
-			// I'm not absolutely sure that this and UpdatePreview will always run on the UI thread.
-			// So there is a possible race condition:
-			// while we are running this method, the user does something which results in
-			// a new UpdatePreview on another thread.
-			// If updatePreview gets the lock first, it will set the abort flag and quit;
-			// this method will clean up and call UpdatePreview again.
-			// If this method gets the lock first, it will proceed to update the preview
-			// with the successful results it obtained. The new update will proceed in the background.
-			// That should be OK, though there is probably a rare pathological case where progress shows
-			// two Preparing messages followed by two Done messages.
-			lock (this)
-			{
-				_previewWorker.Dispose();
-				_previewWorker = null; // allows UpdatePrevew to know nothing is in progress
-				abortRequested = _model.EpubMaker.AbortRequested;
-				// Either we just made a successful preview, or we're just about to try again.
-				// Either way, we don't need yet another new one later (unless another change happens)
-				_needNewPreview = false;
-			}
-
-			if (abortRequested || _model.EpubMaker.PublishImageDescriptions != _desiredEpubSettings.howToPublishImageDescriptions
-				|| _model.EpubMaker.RemoveFontSizes != _desiredEpubSettings.removeFontSizes)
-			{
-				UpdatePreview(_desiredEpubSettings, true);
-				return;
-			}
-
-			if (_doWhenPreviewComplete != null)
-			{
-				Debug.Assert(!_model.EpubMaker.AbortRequested);
-				Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredEpubSettings.howToPublishImageDescriptions);
-				Debug.Assert(_model.EpubMaker.RemoveFontSizes == _desiredEpubSettings.removeFontSizes);
-				_doWhenPreviewComplete(_model.EpubMaker);
-				_doWhenPreviewComplete = null;
-
-				if (_needNewPreview)
-				{
-					// We got a request somewhere in the process of running the action.
-					UpdatePreview(_desiredEpubSettings, true);
-					return;
-				}
-			}
-
-			Invoke((Action) (() =>
-			{
-				_webSocketServer.Send(kWebsocketPreviewId, _previewSrc);
-				PublishEpubApi.ReportProgress(this,_webSocketServer,
-					LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
-			}));
-		}
-
-		/// <summary>
-		/// Perform the requested action (currently the only example is, save the epub) when we have an up-to-date
-		/// preview. Pass it the EpubMaker that generated the preview.
-		/// </summary>
-		/// <param name="doWhenReady"></param>
-		public void RequestPreviewOutput(Action<EpubMaker> doWhenReady)
-		{
-			lock (this)
-			{
-				_doWhenPreviewComplete = doWhenReady;
-				if (_previewWorker != null)
-					return; // in process of making, can't do it now; will be done in _previewWorker_RunWorkerCompleted.
-			}
-
-			Debug.Assert(!_model.EpubMaker.AbortRequested);
-			Debug.Assert(_model.EpubMaker.PublishImageDescriptions == _desiredEpubSettings.howToPublishImageDescriptions);
-			Debug.Assert(_model.EpubMaker.RemoveFontSizes == _desiredEpubSettings.removeFontSizes);
-			_doWhenPreviewComplete(_model.EpubMaker);
-
-			_doWhenPreviewComplete = null;
-
-			if (_needNewPreview) // we got a request during action processing
-				UpdatePreview(_desiredEpubSettings, true);
-		}
-
-		private void SetupEpubPreview()
-		{
-			_model.DoAnyNeededAudioCompression();
-			_previewSrc = _model.SetupEpubControlContent();
 		}
 
 		private void ShowHtmlPanel(string pathToHtml)
@@ -727,10 +527,8 @@ namespace Bloom.Publish
 
 		private void UpdateSaveButton()
 		{
-			if (Controls.Contains(_epubPreviewControl))
-				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save ePUB...");
-			else
-				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveButton", "&Save PDF...");
+			// Nothing meaningful to do at present.
+			_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveButton", "&Save PDF...");
 		}
 
 		private void SetupPublishControl()
@@ -783,7 +581,6 @@ namespace Bloom.Publish
 		{
 			_model.UploadMode = _uploadRadio.Checked;
 			_model.EpubMode = _epubRadio.Checked;
-			_model.Epub2Mode = _epub2Radio.Checked;
 			bool pdfPreviewMode = false;
 			if (_simpleAllPagesRadio.Checked)
 			{
@@ -803,10 +600,6 @@ namespace Bloom.Publish
 			else if (_epubRadio.Checked)
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.EPUB;
-			}
-			else if (_epub2Radio.Checked)
-			{
-				_model.DisplayMode = PublishModel.DisplayModes.EPUB2;
 			}
 			else if (_uploadRadio.Checked)
 			{
@@ -870,15 +663,6 @@ namespace Bloom.Publish
 				// mode that shows generation is pending. For the upload button case, we want to go straight to the Upload
 				// mode, so the upload control appears. This is a bizarre place to do it, but I can't find a better one.
 				SetDisplayMode(PublishModel.DisplayModes.Upload);
-				return;
-			}
-			if (_epubRadio.Checked)
-			{
-				// We aren't going to display it, so don't bother generating it.
-				// Unfortunately, the completion of the generation process is normally responsible for putting us into
-				// the right display mode for what we generated (or failed to), after this routine puts us into the
-				// mode that shows generation is pending. For the ePUB button case, we want to go straight to the ePUB preview.
-				SetDisplayMode(PublishModel.DisplayModes.EPUB);
 				return;
 			}
 
@@ -1051,11 +835,6 @@ namespace Bloom.Publish
 		public string HelpTopicUrl
 		{
 			get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
-		}
-
-		public ElectronicPublishView ElectronicPublishView
-		{
-			get { return _electronicPublishView; }
 		}
 
 		private void _openinBrowserMenuItem_Click(object sender, EventArgs e)

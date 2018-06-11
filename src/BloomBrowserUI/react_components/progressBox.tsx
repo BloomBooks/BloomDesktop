@@ -4,6 +4,12 @@ import WebSocketManager from "../utils/WebSocketManager";
 
 interface IProgressBoxProps {
     lifetimeLabel: string;
+    // If the client is going to start doing something right away that will
+    // cause progress messages to happen, it had better wait until this is invoked;
+    // otherwise, some of the early ones may be lost. This function will be called
+    // once, immediately if the socket is already open, otherwise, as soon as
+    // it is in the "OPEN" state where messages can be received (and sent).
+    onReadyToReceive?: () => void;
 }
 
 interface IProgressState {
@@ -39,6 +45,9 @@ export default class ProgressBox extends React.Component<IProgressBoxProps, IPro
                 this.tryScrollToBottom();
             }
         });
+        if (props.onReadyToReceive) {
+            WebSocketManager.notifyReady(props.lifetimeLabel, props.onReadyToReceive);
+        }
     }
 
     tryScrollToBottom() {

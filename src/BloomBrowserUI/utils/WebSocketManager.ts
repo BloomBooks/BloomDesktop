@@ -59,4 +59,26 @@ export default class WebSocketManager {
         this.getWebSocket(socketName).addEventListener("message", listener);
         this.listeners.push(listener);
     }
+
+    /**
+     * Find or create a websocket (often used after addEventListener, in which case it is sure to
+     * be found), and request a one-time notification when the socket is open, that is, able to
+     * receive (and send) messages. If the socket is already open, onReady() will be called at
+     * once, before the call to this method returns.
+     */
+    public static notifyReady(socketName: string, onReady: () => void) {
+        var socket = this.getWebSocket(socketName);
+        if (socket.readyState === 0) { // CONNECTING
+            var openFunc = () => {
+                socket.removeEventListener("open", openFunc);
+                onReady();
+            };
+            //alert("waiting for open");
+            socket.addEventListener("open", openFunc);
+        } else {
+            // presume state OPEN; out of luck if already closed or closing
+            // Since it's already open we can call the function now.
+            onReady();
+        }
+    }
 }
