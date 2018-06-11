@@ -13,6 +13,7 @@ using DesktopAnalytics;
 using Gecko;
 using Gecko.DOM;
 using L10NSharp;
+using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -80,13 +81,13 @@ namespace Bloom.web.controllers
 				var fileName = GetNewVideoFileName();
 				var videoFolder = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
 				var path = Path.Combine(videoFolder, fileName);
-				RobustFile.WriteAllBytes(path, bytes);
+				SaveVideoFile(path, bytes);
 				var videoContainer = GetSelectedVideoContainer();
 				if (videoContainer == null)
 				{
 					// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
 					// video recording if there is no container on the page.
-					MessageBox.Show("There's nowhere to put a video on this page. You can find it later at " + fileName);
+					MessageBox.Show("There's nowhere to put a video on this page. You can find it later at " + path);
 					request.Failed("nowhere to put video");
 					return;
 				}
@@ -101,6 +102,64 @@ namespace Bloom.web.controllers
 				// But currently nothing is using the success/fail status, and we don't expect this to fail.
 				SaveChangedVideo(videoContainer, path, "Bloom had a problem including that video");
 				request.PostSucceeded();
+			}
+		}
+
+		/// <summary>
+		/// Save the video file, first processing it with ffmpeg (if possible) to convert the data to a more
+		/// common and more compressed format (h264 instead of vp8) and to insert keyframes every half second.
+		/// Processing with ffmpeg also has the effect of setting the duration value for the video as a whole,
+		/// something which is sadly lacking in the video data coming directly from mozilla browser code.
+		/// If ffmpeg is not available, then the file is stored exactly as it comes from the api call.
+		/// </summary>
+		/// <remarks>
+		/// Inserting keyframes, and possibly any ffmeg processing, may not be needed if we use ffmpeg to
+		/// trim the output later.  But the smaller size of the h264 format may be attractive if the
+		/// quality is still good enough to work from.
+		/// </remarks>
+		private static void SaveVideoFile(string path, byte [] bytes)
+		{
+			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
+			if (RobustFile.Exists(ffmpeg))
+			{
+				var rawVideo = TempFile.CreateAndGetPathButDontMakeTheFile();
+				RobustFile.WriteAllBytes(rawVideo.Path, bytes);
+				// -hide_banner = don't write all the version and build information to the console
+				// -y = always overwrite output file
+				// -v 16 = verbosity level reports only errors, including ones that can be recovered from
+				// -i <path> = specify input file
+				// -force_key_frames "expr:gte(t,n_forced*0.5)" = insert keyframe every 0.5 seconds in the output file
+				var result = CommandLineRunner.Run(ffmpeg, $"-hide_banner -y -v 16 -i \"{rawVideo.Path}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"", "", 60, new NullProgress());
+				var msg = String.Empty;
+				if (result.DidTimeOut)
+				{
+					msg = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.Timeout",
+						"The initial processing of the video file timed out after one minute.  The raw video output will be stored.");
+				}
+				else
+				{
+					var output = result.StandardError;
+					if (!String.IsNullOrWhiteSpace(output))
+					{
+						// Even though it may be possible to recover from the error, we'll just notify the user and use the raw vp8 output.
+						var format = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.VideoProcessingError",
+							"Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.",
+							"{0} is the path to the video file, {1} is the error message from the ffmpeg program, and {2} is a newline character");
+						msg = String.Format(format, path, output, Environment.NewLine);
+					}
+				}
+				if (!String.IsNullOrEmpty(msg))
+				{
+					Logger.WriteEvent(msg);
+					ErrorReport.NotifyUserOfProblem(msg);
+					RobustFile.WriteAllBytes(path, bytes);     // use the original, hoping it's better than nothing.
+				}
+			}
+			else
+			{
+				RobustFile.WriteAllBytes(path, bytes);
 			}
 		}
 
