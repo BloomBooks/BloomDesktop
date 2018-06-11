@@ -107,8 +107,7 @@ namespace Bloom.web.controllers
 		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
 		/// start a process to generate an image from the template page content.
 		/// </summary>
-		/// <param name="expectedPathOfThumbnailImage"></param>
-		/// <returns>Should always return true, unless we really can't come up with an image at all.</returns>
+		/// <returns>Should always return a valid image path, unless we really can't come up with an image at all.</returns>
 		private string FindOrGenerateThumbnail(string expectedPathOfThumbnailImage)
 		{
 			var localPath = AdjustPossibleLocalHostPathToFilePath(expectedPathOfThumbnailImage);
@@ -128,25 +127,18 @@ namespace Bloom.web.controllers
 				if (f.IsReadOnly)
 					return pngpath; // it's locked, don't try and replace it
 
-				//If there is no svg, then we assume the we are using a generated image.
-				//If the book we want a thumbnail from is the one is the one we are currently editing,
-				//then the thumbnail we generated last time might not reflect how the page is laid out
-				//now. So in that case we ignore the existing png thumbnail (and any cached version
-				//of it we previously saved) and make a new one. Bloom saves the current page
-				//before invoking AddPage, so the file contains the right content for making the new one.
-				var testLocalPath = localPath.Replace("/", "\\");
-				var testFolderPath = _bookSelection.CurrentSelection.FolderPath.Replace("/", "\\");
-				if (Platform.IsWindows)
-				{
-					// Not a formality, since localPath comes from GetBookTemplatePaths and has been
-					// forced to LC on Windows, while the book's FolderPath has not.
-					testLocalPath = testLocalPath.ToLowerInvariant();
-					testFolderPath = testFolderPath.ToLowerInvariant();
-				}
-				if (!testLocalPath.Contains(testFolderPath))
-				{
+				if (!IsPageTypeFromCurrentBook(localPath))
 					return pngpath;
-				}
+
+				mustRegenerate = true; // prevent thumbnailer using cached (obsolete) image
+			}
+
+			var altpath = GetAlternativeWritablePath(pngpath);
+			if (RobustFile.Exists(altpath))
+			{
+				if (!IsPageTypeFromCurrentBook(localPath))
+					return altpath;
+
 				mustRegenerate = true; // prevent thumbnailer using cached (obsolete) image
 			}
 
@@ -193,14 +185,52 @@ namespace Bloom.web.controllers
 				}
 				catch (Exception)
 				{
-					using (var file = new TempFile())
-					{
-						clone.Save(file.Path);
-						resultPath = file.Path;
-					}
+					var folder = Path.GetDirectoryName(altpath);
+					Directory.CreateDirectory(folder);
+					clone.Save(altpath);
+					resultPath = altpath;
 				}
 			}
 			return resultPath;
+		}
+
+		/// <summary>
+		/// If there is no svg, then we assume that we are using a generated image.
+		/// If the book we want a thumbnail from is also the one we are currently editing,
+		/// then the thumbnail we generated last time might not reflect how the page is laid out
+		/// now. So in that case we ignore the existing png thumbnail (and any cached version
+		/// of it we previously saved) and make a new one. Bloom saves the current page
+		/// before invoking AddPage, so the file contains the right content for making the new one.
+		/// </summary>
+		private bool IsPageTypeFromCurrentBook(string localPath)
+		{
+			var testLocalPath = localPath.Replace ("/", "\\");
+			var testFolderPath = _bookSelection.CurrentSelection.FolderPath.Replace ("/", "\\");
+			if (Platform.IsWindows)
+			{
+				// Not a formality, since localPath comes from GetBookTemplatePaths and has been
+				// forced to LC on Windows, while the book's FolderPath has not.
+				testLocalPath = testLocalPath.ToLowerInvariant();
+				testFolderPath = testFolderPath.ToLowerInvariant();
+			}
+			return testLocalPath.Contains(testFolderPath);
+		}
+
+		private string GetAlternativeWritablePath(string pngpath)
+		{
+			var idx = pngpath.IndexOf("browser");
+			string newpath;
+			if (idx >= 0)
+			{
+				var subpath = pngpath.Substring(idx);
+				newpath = Path.Combine(Path.GetTempPath(), "Bloom", subpath);
+			}
+			else
+			{
+				// this path will probably never be used
+				newpath = Path.Combine(Path.GetTempPath(), "Bloom", "browser", Path.GetFileName(pngpath));
+			}
+			return newpath;
 		}
 
 		private static string AdjustPossibleLocalHostPathToFilePath(string path)
