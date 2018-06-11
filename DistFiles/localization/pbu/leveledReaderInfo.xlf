@@ -53,6 +53,7 @@
           
           
           
+          
            <g id="genid-1" ctype="x-html-em">‏وړاندوینه</g> په یو متن کې، په دې معنی چې لوستونکی اټکل کولي شي چې ورپسې به څه وي. تاسو کولی شئ د تکرار شویو مثالونو په کارولو سره وړاندوینه ډېره کړئ. دلته ځینې مثالونه دي چې تاسې تري کار اخیستي شئ:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
@@ -68,6 +69,22 @@
           
           
           
+          
+           <g id="genid-1" ctype="x-html-em">‏وړاندوینه</g> په یو متن کې، په دې معنی چې لوستونکی اټکل کولي شي چې ورپسې به څه وي. تاسو کولی شئ د تکرار شویو مثالونو په کارولو سره وړاندوینه ډېره کړئ. دلته ځینې مثالونه دي چې تاسې تري کار اخیستي شئ:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
            <g id="genid-1" ctype="x-html-em">‏وړاندوینه</g> په یو متن کې، په دې معنی چې لوستونکی اټکل کولي شي چې ورپسې به څه وي. تاسو کولی شئ د تکرار شویو مثالونو په کارولو سره وړاندوینه ډېره کړئ. دلته ځینې مثالونه دي چې تاسې تري کار اخیستي شئ:</target>
         </alt-trans>
         <alt-trans>
@@ -100,17 +117,6 @@
         <alt-trans>
           <target xml:lang="pbu">
           
-          
-          
-          
-          
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">‏وړاندوینه</g> په یو متن کې، په دې معنی چې لوستونکی اټکل کولي شي چې ورپسې به څه وي. تاسو کولی شئ د تکرار شویو مثالونو په کارولو سره وړاندوینه ډېره کړئ. دلته ځینې مثالونه دي چې تاسې تري کار اخیستي شئ:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">
           
           
           
@@ -166,6 +172,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
@@ -190,6 +197,31 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">نظم او قافیه – یوه کیسه له یو نمونی سره یا سلسلې سره چې نظم او قافیه هم ورکې وي. لکه:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> نصواري خرس، نصواري خرس، تاسو څه ګورئ؟
+زه یوه سره مرغۍ ګورم چې ماته ګوري
+سره مرغۍ، سره مرغۍ، تاسو څه ګورئ؟
+زه یوه زیړه هیلۍ ګورم چې ماته ګوري.
+زیړه هیلۍ، زیړه هیلۍ، تاسو څه ګورئ؟</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. او ایرک کارل</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -248,26 +280,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. او ایرک کارل</g>
         </g>
       
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">نظم او قافیه – یوه کیسه له یو نمونی سره یا سلسلې سره چې نظم او قافیه هم ورکې وي. لکه:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre"> نصواري خرس، نصواري خرس، تاسو څه ګورئ؟
-زه یوه سره مرغۍ ګورم چې ماته ګوري
-سره مرغۍ، سره مرغۍ، تاسو څه ګورئ؟
-زه یوه زیړه هیلۍ ګورم چې ماته ګوري.
-زیړه هیلۍ، زیړه هیلۍ، تاسو څه ګورئ؟</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. او ایرک کارل</g>
-        </g>
       
       
       
@@ -300,6 +312,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
@@ -315,6 +328,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">لار ښوونې کیسې ته ملاتړ برابروي. لارښوونې په بیلا بیلو لارو کې له کیسو سره په تفاوت تړلي دي <g id="genid-5" ctype="x-html-em">سويې</g> او د مختلفو لوستونکو لپاره (لاندې وګورئ). په یاد ولرئ چې په ډېرو کلتورونو کې چې ډیر چاپ شوي مواد نه لري، مغلق عکسونه ښایي د پوهاوي لپاره ستونزمن وي.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -347,17 +376,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لار ښوونې کیسې ته ملاتړ برابروي. لارښوونې په بیلا بیلو لارو کې له کیسو سره په تفاوت تړلي دي <g id="genid-5" ctype="x-html-em">سويې</g> او د مختلفو لوستونکو لپاره (لاندې وګورئ). په یاد ولرئ چې په ډېرو کلتورونو کې چې ډیر چاپ شوي مواد نه لري، مغلق عکسونه ښایي د پوهاوي لپاره ستونزمن وي.
     
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">لار ښوونې کیسې ته ملاتړ برابروي. لارښوونې په بیلا بیلو لارو کې له کیسو سره په تفاوت تړلي دي <g id="genid-5" ctype="x-html-em">سويې</g> او د مختلفو لوستونکو لپاره (لاندې وګورئ). په یاد ولرئ چې په ډېرو کلتورونو کې چې ډیر چاپ شوي مواد نه لري، مغلق عکسونه ښایي د پوهاوي لپاره ستونزمن وي.
     
     
     
@@ -372,6 +390,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی کتابونو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
+      
       
       
       
@@ -399,6 +418,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی کتابونو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -431,17 +466,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی کتابونو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">لپاره د <g id="genid-6" ctype="x-html-strong">لومړنی کتابونو</g> عکسونه باید له کیسې سره نږدې برابروالی ولري. لوستونکی باید وتوانیږي چې یوازې عکسونو ته په کتلو سره د کیسې وړاندوینه وکړي. انځورونه په دې کچه کې باید ساده وي.
       
       
       
@@ -456,6 +480,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <target xml:lang="pbu">لپاره د <g id="genid-7" ctype="x-html-strong">لومړني کتابونو</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
+      
       
       
       
@@ -483,6 +508,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">لپاره د <g id="genid-7" ctype="x-html-strong">لومړني کتابونو</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -515,17 +556,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-7" ctype="x-html-strong">لومړني کتابونو</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">لپاره د <g id="genid-7" ctype="x-html-strong">لومړني کتابونو</g> عکسونه باید د کیسې ملاتړ وکړي. لکه څنګه چې متن ډېرېږي، لوستونکي لږ عکسونو ته توجه کوي او له متن څخه ډیره معنی اخلي. انځورونه کیدای شي ډیر مغلق وي.
       
       
       
@@ -540,6 +570,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
         <target xml:lang="pbu">لپاره د <g id="genid-8" ctype="x-html-strong">روان لوستونکو</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
+      
       
       
       
@@ -567,6 +598,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">لپاره د <g id="genid-8" ctype="x-html-strong">روان لوستونکو</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -599,17 +646,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-8" ctype="x-html-strong">روان لوستونکو</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">لپاره د <g id="genid-8" ctype="x-html-strong">روان لوستونکو</g> عکس باید لږ یا هیڅ ملاتړ کیسې ته ورنکړي. لوستونکي د معنی لپاره ډیر په متن باندې تکیه کوي نظر په عکس باندې. انځورونه کېدای شي ډیر مغلق وي.
       
       
       
@@ -646,6 +682,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
@@ -661,6 +698,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">لپاره د <g id="genid-9" ctype="x-html-strong">لومړنی کتابونو</g> کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -693,17 +746,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-9" ctype="x-html-strong">لومړنی کتابونو</g> کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">لپاره د <g id="genid-9" ctype="x-html-strong">لومړنی کتابونو</g> کتاب باید دقیق وي، باید په یوه نظر/موضوع یې پام وي، او باید آشنا او د پوهیدو لپاره اسانه وي.
       
       
       
@@ -718,6 +760,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
         <target xml:lang="pbu">لپاره د <g id="genid-10" ctype="x-html-strong">لومړني کتابونو</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
+      
       
       
       
@@ -745,6 +788,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">لپاره د <g id="genid-10" ctype="x-html-strong">لومړني کتابونو</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -777,17 +836,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-10" ctype="x-html-strong">لومړني کتابونو</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">لپاره د <g id="genid-10" ctype="x-html-strong">لومړني کتابونو</g>‏، یوه کیسه په همدې موضوع جوړوي خو په ډیر عمق سره.
       
       
       
@@ -802,6 +850,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
         <target xml:lang="pbu">لپاره د <g id="genid-11" ctype="x-html-strong">روان لوستونکو</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
+      
       
       
       
@@ -829,6 +878,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">لپاره د <g id="genid-11" ctype="x-html-strong">روان لوستونکو</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -861,17 +926,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="pbu">لپاره د <g id="genid-11" ctype="x-html-strong">روان لوستونکو</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">لپاره د <g id="genid-11" ctype="x-html-strong">روان لوستونکو</g> موضوع ګانې له اشنايي څخه ډیرې پراخیدلی شي، ډیر تغیر لرونکی او خلص اوسئ.
       
       
       
