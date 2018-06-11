@@ -99,7 +99,13 @@ namespace Bloom
 					new[] {typeof (HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof (GetUsedFontsParameters), typeof(ChangeLayoutParameters)})
 					.MapResult(
 						(HydrateParameters opts) => HandlePrepareCommandLine(opts),
-						(UploadParameters opts) => UploadCommand.Handle(opts),
+						(UploadParameters opts) =>
+						{
+							using (InitializeAnalytics())
+							{
+								return UploadCommand.Handle(opts);
+							}
+						},
 						(DownloadBookOptions opts) => DownloadBookCommand.HandleSilentDownload(opts),
 						(GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
 						(ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
@@ -181,34 +187,7 @@ namespace Bloom
 					LocalizationManager.IgnoreExistingEnglishXliffFiles = true;
 #endif
 
-				// Ensures that registration settings for all channels of Bloom are stored in a common place,
-				// so the user is not asked to register each independently.
-				RegistrationSettingsProvider.SetProductName("Bloom");
-
-				Dictionary<string, string> propertiesThatGoWithEveryEvent = ErrorReport.GetStandardProperties();
-				propertiesThatGoWithEveryEvent.Remove("MachineName");
-				propertiesThatGoWithEveryEvent.Remove("UserName");
-				propertiesThatGoWithEveryEvent.Remove("UserDomainName");
-				propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
-
-#if DEBUG
-				using (
-				new DesktopAnalytics.Analytics("rw21mh2piu", RegistrationDialog.GetAnalyticsUserInfo(),
-						propertiesThatGoWithEveryEvent,
-						false )) /// change to true if you want to test sending
-					_supressRegistrationDialog = true;
-#else
-				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
-
-				//default is to allow tracking
-				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
-					|| feedbackSetting.ToLowerInvariant() == "true";
-				_supressRegistrationDialog = _supressRegistrationDialog || !allowTracking;
-
-				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, allowTracking))
-
-#endif
-
+				using (InitializeAnalytics())
 				{
 					// do not show the registration dialog if bloom was started for a special purpose
 					if (args.Length > 0)
@@ -242,7 +221,7 @@ namespace Bloom
 						}
 						// Continue with normal startup now we unpacked the bloompack.
 						// Various other things will misinterpret the .bloompack argument if we leave it in args.
-						args = new string[] {};
+						args = new string[] { };
 					}
 					if (IsBloomBookOrder(args))
 					{
@@ -326,7 +305,7 @@ namespace Bloom
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
 						// We don't even want to try to install fonts if we are installed by an admin for all users;
 						// it will have been installed already as part of the allUsers install.
-						if ((!InstallerSupport.SharedByAllUsers()) && FontInstaller.InstallFont("AndikaNewBasic"))
+						if (!InstallerSupport.SharedByAllUsers() && FontInstaller.InstallFont("AndikaNewBasic"))
 							return 1;
 
 						Run();
@@ -342,6 +321,46 @@ namespace Bloom
 			Settings.Default.FirstTimeRun = false;
 			Settings.Default.Save();
 			return 0;
+		}
+
+		/// <summary>
+		/// Sets up different analytics channels depending on Debug or not.
+		/// Also determines whether or not Registration should occur.
+		/// </summary>
+		/// <returns></returns>
+		private static DesktopAnalytics.Analytics InitializeAnalytics()
+		{
+			// Ensures that registration settings for all channels of Bloom are stored in a common place,
+			// so the user is not asked to register each independently.
+			RegistrationSettingsProvider.SetProductName("Bloom");
+
+			Dictionary<string, string> propertiesThatGoWithEveryEvent = ErrorReport.GetStandardProperties();
+			propertiesThatGoWithEveryEvent.Remove("MachineName");
+			propertiesThatGoWithEveryEvent.Remove("UserName");
+			propertiesThatGoWithEveryEvent.Remove("UserDomainName");
+			propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
+
+#if DEBUG
+			_supressRegistrationDialog = true;
+			return new DesktopAnalytics.Analytics(
+				"rw21mh2piu",
+				RegistrationDialog.GetAnalyticsUserInfo(),
+				propertiesThatGoWithEveryEvent,
+				false); // change to true if you want to test sending
+#else
+			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
+
+			//default is to allow tracking
+			var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
+				|| feedbackSetting.ToLowerInvariant() == "true";
+			_supressRegistrationDialog = _supressRegistrationDialog || !allowTracking;
+
+			return new DesktopAnalytics.Analytics(
+				"c8ndqrrl7f0twbf2s6cv",
+				RegistrationDialog.GetAnalyticsUserInfo(),
+				propertiesThatGoWithEveryEvent,
+				allowTracking);
+#endif
 		}
 
 #if DEBUG
