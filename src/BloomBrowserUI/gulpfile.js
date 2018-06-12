@@ -9,7 +9,7 @@ var replaceExt = require('replace-ext');
 var markdownIt = require('markdown-it')({
     html: true,     // enable HTML tags in source
     linkify: true   // autoconvert URL-like text to links
-    });
+});
 var markdownItContainer = require('markdown-it-container');
 var markdownItAttrs = require('markdown-it-attrs');
 markdownIt.use(markdownItContainer);
@@ -45,7 +45,7 @@ const leveledRTInfoPath = '../../DistFiles/leveledRTInfo';
 var paths = {
     help: ['./help/**/*.md'],
     templateReadme: ['./templates/**/ReadMe*.md'],
-    distInfo: [ '../../DistFiles/**/*.md', '!../../DistFiles/ReleaseNotes.md'],
+    distInfo: ['../../DistFiles/**/*.md', '!../../DistFiles/ReleaseNotes.md', '!../../DistFiles/ffmpeg/*.md'],
     less: ['./**/*.less', '!./node_modules/**/*.less'],
     pug: ['./**/*.pug', '!./node_modules/**/*.pug', '!./**/*mixins.pug'],
     //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*'],
@@ -56,7 +56,7 @@ var paths = {
     htmlFiles: ['../../DistFiles/**/*-en.htm*', '../../output/browser/**/*-en.htm*'],
     // List all the available translated Xliff files. (omitting original English Xliff files)
     xliff: ['../../DistFiles/localization/**/*.xlf', '!../../DistFiles/localization/en/*.xlf',
-                '!../../DistFiles/localization/**/*-en.xlf'],
+        '!../../DistFiles/localization/**/*-en.xlf'],
 };
 
 // Expand the wildcards to get actual file list for translated Xliff.
@@ -201,7 +201,7 @@ gulp.task('markdownDistInfo', function () {
         .pipe(debug({ title: ' md --> ' }));
 });
 
-gulp.task('translateHtmlFiles', function() {
+gulp.task('translateHtmlFiles', function () {
     return gulp.src(paths.htmlFiles)
         .pipe(debug({ title: 'translateHtmlFiles:' }))
         .pipe(tap(function (file) {
@@ -216,7 +216,7 @@ gulp.task('translateHtmlFiles', function() {
                 cmd = cmd + " -x \"" + xliffFiles[i] + "\"";
                 cmd = cmd + " -o \"" + outfile + "\"";
                 cmd = cmd + " \"" + file.path + "\"";
-                myProcess.exec(cmd, function(err, stdout, stderr) {
+                myProcess.exec(cmd, function (err, stdout, stderr) {
                     if (err) {
                         console.error("\n" + stderr);
                     }
@@ -226,7 +226,7 @@ gulp.task('translateHtmlFiles', function() {
         }))
 });
 
-gulp.task('createXliffFiles', function() {
+gulp.task('createXliffFiles', function () {
     return gulp.src(paths.htmlFiles)
         .pipe(debug({ title: 'createXliffFiles:' }))
         .pipe(tap(function (file) {
@@ -238,7 +238,7 @@ gulp.task('createXliffFiles', function() {
                 cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract --preserve";
             cmd = cmd + " -o \"" + xliffFile + "\"";
             cmd = cmd + " \"" + file.path + "\"";
-            myProcess.exec(cmd, function(err, stdout, stderr) {
+            myProcess.exec(cmd, function (err, stdout, stderr) {
                 if (err) {
                     console.error("\n" + stderr);
                 }
@@ -270,30 +270,30 @@ var getXliffFiles = function (htmFile) {
     } else {
         var pos = basename.search("-en.htm");
         if (pos > 0)
-           basename = "/" + basename.substring(0, pos);
+            basename = "/" + basename.substring(0, pos);
     }
     var retval = [];
-    for (i = 0 ; i < allXliffFiles.length; i++) {
+    for (i = 0; i < allXliffFiles.length; i++) {
         var pos = allXliffFiles[i].search(basename);
         if (pos > 0)
-           retval.push(allXliffFiles[i]);
+            retval.push(allXliffFiles[i]);
     }
     return retval;
 }
 
 // Get the language code from the xlfFile path and put it into the htmFile path
 // (replacing the English language code) for an output file pathname.
-var getOutputFilename = function(htmFile, xlfFile) {
+var getOutputFilename = function (htmFile, xlfFile) {
     var langCode = "";
-    if ( xlfFile.search("/ReadMe-") > 0)  // as in "blah/foo/ReadMe-en.htm"
-        langCode = xlfFile.replace(/.*\/ReadMe-/, "").replace(".xlf","");
+    if (xlfFile.search("/ReadMe-") > 0)  // as in "blah/foo/ReadMe-en.htm"
+        langCode = xlfFile.replace(/.*\/ReadMe-/, "").replace(".xlf", "");
     else  // as in "blah/foo/fr/something.htm"
         langCode = xlfFile.split("/").slice(-2, -1)[0]; // penultimate item has the language code
     return htmFile.replace("-en.htm", "-" + langCode + ".htm");
 }
 
 // Get the name of the English Xliff file corresponding to the English HTML file.
-var getXliffFilename = function(htmFile) {
+var getXliffFilename = function (htmFile) {
     var htmPieces = htmFile.split("/");
     if (htmFile.includes("\\"))
         htmPieces = htmFile.split("\\");
