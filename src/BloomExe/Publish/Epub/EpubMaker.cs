@@ -13,12 +13,10 @@ using Bloom.Book;
 using Bloom.ToPalaso;
 using BloomTemp;
 using L10NSharp;
-using SIL.CommandLineProcessing;
 #if !__MonoCS__
 using NAudio.Wave;
 #endif
 using SIL.IO;
-using SIL.Progress;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
@@ -200,10 +198,25 @@ namespace Bloom.Publish.Epub
 			else
 				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code, Book.CollectionSettings.Language3Iso639Code };
 
-			//I (JH) kept having trouble making epubs because this kept getting locked.
-			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
+			// robustly come up with a directory we can use, even if previously used directories are locked somehow
+			var exportRoot = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
+			Directory.CreateDirectory(exportRoot); // this is ok if it already exists
+			for (var i = 0; i < 20; i++)
+			{
+				var dir = Path.Combine(Path.GetTempPath(), kEPUBExportFolder, i.ToString());
+				
+				if (Directory.Exists(dir))
+				{
+					// see if we can delete this old directory first
+					if (!SIL.IO.RobustIO.DeleteDirectoryAndContents(dir))
+						continue; // if not, let's change the target directory name and try again
+				}
 
-			_outerStagingFolder = new TemporaryFolder(kEPUBExportFolder);
+				Directory.CreateDirectory(dir);
+				_outerStagingFolder = TemporaryFolder.TrackExisting(dir);
+				break;
+			}
+
 			var tempBookPath = Path.Combine(_outerStagingFolder.FolderPath, Path.GetFileName(Book.FolderPath));
 			_originalBook = _book;
 			if (_bookServer != null)
