@@ -34,12 +34,33 @@ export function handleUndo(): void {
 export function switchContentPage(newSource: string) {
     this.getPageFrameExports().pageUnloading();
     let iframe = (<HTMLIFrameElement>document.getElementById("page"));
+    // We want to call getToolboxFrameExports().applyToolboxStateToPage() to allow
+    // any tool that is active to update its state to match the new page content.
+    // This gets a bit complicated because we want the tool to actually see the new
+    // content in the DOM, and it won't be present right when we set the src attribute.
+    // The normal way to deal with this is to wait and call the function after the new
+    // page is loaded. But sometimes (see comment below) the load event doesn't get
+    // raised, so we have a fall-back.
+    let handlerCalled = false;
+    const handler = () => {
+        handlerCalled = true;
+        iframe.removeEventListener("load", handler);
+        getToolboxFrameExports().applyToolboxStateToPage();
+    };
+    iframe.removeEventListener("load", handler);
+    iframe.addEventListener("load", handler);
     iframe.src = newSource;
-    // I don't fully understand why the load is necessary; it seems that without it
-    // the old page content is still around and applyToolboxStateToPage() works on that
-    // instead of the new page.
-    $(iframe).one("load", () =>
-        getToolboxFrameExports().applyToolboxStateToPage());
+    // When we don't already have a video (either a new page, or it has been deleted),
+    // and record a new one, we switchContentPage to make the new video show up.
+    // And for no known reason, the load event never fires. There may possibly be
+    // other cases since I have no explanation. Rather than leaving control state
+    // permanently wrong, if the event is delayed much longer than expected we just
+    // call the handler.
+    window.setTimeout(() => {
+        if (!handlerCalled) {
+            handler();
+        }
+    }, 1500);
 }
 
 // This function allows code in the toolbox (or other) frame to create a dialog with dynamic content in the root frame
