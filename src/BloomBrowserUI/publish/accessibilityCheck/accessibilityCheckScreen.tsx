@@ -4,16 +4,42 @@ import "./accessibilityCheckScreen.less";
 import { TabList, Tab, Tabs, TabPanel } from "react-tabs";
 import { LearnAboutAccessibility } from "./learnAboutAccessibility";
 import { AccessibilityChecklist } from "./accessibilityChecklist";
-import { IUILanguageAwareProps } from "../../react_components/l10n";
 import { DaisyChecks } from "./daisyChecks";
+import WebSocketManager from "../../utils/WebSocketManager";
+import axios from "axios";
 
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
-class AccessibilityCheckScreen extends React.Component<IUILanguageAwareProps> {
+interface IState {
+    bookName: string;
+}
+class AccessibilityCheckScreen extends React.Component<{}, IState> {
+    constructor(props) {
+        super(props);
+        this.state = { bookName: "?" };
+    }
+    public componentDidMount() {
+        // Listen for changes to state from C#-land
+        WebSocketManager.addListener("a11yChecklist", event => {
+            this.refresh();
+        });
+        this.refresh();
+    }
+    private refresh() {
+        axios.get("/bloom/api/accessibilityCheck/bookName").then(result => {
+            this.setState({
+                bookName: result.data
+            });
+        });
+    }
+
     public render() {
         return (
             <div id="accessibilityCheckReactRoot" className={"screen-root"}>
-                <div className="overall-status">Status: TODO</div>
+                <div className="header">
+                    <div className="book-name">{this.state.bookName}</div>
+                    <div className="overall-status">Status: TODO</div>
+                </div>
                 <Tabs defaultIndex={1}>
                     <TabList>
                         <Tab>Learn About Accessibility</Tab>

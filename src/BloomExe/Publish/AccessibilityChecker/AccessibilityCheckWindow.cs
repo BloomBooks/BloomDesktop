@@ -1,4 +1,6 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
+using Bloom.Api;
 
 namespace Bloom.Publish.AccessibilityChecker
 {
@@ -8,14 +10,16 @@ namespace Bloom.Publish.AccessibilityChecker
 	/// </summary>
 	public partial class AccessibilityCheckWindow : Form
 	{
+		private readonly Action _onWindowActivated;
+
 		private static AccessibilityCheckWindow _sTheOneAccessibilityCheckerWindow;
 		private bool _disposed;
 
-		public static void StaticShow()
+		public static void StaticShow(Action onWindowActivated)
 		{
 			if (_sTheOneAccessibilityCheckerWindow == null)
 			{
-				_sTheOneAccessibilityCheckerWindow = new AccessibilityCheckWindow();
+				_sTheOneAccessibilityCheckerWindow = new AccessibilityCheckWindow(onWindowActivated);
 				_sTheOneAccessibilityCheckerWindow.Show();
 			}
 			else
@@ -24,9 +28,11 @@ namespace Bloom.Publish.AccessibilityChecker
 			}
 		}
 
-		public AccessibilityCheckWindow()
+		public AccessibilityCheckWindow(Action onWindowActivated)
 		{
+			_onWindowActivated = onWindowActivated;
 			InitializeComponent();
+
 			var path = BloomFileLocator.GetBrowserFile(false, "publish", "accessibilityCheck", "accessibilityCheckScreen.html");
 			_browser.Navigate(path.ToLocalhost(),false);
 		}
@@ -44,6 +50,11 @@ namespace Bloom.Publish.AccessibilityChecker
 			}
 			base.Dispose(disposing);
 			_disposed = true;
+		}
+
+		private void AccessibilityCheckWindow_Activated(object sender, System.EventArgs e)
+		{
+			_onWindowActivated();
 		}
 	}
 }

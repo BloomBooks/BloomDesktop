@@ -27,7 +27,6 @@
 			this._browser.ContextMenuProvider = null;
 			this._browser.ControlKeyEvent = null;
 			this._browser.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._browser.Isolator = null;
 			this._browser.Location = new System.Drawing.Point(0, 0);
 			this._browser.Name = "_browser";
 			this._browser.Size = new System.Drawing.Size(908, 585);
@@ -45,6 +44,7 @@
 			this.MinimizeBox = false;
 			this.Name = "AccessibilityCheckWindow";
 			this.Text = "Bloom Accessibility Checker";
+			this.Activated += new System.EventHandler(this.AccessibilityCheckWindow_Activated);
 			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.AccessibilityCheckWindow_FormClosed);
 			this.ResumeLayout(false);
 

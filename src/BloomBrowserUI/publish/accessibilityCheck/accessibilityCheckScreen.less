@@ -10,11 +10,21 @@ html.accessibilityCheckScreen {
         height: 100%;
     }
 
-    .overall-status {
-        color: @bloom-red;
+    .header {
         padding-left: 10px;
         padding-top: 10px;
-        font-size: 16pt;
+        padding-right: 10px;
+        .overall-status,
+        .book-name {
+            color: @bloom-red;
+
+            font-size: 16pt;
+        }
+        .overall-status {
+        }
+        .book-name {
+            color: @bloom-blue;
+        }
     }
 
     #accessibilityCheckReactRoot {

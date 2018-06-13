@@ -1,5 +1,4 @@
 ﻿import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { IUILanguageAwareProps } from "../../react_components/l10n";
 import axios from "axios";
 import "./daisyChecks.less";

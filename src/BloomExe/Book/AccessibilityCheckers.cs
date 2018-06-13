@@ -131,7 +131,7 @@ namespace Bloom.web.controllers
 						// we found some text that was not wrapped in an span.audio-sentence
 						// return true if it isn't just whitespace
 						if (!String.IsNullOrWhiteSpace(child.InnerText))
-							return child.InnerText +" (no audio span)";
+							return child.InnerText;// +" (no audio span)";
 						// else go on to the sibling of this child
 						break;
 					case XmlNodeType.Element:

@@ -18,10 +18,21 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class AccessibilityCheckApi
 	{
+		// Define a socket to signal the client window to refresh
+		private readonly BloomWebSocketServer _webSocketServer;
+		private const string kWebsocketId = "a11yChecklist";
+
 		private readonly NavigationIsolator _isolator;
 		private readonly BookServer _bookServer;
 		public const string kApiUrlPart = "accessibilityCheck/";
 		private static string _epubPath;
+
+		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection, BookRefreshEvent bookRefreshEvent)
+		{
+			_webSocketServer = webSocketServer;
+			bookSelection.SelectionChanged += (unused1, unused2) => RefreshClient();
+			bookRefreshEvent.Subscribe((book) => RefreshClient());
+		}
 		
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
@@ -30,9 +41,15 @@ namespace Bloom.web.controllers
 				_epubPath = request.RequiredPostString();
 			}, false);
 
+			
+			server.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
+			{
+				request.ReplyWithText(request.CurrentBook.TitleBestForUserDisplay);
+			}, false);
+
 			server.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>
 			{
-				AccessibilityCheckWindow.StaticShow();
+				AccessibilityCheckWindow.StaticShow(RefreshClient);
 				request.PostSucceeded();
 			}, true);
 
@@ -123,6 +140,11 @@ namespace Bloom.web.controllers
 		public static void SetEpubPath(string previewSrc)
 		{
 			_epubPath = previewSrc;
+		}
+
+		private void RefreshClient()
+		{
+			_webSocketServer.Send(kWebsocketId, "refresh");
 		}
 	}
 }
