@@ -1,4 +1,5 @@
 ﻿using System;
+using Bloom.Book;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -11,7 +12,7 @@ namespace Bloom.Publish.Epub
 	public class EpubPublishUiSettings
 	{
 		[JsonConverter(typeof(StringEnumConverter))]
-		public EpubMaker.HowToPublishImageDescriptions howToPublishImageDescriptions;
+		public BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions;
 		public bool removeFontSizes;
 
 		public override bool Equals(object obj)
@@ -44,16 +45,6 @@ namespace Bloom.Publish.Epub
 		public static bool operator !=(EpubPublishUiSettings a, EpubPublishUiSettings b)
 		{
 			return !(a == b);
-		}
-
-		public string GetImageDescriptionSettingAsString()
-		{
-			return JsonConvert.SerializeObject(howToPublishImageDescriptions);
-		}
-
-		public static EpubMaker.HowToPublishImageDescriptions GetImageDescriptionSettingFromString(string storedSettingValue)
-		{
-			return JsonConvert.DeserializeObject<EpubMaker.HowToPublishImageDescriptions>(storedSettingValue);
 		}
 	}
 }

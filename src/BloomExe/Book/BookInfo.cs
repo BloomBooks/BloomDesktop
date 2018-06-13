@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
-using Bloom.Collection;
 using Bloom.Edit;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -62,6 +61,11 @@ namespace Bloom.Book
 			IsEditable = isEditable;
 
 			FixDefaultsIfAppropriate();
+		}
+
+		public enum HowToPublishImageDescriptions
+		{
+			None, OnPage, Links
 		}
 
 		public string Id
@@ -328,25 +332,13 @@ namespace Bloom.Book
 			set { MetaData.Summary = value; }
 		}
 
-		public string PublishImageDescriptionsInEpub
-		{
-			get { return MetaData.Epub_IncludeImageDescriptions; }
-			set { MetaData.Epub_IncludeImageDescriptions = value; }
-		}
-
-		public bool RemoveFontSizesInEpub
-		{
-			get { return MetaData.Epub_RemoveFontStyles; }
-			set { MetaData.Epub_RemoveFontStyles = value; }
-		}
-
 		string[] SplitList(string list)
 		{
 			if (list == null)
 			{
 				return new string[0];
 			}
-			return list.Split(',').Select(item => item.Trim()).Where(item => !string.IsNullOrEmpty(item)).ToArray();
+			return list.Split(',').Select(item => item.Trim()).Where(item => !String.IsNullOrEmpty(item)).ToArray();
 		}
 
 		/// <summary>
@@ -811,14 +803,14 @@ namespace Bloom.Book
 		/// This item indicates how the user would like Epubs of this book to handle Image Descriptions
 		/// Current possibilities are 'None', 'OnPage', and 'Links'.
 		/// </summary>
-		[JsonProperty("epub_IncludeImageDescriptions")]
-		public string Epub_IncludeImageDescriptions;
+		[JsonProperty("epub_HowToPublishImageDescriptions")]
+		public BookInfo.HowToPublishImageDescriptions Epub_HowToPublishImageDescriptions;
 
 		/// <summary>
 		/// This corresponds to a checkbox indicating that the user wants to use the eReader's native font styles.
 		/// </summary>
 		[JsonProperty("epub_RemoveFontStyles")]
-		public bool Epub_RemoveFontStyles;
+		public bool Epub_RemoveFontSizes;
 
 		public ToolboxToolState LeveledReaderTool => Tools?.SingleOrDefault(t => t.ToolId == "leveledReader");
 

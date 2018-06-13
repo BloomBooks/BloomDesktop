@@ -231,14 +231,30 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
+		/// Get an enum value of type T that was passed as application/json
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <remarks>requires something like this:
+		///    axios.post("api/bloom/foo", myEnum, {
+		///       headers: { "Content-Type": "application/json" }});
+		/// </remarks>
+		/// <returns>An enum value</returns>
+		internal T RequiredPostEnumAsJson<T>()
+		{
+			Debug.Assert(typeof(T).IsEnum, "Type passed to RequiredPostEnumAsJson() is not an Enum.");
+			return (T)Enum.Parse(typeof(T), RequiredPostJson());
+		}
+
+		/// <summary>
 		/// Get a boolean value that was passed as application/json
 		/// </summary>
-		/// <remarks>requires something like this:
+		/// <remarks>
+		/// Used by EnhancedImageServer.RegisterBooleanEndpointHandler() and requires something like this:
 		///    axios.post("api/bloom/foo", myBool, {
 		///       headers: { "Content-Type": "application/json" }});
 		/// </remarks>
 		/// <returns></returns>
-		public bool RequiredPostBooleanAsJson()
+		internal bool RequiredPostBooleanAsJson()
 		{
 			// There isn't an obvious choice for passing a simple true/false, but a plain true/false counts as json:
 			// https://tools.ietf.org/html/rfc7493#section-4.1  Note we don't have to be compatible with old parsers. so we can just return true or false
@@ -260,6 +276,11 @@ namespace Bloom.Api
 		{
 			// https://tools.ietf.org/html/rfc7493#section-4.1  Note we don't have to be compatible with old parsers. so we can just return true or false
 			ReplyWithJson(value);
+		}
+
+		public void ReplyWithEnum<T>(T value)
+		{
+			ReplyWithJson(Enum.GetName(typeof(T), value));
 		}
 	}
 }

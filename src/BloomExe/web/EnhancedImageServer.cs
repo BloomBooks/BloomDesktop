@@ -96,6 +96,27 @@ namespace Bloom.Api
 			}, handleOnUiThread);
 		}
 
+		/// <summary>
+		/// Handle enum reads/writes
+		/// </summary>
+		public void RegisterEnumEndpointHandler<T>(string pattern, Func<ApiRequest, T> readAction, Action<ApiRequest, T> writeAction,
+			bool handleOnUiThread)
+		{
+			Debug.Assert(typeof(T).IsEnum, "Type passed to RegisterEnumEndpointHandler is not an Enum.");
+			RegisterEndpointHandler(pattern, request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithEnum(readAction(request));
+				}
+				else // post
+				{
+					writeAction(request, request.RequiredPostEnumAsJson<T>());
+					request.PostSucceeded();
+				}
+			}, handleOnUiThread);
+		}
+
 		// We use two different locks to synchronize access to the methods of this class.
 		// This allows certain methods to run concurrently.
 
