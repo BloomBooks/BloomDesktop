@@ -57,8 +57,9 @@ namespace Bloom.Book
 		public const string ReadMeImagesFolderName = "ReadMeImages";
 
 		//for moq'ing only
-		public Book()
+		public Book(BookInfo info = null)
 		{
+			BookInfo = info; // only for testing!
 		}
 
 		public Book(BookInfo info, IBookStorage storage, ITemplateFinder templateFinder,

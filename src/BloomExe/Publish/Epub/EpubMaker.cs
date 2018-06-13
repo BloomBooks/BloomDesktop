@@ -168,12 +168,7 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
-		public enum HowToPublishImageDescriptions
-		{
-			None, OnPage, Links
-		}
-
-		public HowToPublishImageDescriptions PublishImageDescriptions { get; set; }
+		public BookInfo.HowToPublishImageDescriptions PublishImageDescriptions { get; set; }
 		public bool RemoveFontSizes { get; set; }
 
 		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator, BookServer bookServer)
@@ -962,7 +957,7 @@ namespace Bloom.Publish.Epub
 				img.RemoveAttribute("alt");    // signal missing accessibility information
 			}
 			// Put the image descriptions on the page following the images.
-			if (PublishImageDescriptions == HowToPublishImageDescriptions.OnPage)
+			if (PublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
 				foreach (XmlElement description in imageDescriptions)
@@ -982,7 +977,7 @@ namespace Bloom.Publish.Epub
 					}
 				}
 			}
-			else if (PublishImageDescriptions == HowToPublishImageDescriptions.Links)
+			else if (PublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.Links)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
 				foreach (XmlElement description in imageDescriptions)
