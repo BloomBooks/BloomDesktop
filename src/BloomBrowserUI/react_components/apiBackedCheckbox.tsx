@@ -3,7 +3,7 @@ import { ILocalizationProps } from "./l10n";
 import axios from "axios";
 import { Checkbox } from "./checkbox";
 
-// Use this component when you have a one-to-one correspodence between a checkbox and an api endpoint
+// Use this component when you have a one-to-one correspondence between a checkbox and an api endpoint
 
 interface IProps extends ILocalizationProps {
     apiEndpoint: string;

@@ -93,7 +93,7 @@ namespace BloomTests.Publish
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
 				imageDescriptions: new[] { "This describes image 1" }, extraContentOutsideTranslationGroup: "<img class='branding' src='back-cover.png'/>");
 			MakeImageFiles(book, "back-cover");
-			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, EpubMaker.HowToPublishImageDescriptions.OnPage);
+			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, BookInfo.HowToPublishImageDescriptions.OnPage);
 			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:aside[.='This describes image 1']", _ns, 1);
@@ -155,7 +155,7 @@ namespace BloomTests.Publish
 		/// <param name="book"></param>
 		/// <returns></returns>
 		protected override ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
-			EpubMaker.HowToPublishImageDescriptions howToPublishImageDescriptions = EpubMaker.HowToPublishImageDescriptions.None,
+			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
 			Action<EpubMaker> extraInit = null)
 		{
 			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, extraInit);

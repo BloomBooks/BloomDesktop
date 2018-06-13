@@ -102,34 +102,44 @@ namespace Bloom.Publish.Epub
 				}
 				else
 				{
-					// post
-					var settings = (EpubPublishUiSettings)JsonConvert.DeserializeObject(request.RequiredPostJson(), typeof(EpubPublishUiSettings));
-					// gjm 12 Jun 2018: I wanted to have a separate call to save settings when the React page was shutting down,
-					// but nothing I tried called such a function reliably. So we save the checkbox settings to the bookinfo
-					// whenever they change.
-					UpdateAndSaveBookInfo(settings);
-					UpdatePreview(settings, false);
-
-					request.PostSucceeded();
+					// post is deprecated.
+					throw new ApplicationException("epubSettings POST is deprecated");
 				}
-			}, true);
+			}, false);
+
+			// At this point, this is a checkbox backed by an enum (YAGNI?) that the user ticks to say
+			// "put my image descriptions on the epub page"
+			server.RegisterEnumEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
+				request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
+				(request, enumSetting) => {
+					request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = enumSetting;
+					request.CurrentBook.BookInfo.Save();
+					_desiredEpubSettings.howToPublishImageDescriptions = enumSetting;
+					RefreshPreview();
+				},
+				false);
+
+			// Saving a checkbox setting that the user ticks to say "Use my E-reader's font sizes"
+			server.RegisterBooleanEndpointHandler(kApiUrlPart + "removeFontSizesSetting",
+				request => request.CurrentBook.BookInfo.MetaData.Epub_RemoveFontSizes,
+				(request, booleanSetting) => {
+					request.CurrentBook.BookInfo.MetaData.Epub_RemoveFontSizes = booleanSetting;
+					request.CurrentBook.BookInfo.Save();
+					_desiredEpubSettings.removeFontSizes = booleanSetting;
+					RefreshPreview();
+				},
+				false);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
-				var settings = (EpubPublishUiSettings)JsonConvert.DeserializeObject(request.RequiredPostJson(), typeof(EpubPublishUiSettings));
-				UpdatePreview(settings, true);
+				RefreshPreview();
 				request.PostSucceeded();
 			}, true);
 		}
 
-		private void UpdateAndSaveBookInfo(EpubPublishUiSettings settings)
+		private void RefreshPreview()
 		{
-			if (_bookSelection == null)
-				return;
-			var info = _bookSelection.CurrentSelection.BookInfo;
-			info.PublishImageDescriptionsInEpub = settings.GetImageDescriptionSettingAsString();
-			info.RemoveFontSizesInEpub = settings.removeFontSizes;
-			info.Save();
+			UpdatePreview(_desiredEpubSettings, true);
 		}
 
 		private void CompleteSave(string savePath)
@@ -252,8 +262,8 @@ namespace Bloom.Publish.Epub
 			if (_bookSelection != null)
 			{
 				var info = _bookSelection.CurrentSelection.BookInfo;
-				_desiredEpubSettings.howToPublishImageDescriptions = EpubPublishUiSettings.GetImageDescriptionSettingFromString(info.PublishImageDescriptionsInEpub);
-				_desiredEpubSettings.removeFontSizes = info.RemoveFontSizesInEpub;
+				_desiredEpubSettings.howToPublishImageDescriptions = info.MetaData.Epub_HowToPublishImageDescriptions;
+				_desiredEpubSettings.removeFontSizes = info.MetaData.Epub_RemoveFontSizes;
 			}
 
 			return JsonConvert.SerializeObject(_desiredEpubSettings);
