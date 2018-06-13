@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
+using Bloom.web;
 using BloomTemp;
 using L10NSharp;
 #if !__MonoCS__
@@ -187,7 +188,7 @@ namespace Bloom.Publish.Epub
 		/// It is required that the parent of the StagingFolder is a temporary folder into which we can
 		/// copy the Readium stuff. This folder is deleted when the EpubMaker is disposed.
 		/// </summary>
-		public void StageEpub(bool publishWithoutAudio = false)
+		public void StageEpub(IWebSocketProgress progress, bool publishWithoutAudio = false)
 		{
 			PublishWithoutAudio = publishWithoutAudio;
 			if(!string.IsNullOrEmpty(BookInStagingFolder))
@@ -209,7 +210,10 @@ namespace Bloom.Publish.Epub
 				{
 					// see if we can delete this old directory first
 					if (!SIL.IO.RobustIO.DeleteDirectoryAndContents(dir))
+					{
+						progress.MessageWithoutLocalizing("could not remove "+dir);
 						continue; // if not, let's change the target directory name and try again
+					}
 				}
 
 				Directory.CreateDirectory(dir);
@@ -248,6 +252,7 @@ namespace Bloom.Publish.Epub
 			HandleImageDescriptions(Book.OurHtmlDom);
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
+				progress.MessageWithoutLocalizing(HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement));
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
@@ -1495,10 +1500,10 @@ namespace Bloom.Publish.Epub
 		}
 
 		// Combines staging and finishing (currently just used in tests).
-		public void SaveEpub(string destinationEpubPath)
+		public void SaveEpub(string destinationEpubPath, IWebSocketProgress progress)
 		{
 			if(string.IsNullOrEmpty (BookInStagingFolder)) {
-				StageEpub();
+				StageEpub(progress);
 			}
 			FinishEpub (destinationEpubPath);
 		}

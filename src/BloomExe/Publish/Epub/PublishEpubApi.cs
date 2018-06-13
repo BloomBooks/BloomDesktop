@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
@@ -32,6 +33,7 @@ namespace Bloom.Publish.Epub
 		private BookSelection _bookSelection;
 		private CollectionSettings _collectionSettings;
 		private BloomWebSocketServer _webSocketServer;
+		private readonly WebSocketProgress _progress;
 
 		private EpubPublishUiSettings _desiredEpubSettings = new EpubPublishUiSettings();
 		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
@@ -43,6 +45,8 @@ namespace Bloom.Publish.Epub
 		private const string kWebsocketPreviewId = "epubPreview";
 
 		private string _lastDirectory; // where we saved the most recent previous epub, if any
+
+
 		// This constant must match the ID that is used for the listener set up in the React component ProgressBox
 		private const string kWebsocketProgressId = "progress";
 
@@ -57,6 +61,7 @@ namespace Bloom.Publish.Epub
 			_bookSelection = bookSelection;
 			_collectionSettings = collectionSettings;
 			_webSocketServer = webSocketServer;
+			_progress = new WebSocketProgress(_webSocketServer);
 		}
 
 		// Message is presumed already localized.
@@ -205,7 +210,7 @@ namespace Bloom.Publish.Epub
 			// This gets called on a background thread but one step needs to happen on the UI thread,
 			// so the Maker needs a control to Invoke on.
 			EpubMaker.ControlForInvoke = Form.ActiveForm;
-			EpubMaker.StageEpub();
+			EpubMaker.StageEpub(_progress);
 
 			var fileLocator = _bookSelection.CurrentSelection.GetFileLocator();
 			var root = fileLocator.LocateDirectoryWithThrow("Readium");
