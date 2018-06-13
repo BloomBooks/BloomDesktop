@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Publish;
 using Glob;
-using SIL.Extensions;
-using SIL.Xml;
 
 namespace Bloom.web.controllers
 {
@@ -17,11 +14,17 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class AccessibilityCheckers
 	{
+		// this should match the IProblem in checkItem.tsx
+		public struct Problem
+		{
+			public string message;
+			public string problemText;
+		}
 		/// <summary>
 		/// Return an error for every image we find that is missing a description.
 		/// </summary>
 		/// <returns>returns an enumerator of strings describing any problems it finds</returns>
-		public static IEnumerable<string> CheckDescriptionsForAllImages(Book.Book book)
+		public static IEnumerable<Problem> CheckDescriptionsForAllImages(Book.Book book)
 		{
 			var messageTemplate = L10NSharp.LocalizationManager.GetString("Accessibility.DescriptionsForAllImages.Missing",
 				"Missing image description on page {0}",
@@ -35,17 +38,17 @@ namespace Bloom.web.controllers
 			foreach (XmlElement imageContainer in book.OurHtmlDom.SafeSelectNodes(
 				"//div[contains(@class, 'bloom-imageContainer')]"))
 			{
-				var descriptionElementInTheRightLanguage = imageContainer.SelectSingleNode(
+				var visibleElements = imageContainer.SelectSingleNode(
 						$@"./div[contains(@class,'bloom-imageDescription')]
-													/div[contains(@class,'bloom-editable')
-													and @lang='{book.CollectionSettings.Language1Iso639Code}']")
+								/div[contains(@class,'bloom-editable')
+								and @lang='{book.CollectionSettings.Language1Iso639Code}']")
 					as XmlElement;
-				if (descriptionElementInTheRightLanguage == null ||
-				    (descriptionElementInTheRightLanguage.InnerText.Trim().Length == 0))
+				if (visibleElements == null ||
+				    (visibleElements.InnerText.Trim().Length == 0))
 				{
 					var page = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(imageContainer);
 
-					yield return string.Format(messageTemplate, page);
+					yield return new Problem() {message=string.Format(messageTemplate, page)};
 				}
 			}
 		}
@@ -55,7 +58,7 @@ namespace Bloom.web.controllers
 		/// Return an error for every image we find that is missing audio on the description.
 		/// </summary>
 		/// <returns>returns an enumerator of strings describing any problems it finds</returns>
-		public static IEnumerable<string> CheckAudioForAllImageDescriptions(Book.Book book)
+		public static IEnumerable<Problem> CheckAudioForAllImageDescriptions(Book.Book book)
 		{
 			var messageTemplate = L10NSharp.LocalizationManager.GetString("Accessibility.AudioForAllImageDescriptions.MissingOnPage",
 				"Some text is missing a recording for an image description on page {0}",
@@ -69,7 +72,7 @@ namespace Bloom.web.controllers
 		/// Return an error for every textbox that is missing some text
 		/// </summary>
 		/// <returns>returns an enumerator of strings describing any problems it finds</returns>
-		public static IEnumerable<string> CheckAudioForAllText(Book.Book book)
+		public static IEnumerable<Problem> CheckAudioForAllText(Book.Book book)
 		{
 			var messageTemplate = L10NSharp.LocalizationManager.GetString("Accessibility.AudioForAllText.MissingOnPage",
 				"Some text is missing a recording on page {0}",
@@ -79,33 +82,45 @@ namespace Bloom.web.controllers
 				yield return p;
 		}
 
-		private static IEnumerable<string> InnerCheckAudio(Book.Book book, string messageTemplate, string translationGroupConstraint)
+		private static IEnumerable<Problem> InnerCheckAudio(Book.Book book, string messageTemplate, string translationGroupConstraint)
 		{
 			var audioFolderPath = AudioProcessor.GetAudioFolderPath(book.FolderPath);
 
 			var audioFolderInfo = new DirectoryInfo(audioFolderPath);
 			foreach (XmlElement page in book.OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
-				if (PageHasMissingAudio(book, page, audioFolderInfo, translationGroupConstraint))
+				var problemText = PageHasMissingAudio(book, page, audioFolderInfo, translationGroupConstraint);
+				if (!string.IsNullOrEmpty(problemText))
 				{
 					var pageLabel = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(page);
-					yield return String.Format(messageTemplate, pageLabel);
+					var message = String.Format(messageTemplate, pageLabel);
+					yield return new Problem() { message=message, problemText=problemText};
 				}
 			}
 		}
 
-		private static bool PageHasMissingAudio(Book.Book book, XmlElement page, DirectoryInfo audioFolderInfo,
+		private static string PageHasMissingAudio(Book.Book book, XmlElement page, DirectoryInfo audioFolderInfo,
 			string translationGroupConstraint)
 		{
-			var elementsInTheRightLanguage = page.SelectNodes(
-					$"//div[contains(@class, 'bloom-translationGroup') and {translationGroupConstraint}]/div[contains(@class, 'bloom-editable') and @lang='{book.CollectionSettings.Language1Iso639Code}']")
+			// NB: we're selecting for bloom-visibility-code-on instead of @lang
+			var elementsInTheRightLanguage = page.SelectNodes($".//div[contains(@class, 'bloom-translationGroup') " +
+					"and not(contains(@class, 'bloom-recording-optional')) " + 
+					$"and {translationGroupConstraint}]/div[contains(@class, 'bloom-editable') " +
+					"and contains(@class, 'bloom-visibility-code-on')]")
+					//$"and @lang='{book.CollectionSettings.Language1Iso639Code}']")
 				.Cast<XmlElement>();
 
-			return elementsInTheRightLanguage
-				.Any(editable => ElementContainsMissingAudio(editable, audioFolderInfo));
+			foreach (var editable in elementsInTheRightLanguage)
+			{
+				var problemText = ElementContainsMissingAudio(editable, audioFolderInfo);
+				if (!string.IsNullOrEmpty(problemText))
+					return problemText;
+			}
+
+			return null;
 		}
 
-		private static bool ElementContainsMissingAudio(XmlElement element, DirectoryInfo audioFolderInfo)
+		private static string ElementContainsMissingAudio(XmlElement element, DirectoryInfo audioFolderInfo)
 		{
 			foreach (XmlNode child in element.ChildNodes)
 			{
@@ -116,7 +131,7 @@ namespace Bloom.web.controllers
 						// we found some text that was not wrapped in an span.audio-sentence
 						// return true if it isn't just whitespace
 						if (!String.IsNullOrWhiteSpace(child.InnerText))
-							return true;
+							return child.InnerText +" (no audio span)";
 						// else go on to the sibling of this child
 						break;
 					case XmlNodeType.Element:
@@ -128,13 +143,17 @@ namespace Bloom.web.controllers
 							// and just want to see some file with a base name that matches the id.
 							// Note: GlobFiles handles the case of the audioFolder being non-existant just fine.
 							if (!audioFolderInfo.GlobFiles(id + ".*").Any())
-								return true;
+								return childElement.InnerText;
 							// else go on to the sibling of this child
+						} else if (childElement.Name == "label")
+						{
+							// ignore
 						}
 						else if (child.HasChildNodes)
 						{
-							if (ElementContainsMissingAudio(childElement, audioFolderInfo)) // recurse down the tree
-								return true;
+							var problemText = ElementContainsMissingAudio(childElement, audioFolderInfo);
+							if (!string.IsNullOrEmpty(problemText)) // recurse down the tree
+								return problemText;
 							// else go on to the sibling of this child
 						}
 						break;
@@ -142,7 +161,7 @@ namespace Bloom.web.controllers
 						break;
 				}
 			}
-			return false;
+			return null;
 		}
 	}
 }
