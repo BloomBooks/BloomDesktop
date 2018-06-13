@@ -1,10 +1,13 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { IUILanguageAwareProps } from "../../react_components/l10n";
 import axios from "axios";
 interface IProps extends IUILanguageAwareProps {
     apiCheckName: string;
     label: string;
+    // This is sort of a hack... our parent
+    // increments it whenever it wants us to re-query
+    // the server.
+    refreshCount: number;
 }
 
 // Each "CheckItem" conveys the status and results of a single automated accessibility test.
@@ -30,7 +33,10 @@ export class CheckItem extends React.Component<IProps, IState> {
             checkResult: { resultClass: "pending", problems: [] }
         };
     }
-    public componentDidMount() {
+
+    // We're using componentWillReceiveProps() instead of componentWillMount so that we
+    // can re-query if/when our refreshCount number changes.
+    public componentWillReceiveProps() {
         axios
             .get(`/bloom/api/accessibilityCheck/${this.props.apiCheckName}`)
             .then(result => {

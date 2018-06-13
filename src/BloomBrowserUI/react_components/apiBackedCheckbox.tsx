@@ -8,6 +8,10 @@ import { Checkbox } from "./checkbox";
 
 interface IProps extends ILocalizationProps {
     apiPath: string;
+    // This is sort of a hack... our parent
+    // increments it whenever it wants us to re-query
+    // the server.
+    refreshCount?: number;
 }
 interface IState {
     checked: boolean;
@@ -17,7 +21,10 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
         super(props);
         this.state = { checked: false };
     }
-    public componentDidMount() {
+
+    // We're using can re-query() instead of componentWillMount so that we can re-query
+    // if/when our refreshCount number changes.
+    public componentWillReceiveProps() {
         axios.get(this.props.apiPath).then(result => {
             const c = result.data as boolean;
             this.setState({ checked: c });

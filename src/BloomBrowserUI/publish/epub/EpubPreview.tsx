@@ -18,7 +18,7 @@ interface IComponentState {
 export default class EpubPreview extends React.Component<
     IPreviewProps,
     IComponentState
-    > {
+> {
     constructor(props) {
         super(props);
         WebSocketManager.addListener(props.lifetimeLabel, event => {
@@ -30,8 +30,10 @@ export default class EpubPreview extends React.Component<
         this.state = { previewSrc: "" };
     }
     public render() {
-        return <div id="device">
-            <iframe src={this.state.previewSrc}></iframe>
-        </div>;
+        return (
+            <div id="device">
+                <iframe src={this.state.previewSrc} />
+            </div>
+        );
     }
 }
