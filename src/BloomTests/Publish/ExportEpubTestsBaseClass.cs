@@ -12,6 +12,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
+using Bloom.web;
 using BloomTemp;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
@@ -134,7 +135,7 @@ namespace BloomTests.Publish
 				maker.Unpaginated = true; // Currently we always make unpaginated epubs.
 				maker.PublishImageDescriptions = howToPublishImageDescriptions;
 				extraInit?.Invoke(maker);
-				maker.SaveEpub(epubPath);
+				maker.SaveEpub(epubPath, new NullWebSocketProgress());
 			}
 			Assert.That(File.Exists(epubPath));
 			_epub = new ZipFile(epubPath);
