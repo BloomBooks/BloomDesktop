@@ -1,5 +1,7 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
+
+using System;
 using System.Collections.Specialized;
 using System.Text;
 using SIL.IO;
@@ -10,6 +12,7 @@ namespace Bloom.Api
 	{
 		public HttpMethods HttpMethod { get; set; }
 
+		private string _jsonForPost = string.Empty;
 		public string ReplyContents;
 		public string ReplyImagePath;
 		//public HttpListenerContext Context; //todo: could we mock a context and then all but do away with this pretend class by subclassing the real one?
@@ -92,13 +95,25 @@ namespace Bloom.Api
 
 		public string GetPostJson()
 		{
-			return "";
+			return _jsonForPost;
 		}
+
+		/// <summary>
+		/// Unit tests can use this to test Post by specifying what Json a Post should send to the server.
+		/// </summary>
+		/// <param name="value"></param>
+		public void SetPostJson(string value)
+		{
+			_jsonForPost = value;
+		}
+
 		public string GetPostString()
 		{
 			return "";
 		}
-		public void ExternalLinkSucceeded(){}
+
+		public void ExternalLinkSucceeded() {}
+
 		public string DoNotCacheFolder { get; set; }
 
 		public string RawUrl { get; private set; }

@@ -1,6 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { H1, Div, IUILanguageAwareProps } from "../../react_components/l10n";
+import { IUILanguageAwareProps } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
 
 interface IPreviewProps extends IUILanguageAwareProps {
