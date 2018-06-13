@@ -1,26 +1,36 @@
 ﻿// Styles that are shared by both the regular book css and the more minimalist epub css.
 
-@preferredBackgroundGray: hsl(0,0%,86%);
+@preferredBackgroundGray: hsl(0, 0%, 86%);
 
 body {
-	line-height: 1.5;
-	font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulos SIL", Sans-Serif;
+    line-height: 1.5;
+    font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic",
+        "Gentium Book Basic", "Doulos SIL", Sans-Serif;
 }
 
-.bloom-backgroundImage{
+.bloom-backgroundImage {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
 
-.bloom-borderstyle-black, .bloom-borderstyle-black-round, .bloom-borderstyle-gray, .bloom-borderstyle-gray-round{
-
+.bloom-borderstyle-black,
+.bloom-borderstyle-black-round,
+.bloom-borderstyle-gray,
+.bloom-borderstyle-gray-round {
     //It's not 100% clear people won't sometimes wish this was a fixed distance,
     //rather than proportional. After reading many non-concusive things on the topic,
     //I'm going with proportional for now.
-    padding: 1em;
+    //padding: 1em;
+    // And then in June 2018, we got a complaint, not about being proportional, but about being too large. So I (jh)
+    // fiddled with Microsoft Publisher, and found that their "automatic" setting doesn't change based on font size.
+    // I didn't see it change based on... anything. It was alway 0.04". So I exported to html and see that they use
+    // 5.38pt in css. pt vs. px is a no-win situation; pt better for print, but px better for screen. The way things
+    // are going, I expect we may have more electronic publishing than paper soon. So I'm sticking with px here.
+    // And found that 7px gives same results as 5.38pt on my normal monitor.
+    padding: 7px;
 
-    .bloom-editable{
+    .bloom-editable {
         //the normal grey edit-time-only border looks weird inset from a visible border
         //the highlighted border will still show when you're in the box
         border: none;
