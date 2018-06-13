@@ -114,7 +114,29 @@ namespace Bloom.Publish.PDF
 						+ LocalizationManager.GetString("PublishTab.PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory"));
 
 			}
-
+			catch (OutOfMemoryException e)
+			{
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5467.
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					LocalizationManager.GetString("Publish.PdfMaker.OutOfMemory",
+						"Bloom ran out of memory while making a PDF of this book. Here are some suggestions for what to try:")
+					+ Environment.NewLine + "- "
+					+ LocalizationManager.GetString("Publish.PdfMaker.OutOfMemory.ProgramOption",
+						"Turn on the option “Use less memory (slower),” which you can find in the Options menu near the top left of the Publish tab.")
+					+ Environment.NewLine + "- "
+					+ LocalizationManager.GetString("Publish.PdfMaker.OutOfMemory.BiggerComputer",
+						"When making the PDF, make sure you use a computer with enough RAM. As a 32-bit application, Bloom can only use 3.2 Gigs, but if you’re on a 2, 3, or 4 Gig machine, it might not get even that much. For a recent 180 page picture dictionary we helped with that used line-art, using a “larger” computer was enough to make the PDF.")
+					+ Environment.NewLine + "- "
+					+ LocalizationManager.GetString("Publish.PdfMaker.OutOfMemory.NewerBloom",
+						"Use a recent version of Bloom. We made major improvements related to making PDFs in 3.8 and more since, particularly in 4.0, which greatly compresses PDFs that Bloom generates. You may want to try a the most recent version to see if it works better.")
+					+ Environment.NewLine + "- "
+					+ LocalizationManager.GetString("Publish.PdfMaker.OutOfMemory.SmallerImages",
+						"If you’re using high-resolution images, use something like FastStone Resizer to reduce all your images to the DPI (dots per inch) you really need. If your images are a maximum of 5 inches across, for example, you can tell FastStone Resizer to resize all the images in the book to a width of 5 * 300dpi=1500 pixels. If you hover over a jpg image, Bloom will pop up a little dialog which will tell you if an image has a higher DPI than you probably need.")
+					+ Environment.NewLine
+					+ LocalizationManager.GetString("Publish.PdfMaker.OutOfMemory.SendUsBook",
+						"If none of these suggestions help, please use Help:Report a problem and allow it to ATTACH THE BOOK so we can try to help.")
+					);
+			}
 		}
 
 		// This is a subset of what MakeBooklet normally does, just enough to make it process the PDF to the
