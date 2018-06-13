@@ -8,12 +8,16 @@ interface IProps extends IUILanguageAwareProps {
 }
 
 // Each "CheckItem" conveys the status and results of a single automated accessibility test.
-
+// this should match the struct Problem in AccessibilityCheckers.cs
+interface IProblem {
+    message: string;
+    problemText: string;
+}
 interface CheckResult {
     // this is passed, failed, unknown, or pending. Only the stylesheet cares, this code doesn't.
     resultClass: string;
     // for now, simple strings. Someday may be links to problem items.
-    problems: string[];
+    problems: IProblem[];
 }
 
 interface IState {
@@ -51,7 +55,14 @@ export class CheckItem extends React.Component<IProps, IState> {
                     {// problem descriptions are already localized by the backend
                     this.state.checkResult.problems.map((problem, index) => (
                         //react requires unique keys on each
-                        <li key={"p" + index}>{problem}</li>
+                        <li key={"p" + index}>
+                            {problem.message}
+                            {problem.problemText ? (
+                                <blockquote>{problem.problemText}</blockquote>
+                            ) : (
+                                ""
+                            )}
+                        </li>
                     ))}
                 </ul>
             </li>

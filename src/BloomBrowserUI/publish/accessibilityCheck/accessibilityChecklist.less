@@ -28,6 +28,19 @@
             li {
                 color: @bloom-red;
             }
+            blockquote {
+                color: darkgray;
+                width: 300px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                margin-top: 0;
+                margin-bottom: 1em;
+                margin-left: 0;
+                &:before {
+                    content: "\201C";
+                }
+            }
         }
         // problem list
         ul {

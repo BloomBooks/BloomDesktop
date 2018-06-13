@@ -76,7 +76,7 @@ namespace BloomTests.Book
 			Assert.AreEqual(1, results.Count(), "Should point out missing image description");
 			var expected = pageNumber ?? pageLabel;
 
-			Assert.AreEqual($"Missing image description on page {expected}", results.First());
+			Assert.AreEqual($"Missing image description on page {expected}", results.First().message);
 		}
 
 		[Test]
@@ -114,6 +114,7 @@ namespace BloomTests.Book
 		[TestCase("<p><span id='iExist' class='audio-sentence'>A flower.</span></p>")]
 		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span>
 					<span id='iExist' class='audio-sentence'>A dog.</span></p>")]
+		[TestCase(@"<label>This is bubble text</label>")]
 		public void CheckAudioForAllText_NoErrors(string content)
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
@@ -163,6 +164,34 @@ namespace BloomTests.Book
 								</div>");
 			var results = AccessibilityCheckers.CheckAudioForAllText(testBook);
 			Assert.Greater(results.Count(), 0, "Error should have been reported");
+		}
+
+		[Test]
+		public void CheckAudioForAllText_TextInRandomLangButVisibleAndNotRecorded_GivesError()
+		{
+			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
+										<div class='bloom-editable bloom-visibility-code-on' lang=''>
+											<p>hello</p>
+										</div>
+									</div>
+								</div>");
+			var results = AccessibilityCheckers.CheckAudioForAllText(testBook);
+			Assert.AreEqual(1,results.Count(), "The text has to be recorded because it is visible");
+		}
+
+		[Test]
+		public void CheckAudioForAllText_TextInNationalLanguageNotVisible_NotRecorded()
+		{
+			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
+										<div class='bloom-editable bloom-visibility-code-off' lang='{
+					_collectionSettings.Language2Iso639Code
+				}'>
+											<p>hello</p>
+										</div>
+									</div>
+								</div>");
+			var results = AccessibilityCheckers.CheckAudioForAllText(testBook);
+			Assert.AreEqual(0, results.Count(), "Since the text is not visible, should not give error if not recorded");
 		}
 
 		[Test]
