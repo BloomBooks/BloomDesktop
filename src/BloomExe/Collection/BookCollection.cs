@@ -171,13 +171,22 @@ namespace Bloom.Collection
 			_bookInfos.Add(bookInfo);
 		}
 
+		private bool BackupFileExists(string folderPath)
+		{
+			var bakFiles = Directory.GetFiles(folderPath, BookStorage.BackupFilename);
+			return bakFiles.Length == 1 && RobustFile.Exists(bakFiles[0]);
+		}
+
 		private void AddBookInfo(string folderPath)
 		{
 			try
 			{
 				//this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
-				if (Directory.GetFiles(folderPath, "*.htm").Length == 0 && Directory.GetFiles(folderPath, "*.html").Length == 0)
-					return;
+				if (Directory.GetFiles(folderPath, "*.htm").Length == 0 &&
+					Directory.GetFiles(folderPath, "*.html").Length == 0 &&
+					// BL-6099: don't hide the book if we at least have a valid backup file
+					!BackupFileExists(folderPath))
+						return;
 				var bookInfo = new BookInfo(folderPath, Type == CollectionType.TheOneEditableCollection);
 
 				_bookInfos.Add(bookInfo);
