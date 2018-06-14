@@ -134,9 +134,9 @@ namespace Bloom.CollectionTab
 
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
-			var editableCllection = _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
-			_currentEditableCollectionSelection.SelectCollection(editableCllection);
-			yield return editableCllection;
+			var editableCollection = _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
+			_currentEditableCollectionSelection.SelectCollection(editableCollection);
+			yield return editableCollection;
 
 			foreach (var bookCollection in _sourceCollectionsList.GetSourceCollectionsFolders())
 				yield return _bookCollectionFactory(bookCollection, BookCollection.CollectionType.SourceCollection);
