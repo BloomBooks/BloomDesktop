@@ -2163,10 +2163,20 @@
         <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
         <target xml:lang="ha" state="needs-translation">Edit outside of Bloom</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles">
+        <source xml:lang="en">Video Files</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
+        <target xml:lang="ha" state="needs-translation">Video Files</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Heading" sil:dynamic="true">
         <source xml:lang="en">Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
         <target xml:lang="ha" state="needs-translation">Sign Language Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
+        <source xml:lang="en">Import Video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
+        <target xml:lang="ha" state="needs-translation">Import Video</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
         <source xml:lang="en">Press any key to cancel</source>
