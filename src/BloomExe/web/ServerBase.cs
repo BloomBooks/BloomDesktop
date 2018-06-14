@@ -610,14 +610,25 @@ namespace Bloom.Api
 						// tell _listenerThread and the worker threads they should stop
 						_stop.Set();
 
+						var secondsToWait = 2.0;
 						// wait for _listenerThread to stop
 						if (_listenerThread.ThreadState != ThreadState.Unstarted)
-							_listenerThread.Join();
+						{
+							if (!_listenerThread.Join((int)(secondsToWait * 1000)))
+							{
+								Logger.WriteError($"Could not kill a listener thread after waiting {secondsToWait} seconds.", new ApplicationException());
+							}
+						}
 
+						
 						// wait for each worker thread to stop
 						foreach (var worker in _workers.Where(worker => (worker != null) && (worker.ThreadState != ThreadState.Unstarted)))
 						{
-							worker.Join();
+							if (!worker.Join((int)(secondsToWait * 1000)))
+							{
+								Logger.WriteError("Could not kill a worker thread after waiting 2 seconds.", new ApplicationException());
+								secondsToWait = secondsToWait / 2.0; // if one thing is broken, likely other are, so get less patient
+							}
 						}
 
 						// stop listening for incoming http requests
