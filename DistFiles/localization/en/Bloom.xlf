@@ -1754,9 +1754,17 @@
         <source xml:lang="en">Edit outside of Bloom</source>
         <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles">
+        <source xml:lang="en">Video Files</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Heading" sil:dynamic="true">
         <source xml:lang="en">Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
+        <source xml:lang="en">Import Video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
         <source xml:lang="en">Press any key to cancel</source>
