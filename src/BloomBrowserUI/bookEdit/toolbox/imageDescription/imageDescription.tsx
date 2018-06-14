@@ -97,7 +97,7 @@ export class ImageDescriptionToolControls extends React.Component<
                             poet.diagramcenter.org
                         </Link>
                     </div>
-                    <div className="wrapPlayVideo disabled">
+                    <div className="wrapPlayVideo disabled invisible">
                         <img
                             id="playBloomTrainingVideo"
                             src="/bloom/images/play.svg"
