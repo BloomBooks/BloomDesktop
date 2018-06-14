@@ -448,6 +448,12 @@
     <Compile Include="MiscUI\DontShowThisAgainButton.Designer.cs">
       <DependentUpon>DontShowThisAgainButton.cs</DependentUpon>
     </Compile>
+    <Compile Include="MiscUI\HtmlLinkDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiscUI\HtmlLinkDialog.Designer.cs">
+      <DependentUpon>HtmlLinkDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="MiscUI\HtmlTextBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -818,6 +824,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\BloomIntegrityDialog.resx">
       <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\HtmlLinkDialog.resx">
+      <DependentUpon>HtmlLinkDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
