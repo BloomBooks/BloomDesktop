@@ -10,7 +10,6 @@
         }
         &.pending::before {
             content: "⧖ ";
-            //color: @bloom-purple;
         }
         &.unknown::before {
             content: "? ";
@@ -29,13 +28,13 @@
                 color: @bloom-red;
             }
             blockquote {
-                color: darkgray;
+                color: @DarkBackgroundColor;
                 width: 300px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 margin-top: 0;
-                margin-bottom: 1em;
+                margin-bottom: 0;
                 margin-left: 0;
                 &:before {
                     content: "\201C";

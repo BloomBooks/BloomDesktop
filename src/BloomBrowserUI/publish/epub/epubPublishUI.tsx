@@ -36,7 +36,12 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private isLinux: boolean;
     constructor(props) {
         super(props);
-        this.state = { settings: { howToPublishImageDescriptions: "None", removeFontSizes: false } };
+        this.state = {
+            settings: {
+                howToPublishImageDescriptions: "None",
+                removeFontSizes: false
+            }
+        };
 
         axios.get("/bloom/api/publish/epub/epubSettings").then(result => {
             this.setState({ settings: result.data });
@@ -51,7 +56,10 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
         // once the progress box is ready, we can start generating a preview.
         // If we don't wait for that, it's pretty random whether we get the
         // "preparing preview" message.
-        axios.post("/bloom/api/publish/epub/updatePreview", this.state.settings);
+        axios.post(
+            "/bloom/api/publish/epub/updatePreview",
+            this.state.settings
+        );
     }
 
     // Apparently, we have to rely on the window event when closing or refreshing the page.
@@ -97,7 +105,12 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                             <H2 className="label" l10nKey="Common.Progress">
                                 Progress
                             </H2>
-                            <ProgressBox lifetimeLabel={kWebSocketLifetime} onReadyToReceive={() => this.readyToReceiveProgress()} />
+                            <ProgressBox
+                                lifetimeLabel={kWebSocketLifetime}
+                                onReadyToReceive={() =>
+                                    this.readyToReceiveProgress()
+                                }
+                            />
                         </div>
                     </section>
                     <div className="column">
@@ -128,15 +141,33 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                             {/* todo: pick correct l10nkey */}
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
-                        <H1 l10nKey="PublishTab.Epub.BooksForBlind">Books for the Blind</H1>
-                        <Checkbox name="includeImageDesc" checked={this.state.settings.howToPublishImageDescriptions === "OnPage"}
-                            onCheckChanged={val => this.setPublishRadio(val ? "OnPage" : "None")}
-                            l10nKey="PublishTab.Epub.IncludeOnPage">Include image descriptions on page</Checkbox>
-                        <Checkbox name="removeFontSizes" checked={this.state.settings.removeFontSizes}
+                        <H1 l10nKey="PublishTab.Epub.BooksForBlind">
+                            Books for the Blind
+                        </H1>
+                        <Checkbox
+                            name="includeImageDesc"
+                            checked={
+                                this.state.settings
+                                    .howToPublishImageDescriptions === "OnPage"
+                            }
+                            onCheckChanged={val =>
+                                this.setPublishRadio(val ? "OnPage" : "None")
+                            }
+                            l10nKey="PublishTab.Epub.IncludeOnPage"
+                        >
+                            Include image descriptions on page
+                        </Checkbox>
+                        <Checkbox
+                            name="removeFontSizes"
+                            checked={this.state.settings.removeFontSizes}
                             onCheckChanged={val => this.setRemoveFontSizes(val)}
-                            l10nKey="PublishTab.Epub.RemoveFontSizes">Use epub reader's text size</Checkbox>
+                            l10nKey="PublishTab.Epub.RemoveFontSizes"
+                        >
+                            Use epub reader's text size
+                        </Checkbox>
                         {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                         <Link
+                            id="a11yCheckerLink"
                             l10nKey="AccessibilityCheck.ShowAccessibilityChecker"
                             href=""
                             onClick={() =>
