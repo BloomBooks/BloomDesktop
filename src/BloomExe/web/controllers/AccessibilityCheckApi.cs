@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish.AccessibilityChecker;
-using BloomTemp;
 using SIL.Code;
 using SIL.CommandLineProcessing;
 using SIL.Progress;
@@ -109,14 +106,8 @@ namespace Bloom.web.controllers
 			var errorMessage = "Unknown Error";
 			for (var i = 0; i < 20; i++)
 			{
-				var reportDirectory = Path.Combine(reportRootDirectory, "report" + i);
-				// This call is ok if the directory does not exist at all.
-				SIL.IO.RobustIO.DeleteDirectoryAndContents(reportDirectory);
-
-				if (Directory.Exists(reportDirectory))
-					continue; // something is locking this one, start over
-
-				Guard.Against(Directory.Exists(reportDirectory), "Could not come up with a temp directory name to use for the ace report");
+				var randomName = Guid.NewGuid().ToString();
+				var reportDirectory = Path.Combine(reportRootDirectory, randomName);
 
 				var arguments = $"ace.js  -o \"{reportDirectory}\" \"{_epubPath}\"";
 				const int kSecondsBeforeTimeout = 60;
@@ -170,7 +161,7 @@ namespace Bloom.web.controllers
 
 			if (!whereResult.StandardOutput.Contains("npm.cmd"))
 			{
-				request.ReplyWithHtml($"Could could not find npm. {System.Environment.NewLine}{instructionsHtml}");
+				request.ReplyWithHtml($"Could could not find npm.<br/>{instructionsHtml}");
 				return null;
 			}
 
@@ -183,7 +174,7 @@ namespace Bloom.web.controllers
 			if (!result.StandardOutput.Contains("node_modules"))
 			{
 				request.ReplyWithHtml(
-					$"Could could not get npm -g root to work. It said {result.StandardOutput} {result.StandardError}. {System.Environment.NewLine}{instructionsHtml}");
+					$"Could could not get npm -g root to work. It said {result.StandardOutput} {result.StandardError}.<br/>{instructionsHtml}");
 				return null;
 			}
 
@@ -192,7 +183,7 @@ namespace Bloom.web.controllers
 			if (!Directory.Exists((nodeModulesDirectory)))
 			{
 				request.ReplyWithHtml(
-					$"Could could not find global node_modules directory at {nodeModulesDirectory}. {instructionsHtml}");
+					$"Could could not find global node_modules directory at {nodeModulesDirectory}.<br/>{instructionsHtml}");
 				return null;
 			}
 
@@ -204,7 +195,7 @@ namespace Bloom.web.controllers
 				daisyDirectory = Path.Combine(nodeModulesDirectory, "@daisy/ace-cli/bin/");
 				if (!Directory.Exists((daisyDirectory)))
 				{
-					request.ReplyWithHtml($"Could could not find daisy-ace at {daisyDirectory}. {instructionsHtml}");
+					request.ReplyWithHtml($"Could could not find daisy-ace at {daisyDirectory}.<br/>{instructionsHtml}");
 					return null;
 				}
 			}
