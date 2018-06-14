@@ -55,6 +55,7 @@ namespace Bloom.web.controllers
 			server.RegisterEndpointHandler("toolbox/deleteVideo", HandleDeleteVideoRequest, true);
 			server.RegisterEndpointHandler("toolbox/restoreOriginal", HandleRestoreOriginalRequest, true);
 			server.RegisterEndpointHandler("toolbox/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
+			server.RegisterEndpointHandler("toolbox/importVideo", HandleImportVideoRequest, true);
 		}
 
 		private void RethinkPageAndReloadIt(ApiRequest request)
@@ -82,27 +83,37 @@ namespace Bloom.web.controllers
 				var videoFolder = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
 				var path = Path.Combine(videoFolder, fileName);
 				SaveVideoFile(path, bytes);
-				var videoContainer = GetSelectedVideoContainer();
+				var videoContainer = GetSelectedEditableVideoContainer(request, path);
 				if (videoContainer == null)
-				{
-					// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
-					// video recording if there is no container on the page.
-					MessageBox.Show("There's nowhere to put a video on this page. You can find it later at " + path);
-					request.Failed("nowhere to put video");
 					return;
-				}
-
-				if (WarnIfVideoCantChange(videoContainer))
-				{
-					request.Failed("editing not allowed");
-					return;
-				}
 
 				// Technically this could fail and we might want to report that the post failed.
 				// But currently nothing is using the success/fail status, and we don't expect this to fail.
 				SaveChangedVideo(videoContainer, path, "Bloom had a problem including that video");
 				request.PostSucceeded();
 			}
+		}
+
+		private GeckoHtmlElement GetSelectedEditableVideoContainer(ApiRequest request, string path)
+		{
+			var videoContainer = GetSelectedVideoContainer();
+			if (videoContainer == null)
+			{
+				// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
+				// video recording and importing if there is no container on the page.
+				var msg = "There's nowhere to put a video on this page." +
+					(String.IsNullOrEmpty(path) ? "" : (" " + String.Format("You can find it later at {0}", path)));
+				MessageBox.Show(msg);
+				request.Failed("nowhere to put video");
+				return null;
+			}
+
+			if (WarnIfVideoCantChange(videoContainer))
+			{
+				request.Failed("editing not allowed");
+				return null;
+			}
+			return videoContainer;
 		}
 
 		/// <summary>
@@ -258,7 +269,39 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		// Request from sign language tool to edit the selected video.
+		// Request from sign language tool to import a video.
+		private void HandleImportVideoRequest (ApiRequest request)
+		{
+			var videoContainer = GetSelectedEditableVideoContainer(request, null);
+			if (videoContainer == null)
+				return;
+			string path = null;
+			_view.Invoke((Action)(() => {
+				var videoFiles = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.FileDialogVideoFiles", "Video files");
+				var dlg = new DialogAdapters.OpenFileDialogAdapter
+				{
+					Multiselect = false,
+					CheckFileExists = true,
+					Filter = String.Format("{0} (*.mp4)|*.mp4", videoFiles)
+				};
+				var result = dlg.ShowDialog();
+				if (result == DialogResult.OK)
+					path = dlg.FileName;
+			}));
+			if (String.IsNullOrEmpty(path))
+			{
+				request.Failed("user did not select video file");
+			}
+			else
+			{
+				var newVideoPath = Path.Combine(BookStorage.GetVideoFolderPath(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
+				RobustFile.Copy(path, newVideoPath);
+				SaveChangedVideo(videoContainer, newVideoPath, "Bloom had a problem including that video");
+				request.PostSucceeded();
+			}
+		}
+
+		// Request from sign language tool to delete the selected video.
 		private void HandleDeleteVideoRequest(ApiRequest request)
 		{
 			lock (request)

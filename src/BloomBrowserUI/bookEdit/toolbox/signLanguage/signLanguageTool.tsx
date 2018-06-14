@@ -176,6 +176,27 @@ export class SignLanguageToolControls extends React.Component<
                     </Label>
                 </div>
                 <div
+                    id="importRecordingWrapper"
+                    className={
+                        "videoButtonWrapper" +
+                        (this.state.enabled && !this.state.haveRecording ? "" : " disabled ")
+                    }
+                >
+                    <button
+                        id="videoImport"
+                        onClick={() => this.importRecording()}
+                    >
+                        X
+                    </button>
+                    <Label
+                        className="commandLabel"
+                        l10nKey="EditTab.Toolbox.SignLanguage.ImportVideo"
+                        onClick={() => this.importRecording()}
+                    >
+                        Import Video
+                    </Label>
+                </div>
+                <div
                     id="deleteRecordingWrapper"
                     className={
                         "videoButtonWrapper" +
@@ -217,6 +238,11 @@ export class SignLanguageToolControls extends React.Component<
                 </Label>
             </div>
         );
+    }
+
+    private importRecording() {
+        if (this.state.enabled && !this.state.haveRecording)
+            axios.post("/bloom/api/toolbox/importVideo");
     }
 
     private deleteRecording() {
