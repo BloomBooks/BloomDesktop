@@ -6,31 +6,34 @@ import { CheckItem } from "./checkItem";
 import { ApiBackedCheckbox } from "../../react_components/apiBackedCheckbox";
 import WebSocketManager from "../../utils/WebSocketManager";
 
-interface IState {
-    // This is something of a hack... we increase it whenever
-    // we want to refresh and have our children go ask the server
-    // for updated data. We do that by including "refreshCount" as
-    // one of their props.
-    refreshCount: number;
-}
 export class AccessibilityChecklist extends React.Component<
-    IUILanguageAwareProps,
-    IState
+    IUILanguageAwareProps
 > {
     constructor(props) {
         super(props);
-        this.state = { refreshCount: 0 };
     }
-    public componentDidMount() {
-        // Listen for changes to state from C#-land
-        // Notice that at this time, we don't even pay attention
-        // to the content of the message, as "refresh" is all there is
-        // and all we can anticipate needing.
+
+    // C# land will send us a command when somethind has changed that would
+    // warrant us refreshing: either the user has changd to a different book,
+    // or the book has changed (e.g. the user has fixed something that we
+    // we pointed out).
+    // React doesn't have a super natural way of doing this. That is probably
+    // because react is normally used in the context of a state system like
+    // redux of mobx. In this case, our code (both c# and ts) is much simpler
+    // if we just let each child do its own querying of the data (this is NOT
+    // obviously true, but JH and JT, pairing agreed that things were getting
+    // steadily more complex when we tried that route.)
+    // Some react ways to force a child to update include:
+    // * providing and then changing "key" attributes on each child
+    // * capturing "refs" of each child, then calling some public method on the child
+    // * providing a prop that is only used to trick the child into refreshing
+    // Each of these were tried, the last was perhaps the best. In the end we
+    // went looking for some kind of observer approach, and that led to this.
+    // We give each child the following function. The child then calls it, providing
+    // a function that causes it to refresh.
+    private subscribeChildToRefreshEvent(childRefreshFunction) {
         WebSocketManager.addListener("a11yChecklist", event => {
-            this.setState({
-                refreshCount: this.state.refreshCount + 1
-            });
-            this.forceUpdate();
+            childRefreshFunction();
         });
     }
 
@@ -40,17 +43,17 @@ export class AccessibilityChecklist extends React.Component<
                 <section>
                     <h1>Bloom can automatically check these for you</h1>
                     <CheckItem
-                        refreshCount={this.state.refreshCount}
+                        subscribeToRefresh={this.subscribeChildToRefreshEvent}
                         apiCheckName="audioForAllText"
                         label="Audio for all text"
                     />
                     <CheckItem
-                        refreshCount={this.state.refreshCount}
+                        subscribeToRefresh={this.subscribeChildToRefreshEvent}
                         apiCheckName="descriptionsForAllImages"
                         label="Descriptions for all images"
                     />
                     <CheckItem
-                        refreshCount={this.state.refreshCount}
+                        subscribeToRefresh={this.subscribeChildToRefreshEvent}
                         apiCheckName="audioForAllImageDescriptions"
                         label="Audio for all image descriptions"
                     />
@@ -73,12 +76,13 @@ export class AccessibilityChecklist extends React.Component<
             </div>
         );
     }
+
     private addCheck(key: string, english: string): JSX.Element {
         return (
             <ApiBackedCheckbox
-                refreshCount={this.state.refreshCount}
+                subscribeToRefresh={this.subscribeChildToRefreshEvent}
                 l10nKey={"Accessibility." + key}
-                apiPath={"/bloom/api/accessibilityCheck/" + key}
+                apiEndpoint={"/bloom/api/accessibilityCheck/" + key}
             >
                 {english}
             </ApiBackedCheckbox>

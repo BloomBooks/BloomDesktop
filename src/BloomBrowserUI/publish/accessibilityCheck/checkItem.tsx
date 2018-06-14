@@ -1,13 +1,13 @@
 import * as React from "react";
 import { IUILanguageAwareProps } from "../../react_components/l10n";
 import axios from "axios";
+import WebSocketManager from "../../utils/WebSocketManager";
 interface IProps extends IUILanguageAwareProps {
     apiCheckName: string;
     label: string;
-    // This is sort of a hack... our parent
-    // increments it whenever it wants us to re-query
-    // the server.
-    refreshCount: number;
+    // The parent can give us this function which we use to subscribe to refresh events
+    // See notes in accessibiltiyChecklist for a thorough discussion.
+    subscribeToRefresh?: (queryData: () => void) => void;
 }
 
 // Each "CheckItem" conveys the status and results of a single automated accessibility test.
@@ -34,9 +34,15 @@ export class CheckItem extends React.Component<IProps, IState> {
         };
     }
 
-    // We're using componentWillReceiveProps() instead of componentWillMount so that we
-    // can re-query if/when our refreshCount number changes.
-    public componentWillReceiveProps() {
+    public componentDidMount() {
+        this.queryData();
+
+        if (this.props.subscribeToRefresh) {
+            this.props.subscribeToRefresh(() => this.queryData());
+        }
+    }
+
+    private queryData() {
         axios
             .get(`/bloom/api/accessibilityCheck/${this.props.apiCheckName}`)
             .then(result => {
@@ -51,6 +57,7 @@ export class CheckItem extends React.Component<IProps, IState> {
                 });
             });
     }
+
     public render() {
         return (
             <li className={`checkItem ${this.state.checkResult.resultClass}`}>
