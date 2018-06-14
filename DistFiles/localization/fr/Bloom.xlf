@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="fr">
     <body>
@@ -2397,10 +2397,20 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
         <target xml:lang="fr" state="needs-translation">Edit outside of Bloom</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles">
+        <source xml:lang="en">Video Files</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
+        <target xml:lang="fr" state="needs-translation">Video Files</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Heading" sil:dynamic="true">
         <source xml:lang="en">Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
         <target xml:lang="fr" state="needs-translation">Sign Language Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
+        <source xml:lang="en">Import Video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
+        <target xml:lang="fr" state="needs-translation">Import Video</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
         <source xml:lang="en">Press any key to cancel</source>
@@ -3494,7 +3504,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="fr">Envoi de "‎{0}" à l'appareil ‎{1}</target>
+        <target xml:lang="fr">Envoi de "‎{0‎}" à l'appareil ‎{1‎}</target>
         <alt-trans>
           <target xml:lang="fr">Envoi de "‎{0}" à l'appareil ‎{1}</target>
         </alt-trans>
