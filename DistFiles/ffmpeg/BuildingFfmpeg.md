@@ -112,7 +112,7 @@ I had to edit three files to get the library to compile with MinGW on Windows.
 git clone https://github.com/BloomBooks/libvpx
 cd libvpx
 git checkout Bloom
-extralibs=-lmingwex ./configure --enable-small --disable-shared --enable-static --disable-multithread --disable-vp9 --as=yasm --enable-libyuv --enable-webm-io --prefix=/mingw --target=x86-win32-gcc --disable-unit-tests
+extralibs=-lmingwex ./configure --enable-static --enable-multithread --disable-vp9 --as=yasm --enable-libyuv --enable-webm-io --prefix=/mingw --target=x86-win32-gcc --disable-unit-tests
 make install
 cd ..
 </pre>
@@ -124,9 +124,9 @@ git clone http://git.videolan.org/git/x264.git
 cd x264
 mkdir build
 cd build
-../configure --enable-static --disable-cli --disable-gpl --disable-opencl --disable-avs --disable-swscale --disable-lavf --disable-ffms --disable-gpac --disable-lsmash --disable-thread --disable-asm --prefix=/mingw
+../configure --enable-static --disable-cli --disable-gpl --disable-opencl --disable-avs --disable-swscale --disable-lavf --disable-ffms --disable-gpac --disable-lsmash --enable-lto --prefix=/mingw
 make install
-cd ..
+cd ../..
 </pre>
 
 ffmpeg
@@ -139,9 +139,9 @@ cd ffmpeg
 git checkout Bloom
 mkdir build
 cd build
-../configure --disable-all --disable-pthreads --disable-w32threads --disable-os2threads --disable-alsa --disable-appkit --disable-avfoundation --disable-bzlib --disable-coreimage --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-lzma --disable-sndio --disable-sdl2 --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-ffnvcodec --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-ffmpeg --enable-small --enable-avcodec --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264 --enable-protocol=file --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-gpl --enable-libx264 --enable-libvorbis --enable-libvpx --prefix=/mingw --extra-ldflags=-static --pkg-config-flags=--static
+../configure --disable-all --disable-alsa --disable-appkit --disable-avfoundation --disable-bzlib --disable-coreimage --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-lzma --disable-sndio --disable-sdl2 --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-ffnvcodec --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-ffmpeg --enable-avcodec --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264,vp8 --enable-protocol=file --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-gpl --enable-libx264 --enable-libvorbis --enable-libvpx --prefix=/mingw --extra-ldflags=-static --pkg-config-flags=--static
 make install
-cd ..
+cd ../..
 </pre>
 
 After building, the desired ffmpeg.exe is found in .../ffmpeg/build and in C:\mingw\bin.
