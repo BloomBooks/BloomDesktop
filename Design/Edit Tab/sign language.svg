@@ -47,15 +47,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.0000001"
-     inkscape:cx="-635.87003"
-     inkscape:cy="959.98918"
+     inkscape:zoom="1.0000001"
+     inkscape:cx="-609.54915"
+     inkscape:cy="1194.5389"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1137"
-     inkscape:window-x="-8"
+     inkscape:window-width="1824"
+     inkscape:window-height="1177"
+     inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      showguides="false"
@@ -1564,23 +1564,27 @@
          id="circle2524"
          style="opacity:1;fill:#ffcc00;fill-opacity:1;stroke:#59b4d3;stroke-width:0.04227648;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal" />
     </g>
-    <path
-       id="path4229"
-       inkscape:connector-curvature="0"
-       inkscape:export-filename="X:\dev\b36\src\BloomExe\Resources\LogoForSplashScreen.png"
-       inkscape:export-xdpi="108.54"
-       inkscape:export-ydpi="108.54"
-       sodipodi:nodetypes="cccsccc"
-       class="st1"
-       d="m -142.86657,45.903024 c 0.0323,-1.805815 -0.62344,-2.225022 -1.01039,-2.515227 -0.34396,-0.247217 -1.03189,-0.515957 -1.52633,-0.612684 -0.3738,2.079303 0.14034,4.631521 2.21667,4.53599 2.38557,-0.109744 2.35509,-1.920979 2.21184,-4.48224 -1.3006,0.11821 -1.69831,0.505184 -1.69831,0.505184 l -0.0752,0.05378"
-       style="opacity:1;fill:none;stroke:#59b4d3;stroke-width:0.83840823;stroke-linejoin:round;stroke-opacity:1" />
-    <path
-       inkscape:connector-curvature="0"
-       data-name="Path"
-       d="m -136.25201,37.751655 -3.48929,3.488393 V 38.82973 c -9.3e-4,-0.379392 -0.56965,-0.379392 -0.57058,0 v 3.094906 c -0.002,0.01897 -0.002,0.03808 0,0.05705 v 0.08557 h 0.0143 l 0.0856,0.08557 h 3.28084 c 0.38039,0 0.38039,-0.57049 0,-0.57049 h -2.41071 l 3.4893,-3.431344 c 0.19792,-0.263879 -0.13547,-0.597226 -0.3994,-0.399343 z"
-       id="path4"
-       style="fill:#59b4d3;fill-opacity:1;stroke:#59b4d3;stroke-width:0.26458332;stroke-opacity:1"
-       sodipodi:nodetypes="cccccccccsscccc" />
+    <g
+       id="g1847"
+       transform="translate(-24.540103,25.003124)">
+      <path
+         style="opacity:1;fill:none;stroke:#59b4d3;stroke-width:0.83840823;stroke-linejoin:round;stroke-opacity:1"
+         d="m -142.86657,45.903024 c 0.0323,-1.805815 -0.62344,-2.225022 -1.01039,-2.515227 -0.34396,-0.247217 -1.03189,-0.515957 -1.52633,-0.612684 -0.3738,2.079303 0.14034,4.631521 2.21667,4.53599 2.38557,-0.109744 2.35509,-1.920979 2.21184,-4.48224 -1.3006,0.11821 -1.69831,0.505184 -1.69831,0.505184 l -0.0752,0.05378"
+         class="st1"
+         sodipodi:nodetypes="cccsccc"
+         inkscape:export-ydpi="108.54"
+         inkscape:export-xdpi="108.54"
+         inkscape:export-filename="X:\dev\b36\src\BloomExe\Resources\LogoForSplashScreen.png"
+         inkscape:connector-curvature="0"
+         id="path4229" />
+      <path
+         sodipodi:nodetypes="cccccccccsscccc"
+         style="fill:#59b4d3;fill-opacity:1;stroke:#59b4d3;stroke-width:0.26458332;stroke-opacity:1"
+         id="path4"
+         d="m -136.25201,37.751655 -3.48929,3.488393 V 38.82973 c -9.3e-4,-0.379392 -0.56965,-0.379392 -0.57058,0 v 3.094906 c -0.002,0.01897 -0.002,0.03808 0,0.05705 v 0.08557 h 0.0143 l 0.0856,0.08557 h 3.28084 c 0.38039,0 0.38039,-0.57049 0,-0.57049 h -2.41071 l 3.4893,-3.431344 c 0.19792,-0.263879 -0.13547,-0.597226 -0.3994,-0.399343 z"
+         data-name="Path"
+         inkscape:connector-curvature="0" />
+    </g>
     <g
        transform="translate(12.579953,76.176298)"
        id="g1544">
@@ -1646,6 +1650,39 @@
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#f8f8f8;fill-opacity:1;stroke-width:1.5233835px" /></flowRegion><flowPara
            id="flowPara1186"
            style="font-size:11.25px;line-height:1.25;stroke-width:1.5233835px">Help</flowPara></flowRoot>    </g>
+    <g
+       id="g1851"
+       transform="matrix(1.3611059,0,0,1.3617453,104.29986,-48.53954)"
+       style="stroke:#59b4d3;stroke-width:0.73452413;stroke-opacity:1">
+      <path
+         inkscape:connector-curvature="0"
+         id="path1828"
+         d="m -179.72441,63.643478 h -4.16101 v 6.336705 h 6.4149 v -3.835374"
+         style="fill:none;stroke:#59b4d3;stroke-width:0.58302855;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="cccccccccssccccc"
+         style="fill:#59b4d3;fill-opacity:1;stroke:#59b4d3;stroke-width:0.19434284;stroke-linecap:round;stroke-opacity:1"
+         id="path4-2"
+         d="m -176.88813,62.77335 -4.69367,4.569999 v -1.881151 c -9.3e-4,-0.379392 -0.56965,-0.379392 -0.57058,0 v 2.565739 c -0.002,0.01897 -0.002,0.03808 0,0.05705 v 0.08557 l 0.0207,0.0641 0.0789,0.02147 h 2.75167 c 0.38039,0 0.38039,-0.57049 0,-0.57049 h -1.88154 l 0.94855,-0.932793 3.74513,-3.580157 c 0.19792,-0.263879 -0.25824,-0.556301 -0.3994,-0.399343 z"
+         data-name="Path"
+         inkscape:connector-curvature="0" />
+    </g>
+    <g
+       transform="translate(-5.4239585,-6.9453122)"
+       id="g1857">
+      <path
+         style="fill:none;stroke:#59b4d3;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m -179.72441,63.643478 h -4.16101 v 6.336705 h 6.4149 v -3.835374"
+         id="path1853"
+         inkscape:connector-curvature="0" />
+      <path
+         inkscape:connector-curvature="0"
+         data-name="Path"
+         d="m -176.88813,62.77335 -4.69367,4.569999 v -1.881151 c -9.3e-4,-0.379392 -0.56965,-0.379392 -0.57058,0 v 2.565739 c -0.002,0.01897 -0.002,0.03808 0,0.05705 v 0.08557 l 0.0207,0.0641 0.0789,0.02147 h 2.75167 c 0.38039,0 0.38039,-0.57049 0,-0.57049 h -1.88154 l 0.94855,-0.932793 3.74513,-3.580157 c 0.19792,-0.263879 -0.25824,-0.556301 -0.3994,-0.399343 z"
+         id="path1855"
+         style="fill:#59b4d3;fill-opacity:1;stroke:#59b4d3;stroke-width:0.26458332;stroke-linecap:round;stroke-opacity:1"
+         sodipodi:nodetypes="cccccccccssccccc" />
+    </g>
   </g>
   <style
      id="style5606"
