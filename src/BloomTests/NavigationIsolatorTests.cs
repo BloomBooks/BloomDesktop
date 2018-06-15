@@ -336,5 +336,7 @@ namespace BloomTests
 			// Removing handlers not present does nothing.
 			EventHandlerCount = Math.Max(EventHandlerCount-1, 0);
 		}
+
+		public bool IsBrowserDisposed => false;
 	}
 }
