@@ -2,6 +2,9 @@
 import { IUILanguageAwareProps } from "../../react_components/l10n";
 import axios from "axios";
 import "./daisyChecks.less";
+import ProgressBox from "../../react_components/progressBox";
+
+const kWebSocketLifetime = "a11yChecklist";
 
 /* Ace By Daisy (https://daisy.github.io/ace/) is a nodejs-based epub checker.
     This class asks the Bloom server to run it and then shows the result
@@ -9,57 +12,44 @@ import "./daisyChecks.less";
 interface IState {
     // when the report is done, we get back from the Bloom server a url to get at the report that was generated
     reportUrl: string;
-    // but if we don't have a report for some reason, this is what we show the user
-    statusMessageHtml: string;
 }
 export class DaisyChecks extends React.Component<
     IUILanguageAwareProps,
     IState
 > {
+    private progressBox: ProgressBox;
     constructor(props) {
         super(props);
-        this.state = { reportUrl: "", statusMessageHtml: "" };
+        this.state = { reportUrl: "" };
     }
     public componentDidMount() {
-        this.setState({
-            statusMessageHtml: "Generating..."
-        });
+        this.refresh();
+    }
+    private refresh() {
+        this.setState({ reportUrl: "" });
         axios
             .get("/bloom/api/accessibilityCheck/aceByDaisyReportUrl")
             .then(result => {
-                // we use text/plain as an indicator that we are being given a url
-                switch (result.headers["content-type"]) {
-                    case "text/plain":
-                        this.setState({ reportUrl: result.data });
-                        break;
-                    case "text/html":
-                        this.setState({ statusMessageHtml: result.data });
-                        break;
-                    default:
-                        this.setState({
-                            statusMessageHtml:
-                                "aceByDaisyReportUrl returned unexpected content-type"
-                        });
-                        break;
-                }
+                this.setState({ reportUrl: result.data });
             })
             .catch(error => {
-                this.setState({
-                    statusMessageHtml: error
-                });
+                this.progressBox.writeLine("Failed");
             });
     }
     public render() {
         return (
             <div id="daisyChecks">
                 {this.state.reportUrl.length > 0 ? (
-                    <iframe src={this.state.reportUrl} />
+                    <div id="report">
+                        <button id="refresh" onClick={() => this.refresh()}>
+                            Refresh
+                        </button>
+                        <iframe src={this.state.reportUrl} />
+                    </div>
                 ) : (
-                    <p
-                        id="statusMessage"
-                        dangerouslySetInnerHTML={{
-                            __html: this.state.statusMessageHtml
-                        }}
+                    <ProgressBox
+                        ref={r => (this.progressBox = r)}
+                        lifetimeLabel={kWebSocketLifetime}
                     />
                 )}
             </div>

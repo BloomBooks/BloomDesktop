@@ -57,7 +57,7 @@ namespace Bloom.Publish.Android.wifi
 
 		private void Work()
 		{
-			_progress.Message(id:"beginAdvertising", message:"Advertising book to Bloom Readers on local network...");
+			_progress.Message(idSuffix: "beginAdvertising", message: "Advertising book to Bloom Readers on local network...");
 			try
 			{
 				while (true)
@@ -72,7 +72,7 @@ namespace Bloom.Publish.Android.wifi
 			}
 			catch (ThreadAbortException)
 			{
-				_progress.Message(id: "Stopped", message: "Stopped Advertising.");
+				_progress.Message(idSuffix: "Stopped", message: "Stopped Advertising.");
 				_client.Close();
 			}
 			catch (Exception error)

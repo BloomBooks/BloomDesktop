@@ -169,7 +169,6 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                         <Link
                             id="a11yCheckerLink"
                             l10nKey="AccessibilityCheck.ShowAccessibilityChecker"
-                            href=""
                             onClick={() =>
                                 axios.post(
                                     "/bloom/api/accessibilityCheck/showAccessibilityChecker"

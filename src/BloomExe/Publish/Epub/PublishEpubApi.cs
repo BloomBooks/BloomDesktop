@@ -3,15 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
-using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -28,7 +24,6 @@ namespace Bloom.Publish.Epub
 		private EpubMaker _epubMaker;
 		// Autofac singletons we need and get through our constructor
 		private BookServer _bookServer;
-		private NavigationIsolator _isolator;
 		private BookThumbNailer _thumbNailer;
 		private BookSelection _bookSelection;
 		private CollectionSettings _collectionSettings;
@@ -56,7 +51,6 @@ namespace Bloom.Publish.Epub
 			BookSelection bookSelection, CollectionSettings collectionSettings, BloomWebSocketServer webSocketServer)
 		{
 			_thumbNailer = thumbNailer;
-			_isolator = isolator;
 			_bookServer = bookServer;
 			_bookSelection = bookSelection;
 			_collectionSettings = collectionSettings;
@@ -122,13 +116,9 @@ namespace Bloom.Publish.Epub
 
 		private void CompleteSave(string savePath)
 		{
-			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Saving", "Saving"));
-			_epubMaker.FinishEpub(savePath);
+			_epubMaker.ZipAndSaveEpub(savePath, _progress);
 			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
 			ReportAnalytics("Save ePUB");
-
-			// Tell the accessibility checker about this new thing it can check
-			AccessibilityCheckApi.SetEpubPath(savePath);
 		}
 
 		public void ReportAnalytics(string eventName)
@@ -188,7 +178,7 @@ namespace Bloom.Publish.Epub
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-					EpubMaker.FinishEpub(dlg.FileName);
+					EpubMaker.ZipAndSaveEpub(dlg.FileName, _progress);
 					ReportAnalytics("Save ePUB");
 				}
 			}
@@ -281,7 +271,10 @@ namespace Bloom.Publish.Epub
 			// something to do with navigating its embedded browser.
 			if (EpubMaker == null)
 			{
-				Form.ActiveForm.Invoke((Action)(() => PrepareToStageEpub()));
+				if (Form.ActiveForm == null) // this is null when we are off debugging in firefox or chrome, not winforms
+					return;
+
+				Form.ActiveForm.Invoke((Action) (() => PrepareToStageEpub()));
 			}
 
 			EpubMaker.PublishImageDescriptions = newSettings.howToPublishImageDescriptions;

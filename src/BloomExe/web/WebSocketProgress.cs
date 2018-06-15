@@ -34,14 +34,14 @@ namespace Bloom.web
 		{
 			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", args);
 		}
-		public void Error(string id, string message)
+		public void Error(string idSuffix, string message)
 		{
-			ErrorWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message));
+			ErrorWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message));
 		}
 
 		public void MessageWithoutLocalizing(string message, params object[] args)
 		{
-			_bloomWebSocketServer.Send("progress", message);
+			_bloomWebSocketServer.Send("progress", String.Format(message, args));
 		}
 
 		public void MessageWithStyleWithoutLocalizing(string message, string style)
@@ -49,53 +49,57 @@ namespace Bloom.web
 			_bloomWebSocketServer.Send("progress", message, style);
 		}
 
-		public void Message(string id, string message, string comment = null)
+		public void Message(string idSuffix, string comment, string message)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message, comment: comment));
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message, comment: comment));
+		}
+		public void Message(string idSuffix, string message)
+		{
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message));
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public void MessageWithParams(string id, string comment, string message, params object[] parameters)
+		public void MessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
-			var formatted = GetMessageWithParams(id, comment, message, parameters);
+			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
 			MessageWithoutLocalizing(formatted);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public void ErrorWithParams(string id, string comment, string message, params object[] parameters)
+		public void ErrorWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
-			var formatted = GetMessageWithParams(id, comment, message, parameters);
+			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
 			ErrorWithoutLocalizing(formatted);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters)
+		public void MessageWithColorAndParams(string idSuffix, string comment, string color, string message, params object[] parameters)
 		{
-			var formatted = GetMessageWithParams(id, comment, message, parameters);
+			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
 			MessageWithoutLocalizing("<span style='color:" + color + "'>" + formatted + "</span>");
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public string GetMessageWithParams(string id, string comment, string message, params object[] parameters)
+		public string GetMessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
 			Debug.Assert(message.Contains("{0}"));
-			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message,
+			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message,
 				comment: comment);
 			var formatted = String.Format(localized, parameters);
 			return formatted;
 		}
 
-		public void MessageUsingTitle(string id, string message, string bookTitle)
+		public void MessageUsingTitle(string idSuffix, string message, string bookTitle)
 		{
-			var formatted = GetTitleMessage(id, message, bookTitle);
+			var formatted = GetTitleMessage(idSuffix, message, bookTitle);
 			MessageWithoutLocalizing(formatted);
 		}
 
-		public string GetTitleMessage(string id, string message, string bookTitle)
+		public string GetTitleMessage(string idSuffix, string message, string bookTitle)
 		{
 			Debug.Assert(message.Contains("{0}"));
 			Debug.Assert(!message.Contains("{1}"));
-			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message,
+			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message,
 				comment: "{0} is a book title");
 			var formatted = String.Format(localized, bookTitle);
 			return formatted;
@@ -114,6 +118,7 @@ namespace Bloom.web
 	{
 		void MessageWithoutLocalizing(string message, params object[] args);
 		void ErrorWithoutLocalizing(string message, params object[] args);
+		void Message(string idSuffix, string comment, string message);
 		void MessageWithParams(string id, string comment, string message, params object[] parameters);
 		void ErrorWithParams(string id, string comment, string message, params object[] parameters);
 		void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters);
@@ -127,6 +132,10 @@ namespace Bloom.web
 		}
 
 		public void ErrorWithoutLocalizing(string message, params object[] args)
+		{
+		}
+
+		public void Message(string id, string comment, string message)
 		{
 		}
 

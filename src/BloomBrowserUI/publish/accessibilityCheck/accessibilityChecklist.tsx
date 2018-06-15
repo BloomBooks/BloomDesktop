@@ -33,7 +33,12 @@ export class AccessibilityChecklist extends React.Component<
     // a function that causes it to refresh.
     private subscribeChildToRefreshEvent(childRefreshFunction) {
         WebSocketManager.addListener("a11yChecklist", event => {
-            childRefreshFunction();
+            if (
+                event.data === "bookSelectionChanged" ||
+                event.data === "bookContentsMayHaveChanged"
+            ) {
+                childRefreshFunction();
+            }
         });
     }
 
