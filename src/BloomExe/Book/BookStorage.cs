@@ -122,7 +122,7 @@ namespace Bloom.Book
 		{
 			_folderPath = folderPath;
 
-			//we clone becuase we'll be customizing this for use by just this book
+			// We clone this because we'll be customizing it for use by just this book
 			_fileLocator = (IChangeableFileLocator) baseFileLocator.CloneAndCustomize(new string[]{});
 			_bookRenamedEvent = bookRenamedEvent;
 			_collectionSettings = collectionSettings;
@@ -130,9 +130,25 @@ namespace Bloom.Book
 			ExpensiveInitialization(forSelectedBook);
 		}
 
+		private string _cachedFolderPath;
+		private string _cachedPathToHtml;
+
 		public string PathToExistingHtml
 		{
-			get { return FindBookHtmlInFolder(_folderPath); }
+			get
+			{
+				// We reference PathToExistingHtml about 3 times per book when doing ExpensiveInitialization.
+				// Let's make it not quite so expensive.
+				if (!string.IsNullOrEmpty(_cachedFolderPath) && FolderPath == _cachedFolderPath)
+				{
+					// our folder path hasn't changed, so the path to our Html can't have changed.
+					return _cachedPathToHtml;
+				}
+
+				_cachedFolderPath = FolderPath;
+				_cachedPathToHtml = FindBookHtmlInFolder(_cachedFolderPath);
+				return _cachedPathToHtml;
+			}
 		}
 
 		public string FileName
@@ -275,17 +291,19 @@ namespace Bloom.Book
 			BookInfo.Save();
 		}
 
+		public const string BackupFilename = "bookhtml.bak"; // need to know this in BookCollection too.
+
 		private string GetBackupFilePath()
 		{
 			try
 			{
-				return Path.Combine(Path.GetDirectoryName(PathToExistingHtml), "bookhtml.bak");
+				return Path.Combine(FolderPath, BackupFilename);
 			}
 			catch (Exception ex)
 			{
 				// Following up BL-5636, which involves a "Path is not of a legal form" here, we'd like to see
 				// the exact path that has the problem.
-				throw new ArgumentException("Failed to get backup file path for " + PathToExistingHtml, ex);
+				throw new ArgumentException("Failed to get backup file path for " + FolderPath, ex);
 			}
 		}
 
@@ -805,9 +823,15 @@ namespace Bloom.Book
 		}
 
 		#region Static Helper Methods
+
+		private static string GetHtmCandidate(string folderPath)
+		{
+			return Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
+		}
+
 		public static string FindBookHtmlInFolder(string folderPath)
 		{
-			string p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
+			string p = GetHtmCandidate(folderPath);
 			if (RobustFile.Exists(p))
 				return p;
 			p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".html");
@@ -916,8 +940,11 @@ namespace Bloom.Book
 			}
 			var backupPath = GetBackupFilePath();
 
-			if (!RobustFile.Exists(pathToExistingHtml))
+			// if we don't have an html file, but we're looking at the selected book and we do have a backup file
+			// go ahead and try to restore it.
+			if (!RobustFile.Exists(pathToExistingHtml) && (!forSelectedBook || !RobustFile.Exists(backupPath)))
 			{
+				// Error out
 				var files = new List<string>(Directory.GetFiles(_folderPath));
 				var b = new StringBuilder();
 				b.AppendLine("Could not determine which html file in the folder to use.");
@@ -1038,8 +1065,16 @@ namespace Bloom.Book
 		{
 			var backupPath = GetBackupFilePath();
 			string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
-			RobustFile.Move(PathToExistingHtml, corruptFilePath);
-			RobustFile.Move(backupPath, pathToExistingHtml);
+			// BL-6099 it could be missing altogether if we had a bad crash or someone's anti-virus is acting up.
+			if (string.IsNullOrEmpty(pathToExistingHtml))
+			{
+				RobustFile.Copy(backupPath, GetHtmCandidate(Path.GetDirectoryName(backupPath)));
+			}
+			else
+			{
+				RobustFile.Move(PathToExistingHtml, corruptFilePath);
+				RobustFile.Move(backupPath, pathToExistingHtml);
+			}
 			var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
 				"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.");
 			ErrorReport.NotifyUserOfProblem(error, msg);
