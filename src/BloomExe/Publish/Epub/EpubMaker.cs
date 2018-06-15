@@ -802,7 +802,13 @@ namespace Bloom.Publish.Epub
 			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
 			// but things freeze up if we don't do it on the uI thread.
 			if (ControlForInvoke != null)
+			{
+				// Linux/Mono can choose a toast as the ActiveForm.  When it closes, bad things can happen
+				// trying to use it to Invoke.
+				if (ControlForInvoke.IsDisposed)
+					ControlForInvoke = Form.ActiveForm;
 				ControlForInvoke.Invoke((Action)(() => RemoveUnwantedContent(pageDom)));
+			}
 			else
 				RemoveUnwantedContent(pageDom);
 
