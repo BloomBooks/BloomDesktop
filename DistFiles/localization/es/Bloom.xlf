@@ -256,7 +256,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="es-ES" state="translated">Mostrar los Comandos Experimentales</target>
+        <target xml:lang="es-ES" state="translated">Mostrar las Funciones Experimentales</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Mostrar los Comandos Experimentales</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Mostrar los Comandos Experimentales (p. ej. exportar XML para InDesign)</target>
         </alt-trans>
