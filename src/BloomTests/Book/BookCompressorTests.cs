@@ -715,6 +715,11 @@ namespace BloomTests.Book
 				ErrorsNotLocalized.Add(message);
 			}
 
+			public void Message(string idSuffix, string comment, string message)
+			{
+				MessagesNotLocalized.Add(string.Format(message));
+			}
+
 			public void MessageWithParams(string id, string comment, string message, params object[] parameters)
 			{
 				MessagesNotLocalized.Add(string.Format(message, parameters));

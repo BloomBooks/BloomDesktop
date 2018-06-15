@@ -12,11 +12,29 @@
         padding: 1em;
         font-size: 14pt;
     }
+    #progress-box {
+        padding: 10px;
+    }
+    #report {
+        display: flex;
+        flex-direction: column;
+        #refresh {
+            margin-left: auto;
+            margin-right: 30px;
+            margin-top: 10px;
+            color: @bloom-blue;
+            &:before {
+                content: "⟳";
+                font-size: 18px;
+                font-weight: bold;
+            }
+        }
 
-    iframe {
-        margin: 0;
-        width: 100%;
-        height: unset;
-        flex: 1;
+        iframe {
+            margin: 0;
+            width: 100%;
+            height: unset;
+            flex: 1;
+        }
     }
 }

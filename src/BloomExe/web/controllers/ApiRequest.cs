@@ -110,9 +110,18 @@ namespace Bloom.Api
 			_requestInfo.ReplyWithImage(imagePath);
 		}
 
+		/// <summary>
+		/// Use this one in cases where the error has already been output to a progress box,
+		/// and repeating the error is just noise.
+		/// </summary>
+		public void Failed()
+		{
+			_requestInfo.ContentType = "text/plain";
+			_requestInfo.WriteError(503);
+		}
+
 		public void Failed(string text)
 		{
-			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery+": "+text);
 			_requestInfo.ContentType = "text/plain";
 			_requestInfo.WriteError(503, text);
 		}

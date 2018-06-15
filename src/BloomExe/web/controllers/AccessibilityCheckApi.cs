@@ -2,10 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish.AccessibilityChecker;
-using SIL.Code;
+using Bloom.Publish.Epub;
 using SIL.CommandLineProcessing;
 using SIL.Progress;
 
@@ -20,28 +21,36 @@ namespace Bloom.web.controllers
 	{
 		// Define a socket to signal the client window to refresh
 		private readonly BloomWebSocketServer _webSocketServer;
+		private readonly EpubMaker.Factory _epubMakerFactory;
 		private const string kWebsocketId = "a11yChecklist";
 
 		private readonly NavigationIsolator _isolator;
 		private readonly BookServer _bookServer;
+		private WebSocketProgress _webSocketProgress;
 		public const string kApiUrlPart = "accessibilityCheck/";
-		private static string _epubPath;
 
-		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection, BookRefreshEvent bookRefreshEvent)
+		// must match what's in the typescript
+		private const string kBookSelectionChanged = "bookSelectionChanged";
+
+		// must match what's in the typescript
+		private const string kBookContentsMayHaveChanged = "bookContentsMayHaveChanged";
+
+		// must match what's in the typescript
+		private const string kWindowActivated = "a11yChecksWindowActivated"; // REVIEW later... are we going to use this event?
+
+
+		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection,
+									BookRefreshEvent bookRefreshEvent, EpubMaker.Factory epubMakerFactory)
 		{
 			_webSocketServer = webSocketServer;
-			bookSelection.SelectionChanged += (unused1, unused2) => RefreshClient();
+			_webSocketProgress = new WebSocketProgress(_webSocketServer);
+			_epubMakerFactory = epubMakerFactory;
+			bookSelection.SelectionChanged += (unused1, unused2) => _webSocketServer.Send(kWebsocketId, kBookSelectionChanged);
 			bookRefreshEvent.Subscribe((book) => RefreshClient());
 		}
 		
 		public void RegisterWithServer(EnhancedImageServer server)
-		{
-			server.RegisterEndpointHandler(kApiUrlPart + "setEpubPath", request =>
-			{
-				_epubPath = request.RequiredPostString();
-			}, false);
-
-			
+		{	
 			server.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
 			{
 				request.ReplyWithText(request.CurrentBook.TitleBestForUserDisplay);
@@ -49,7 +58,7 @@ namespace Bloom.web.controllers
 
 			server.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>
 			{
-				AccessibilityCheckWindow.StaticShow(RefreshClient);
+				AccessibilityCheckWindow.StaticShow(()=>_webSocketServer.Send(kWebsocketId, kWindowActivated));
 				request.PostSucceeded();
 			}, true);
 
@@ -95,18 +104,16 @@ namespace Bloom.web.controllers
 				false);
 			
 			//enhance: this might have to become async to work on large books on slow computers
-			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); }, false);
+			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
+				true // <-- ui thread needed to make epub for some reason.
+					 // This messes with our ability to make progress show up.
+					 // Card for fixing the epub maker is BL-6122 
+				);
 		}
 
-		private static void MakeAceByDaisyReport(ApiRequest request)
+		private void MakeAceByDaisyReport(ApiRequest request)
 		{
-			if (string.IsNullOrEmpty(_epubPath) || !File.Exists((_epubPath)))
-			{
-				request.ReplyWithHtml("Please save the epub first.");
-				return;
-			}
-
-			var daisyDirectory = FindAceByDaisyOrTellUser(request);
+			var daisyDirectory = FindAceByDaisyOrTellUser(request); // this should do the request.fail() if needed
 			if (string.IsNullOrEmpty(daisyDirectory))
 				return;
 
@@ -121,19 +128,26 @@ namespace Bloom.web.controllers
 			// so give new folder names if needed
 			var haveReportedError = false;
 			var errorMessage = "Unknown Error";
-			for (var i = 0; i < 20; i++)
+			
+			var epubPath = MakeEpub(request, reportRootDirectory, _webSocketProgress);
+			// Try 3 times. It could be that this is no longer needed, but working on a developer
+			// machine isn't proof.
+			for (var i = 0; i < 3; i++)
 			{
 				var randomName = Guid.NewGuid().ToString();
 				var reportDirectory = Path.Combine(reportRootDirectory, randomName);
 
-				var arguments = $"ace.js  -o \"{reportDirectory}\" \"{_epubPath}\"";
+				var arguments = $"ace.js  -o \"{reportDirectory}\" \"{epubPath}\"";
 				const int kSecondsBeforeTimeout = 60;
 				var progress = new NullProgress();
+				_webSocketProgress.MessageWithoutLocalizing("Running Ace by Daisy");
+			
 				var res = CommandLineRunner.Run("node", arguments, Encoding.UTF8, daisyDirectory, kSecondsBeforeTimeout, progress,
 					(dummy) => { });
 				if (res.DidTimeOut)
 				{
 					errorMessage = $"Daisy Ace timed out after {kSecondsBeforeTimeout} seconds.";
+					_webSocketProgress.ErrorWithoutLocalizing(errorMessage);
 					continue;
 				}
 
@@ -149,12 +163,7 @@ namespace Bloom.web.controllers
 					               $"Standard Error{Environment.NewLine}{res.StandardError}{Environment.NewLine}" +
 					               $"Standard Out{res.StandardOutput}";
 
-					if (!haveReportedError) // don't want to put up 50 toasts
-					{
-						haveReportedError = true;
-						NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Ace By Daisy error",
-							errorMessage);
-					}
+					_webSocketProgress.ErrorWithoutLocalizing(errorMessage);
 
 					continue; // something went wrong, try again
 				}
@@ -165,20 +174,29 @@ namespace Bloom.web.controllers
 			}
 
 			// If we get this far, we give up.
-			// The html client is set to treat an html reply as an error message.
-			request.ReplyWithHtml(errorMessage);
+			ReportErrorAndFailTheRequest(request, errorMessage);
 		}
 
-		private static string FindAceByDaisyOrTellUser(ApiRequest request)
+		private string MakeEpub(ApiRequest request, string parentDirectory, IWebSocketProgress progress)
 		{
-			var instructionsHtml =
-				"Please follow the <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >steps under \"Installation\"</a>";
+			var maker = _epubMakerFactory();
+			maker.Book = request.CurrentBook;
+			var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
+			maker.SaveEpub(path, progress);
+			return path;
+		}
 
+		private string FindAceByDaisyOrTellUser(ApiRequest request)
+		{
+			_webSocketProgress.MessageWithoutLocalizing("Finding Ace by Daisy on this computer...");
 			var whereResult = CommandLineRunner.Run("where", "npm.cmd", Encoding.ASCII, "", 2, new NullProgress());
-
+			if (!String.IsNullOrEmpty(whereResult.StandardError))
+			{
+				_webSocketProgress.ErrorWithoutLocalizing(whereResult.StandardError);
+			}
 			if (!whereResult.StandardOutput.Contains("npm.cmd"))
 			{
-				request.ReplyWithHtml($"Could could not find npm.<br/>{instructionsHtml}");
+				ReportErrorAndFailTheRequest(request, whereResult, "Could could not find npm.");
 				return null;
 			}
 
@@ -187,11 +205,9 @@ namespace Bloom.web.controllers
 			// to ask npm:
 			var result = CommandLineRunner.Run("npm.cmd", "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
 				new NullProgress());
-
 			if (!result.StandardOutput.Contains("node_modules"))
 			{
-				request.ReplyWithHtml(
-					$"Could could not get npm -g root to work. It said {result.StandardOutput} {result.StandardError}.<br/>{instructionsHtml}");
+				ReportErrorAndFailTheRequest(request, whereResult, "Could not get npm -g root to work");
 				return null;
 			}
 
@@ -199,8 +215,7 @@ namespace Bloom.web.controllers
 
 			if (!Directory.Exists((nodeModulesDirectory)))
 			{
-				request.ReplyWithHtml(
-					$"Could could not find global node_modules directory at {nodeModulesDirectory}.<br/>{instructionsHtml}");
+				ReportErrorAndFailTheRequest(request, whereResult, "Could not find global node_modules directory");
 				return null;
 			}
 
@@ -212,22 +227,31 @@ namespace Bloom.web.controllers
 				daisyDirectory = Path.Combine(nodeModulesDirectory, "@daisy/ace-cli/bin/");
 				if (!Directory.Exists((daisyDirectory)))
 				{
-					request.ReplyWithHtml($"Could could not find daisy-ace at {daisyDirectory}.<br/>{instructionsHtml}");
+					ReportErrorAndFailTheRequest(request, whereResult, $"Could could not find daisy-ace at {daisyDirectory}.");
 					return null;
 				}
 			}
-
+			_webSocketProgress.MessageWithoutLocalizing("Found.");
 			return daisyDirectory;
 		}
 
-		public static void SetEpubPath(string previewSrc)
+		private void ReportErrorAndFailTheRequest(ApiRequest request, ExecutionResult commandLineResult, string error)
 		{
-			_epubPath = previewSrc;
+			_webSocketProgress.ErrorWithoutLocalizing(commandLineResult.StandardError);
+			_webSocketProgress.ErrorWithoutLocalizing(commandLineResult.StandardOutput);
+			ReportErrorAndFailTheRequest(request, error);
+		}
+
+		private void ReportErrorAndFailTheRequest(ApiRequest request, string error)
+		{
+			_webSocketProgress.ErrorWithoutLocalizing(error);
+			_webSocketProgress.MessageWithoutLocalizing("Please follow <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >these instructions</a> to install the Ace By Daisy system on this computer.");
+			request.Failed();
 		}
 
 		private void RefreshClient()
 		{
-			_webSocketServer.Send(kWebsocketId, "refresh");
+			_webSocketServer.Send(kWebsocketId, kBookContentsMayHaveChanged);
 		}
 	}
 }

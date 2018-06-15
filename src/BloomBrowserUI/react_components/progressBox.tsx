@@ -18,7 +18,10 @@ interface IProgressState {
 
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
-export default class ProgressBox extends React.Component<IProgressBoxProps, IProgressState> {
+export default class ProgressBox extends React.Component<
+    IProgressBoxProps,
+    IProgressState
+> {
     constructor(props: IProgressBoxProps) {
         super(props);
         let self = this;
@@ -28,36 +31,39 @@ export default class ProgressBox extends React.Component<IProgressBoxProps, IPro
             var e = JSON.parse(event.data);
             if (e.id === "progress") {
                 if (e.style) {
-                    self.setState({
-                        progress:
-                            self.state.progress +
-                            "<span style='" +
-                            e.style +
-                            "'>" +
-                            e.payload +
-                            "</span><br/>"
-                    });
+                    this.writeLine(
+                        `<span style='${e.style}'>${e.payload}</span>`
+                    );
                 } else {
-                    self.setState({
-                        progress: self.state.progress + e.payload + "<br/>"
-                    });
+                    this.writeLine(e.payload);
                 }
                 this.tryScrollToBottom();
             }
         });
         if (props.onReadyToReceive) {
-            WebSocketManager.notifyReady(props.lifetimeLabel, props.onReadyToReceive);
+            WebSocketManager.notifyReady(
+                props.lifetimeLabel,
+                props.onReadyToReceive
+            );
         }
     }
 
-    tryScrollToBottom() {
+    public write(htmlToAdd: string) {
+        this.setState({
+            progress: this.state.progress + htmlToAdd
+        });
+    }
+    public writeLine(htmlToAdd: string) {
+        this.write(htmlToAdd + "<br/>");
+    }
+
+    private tryScrollToBottom() {
         // Must be done AFTER painting once, so we
         // get a real current scroll height.
         let progressDiv = document.getElementById("progress-box");
 
         // in my testing in FF, this worked the first time
-        if (progressDiv)
-            progressDiv.scrollTop = progressDiv.scrollHeight;
+        if (progressDiv) progressDiv.scrollTop = progressDiv.scrollHeight;
         // but there apparently have been times when the div wasn't around
         // yet, so we do this:
         else {
@@ -67,9 +73,12 @@ export default class ProgressBox extends React.Component<IProgressBoxProps, IPro
         }
     }
 
-    render() {
+    public render() {
         return (
-            <div id="progress-box" dangerouslySetInnerHTML={{ __html: this.state.progress }} />
+            <div
+                id="progress-box"
+                dangerouslySetInnerHTML={{ __html: this.state.progress }}
+            />
         );
     }
 }
