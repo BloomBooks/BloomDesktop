@@ -214,6 +214,10 @@ namespace Bloom
 					Debug.Assert(false, String.Format(@"DEBUG: NavigationIsolator.ForceDocumentCompleted(): new file to display (""{0}"") does not exist!??", task.Url));
 					continue;
 				}
+				// If a browser gets disposed before we get around to telling it to navigate,
+				// it's certainly no longer useful to do so, and will cause a crash.
+				if (task.Browser.IsBrowserDisposed)
+					continue;
 				StartTask(task);
 				return;
 			}
@@ -251,6 +255,7 @@ namespace Bloom
 		bool IsBusy { get; }
 		void InstallEventHandlers();
 		void RemoveEventHandlers();
+		bool IsBrowserDisposed { get; }
 	}
 
 	/// <summary>
@@ -287,6 +292,8 @@ namespace Bloom
 			// Todo: May need changes for Gecko29
 			get { return !_browser.IsDisposed && _browser.IsBusy; }
 		}
+
+		public bool IsBrowserDisposed => _browser.IsDisposed;
 
 		public void InstallEventHandlers()
 		{
