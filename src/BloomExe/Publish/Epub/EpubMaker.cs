@@ -946,6 +946,7 @@ namespace Bloom.Publish.Epub
 				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
 				{
 					img.SetAttribute("alt", "");   // signal no accessibility need
+					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes daisy checker happy
 					continue;
 				}
 				var desc = img.SelectSingleNode("following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]") as XmlElement;
