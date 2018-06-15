@@ -91,14 +91,18 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 		}
 
+		// Also checks for handling of branding images, to avoid another whole epub creation.
 		[Test]
 		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides()
 		{
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
-				imageDescriptions: new[] { "This describes image 1" });
+				imageDescriptions: new[] { "This describes image 1" }, extraContentOutsideTranslationGroup: "<img class='branding' src='back-cover.png'/>");
+			MakeImageFiles(book, "back-cover");
 			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, EpubMaker.HowToPublishImageDescriptions.OnPage);
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:aside[.='This describes image 1']", _ns, 1);
+			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
+			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:aside[.='This describes image 1']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@class='branding' and @alt='' and @role='presentation']", _ns, 1);
 		}
 
 		private string CheckNavPage()
