@@ -185,9 +185,7 @@ export class SignLanguageToolControls extends React.Component<
                     <button
                         id="videoImport"
                         onClick={() => this.importRecording()}
-                    >
-                        X
-                    </button>
+                    />
                     <Label
                         className="commandLabel"
                         l10nKey="EditTab.Toolbox.SignLanguage.ImportVideo"
