@@ -229,7 +229,7 @@ namespace Bloom.CollectionTab
 		/// </remarks>
 		public void ExportDocFormat(string path)
 		{
-			string sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			var sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			if (RobustFile.Exists(path))
 			{
 				RobustFile.Delete(path);
@@ -240,9 +240,27 @@ namespace Bloom.CollectionTab
 			// believe me.)  I don't know any perfect way to add this information to the file,
 			// but a simple string replace should be safe.  This change works okay for both
 			// Windows and Linux and for all three programs (Word, OpenOffice and Libre Office).
-			string content = RobustFile.ReadAllText(sourcePath);
-			string fixedContent = content.Replace("<meta charset=\"UTF-8\">", "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
-			RobustFile.WriteAllText(path, fixedContent);
+			var content = RobustFile.ReadAllText(sourcePath);
+			var fixedContent = content.Replace("<meta charset=\"UTF-8\">",
+				"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
+			var xmlDoc = RepairWordVisibility(fixedContent);
+			XmlHtmlConverter.SaveDOMAsHtml5(xmlDoc, path); // writes file and returns path
+		}
+
+		// BL-5998 Apparently Word doesn't read our CSS rules for bloom-visibility correctly.
+		// So we're forced to control visibility more directly with inline styles.
+		private static XmlDocument RepairWordVisibility(string content)
+		{
+			var xmlDoc = XmlHtmlConverter.GetXmlDomFromHtml(content);
+			var dom = new HtmlDom(xmlDoc);
+			var bloomEditableDivs = dom.RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-editable')]");
+			foreach (XmlElement editableDiv in bloomEditableDivs)
+			{
+				HtmlDom.SetInlineStyle(editableDiv,
+					HtmlDom.HasClass(editableDiv, "bloom-visibility-code-on") ? "display: block;" : "display: none;");
+			}
+
+			return dom.RawDom;
 		}
 
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
