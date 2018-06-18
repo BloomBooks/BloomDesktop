@@ -124,6 +124,7 @@ namespace Bloom
 							typeof(ImageApi),
 							typeof(MusicApi),
 							typeof(ToolboxApi),
+							typeof(CommonApi),
 							typeof(BrandingApi),
 							typeof(FeatureControlApi),
 							typeof(SignLanguageApi)
@@ -306,6 +307,7 @@ namespace Bloom
 			_scope.Resolve<BrandingApi>().RegisterWithServer(server);
 			_scope.Resolve<MusicApi>().RegisterWithServer(server);
 			_scope.Resolve<ToolboxApi>().RegisterWithServer(server);
+			_scope.Resolve<CommonApi>().RegisterWithServer(server);
 			_scope.Resolve<FeatureControlApi>().RegisterWithServer(server);
 			_scope.Resolve<SignLanguageApi>().RegisterWithServer(server);
 		}

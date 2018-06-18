@@ -1,0 +1,44 @@
+@import "../bloomUI.less";
+@noticeColor: #d0ff00;
+.requiresBloomEnterprise {
+    background-color: @noticeColor;
+    border-radius: 10px;
+    margin:20px;
+    color: black;
+    padding: 5px;
+    display:flex;
+}
+@triangleSize: 18px;
+.redTriangle {
+    width: 0;
+    height: 0;
+    border-left: @triangleSize *.666 solid transparent;
+    border-right: @triangleSize *.666 solid transparent;
+    border-bottom: @triangleSize solid @bloom-red;
+    color: @noticeColor;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.triangleContent {
+    margin-left: -2px;
+}
+
+// Rule has to be very specific to override jquery rule
+.ui-widget-content {
+    .requiresEnterpriseHelp {
+        a {
+            color: black;
+        }
+    }
+}
+
+.requiresEnterpriseHelp  {
+    text-align: end;
+    margin-right: 10px;
+    margin-bottom: 5px;
+}
+
+.messageHelpWrapper {
+    margin-left: 5px;
+}

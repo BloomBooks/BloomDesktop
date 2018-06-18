@@ -1738,6 +1738,11 @@
         <source xml:lang="en">More...</source>
         <note>ID: EditTab.Toolbox.More</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.RequiresEnterprise" sil:dynamic="true">
+        <source xml:lang="en">Requires Bloom Enterprise Subscription.</source>
+        <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
+        <note>Appears in place of other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>

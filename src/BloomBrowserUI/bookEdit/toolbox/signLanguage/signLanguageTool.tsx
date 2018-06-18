@@ -14,6 +14,7 @@ import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import "./signLanguage.less";
+import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 
 // The recording process can be in one of these states:
 // waiting...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
@@ -40,7 +41,7 @@ interface BlobEvent {
 }
 
 interface MediaRecorder {
-    new (source: MediaStream, options: any);
+    new(source: MediaStream, options: any);
     start(): void;
     stop(): void;
     ondataavailable: (ev: BlobEvent) => void;
@@ -49,7 +50,7 @@ interface MediaRecorder {
 
 declare var MediaRecorder: {
     prototype: MediaRecorder;
-    new (s: MediaStream, options: any): MediaRecorder;
+    new(s: MediaStream, options: any): MediaRecorder;
 };
 
 // This react class implements the UI for the sign language (video) toolbox.
@@ -60,7 +61,7 @@ declare var MediaRecorder: {
 export class SignLanguageToolControls extends React.Component<
     {},
     IComponentState
-> {
+    > {
     constructor() {
         super({});
         this.state = {
@@ -80,161 +81,165 @@ export class SignLanguageToolControls extends React.Component<
 
     public render() {
         return (
-            <div
-                className={
-                    "signLanguageFrame " +
-                    this.state.stateClass +
-                    (this.state.enabled ? "" : " disabled")
-                }
-            >
-                <Label l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees">
-                    Here is what your camera sees:
+            <RequiresBloomEnterpriseWrapper>
+                <div
+                    className={
+                        "signLanguageFrame " +
+                        this.state.stateClass +
+                        (this.state.enabled ? "" : " disabled")
+                    }
+                >
+                    <Label l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees">
+                        Here is what your camera sees:
                 </Label>
-                <div id="videoMonitorWrapper">
-                    <video id="videoMonitor" autoPlay />
-                </div>
-                <div className="button-label-wrapper">
-                    <div id="videoPlayAndLabelWrapper">
-                        <div className="videoButtonWrapper">
-                            <button
-                                id="videoToggleRecording"
-                                className={
-                                    "video-button ui-button" +
-                                    (this.state.stateClass !== "waiting"
-                                        ? " started"
-                                        : "") +
-                                    (this.state.recording
-                                        ? " recordingNow"
-                                        : "") +
-                                    (this.state.enabled
-                                        ? " enabled"
-                                        : " disabled")
-                                }
-                                onClick={() => this.toggleRecording()}
-                            />
-                            <Label
-                                className="startRecording waiting"
-                                l10nKey="EditTab.Toolbox.SignLanguage.StartRecording"
-                                onClick={() => this.toggleRecording()}
-                            >
-                                Start Recording
+                    <div id="videoMonitorWrapper">
+                        <video id="videoMonitor" autoPlay />
+                    </div>
+                    <div className="button-label-wrapper">
+                        <div id="videoPlayAndLabelWrapper">
+                            <div className="videoButtonWrapper">
+                                <button
+                                    id="videoToggleRecording"
+                                    className={
+                                        "video-button ui-button" +
+                                        (this.state.stateClass !== "waiting"
+                                            ? " started"
+                                            : "") +
+                                        (this.state.recording
+                                            ? " recordingNow"
+                                            : "") +
+                                        (this.state.enabled
+                                            ? " enabled"
+                                            : " disabled")
+                                    }
+                                    onClick={() => this.toggleRecording()}
+                                />
+                                <Label
+                                    className="startRecording waiting"
+                                    l10nKey="EditTab.Toolbox.SignLanguage.StartRecording"
+                                    onClick={() => this.toggleRecording()}
+                                >
+                                    Start Recording
                             </Label>
-                            <span className="countdown3 countdownNumber">
-                                3
+                                <span className="countdown3 countdownNumber">
+                                    3
                             </span>
-                            <span className="countdown2 countdownNumber">
-                                2
+                                <span className="countdown2 countdownNumber">
+                                    2
                             </span>
-                            <span className="countdown1 countdownNumber">
-                                1
+                                <span className="countdown1 countdownNumber">
+                                    1
                             </span>
-                            <Label
-                                className="recording recordingLabel"
-                                l10nKey="EditTab.Toolbox.SignLanguage.Recording"
-                            >
-                                Recording
+                                <Label
+                                    className="recording recordingLabel"
+                                    l10nKey="EditTab.Toolbox.SignLanguage.Recording"
+                                >
+                                    Recording
                             </Label>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div
-                    id="editOutsideWrapper"
-                    className={
-                        "videoButtonWrapper" +
-                        (this.state.haveRecording ? "" : " disabled ")
-                    }
-                >
-                    <button
-                        id="editOutsideButton"
-                        onClick={() => this.editOutside()}
-                    />
-                    <Label
-                        className="commandLabel"
-                        l10nKey="EditTab.Toolbox.SignLanguage.EditOutside"
-                        onClick={() => this.editOutside()}
+                    <div
+                        id="editOutsideWrapper"
+                        className={
+                            "videoButtonWrapper" +
+                            (this.state.haveRecording ? "" : " disabled ")
+                        }
                     >
-                        Edit outside of Bloom
+                        <button
+                            id="editOutsideButton"
+                            onClick={() => this.editOutside()}
+                        />
+                        <Label
+                            className="commandLabel"
+                            l10nKey="EditTab.Toolbox.SignLanguage.EditOutside"
+                            onClick={() => this.editOutside()}
+                        >
+                            Edit outside of Bloom
                     </Label>
-                </div>
-                <div
-                    id="restoreOriginalWrapper"
-                    className={
-                        "videoButtonWrapper" +
-                        (this.state.originalExists ? "" : " disabled ")
-                    }
-                >
-                    <button
-                        id="restoreOriginalButton"
-                        onClick={() => this.restoreOriginal()}
-                    />
-                    <Label
-                        className="commandLabel"
-                        l10nKey="EditTab.Toolbox.SignLanguage.RestoreOriginal"
-                        onClick={() => this.restoreOriginal()}
+                    </div>
+                    <div
+                        id="restoreOriginalWrapper"
+                        className={
+                            "videoButtonWrapper" +
+                            (this.state.originalExists ? "" : " disabled ")
+                        }
                     >
-                        Restore Original
+                        <button
+                            id="restoreOriginalButton"
+                            onClick={() => this.restoreOriginal()}
+                        />
+                        <Label
+                            className="commandLabel"
+                            l10nKey="EditTab.Toolbox.SignLanguage.RestoreOriginal"
+                            onClick={() => this.restoreOriginal()}
+                        >
+                            Restore Original
                     </Label>
-                </div>
-                <div
-                    id="importRecordingWrapper"
-                    className={
-                        "videoButtonWrapper" +
-                        (this.state.enabled && !this.state.haveRecording ? "" : " disabled ")
-                    }
-                >
-                    <button
-                        id="videoImport"
-                        onClick={() => this.importRecording()}
-                    />
-                    <Label
-                        className="commandLabel"
-                        l10nKey="EditTab.Toolbox.SignLanguage.ImportVideo"
-                        onClick={() => this.importRecording()}
+                    </div>
+                    <div
+                        id="importRecordingWrapper"
+                        className={
+                            "videoButtonWrapper" +
+                            (this.state.enabled && !this.state.haveRecording ? "" : " disabled ")
+                        }
                     >
-                        Import Video
-                    </Label>
-                </div>
-                <div
-                    id="deleteRecordingWrapper"
-                    className={
-                        "videoButtonWrapper" +
-                        (this.state.haveRecording ? "" : " disabled ")
-                    }
-                >
-                    <button
-                        id="videoDelete"
-                        onClick={() => this.deleteRecording()}
-                    >
-                        X
+                        <button
+                            id="videoImport"
+                            onClick={() => this.importRecording()}
+                        >
+                            X
                     </button>
-                    <Label
-                        className="commandLabel"
-                        l10nKey="EditTab.Toolbox.SignLanguage.DeleteVideo"
-                        onClick={() => this.deleteRecording()}
-                    >
-                        Delete Video
+                        <Label
+                            className="commandLabel"
+                            l10nKey="EditTab.Toolbox.SignLanguage.ImportVideo"
+                            onClick={() => this.importRecording()}
+                        >
+                            Import Video
                     </Label>
-                </div>
-                <div>
-                    <button
-                        id="videoStopRecording"
-                        className={"video-button ui-button notWaiting"}
-                        onClick={() => this.toggleRecording()}
-                    />
-                </div>
-                <Label
-                    l10nKey="EditTab.Toolbox.SignLanguage.PressCancel"
-                    className="counting stopLabel"
-                >
-                    Press any key to cancel
+                    </div>
+                    <div
+                        id="deleteRecordingWrapper"
+                        className={
+                            "videoButtonWrapper" +
+                            (this.state.haveRecording ? "" : " disabled ")
+                        }
+                    >
+                        <button
+                            id="videoDelete"
+                            onClick={() => this.deleteRecording()}
+                        >
+                            X
+                        </button>
+                        <Label
+                            className="commandLabel"
+                            l10nKey="EditTab.Toolbox.SignLanguage.DeleteVideo"
+                            onClick={() => this.deleteRecording()}
+                        >
+                            Delete Video
+                    </Label>
+                    </div>
+                    <div>
+                        <button
+                            id="videoStopRecording"
+                            className={"video-button ui-button notWaiting"}
+                            onClick={() => this.toggleRecording()}
+                        />
+                    </div>
+                    <Label
+                        l10nKey="EditTab.Toolbox.SignLanguage.PressCancel"
+                        className="counting stopLabel"
+                    >
+                        Press any key to cancel
                 </Label>
-                <Label
-                    l10nKey="EditTab.Toolbox.SignLanguage.PressStop"
-                    className="recording stopLabel"
-                >
-                    Press any key to stop
+                    <Label
+                        l10nKey="EditTab.Toolbox.SignLanguage.PressStop"
+                        className="recording stopLabel"
+                    >
+                        Press any key to stop
                 </Label>
-            </div>
+                </div>
+            </RequiresBloomEnterpriseWrapper>
         );
     }
 
@@ -278,7 +283,7 @@ export class SignLanguageToolControls extends React.Component<
         // "open in browser".
         alert(
             "Could not access video camera...is something else using it? Details: " +
-                reason
+            reason
         );
     }
 
@@ -479,8 +484,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         if (
             y < container.offsetHeight - 40 && // above the control bar across the bottom
             (y < container.offsetHeight / 2 - buttonRadius || // above the play button
-            y > container.offsetHeight / 2 + buttonRadius || // below the play button
-            x < container.offsetWidth / 2 - buttonRadius || // left of play button
+                y > container.offsetHeight / 2 + buttonRadius || // below the play button
+                x < container.offsetWidth / 2 - buttonRadius || // left of play button
                 x > container.offsetWidth / 2 + buttonRadius)
         ) {
             // right of play button
@@ -564,7 +569,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         axios
             .get(
                 "/bloom/api/toolbox/fileExists?filename=" +
-                    src.replace(".mp4", ".orig")
+                src.replace(".mp4", ".orig")
             )
             .then(result => {
                 this.reactControls.setState({ originalExists: result.data });
