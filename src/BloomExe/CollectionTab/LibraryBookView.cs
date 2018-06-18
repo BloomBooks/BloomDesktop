@@ -28,12 +28,9 @@ namespace Bloom.CollectionTab
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			EditBookCommand editBookCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
-			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
-			NavigationIsolator isolator)
+			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent)
 		{
 			InitializeComponent();
-			_previewBrowser.Isolator = isolator;
-			_readmeBrowser.Isolator = isolator;
 			_bookSelection = bookSelection;
 			//_sendReceiver = sendReceiver;
 			_createFromSourceBookCommand = createFromSourceBookCommand;

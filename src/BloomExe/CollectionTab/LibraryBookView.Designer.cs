@@ -117,7 +117,6 @@
 			this._previewBrowser.ContextMenuProvider = null;
 			this._previewBrowser.ControlKeyEvent = null;
 			this._previewBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._previewBrowser.Isolator = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._previewBrowser, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._previewBrowser, null);
 			this._L10NSharpExtender.SetLocalizingId(this._previewBrowser, "CollectionTab.Browser");
@@ -134,7 +133,6 @@
 			this._readmeBrowser.ContextMenuProvider = null;
 			this._readmeBrowser.ControlKeyEvent = null;
 			this._readmeBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._readmeBrowser.Isolator = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._readmeBrowser, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._readmeBrowser, null);
 			this._L10NSharpExtender.SetLocalizingId(this._readmeBrowser, "CollectionTab.Browser");

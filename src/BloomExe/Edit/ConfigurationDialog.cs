@@ -20,7 +20,6 @@ namespace Bloom.Edit
 			_filePath = configurationHtmlPath;
 			_libraryJsonData = libraryJsonData;
 			InitializeComponent();
-			_browser.Isolator = isolator;
 		}
 
 		private void ConfigurationDialog_Load(object sender, EventArgs e)

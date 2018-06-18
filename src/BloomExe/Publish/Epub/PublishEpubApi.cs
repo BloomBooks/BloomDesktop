@@ -165,7 +165,7 @@ namespace Bloom.Publish.Epub
 				EpubMaker.Dispose();
 				EpubMaker = null;
 			}
-			EpubMaker = new EpubMaker(_thumbNailer, NavigationIsolator._sTheOneNavigationIsolator, _bookServer);
+			EpubMaker = new EpubMaker(_thumbNailer, _bookServer);
 			EpubMaker.Book = _bookSelection.CurrentSelection;
 			EpubMaker.Unpaginated = true; // Enhance: UI?
 			EpubMaker.OneAudioPerPage = true;

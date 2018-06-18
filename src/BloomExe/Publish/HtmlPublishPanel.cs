@@ -12,12 +12,11 @@ namespace Bloom.Publish
 	{
 		private Browser _browser;
 
-		public HtmlPublishPanel(NavigationIsolator isolator, string pathToHtmlFile)
+		public HtmlPublishPanel(string pathToHtmlFile)
 		{
 			InitializeComponent();
 
 			_browser = new Browser();
-			_browser.Isolator = isolator;
 			_browser.Dock = DockStyle.Fill;
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.

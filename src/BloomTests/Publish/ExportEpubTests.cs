@@ -6,14 +6,9 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom;
-using Bloom.Api;
 using Bloom.Book;
-using Bloom.Collection;
-using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
-using BloomTemp;
-using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
@@ -1269,8 +1264,7 @@ namespace BloomTests.Publish
 		// So I think all the tests are currently passing null for the bookserver, which disables the
 		// device xmatter code.
 		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer, BookServer bookServer) :
-			base(thumbNailer, NavigationIsolator.GetOrCreateTheOneNavigationIsolator(),
-				string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
+			base(thumbNailer, string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
 		{
 			this.Book = book;
 			AudioProcessor._compressorMethod = EpubMakerAdjusted.PretendMakeCompressedAudio;

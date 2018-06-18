@@ -176,10 +176,9 @@ namespace Bloom.Publish.Epub
 		public HowToPublishImageDescriptions PublishImageDescriptions { get; set; }
 		public bool RemoveFontSizes { get; set; }
 
-		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator, BookServer bookServer)
+		public EpubMaker(BookThumbNailer thumbNailer, BookServer bookServer)
 		{
 			_thumbNailer = thumbNailer;
-			_browser.Isolator = _isolator;
 			_bookServer = bookServer;
 		}
 

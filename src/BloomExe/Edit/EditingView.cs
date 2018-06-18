@@ -64,7 +64,6 @@ namespace Bloom.Edit
 			_deletePageCommand = deletePageCommand;
 			_webSocketServer = model.EditModelSocketServer;
 			InitializeComponent();
-			_browser1.Isolator = isolator;
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it
 			//don't let it grow automatically
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);

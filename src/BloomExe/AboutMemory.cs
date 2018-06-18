@@ -1,12 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Bloom
@@ -19,10 +11,9 @@ namespace Bloom
 	/// </summary>
 	public partial class AboutMemory : Form
 	{
-		public AboutMemory(NavigationIsolator isolator)
+		public AboutMemory()
 		{
 			InitializeComponent();
-			_browser1.Isolator = isolator;
 			_browser1.ContextMenuProvider = x => { return true; }; // replace standard menu commands with none
 			FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
 			SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
