@@ -258,7 +258,8 @@ namespace BloomTests.Publish
 		{
 			var pageData = GetPageNData(5);
 			// Verify the ARIA roles and labels for the End Page.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 1);
+			// currently two things get role attrs, one doc-pageBreak, and currently one presentation, on an automatically inserted branding image.
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 2);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 1);
 
 			// Check the page break references.
