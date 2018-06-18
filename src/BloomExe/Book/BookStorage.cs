@@ -139,7 +139,7 @@ namespace Bloom.Book
 			{
 				// We reference PathToExistingHtml about 3 times per book when doing ExpensiveInitialization.
 				// Let's make it not quite so expensive.
-				if (!string.IsNullOrEmpty(_cachedFolderPath) && FolderPath == _cachedFolderPath)
+				if (!string.IsNullOrEmpty(_cachedFolderPath) && FolderPath == _cachedFolderPath && File.Exists(_cachedPathToHtml))
 				{
 					// our folder path hasn't changed, so the path to our Html can't have changed.
 					return _cachedPathToHtml;
