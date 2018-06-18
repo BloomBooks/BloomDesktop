@@ -41,7 +41,6 @@
 			this._browser1.BackColor = System.Drawing.Color.DarkGray;
 			this._browser1.ContextMenuProvider = null;
 			this._browser1.ControlKeyEvent = null;
-			this._browser1.Isolator = null;
 			this._browser1.Location = new System.Drawing.Point(0, 0);
 			this._browser1.Name = "_browser1";
 			this._browser1.Size = new System.Drawing.Size(624, 294);

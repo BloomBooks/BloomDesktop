@@ -47,20 +47,6 @@ namespace Bloom
 		// generated.
 		internal Point ContextMenuLocation;
 
-		private static int XulRunnerVersion
-		{
-			get
-			{
-				var geckofx = Assembly.GetAssembly(typeof(GeckoWebBrowser));
-				if (geckofx == null)
-					return 0;
-
-				var versionAttribute = geckofx.GetCustomAttributes(typeof(AssemblyFileVersionAttribute), true)
-					.FirstOrDefault() as AssemblyFileVersionAttribute;
-				return versionAttribute == null ? 0 : new Version(versionAttribute.Version).Major;
-			}
-		}
-
 		// TODO: refactor to use same initialization code as Palaso
 		public static void SetUpXulRunner()
 		{
@@ -181,7 +167,7 @@ namespace Bloom
 		public Browser()
 		{
 			InitializeComponent();
-			Isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
+			_isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 		}
 
 		/// <summary>
@@ -191,22 +177,9 @@ namespace Bloom
 		public ControlKeyEvent ControlKeyEvent { get; set; }
 
 		/// <summary>
-		/// Should be set by every caller of the constructor before attempting navigation. The only reason we don't make it a constructor argument
-		/// is so that Browser can be used in designer.
+		/// Singleton set by the constructor after designer setup, but before attempting navigation.
 		/// </summary>
 		private NavigationIsolator _isolator;
-		public NavigationIsolator Isolator
-		{
-			get { return _isolator;}
-			set
-			{
-				// windows.designer code sets to null, *after* our constructor sets this. Don't let it.
-				if (_isolator == null)
-				{
-					_isolator = value;
-				}
-			}
-		}
 
 		public void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
@@ -641,7 +614,7 @@ namespace Bloom
 
 		private void OnOpenAboutMemory(object sender, EventArgs e)
 		{
-			var form = new AboutMemory(Isolator);
+			var form = new AboutMemory();
 			form.Text = "Bloom Browser Memory Diagnostics (\"about:memory\")";
 			form.FirstLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory for a basic explanation.";
 			form.FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
@@ -653,7 +626,7 @@ namespace Bloom
 
 		private void OnOpenAboutConfig(object sender, EventArgs e)
 		{
-			var form = new AboutMemory(Isolator);
+			var form = new AboutMemory();
 			form.Text = "Bloom Browser Internal Configuration Settings (\"about:config\")";
 			form.FirstLinkMessage = "See http://kb.mozillazine.org/About:config_entries for a basic explanation.";
 			form.FirstLinkUrl = "http://kb.mozillazine.org/About:config_entries";
@@ -665,7 +638,7 @@ namespace Bloom
 
 		private void OnOpenAboutCache(object sender, EventArgs e)
 		{
-			var form = new AboutMemory(Isolator);
+			var form = new AboutMemory();
 			form.Text = "Bloom Browser Internal Cache Status (\"about:cache?storage=&context=\")";
 			form.FirstLinkMessage = "See http://kb.mozillazine.org/Browser.cache.memory.capacity for a basic explanation.";
 			form.FirstLinkUrl = "http://kb.mozillazine.org/Browser.cache.memory.capacity";
@@ -924,7 +897,7 @@ namespace Bloom
 			if (_url!=null)
 			{
 				_browser.Visible = true;
-				Isolator.Navigate(_browser, _url);
+				_isolator.Navigate(_browser, _url);
 			}
 		}
 

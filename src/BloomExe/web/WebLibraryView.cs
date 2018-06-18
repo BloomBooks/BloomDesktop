@@ -14,12 +14,11 @@ namespace Bloom.Library
 
 		public delegate WebLibraryView Factory();//autofac uses this
 
-		public WebLibraryView(NavigationIsolator isolator)
+		public WebLibraryView()
 		{
 			InitializeComponent();
 			//_browser.GeckoReady += new EventHandler(OnLod);
 			b = new Browser();
-			b.Isolator = isolator;
 			b.Parent = this;
 			b.Dock = DockStyle.Fill;
 			Controls.Add(b);

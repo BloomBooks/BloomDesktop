@@ -41,7 +41,6 @@ namespace Bloom.Edit
 			public Action<IPage> ExecuteCommand;
 		}
 
-
 		// A list of menu items that should be in both the web browser's right-click menu and
 		// the one we show ourselves when the arrow is clicked. The second item in the tuple
 		// determines whether the item should be enabled; the third performs the action.
@@ -678,16 +677,6 @@ namespace Bloom.Edit
 				}
 			}
 			return result;
-		}
-
-		public NavigationIsolator Isolator
-		{
-			get { return _browser == null ? null : _browser.Isolator; }
-			set
-			{
-				if (_browser != null)
-					_browser.Isolator = value;
-			}
 		}
 
 		public ControlKeyEvent ControlKeyEvent

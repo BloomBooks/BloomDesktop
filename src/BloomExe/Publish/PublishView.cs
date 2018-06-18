@@ -524,7 +524,7 @@ namespace Bloom.Publish
 			_printButton.Enabled = false;
 			_pdfViewer.Visible = false;
 			Cursor = Cursors.WaitCursor;
-			_htmlControl = new HtmlPublishPanel(_isolator, pathToHtml);
+			_htmlControl = new HtmlPublishPanel(pathToHtml);
 			_htmlControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 				_pdfViewer.Width, _pdfViewer.Height);
 			_htmlControl.Dock = _pdfViewer.Dock;

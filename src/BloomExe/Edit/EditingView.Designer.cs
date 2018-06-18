@@ -369,7 +369,6 @@
 			this._browser1.ContextMenuProvider = null;
 			this._browser1.ControlKeyEvent = null;
 			this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._browser1.Isolator = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._browser1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._browser1, null);
 			this._L10NSharpExtender.SetLocalizingId(this._browser1, "EditTab.Browser");

@@ -69,7 +69,6 @@
 			this._thumbNailList.BackColor = System.Drawing.SystemColors.Control;
 			this._thumbNailList.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._thumbNailList.ForeColor = System.Drawing.SystemColors.WindowText;
-			this._thumbNailList.Isolator = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._thumbNailList, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._thumbNailList, null);
 			this._L10NSharpExtender.SetLocalizingId(this._thumbNailList, "WebThumbNailList");
