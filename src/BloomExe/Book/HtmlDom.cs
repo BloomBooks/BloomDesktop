@@ -1842,5 +1842,20 @@ namespace Bloom.Book
 			// Images in accessible epubs should have explicit empty alt attr if no useful description
 			img.SetAttribute("alt", "");
 		}
+
+		/// <summary>
+		/// Intended for Export to Word/Libre Office only. Sets an inline style to a given value, adding to what
+		/// might already be there.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <param name="styleToSet"></param>
+		public static void SetInlineStyle(XmlElement element, string styleToSet)
+		{
+			var styleString = GetAttributeValue(element, "style");
+			if (!string.IsNullOrWhiteSpace(styleString))
+				styleString += " ";
+			styleString += styleToSet;
+			element.SetAttribute("style", styleString);
+		}
 	}
 }
