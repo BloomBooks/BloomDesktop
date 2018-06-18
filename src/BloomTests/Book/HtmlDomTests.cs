@@ -326,7 +326,7 @@ namespace BloomTests.Book
 		{
 			var img = MakeElement("<img src='old.png'/>");
 			HtmlDom.SetImageElementUrl(img, UrlPathString.CreateFromUrlEncodedString("test%20me"));
-			Assert.AreEqual("test%20me",img.GetAttribute("src"));
+			Assert.AreEqual("test me",img.GetAttribute("src"));
 			Assert.AreEqual("", img.GetAttribute("style"));
 		}
 		[Test]

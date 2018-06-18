@@ -85,9 +85,9 @@ namespace BloomTests.Publish
 		[Test]
 		public void CreatesExtraPages()
 		{
-			VerifyEntryExists("ImageDesc1.xhtml");
-			VerifyEntryExists("ImageDesc2.xhtml");
-			VerifyEntryExists("ImageDesc3.xhtml");
+			VerifyEpubItemExists("content/ImageDesc1.xhtml");
+			VerifyEpubItemExists("content/ImageDesc2.xhtml");
+			VerifyEpubItemExists("content/ImageDesc3.xhtml");
 		}
 
 		[Test]
@@ -132,17 +132,17 @@ namespace BloomTests.Publish
 		[Test]
 		public void ImagesGetAriaDetails()
 		{
-			_assertThatPage1Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='image1.png' and @aria-details='figdesc1']", _ns, 1);
-			_assertThatPage1Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='image2.png' and @aria-details='figdesc2']", _ns, 1);
-			_assertThatPage2Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='image3.png' and @aria-details='figdesc3']", _ns, 1);
+			_assertThatPage1Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='"+kImagesSlash+"image1.png' and @aria-details='figdesc1']", _ns, 1);
+			_assertThatPage1Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='"+kImagesSlash+"image2.png' and @aria-details='figdesc2']", _ns, 1);
+			_assertThatPage2Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='"+kImagesSlash+"image3.png' and @aria-details='figdesc3']", _ns, 1);
 		}
 
 		[Test]
 		public void ImagesGetIds()
 		{
-			_assertThatPage1Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='image1.png' and @id='bookfig1']", _ns, 1);
-			_assertThatPage1Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='image2.png' and @id='bookfig2']", _ns, 1);
-			_assertThatPage2Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='image3.png' and @id='bookfig3']", _ns, 1);
+			_assertThatPage1Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='"+kImagesSlash+"image1.png' and @id='bookfig1']", _ns, 1);
+			_assertThatPage1Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='"+kImagesSlash+"image2.png' and @id='bookfig2']", _ns, 1);
+			_assertThatPage2Data.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@src='"+kImagesSlash+"image3.png' and @id='bookfig3']", _ns, 1);
 		}
 
 		[Test]

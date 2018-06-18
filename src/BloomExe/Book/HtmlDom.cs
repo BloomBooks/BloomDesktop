@@ -1485,7 +1485,9 @@ namespace Bloom.Book
 		{
 			if(imgOrDivWithBackgroundImage.Name.ToLower() == "img")
 			{
-				imgOrDivWithBackgroundImage.SetAttribute("src", url.UrlEncoded);
+				// This does not need to be encoded until sent over the network.
+				// Indeed, encoding it breaks links within epubs.
+				imgOrDivWithBackgroundImage.SetAttribute("src", url.NotEncoded);
 			}
 			else
 			{

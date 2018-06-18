@@ -162,7 +162,6 @@ namespace BloomTests.Book
 			// So we'll make sure it works.
 			const string imageFilename = "my ǆñImageﭳ.png";
 			var encodedFilename = HttpUtility.UrlEncode(imageFilename);
-			var noPlusEncodedName = encodedFilename.Replace("+", "%20");
 			var imgTag = "<img style='width: 360px;' src='" + encodedFilename + "' height='360' alt='missing'></img>";
 			SetDom(@"<div id='bloomDataDiv'>
 						<div data-book='coverImage' lang='*'>
@@ -181,7 +180,7 @@ namespace BloomTests.Book
 			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
 			Assert.AreEqual(imageFilename, dataBookImage.InnerText);
 			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']");
-			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals(noPlusEncodedName));
+			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals(imageFilename));
 		}
 
 		[Test]

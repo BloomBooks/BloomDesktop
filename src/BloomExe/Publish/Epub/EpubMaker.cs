@@ -70,6 +70,11 @@ namespace Bloom.Publish.Epub
 	/// </summary>
 	public class EpubMaker : IDisposable
 	{
+		public const string kAudioFolder = "audio";
+		public const string kImagesFolder = "images";
+		public const string kCssFolder = "css";
+		public const string kFontsFolder = "fonts";
+
 		public const string kEPUBExportFolder = "ePUB export";
 		protected const string kEpubNamespace = "http://www.idpf.org/2007/ops";
 
@@ -255,13 +260,7 @@ namespace Bloom.Publish.Epub
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
-				var pageDom = MakePageFile(pageElement);
-				if (pageDom == null)
-					continue;	// page was blank, so we're not adding it to the ePUB.
-				// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
-				//to look at those stylesheets on the first page
-				if (_pageIndex == 1)
-					CopyStyleSheets(pageDom);
+				MakePageFile(pageElement);
 			}
 
 			string coverPageImageFile = "thumbnail-256.png";
@@ -294,7 +293,7 @@ namespace Bloom.Publish.Epub
 					throw new FileNotFoundException("Could not find or create thumbnail for cover page (BL-3209)", coverPageImageFile);
 				}
 			}
-			CopyFileToEpub(coverPageImagePath, true, true);
+			CopyFileToEpub(coverPageImagePath, true, true, kImagesFolder);
 
 			EmbedFonts(); // must call after copying stylesheets
 			MakeNavPage();
@@ -314,9 +313,9 @@ namespace Bloom.Publish.Epub
 					</rootfiles>
 					</container>");
 
-			MakeManifest(coverPageImageFile);
+			MakeManifest(kImagesFolder+"/" + coverPageImageFile);
 
-			foreach (var filename in Directory.EnumerateFiles(_contentFolder, "*.*"))
+			foreach (var filename in Directory.EnumerateFiles(Path.Combine(_contentFolder, kImagesFolder), "*.*"))
 			{
 				if (Path.GetExtension(filename).ToLowerInvariant() == ".svg")
 					PruneSvgFileOfCruft(filename);
@@ -634,6 +633,8 @@ namespace Bloom.Publish.Epub
 					if(RobustFile.Exists(wavPath))
 					{
 #if __MonoCS__
+						// /usr/bin/soxi -D file.(mp3|wav) returns the time in seconds to stdout
+						// or /usr/bin/sox --info -D file.(mp3|wav)  [soxi is a symbolic link to sox on Linux]
 						clipTimeSpan = new TimeSpan(new FileInfo(path).Length*7*10000000/61000);	// TODO: this needs to be fixed for Linux/Mono
 #else
 						using(WaveFileReader wf = RobustIO.CreateWaveFileReader(wavPath))
@@ -654,16 +655,13 @@ namespace Bloom.Publish.Epub
 
 				var clipStart = pageDuration;	
 				pageDuration += clipTimeSpan;
-				string epubPath = mergedAudioPath ?? CopyFileToEpub(path);
+				string epubPath = mergedAudioPath ?? CopyFileToEpub(path, subfolder:kAudioFolder);
 				seq.Add(new XElement(smil + "par",
 					new XAttribute("id", "s" + index++),
 					new XElement(smil + "text",
 						new XAttribute("src", pageDocName + "#" + spanId)),
 					new XElement(smil + "audio",
-						// Note that we don't need to preserve any audio/ in the path.
-						// We now mangle file names so as to replace any / (with _2f) so all files
-						// are at the top level in the ePUB. Makes one less complication for readers.
-						new XAttribute("src", Path.GetFileName(epubPath)),
+						new XAttribute("src", kAudioFolder+"/" + Path.GetFileName(epubPath)),
 						new XAttribute("clipBegin", mergedAudioPath != null ? clipStart.ToString(@"h\:mm\:ss\.fff") : "0:00:00.000"),
 						new XAttribute("clipEnd", mergedAudioPath != null ? pageDuration.ToString(@"h\:mm\:ss\.fff") : clipTimeSpan.ToString(@"h\:mm\:ss\.fff")))));
 			}
@@ -687,13 +685,14 @@ namespace Bloom.Publish.Epub
 				spansWithAudio.Select(
 					s => Path.ChangeExtension(
 						AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, s.Attributes["id"].Value), "wav"));
-			var combinedAudioPath = Path.Combine(_contentFolder, "audio_page" + _pageIndex + ".wav");
+			Directory.CreateDirectory(Path.Combine(_contentFolder, kAudioFolder));
+			var combinedAudioPath = Path.Combine(_contentFolder, kAudioFolder, "page" + _pageIndex + ".wav");
 			var errorMessage = AudioProcessor.MergeAudioFiles(mergeFiles, combinedAudioPath);
 			if (errorMessage == null)
 			{
 				mergedAudioPath = AudioProcessor.MakeCompressedAudio(combinedAudioPath);
 				RobustFile.Delete(combinedAudioPath);
-				_manifestItems.Add(Path.GetFileName(mergedAudioPath));
+				_manifestItems.Add(kAudioFolder+"/" + Path.GetFileName(mergedAudioPath));
 				return mergedAudioPath;
 			}
 			Logger.WriteEvent("Failed to merge audio files for page " + _pageIndex + " " + errorMessage);
@@ -754,24 +753,23 @@ namespace Bloom.Publish.Epub
 					path = fl.LocateFileWithThrow(name);
 				}
 				if (path != null)
-					CopyFileToEpub(path);
+					CopyFileToEpub(path, subfolder:kCssFolder);
 			}
 		}
 
 		/// <summary>
-		/// If the page is not blank, make the page file and return the HtmlDom of the page.
-		/// If the page is blank, return null without writing anything to disk.
+		/// If the page is not blank, make the page file.
+		/// If the page is blank, return without writing anything to disk.
 		/// </summary>
-		/// <returns>the HtmlDom of the page if not blank, null if it was blank</returns>
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288 for discussion of blank pages.
 		/// </remarks>
-		private HtmlDom MakePageFile(XmlElement pageElement)
+		private void MakePageFile(XmlElement pageElement)
 		{
 			// nonprinting pages (e.g., comprehension questions) are omitted for now
 			if (pageElement.Attributes["class"]?.Value?.Contains("bloom-nonprinting") ?? false)
 			{
-				return null;
+				return;
 			}
 			var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
 
@@ -827,7 +825,7 @@ namespace Bloom.Publish.Epub
 
 			// Check for a blank page before storing any data from this page or copying any files on disk.
 			if (IsBlankPage(pageDom.RawDom.DocumentElement))
-				return null;
+				return;
 
 			// Do this as the last cleanup step, since other things may be looking for these elements
 			// expecting them to be divs.
@@ -863,7 +861,17 @@ namespace Bloom.Publish.Epub
 				_firstContentPageItem = pageDocName;
 
 			FixChangedFileNames(pageDom);
-			pageDom.AddStyleSheet("fonts.css"); // enhance: could omit if we don't embed any
+			// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
+			//to copy those stylesheets on the first page
+			if (_pageIndex == 1)
+				CopyStyleSheets(pageDom);
+			// But we always need to adjust the stylesheets to be in the css folder
+			foreach(XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var name = Path.GetFileName(link.GetAttribute("href"));
+				link.SetAttribute("href", kCssFolder+"/" + name);
+			}
+			pageDom.AddStyleSheet(kCssFolder+"/" + "fonts.css"); // enhance: could omit if we don't embed any
 
 			// ePUB validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
@@ -874,7 +882,6 @@ namespace Bloom.Publish.Epub
 				foreach (var pendingBackLink in pendingBackLinks)
 					pendingBackLink.Item1.SetAttribute("href", pageDocName + "#" + pendingBackLink.Item2);
 			}
-			return pageDom;
 		}
 
 		private void ConvertHeadingStylesToHeadingElements(HtmlDom pageDom)
@@ -1136,9 +1143,8 @@ namespace Bloom.Publish.Epub
 				else
 				{
 					var isCoverImage = img.SafeSelectNodes("parent::div[contains(@class, 'bloom-imageContainer')]/ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]").Cast<XmlElement>().Count() != 0;
-					CopyFileToEpub(srcPath, limitImageDimensions: true, needTransparentBackground: isCoverImage);
-					if (isBrandingFile)
-						img.SetAttribute("src", Path.GetFileName(srcPath));
+					CopyFileToEpub(srcPath, limitImageDimensions: true, needTransparentBackground: isCoverImage, subfolder: kImagesFolder);
+					img.SetAttribute("src", kImagesFolder+"/" + Path.GetFileName(srcPath));
 				}
 			}
 		}
@@ -1541,13 +1547,13 @@ namespace Bloom.Publish.Epub
 			var fontFileFinder = new FontFileFinder ();
 			var filesToEmbed = fontsWanted.SelectMany (fontFileFinder.GetFilesForFont).ToArray ();
 			foreach (var file in filesToEmbed) {
-				CopyFileToEpub (file);
+				CopyFileToEpub(file, subfolder:kFontsFolder);
 			}
 			var sb = new StringBuilder ();
 			foreach (var font in fontsWanted) {
 				var group = fontFileFinder.GetGroupForFont (font);
 				if (group != null) {
-					AddFontFace (sb, font, "normal", "normal", group.Normal);
+					AddFontFace (sb, font, "normal", "normal", group.Normal, "../"+kFontsFolder+"/");
 					// We are currently not including the other faces (nor their files...see FontFileFinder.GetFilesForFont().
 					// BL-4202 contains a discussion of this. Basically,
 					// - embedding them takes a good deal of extra space
@@ -1559,16 +1565,17 @@ namespace Bloom.Publish.Epub
 					//AddFontFace(sb, font, "bold", "italic", group.BoldItalic);
 				}
 			}
-			RobustFile.WriteAllText (Path.Combine (_contentFolder, "fonts.css"), sb.ToString ());
-			_manifestItems.Add ("fonts.css");
+			Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
+			RobustFile.WriteAllText(Path.Combine(_contentFolder, kCssFolder, "fonts.css"), sb.ToString());
+			_manifestItems.Add(kCssFolder+"/" + "fonts.css");
 		}
 
-		internal static void AddFontFace (StringBuilder sb, string name, string weight, string style, string path)
+		internal static void AddFontFace (StringBuilder sb, string name, string weight, string style, string path, string subfolder="")
 		{
 			if (path == null)
 				return;
-			sb.AppendLineFormat ("@font-face {{font-family:'{0}'; font-weight:{1}; font-style:{2}; src:url({3}) format('{4}');}}",
-				name, weight, style, Path.GetFileName (path),
+			sb.AppendLineFormat ("@font-face {{font-family:'{0}'; font-weight:{1}; font-style:{2}; src:url({3}{4}) format('{5}');}}",
+				name, weight, style, subfolder, Path.GetFileName(path),
 				Path.GetExtension (path) == ".woff" ? "woff" : "opentype");
 		}
 
@@ -2000,7 +2007,7 @@ namespace Bloom.Publish.Epub
 		// that it is a necessary manifest item. Return the path of the copied file
 		// (which may be different in various ways from the original; we suppress various dubious
 		// characters and return something that doesn't depend on url decoding.
-		private string CopyFileToEpub (string srcPath, bool limitImageDimensions=false, bool needTransparentBackground=false)
+		private string CopyFileToEpub (string srcPath, bool limitImageDimensions=false, bool needTransparentBackground=false, string subfolder = "")
 		{
 			string existingFile;
 			if (_mapSrcPathToDestFileName.TryGetValue (srcPath, out existingFile))
@@ -2016,11 +2023,13 @@ namespace Bloom.Publish.Epub
 															   // right but if we substitute them we can be sure things are fine.
 															   // I'm deliberately not using UrlPathString here because it doesn't correctly encode a lot of Ascii characters like =$&<>
 															   // which are technically not valid in hrefs
+			if (!String.IsNullOrEmpty(subfolder) && originalFileName.StartsWith(subfolder+"/"))
+				originalFileName = originalFileName.Substring(subfolder.Length+1);	// we don't need to change the folder to be part of the filename
 			var encoded =
 				HttpUtility.UrlEncode (
 					originalFileName.Replace ("+", "_").Replace (" ", "_").Replace ("&", "_").Replace ("<", "_").Replace (">", "_"));
 			var fileName = encoded.Replace ("%", "_");
-			var dstPath = Path.Combine (_contentFolder, fileName);
+			string dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
 			// or produced by replacing spaces, or something. Come up with a similar unique name.
@@ -2028,15 +2037,31 @@ namespace Bloom.Publish.Epub
 				var fileNameWithoutExtension = Path.Combine (Path.GetDirectoryName (fileName),
 					Path.GetFileNameWithoutExtension (fileName));
 				fileName = Path.ChangeExtension (fileNameWithoutExtension + fix, Path.GetExtension (fileName));
-				dstPath = Path.Combine (_contentFolder, fileName);
+				dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
 			}
 			if (originalFileName != fileName)
-				_mapChangedFileNames [originalFileName] = fileName;
+				_mapChangedFileNames[SubfolderAdjustedName(subfolder, originalFileName)] = SubfolderAdjustedName(subfolder, fileName);
 			Directory.CreateDirectory (Path.GetDirectoryName (dstPath));
 			CopyFile (srcPath, dstPath, limitImageDimensions, needTransparentBackground);
-			_manifestItems.Add (fileName);
+			_manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
 			_mapSrcPathToDestFileName [srcPath] = fileName;
 			return dstPath;
+		}
+
+		private string SubfolderAdjustedName(string subfolder, string name)
+		{
+			if (String.IsNullOrEmpty(subfolder))
+				return name;
+			else
+				return subfolder+"/"+name;
+		}
+
+		private string SubfolderAdjustedContentPath(string subfolder, string fileName)
+		{
+			if (String.IsNullOrEmpty(subfolder))
+				return Path.Combine(_contentFolder, fileName);
+			else
+				return Path.Combine(_contentFolder, subfolder, fileName);
 		}
 
 		/// <summary>
