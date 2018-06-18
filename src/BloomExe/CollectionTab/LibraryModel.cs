@@ -229,7 +229,7 @@ namespace Bloom.CollectionTab
 		/// </remarks>
 		public void ExportDocFormat(string path)
 		{
-			string sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			var sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			if (RobustFile.Exists(path))
 			{
 				RobustFile.Delete(path);
@@ -240,9 +240,23 @@ namespace Bloom.CollectionTab
 			// believe me.)  I don't know any perfect way to add this information to the file,
 			// but a simple string replace should be safe.  This change works okay for both
 			// Windows and Linux and for all three programs (Word, OpenOffice and Libre Office).
-			string content = RobustFile.ReadAllText(sourcePath);
-			string fixedContent = content.Replace("<meta charset=\"UTF-8\">", "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
-			RobustFile.WriteAllText(path, fixedContent);
+			var content = RobustFile.ReadAllText(sourcePath);
+			var fixedHeaderContent = content.Replace("<meta charset=\"UTF-8\">",
+				"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
+			RepairWordVisibility(fixedHeaderContent, path);
+		}
+
+		private static void RepairWordVisibility(string fixedHeaderContent, string path)
+		{
+			var xmlDoc = XmlHtmlConverter.GetXmlDomFromHtml(fixedHeaderContent);
+			var dom = new HtmlDom(xmlDoc);
+			var bloomEditableDivs = dom.RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-editable')]");
+			foreach (XmlElement editableDiv in bloomEditableDivs)
+			{
+				HtmlDom.SetInlineStyle(editableDiv,
+					HtmlDom.HasClass(editableDiv, "bloom-visibility-code-on") ? "display: block;" : "display: none;");
+			}
+			XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, path); // writes file and returns path
 		}
 
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
