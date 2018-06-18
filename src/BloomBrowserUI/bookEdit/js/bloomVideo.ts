@@ -1,5 +1,4 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import axios from "axios";
 import { GetButtonModifier } from "./bloomImages";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).

@@ -28,7 +28,7 @@ namespace Bloom.Api
 		/// <summary>
 		/// Get a json of the book's settings.
 		/// </summary>
-		private  void HandleBookSettings(ApiRequest request)
+		private void HandleBookSettings(ApiRequest request)
 		{
 			switch (request.HttpMethod)
 			{

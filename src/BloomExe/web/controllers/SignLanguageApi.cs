@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -26,20 +23,10 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class SignLanguageApi
 	{
-		private EditingModel _model;
-		private EditingView _view;
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
-		public EditingView View
-		{
-			get { return _view;}
-			set { _view = value; }
-		}
-		public EditingModel Model
-		{
-			get { return _model;}
-			set { _model = value; }
-		}
+		public EditingView View { get; set; }
+		public EditingModel Model { get; set; }
 
 		public SignLanguageApi(BookSelection bookSelection, PageSelection pageSelection)
 		{
@@ -60,7 +47,7 @@ namespace Bloom.web.controllers
 
 		private void RethinkPageAndReloadIt(ApiRequest request)
 		{
-			_model.RethinkPageAndReloadIt(request);
+			Model.RethinkPageAndReloadIt(request);
 		}
 
 
@@ -197,7 +184,7 @@ namespace Bloom.web.controllers
 				RobustFile.Copy(newOriginalPath, newVideoPath);
 				// I'm not absolutely sure we need to get the Video container again on the UI thread, but have had some problems
 				// with COM interfaces in a similar situation so it seems safest.
-				_view.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
+				View.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
 				request.PostSucceeded();
 			}
 		}
@@ -260,7 +247,7 @@ namespace Bloom.web.controllers
 						// but somehow QueryInterface on the underlying COM object fails. It's probably something to
 						// do with the COM threading model that forbids using it on a thread other than the
 						// one that created it.
-						_view.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
+						View.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
 						//_view.Invoke((Action)(()=> RethinkPageAndReloadIt()));
 					}
 				};
@@ -276,7 +263,7 @@ namespace Bloom.web.controllers
 			if (videoContainer == null)
 				return;
 			string path = null;
-			_view.Invoke((Action)(() => {
+			View.Invoke((Action)(() => {
 				var videoFiles = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.FileDialogVideoFiles", "Video files");
 				var dlg = new DialogAdapters.OpenFileDialogAdapter
 				{
@@ -325,12 +312,12 @@ namespace Bloom.web.controllers
 
 				}
 				ConfirmRecycleDialog.Recycle(originalPath);
-				_view.Invoke((Action)(() => {
+				View.Invoke((Action)(() => {
 					var video = videoContainer.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
 					video.ParentNode.RemoveChild(video);
-					_model.SaveNow();
-					_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-					_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+					Model.SaveNow();
+					View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+					View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 				}));
 				request.PostSucceeded();
 			}
@@ -374,7 +361,7 @@ namespace Bloom.web.controllers
 
 		internal bool WarnIfVideoCantChange(GeckoHtmlElement videoContainer)
 		{
-			if (!_model.CanChangeImages())
+			if (!Model.CanChangeImages())
 			{
 				MessageBox.Show(
 					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
@@ -383,7 +370,7 @@ namespace Bloom.web.controllers
 			}
 			string currentPath = HtmlDom.GetVideoElementUrl(videoContainer).NotEncoded;
 
-			if (!_view.CheckIfLockedAndWarn(currentPath))
+			if (!View.CheckIfLockedAndWarn(currentPath))
 				return true;
 			return false;
 		}
@@ -425,7 +412,7 @@ namespace Bloom.web.controllers
 
 		private GeckoHtmlElement GetSelectedVideoContainer()
 		{
-			var root = _view.Browser.WebBrowser.Document;
+			var root = View.Browser.WebBrowser.Document;
 			var page = root.GetElementById("page") as GeckoIFrameElement;
 			var pageDoc = page.ContentWindow.Document;
 			var videoContainer =
@@ -475,16 +462,16 @@ namespace Bloom.web.controllers
 				editor.ChangeVideo(CurrentBook.FolderPath, new ElementProxy(videoContainer), videoPath, progress);
 
 				// We need to save so that when asked by the thumbnailer, the book will give the proper image
-				_model.SaveNow();
+				Model.SaveNow();
 
 				// At some point we might clean up unused videos here. If so, be careful about
 				// losing license info if we ever put video information without it in the clipboard.
 				// Compare the parallel situation for images, BL-3717
 
 				// But after saving, we need the non-cleaned version back there
-				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
-				_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+				View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 				Analytics.Track("Change Video");
 				Logger.WriteEvent("ChangeVideo {0}...", videoPath);
 

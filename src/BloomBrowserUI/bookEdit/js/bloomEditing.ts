@@ -1,6 +1,5 @@
 ﻿///<reference path="./jquery.hasAttr.d.ts" />
 import * as $ from "jquery";
-import * as JQuery from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import { cleanupImages, SetOverlayForImagesWithoutMetadata, SetupResizableElement, SetupImagesInContainer } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";

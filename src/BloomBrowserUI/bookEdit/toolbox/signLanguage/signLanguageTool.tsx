@@ -1,18 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {
-    H1,
-    Div,
-    IUILanguageAwareProps,
-    Label
-} from "../../../react_components/l10n";
-import { RadioGroup, Radio } from "../../../react_components/radio";
+import { Label } from "../../../react_components/l10n";
 import axios from "axios";
-import { ToolBox, ITool } from "../toolbox";
+import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import Slider from "rc-slider";
-import AudioRecording from "../talkingBook/audioRecording";
-import { getPageFrameExports } from "../../js/bloomFrames";
 import "./signLanguage.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 
@@ -301,7 +292,7 @@ export class SignLanguageToolControls extends React.Component<
     // we have to be able to remove it later.
     private onKeyPress = () => {
         this.toggleRecording();
-    };
+    }
 
     // Called when the record or stop button is clicked, or if a key is pressed while not in the waiting state
     // ...depending on the current state it either starts or ends the recording. It works as the action function
@@ -491,7 +482,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             // right of play button
             event.preventDefault();
         }
-    };
+    }
 
     public newPageReady() {
         const containers = SignLanguageTool.getVideoContainers(false);

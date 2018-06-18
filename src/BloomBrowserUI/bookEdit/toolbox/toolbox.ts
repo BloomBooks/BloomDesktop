@@ -395,7 +395,6 @@ function activateTool(newTool: ITool) {
         // If we're activating this tool for the first time, restore its settings.
         if (!newTool.hasRestoredSettings) {
             newTool.hasRestoredSettings = true;
-            var name = newTool.id();
             newTool.beginRestoreSettings(savedSettings).then(() => {
                 newTool.finishToolLocalization(getToolElement(newTool));
                 newTool.showTool();
