@@ -925,7 +925,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="Common.Settings">
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
-        <target xml:lang="fr" state="needs-translation">Settings</target>
+        <target xml:lang="fr" state="translated">Paramètres</target>
       </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -2401,12 +2401,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true">
         <source xml:lang="en">Delete Video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.DeleteVideo</note>
-        <target xml:lang="fr" state="needs-translation">Delete Video</target>
+        <target xml:lang="fr" state="translated">Supprimer la vidéo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true">
         <source xml:lang="en">Edit outside of Bloom</source>
         <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
-        <target xml:lang="fr" state="needs-translation">Edit outside of Bloom</target>
+        <target xml:lang="fr" state="translated">Modifier en dehors de Bloom</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles">
         <source xml:lang="en">Video Files</source>
@@ -3677,12 +3677,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="PublishTab.Epub.PreparingDoc">
         <source xml:lang="en">Preparing document</source>
         <note>ID: PublishTab.Epub.PreparingDoc</note>
-        <target xml:lang="fr" state="needs-translation">Preparing document</target>
+        <target xml:lang="fr" state="translated">Préparation du document</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PreparingPreview">
         <source xml:lang="en">Preparing preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
-        <target xml:lang="fr" state="needs-translation">Preparing preview</target>
+        <target xml:lang="fr" state="translated">Préparation de l'aperçu</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
         <source xml:lang="en">Use epub reader's text size</source>
@@ -3692,7 +3692,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="PublishTab.Epub.Saving">
         <source xml:lang="en">Saving</source>
         <note>ID: PublishTab.Epub.Saving</note>
-        <target xml:lang="fr" state="needs-translation">Saving</target>
+        <target xml:lang="fr" state="translated">Enregistrement</target>
       </trans-unit>
       <trans-unit id="PublishTab.EpubButton" approved="yes">
         <source xml:lang="en">ePUB</source>
