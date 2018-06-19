@@ -910,6 +910,11 @@
           <target xml:lang="prs">ببین</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="Common.Settings">
+        <source xml:lang="en">Settings</source>
+        <note>ID: Common.Settings</note>
+        <target xml:lang="prs" state="needs-translation">Settings</target>
+      </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
