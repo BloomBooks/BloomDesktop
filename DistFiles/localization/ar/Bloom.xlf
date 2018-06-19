@@ -835,6 +835,11 @@
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
         <target xml:lang="ar" state="needs-translation">See {0}.</target>
       </trans-unit>
+      <trans-unit id="Common.Settings">
+        <source xml:lang="en">Settings</source>
+        <note>ID: Common.Settings</note>
+        <target xml:lang="ar" state="needs-translation">Settings</target>
+      </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
