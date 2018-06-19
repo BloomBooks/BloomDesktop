@@ -53,8 +53,8 @@ export class SignLanguageToolControls extends React.Component<
     {},
     IComponentState
     > {
-    constructor() {
-        super({});
+    constructor(props) {
+        super(props);
         this.state = {
             recording: false,
             countdown: 0,

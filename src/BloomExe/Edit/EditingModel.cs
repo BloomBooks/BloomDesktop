@@ -5,25 +5,21 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Properties;
 //using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using Bloom.MiscUI;
 using DesktopAnalytics;
 using Gecko;
-using Gecko.DOM;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Windows.Forms.FileSystem;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
 
@@ -773,7 +769,7 @@ namespace Bloom.Edit
 		/// <returns></returns>
 		public HtmlDom GetXmlDocumentForEditScreenWebPage()
 		{
-			var path = FileLocator.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "bookEdit", "EditViewFrame.html"));
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "bookEdit", "EditViewFrame.html"));
 			// {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
 			// We don't really make a file for the page, the contents are just saved in our local server.
 			// But we give it a url that makes it seem to be in the book folder so local urls work.
@@ -784,12 +780,11 @@ namespace Bloom.Edit
 			if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
 			{
 				// Make the toolbox initially visible.
-				// What we have to do to accomplish this is pretty non-intutive. It's a consequence of the way
+				// What we have to do to accomplish this is pretty non-intuitive. It's a consequence of the way
 				// the pure-drawer CSS achieves the open/close effect. This input is a check-box, so clicking it
 				// changes the state of things in a way that all the other CSS can depend on.
 				var toolboxCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
-				if (toolboxCheckBox != null)
-					toolboxCheckBox.SetAttribute("checked", "true");
+				toolboxCheckBox?.SetAttribute("checked", "true");
 			}
 
 			return dom;
