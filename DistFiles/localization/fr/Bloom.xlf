@@ -2260,7 +2260,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram" sil:dynamic="true">
         <source xml:lang="en">poet.diagramcenter.org</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
-        <target xml:lang="fr" state="needs-translation">poet.diagramcenter.org</target>
+        <target xml:lang="fr" state="translated">poet.diagramcenter.org</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
         <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
@@ -2426,17 +2426,17 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
         <source xml:lang="en">Press any key to cancel</source>
         <note>ID: EditTab.Toolbox.SignLanguage.PressCancel</note>
-        <target xml:lang="fr" state="needs-translation">Press any key to cancel</target>
+        <target xml:lang="fr" state="translated">Appuyez sur une touche pour annuler</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressStop" sil:dynamic="true">
         <source xml:lang="en">Press any key to stop</source>
         <note>ID: EditTab.Toolbox.SignLanguage.PressStop</note>
-        <target xml:lang="fr" state="needs-translation">Press any key to stop</target>
+        <target xml:lang="fr" state="translated">Appuyez sur une touche pour arrêter</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
         <source xml:lang="en">Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Recording</note>
-        <target xml:lang="fr" state="needs-translation">Recording</target>
+        <target xml:lang="fr" state="translated">Enregistrement</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true">
         <source xml:lang="en">Restore Original</source>
@@ -2452,7 +2452,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
         <source xml:lang="en">Start Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
-        <target xml:lang="fr" state="needs-translation">Start Recording</target>
+        <target xml:lang="fr" state="translated">Commencer l'enregistrement</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
         <source xml:lang="en">Here is what your camera sees:</source>
@@ -3655,7 +3655,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="PublishTab.Epub.BooksForBlind">
         <source xml:lang="en">Books for the Blind</source>
         <note>ID: PublishTab.Epub.BooksForBlind</note>
-        <target xml:lang="fr" state="needs-translation">Books for the Blind</target>
+        <target xml:lang="fr" state="translated">Livres pour les aveugles</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Done">
         <source xml:lang="en">Done</source>
