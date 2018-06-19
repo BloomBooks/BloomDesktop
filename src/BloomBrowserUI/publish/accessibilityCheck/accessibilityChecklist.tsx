@@ -13,13 +13,13 @@ export class AccessibilityChecklist extends React.Component<
         super(props);
     }
 
-    // C# land will send us a command when somethind has changed that would
+    // C# land will send us a command when something has changed that would
     // warrant us refreshing: either the user has changd to a different book,
     // or the book has changed (e.g. the user has fixed something that we
     // we pointed out).
     // React doesn't have a super natural way of doing this. That is probably
     // because react is normally used in the context of a state system like
-    // redux of mobx. In this case, our code (both c# and ts) is much simpler
+    // redux or mobx. In this case, our code (both c# and ts) is much simpler
     // if we just let each child do its own querying of the data (this is NOT
     // obviously true, but JH and JT, pairing agreed that things were getting
     // steadily more complex when we tried that route.)

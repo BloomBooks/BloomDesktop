@@ -125,7 +125,7 @@ namespace BloomTests.Publish
 		/// <param name="book"></param>
 		/// <returns></returns>
 		protected virtual ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
-			EpubMaker.HowToPublishImageDescriptions howToPublishImageDescriptions = EpubMaker.HowToPublishImageDescriptions.None, Action<EpubMaker> extraInit = null)
+			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None, Action<EpubMaker> extraInit = null)
 		{
 			var epubFolder = new TemporaryFolder(folderName);
 			var epubName = mainFileName + ".epub";

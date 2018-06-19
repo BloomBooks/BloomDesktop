@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Bloom.Book;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -15,7 +12,7 @@ namespace Bloom.Publish.Epub
 	public class EpubPublishUiSettings
 	{
 		[JsonConverter(typeof(StringEnumConverter))]
-		public EpubMaker.HowToPublishImageDescriptions howToPublishImageDescriptions;
+		public BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions;
 		public bool removeFontSizes;
 
 		public override bool Equals(object obj)

@@ -57,8 +57,10 @@ namespace Bloom.Book
 		public const string ReadMeImagesFolderName = "ReadMeImages";
 
 		//for moq'ing only
-		public Book()
+		public Book(BookInfo info = null)
 		{
+			Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
+			BookInfo = info;
 		}
 
 		public Book(BookInfo info, IBookStorage storage, ITemplateFinder templateFinder,

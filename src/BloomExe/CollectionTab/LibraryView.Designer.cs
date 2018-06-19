@@ -114,7 +114,7 @@
 			this._settingsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._settingsButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._settingsButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._settingsButton, "CollectionTab.SettingsButton");
+			this._L10NSharpExtender.SetLocalizingId(this._settingsButton, "CollectionTab.SettingsButton"); // should be Common.Settings
 			this._settingsButton.Name = "_settingsButton";
 			this._settingsButton.Size = new System.Drawing.Size(53, 67);
 			this._settingsButton.Text = "Settings";

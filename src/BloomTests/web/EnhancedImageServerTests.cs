@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -128,6 +127,107 @@ namespace BloomTests.web
 		}
 
 		[Test]
+		public void RegisterBoolEndpointHandler_Works()
+		{
+			// Setup
+			using (var server = CreateImageServer())
+			{
+				// set boolean handler
+				server.RegisterBooleanEndpointHandler("allowNewBooks",
+					// get action
+					request => request.CurrentCollectionSettings.AllowDeleteBooks,
+					// post action
+					(request, myBoolean) => request.CurrentCollectionSettings.AllowNewBooks = myBoolean,
+					true);
+
+				// Get
+				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/allowNewBooks");
+				server.CurrentCollectionSettings = new CollectionSettings {AllowNewBooks = true};
+
+				// Execute get
+				server.MakeReply(transaction);
+
+				// Verify get
+				Assert.That(transaction.ReplyContents, Is.EqualTo("true"));
+
+				// Make sure
+				server.CurrentCollectionSettings = new CollectionSettings {AllowNewBooks = false};
+				server.MakeReply(transaction);
+				Assert.That(transaction.ReplyContents, Is.EqualTo("false"));
+
+				// Post
+				transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/allowNewBooks",
+					HttpMethods.Post);
+				transaction.SetPostJson("true");
+
+				// Execute post
+				server.MakeReply(transaction);
+
+				// Verify post
+				Assert.That(transaction.ReplyContents, Is.EqualTo("OK"));
+				Assert.That(server.CurrentCollectionSettings.AllowNewBooks, Is.True);
+
+				// Make sure
+				transaction.SetPostJson("false");
+				server.MakeReply(transaction);
+				Assert.That(transaction.ReplyContents, Is.EqualTo("OK"));
+				Assert.That(server.CurrentCollectionSettings.AllowNewBooks, Is.False);
+			}
+		}
+
+		[Test]
+		public void RegisterEnumEndpointHandler_Works()
+		{
+			// Setup
+			var info = new BookInfo("", true);
+			using (var server = CreateImageServer(info))
+			{
+				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc");
+				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
+					BookInfo.HowToPublishImageDescriptions.None;
+				// set enum handler
+				server.RegisterEnumEndpointHandler("imageDesc",
+					// get action
+					request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
+					// post action
+					(request, myEnum) => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = myEnum,
+					true);
+
+				// Execute get
+				server.MakeReply(transaction);
+
+				// Verify get
+				Assert.That(transaction.ReplyContents, Is.EqualTo("None"));
+
+				// Try another
+				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
+					BookInfo.HowToPublishImageDescriptions.Links;
+				server.MakeReply(transaction);
+				Assert.That(transaction.ReplyContents, Is.EqualTo("Links"));
+
+				// Post
+				transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc",
+					HttpMethods.Post);
+				transaction.SetPostJson("OnPage");
+
+				// Execute post
+				server.MakeReply(transaction);
+
+				// Verify post
+				Assert.That(transaction.ReplyContents, Is.EqualTo("OK"));
+				Assert.That(server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
+					Is.EqualTo(BookInfo.HowToPublishImageDescriptions.OnPage));
+
+				// Try another
+				transaction.SetPostJson("None");
+				server.MakeReply(transaction);
+				Assert.That(transaction.ReplyContents, Is.EqualTo("OK"));
+				Assert.That(server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
+					Is.EqualTo(BookInfo.HowToPublishImageDescriptions.None));
+			}
+		}
+
+		[Test]
 		public void Topics_ReturnsFrenchFor_NoTopic_()
 		{
 			Assert.AreEqual("Aucun thème", QueryServerForJson("topics")["NoTopic"].ToString());
@@ -151,10 +251,10 @@ namespace BloomTests.web
 			}
 		}
 
-		private EnhancedImageServer CreateImageServer()
+		private EnhancedImageServer CreateImageServer(BookInfo info = null)
 		{
 			var bookSelection = new BookSelection();
-			bookSelection.SelectBook(new Bloom.Book.Book());
+			bookSelection.SelectBook(new Bloom.Book.Book(info));
 			return new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection, _fileLocator);
 		}
 
