@@ -329,6 +329,9 @@ export default class AudioRecording {
             .post("/bloom/api/audio/startRecord?id=" + id)
             .then(result => {
                 this.setStatus("record", Status.Active);
+                // The active device MIGHT have changed, if the user unplugged since we
+                // chose it.
+                this.updateInputDeviceDisplay();
             })
             .catch(error => {
                 toastr.error(error.statusText);
