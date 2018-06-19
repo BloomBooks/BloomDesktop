@@ -113,6 +113,12 @@ namespace Bloom.web.controllers
 
 		private void MakeAceByDaisyReport(ApiRequest request)
 		{
+			if (!UrlLookup.IsInternetAvailable())
+			{
+				_webSocketProgress.ErrorWithoutLocalizing("Sorry, you must have an internet connection in order to view the Ace by Daisy report.");
+				request.Failed();
+				return;
+			}
 			var daisyDirectory = FindAceByDaisyOrTellUser(request); // this should do the request.fail() if needed
 			if (string.IsNullOrEmpty(daisyDirectory))
 				return;
