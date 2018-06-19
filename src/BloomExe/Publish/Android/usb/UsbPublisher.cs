@@ -55,9 +55,9 @@ namespace Bloom.Publish.Android.usb
 					// on another thread.
 					_connectionHandler = new BackgroundWorker();
 				}
-				_progress.Message(id: "LookingForDevice",
-					message: "Looking for an Android device connected by USB cable and set up for MTP...",
-					comment: "This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.");
+				_progress.Message(idSuffix: "LookingForDevice",
+					comment: "This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.",
+					message: "Looking for an Android device connected by USB cable and set up for MTP...");
 
 				_androidDeviceUsbConnection.OneReadyDeviceFound = HandleFoundAReadyDevice;
 				_androidDeviceUsbConnection.OneReadyDeviceNotFound = HandleFoundOneNonReadyDevice;
@@ -84,15 +84,15 @@ namespace Bloom.Publish.Android.usb
 
 		public void Stop()
 		{
-			_progress.Message(id: "Stopped", message: "Stopped");
+			_progress.Message(idSuffix: "Stopped", message: "Stopped");
 			_androidDeviceUsbConnection.StopFindingDevice();
 		}
 
 		private void UsbFailConnect(Exception e)
 		{
 			Stop();
-			_progress.Message(id: "UnableToConnect",
-				message: "Unable to connect to any Android device which has Bloom Reader.");
+			_progress.Message(idSuffix: "UnableToConnect",
+				 message: "Unable to connect to any Android device which has Bloom Reader.");
 
 			_progress.ErrorWithoutLocalizing("\tTechnical details to share with the development team: " + e);
 			Logger.WriteError(e);
@@ -101,7 +101,7 @@ namespace Bloom.Publish.Android.usb
 
 		private void HandleFoundAReadyDevice(Book.Book book, Color backColor)
 		{
-			_progress.MessageWithParams(id: "Connected",
+			_progress.MessageWithParams(idSuffix: "Connected",
 				message: "Connected to {0} via USB...",
 				comment: "{0} is a the name of the device Bloom connected to",
 				parameters: _androidDeviceUsbConnection.GetDeviceName());
@@ -126,13 +126,13 @@ namespace Bloom.Publish.Android.usb
 					// I made this "running" instead of "installed" because I'm assuming
 					// we wouldn't get a bloom directory just from installing. We don't actually need it to be
 					// running, but this keeps the instructions simple.
-					_progress.Message(id: "DeviceWithoutBloomReader",
+					_progress.Message(idSuffix: "DeviceWithoutBloomReader",
 						message: "The following devices are connected but do not seem to have Bloom Reader running:");
 					foreach (var deviceName in deviceNames)
 						_progress.MessageWithoutLocalizing($"\t{deviceName}");
 					break;
 				case DeviceNotFoundReportType.MoreThanOneReadyDevice:
-					_progress.Message(id: "MoreThanOne",
+					_progress.Message(idSuffix: "MoreThanOne",
 						message: "The following connected devices all have Bloom Reader installed. Please connect only one of these devices.");
 					foreach (var deviceName in deviceNames)
 						_progress.MessageWithoutLocalizing($"\t{deviceName}");
@@ -204,7 +204,7 @@ namespace Bloom.Publish.Android.usb
 			}
 			else
 			{
-				_progress.Error(id: "FailureToSend",
+				_progress.Error(idSuffix: "FailureToSend",
 					message: "An error occurred and the book was not sent to your Android device.");
 				if (e != null)
 				{

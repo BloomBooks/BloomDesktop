@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IUILanguageAwareProps } from "../../react_components/l10n";
 import axios from "axios";
-import WebSocketManager from "../../utils/WebSocketManager";
+
 interface IProps extends IUILanguageAwareProps {
     apiCheckName: string;
     label: string;

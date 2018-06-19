@@ -70,6 +70,8 @@ namespace Bloom.Publish.Epub
 	/// </summary>
 	public class EpubMaker : IDisposable
 	{
+		public delegate EpubMaker Factory();// autofac uses this
+
 		public const string kEPUBExportFolder = "ePUB export";
 		protected const string kEpubNamespace = "http://www.idpf.org/2007/ops";
 
@@ -193,6 +195,7 @@ namespace Bloom.Publish.Epub
 			if(!string.IsNullOrEmpty(BookInStagingFolder))
 				return; //already staged
 
+			progress.Message("BuildingEPub", comment:"Shown in a progress box when Bloom is starting to creat an epub", message:"Building Epub");
 			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
 				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code };
 			else
@@ -1511,15 +1514,16 @@ namespace Bloom.Publish.Epub
 			if(string.IsNullOrEmpty (BookInStagingFolder)) {
 				StageEpub(progress);
 			}
-			FinishEpub (destinationEpubPath);
+			ZipAndSaveEpub (destinationEpubPath, progress);
 		}
 
 		/// <summary>
 		/// Finish publishing an ePUB that has been staged, by zipping it into the desired final file.
 		/// </summary>
 		/// <param name="destinationEpubPath"></param>
-		public void FinishEpub (string destinationEpubPath)
+		public void ZipAndSaveEpub (string destinationEpubPath, IWebSocketProgress progress)
 		{
+			progress.Message("Saving", comment:"Shown in a progress box when Bloom is saving an epub", message:"Saving");
 			var zip = new BloomZipFile (destinationEpubPath);
 			foreach (var file in Directory.GetFiles (BookInStagingFolder))
 				zip.AddTopLevelFile (file);
@@ -1760,7 +1764,7 @@ namespace Bloom.Publish.Epub
 			_browser.WebBrowser.NavigationError += (object sender, Gecko.Events.GeckoNavigationErrorEventArgs e) => done = true;
 			_browser.Navigate (normalDom, source: "epub");
 			while (!done) {
-				Application.DoEvents ();
+				Application.DoEvents (); // NOTE: this has bad consequences all down the line. See BL-6122.
 				Application.RaiseIdle (new EventArgs ()); // needed on Linux to avoid deadlock starving browser navigation
 			}
 

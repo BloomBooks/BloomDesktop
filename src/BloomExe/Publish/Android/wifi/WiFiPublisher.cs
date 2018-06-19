@@ -73,7 +73,7 @@ namespace Bloom.Publish.Android.wifi
 				// just ignore the request.
 				catch (Exception ex) when (ex is JsonReaderException || ex is JsonSerializationException)
 				{
-					_progress.Error(id: "BadBookRequest",
+					_progress.Error(idSuffix: "BadBookRequest",
 						message: "Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?");
 
 					//this is too technical/hard to translate
@@ -92,10 +92,10 @@ namespace Bloom.Publish.Android.wifi
 			PublishToAndroidApi.CheckBookLayout(book, _progress);
 			_wifiAdvertiser.Start();
 
-			_progress.Message(id: "WifiInstructions1",
-				message:"On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.");
-			_progress.Message(id: "WifiInstructions2",
-				message:"You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
+			_progress.Message(idSuffix: "WifiInstructions1",
+				message: "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.");
+			_progress.Message(idSuffix: "WifiInstructions2",
+				message: "You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
 		}
 
 		public void Stop()
@@ -210,7 +210,7 @@ namespace Bloom.Publish.Android.wifi
 					_wifiSender.UploadDataAsync(new Uri(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(publishedFileName)), File.ReadAllBytes(bloomDPath));
 				},
 				_progress,
-				(publishedFileName, bookTitle) => _progress.GetMessageWithParams(id: "Sending",
+				(publishedFileName, bookTitle) => _progress.GetMessageWithParams(idSuffix: "Sending",
 					comment: "{0} is the name of the book, {1} is the name of the device",
 					message: "Sending \"{0}\" to device {1}",
 					parameters: new object[] { bookTitle, androidName }),
@@ -242,7 +242,7 @@ namespace Bloom.Publish.Android.wifi
 			{
 				// This method is called on a background thread in response to receiving a request from Bloom Reader.
 				// Exceptions somehow get discarded, so there is no point in letting them propagate further.
-				_progress.Error(id: "Failed",
+				_progress.Error(idSuffix: "Failed",
 					message: "There was an error while sending the book. Possibly the device was disconnected? If you can't see a "
 					         + "reason for this the following may be helpful to report to the developers:");
 				_progress.Exception(e);
