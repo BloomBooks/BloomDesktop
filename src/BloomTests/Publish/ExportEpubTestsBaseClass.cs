@@ -42,6 +42,11 @@ namespace BloomTests.Publish
 		protected BookServer _bookServer;
 		protected string _defaultSourceValue;
 
+		protected const string kAudioSlash = EpubMaker.kAudioFolder+"^slash^";
+		protected const string kCssSlash = EpubMaker.kCssFolder+"^slash^";
+		protected const string kFontsSlash = EpubMaker.kFontsFolder+"^slash^";
+		protected const string kImagesSlash = EpubMaker.kImagesFolder+"^slash^";
+
 		[OneTimeSetUp]
 		public virtual void OneTimeSetup()
 		{
@@ -83,7 +88,8 @@ namespace BloomTests.Publish
 
 		protected string GetPageNData(int n)
 		{
-			return GetFileData(n + ".xhtml");
+			var data = GetFileData(n + ".xhtml");
+			return FixContentForXPathValueSlash(data);
 		}
 
 		protected string GetFileData(string fileName)
@@ -146,6 +152,16 @@ namespace BloomTests.Publish
 			return _epub;
 		}
 
+		public string FixContentForXPathValueSlash(string content)
+		{
+			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
+			return content.Replace("application/", "application^slash^")
+							.Replace(EpubMaker.kCssFolder+"/", kCssSlash)
+							.Replace(EpubMaker.kFontsFolder+"/", kFontsSlash)
+							.Replace(EpubMaker.kImagesFolder+"/", kImagesSlash)
+							.Replace(EpubMaker.kAudioFolder+"/", kAudioSlash);
+		}
+
 		private EpubMakerAdjusted CreateEpubMaker(Bloom.Book.Book book)
 		{
 			return new EpubMakerAdjusted(book, new BookThumbNailer(_thumbnailer.Object), _bookServer);
@@ -168,9 +184,15 @@ namespace BloomTests.Publish
 			return entry;
 		}
 
-		public void VerifyEntryExists(string fileName)
+		public void VerifyEpubItemExists(string path)
 		{
-			GetZipEntry(_epub, Path.GetDirectoryName(_manifestFile) + "/" + fileName);
+			GetZipEntry(_epub, path);
+		}
+
+		public void VerifyEpubItemDoesNotExist(string path)
+		{
+			var entry = _epub.GetEntry(path);
+			Assert.That(entry, Is.Null, "Should not have found entry at " + path);
 		}
 
 		internal static string StripXmlHeader(string data)
@@ -320,11 +342,11 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[@contenteditable]", _ns);
 
 			foreach (var image in images)
-				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//img[@src='" +image + ".png']");
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='settingsCollectionStyles.css']", _ns);
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customCollectionStyles.css']", _ns);
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", _ns);
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='fonts.css']", _ns);
+				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//img[@src='"+kImagesSlash + image + ".png']");
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"settingsCollectionStyles.css']", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"customCollectionStyles.css']", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"customBookStyles.css']", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"fonts.css']", _ns);
 
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:body/*[@role]", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:body/*[@aria-label]", _ns);
@@ -333,8 +355,7 @@ namespace BloomTests.Publish
 		protected void CheckBasicsInManifest(params string[] imageFiles)
 		{
 			VerifyThatFilesInManifestArePresent();
-			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
-			var assertThatManifest = AssertThatXmlIn.String(_manifestContent.Replace("application/", "application^slash^"));
+			var assertThatManifest = AssertThatXmlIn.String(FixContentForXPathValueSlash(_manifestContent));
 			assertThatManifest.HasAtLeastOneMatchForXpath("package[@version='3.0']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package[@unique-identifier]");
 			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:title", _ns);
@@ -355,18 +376,18 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='nav']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='cover-image']");
 
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='settingsCollectionStyles' and @href='settingsCollectionStyles.css']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='customCollectionStyles.css']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='customBookStyles.css']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='settingsCollectionStyles' and @href='"+kCssSlash+"settingsCollectionStyles.css']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='"+kCssSlash+"customCollectionStyles.css']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='"+kCssSlash+"customBookStyles.css']");
 
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf' and @media-type='application^slash^vnd.ms-opentype']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='"+kFontsSlash+"AndikaNewBasic-R.ttf' and @media-type='application^slash^vnd.ms-opentype']");
 			// This used to be a test that it DOES include the bold (along with italic and BI) variants. But we decided not to...see BL-4202 and comments in EpubMaker.EmbedFonts().
 			// So this is now a negative to check that they don't creep back in (unless we change our minds).
-			assertThatManifest.HasNoMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf' and @media-type='application^slash^vnd.ms-opentype']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fonts' and @href='fonts.css']");
+			assertThatManifest.HasNoMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='"+kFontsSlash+"AndikaNewBasic-B.ttf' and @media-type='application^slash^vnd.ms-opentype']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fonts' and @href='"+kCssSlash+"fonts.css']");
 
 			foreach (var image in imageFiles)
-				assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='" + image + "' and @href='" + image + ".png']");
+				assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='" + image + "' and @href='" + EpubMaker.kImagesFolder+ "^slash^"+ image + ".png']");
 		}
 
 		/// <summary>
@@ -499,5 +520,63 @@ namespace BloomTests.Publish
 			Assert.AreEqual(1, summaryCount, "Expected a single accessibilitySummary item in the manifest, but found {0}", summaryCount);
 		}
 
+		protected void CheckFolderStructure()
+		{
+			var zipped = _epub.GetEnumerator();
+			while (zipped.MoveNext())
+			{
+				var entry = zipped.Current as ZipEntry;
+				Assert.IsNotNull(entry);
+				var path = entry.Name.Split('/');
+				var ext = Path.GetExtension(entry.Name);
+				switch (ext.ToLowerInvariant())
+				{
+				case ".css":
+					Assert.AreEqual(3, path.Length);
+					Assert.AreEqual("content", path[0]);
+					Assert.AreEqual(EpubMaker.kCssFolder, path[1]);
+					break;
+				case ".png":
+				case ".svg":
+				case ".jpg":
+					Assert.AreEqual(3, path.Length);
+					Assert.AreEqual("content", path[0]);
+					Assert.AreEqual(EpubMaker.kImagesFolder, path[1]);
+					break;
+				case ".mp3":
+					Assert.AreEqual(3, path.Length);
+					Assert.AreEqual("content", path[0]);
+					Assert.AreEqual(EpubMaker.kAudioFolder, path[1]);
+					break;
+				case ".mp4":
+					Assert.AreEqual(3, path.Length);
+					Assert.AreEqual("content", path[0]);
+					if (path[1] != EpubMaker.kAudioFolder)
+						Assert.AreEqual("video", path[1]);
+					break;
+				case ".ttf":
+					Assert.AreEqual(3, path.Length);
+					Assert.AreEqual("content", path[0]);
+					Assert.AreEqual(EpubMaker.kFontsFolder, path[1]);
+					break;
+				case ".xhtml":
+				case ".smil":
+				case ".opf":
+					Assert.AreEqual(2, path.Length);
+					Assert.AreEqual("content", path[0]);
+					break;
+				case ".xml":
+					Assert.AreEqual(2, path.Length);
+					Assert.AreEqual("META-INF", path[0]);
+					Assert.AreEqual("container.xml", path[1]);
+					break;
+				default:
+					Assert.AreEqual("", ext);
+					Assert.AreEqual(1, path.Length);
+					Assert.AreEqual("mimetype", path[0]);
+					break;
+				}
+			}
+		}
 	}
 }

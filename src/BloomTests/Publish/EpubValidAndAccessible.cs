@@ -272,7 +272,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEpubSvgValidity()
 		{
-			var svgData = GetFileData("back-cover-outside.svg");
+			var svgData = GetFileData(EpubMaker.kImagesFolder+"/back-cover-outside.svg");
 			var ns = new XmlNamespaceManager(new NameTable());
 			//ns.AddNamespace("", "http://www.w3.org/2000/svg");
 			//ns.AddNamespace("dc", "http://purl.org/dc/elements/1.1/");
@@ -458,6 +458,12 @@ namespace BloomTests.Publish
 		protected void MakeSampleSvgImage(string path)
 		{
 			File.WriteAllText(path, _originalSvgContent);
+		}
+
+		[Test]
+		public void CheckEpubFolderStructure()
+		{
+			CheckFolderStructure();
 		}
 	}
 }

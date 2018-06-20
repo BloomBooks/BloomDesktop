@@ -1481,15 +1481,17 @@ namespace Bloom.Book
 		/// Sets the url attribute either of an img (the src attribute)
 		/// or a div with an inline style with an background-image rule
 		/// </summary>
-		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url)
+		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url, bool urlEncode = true)
 		{
 			if(imgOrDivWithBackgroundImage.Name.ToLower() == "img")
 			{
-				imgOrDivWithBackgroundImage.SetAttribute("src", url.UrlEncoded);
+				// This does not need to be encoded until sent over the network.
+				// Indeed, encoding it breaks links within epubs.
+				imgOrDivWithBackgroundImage.SetAttribute("src", urlEncode ? url.UrlEncoded : url.NotEncoded);
 			}
 			else
 			{
-				imgOrDivWithBackgroundImage.SetAttribute("style", String.Format("background-image:url('{0}')", url.UrlEncoded));
+				imgOrDivWithBackgroundImage.SetAttribute("style", String.Format("background-image:url('{0}')", urlEncode ? url.UrlEncoded : url.NotEncoded));
 			}
 		}
 
