@@ -56,10 +56,15 @@ namespace Bloom.Book
 		private readonly BookData _bookData;
 		public const string ReadMeImagesFolderName = "ReadMeImages";
 
-		//for moq'ing only
-		public Book(BookInfo info = null)
+		//for moq'ing only; parameterless ctor required by Moq
+		public Book()
 		{
 			Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
+		}
+
+		public Book(BookInfo info = null):
+			this()
+		{
 			BookInfo = info;
 		}
 
