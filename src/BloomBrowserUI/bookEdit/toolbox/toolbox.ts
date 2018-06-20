@@ -52,8 +52,9 @@ export interface ITool {
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 export class ToolBox {
-    toolboxIsShowing() { return (<HTMLInputElement>$(parent.window.document).find("#pure-toggle-right").get(0)).checked; }
-    configureElementsForTools(container: HTMLElement) {
+    public toolboxIsShowing() { return (<HTMLInputElement>$(parent.window.document).find("#pure-toggle-right").get(0)).checked; }
+    public toggleToolbox() { (<HTMLInputElement>$(parent.window.document).find("#pure-toggle-right").get(0)).click(); }
+    public configureElementsForTools(container: HTMLElement) {
         for (var i = 0; i < masterToolList.length; i++) {
             masterToolList[i].configureElements(container);
             // the toolbox itself handles keypresses in order to manage the process
@@ -250,6 +251,17 @@ export function showOrHideTool_click(chkbox) {
     resizeToolbox();
 }
 
+export function activateSignLanguageTool() {
+    let signCheckBox = $("#signLanguageCheck").get(0) as HTMLDivElement;
+    // if it was an actual "input" element, we would just check for "checked",
+    // but it's actually a div with possibly a checkmark character inside,
+    // so just check string length.
+    if (signCheckBox.innerText.length === 0) {
+        signCheckBox.click(); // will also activate
+    } else {
+        setCurrentTool("signLanguageTool");
+    }
+}
 
 export function restoreToolboxSettings() {
     axios.get("/bloom/api/toolbox/settings").then(result => {
@@ -395,7 +407,6 @@ function activateTool(newTool: ITool) {
         // If we're activating this tool for the first time, restore its settings.
         if (!newTool.hasRestoredSettings) {
             newTool.hasRestoredSettings = true;
-            var name = newTool.id();
             newTool.beginRestoreSettings(savedSettings).then(() => {
                 newTool.finishToolLocalization(getToolElement(newTool));
                 newTool.showTool();

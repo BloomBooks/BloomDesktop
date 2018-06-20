@@ -391,7 +391,3 @@ function makeVideoFieldClickHandler(e) {
     axios.post("/bloom/api/edit/pageControls/requestVideoPlaceHolder");
     $(this).closest(".selector-links").remove();
 }
-
-function setStyle(data, translationGroup) {
-    $(translationGroup).addClass("style" + data + "-style");
-}

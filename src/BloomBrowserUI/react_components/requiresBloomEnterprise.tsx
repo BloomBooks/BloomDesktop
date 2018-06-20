@@ -18,8 +18,8 @@ export interface IComponentState {
 // RequiresBloomEnterpriseWrapper, also defined in this file.
 export class RequiresBloomEnterprise extends React.Component<{}, IComponentState> {
 
-    constructor() {
-        super({});
+    constructor(props) {
+        super(props);
         this.state = { visible: false };
         enterpriseFeaturesEnabled().then(enabled => this.setState({ visible: !enabled }));
     }
@@ -46,8 +46,8 @@ export interface IWrapperComponentState {
 // The children of this component will be displayed if an enterprise project has been selected;
 // otherwise, the RequiresBloomEnterprise message will be displayed.
 export class RequiresBloomEnterpriseWrapper extends React.Component<{}, IWrapperComponentState> {
-    constructor() {
-        super({});
+    constructor(props) {
+        super(props);
         this.state = { enterprise: true };
         enterpriseFeaturesEnabled().then(enabled => this.setState({ enterprise: enabled }));
     }
