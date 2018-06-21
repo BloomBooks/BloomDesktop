@@ -252,6 +252,15 @@ export function showOrHideTool_click(chkbox) {
 }
 
 export function activateSignLanguageTool() {
+    const toolId = "signLanguageTool";
+    let itool = getITool(toolId);
+    if (!itool) {
+        // experimental feature, but we have that turned off in settings
+        let msg = "The sign language tool requires that you enable Settings : ";
+        msg += "Advanced Program Settings : Show Experimental Features";
+        alert(msg);
+        return;
+    }
     let signCheckBox = $("#signLanguageCheck").get(0) as HTMLDivElement;
     // if it was an actual "input" element, we would just check for "checked",
     // but it's actually a div with possibly a checkmark character inside,
@@ -259,7 +268,7 @@ export function activateSignLanguageTool() {
     if (signCheckBox.innerText.length === 0) {
         signCheckBox.click(); // will also activate
     } else {
-        setCurrentTool("signLanguageTool");
+        setCurrentTool(toolId);
     }
 }
 
@@ -493,6 +502,14 @@ function setCurrentTool(currentTool) {
     switchTool(currentTool);
 }
 
+// Parameter 'toolId' is the complete tool id with the 'Tool' suffix
+// Can return undefined in the case of an experimental tool with
+// Advanced Program Settings: Show Experimental Features unchecked.
+function getITool(toolId: string): ITool {
+    const reactToolId = toolId.substring(0, toolId.length - 4); // strip off "Tool"
+    return (<any>masterToolList).find(tool => tool.id() === reactToolId);
+}
+
 /**
  * Requests a tool from localhost and loads it into the toolbox.
  * This is used when the user ticks a previously unticked checkbox of a tool, or as part of
@@ -522,8 +539,7 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
         });
     } else {
         // new-style tool implemented in React
-        const reactToolId = toolId.substring(0, toolId.length - 4); // strip off "Tool"
-        var tool: ITool = (<any>masterToolList).find(tool => tool.id() === reactToolId);
+        var tool = getITool(toolId);
         const content = $(tool.makeRootElement());
         const toolName = tool.id() + "Tool";
         // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
