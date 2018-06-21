@@ -46,6 +46,7 @@ namespace BloomTests.Publish
 		protected const string kCssSlash = EpubMaker.kCssFolder+"^slash^";
 		protected const string kFontsSlash = EpubMaker.kFontsFolder+"^slash^";
 		protected const string kImagesSlash = EpubMaker.kImagesFolder+"^slash^";
+		protected const string kVideoSlash = EpubMaker.kVideoFolder+"^slash^";
 
 		[OneTimeSetUp]
 		public virtual void OneTimeSetup()
@@ -95,6 +96,13 @@ namespace BloomTests.Publish
 		protected string GetFileData(string fileName)
 		{
 			return ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + fileName);
+		}
+
+		protected void VerifyThatPageNDoesNotExist(int n)
+		{
+			var path = String.Format("{0}/{1}.xhtml", Path.GetDirectoryName(_manifestFile), n);
+			var entry = _epub.GetEntry(path);
+			Assert.That(entry, Is.Null, "Should not have found entry at " + path);
 		}
 
 		internal static XmlNamespaceManager GetNamespaceManager()
@@ -159,7 +167,8 @@ namespace BloomTests.Publish
 							.Replace(EpubMaker.kCssFolder+"/", kCssSlash)
 							.Replace(EpubMaker.kFontsFolder+"/", kFontsSlash)
 							.Replace(EpubMaker.kImagesFolder+"/", kImagesSlash)
-							.Replace(EpubMaker.kAudioFolder+"/", kAudioSlash);
+							.Replace(EpubMaker.kAudioFolder+"/", kAudioSlash)
+							.Replace(EpubMaker.kVideoFolder+"/", kVideoSlash);
 		}
 
 		private EpubMakerAdjusted CreateEpubMaker(Bloom.Book.Book book)
@@ -207,6 +216,17 @@ namespace BloomTests.Publish
 		{
 			foreach (var image in images)
 				MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath(image + ".png"));
+		}
+
+		protected void MakeVideoFiles(Bloom.Book.Book book, params string[] videos)
+		{
+			foreach (var video in videos)
+			{
+				var path = Path.Combine(book.FolderPath, "video", video + ".mp4");
+				Directory.CreateDirectory(book.FolderPath.CombineForPath("video"));
+				// first 16 bytes from an actual mp4 file.
+				File.WriteAllBytes(path, new byte[] { 0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x00 });
+			}
 		}
 
 		/// <summary>
@@ -552,7 +572,7 @@ namespace BloomTests.Publish
 					Assert.AreEqual(3, path.Length);
 					Assert.AreEqual("content", path[0]);
 					if (path[1] != EpubMaker.kAudioFolder)
-						Assert.AreEqual("video", path[1]);
+						Assert.AreEqual(EpubMaker.kVideoFolder, path[1]);
 					break;
 				case ".ttf":
 					Assert.AreEqual(3, path.Length);

@@ -79,6 +79,7 @@ namespace Bloom.Publish.Epub
 		public const string kImagesFolder = "images";
 		public const string kCssFolder = "css";
 		public const string kFontsFolder = "fonts";
+		public const string kVideoFolder = "video";
 
 		public Book.Book Book
 		{
@@ -764,9 +765,7 @@ namespace Bloom.Publish.Epub
 		{
 			// nonprinting pages (e.g., comprehension questions) are omitted for now
 			if (pageElement.Attributes["class"]?.Value?.Contains("bloom-nonprinting") ?? false)
-			{
 				return;
-			}
 			var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
 
 			// Note, the following stylsheet stuff can be quite bewildering...
@@ -838,6 +837,8 @@ namespace Bloom.Publish.Epub
 				_coverPage = pageDocName;
 
 			CopyImages(pageDom);
+			CopyVideos(pageDom);
+			AddVideoAttributes(pageDom);
 
 			AddEpubNamespace(pageDom);
 			AddPageBreakSpan(pageDom, pageDocName);
@@ -1119,6 +1120,16 @@ namespace Bloom.Publish.Epub
 				if (!String.IsNullOrEmpty(path) && Path.GetFileName(path) != "placeHolder.png")	// consider blank if only placeholder image
 					return false;
 			}
+			foreach (XmlElement vid in HtmlDom.SelectChildVideoSourceElements(pageElement).Cast<XmlElement>())
+			{
+				var src = vid.GetOptionalStringAttribute("src", null);
+				if (!String.IsNullOrEmpty(src))
+				{
+					var srcPath = Path.Combine(Book.FolderPath, src);
+					if (RobustFile.Exists(srcPath))
+						return false;
+				}
+			}
 			return true;
 		}
 
@@ -1142,6 +1153,35 @@ namespace Bloom.Publish.Epub
 					var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
 					HtmlDom.SetImageElementUrl(new ElementProxy(img), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
 				}
+			}
+		}
+
+		private void CopyVideos(HtmlDom pageDom)
+		{
+			foreach (XmlElement vid in HtmlDom.SelectChildVideoSourceElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>())
+			{
+				var src = vid.GetOptionalStringAttribute("src", null);
+				if (String.IsNullOrEmpty(src))
+					continue;
+				var srcPath = Path.Combine(Book.FolderPath, src);
+				if (!RobustFile.Exists(srcPath))
+					continue;
+				var dstPath = CopyFileToEpub(srcPath, subfolder:kVideoFolder);
+				var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
+				vid.SetAttribute("src", newSrc);
+			}
+		}
+
+		/// <summary>
+		/// Add attributes needed for videos to work in Readium and possibly other readers.
+		/// </summary>
+		private void AddVideoAttributes(HtmlDom pageDom)
+		{
+			foreach (XmlElement vid in pageDom.SafeSelectNodes("//div[contains(@class,'bloom-videoContainer')]/video").Cast<XmlElement>())
+			{
+				vid.SetAttribute("controls", "controls");
+				// Can we produce landscape oriented books where this should be height="100%" instead?
+				vid.SetAttribute("width", "100%");
 			}
 		}
 

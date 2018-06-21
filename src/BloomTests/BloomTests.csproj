@@ -202,6 +202,7 @@
     <Compile Include="Book\PageTests.cs" />
     <Compile Include="Publish\ExportEpubTestsBaseClass.cs" />
     <Compile Include="Publish\ExportEpubWithLinksTests.cs" />
+    <Compile Include="Publish\ExportEpubWithVideoTests.cs" />
     <Compile Include="Publish\EpubValidAndAccessible.cs" />
     <Compile Include="Publish\MockUsbPublisher.cs" />
     <Compile Include="Publish\UsbPublisherTests.cs" />
