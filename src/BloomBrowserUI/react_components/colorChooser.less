@@ -40,6 +40,7 @@
     top: @cc-arrow-height + @cc-arrow-height;
     left: -@cc-arrow-height;
     background-color: white;
+    z-index: 1; // pop-up above surrounding stuff
     &:after {
         content: "";
         position: absolute;
@@ -80,4 +81,5 @@
     padding-left:5px;
     border-radius: 0 @cc-color-radius @cc-color-radius 0;
     padding-top: @cc-hex-padding;
+    box-sizing: content-box; // otherwise the box around the hex value is too small
 }
