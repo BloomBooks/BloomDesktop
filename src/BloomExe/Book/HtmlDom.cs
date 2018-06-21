@@ -644,19 +644,22 @@ namespace Bloom.Book
 		/// <param name="page"></param>
 		/// <param name="template"></param>
 		/// <param name="lineage"></param>
-		/// <param name="originalTemplateGuid"></param>
-		/// <param name="updateTo"></param>
+		/// <param name="allowDataLoss"></param>
+		/// <param name="didChange"></param>
 		internal string MigrateEditableData(XmlElement page, XmlElement template, string lineage, bool allowDataLoss, out bool didChange)
 		{
 			var textXPath = ".//div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and not(contains(@class, 'box-header-off'))]";
 			var imageXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]";
+			var videoXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]";
 			if (!allowDataLoss)
 			{
 				var oldTextCount = page.SafeSelectNodes(textXPath).Count;
 				var newTextCount = template.SafeSelectNodes(textXPath).Count;
 				var oldImageCount = page.SafeSelectNodes(imageXpath).Count;
 				var newImageCount = template.SafeSelectNodes(imageXpath).Count;
-				if (newTextCount < oldTextCount || newImageCount < oldImageCount)
+				var oldVideoCount = page.SafeSelectNodes(videoXpath).Count;
+				var newVideoCount = template.SafeSelectNodes(videoXpath).Count;
+				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount)
 				{
 					didChange = false;
 					return null;
@@ -699,8 +702,26 @@ namespace Bloom.Book
 			MigrateChildren(page, textXPath, newPage);
 			// migrate images
 			MigrateChildren(page, imageXpath, newPage);
+			// migrate videos
+			MigrateChildren(page, videoXpath, newPage);
+			RemovePlaceholderVideoClass(newPage);
 			didChange = true;
 			return oldLineage;
+		}
+
+		private void RemovePlaceholderVideoClass(XmlElement newPage)
+		{
+			const string videoPlaceholderClass = "bloom-noVideoSelected";
+			var nodesWithPlaceholder = newPage.SelectNodes("//div[contains(@class,'" + videoPlaceholderClass + "')]");
+			foreach (XmlNode placeholderDiv in nodesWithPlaceholder)
+			{
+				if (placeholderDiv.HasChildNodes && placeholderDiv.FirstChild.Name == "video")
+				{
+					// We migrated a video node into here, delete the placeholder class.
+					XmlUtils.SetAttribute(placeholderDiv, "class", XmlUtils.GetStringAttribute(placeholderDiv, "class").
+						Replace(videoPlaceholderClass, string.Empty));
+				}
+			}
 		}
 
 		internal static string TransferOrientation(string classes, string newClasses)

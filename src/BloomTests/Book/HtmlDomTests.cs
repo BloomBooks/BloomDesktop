@@ -915,5 +915,53 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//p[.='‌*Answer 2']", 1);
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//p[.='My test text.']", 1);
 		}
+
+		[Test]
+		public void MigrateChildren_MigratesVideo()
+		{
+			var pageDom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page' id='pageGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'>Contents</div>
+							</div>
+							<div class='bloom-videoContainer'>
+								<video>
+									<source src='video/videoGuid.mp4' type='video/mp4'></source>
+								</video>
+							</div>
+						</div>
+					</div>
+				</body></html>");
+			var templateDom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page' id='templateGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-videoContainer bloom-noVideoSelected' />
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
+							</div>
+						</div>
+					</div>
+				</body></html>");
+			bool didChange;
+			var lineage = "someGuid";
+			var pageElement = pageDom.SelectSingleNode("//div[@class='bloom-page']");
+			var templateElement = templateDom.SelectSingleNode("//div[@class='bloom-page']");
+
+			// SUT
+			pageDom.MigrateEditableData(pageElement, templateElement, lineage, false, out didChange);
+
+			// Verification
+			Assert.That(didChange, Is.True);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='someGuid']", 1);
+			var textContentsXpath = "//div[contains(@class,'bloom-editable') and text()='Contents']";
+			var videoXpath = "//video/source[@src='video/videoGuid.mp4' and @type='video/mp4']";
+			var noVideoXpath = "//div[contains(@class,'bloom-noVideoSelected')]";
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath("//div[@id='templateGuid']");
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(textContentsXpath, 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(videoXpath, 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath(noVideoXpath);
+		}
 	}
 }
