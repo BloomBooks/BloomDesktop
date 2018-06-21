@@ -6,8 +6,7 @@ import BloomButton from "../../react_components/bloomButton";
 import { ApiBackedCheckbox } from "../../react_components/apiBackedCheckbox";
 import { Checkbox } from "../../react_components/checkbox";
 import Link from "../../react_components/link";
-// import HelpLink from "../../react_components/helpLink";
-import HtmlHelpLink from "../../react_components/htmlHelpLink";
+import HelpLink from "../../react_components/helpLink";
 import {
     H1,
     H2,
@@ -84,24 +83,24 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
                     <div className="column">
                         <section className="help-section">
                             <H1 l10nKey="Common.Help">Help</H1>
-                            <HtmlHelpLink
+                            <HelpLink
                                 l10nKey="PublishTab.Epub.Help.AboutEpubs"
-                                fileid="todo"
+                                helpId="Concepts/EPUB.htm"
                             >
                                 About Epubs
-                            </HtmlHelpLink>
-                            <HtmlHelpLink
+                            </HelpLink>
+                            <HelpLink
                                 l10nKey="PublishTab.Epub.Help.todo"
-                                fileid="todo"
+                                helpId="Concepts/Epub_Readers.htm"
                             >
                                 Compatible Epub Readers
-                            </HtmlHelpLink>
-                            <HtmlHelpLink
+                            </HelpLink>
+                            <HelpLink
                                 l10nKey="PublishTab.Epub.Help.todo"
-                                fileid="todo"
+                                helpId="Tasks/Publish_tasks/Digital_publishing_options.htm"
                             >
                                 Gettings Epubs onto a device
-                            </HtmlHelpLink>
+                            </HelpLink>
                         </section>
                         <section
                             className={"settings-section section-below-another"}
