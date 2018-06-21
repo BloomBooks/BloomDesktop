@@ -1569,6 +1569,11 @@ namespace Bloom.Book
 			return element.SelectNodes(".//div[contains(@class,'bloom-videoContainer')]");
 		}
 
+		public static XmlNodeList SelectChildVideoSourceElements(XmlElement element)
+		{
+			return element.SafeSelectNodes(".//div[contains(@class,'bloom-videoContainer')]/video/source");
+		}
+
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)
 		{
 			return element.SelectNodes("self::img | self::*[contains(@style,'background-image')]").Count == 1;
