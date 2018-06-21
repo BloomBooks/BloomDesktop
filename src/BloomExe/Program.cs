@@ -1264,26 +1264,57 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 		/// <returns>The number of running Bloom instances</returns>
 		public static int GetRunningBloomProcessCount()
 		{
-			// The second test prevents counting the Bloom.vshost.exe process which Visual Studio and similar tools
-			// create to speed up launching the program in debug mode. It's only useful for developers.
-			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLowerInvariant().Contains("bloom")
-				&& !p.ProcessName.ToLowerInvariant().Contains("vshost"));
-
-			// This is your count on Windows.
 			if (SIL.PlatformUtilities.Platform.IsWindows)
-				return bloomProcessCount;
-
+			{
+				// This is your count on Windows.
+				return Process.GetProcesses().Count(p => IsBloomProcess(p));;
+			}
 			// On Linux, the process name is usually "mono-sgen" or something similar, but not all processes
 			// with this name are instances of Bloom.
-			var processes = Process.GetProcesses().Where(p => p.ProcessName.ToLowerInvariant().StartsWith("mono"));
-
+			var processes = Process.GetProcesses().Where(p => IsMonoProcess(p));
 			// DO NOT change this foreach loop into a LINQ expression. It takes longer to complete if you do.
+			var bloomProcessCount = 0;
 			foreach (var p in processes)
 			{
-				bloomProcessCount += p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName == "Bloom.exe") ? 1 : 0;
+				try
+				{
+					if (p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName == "Bloom.exe"))
+						++bloomProcessCount;
+				}
+				catch (System.InvalidOperationException)
+				{
+				}
 			}
-
 			return bloomProcessCount;
+		}
+
+		public static bool IsBloomProcess(Process process)
+		{
+			try
+			{
+				var name = process.ProcessName.ToLowerInvariant();
+				// The second test prevents counting the Bloom.vshost.exe process which Visual Studio and similar tools
+				// create to speed up launching the program in debug mode. It's only useful for developers.
+				return name.Contains("bloom") && !name.Contains("vshost");
+			}
+			catch (System.InvalidOperationException)
+			{
+				// process is already exited?
+				return false;
+			}
+		}
+
+		public static bool IsMonoProcess(Process process)
+		{
+			try
+			{
+				return process.ProcessName.ToLowerInvariant().StartsWith("mono");
+			}
+			catch (System.InvalidOperationException)
+			{
+				// process is already exited?
+				return false;
+			}
 		}
 
 		public static BloomFileLocator OptimizedFileLocator
