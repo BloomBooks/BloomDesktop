@@ -171,8 +171,7 @@ export class SignLanguageToolControls extends React.Component<
                     <div
                         id="importRecordingWrapper"
                         className={
-                            "videoButtonWrapper" +
-                            (this.state.enabled && !this.state.haveRecording ? "" : " disabled ")
+                            "videoButtonWrapper" + this.getImportButtonState()
                         }
                     >
                         <button
@@ -231,6 +230,15 @@ export class SignLanguageToolControls extends React.Component<
                 </div>
             </RequiresBloomEnterpriseWrapper>
         );
+    }
+
+    private getImportButtonState(): string {
+        return (this.state.enabled && (this.state.haveRecording || this.recordingInProgress())) ?
+            " disabled" : "";
+    }
+
+    private recordingInProgress(): boolean {
+        return this.state.stateClass !== "waiting";
     }
 
     private importRecording() {
