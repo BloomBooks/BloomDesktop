@@ -315,6 +315,8 @@ namespace Bloom.web.controllers
 				View.Invoke((Action)(() => {
 					var video = videoContainer.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
 					video.ParentNode.RemoveChild(video);
+					// BL-6136 add back in the class that shows the placeholder
+					videoContainer.ClassName += " bloom-noVideoSelected";
 					Model.SaveNow();
 					View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 					View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
