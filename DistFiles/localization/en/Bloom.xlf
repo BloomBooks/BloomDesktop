@@ -2625,6 +2625,18 @@
         <source xml:lang="en">Done</source>
         <note>ID: PublishTab.Epub.Done</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
+        <source xml:lang="en">About ePUBs</source>
+        <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.EReaders">
+        <source xml:lang="en">Compatible ePUB Readers</source>
+        <note>ID: PublishTab.Epub.Help.EReaders</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.Publishing">
+        <source xml:lang="en">Gettings ePUBs onto a device</source>
+        <note>ID: PublishTab.Epub.Help.Publishing</note>
+      </trans-unit>
 	  <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>

@@ -8,7 +8,7 @@ import WebSocketManager from "../../utils/WebSocketManager";
 
 export class AccessibilityChecklist extends React.Component<
     IUILanguageAwareProps
-> {
+    > {
     constructor(props) {
         super(props);
     }
@@ -62,7 +62,7 @@ export class AccessibilityChecklist extends React.Component<
                         apiCheckName="audioForAllImageDescriptions"
                         label="Audio for all image descriptions"
                     />
-                    {/* <CheckItem apirUrl="automatedEpubCheck" label="Automated Epub Check" /> */}
+                    {/* <CheckItem apirUrl="automatedEpubCheck" label="Automated ePUB Check" /> */}
                 </section>
                 <section>
                     <h1>You need to check these yourself:</h1>
