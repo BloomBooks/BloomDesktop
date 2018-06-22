@@ -8,18 +8,18 @@ import "./signLanguage.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 
 // The recording process can be in one of these states:
-// waiting...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
+// idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
 // countdown{3,2,1}...record button has been pressed, top label shows countdown, not recording, stop button shows,
 //  "press any key to cancel" shows in bottom label
 // recording...top label shows "Recording", stop button shows, recording is happening, bottom label shows "press any key to stop"
 // Transitions:
-// Start recording button: state waiting -> countdown{3}, * -> waiting (save video if any)
-// Stop button or any key: * -> waiting
+// Start recording button: state idle -> countdown{3}, * -> idle (save video if any)
+// Stop button or any key: * -> idle
 interface IComponentState {
     recording: boolean;
     countdown: number;
     enabled: boolean;
-    stateClass: string; // one of waiting, countdown3, countdown2, countdown1, recording
+    stateClass: string; // one of idle, countdown3, countdown2, countdown1, recording
     haveRecording: boolean;
     originalExists: boolean;
 }
@@ -59,7 +59,7 @@ export class SignLanguageToolControls extends React.Component<
             recording: false,
             countdown: 0,
             enabled: false,
-            stateClass: "waiting",
+            stateClass: "idle",
             haveRecording: false,
             originalExists: false
         };
@@ -82,7 +82,7 @@ export class SignLanguageToolControls extends React.Component<
                 >
                     <Label l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees">
                         Here is what your camera sees:
-                </Label>
+                    </Label>
                     <div id="videoMonitorWrapper">
                         <video id="videoMonitor" autoPlay />
                     </div>
@@ -93,7 +93,7 @@ export class SignLanguageToolControls extends React.Component<
                                     id="videoToggleRecording"
                                     className={
                                         "video-button ui-button" +
-                                        (this.state.stateClass !== "waiting"
+                                        (this.state.stateClass !== "idle"
                                             ? " started"
                                             : "") +
                                         (this.state.recording
@@ -106,27 +106,27 @@ export class SignLanguageToolControls extends React.Component<
                                     onClick={() => this.toggleRecording()}
                                 />
                                 <Label
-                                    className="startRecording waiting"
+                                    className="startRecording idle"
                                     l10nKey="EditTab.Toolbox.SignLanguage.StartRecording"
                                     onClick={() => this.toggleRecording()}
                                 >
                                     Start Recording
-                            </Label>
+                                </Label>
                                 <span className="countdown3 countdownNumber">
                                     3
-                            </span>
+                                </span>
                                 <span className="countdown2 countdownNumber">
                                     2
-                            </span>
+                                </span>
                                 <span className="countdown1 countdownNumber">
                                     1
-                            </span>
+                                </span>
                                 <Label
                                     className="recording recordingLabel"
                                     l10nKey="EditTab.Toolbox.SignLanguage.Recording"
                                 >
                                     Recording
-                            </Label>
+                                </Label>
                             </div>
                         </div>
                     </div>
@@ -134,7 +134,7 @@ export class SignLanguageToolControls extends React.Component<
                         id="editOutsideWrapper"
                         className={
                             "videoButtonWrapper" +
-                            (this.state.haveRecording ? "" : " disabled ")
+                            (this.state.haveRecording && this.state.stateClass === "idle" ? "" : " disabled ")
                         }
                     >
                         <button
@@ -147,7 +147,7 @@ export class SignLanguageToolControls extends React.Component<
                             onClick={() => this.editOutside()}
                         >
                             Edit outside of Bloom
-                    </Label>
+                        </Label>
                     </div>
                     <div
                         id="restoreOriginalWrapper"
@@ -166,13 +166,13 @@ export class SignLanguageToolControls extends React.Component<
                             onClick={() => this.restoreOriginal()}
                         >
                             Restore Original
-                    </Label>
+                        </Label>
                     </div>
                     <div
                         id="importRecordingWrapper"
                         className={
                             "videoButtonWrapper" +
-                            (this.state.enabled && !this.state.haveRecording ? "" : " disabled ")
+                            (this.state.stateClass === "idle" ? "" : " disabled")
                         }
                     >
                         <button
@@ -186,13 +186,13 @@ export class SignLanguageToolControls extends React.Component<
                             onClick={() => this.importRecording()}
                         >
                             Import Video
-                    </Label>
+                        </Label>
                     </div>
                     <div
                         id="deleteRecordingWrapper"
                         className={
                             "videoButtonWrapper" +
-                            (this.state.haveRecording ? "" : " disabled ")
+                            (this.state.haveRecording && this.state.stateClass === "idle" ? "" : " disabled ")
                         }
                     >
                         <button
@@ -207,12 +207,12 @@ export class SignLanguageToolControls extends React.Component<
                             onClick={() => this.deleteRecording()}
                         >
                             Delete Video
-                    </Label>
+                        </Label>
                     </div>
                     <div>
                         <button
                             id="videoStopRecording"
-                            className={"video-button ui-button notWaiting"}
+                            className={"video-button ui-button notIdle"}
                             onClick={() => this.toggleRecording()}
                         />
                     </div>
@@ -221,21 +221,20 @@ export class SignLanguageToolControls extends React.Component<
                         className="counting stopLabel"
                     >
                         Press any key to cancel
-                </Label>
+                    </Label>
                     <Label
                         l10nKey="EditTab.Toolbox.SignLanguage.PressStop"
                         className="recording stopLabel"
                     >
                         Press any key to stop
-                </Label>
+                    </Label>
                 </div>
             </RequiresBloomEnterpriseWrapper>
         );
     }
 
     private importRecording() {
-        if (this.state.enabled && !this.state.haveRecording)
-            axios.post("/bloom/api/toolbox/importVideo");
+        axios.post("/bloom/api/toolbox/importVideo");
     }
 
     private deleteRecording() {
@@ -293,9 +292,9 @@ export class SignLanguageToolControls extends React.Component<
         this.toggleRecording();
     }
 
-    // Called when the record or stop button is clicked, or if a key is pressed while not in the waiting state
+    // Called when the record or stop button is clicked, or if a key is pressed while not in the idle state
     // ...depending on the current state it either starts or ends the recording. It works as the action function
-    // for things that only stop the recording because those controls are not enabled in the waiting state.
+    // for things that only stop the recording because those controls are not enabled in the idle state.
     private toggleRecording() {
         if (!this.videoStream) {
             return;
@@ -304,12 +303,12 @@ export class SignLanguageToolControls extends React.Component<
         var wasRecording = this.state.recording;
         if (wasRecording) {
             document.removeEventListener("keydown", this.onKeyPress);
-            this.setState({ recording: false, stateClass: "waiting" });
+            this.setState({ recording: false, stateClass: "idle" });
             // triggers all the interesting behavior defined in onstop below.
             this.mediaRecorder.stop();
             return;
         }
-        if (oldState === "waiting") {
+        if (oldState === "idle") {
             document.addEventListener("keydown", this.onKeyPress);
             this.setState({ stateClass: "countdown3" });
             this.timerId = window.setTimeout(() => {
@@ -327,10 +326,10 @@ export class SignLanguageToolControls extends React.Component<
             }, 1000);
             return;
         }
-        // we're in one of the countdown states. Back to waiting.
+        // we're in one of the countdown states. Back to idle.
         document.removeEventListener("keydown", this.onKeyPress);
         window.clearTimeout(this.timerId);
-        this.setState({ stateClass: "waiting" });
+        this.setState({ stateClass: "idle" });
     }
 
     public componentDidUpdate(prevProps, prevState: IComponentState) {
@@ -350,7 +349,7 @@ export class SignLanguageToolControls extends React.Component<
                 SignLanguageTool.addRecordingLabelToOverlay(document);
                 break;
             default:
-                // back to 'waiting'
+                // back to 'idle'
                 SignLanguageTool.removeVideoOverlay();
                 break;
         }
