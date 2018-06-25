@@ -14,8 +14,8 @@
    viewBox="0 0 230.82841 153.23851"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.1 r15371"
-   sodipodi:docname="back-cover-outside.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="source svg for back-cover-outside-wide.svg"
    inkscape:export-filename="D:\dev\b41\DistFiles\branding\Local Community\back-cover-outside.png"
    inkscape:export-xdpi="300.12039"
    inkscape:export-ydpi="300.12039">
@@ -29,15 +29,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="-45.653947"
+     inkscape:cx="-39.215302"
      inkscape:cy="-18.817658"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="in"
-     inkscape:window-width="1920"
-     inkscape:window-height="1147"
-     inkscape:window-x="-8"
+     inkscape:window-width="1822"
+     inkscape:window-height="1177"
+     inkscape:window-x="3832"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      showguides="true"
@@ -65,7 +65,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -232,5 +232,5 @@
            x="-6.4285712"
            y="-88.396202"
            style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25000095px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start" /></flowRegion><flowPara
-         id="flowPara4518">This book was created with enterprise features freely enabled in order to support local communities that cannot afford Bloom Enterprise. </flowPara></flowRoot>  </g>
+         id="flowPara4518">This book was created with Bloom Enterprise features freely enabled in order to support projects funded by the local community. </flowPara></flowRoot>  </g>
 </svg>
