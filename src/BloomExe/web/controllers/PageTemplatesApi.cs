@@ -8,6 +8,7 @@ using System.Web;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Properties;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -279,8 +280,49 @@ namespace Bloom.web.controllers
 				bookTemplatePaths.RemoveAt(indexOfBasicBook);
 				bookTemplatePaths.Insert(1,pathOfBasicBook);
 			}
+			// Remove experimental books if not wanted, or if part of an unwanted experimental feature.
+			for (int i = bookTemplatePaths.Count - 1; i >= 0; --i)
+			{
+				if (!EnabledTemplate(bookTemplatePaths[i]))
+					bookTemplatePaths.RemoveAt(i);
+			}
 
 			return bookTemplatePaths.Distinct().ToList();
+		}
+
+		/// <summary>
+		/// Check whether this template is marked experimental, and if so whether it as a tool
+		/// associated with it (which we assume would itself be experimental).  Return true iff
+		/// the user wants to see pages from this template based on the collection settings.
+		/// </summary>
+		private static bool EnabledTemplate(string path)
+		{
+			var jasonpath = Path.Combine(Path.GetDirectoryName(path), "meta.json");
+			if (RobustFile.Exists(jasonpath))
+			{
+				var jasontext = RobustFile.ReadAllText(jasonpath);
+				var meta = Newtonsoft.Json.Linq.JObject.Parse(jasontext);
+				if (meta != null)
+				{
+					var experimental = meta.Value<string>("experimental");
+					if (experimental != null && experimental == "true")
+					{
+						var currentTool = meta.Value<string>("currentTool");
+						if (!String.IsNullOrEmpty(currentTool))
+						{
+							// Experimental features must be turned on.    (We assume any tool
+							// associated with an experimental book must itself be experimental.)
+							return Settings.Default.ShowExperimentalFeatures;
+						}
+						else
+						{
+							// Experimental books must be turned on.
+							return Settings.Default.ShowExperimentalBooks;
+						}
+					}
+				}
+			}
+			return true;
 		}
 
 		private dynamic GetPageGroup(string path)

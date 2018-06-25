@@ -508,7 +508,7 @@ namespace Bloom.CollectionTab
 			{
 				try
 				{
-					if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
+					if (ShowThisBook(bookInfo))
 					{
 						loadedAtLeastOneBook = true;
 						AddOneBook(bookInfo, flowLayoutPanel, collection);
@@ -552,6 +552,15 @@ namespace Bloom.CollectionTab
 				}
 			}
 			return loadedAtLeastOneBook;
+		}
+
+		private static bool ShowThisBook(BookInfo bookInfo)
+		{
+			return !bookInfo.IsExperimental ||
+					// If an experimental book has an assigned tool, assume that tool is experimental and needs permission itself.
+					// Hide the experimental book if it has an assigned tool that isn't guaranteed to be visible itself (BL-6047).
+					(Settings.Default.ShowExperimentalBooks && (String.IsNullOrEmpty(bookInfo.CurrentTool) || Settings.Default.ShowExperimentalFeatures)) ||
+					(!String.IsNullOrEmpty(bookInfo.CurrentTool) && Settings.Default.ShowExperimentalFeatures);
 		}
 
 	   private bool IsSuitableSourceForThisEditableCollection(BookInfo bookInfo)
