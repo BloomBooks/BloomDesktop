@@ -108,16 +108,19 @@ class PageChooser {
     } // thumbnailClickHandler
 
     // Return true if choosing the current layout will cause loss of data
-    willLoseData(): boolean {
+    private willLoseData(): boolean {
         var selected = $(this._selectedGridItem);
-        var selectedEditableDivs = parseInt(selected.attr('data-textDivCount'));
-        var selectedPictures = parseInt(selected.attr('data-pictureCount'));
+        var selectedEditableDivs = parseInt(selected.attr("data-textDivCount"), 10);
+        var selectedPictures = parseInt(selected.attr("data-pictureCount"), 10);
+        var selectedVideos = parseInt(selected.attr("data-videoCount"), 10);
 
-        var current = $((<HTMLIFrameElement>window.parent.document.getElementById('page')).contentWindow.document);
+        var current = $((<HTMLIFrameElement>window.parent.document.getElementById("page")).contentWindow.document);
         var currentEditableDivs = current.find(".bloom-translationGroup:not(.box-header-off)").length;
         var currentPictures = current.find(".bloom-imageContainer").length;
+        var currentVideos = current.find(".bloom-videoContainer:not(.bloom-noVideoSelected)").length;
 
-        return selectedEditableDivs < currentEditableDivs || selectedPictures < currentPictures;
+        return selectedEditableDivs < currentEditableDivs || selectedPictures < currentPictures ||
+            selectedVideos < currentVideos;
     }
 
 
@@ -355,6 +358,7 @@ class PageChooser {
             $(currentGridItemHtml).attr("data-pageId", currentId);
             $(currentGridItemHtml).attr("data-textDivCount", $(div).find(".bloom-translationGroup:not(.box-header-off)").length);
             $(currentGridItemHtml).attr("data-pictureCount", $(div).find(".bloom-imageContainer").length);
+            $(currentGridItemHtml).attr("data-videoCount", $(div).find(".bloom-videoContainer").length);
 
             // The check for _indexOfPageToSelect here keeps the selection on the *first* matching page. In BL-4500, we found
             // that different templates could reuse the same guid for custom page. That's a problem probably should be
