@@ -2,6 +2,11 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="fr">
     <body>
+      <trans-unit id="AccessibilityCheck.AccessibilityChecker">
+        <source xml:lang="en">Accessibility Checker</source>
+        <note>ID: AccessibilityCheck.AccessibilityChecker</note>
+        <target xml:lang="fr" state="needs-translation">Accessibility Checker</target>
+      </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
@@ -912,6 +917,16 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
         <target xml:lang="fr">facultatif</target>
+      </trans-unit>
+      <trans-unit id="Common.Preview">
+        <source xml:lang="en">Preview</source>
+        <note>ID: Common.Preview</note>
+        <target xml:lang="fr" state="needs-translation">Preview</target>
+      </trans-unit>
+      <trans-unit id="Common.Progress">
+        <source xml:lang="en">Progress</source>
+        <note>ID: Common.Progress</note>
+        <target xml:lang="fr" state="needs-translation">Progress</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
@@ -3662,6 +3677,21 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: PublishTab.Epub.Done</note>
         <target xml:lang="fr" state="needs-translation">Done</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
+        <source xml:lang="en">About ePUBs</source>
+        <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
+        <target xml:lang="fr" state="needs-translation">About ePUBs</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.EReaders">
+        <source xml:lang="en">Compatible ePUB Readers</source>
+        <note>ID: PublishTab.Epub.Help.EReaders</note>
+        <target xml:lang="fr" state="needs-translation">Compatible ePUB Readers</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.Publishing">
+        <source xml:lang="en">Getting ePUBs onto a device</source>
+        <note>ID: PublishTab.Epub.Help.Publishing</note>
+        <target xml:lang="fr" state="needs-translation">Getting ePUBs onto a device</target>
+      </trans-unit>
       <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
@@ -3685,14 +3715,19 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <target xml:lang="fr" state="translated">Préparation de l'aperçu</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
-        <source xml:lang="en">Use epub reader's text size</source>
+        <source xml:lang="en">Use ePUB reader's text size</source>
         <note>ID: PublishTab.Epub.RemoveFontSizes</note>
-        <target xml:lang="fr" state="needs-translation">Use epub reader's text size</target>
+        <target xml:lang="fr" state="needs-translation">Use ePUB reader's text size</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Saving">
         <source xml:lang="en">Saving</source>
         <note>ID: PublishTab.Epub.Saving</note>
         <target xml:lang="fr" state="translated">Enregistrement</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Title">
+        <source xml:lang="en">Create an ePUB book</source>
+        <note>ID: PublishTab.Epub.Title</note>
+        <target xml:lang="fr" state="needs-translation">Create an ePUB book</target>
       </trans-unit>
       <trans-unit id="PublishTab.EpubButton" approved="yes">
         <source xml:lang="en">ePUB</source>
