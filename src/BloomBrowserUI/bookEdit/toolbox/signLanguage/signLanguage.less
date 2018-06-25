@@ -150,18 +150,18 @@
 }
 
 // state management
-.waiting {
+.idle {
     .countdown3,
     .countdown2,
     .countdown1,
     .counting,
     .recording,
-    .notWaiting {
+    .notIdle {
         display: none;
     }
 }
 .countdown3 {
-    .waiting,
+    .idle,
     .countdown2,
     .countdown1,
     .recording {
@@ -169,7 +169,7 @@
     }
 }
 .countdown2 {
-    .waiting,
+    .idle,
     .countdown3,
     .countdown1,
     .recording {
@@ -177,7 +177,7 @@
     }
 }
 .countdown1 {
-    .waiting,
+    .idle,
     .countdown3,
     .countdown2,
     .recording {
@@ -185,7 +185,7 @@
     }
 }
 .recording {
-    .waiting,
+    .idle,
     .countdown3,
     .countdown2,
     .countdown1,
