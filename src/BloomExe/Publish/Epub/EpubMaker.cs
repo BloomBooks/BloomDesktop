@@ -193,7 +193,7 @@ namespace Bloom.Publish.Epub
 			if(!string.IsNullOrEmpty(BookInStagingFolder))
 				return; //already staged
 
-			progress.Message("BuildingEPub", comment:"Shown in a progress box when Bloom is starting to creat an epub", message:"Building Epub");
+			progress.Message("BuildingEPub", comment:"Shown in a progress box when Bloom is starting to create an ePUB", message:"Building ePUB");
 			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
 				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code };
 			else

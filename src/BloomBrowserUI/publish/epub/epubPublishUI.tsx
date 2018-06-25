@@ -48,15 +48,14 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
             <div id="epubPublishReactRoot" className={"screen-root"}>
                 <header>
                     <img src="epub.png" />
-                    <H1 l10nKey="PublishTab.epub.Title">Create an Epub book</H1>
+                    <H1 l10nKey="PublishTab.Epub.Title">Create an ePUB book</H1>
                 </header>
                 <div className="sections">
                     <section className="preview-section">
-                        <H1 l10nKey="PublishTab.Preview">Preview</H1>
+                        <H1 l10nKey="Common.Preview">Preview</H1>
                         <EpubPreview lifetimeLabel={kWebSocketLifetime} />
                     </section>
                     <section className="publish-section">
-                        {/* todo: pick correct l10nkey... same as tab? */}
                         <H1 l10nKey="PublishTab.Publish">Publish</H1>
                         <BloomButton
                             className="save-button"
@@ -87,19 +86,19 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
                                 l10nKey="PublishTab.Epub.Help.AboutEpubs"
                                 helpId="Concepts/EPUB.htm"
                             >
-                                About Epubs
+                                About ePUBs
                             </HelpLink>
                             <HelpLink
-                                l10nKey="PublishTab.Epub.Help.todo"
+                                l10nKey="PublishTab.Epub.Help.EReaders"
                                 helpId="Concepts/Epub_Readers.htm"
                             >
-                                Compatible Epub Readers
+                                Compatible ePUB Readers
                             </HelpLink>
                             <HelpLink
-                                l10nKey="PublishTab.Epub.Help.todo"
+                                l10nKey="PublishTab.Epub.Help.Publishing"
                                 helpId="Tasks/Publish_tasks/Digital_publishing_options.htm"
                             >
-                                Gettings Epubs onto a device
+                                Getting ePUBs onto a device
                             </HelpLink>
                         </section>
                         <section
@@ -117,11 +116,11 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
                         <ApiBackedCheckbox
                             apiEndpoint="/bloom/api/publish/epub/removeFontSizesSetting"
                             l10nKey="PublishTab.Epub.RemoveFontSizes"
-                        >Use epub reader's text size</ApiBackedCheckbox>
+                        >Use ePUB reader's text size</ApiBackedCheckbox>
                         {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                         <Link
                             id="a11yCheckerLink"
-                            l10nKey="AccessibilityCheck.ShowAccessibilityChecker"
+                            l10nKey="AccessibilityCheck.AccessibilityChecker"
                             onClick={() =>
                                 axios.post(
                                     "/bloom/api/accessibilityCheck/showAccessibilityChecker"

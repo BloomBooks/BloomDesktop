@@ -2,6 +2,10 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
+      <trans-unit id="AccessibilityCheck.AccessibilityChecker">
+        <source xml:lang="en">Accessibility Checker</source>
+        <note>ID: AccessibilityCheck.AccessibilityChecker</note>
+      </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
@@ -671,6 +675,14 @@
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
+      </trans-unit>
+      <trans-unit id="Common.Preview">
+        <source xml:lang="en">Preview</source>
+        <note>ID: Common.Preview</note>
+      </trans-unit>
+      <trans-unit id="Common.Progress">
+        <source xml:lang="en">Progress</source>
+        <note>ID: Common.Progress</note>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
@@ -2625,6 +2637,18 @@
         <source xml:lang="en">Done</source>
         <note>ID: PublishTab.Epub.Done</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
+        <source xml:lang="en">About ePUBs</source>
+        <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.EReaders">
+        <source xml:lang="en">Compatible ePUB Readers</source>
+        <note>ID: PublishTab.Epub.Help.EReaders</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.Publishing">
+        <source xml:lang="en">Getting ePUBs onto a device</source>
+        <note>ID: PublishTab.Epub.Help.Publishing</note>
+      </trans-unit>
 	  <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
@@ -2644,12 +2668,16 @@
         <note>ID: PublishTab.Epub.PreparingPreview</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
-        <source xml:lang="en">Use epub reader's text size</source>
+        <source xml:lang="en">Use ePUB reader's text size</source>
         <note>ID: PublishTab.Epub.RemoveFontSizes</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Saving">
         <source xml:lang="en">Saving</source>
         <note>ID: PublishTab.Epub.Saving</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Title">
+        <source xml:lang="en">Create an ePUB book</source>
+        <note>ID: PublishTab.Epub.Title</note>
       </trans-unit>
       <trans-unit id="PublishTab.EpubButton">
         <source xml:lang="en">ePUB</source>
