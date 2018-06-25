@@ -134,6 +134,13 @@ namespace Bloom.Book
 			// because the rest is in the xmatter.
 			// For shells, we'll still have pages.
 
+			// BL-6108: But if this is a template and we remove all the pages and xmatter,
+			// there won't be anything left to tell us what the template's preferred layout was,
+			// so we'll save that first.
+			Layout templateLayout = null;
+			if (usingTemplate)
+				templateLayout = Layout.FromDom(storage.Dom, Layout.A5Portrait);
+
 			//Remove from the new book any div-pages labeled as "extraPage"
 			for (var initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]");
 				initialPageDivs.Count > 0;
@@ -155,7 +162,7 @@ namespace Bloom.Book
 
 			bookData.RemoveAllForms("ISBN");//ISBN number of the original doesn't apply to derivatives
 
-			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, Layout.A5Portrait, _fileLocator);
+			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, templateLayout??Layout.A5Portrait, _fileLocator);
 
 			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
 			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.
