@@ -27,6 +27,7 @@ export class DaisyChecks extends React.Component<
     }
     private refresh() {
         this.setState({ reportUrl: "" });
+        // using axios directly because of explicit catch.
         axios
             .get("/bloom/api/accessibilityCheck/aceByDaisyReportUrl")
             .then(result => {

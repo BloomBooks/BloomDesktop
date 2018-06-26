@@ -4,7 +4,8 @@
 /// <reference path="bloomQtipUtils.ts" />
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
-import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
+
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import { IsPageXMatter } from '../js/bloomEditing';
 import bloomQtipUtils from './bloomQtipUtils';
@@ -120,7 +121,7 @@ export default class BloomHintBubbles {
         // We can't wait until we have the language list to insert the main hint element into the source bubble,
         // because doing that causes the manipulations that easytabs does to the results of this method
         // to skip the hint tab. (At least, when you're not stepping through the code.)
-        axios.get('/bloom/bubbleLanguages').then(result => {
+        BloomApi.get("bubbleLanguages", result => {
             let preferredLangs: Array<string> = (<any>result.data).langs;
             whatToSay = this.getHintContent(elementThatHasSourceBubble, elementWithBubbleAttributes, preferredLangs);
             if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);

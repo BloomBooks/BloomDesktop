@@ -1,4 +1,4 @@
-import axios from "axios";
+import { BloomApi } from "../utils/bloomApi";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {
@@ -26,7 +26,7 @@ export interface IButtonProps extends ILocalizationProps {
 export default class BloomButton extends LocalizableElement<
     IButtonProps,
     ILocalizationState
-> {
+    > {
     constructor(props: IButtonProps) {
         super(props);
     }
@@ -57,7 +57,7 @@ export default class BloomButton extends LocalizableElement<
                 }
                 title={tip}
                 onClick={() =>
-                    axios.post("/bloom/api/" + this.props.clickEndpoint)
+                    BloomApi.post("api/" + this.props.clickEndpoint)
                 }
                 disabled={!this.props.enabled}
             >

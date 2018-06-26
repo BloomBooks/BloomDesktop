@@ -5,7 +5,7 @@ import { fireCSharpEditEvent } from "./bloomEditing";
 import { SetupImage } from "./bloomImages";
 import "split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
-import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
 
 //I was not able to get css-element-queries to load from here.. I think this should have worked:
 //import {ElementQueries} from 'css-element-queries'; //nb: this in turn loads resizesensor.js from the same module
@@ -117,7 +117,7 @@ function layoutToggleClickHandler() {
         const toggleTransitionLength = 450;
         setTimeout(function () {
             $("html").off("keydown.origami");
-            axios.post("/bloom/api/toolbox/saveChangesAndRethinkPageEvent");
+            BloomApi.post("api/toolbox/saveChangesAndRethinkPageEvent");
         }, toggleTransitionLength);
     }
 }
@@ -388,6 +388,6 @@ function makeVideoFieldClickHandler(e) {
     // the image needs to be in the book folder. Unlike the regular placeholder, which we copy
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
-    axios.post("/bloom/api/edit/pageControls/requestVideoPlaceHolder");
+    BloomApi.post("api/edit/pageControls/requestVideoPlaceHolder");
     $(this).closest(".selector-links").remove();
 }

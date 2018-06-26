@@ -30,6 +30,8 @@ const mouseOutFunction = e => {
 };
 
 export function SetupVideoEditing(container) {
+    // sticking with axios because there's already a catch...though not obviously better than
+    // the BloomApi one.
     axios.get("/bloom/api/featurecontrol/enterpriseEnabled").then(result => {
         const isEnterpriseEnabled = result.data;
         $(container)

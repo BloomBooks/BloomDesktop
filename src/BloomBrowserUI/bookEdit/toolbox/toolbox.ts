@@ -4,6 +4,7 @@ import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "../../lib/jquery.i18n.custom";
 import "../../lib/jquery.onSafe";
 import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -141,9 +142,11 @@ export class ToolBox {
     static registerTool(tool: ITool) { masterToolList.push(tool); }
 
     private getShowAdvancedFeatures() {
+        // Using axios directly because api calls for returning the promise.
         return axios.get("/bloom/api/featurecontrol/showAdvancedFeatures");
     }
     private getEnabledTools() {
+        // Using axios directly because api calls for returning the promise.
         return axios.get("/bloom/api/toolbox/enabledTools");
     }
 
@@ -156,63 +159,64 @@ export class ToolBox {
             $(parent.window.document).find("#pure-toggle-right").change(function () { showToolboxChanged(!this.checked); });
         });
 
-        axios.all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
-            .then(axios.spread(function(showAdvancedFeatures, enabledTools) {
-            // Both requests are complete
-            // remove the experimental tools if the user doesn't want them
-            showExperimentalTools = showAdvancedFeatures.data.toString() === "true";
-            if (!showExperimentalTools) {
-                for (var i = masterToolList.length - 1; i >= 0; i--) {
-                    if (masterToolList[i].isExperimental()) {
-                        masterToolList.splice(i, 1);
+        // Using axios directly because BloomApi doesn't support merging promises with .all
+        BloomApi.wrapAxios(axios.all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
+            .then(axios.spread(function (showAdvancedFeatures, enabledTools) {
+                // Both requests are complete
+                // remove the experimental tools if the user doesn't want them
+                showExperimentalTools = showAdvancedFeatures.data.toString() === "true";
+                if (!showExperimentalTools) {
+                    for (var i = masterToolList.length - 1; i >= 0; i--) {
+                        if (masterToolList[i].isExperimental()) {
+                            masterToolList.splice(i, 1);
+                        }
                     }
                 }
-            }
-            const toolsToLoad = enabledTools.data.split(",");
-            // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
-            for (var i = toolsToLoad.length - 1; i >= 0; i--) {
-                if (!masterToolList.some(mod => mod.id() === toolsToLoad[i])) {
-                    toolsToLoad.splice(i, 1);
+                const toolsToLoad = enabledTools.data.split(",");
+                // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
+                for (var i = toolsToLoad.length - 1; i >= 0; i--) {
+                    if (!masterToolList.some(mod => mod.id() === toolsToLoad[i])) {
+                        toolsToLoad.splice(i, 1);
+                    }
                 }
-            }
-            // add any tools we always show
-            for (var j = 0; j < masterToolList.length; j++) {
-                if (masterToolList[j].isAlwaysEnabled() && !toolsToLoad.includes(masterToolList[j].id())) {
-                    toolsToLoad.push(masterToolList[j].id());
+                // add any tools we always show
+                for (var j = 0; j < masterToolList.length; j++) {
+                    if (masterToolList[j].isAlwaysEnabled() && !toolsToLoad.includes(masterToolList[j].id())) {
+                        toolsToLoad.push(masterToolList[j].id());
+                    }
                 }
-            }
-            // for correct positioning and so we can find check boxes when adding others must load this one first,
-            // which means putting it last in the array.
-            toolsToLoad.push("settings");
-            $("#toolbox").hide();
-            const loadNextTool = function () {
-                if (toolsToLoad.length === 0) {
-                    $("#toolbox").accordion({
-                        heightStyle: "fill"
-                    });
-                    $("body").find("*[data-i18n]").localize(); // run localization
+                // for correct positioning and so we can find check boxes when adding others must load this one first,
+                // which means putting it last in the array.
+                toolsToLoad.push("settings");
+                $("#toolbox").hide();
+                const loadNextTool = function () {
+                    if (toolsToLoad.length === 0) {
+                        $("#toolbox").accordion({
+                            heightStyle: "fill"
+                        });
+                        $("body").find("*[data-i18n]").localize(); // run localization
 
-                    // Now bind the window's resize function to the toolbox resizer
-                    $(window).bind("resize", function () {
-                        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-                        resizeTimer = setTimeout(resizeToolbox, 100);
-                    });
-                    // loaded them all, now we can deal with settings.
-                    restoreToolboxSettings();
-                    $("#toolbox").show();
-                    // I don't know why, but the accordion refresh inside resizeToolbox is needed
-                    // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
-                    setTimeout(resizeToolbox, 0);
-                } else {
-                    // optimize: maybe we can overlap these?
-                    const nextToolId = toolsToLoad.pop();
-                    const checkBoxId = nextToolId + "Check";
-                    const toolId = nextToolId + "Tool";
-                    beginAddTool(checkBoxId, toolId, false).then(() => loadNextTool());
-                }
-            };
-            loadNextTool();
-        }));
+                        // Now bind the window's resize function to the toolbox resizer
+                        $(window).bind("resize", function () {
+                            clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
+                            resizeTimer = setTimeout(resizeToolbox, 100);
+                        });
+                        // loaded them all, now we can deal with settings.
+                        restoreToolboxSettings();
+                        $("#toolbox").show();
+                        // I don't know why, but the accordion refresh inside resizeToolbox is needed
+                        // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
+                        setTimeout(resizeToolbox, 0);
+                    } else {
+                        // optimize: maybe we can overlap these?
+                        const nextToolId = toolsToLoad.pop();
+                        const checkBoxId = nextToolId + "Check";
+                        const toolId = nextToolId + "Tool";
+                        beginAddTool(checkBoxId, toolId, false, () => loadNextTool());
+                    }
+                };
+                loadNextTool();
+            })));
 
     }
 }
@@ -240,7 +244,7 @@ export function showOrHideTool_click(chkbox) {
         chkbox.innerHTML = checkMarkString;
         ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "active\t" + chkbox.id + "\t1");
         if (tool) {
-            beginAddTool(chkbox.id, tool, true);
+            beginAddTool(chkbox.id, tool, true, null);
         }
     } else {
         chkbox.innerHTML = "";
@@ -273,7 +277,7 @@ export function activateSignLanguageTool() {
 }
 
 export function restoreToolboxSettings() {
-    axios.get("/bloom/api/toolbox/settings").then(result => {
+    BloomApi.get("api/toolbox/settings", result => {
         savedSettings = result.data;
         var pageFrame = getPageFrame();
         if (pageFrame.contentWindow.document.readyState === "loading") {
@@ -516,7 +520,7 @@ function getITool(toolId: string): ITool {
  * initializing the toolbox for those that are already checked.
  */
 // these last three parameters were never used: function requestTool(checkBoxId, toolId, loadNextCallback, tools, currentTool) {
-function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Promise<void> {
+function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean, whenLoaded: () => void): void {
     var chkBox = document.getElementById(checkBoxId);
     if (chkBox) { // always-enabled tools don't have checkboxes.
         chkBox.innerHTML = checkMarkString;
@@ -534,8 +538,11 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
     const subPathToPremadeHtml = subpath[toolId];
     if (subPathToPremadeHtml) {
         // old-style tool implemented in pug and typescript
-        return axios.get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml).then(result => {
+        BloomApi.get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml, result => {
             loadToolboxToolText(result.data, toolId, openTool);
+            if (whenLoaded) {
+                whenLoaded();
+            }
         });
     } else {
         // new-style tool implemented in React
@@ -556,22 +563,9 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean): Pr
         header.attr("data-toolId", toolName);
         content.attr("data-toolId", toolName);
         loadToolboxTool(header, content, toolId, openTool);
-
-        // api calls for promise, but we don't need one here; just return something
-        // that behaves like a promise already fulfilled.
-        return new TrivialPromise();
-    }
-}
-
-// Review: there should be some built-in Promise implementation I can use here, but I can't find it.
-class TrivialPromise implements Promise<void> {
-    then<TResult1 = void, TResult2 = never>(onfulfilled?: (value: void) =>
-        TResult1 | PromiseLike<TResult1>, onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>): Promise<TResult1 | TResult2> {
-        onfulfilled(null);
-        return null;
-    }
-    catch<TResult = never>(onrejected?: (reason: any) => TResult | PromiseLike<TResult>): Promise<void | TResult> {
-        throw new Error("Method not implemented.");
+        if (whenLoaded) {
+            whenLoaded();
+        }
     }
 }
 

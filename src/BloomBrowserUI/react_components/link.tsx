@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ILocalizationProps, LocalizableElement } from "./l10n";

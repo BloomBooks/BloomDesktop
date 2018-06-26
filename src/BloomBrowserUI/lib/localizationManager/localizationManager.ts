@@ -194,6 +194,7 @@ export class LocalizationManager {
         var deferred = $.Deferred();
 
         //when the async call comes back, we massage the text
+        // Using axios directly because we have specific catch behavior
         axios.get("/bloom/i18n/translate",
             {
                 params: { key: id, englishText: englishText, langId: langId, comment: comment }
