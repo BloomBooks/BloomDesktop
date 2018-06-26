@@ -123,13 +123,14 @@ namespace Bloom.web
 
 		/// <summary>
 		/// Check whether or not the internet is currently available.  This may delay 2.5 seconds if the computer
-		/// is on a local network, but the internet is inaccessible.
+		/// is on a local network, but the internet is inaccessible. It does not check for connectivity to
+		/// an Amazon or other site we actually use, though. Those could be blocked.
 		/// </summary>
 		/// <remarks>
 		/// credit is due to http://stackoverflow.com/questions/520347/how-do-i-check-for-a-network-connection
 		/// and https://forums.xamarin.com/discussion/19491/check-internet-connectivity.
 		/// </remarks>
-		public static bool IsInternetAvailable()
+		public static bool CheckGeneralInternetAvailability(bool okToDoSlowCheckAgain)
 		{
 			// The next line detects whether the computer is hooked up to a local network, wired or wireless.
 			// If it's not on a network at all, we know the Internet isn't available!
@@ -139,12 +140,20 @@ namespace Bloom.web
 				_internetAvailable = false;
 				return false;
 			}
+
+			if (!okToDoSlowCheckAgain && !_internetAvailable)
+			{
+				return false;
+			}
+
 			// Test whether we can talk to a known site of interest on the internet.  This will tell us
 			// close enough whether or not the internet is available.
 			try
 			{
-				// test site same as what we use to talk to Amazon S3
-				var iNetRequest = (HttpWebRequest)WebRequest.Create("https://s3.amazonaws.com");
+				// From https://www.reddit.com/r/sysadmin/comments/1f9kv4/what_are_some_public_ips_that_are_ok_to/
+				// not clear if it's better to use 8.8.8.8 (goolge or example.com. Since google is blocked in some
+				// countries, I think example.com (run by the  Internet Assigned Numbers Authority) is safer.
+				var iNetRequest = (HttpWebRequest)WebRequest.Create("http://example.com");
 				iNetRequest.Timeout = 2500;
 				var iNetResponse = iNetRequest.GetResponse();
 				iNetResponse.Close();
