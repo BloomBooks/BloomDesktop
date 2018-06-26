@@ -14,6 +14,8 @@
 @videoButtonBorder: @videoButtonSize / 3;
 @videoButtonRimThickness: 3px;
 
+@helpLinkMargin: 50px;
+
 #videoToggleRecording {
     // These properties make a blue circle, with the border thickness equal to the center diameter
     height: @videoButtonSize;
@@ -75,6 +77,9 @@
     // make the containing box a little bigger than when it just contains the button and small text.
     height: @videoButtonSize + 2;
     margin-bottom: 20px;
+    &.helpLink {
+        margin-left: @helpLinkMargin;
+    }
 }
 
 .startRecording,
