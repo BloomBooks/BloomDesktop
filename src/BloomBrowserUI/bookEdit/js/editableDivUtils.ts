@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -162,7 +162,7 @@ export class EditableDivUtils {
 
     static pasteImageCredits() {
         var activeElement = document.activeElement;
-        axios.get("/bloom/api/image/imageCreditsForWholeBook").then(result => {
+        BloomApi.get("api/image/imageCreditsForWholeBook", result => {
             var data = result.data;
             if (!data)
                 return;     // nothing to insert: no images apparently...
@@ -179,10 +179,10 @@ export class EditableDivUtils {
             if (credits.length > 0) {
                 artists = credits[0];
             } else {
-                if (activeElement.getAttribute("data-book")=="originalContributions" &&
-                    activeElement.getAttribute("contenteditable")=="true" &&
-                    activeElement.getAttribute("role")=="textbox" &&
-                    activeElement.getAttribute("aria-label")=="false") {
+                if (activeElement.getAttribute("data-book") == "originalContributions" &&
+                    activeElement.getAttribute("contenteditable") == "true" &&
+                    activeElement.getAttribute("role") == "textbox" &&
+                    activeElement.getAttribute("aria-label") == "false") {
                     // If we're coming from a tab in a source-bubble instead of a pure
                     // hint-bubble, then the activeElement is the actual text-box we
                     // want to insert into.  I don't know why it isn't the <a> element.
@@ -191,7 +191,7 @@ export class EditableDivUtils {
                     artists = activeElement;
                 }
             }
-            if (artists!==null) {
+            if (artists !== null) {
                 // We found where to insert the credits.  If there's a better way to add this
                 // information, I'd be happy to learn what it is.  data is a string consisting
                 // of one or more <p> elements properly terminated by </p> and separated by

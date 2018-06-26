@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import axios from "axios";
+import { BloomApi } from "../../../utils/bloomApi";
 import { ToolBox, ITool } from "../toolbox";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import "./imageDescription.less";
@@ -98,20 +98,20 @@ export class ImageDescriptionToolControls extends React.Component<
                             >
                                 poet.diagramcenter.org
                         </Link>
-                    </div>
-                    <div className="wrapPlayVideo disabled invisible">
-                        <img
-                            id="playBloomTrainingVideo"
-                            src="/bloom/images/play.svg"
-                        />
-                        <Link
-                            id="bloomImageDescritionTraining"
-                            className="disabled"
-                            href=""
-                            l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
-                            l10nComment="Link that launces the video"
-                        >
-                            Bloom training video
+                        </div>
+                        <div className="wrapPlayVideo disabled invisible">
+                            <img
+                                id="playBloomTrainingVideo"
+                                src="/bloom/images/play.svg"
+                            />
+                            <Link
+                                id="bloomImageDescritionTraining"
+                                className="disabled"
+                                href=""
+                                l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
+                                l10nComment="Link that launces the video"
+                            >
+                                Bloom training video
                         </Link>
                         </div>
                     </div>
@@ -309,7 +309,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         }
         if (addedTranslationGroup) {
             // This inserts all the right bloom-editable divs in whatever languages are needed.
-            axios.post("/bloom/api/toolbox/saveChangesAndRethinkPageEvent");
+            BloomApi.post("api/toolbox/saveChangesAndRethinkPageEvent");
             // This return is currently redundant but it emphasizes that you can't count on anything
             // more happening in this branch.The page will unload somewhere in the
             // course of saveChangesAndRethinkPageEvent. Then a new page will load and updateMarkup()

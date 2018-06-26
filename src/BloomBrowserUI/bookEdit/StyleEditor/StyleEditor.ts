@@ -16,6 +16,7 @@ import OverflowChecker from '../OverflowChecker/OverflowChecker';
 import { GetDifferenceBetweenHeightAndParentHeight, IsPageXMatter } from '../js/bloomEditing';
 import '../../lib/jquery.alphanum';
 import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
 import { EditableDivUtils } from '../js/editableDivUtils';
 
 declare function GetSettings(): any; //c# injects this
@@ -700,7 +701,7 @@ export default class StyleEditor {
         // More dangerous is using it in getCharTabDescription. But as that is launched by a later
         // async request, I think it should be OK.
 
-        axios.get('/bloom/authorMode').then(result => {
+        BloomApi.get("authorMode", result => {
             editor.authorMode = result.data === true;
         });
         editor.xmatterMode = IsPageXMatter($(targetBox));
@@ -755,7 +756,8 @@ export default class StyleEditor {
         // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '#formatButton', function () {
-            axios.all([
+            // Using axios directly because BloomApi does not support combining multiple promises with .all
+            BloomApi.wrapAxios(axios.all([
                 axios.get('/bloom/availableFontNames'),
                 axios.get('/bloom/bookEdit/StyleEditor/StyleEditor.html')
             ]).then(results => {
@@ -883,7 +885,7 @@ export default class StyleEditor {
                     // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                     event.stopPropagation();
                 });
-            });
+            }));
         });
     }
 

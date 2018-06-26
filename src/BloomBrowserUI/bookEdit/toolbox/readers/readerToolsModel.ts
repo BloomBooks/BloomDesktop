@@ -20,6 +20,7 @@ import { theOneLanguageDataInstance, theOneLibSynphony } from './libSynphony/syn
 import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
 import { DataWord, TextFragment } from './libSynphony/bloomSynphonyExtensions';
 import axios from "axios";
+import { BloomApi } from "../../../utils/bloomApi";
 import { EditableDivUtils } from '../../js/editableDivUtils';
 
 var SortType = {
@@ -164,7 +165,7 @@ export class ReaderToolsModel {
                     this.saveState();
                     // When we're actually changing the stage number is the only time we want
                     // to update the default.
-                    axios.post("/bloom/api/readers/io/defaultStage?stage=" + this.stageNumber);
+                    BloomApi.post("api/readers/io/defaultStage?stage=" + this.stageNumber);
                 }
 
                 if (this.readyToDoMarkup()) {
@@ -210,7 +211,7 @@ export class ReaderToolsModel {
             this.saveState();
             // When we're actually changing the level is the only time we want
             // to update the default.
-            axios.post("/bloom/api/readers/io/defaultLevel?level=" + this.levelNumber);
+            BloomApi.post("api/readers/io/defaultLevel?level=" + this.levelNumber);
         }
         this.doMarkup();
     }
@@ -817,7 +818,7 @@ export class ReaderToolsModel {
     //   }
 
     getTextOfWholeBook(): void {
-        axios.get('/bloom/api/readers/io/textOfContentPages').then(result => {
+        BloomApi.get("api/readers/io/textOfContentPages", result => {
             //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
             this.pageIDToText = result.data as any[];
             this.doMarkup();
@@ -1024,7 +1025,7 @@ export class ReaderToolsModel {
 
                 //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
                 //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
-                axios.post('/bloom/api/readers/io/synphonyLanguageData', theOneLanguageDataInstance);
+                BloomApi.postData("api/readers/io/synphonyLanguageData", theOneLanguageDataInstance);
             }, 200);
         });
     }
@@ -1036,6 +1037,7 @@ export class ReaderToolsModel {
      */
     beginGetAllSampleFiles(): Promise<void> {
         // The <any> works around a flaw in the declaration of axios.all in axios.d.ts.
+        // Using axios directly because api calls for returning the promise.
         return (<any>axios).all(this.texts.map(fileName => {
             return axios.get('/bloom/api/readers/io/sampleFileContents', { params: { fileName: fileName } })
                 .then(result => {
@@ -1214,8 +1216,8 @@ export class ReaderToolsModel {
             // we need to ensure that execution still passes through the "if all loaded" section of
             // the setAllowedWordsListList() method.
             if (stage.allowedWordsFile) {
-                axios.get('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
-                    .then(result => this.setAllowedWordsListList(result.data, index));
+                BloomApi.getWithConfig("api/readers/io/allowedWordsList", { params: { 'fileName': stage.allowedWordsFile } },
+                    result => this.setAllowedWordsListList(result.data, index));
             } else {
                 this.setAllowedWordsListList(null, index);
             }

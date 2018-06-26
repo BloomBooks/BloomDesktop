@@ -87,7 +87,7 @@ export class AccessibilityChecklist extends React.Component<
             <ApiBackedCheckbox
                 subscribeToRefresh={this.subscribeChildToRefreshEvent}
                 l10nKey={"Accessibility." + key}
-                apiEndpoint={"/bloom/api/accessibilityCheck/" + key}
+                apiEndpoint={"api/accessibilityCheck/" + key}
             >
                 {english}
             </ApiBackedCheckbox>

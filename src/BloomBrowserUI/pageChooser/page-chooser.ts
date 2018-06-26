@@ -4,21 +4,15 @@ import * as jQuery from 'jquery';
 import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import axios from "axios";
+import { BloomApi } from "../utils/bloomApi";
 import { getEditViewFrameExports } from '../bookEdit/js/bloomFrames';
 
 $(window).ready(() => {
-    axios.get("/bloom/api/pageTemplates").then(result => {
+    BloomApi.get("api/pageTemplates", result => {
         var templatesJSON = result.data;
         var pageChooser = new PageChooser(JSON.stringify(templatesJSON));
         pageChooser.loadPageGroups();
-    })
-        // If we don't catch axios errors we get mysterious JavaScript errors that just say "Error: Network Error".
-        // I think they are something to do with the request completing after the dialog closes.
-        // This catch might not be needed; I put them on all the axios requests.
-        // The danger is that we might lose some error that does matter. I don't know how to distinguish.
-        .catch(error => {
-            console.log(error);
-        });
+    });
 });
 
 // latest version of the expected JSON initialization string (from PageTemplatesApi.HandleTemplatesRequest)
@@ -188,11 +182,13 @@ class PageChooser {
         const id = this._selectedGridItem.attr("data-pageId");
         const templateBookPath = this._selectedGridItem.closest(".group").attr("data-template-book-path");
         if (this._forChooseLayout) {
+            // using axios direct because we already had a catch...BloomApi catch might be better?
             axios.post("/bloom/api/changeLayout", { pageId: id, templateBookPath: templateBookPath }).catch(error => {
                 // we seem to get unimportant errors here, possibly because the dialog gets closed before the post completes.
                 console.log(error);
             }).then(() => this.closeup());
         } else {
+            // using axios direct because we already had a catch...BloomApi catch might be better?
             axios.post("/bloom/api/addPage", { templateBookPath: templateBookPath, pageId: id }).catch(error => {
                 console.log(error);
             }).then(() => this.closeup());
