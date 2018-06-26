@@ -186,7 +186,7 @@ class AndroidPublishUI extends React.Component<
                         </Checkbox>
                         <div className="aboutMotionLink">
                             <HelpLink
-                                helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm"
+                                helpId="Concepts/Motion_Book.htm"
                                 l10nKey="PublishTab.Android.AboutMotionBooks"
                             >
                                 About Motion Books
