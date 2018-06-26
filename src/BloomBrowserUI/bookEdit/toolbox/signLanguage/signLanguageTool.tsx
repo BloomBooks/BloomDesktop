@@ -6,6 +6,7 @@ import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./signLanguage.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
+import { checkAxiosError } from "../../../utils/axiosErrorHandler";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
@@ -234,19 +235,19 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private importRecording() {
-        axios.post("/bloom/api/toolbox/importVideo");
+        checkAxiosError(axios.post("/bloom/api/toolbox/importVideo"));
     }
 
     private deleteRecording() {
-        axios.post("/bloom/api/toolbox/deleteVideo");
+        checkAxiosError(axios.post("/bloom/api/toolbox/deleteVideo"));
     }
 
     private editOutside() {
-        axios.post("/bloom/api/toolbox/editVideo");
+        checkAxiosError(axios.post("/bloom/api/toolbox/editVideo"));
     }
 
     private restoreOriginal() {
-        axios.post("/bloom/api/toolbox/restoreOriginal");
+        checkAxiosError(axios.post("/bloom/api/toolbox/restoreOriginal"));
     }
 
     public turnOnVideo() {
@@ -375,11 +376,11 @@ export class SignLanguageToolControls extends React.Component<
             // raised when the user clicks stop and we call this.mediaRecorder.stop() above.
             var blob = new Blob(this.chunks, { type: "video/webm" });
             this.chunks = []; // enable garbage collection?
-            axios.post("/bloom/api/toolbox/recordedVideo", blob, {
+            checkAxiosError(axios.post("/bloom/api/toolbox/recordedVideo", blob, {
                 headers: {
                     "Content-Type": "video/mp4"
                 }
-            });
+            }));
             // Don't know why this is necessary, but for some reason, the stream we have is no
             // longer useful after calling mediaRecorder.stop(). The monitor freezes and
             // nothing happens when I click record. So dispose of it and start a new one.

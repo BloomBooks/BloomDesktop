@@ -27,6 +27,7 @@ import { getEditViewFrameExports } from "./bloomFrames";
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 
 /**
  * Fires an event for C# to handle
@@ -715,7 +716,7 @@ interface String {
 export function setZoom(newScale: string) {
     $("div#page-scaling-container").attr("style", "transform: scale(" + newScale + "); transform-origin: top left;");
     // Save changes, so TextOverPicture draggables work correctly.
-    axios.post("/bloom/api/toolbox/saveChangesAndRethinkPageEvent");
+    checkAxiosError(axios.post("/bloom/api/toolbox/saveChangesAndRethinkPageEvent"));
 }
 
 // This is used to keep wheel zooming messages from happening too fast.

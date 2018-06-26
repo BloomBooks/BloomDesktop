@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ILocalizationProps } from "./l10n";
 import axios from "axios";
+import { checkAxiosError } from "../utils/axiosErrorHandler";
 import { Checkbox } from "./checkbox";
 
 // Use this component when you have a one-to-one correspondence between a checkbox and an api endpoint
@@ -28,10 +29,10 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
         }
     }
     private queryData() {
-        axios.get(this.props.apiEndpoint).then(result => {
+        checkAxiosError(axios.get(this.props.apiEndpoint).then(result => {
             const c = result.data as boolean;
             this.setState({ checked: c });
-        });
+        }));
     }
 
     public render() {
@@ -42,9 +43,9 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
                 l10nKey={this.props.l10nKey}
                 onCheckChanged={c => {
                     this.setState({ checked: c });
-                    axios.post(this.props.apiEndpoint, c, {
+                    checkAxiosError(axios.post(this.props.apiEndpoint, c, {
                         headers: { "Content-Type": "application/json" }
-                    });
+                    }));
                 }}
             >
                 {this.props.children}

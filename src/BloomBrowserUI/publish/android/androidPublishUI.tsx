@@ -1,4 +1,5 @@
 ﻿import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
@@ -59,15 +60,15 @@ class AndroidPublishUI extends React.Component<
             }
         });
 
-        axios.get("/bloom/api/publish/android/method").then(result => {
+        checkAxiosError(axios.get("/bloom/api/publish/android/method").then(result => {
             this.setState({ method: result.data });
-        });
-        axios
+        }));
+        checkAxiosError(axios
             .get("/bloom/api/publish/android/backColor")
-            .then(result => this.setState({ backColor: result.data }));
-        axios
+            .then(result => this.setState({ backColor: result.data })));
+        checkAxiosError(axios
             .get("/bloom/api/publish/android/motionBookMode")
-            .then(result => this.setState({ motionBookMode: result.data }));
+            .then(result => this.setState({ motionBookMode: result.data })));
     }
 
     public componentDidMount() {
@@ -82,9 +83,9 @@ class AndroidPublishUI extends React.Component<
     }
 
     componentCleanup() {
-        axios.post("/bloom/api/publish/android/cleanup").then(result => {
+        checkAxiosError(axios.post("/bloom/api/publish/android/cleanup").then(result => {
             WebSocketManager.closeSocket(kWebSocketLifetime);
-        });
+        }));
     }
 
     handleUpdateState(s: string): void {
@@ -106,11 +107,11 @@ class AndroidPublishUI extends React.Component<
         // Yes, this is a hack. I simply could not get the client to populate the clipboard.
         // I tried using react-copy-to-clipboard, but kept getting runtime errors as if the component was not found.
         // I tried using document.execCommand("copy"), but though it worked in FF and Chrome, it did not work in Bloom.
-        axios.post(
+        checkAxiosError(axios.post(
             "/bloom/api/publish/android/textToClipboard",
             document.getElementById("progress-box").innerText,
             { headers: { "Content-Type": "text/plain" } }
-        );
+        ));
     }
 
     render() {
@@ -171,7 +172,7 @@ class AndroidPublishUI extends React.Component<
                             checked={this.state.motionBookMode}
                             onCheckChanged={checked => {
                                 this.setState({ motionBookMode: checked });
-                                axios.post(
+                                checkAxiosError(axios.post(
                                     "/bloom/api/publish/android/motionBookMode",
                                     checked,
                                     {
@@ -179,7 +180,7 @@ class AndroidPublishUI extends React.Component<
                                             "Content-Type": "text/plain"
                                         }
                                     }
-                                );
+                                ));
                             }}
                         >
                             Motion Book
@@ -239,11 +240,11 @@ class AndroidPublishUI extends React.Component<
                         value={this.state.method}
                         onChange={event => {
                             this.setState({ method: event.target.value });
-                            axios.post(
+                            checkAxiosError(axios.post(
                                 "/bloom/api/publish/android/method",
                                 event.target.value,
                                 { headers: { "Content-Type": "text/plain" } }
-                            );
+                            ));
                         }}
                     >
                         <Option

@@ -12,6 +12,7 @@ import { ReaderStage, ReaderLevel, ReaderSettings } from './ReaderSettings';
 import { DataWord, clearWordCache } from './libSynphony/bloomSynphonyExtensions';
 import "../../../lib/jquery.onSafe";
 import axios from "axios";
+import { checkAxiosError } from "../../../utils/axiosErrorHandler";
 import * as _ from 'underscore';
 
 interface textMarkup extends JQueryStatic {
@@ -170,12 +171,12 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     }
     readerToolsInitialized = true;
 
-    axios.get('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
-    axios.get('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
+    checkAxiosError(axios.get('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data)));
+    checkAxiosError(axios.get('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
         console.log("done synphony init");
         result.resolve();
-    });
+    }));
     return result;
 }
 
@@ -205,7 +206,7 @@ function initializeSynphony(settingsFileContent: string): void {
     }
     else {
         // get the list of sample texts
-        axios.get('/bloom/api/readers/ui/sampleTextsList').then(result => beginSetTextsList(result.data));
+        checkAxiosError(axios.get('/bloom/api/readers/ui/sampleTextsList').then(result => beginSetTextsList(result.data)));
     }
 }
 

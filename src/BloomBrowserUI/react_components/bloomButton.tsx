@@ -1,4 +1,5 @@
 import axios from "axios";
+import { checkAxiosError } from "../utils/axiosErrorHandler";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {
@@ -57,7 +58,7 @@ export default class BloomButton extends LocalizableElement<
                 }
                 title={tip}
                 onClick={() =>
-                    axios.post("/bloom/api/" + this.props.clickEndpoint)
+                    checkAxiosError(axios.post("/bloom/api/" + this.props.clickEndpoint))
                 }
                 disabled={!this.props.enabled}
             >

@@ -2,6 +2,7 @@
 import '../../node_modules/select2/dist/js/select2.js';
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 import { EditableDivUtils } from '../js/editableDivUtils';
 import BloomHintBubbles from '../js/BloomHintBubbles';
 
@@ -35,7 +36,7 @@ export default class TextBoxProperties {
         // Why do we use .off and .on? See comment in a nearly identical location in StyleEditor.ts
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '.formatButton', () => {
-            axios.get('/bloom/bookEdit/TextBoxProperties/TextBoxProperties.html').then(result => {
+            checkAxiosError(axios.get('/bloom/bookEdit/TextBoxProperties/TextBoxProperties.html').then(result => {
                 var html = result.data;
                 propDlg.boxBeingEdited = targetBox;
 
@@ -110,7 +111,7 @@ export default class TextBoxProperties {
                     this.makeLanguageSelect();
                     this.initializeHintTab();
                 }, 0); // just push this to the end of the event queue
-            });
+            }));
         });
     }
 
@@ -374,10 +375,10 @@ export default class TextBoxProperties {
 
     makeLanguageSelect() {
         // items comes back as something like languages: [{label: 'English', tag: 'en'},{label: 'French', tag: 'fr'} ]
-        axios.get('/bloom/uiLanguages').then(result => {
+        checkAxiosError(axios.get('/bloom/uiLanguages').then(result => {
             var items: Array<any> = (<any>result.data).languages;
             this.makeSelectItems(items, 'en', 'lang-select');
-        });
+        }));
         $('#lang-select').change(e => {
             this.setHintTextForLang($('#lang-select').val());
         });

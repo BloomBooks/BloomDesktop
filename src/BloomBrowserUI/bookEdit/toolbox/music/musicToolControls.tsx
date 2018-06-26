@@ -9,6 +9,7 @@ import {
 } from "../../../react_components/l10n";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
+import { checkAxiosError } from "../../../utils/axiosErrorHandler";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
@@ -378,7 +379,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 
     private chooseMusicFile() {
-        axios.get("/bloom/api/music/ui/chooseFile").then(result => {
+        checkAxiosError(axios.get("/bloom/api/music/ui/chooseFile").then(result => {
             const fileName = result.data;
             if (!fileName) {
                 return;
@@ -392,7 +393,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                 audioEnabled: true,
                 musicName: this.getDisplayNameOfMusicFile(fileName)
             });
-        });
+        }));
     }
 
     private getDisplayNameOfMusicFile(fileName: string) {

@@ -1,4 +1,5 @@
 ﻿import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
@@ -31,16 +32,16 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
         super(props);
         this.state = { howToPublishImageDescriptions: "None", removeFontSizes: false };
 
-        axios.get("/bloom/api/publish/epub/epubSettings").then(result => {
+        checkAxiosError(axios.get("/bloom/api/publish/epub/epubSettings").then(result => {
             this.setState(result.data);
-        });
+        }));
     }
 
     private readyToReceiveProgress() {
         // once the progress box is ready, we can start generating a preview.
         // If we don't wait for that, it's pretty random whether we get the
         // "preparing preview" message.
-        axios.post("/bloom/api/publish/epub/updatePreview", this.state);
+        checkAxiosError(axios.post("/bloom/api/publish/epub/updatePreview", this.state));
     }
 
     public render() {
@@ -122,9 +123,9 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
                             id="a11yCheckerLink"
                             l10nKey="AccessibilityCheck.AccessibilityChecker"
                             onClick={() =>
-                                axios.post(
+                                checkAxiosError(axios.post(
                                     "/bloom/api/accessibilityCheck/showAccessibilityChecker"
-                                )
+                                ))
                             }
                         >
                             Accessibility Checker
@@ -146,8 +147,8 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
     // (e.g., the implemented but not shipped "links" option)
     private setPublishRadio(val: string) {
         this.setState({ howToPublishImageDescriptions: val });
-        axios.post("/bloom/api/publish/epub/imageDescriptionSetting", val,
-            { headers: { "Content-Type": "application/json" } });
+        checkAxiosError(axios.post("/bloom/api/publish/epub/imageDescriptionSetting", val,
+            { headers: { "Content-Type": "application/json" } }));
     }
 }
 

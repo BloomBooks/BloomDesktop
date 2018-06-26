@@ -1,6 +1,7 @@
 ﻿///<reference path="../../lib/jquery.myimgscale.d.ts" />
 import '../../lib/jquery.resize'; // makes jquery resize work on all elements
 import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
@@ -130,7 +131,7 @@ function SetImageTooltip(container, img) {
         container.title = "";
         return;
     }
-    axios.get("/bloom/api/image/info", { params: { image: GetRawImageUrl(img) } }).then(result => {
+    checkAxiosError(axios.get("/bloom/api/image/info", { params: { image: GetRawImageUrl(img) } }).then(result => {
         var image: any = result.data;
         // This appears to be constant even on higher dpi screens.
         // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
@@ -142,7 +143,7 @@ function SetImageTooltip(container, img) {
             + dpi + " DPI (should be 300-600)\n"
             + "Bit Depth: " + image.bitDepth.toString();
         container.title = info;
-    });
+    }));
 }
 
 function getFileLengthString(bytes): String {

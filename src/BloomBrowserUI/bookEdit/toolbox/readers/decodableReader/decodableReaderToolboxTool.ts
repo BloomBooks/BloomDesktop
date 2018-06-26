@@ -8,7 +8,7 @@ import { ToolBox } from "../../toolbox";
 import { theOneLibSynphony } from './../libSynphony/synphony_lib';
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 import axios from "axios";
-
+import { checkAxiosError } from "../../../../utils/axiosErrorHandler";
 
 export class DecodableReaderToolboxTool implements ITool {
     makeRootElement(): HTMLDivElement {
@@ -35,10 +35,10 @@ export class DecodableReaderToolboxTool implements ITool {
                     getTheOneReaderToolsModel().setStageNumber(parseInt(decState, 10), true);
                 }
             } else {
-                axios.get("/bloom/api/readers/io/defaultStage").then(result => {
+                checkAxiosError(axios.get("/bloom/api/readers/io/defaultStage").then(result => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
                     getTheOneReaderToolsModel().setStageNumber(parseInt(result.data, 10));
-                });
+                }));
             }
         });
     }

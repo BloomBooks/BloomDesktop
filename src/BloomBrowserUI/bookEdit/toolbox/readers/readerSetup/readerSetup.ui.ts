@@ -5,6 +5,7 @@ import '../../../../lib/jquery.onSafe.ts';
 import { beginSaveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords } from './readerSetup.io';
 import { DataWord } from '../libSynphony/bloomSynphonyExtensions';
 import axios from "axios";
+import { checkAxiosError } from "../../../../utils/axiosErrorHandler";
 import * as _ from 'underscore';
 
 var desiredGPCs: string[];
@@ -119,7 +120,7 @@ function process_UI_Message(event: MessageEvent): void {
                 default:
             }
             if (helpFile)
-                axios.get("/bloom/api/help/" + helpFile);
+                checkAxiosError(axios.get("/bloom/api/help/" + helpFile));
             return;
 
         default:
@@ -717,7 +718,7 @@ function attachEventHandlers(): void {
     if (typeof ($) === "function") {
 
         $("#open-text-folder").onSafe('click', function () {
-            axios.post('/bloom/api/readers/ui/openTextsFolder');
+            checkAxiosError(axios.post('/bloom/api/readers/ui/openTextsFolder'));
             return false;
         });
 
@@ -773,13 +774,13 @@ function attachEventHandlers(): void {
         });
 
         $('#setup-choose-allowed-words-file').onSafe('click', function () {
-            axios.get('/bloom/api/readers/ui/chooseAllowedWordsListFile').then(result => {
+            checkAxiosError(axios.get('/bloom/api/readers/ui/chooseAllowedWordsListFile').then(result => {
                 var fileName = result.data;
                 if (fileName) setAllowedWordsFile(fileName);
 
                 // hide stale controls
                 $('#setup-stage-matching-words').find('div').hide();
-            });
+            }));
             return false;
         });
 

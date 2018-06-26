@@ -1,4 +1,5 @@
 ﻿import axios from "axios";
+import { checkAxiosError } from "../../../utils/axiosErrorHandler";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import BloomButton from "../../../react_components/bloomButton";
@@ -52,11 +53,11 @@ class PageControls extends React.Component<{}, IPageControlsState> {
     public componentDidMount() {
         window.addEventListener("beforeunload", this.componentCleanup);
         // Get the initial state from C#-land, now that we're ready for it.
-        axios.get("/bloom/api/edit/pageControls/requestState").then(result => {
+        checkAxiosError(axios.get("/bloom/api/edit/pageControls/requestState").then(result => {
             var jsonObj = result.data; // Axios apparently recognizes the JSON and parses it automatically.
             // something like: {"CanAddPages":true,"CanDeletePage":true,"CanDuplicatePage":true,"BookLockedState":"OriginalBookMode"}
             this.setPageControlState(jsonObj);
-        });
+        }));
     }
 
     // Apparently, we have to rely on the window event when closing or refreshing the page.
@@ -67,9 +68,9 @@ class PageControls extends React.Component<{}, IPageControlsState> {
     }
 
     componentCleanup() {
-        axios.post("/bloom/api/edit/pageControls/cleanup").then(result => {
+        checkAxiosError(axios.post("/bloom/api/edit/pageControls/cleanup").then(result => {
             WebSocketManager.closeSocket(kWebSocketLifetime);
-        });
+        }));
     }
 
     updateStateForEvent(s: string): void {

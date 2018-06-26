@@ -7,6 +7,7 @@ import { AccessibilityChecklist } from "./accessibilityChecklist";
 import { DaisyChecks } from "./daisyChecks";
 import WebSocketManager from "../../utils/WebSocketManager";
 import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
@@ -26,11 +27,11 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
         this.refresh();
     }
     private refresh() {
-        axios.get("/bloom/api/accessibilityCheck/bookName").then(result => {
+        checkAxiosError(axios.get("/bloom/api/accessibilityCheck/bookName").then(result => {
             this.setState({
                 bookName: result.data
             });
-        });
+        }));
     }
 
     public render() {

@@ -1,5 +1,6 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -162,7 +163,7 @@ export class EditableDivUtils {
 
     static pasteImageCredits() {
         var activeElement = document.activeElement;
-        axios.get("/bloom/api/image/imageCreditsForWholeBook").then(result => {
+        checkAxiosError(axios.get("/bloom/api/image/imageCreditsForWholeBook").then(result => {
             var data = result.data;
             if (!data)
                 return;     // nothing to insert: no images apparently...
@@ -204,7 +205,7 @@ export class EditableDivUtils {
                     artists.appendChild(paras[0]);
                 }
             }
-        });
+        }));
         // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
         setTimeout(function () {
             (<qtipInterface>$("div[data-hasqtip]")).qtip("reposition");

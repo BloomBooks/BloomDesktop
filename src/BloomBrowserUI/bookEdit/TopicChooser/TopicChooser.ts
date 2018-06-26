@@ -3,6 +3,7 @@
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
 import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 
 // This must not be renamed. It s called directly from Bloom via RunJavaScript()
 // ReSharper disable once InconsistentNaming
@@ -77,7 +78,7 @@ export default class TopicChooser {
     }
 
     static populateTopics(currentTopicKey: string) {
-        axios.get('/bloom/topics').then(result => {
+        checkAxiosError(axios.get('/bloom/topics').then(result => {
             var topics = result.data;
             // Here, topics will be an object with a property for each known topic. Each property is a key:value pair
             // where the key is the English, and the value is the topic in the UI Language
@@ -117,6 +118,6 @@ export default class TopicChooser {
                 function () {
                     $(this).removeClass('ui-state-hover');
                 });
-        });
+        }));
     }
 }

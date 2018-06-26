@@ -4,6 +4,7 @@ import { Label } from "./l10n";
 import "./requiresBloomEnterprise.less";
 import { HelpLink } from "./helpLink";
 import axios from "axios";
+import { checkAxiosError } from "../utils/axiosErrorHandler";
 
 export interface IComponentState {
     visible: boolean;
@@ -70,9 +71,9 @@ export function enterpriseFeaturesEnabled(): EnterpriseEnabledPromise {
 // The function will be called with argument true if enterprise features are enabled, false otherwise.
 class EnterpriseEnabledPromise {
     public then(resolve: (boolean) => void) {
-        axios.get("/bloom/api/common/enterpriseFeaturesEnabled")
+        checkAxiosError(axios.get("/bloom/api/common/enterpriseFeaturesEnabled")
             .then(response => {
                 resolve(response.data);
-            });
+            }));
     }
 }

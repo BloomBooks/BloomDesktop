@@ -4,6 +4,7 @@ import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "../../lib/jquery.i18n.custom";
 import "../../lib/jquery.onSafe";
 import axios from "axios";
+import { checkAxiosError } from "../../utils/axiosErrorHandler";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -156,63 +157,63 @@ export class ToolBox {
             $(parent.window.document).find("#pure-toggle-right").change(function () { showToolboxChanged(!this.checked); });
         });
 
-        axios.all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
-            .then(axios.spread(function(showAdvancedFeatures, enabledTools) {
-            // Both requests are complete
-            // remove the experimental tools if the user doesn't want them
-            showExperimentalTools = showAdvancedFeatures.data.toString() === "true";
-            if (!showExperimentalTools) {
-                for (var i = masterToolList.length - 1; i >= 0; i--) {
-                    if (masterToolList[i].isExperimental()) {
-                        masterToolList.splice(i, 1);
+        checkAxiosError(axios.all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
+            .then(axios.spread(function (showAdvancedFeatures, enabledTools) {
+                // Both requests are complete
+                // remove the experimental tools if the user doesn't want them
+                showExperimentalTools = showAdvancedFeatures.data.toString() === "true";
+                if (!showExperimentalTools) {
+                    for (var i = masterToolList.length - 1; i >= 0; i--) {
+                        if (masterToolList[i].isExperimental()) {
+                            masterToolList.splice(i, 1);
+                        }
                     }
                 }
-            }
-            const toolsToLoad = enabledTools.data.split(",");
-            // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
-            for (var i = toolsToLoad.length - 1; i >= 0; i--) {
-                if (!masterToolList.some(mod => mod.id() === toolsToLoad[i])) {
-                    toolsToLoad.splice(i, 1);
+                const toolsToLoad = enabledTools.data.split(",");
+                // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
+                for (var i = toolsToLoad.length - 1; i >= 0; i--) {
+                    if (!masterToolList.some(mod => mod.id() === toolsToLoad[i])) {
+                        toolsToLoad.splice(i, 1);
+                    }
                 }
-            }
-            // add any tools we always show
-            for (var j = 0; j < masterToolList.length; j++) {
-                if (masterToolList[j].isAlwaysEnabled() && !toolsToLoad.includes(masterToolList[j].id())) {
-                    toolsToLoad.push(masterToolList[j].id());
+                // add any tools we always show
+                for (var j = 0; j < masterToolList.length; j++) {
+                    if (masterToolList[j].isAlwaysEnabled() && !toolsToLoad.includes(masterToolList[j].id())) {
+                        toolsToLoad.push(masterToolList[j].id());
+                    }
                 }
-            }
-            // for correct positioning and so we can find check boxes when adding others must load this one first,
-            // which means putting it last in the array.
-            toolsToLoad.push("settings");
-            $("#toolbox").hide();
-            const loadNextTool = function () {
-                if (toolsToLoad.length === 0) {
-                    $("#toolbox").accordion({
-                        heightStyle: "fill"
-                    });
-                    $("body").find("*[data-i18n]").localize(); // run localization
+                // for correct positioning and so we can find check boxes when adding others must load this one first,
+                // which means putting it last in the array.
+                toolsToLoad.push("settings");
+                $("#toolbox").hide();
+                const loadNextTool = function () {
+                    if (toolsToLoad.length === 0) {
+                        $("#toolbox").accordion({
+                            heightStyle: "fill"
+                        });
+                        $("body").find("*[data-i18n]").localize(); // run localization
 
-                    // Now bind the window's resize function to the toolbox resizer
-                    $(window).bind("resize", function () {
-                        clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-                        resizeTimer = setTimeout(resizeToolbox, 100);
-                    });
-                    // loaded them all, now we can deal with settings.
-                    restoreToolboxSettings();
-                    $("#toolbox").show();
-                    // I don't know why, but the accordion refresh inside resizeToolbox is needed
-                    // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
-                    setTimeout(resizeToolbox, 0);
-                } else {
-                    // optimize: maybe we can overlap these?
-                    const nextToolId = toolsToLoad.pop();
-                    const checkBoxId = nextToolId + "Check";
-                    const toolId = nextToolId + "Tool";
-                    beginAddTool(checkBoxId, toolId, false).then(() => loadNextTool());
-                }
-            };
-            loadNextTool();
-        }));
+                        // Now bind the window's resize function to the toolbox resizer
+                        $(window).bind("resize", function () {
+                            clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
+                            resizeTimer = setTimeout(resizeToolbox, 100);
+                        });
+                        // loaded them all, now we can deal with settings.
+                        restoreToolboxSettings();
+                        $("#toolbox").show();
+                        // I don't know why, but the accordion refresh inside resizeToolbox is needed
+                        // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
+                        setTimeout(resizeToolbox, 0);
+                    } else {
+                        // optimize: maybe we can overlap these?
+                        const nextToolId = toolsToLoad.pop();
+                        const checkBoxId = nextToolId + "Check";
+                        const toolId = nextToolId + "Tool";
+                        checkAxiosError(beginAddTool(checkBoxId, toolId, false).then(() => loadNextTool()));
+                    }
+                };
+                loadNextTool();
+            })));
 
     }
 }
@@ -240,7 +241,7 @@ export function showOrHideTool_click(chkbox) {
         chkbox.innerHTML = checkMarkString;
         ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "active\t" + chkbox.id + "\t1");
         if (tool) {
-            beginAddTool(chkbox.id, tool, true);
+            checkAxiosError(beginAddTool(chkbox.id, tool, true));
         }
     } else {
         chkbox.innerHTML = "";
@@ -273,7 +274,7 @@ export function activateSignLanguageTool() {
 }
 
 export function restoreToolboxSettings() {
-    axios.get("/bloom/api/toolbox/settings").then(result => {
+    checkAxiosError(axios.get("/bloom/api/toolbox/settings").then(result => {
         savedSettings = result.data;
         var pageFrame = getPageFrame();
         if (pageFrame.contentWindow.document.readyState === "loading") {
@@ -282,7 +283,7 @@ export function restoreToolboxSettings() {
             return;
         }
         restoreToolboxSettingsWhenPageReady(result.data); // not loading, we can proceed immediately.
-    });
+    }));
 }
 
 export function applyToolboxStateToUpdatedPage() {
