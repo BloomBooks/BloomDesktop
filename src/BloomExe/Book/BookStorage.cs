@@ -538,7 +538,7 @@ namespace Bloom.Book
 			get { return "video/"; }
 		}
 
-		internal static string GetVideoFolderPath(string bookFolderPath)
+		private static string GetVideoFolderPath(string bookFolderPath)
 		{
 			return Path.Combine(bookFolderPath, GetVideoFolderName);
 		}
