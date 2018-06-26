@@ -178,7 +178,7 @@ namespace Bloom.web.controllers
 					request.Failed("no original");
 					return;
 				}
-				var newVideoPath = Path.Combine(BookStorage.GetVideoFolderPath(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
+				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
 				RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
 				RobustFile.Copy(newOriginalPath, newVideoPath);
@@ -224,7 +224,7 @@ namespace Bloom.web.controllers
 				var begin = DateTime.Now;
 				proc.Exited += (sender, args) =>
 				{
-					var videoFolderPath = BookStorage.GetVideoFolderPath(CurrentBook.FolderPath);
+					var videoFolderPath = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
 					var lastModifiedFile = new DirectoryInfo(videoFolderPath)
 						.GetFiles("*.mp4")
 						.OrderByDescending(f => GetRealLastModifiedTime(f))
@@ -275,13 +275,13 @@ namespace Bloom.web.controllers
 				if (result == DialogResult.OK)
 					path = dlg.FileName;
 			}));
-			if (String.IsNullOrEmpty(path))
+			if (string.IsNullOrEmpty(path))
 			{
 				request.Failed("user did not select video file");
 			}
 			else
 			{
-				var newVideoPath = Path.Combine(BookStorage.GetVideoFolderPath(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
+				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				RobustFile.Copy(path, newVideoPath);
 				SaveChangedVideo(videoContainer, newVideoPath, "Bloom had a problem including that video");
 				request.PostSucceeded();
