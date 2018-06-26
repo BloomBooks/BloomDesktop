@@ -75,7 +75,6 @@ namespace Bloom.Collection
 			this.showTroubleShooterCheckBox = new System.Windows.Forms.CheckBox();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this._showExperimentalFeatures = new System.Windows.Forms.CheckBox();
-			this._showExperimentalTemplates = new System.Windows.Forms.CheckBox();
 			this._okButton = new System.Windows.Forms.Button();
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -647,7 +646,6 @@ namespace Bloom.Collection
 			this.tabPage4.Controls.Add(this.showTroubleShooterCheckBox);
 			this.tabPage4.Controls.Add(this._automaticallyUpdate);
 			this.tabPage4.Controls.Add(this._showExperimentalFeatures);
-			this.tabPage4.Controls.Add(this._showExperimentalTemplates);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
@@ -696,28 +694,13 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentalFeatures, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentalFeatures, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._showExperimentalFeatures, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands");
-			this._showExperimentalFeatures.Location = new System.Drawing.Point(50, 82);
+			this._showExperimentalFeatures.Location = new System.Drawing.Point(50, 37);
 			this._showExperimentalFeatures.Name = "_showExperimentalFeatures";
-			this._showExperimentalFeatures.Size = new System.Drawing.Size(217, 23);
+			this._showExperimentalFeatures.Size = new System.Drawing.Size(353, 23);
 			this._showExperimentalFeatures.TabIndex = 4;
 			this._showExperimentalFeatures.Text = "Show Experimental Features";
 			this._showExperimentalFeatures.UseVisualStyleBackColor = true;
-			this._showExperimentalFeatures.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
-			// 
-			// _showExperimentalTemplates
-			// 
-			this._showExperimentalTemplates.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._showExperimentalTemplates, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentalTemplates, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentalTemplates, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates");
-			this._showExperimentalTemplates.Location = new System.Drawing.Point(50, 37);
-			this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
-			this._showExperimentalTemplates.Size = new System.Drawing.Size(353, 23);
-			this._showExperimentalTemplates.TabIndex = 3;
-			this._showExperimentalTemplates.Text = "Show Experimental Templates (e.g. Picture Dictionary)";
-			this._showExperimentalTemplates.UseVisualStyleBackColor = true;
-			this._showExperimentalTemplates.CheckedChanged += new System.EventHandler(this._showExperimentalTemplates_CheckedChanged);
+			this._showExperimentalFeatures.CheckedChanged += new System.EventHandler(this._showExperimentalFeatures_CheckedChanged);
 			// 
 			// _okButton
 			// 
@@ -872,7 +855,6 @@ namespace Bloom.Collection
 		private System.Windows.Forms.ComboBox _fontComboLanguage2;
 		private System.Windows.Forms.Label _language3FontLabel;
 		private System.Windows.Forms.ComboBox _fontComboLanguage3;
-        private System.Windows.Forms.CheckBox _showExperimentalTemplates;
 		private System.Windows.Forms.CheckBox _showExperimentalFeatures;
 		private Button _helpButton;
 		private TextBox _xmatterDescription;

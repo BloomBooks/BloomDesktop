@@ -44,7 +44,6 @@ namespace Bloom.Collection
 				_language3Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language3InSourceCollection", "Language 3", "In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label");
 			}
 
-			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 			_showExperimentalFeatures.Checked = Settings.Default.ShowExperimentalFeatures;
 			// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
 			if (SIL.PlatformUtilities.Platform.IsWindows)
@@ -421,13 +420,7 @@ namespace Bloom.Collection
 				ChangeThatRequiresRestart();
 		}
 
-		private void _showExperimentalTemplates_CheckedChanged(object sender, EventArgs e)
-		{
-			Settings.Default.ShowExperimentalBooks = _showExperimentalTemplates.Checked;
-			ChangeThatRequiresRestart();
-		}
-
-		private void checkBox1_CheckedChanged(object sender, EventArgs e)
+		private void _showExperimentalFeatures_CheckedChanged(object sender, EventArgs e)
 		{
 			Settings.Default.ShowExperimentalFeatures = _showExperimentalFeatures.Checked;
 			ChangeThatRequiresRestart();
