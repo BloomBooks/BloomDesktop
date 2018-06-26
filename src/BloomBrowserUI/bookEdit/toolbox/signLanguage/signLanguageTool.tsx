@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Label } from "../../../react_components/l10n";
+import { HelpLink } from "../../../react_components/helpLink";
 import axios from "axios";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -228,6 +229,12 @@ export class SignLanguageToolControls extends React.Component<
                     >
                         Press any key to stop
                     </Label>
+                    <div className="helpLinkWrapper">
+                        <HelpLink
+                            l10nKey="Common.Help"
+                            helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm"
+                        >Help</HelpLink>
+                    </div>
                 </div>
             </RequiresBloomEnterpriseWrapper>
         );
