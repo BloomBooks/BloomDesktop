@@ -8,6 +8,7 @@ using Bloom.Book;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Epub;
 using SIL.CommandLineProcessing;
+using SIL.PlatformUtilities;
 using SIL.Progress;
 
 namespace Bloom.web.controllers
@@ -209,11 +210,31 @@ namespace Bloom.web.controllers
 			var fullNpmPath = whereResult.StandardOutput.Split('\n')[0].Trim();
 			// note: things like nvm will mess with where the global node_modules lives. The best way seems to be
 			// to ask npm:
-			var result = CommandLineRunner.Run("npm.cmd", "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
+			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
+			var result = CommandLineRunner.Run(npmFileName, "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
 				new NullProgress());
+
+			const string kCoreError = "Could not get \"npm -g root\" to work. Is Node & npm installed and working?";
+			if (result == null)
+			{
+				// I don't think this could happen, but *something* was null for Sue.
+				ReportErrorAndFailTheRequest(request, whereResult, $"{kCoreError} CommandLineRunner.Run() returned null.");
+				return null;
+			}
+			if (!string.IsNullOrWhiteSpace(result.StandardError))
+			{
+				ReportErrorAndFailTheRequest(request, whereResult, $"{kCoreError} <br>StandardError:<br>" + result.StandardError);
+				return null;
+			}
+			if (result.StandardOutput == null)
+			{
+				ReportErrorAndFailTheRequest(request, whereResult, $"{kCoreError} StandardOutput was null.");
+				return null;
+			}
+
 			if (result?.StandardOutput == null || !result.StandardOutput.Contains("node_modules"))
 			{
-				ReportErrorAndFailTheRequest(request, whereResult, "Could not get \"npm -g root\" to work. Is Node & npm installed and working?");
+				ReportErrorAndFailTheRequest(request, whereResult, kCoreError);
 				return null;
 			}
 
