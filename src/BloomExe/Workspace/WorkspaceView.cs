@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using Bloom.ToPalaso;
 using Gecko.Cache;
 using SIL.Windows.Forms.WritingSystems;
+using SIL.PlatformUtilities;
 
 namespace Bloom.Workspace
 {
@@ -303,8 +304,13 @@ namespace Bloom.Workspace
 		{
 			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick);
 			_uiLanguageMenu.DropDown.Closing += DropDown_Closing;
+			_helpMenu.DropDown.Closing += DropDown_Closing;
+			_uiLanguageMenu.DropDown.Opening += DropDown_Opening;
+			_helpMenu.DropDown.Opening += DropDown_Opening;
 			// one side-effect of the above is if the _uiLanguageMenu dropdown is open, a click on the _helpMenu won't close it
+			// (and vice versa)
 			_helpMenu.Click += (sender, args) => _uiLanguageMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
+			_uiLanguageMenu.Click += (sender, e) => _helpMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
 
 			// Removing this for now (BL-5111)
 			//_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
@@ -321,27 +327,51 @@ namespace Bloom.Workspace
 			//});
 		}
 
+		private bool _ignoreNextAppFocusChange;
+		/// <summary>
+		/// Prevent undesirable closing of dropdown menus.  This is worth losing some desired
+		/// closings, especially for Linux/Gnome in which the menus refuse to stay open at all
+		/// without this fix.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5471.
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6107.
+		/// The exact behavior seems rather system dependent.
+		/// </remarks>
 		private void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
 		{
 			// ReSharper disable once SwitchStatementMissingSomeCases
 			switch (e.CloseReason)
 			{
 				case ToolStripDropDownCloseReason.AppFocusChange:
-					// this is usually just hovering over the help menu
-					e.Cancel = true;
+					// this is usually just hovering over the help menu on Windows.
+					// there is always one spurious focus change on Linux/Gnome.
+					e.Cancel = _ignoreNextAppFocusChange;
 					break;
 				case ToolStripDropDownCloseReason.AppClicked:
 					// "reason" is AppClicked, but is it legit?
 					// Every other time we get AppClicked even if we are just hovering over the help menu.
+				case ToolStripDropDownCloseReason.Keyboard:
+					// If "reason" is Keyboard, that seems to be generated just by moving the mouse over the
+					// adjacent (visible) button on Linux.
 					var mousePos = _helpMenu.Owner.PointToClient(MousePosition);
-					if (_helpMenu.Bounds.Contains(mousePos))
+					var bounds = (sender == _helpMenu.DropDown) ? _uiLanguageMenu.Bounds : _helpMenu.Bounds;
+					if (bounds.Contains(mousePos))
 					{
-						e.Cancel = true; // probably a false positive
+						// probably a false positive
+						e.Cancel = e.CloseReason==ToolStripDropDownCloseReason.AppClicked || Platform.IsLinux;
 					}
 					break;
-				default: // includes ItemClicked, Keyboard, CloseCalled
+				default: // includes ItemClicked, CloseCalled
 					break;
 			}
+			_ignoreNextAppFocusChange = Platform.IsWindows;	// preserve the fix for BL-5476.
+			Debug.WriteLine("DEBUG WorkspaceView.DropDown_Closing: reason={0}, cancel={1}", e.CloseReason.ToString(), e.Cancel);
+		}
+
+		void DropDown_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			_ignoreNextAppFocusChange = true;
 		}
 
 		/// <summary>
