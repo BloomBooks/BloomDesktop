@@ -15,6 +15,7 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
+using Bloom.Properties;
 
 namespace Bloom.Book
 {
@@ -472,6 +473,15 @@ namespace Bloom.Book
 							"(download book to read full email address)"));
 				LicenseNotes = notes;
 			}
+		}
+
+		/// <summary>
+		/// Check whether this book should be shown.  If it is not experimental, the answer is always "yes".
+		/// If it is experimental, then show it only if the user wants experimental features.
+		/// </summary>
+		internal bool ShowThisBook()
+		{
+			return !IsExperimental || Settings.Default.ShowExperimentalFeatures;
 		}
 
 		private static bool TagIsTopic(string tag)

@@ -508,7 +508,7 @@ namespace Bloom.CollectionTab
 			{
 				try
 				{
-					if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
+					if (bookInfo.ShowThisBook())
 					{
 						loadedAtLeastOneBook = true;
 						AddOneBook(bookInfo, flowLayoutPanel, collection);

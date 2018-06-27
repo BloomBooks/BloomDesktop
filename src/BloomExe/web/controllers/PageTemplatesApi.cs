@@ -279,8 +279,27 @@ namespace Bloom.web.controllers
 				bookTemplatePaths.RemoveAt(indexOfBasicBook);
 				bookTemplatePaths.Insert(1,pathOfBasicBook);
 			}
+			// Remove invisible templates.
+			for (int i = bookTemplatePaths.Count - 1; i >= 0; --i)
+			{
+				if (IsTemplateInvisible(bookTemplatePaths[i]))
+					bookTemplatePaths.RemoveAt(i);
+			}
 
 			return bookTemplatePaths.Distinct().ToList();
+		}
+
+		/// <summary>
+		/// The pages from the template are unwanted if the template itself isn't visible.
+		/// </summary>
+		/// <remarks>
+		/// Experimental templates are invisible if the user doesn't want experimental features.
+		/// </remarks>
+		private static bool IsTemplateInvisible(string templatePath)
+		{
+			var folderPath = Path.GetDirectoryName(templatePath);
+			var info = new BookInfo(folderPath, true);
+			return !info.ShowThisBook();
 		}
 
 		private dynamic GetPageGroup(string path)
