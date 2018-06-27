@@ -111,8 +111,36 @@ namespace Bloom.Edit
 			_cutButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 			_pasteButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 			_copyButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+
+			// Prevent the layout choices and book language dropdown menus from closing
+			// immediately in Linux/Gnome (default for ubuntu 18.04 aka bionic).
+			_layoutChoices.DropDown.Closing += DropDown_Closing;
+			_contentLanguagesDropdown.DropDown.Closing += DropDown_Closing;
 #endif
 		}
+
+#if __MonoCS__
+		/// <summary>
+		/// Prevent the book language and layout dropdown menus from closing prematurely.
+		/// This is a big problem for Gnome, which is the default window manager in Ubuntu 18.04.
+		/// Clicking outside the menu will no longer automatically close the menu with this fix.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6107.
+		/// See also WorkspaceView.DropDown_Closing (UI language menu dropdown).
+		/// </remarks>
+		void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+		{
+			//Console.WriteLine("DEBUG DropDown_Closing: reason = {0}", e.CloseReason.ToString());
+			if (e.CloseReason == ToolStripDropDownCloseReason.AppFocusChange)
+				e.Cancel = true;
+		}
+
+		// We could use the _*Choices.DropDown.MouseLeave events to close the dropdown menus,
+		// but that's as abnormal as the current behavior of not closing when clicking outside
+		// the menu.  The current behavior has already been around for the UI language dropdown
+		// menu for some time, so users may well have seen it before.
+#endif
 
 		/// <summary>
 		/// Might add a menu item to the Gecko context menu.

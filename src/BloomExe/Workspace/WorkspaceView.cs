@@ -305,6 +305,7 @@ namespace Bloom.Workspace
 			_uiLanguageMenu.DropDown.Closing += DropDown_Closing;
 			// one side-effect of the above is if the _uiLanguageMenu dropdown is open, a click on the _helpMenu won't close it
 			_helpMenu.Click += (sender, args) => _uiLanguageMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
+			_helpMenu.DropDown.Closing += DropDown_Closing;
 
 			// Removing this for now (BL-5111)
 			//_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
@@ -331,6 +332,8 @@ namespace Bloom.Workspace
 					e.Cancel = true;
 					break;
 				case ToolStripDropDownCloseReason.AppClicked:
+					if (sender == _helpMenu.DropDown)
+						break;
 					// "reason" is AppClicked, but is it legit?
 					// Every other time we get AppClicked even if we are just hovering over the help menu.
 					var mousePos = _helpMenu.Owner.PointToClient(MousePosition);
