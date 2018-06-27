@@ -135,7 +135,10 @@ export class SignLanguageToolControls extends React.Component<
                         id="editOutsideWrapper"
                         className={
                             "videoButtonWrapper" +
-                            (this.state.haveRecording && this.state.stateClass === "idle" ? "" : " disabled ")
+                            (this.state.haveRecording &&
+                            this.state.stateClass === "idle"
+                                ? ""
+                                : " disabled ")
                         }
                     >
                         <button
@@ -173,14 +176,15 @@ export class SignLanguageToolControls extends React.Component<
                         id="importRecordingWrapper"
                         className={
                             "videoButtonWrapper" +
-                            (this.state.stateClass === "idle" ? "" : " disabled")
+                            (this.state.stateClass === "idle"
+                                ? ""
+                                : " disabled")
                         }
                     >
                         <button
                             id="videoImport"
                             onClick={() => this.importRecording()}
-                        >
-                        </button>
+                        />
                         <Label
                             className="commandLabel"
                             l10nKey="EditTab.Toolbox.SignLanguage.ImportVideo"
@@ -193,7 +197,10 @@ export class SignLanguageToolControls extends React.Component<
                         id="deleteRecordingWrapper"
                         className={
                             "videoButtonWrapper" +
-                            (this.state.haveRecording && this.state.stateClass === "idle" ? "" : " disabled ")
+                            (this.state.haveRecording &&
+                            this.state.stateClass === "idle"
+                                ? ""
+                                : " disabled ")
                         }
                     >
                         <button
@@ -233,7 +240,9 @@ export class SignLanguageToolControls extends React.Component<
                         <HelpLink
                             l10nKey="Common.Help"
                             helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm"
-                        >Help</HelpLink>
+                        >
+                            Help
+                        </HelpLink>
                     </div>
                 </div>
             </RequiresBloomEnterpriseWrapper>
@@ -297,7 +306,7 @@ export class SignLanguageToolControls extends React.Component<
     // we have to be able to remove it later.
     private onKeyPress = () => {
         this.toggleRecording();
-    }
+    };
 
     // Called when the record or stop button is clicked, or if a key is pressed while not in the idle state
     // ...depending on the current state it either starts or ends the recording. It works as the action function
@@ -480,14 +489,14 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         if (
             y < container.offsetHeight - 40 && // above the control bar across the bottom
             (y < container.offsetHeight / 2 - buttonRadius || // above the play button
-                y > container.offsetHeight / 2 + buttonRadius || // below the play button
-                x < container.offsetWidth / 2 - buttonRadius || // left of play button
+            y > container.offsetHeight / 2 + buttonRadius || // below the play button
+            x < container.offsetWidth / 2 - buttonRadius || // left of play button
                 x > container.offsetWidth / 2 + buttonRadius)
         ) {
             // right of play button
             event.preventDefault();
         }
-    }
+    };
 
     public newPageReady() {
         const containers = SignLanguageTool.getVideoContainers(false);
@@ -557,18 +566,15 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             });
             return;
         }
-        BloomApi
-            .get("api/toolbox/fileExists?filename=" + src,
-                result => {
-                    this.reactControls.setState({ haveRecording: result.data });
-                });
-        BloomApi
-            .get(
-                "api/toolbox/fileExists?filename=" +
-                src.replace(".mp4", ".orig"),
-                result => {
-                    this.reactControls.setState({ originalExists: result.data });
-                });
+        BloomApi.get("api/toolbox/fileExists?filename=" + src, result => {
+            this.reactControls.setState({ haveRecording: result.data });
+        });
+        BloomApi.get(
+            "api/toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
+            result => {
+                this.reactControls.setState({ originalExists: result.data });
+            }
+        );
     }
 
     private static overlayClass: string = "bloom-videoOverlay";
