@@ -407,6 +407,12 @@ namespace Bloom
 //			}
 		}
 
+		static bool IsTemplateBookFolder(string path)
+		{
+			var info = new BookInfo(path, false);
+			return info.IsSuitableForMakingShells || info.IsSuitableForMakingTemplates;
+		}
+
 		public static IEnumerable<string> GetUserInstalledDirectories()
 		{
 //Note: This is ordering may no be sufficient. The intent is to use the versino of a css from
@@ -426,7 +432,14 @@ namespace Bloom
 					//more likely, what we're looking for will be found in the book folders of the collection
 					foreach (var templateDirectory in Directory.GetDirectories(dir))
 					{
-						yield return templateDirectory;
+						// Per discussion in BL-6031, we only want to search template books.
+						// For example, if the user downloads a new version of Story Primer,
+						// with a new Story Primer.css, and opens a book that uses that
+						// style sheet, we want them to get the updated style sheet. But if
+						// they just download a new book made from Story Primer, we don't want
+						// them to get an updated (or obsolete) style sheet from there.
+						if (ProjectContext.IsTemplateBookFolder(templateDirectory))
+							yield return templateDirectory;
 					}
 				}
 
@@ -438,7 +451,8 @@ namespace Bloom
 					{
 						foreach (var templateDirectory in Directory.GetDirectories(collectionDirectory))
 						{
-							yield return templateDirectory;
+							if (ProjectContext.IsTemplateBookFolder(templateDirectory))
+								yield return templateDirectory;
 						}
 					}
 				}
