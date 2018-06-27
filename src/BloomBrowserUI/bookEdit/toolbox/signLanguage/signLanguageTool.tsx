@@ -80,6 +80,9 @@ export class SignLanguageToolControls extends React.Component<
                         this.state.stateClass +
                         (this.state.enabled ? "" : " disabled")
                     }
+                    // don't use setControlPointerEvents() here,
+                    // or the user won't ever be able to turn off recording!
+                    style={{ pointerEvents: this.state.enabled ? "auto" : "none" }}
                 >
                     <Label l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees">
                         Here is what your camera sees:
@@ -137,6 +140,7 @@ export class SignLanguageToolControls extends React.Component<
                             "videoButtonWrapper" +
                             (this.state.haveRecording && this.state.stateClass === "idle" ? "" : " disabled ")
                         }
+                        style={this.setControlPointerEvents(this.state.haveRecording)}
                     >
                         <button
                             id="editOutsideButton"
@@ -156,6 +160,7 @@ export class SignLanguageToolControls extends React.Component<
                             "videoButtonWrapper" +
                             (this.state.originalExists ? "" : " disabled ")
                         }
+                        style={this.setControlPointerEvents(this.state.originalExists)}
                     >
                         <button
                             id="restoreOriginalButton"
@@ -175,6 +180,7 @@ export class SignLanguageToolControls extends React.Component<
                             "videoButtonWrapper" +
                             (this.state.stateClass === "idle" ? "" : " disabled")
                         }
+                        style={this.setControlPointerEvents(true)}
                     >
                         <button
                             id="videoImport"
@@ -195,6 +201,7 @@ export class SignLanguageToolControls extends React.Component<
                             "videoButtonWrapper" +
                             (this.state.haveRecording && this.state.stateClass === "idle" ? "" : " disabled ")
                         }
+                        style={this.setControlPointerEvents(this.state.haveRecording)}
                     >
                         <button
                             id="videoDelete"
@@ -237,6 +244,18 @@ export class SignLanguageToolControls extends React.Component<
                     </div>
                 </div>
             </RequiresBloomEnterpriseWrapper>
+        );
+    }
+
+    // Disables mouse events on an element (and its children) during recording.
+    // if extraCondition is false, the element will not accept pointer events
+    // if no extraCondition is necessary, pass 'true'
+    private setControlPointerEvents(extraCondition: boolean): React.CSSProperties {
+        return (
+            {
+                pointerEvents: extraCondition && this.state.enabled && this.state.stateClass === "idle" ?
+                    "auto" : "none"
+            }
         );
     }
 
