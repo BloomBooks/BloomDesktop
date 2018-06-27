@@ -338,6 +338,9 @@ namespace Bloom.Publish.Epub
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
 				new XElement(dc + "source", source),
+				// for now this gets the book's author from the smallCoverCredits datadiv item
+				// in v4.4 we may have a Book Metadata tool that replaces it
+				new XElement(dc + "creator", GetBookAuthor()),
 				new XElement(opf + "meta",
 					new XAttribute("property", "dcterms:modified"),
 					new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z")); // like 2012-03-20T11:37:00Z
@@ -399,6 +402,20 @@ namespace Bloom.Publish.Epub
 			}
 
 			MakeSpine(opf, rootElt, manifestPath);
+		}
+
+		private string GetBookAuthor()
+		{
+			var coverCredits = Book.GetDataItem("smallCoverCredits");
+			if (!MultiTextBase.IsEmpty(coverCredits))
+			{
+				var authorParagraph = coverCredits.GetBestAlternative("*");
+				var author = XElement.Parse(authorParagraph).GetInnerText();
+				if (!string.IsNullOrEmpty(author))
+					return author;
+			}
+
+			return string.Empty;
 		}
 
 		/// <summary>
