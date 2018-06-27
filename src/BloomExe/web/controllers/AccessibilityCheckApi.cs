@@ -211,9 +211,9 @@ namespace Bloom.web.controllers
 			// to ask npm:
 			var result = CommandLineRunner.Run("npm.cmd", "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
 				new NullProgress());
-			if (!result.StandardOutput.Contains("node_modules"))
+			if (result?.StandardOutput == null || !result.StandardOutput.Contains("node_modules"))
 			{
-				ReportErrorAndFailTheRequest(request, whereResult, "Could not get npm -g root to work");
+				ReportErrorAndFailTheRequest(request, whereResult, "Could not get \"npm -g root\" to work. Is Node & npm installed and working?");
 				return null;
 			}
 
