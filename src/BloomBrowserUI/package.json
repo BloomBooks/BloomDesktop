@@ -24,6 +24,7 @@
     "author": "SIL International",
     "license": "MIT",
     "dependencies": {
+        "@types/react": "16.4.2",
         "@types/rc-slider": "^8.2.2",
         "@types/react-tabs": "^1.0.4",
         "@types/webrtc": "^0.0.23",
