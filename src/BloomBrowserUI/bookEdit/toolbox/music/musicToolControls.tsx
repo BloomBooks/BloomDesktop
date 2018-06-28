@@ -8,7 +8,7 @@ import {
     Label
 } from "../../../react_components/l10n";
 import { RadioGroup, Radio } from "../../../react_components/radio";
-import axios from "axios";
+import { BloomApi } from "../../../utils/bloomApi";
 import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
@@ -378,7 +378,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 
     private chooseMusicFile() {
-        axios.get("/bloom/api/music/ui/chooseFile").then(result => {
+        BloomApi.get("api/music/ui/chooseFile", result => {
             const fileName = result.data;
             if (!fileName) {
                 return;

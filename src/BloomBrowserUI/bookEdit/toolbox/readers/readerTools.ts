@@ -12,6 +12,7 @@ import { ReaderStage, ReaderLevel, ReaderSettings } from './ReaderSettings';
 import { DataWord, clearWordCache } from './libSynphony/bloomSynphonyExtensions';
 import "../../../lib/jquery.onSafe";
 import axios from "axios";
+import { BloomApi } from "../../../utils/bloomApi";
 import * as _ from 'underscore';
 
 interface textMarkup extends JQueryStatic {
@@ -170,8 +171,8 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     }
     readerToolsInitialized = true;
 
-    axios.get('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
-    axios.get('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
+    BloomApi.get("api/collection/defaultFont", result => setDefaultFont(result.data));
+    BloomApi.get("api/readers/io/readerToolSettings", settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
         console.log("done synphony init");
         result.resolve();
@@ -205,7 +206,7 @@ function initializeSynphony(settingsFileContent: string): void {
     }
     else {
         // get the list of sample texts
-        axios.get('/bloom/api/readers/ui/sampleTextsList').then(result => beginSetTextsList(result.data));
+        BloomApi.get("api/readers/ui/sampleTextsList", result => beginSetTextsList(result.data));
     }
 }
 
@@ -270,11 +271,13 @@ function beginRefreshEverything(settings: ReaderSettings): Promise<void> {
     }
     else {
         // reload the sample texts
+        // Using axios directly because our api at this point calls for returning the promise.
         return <any>axios.get('/bloom/api/readers/io/sampleTextsList').then(result => beginSetTextsList(result.data));
     }
 }
 
 export function beginSaveChangedSettings(settings: ReaderSettings, previousMoreWords: string): Promise<void> {
+    // Using axios directly because our api at this point calls for returning the promise.
     return <any>axios.post('/bloom/api/readers/io/readerToolSettings', settings)
         .then(result => {
             // reviewslog: following previous logic that we need to reload files if useAllowedWords

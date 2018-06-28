@@ -6,7 +6,7 @@ import { LearnAboutAccessibility } from "./learnAboutAccessibility";
 import { AccessibilityChecklist } from "./accessibilityChecklist";
 import { DaisyChecks } from "./daisyChecks";
 import WebSocketManager from "../../utils/WebSocketManager";
-import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
 
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
@@ -26,7 +26,7 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
         this.refresh();
     }
     private refresh() {
-        axios.get("/bloom/api/accessibilityCheck/bookName").then(result => {
+        BloomApi.get("api/accessibilityCheck/bookName", result => {
             this.setState({
                 bookName: result.data
             });
@@ -62,6 +62,6 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
 }
 
 // allow plain 'ol javascript in the html to connect up react
-(window as any).connectAccessibilityCheckScreen = function(element) {
+(window as any).connectAccessibilityCheckScreen = function (element) {
     ReactDOM.render(<AccessibilityCheckScreen />, element);
 };

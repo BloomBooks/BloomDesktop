@@ -1,7 +1,7 @@
 /// <reference path="../../typings/select2/select2.d.ts" />
 import '../../node_modules/select2/dist/js/select2.js';
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
-import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
 import { EditableDivUtils } from '../js/editableDivUtils';
 import BloomHintBubbles from '../js/BloomHintBubbles';
 
@@ -35,7 +35,7 @@ export default class TextBoxProperties {
         // Why do we use .off and .on? See comment in a nearly identical location in StyleEditor.ts
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '.formatButton', () => {
-            axios.get('/bloom/bookEdit/TextBoxProperties/TextBoxProperties.html').then(result => {
+            BloomApi.get("bookEdit/TextBoxProperties/TextBoxProperties.html", result => {
                 var html = result.data;
                 propDlg.boxBeingEdited = targetBox;
 
@@ -374,7 +374,7 @@ export default class TextBoxProperties {
 
     makeLanguageSelect() {
         // items comes back as something like languages: [{label: 'English', tag: 'en'},{label: 'French', tag: 'fr'} ]
-        axios.get('/bloom/uiLanguages').then(result => {
+        BloomApi.get("uiLanguages", result => {
             var items: Array<any> = (<any>result.data).languages;
             this.makeSelectItems(items, 'en', 'lang-select');
         });

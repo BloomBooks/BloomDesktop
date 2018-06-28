@@ -5,6 +5,7 @@ import '../../../../lib/jquery.onSafe.ts';
 import { beginSaveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords } from './readerSetup.io';
 import { DataWord } from '../libSynphony/bloomSynphonyExtensions';
 import axios from "axios";
+import { BloomApi } from "../../../../utils/bloomApi";
 import * as _ from 'underscore';
 
 var desiredGPCs: string[];
@@ -119,7 +120,7 @@ function process_UI_Message(event: MessageEvent): void {
                 default:
             }
             if (helpFile)
-                axios.get("/bloom/api/help/" + helpFile);
+                BloomApi.post("api/help/" + helpFile);
             return;
 
         default:
@@ -717,7 +718,7 @@ function attachEventHandlers(): void {
     if (typeof ($) === "function") {
 
         $("#open-text-folder").onSafe('click', function () {
-            axios.post('/bloom/api/readers/ui/openTextsFolder');
+            BloomApi.post("api/readers/ui/openTextsFolder");
             return false;
         });
 
@@ -773,7 +774,7 @@ function attachEventHandlers(): void {
         });
 
         $('#setup-choose-allowed-words-file').onSafe('click', function () {
-            axios.get('/bloom/api/readers/ui/chooseAllowedWordsListFile').then(result => {
+            BloomApi.get("api/readers/ui/chooseAllowedWordsListFile", result => {
                 var fileName = result.data;
                 if (fileName) setAllowedWordsFile(fileName);
 
@@ -848,6 +849,8 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
     }
 
     // if you are here, the file name is not in use
+    // Using axios directly because delete doesn't return a promise and doesn't need the BloomApi
+    // treatment.
     axios.delete('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': fileName } });
 }
 

@@ -1,6 +1,6 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { GetButtonModifier } from "./bloomImages";
-import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
@@ -30,7 +30,7 @@ const mouseOutFunction = e => {
 };
 
 export function SetupVideoEditing(container) {
-    axios.get("/bloom/api/featurecontrol/enterpriseEnabled").then(result => {
+    BloomApi.get("/bloom/api/featurecontrol/enterpriseEnabled", result => {
         const isEnterpriseEnabled = result.data;
         $(container)
             .find(".bloom-videoContainer")
@@ -46,8 +46,6 @@ export function SetupVideoEditing(container) {
         document.body.addEventListener("mouseover", mouseOverFunction);
         document.body.removeEventListener("mouseout", mouseOutFunction);
         document.body.addEventListener("mouseout", mouseOutFunction);
-    }).catch(error => {
-        console.log(error.statusText);
     });
 }
 

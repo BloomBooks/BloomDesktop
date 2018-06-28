@@ -1,12 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Label } from "../../../react_components/l10n";
-import { HelpLink } from "../../../react_components/helpLink";
-import axios from "axios";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./signLanguage.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
+import { BloomApi } from "../../../utils/bloomApi";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
@@ -241,19 +240,19 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private importRecording() {
-        axios.post("/bloom/api/toolbox/importVideo");
+        BloomApi.post("api/toolbox/importVideo");
     }
 
     private deleteRecording() {
-        axios.post("/bloom/api/toolbox/deleteVideo");
+        BloomApi.post("api/toolbox/deleteVideo");
     }
 
     private editOutside() {
-        axios.post("/bloom/api/toolbox/editVideo");
+        BloomApi.post("api/toolbox/editVideo");
     }
 
     private restoreOriginal() {
-        axios.post("/bloom/api/toolbox/restoreOriginal");
+        BloomApi.post("api/toolbox/restoreOriginal");
     }
 
     public turnOnVideo() {
@@ -382,7 +381,7 @@ export class SignLanguageToolControls extends React.Component<
             // raised when the user clicks stop and we call this.mediaRecorder.stop() above.
             var blob = new Blob(this.chunks, { type: "video/webm" });
             this.chunks = []; // enable garbage collection?
-            axios.post("/bloom/api/toolbox/recordedVideo", blob, {
+            BloomApi.postDataWithConfig("api/toolbox/recordedVideo", blob, {
                 headers: {
                     "Content-Type": "video/mp4"
                 }
@@ -557,19 +556,18 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             });
             return;
         }
-        axios
-            .get("/bloom/api/toolbox/fileExists?filename=" + src)
-            .then(result => {
-                this.reactControls.setState({ haveRecording: result.data });
-            });
-        axios
+        BloomApi
+            .get("api/toolbox/fileExists?filename=" + src,
+                result => {
+                    this.reactControls.setState({ haveRecording: result.data });
+                });
+        BloomApi
             .get(
-                "/bloom/api/toolbox/fileExists?filename=" +
-                src.replace(".mp4", ".orig")
-            )
-            .then(result => {
-                this.reactControls.setState({ originalExists: result.data });
-            });
+                "api/toolbox/fileExists?filename=" +
+                src.replace(".mp4", ".orig"),
+                result => {
+                    this.reactControls.setState({ originalExists: result.data });
+                });
     }
 
     private static overlayClass: string = "bloom-videoOverlay";

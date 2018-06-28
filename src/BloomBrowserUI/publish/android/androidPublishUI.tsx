@@ -1,4 +1,5 @@
 ﻿import axios from "axios";
+import { BloomApi } from "../../utils/bloomApi";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
@@ -32,7 +33,7 @@ interface IComponentState {
 class AndroidPublishUI extends React.Component<
     IUILanguageAwareProps,
     IComponentState
-> {
+    > {
     isLinux: boolean;
     constructor(props) {
         super(props);
@@ -59,15 +60,11 @@ class AndroidPublishUI extends React.Component<
             }
         });
 
-        axios.get("/bloom/api/publish/android/method").then(result => {
+        BloomApi.get("api/publish/android/method", result => {
             this.setState({ method: result.data });
         });
-        axios
-            .get("/bloom/api/publish/android/backColor")
-            .then(result => this.setState({ backColor: result.data }));
-        axios
-            .get("/bloom/api/publish/android/motionBookMode")
-            .then(result => this.setState({ motionBookMode: result.data }));
+        BloomApi.get("api/publish/android/backColor", result => this.setState({ backColor: result.data }));
+        BloomApi.get("api/publish/android/motionBookMode", result => this.setState({ motionBookMode: result.data }));
     }
 
     public componentDidMount() {
@@ -82,7 +79,7 @@ class AndroidPublishUI extends React.Component<
     }
 
     componentCleanup() {
-        axios.post("/bloom/api/publish/android/cleanup").then(result => {
+        BloomApi.post("api/publish/android/cleanup", result => {
             WebSocketManager.closeSocket(kWebSocketLifetime);
         });
     }
@@ -106,8 +103,8 @@ class AndroidPublishUI extends React.Component<
         // Yes, this is a hack. I simply could not get the client to populate the clipboard.
         // I tried using react-copy-to-clipboard, but kept getting runtime errors as if the component was not found.
         // I tried using document.execCommand("copy"), but though it worked in FF and Chrome, it did not work in Bloom.
-        axios.post(
-            "/bloom/api/publish/android/textToClipboard",
+        BloomApi.postDataWithConfig(
+            "api/publish/android/textToClipboard",
             document.getElementById("progress-box").innerText,
             { headers: { "Content-Type": "text/plain" } }
         );
@@ -139,25 +136,22 @@ class AndroidPublishUI extends React.Component<
                         imagePath="/bloom/api/publish/android/thumbnail?color="
                         backColorSetting={this.state.backColor}
                         onColorChanged={colorChoice => {
-                            axios
-                                .post(
-                                    "/bloom/api/publish/android/backColor",
-                                    colorChoice,
-                                    {
-                                        headers: {
-                                            "Content-Type": "text/plain"
-                                        }
+                            BloomApi.postDataWithConfig(
+                                "api/publish/android/backColor",
+                                colorChoice,
+                                {
+                                    headers: {
+                                        "Content-Type": "text/plain"
                                     }
-                                )
-                                .then(
-                                    //wait until it's set because once the state changes, a
-                                    // new image gets requested and we want that to happen
-                                    // only after the server has registered this change.
-                                    () =>
-                                        this.setState({
-                                            backColor: colorChoice
-                                        })
-                                );
+                                },
+                                //wait until it's set because once the state changes, a
+                                // new image gets requested and we want that to happen
+                                // only after the server has registered this change.
+                                () =>
+                                    this.setState({
+                                        backColor: colorChoice
+                                    })
+                            );
                         }}
                     />
                     <div className="motionBookWrapper">
@@ -171,8 +165,8 @@ class AndroidPublishUI extends React.Component<
                             checked={this.state.motionBookMode}
                             onCheckChanged={checked => {
                                 this.setState({ motionBookMode: checked });
-                                axios.post(
-                                    "/bloom/api/publish/android/motionBookMode",
+                                BloomApi.postDataWithConfig(
+                                    "api/publish/android/motionBookMode",
                                     checked,
                                     {
                                         headers: {
@@ -234,16 +228,16 @@ class AndroidPublishUI extends React.Component<
                     <select
                         className={`method-shared method-root ${
                             this.state.method
-                        }-method-option`}
+                            }-method-option`}
                         disabled={this.state.stateId !== "stopped"}
                         value={this.state.method}
                         onChange={event => {
                             this.setState({ method: event.target.value });
-                            axios.post(
+                            BloomApi.wrapAxios(axios.post(
                                 "/bloom/api/publish/android/method",
                                 event.target.value,
                                 { headers: { "Content-Type": "text/plain" } }
-                            );
+                            ));
                         }}
                     >
                         <Option

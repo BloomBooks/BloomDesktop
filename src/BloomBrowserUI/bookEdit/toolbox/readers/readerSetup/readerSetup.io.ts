@@ -3,7 +3,6 @@
 import { enableSampleWords, displayLetters, selectLetters, selectLevel, forcePlainTextPaste, selectStage, setLevelValue } from './readerSetup.ui';
 import { ReaderStage, ReaderLevel, ReaderSettings } from '../ReaderSettings';
 import "../../../../lib/jquery.onSafe.js";
-import axios from "axios";
 import * as _ from 'underscore';
 
 var previousMoreWords: string;
