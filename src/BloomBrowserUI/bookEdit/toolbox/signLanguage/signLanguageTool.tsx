@@ -6,6 +6,7 @@ import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./signLanguage.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
+import { HelpLink } from "../../../react_components/helpLink";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
