@@ -1,12 +1,16 @@
 ﻿/// <reference path="../../toolbox.ts" />
 /// <reference path="../readerToolsModel.ts" />
 
-import { DRTState, getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
+import {
+    DRTState,
+    getTheOneReaderToolsModel,
+    MarkupType
+} from "../readerToolsModel";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
-import { theOneLibSynphony } from './../libSynphony/synphony_lib';
-import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
+import { theOneLibSynphony } from "./../libSynphony/synphony_lib";
+import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { BloomApi } from "../../../../utils/bloomApi";
 
 export class DecodableReaderToolboxTool implements ITool {
@@ -15,9 +19,9 @@ export class DecodableReaderToolboxTool implements ITool {
     }
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
-            if (settings['decodableReaderState']) {
+            if (settings["decodableReaderState"]) {
                 var state = new DRTState();
-                var decState = settings['decodableReaderState'];
+                var decState = settings["decodableReaderState"];
                 if (decState.startsWith("stage:")) {
                     var parts = decState.split(";");
                     var stage = parseInt(parts[0].substring("stage:".length));
@@ -28,15 +32,22 @@ export class DecodableReaderToolboxTool implements ITool {
                     // happens when you CHANGE the stage in the toolbox.
                     getTheOneReaderToolsModel().setSort(sort, true);
                     getTheOneReaderToolsModel().setStageNumber(stage, true);
-                    console.log("set stage in beginRestoreSettings to " + stage);
+                    console.log(
+                        "set stage in beginRestoreSettings to " + stage
+                    );
                 } else {
                     // old state
-                    getTheOneReaderToolsModel().setStageNumber(parseInt(decState, 10), true);
+                    getTheOneReaderToolsModel().setStageNumber(
+                        parseInt(decState, 10),
+                        true
+                    );
                 }
             } else {
                 BloomApi.get("api/readers/io/defaultStage", result => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
-                    getTheOneReaderToolsModel().setStageNumber(parseInt(result.data, 10));
+                    getTheOneReaderToolsModel().setStageNumber(
+                        parseInt(result.data, 10)
+                    );
                 });
             }
         });
@@ -50,27 +61,38 @@ export class DecodableReaderToolboxTool implements ITool {
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.
-        $(container).find('.bloom-editable').focusout(function () {
-            getTheOneReaderToolsModel().doMarkup();
-        });
+        $(container)
+            .find(".bloom-editable")
+            .focusout(function() {
+                getTheOneReaderToolsModel().doMarkup();
+            });
 
-        $(container).find('.bloom-editable').focusin(function () {
-            getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
-        });
+        $(container)
+            .find(".bloom-editable")
+            .focusin(function() {
+                getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
+            });
 
-        $(container).find('.bloom-editable').keydown(function (e) {
-            if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
-                if (getTheOneReaderToolsModel().currentMarkupType !== MarkupType.None) {
-                    e.preventDefault();
-                    if (e.shiftKey || e.keyCode == 89) { // ctrl-shift-z or ctrl-y
-                        getTheOneReaderToolsModel().redo();
-                    } else {
-                        getTheOneReaderToolsModel().undo();
+        $(container)
+            .find(".bloom-editable")
+            .keydown(function(e) {
+                if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
+                    // ctrl-z or ctrl-Y
+                    if (
+                        getTheOneReaderToolsModel().currentMarkupType !==
+                        MarkupType.None
+                    ) {
+                        e.preventDefault();
+                        if (e.shiftKey || e.keyCode == 89) {
+                            // ctrl-shift-z or ctrl-y
+                            getTheOneReaderToolsModel().redo();
+                        } else {
+                            getTheOneReaderToolsModel().undo();
+                        }
+                        return false;
                     }
-                    return false;
                 }
-            }
-        });
+            });
     }
 
     // Some things were impossible to do i18n on via the jade/pug
@@ -80,17 +102,32 @@ export class DecodableReaderToolboxTool implements ITool {
         // Update those 'title' attributes from localizationManager.
 
         var doc = paneDOM.ownerDocument;
-        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortAlphabetically', 'Sort alphabetically', "")
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.DecodableReaderTool.SortAlphabetically",
+                "Sort alphabetically",
+                ""
+            )
             .done(result => {
                 this.setTitleOfI(paneDOM, "sortAlphabetic", result);
             });
 
-        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByWordLength', 'Sort by word length', "")
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.DecodableReaderTool.SortByWordLength",
+                "Sort by word length",
+                ""
+            )
             .done(result => {
                 this.setTitleOfI(paneDOM, "sortLength", result);
             });
 
-        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByFrequency', 'Sort by frequency', "")
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.DecodableReaderTool.SortByFrequency",
+                "Sort by frequency",
+                ""
+            )
             .done(result => {
                 // there are actually two here, but JQuery nicely just does it
                 this.setTitleOfI(paneDOM, "sortFrequency", result);
@@ -100,7 +137,10 @@ export class DecodableReaderToolboxTool implements ITool {
     setTitleOfI(paneDOM: HTMLElement, rootId: string, val: string) {
         // Apparently in some cases asyncGetText may return before the document is ready.
         $(paneDOM.ownerDocument).ready(() => {
-            $(paneDOM.ownerDocument).find("#" + rootId).find("i").attr("title", val);
+            $(paneDOM.ownerDocument)
+                .find("#" + rootId)
+                .find("i")
+                .attr("title", val);
         });
     }
 
@@ -133,9 +173,9 @@ export class DecodableReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    id() { return 'decodableReader'; }
+    id() {
+        return "decodableReader";
+    }
 
     hasRestoredSettings: boolean;
 }
-
-

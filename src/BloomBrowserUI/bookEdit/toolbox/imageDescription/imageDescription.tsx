@@ -26,7 +26,7 @@ interface IImageDescriptionState {
 export class ImageDescriptionToolControls extends React.Component<
     {},
     IImageDescriptionState
-    > {
+> {
     constructor() {
         super({});
         this.state = { enabled: true, checkBoxes: [] };
@@ -88,7 +88,7 @@ export class ImageDescriptionToolControls extends React.Component<
                     <div className="imgDescLabelBlock">
                         <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
                             Learn to make effective image descriptions:
-                    </Label>
+                        </Label>
                         <div className="indentPoet">
                             <Link
                                 id="poetDiagram"
@@ -97,7 +97,7 @@ export class ImageDescriptionToolControls extends React.Component<
                                 l10nComment="English text is the actual link. May not need translation?"
                             >
                                 poet.diagramcenter.org
-                        </Link>
+                            </Link>
                         </div>
                         <div className="wrapPlayVideo disabled invisible">
                             <img
@@ -112,27 +112,29 @@ export class ImageDescriptionToolControls extends React.Component<
                                 l10nComment="Link that launces the video"
                             >
                                 Bloom training video
-                        </Link>
+                            </Link>
                         </div>
                     </div>
                     <div className="imgDescLabelBlock">
                         <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.WriteYours">
                             Write your image description on the left, in the box
                             next to the picture.
-                    </Label>
+                        </Label>
                     </div>
                     <div className="imgDescLabelBlock">
                         <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckDescription">
                             Check your image description against each of these
                             reminders:
-                    </Label>
+                        </Label>
                     </div>
                     {this.createCheckboxes()}
                     <div className="helpLinkWrapper imgDescLabelBlock">
                         <HelpLink
                             helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
                             l10nKey="Common.Help"
-                        >Help</HelpLink>
+                        >
+                            Help
+                        </HelpLink>
                     </div>
                 </div>
             </RequiresBloomEnterpriseWrapper>
@@ -300,7 +302,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 const newTg = getPageFrameExports()
                     .makeElement(
                         "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement" +
-                        " ImageDescriptionEdit-style'></div>"
+                            " ImageDescriptionEdit-style'></div>"
                     )
                     .get(0);
                 container.appendChild(newTg);

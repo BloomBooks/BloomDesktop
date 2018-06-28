@@ -24,7 +24,10 @@ export interface ILocalizationState {
 }
 
 // A base class for all elements that display text. It uses Bloom's localizationManager wrapper to get strings.
-export class LocalizableElement<P extends ILocalizationProps, S extends ILocalizationState> extends React.Component<P, ILocalizationState> {
+export class LocalizableElement<
+    P extends ILocalizationProps,
+    S extends ILocalizationState
+> extends React.Component<P, ILocalizationState> {
     localizationRequestCancelToken: CancelTokenStatic;
     isComponentMounted: boolean;
     tooltipKey: string;
@@ -59,8 +62,13 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
         this.isComponentMounted = true;
         var english = this.getOriginalEnglishStringContent();
         if (!english.startsWith("ERROR: must have exactly one child")) {
-            theOneLocalizationManager.asyncGetText(this.props.l10nKey, english, this.props.l10nComment)
-                .done((result) => {
+            theOneLocalizationManager
+                .asyncGetText(
+                    this.props.l10nKey,
+                    english,
+                    this.props.l10nComment
+                )
+                .done(result => {
                     // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
                     // after this component is no longer visible. See note on componentWillUnmount()
                     if (this.isComponentMounted) {
@@ -69,16 +77,26 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
                 });
         }
         if (this.props.l10nTipEnglishEnabled) {
-            theOneLocalizationManager.asyncGetText(this.tooltipKey, this.props.l10nTipEnglishEnabled, this.props.l10nComment)
-                .done((result) => {
+            theOneLocalizationManager
+                .asyncGetText(
+                    this.tooltipKey,
+                    this.props.l10nTipEnglishEnabled,
+                    this.props.l10nComment
+                )
+                .done(result => {
                     if (this.isComponentMounted) {
                         this.setState({ tipEnabledTranslation: result });
                     }
                 });
         }
         if (this.props.l10nTipEnglishDisabled) {
-            theOneLocalizationManager.asyncGetText(this.disabledTooltipKey, this.props.l10nTipEnglishDisabled, this.props.l10nComment)
-                .done((result) => {
+            theOneLocalizationManager
+                .asyncGetText(
+                    this.disabledTooltipKey,
+                    this.props.l10nTipEnglishDisabled,
+                    this.props.l10nComment
+                )
+                .done(result => {
                     if (this.isComponentMounted) {
                         this.setState({ tipDisabledTranslation: result });
                     }
@@ -96,21 +114,34 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
         if (this.state && this.state.translation) {
             return <span> {this.state.translation} </span>;
         } else {
-            return <span style={{ color: "grey" }}> {this.getOriginalEnglishStringContent()} </span>;
+            return (
+                <span style={{ color: "grey" }}>
+                    {" "}
+                    {this.getOriginalEnglishStringContent()}{" "}
+                </span>
+            );
         }
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {
-        return controlIsEnabled ? this.state.tipEnabledTranslation :
-            this.state.tipDisabledTranslation ? this.state.tipDisabledTranslation : this.state.tipEnabledTranslation;
+        return controlIsEnabled
+            ? this.state.tipEnabledTranslation
+            : this.state.tipDisabledTranslation
+                ? this.state.tipDisabledTranslation
+                : this.state.tipEnabledTranslation;
     }
 
     public getClassName(): string {
-        return ((this.props.hidden ? "hidden " : "") + this.props.className).trim();
+        return (
+            (this.props.hidden ? "hidden " : "") + this.props.className
+        ).trim();
     }
 }
 
-export class H1 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+export class H1 extends LocalizableElement<
+    ILocalizationProps,
+    ILocalizationState
+> {
     render() {
         return (
             <h1 className={this.getClassName()}>
@@ -120,7 +151,10 @@ export class H1 extends LocalizableElement<ILocalizationProps, ILocalizationStat
     }
 }
 
-export class H2 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+export class H2 extends LocalizableElement<
+    ILocalizationProps,
+    ILocalizationState
+> {
     render() {
         return (
             <h2 className={this.getClassName()}>
@@ -130,7 +164,10 @@ export class H2 extends LocalizableElement<ILocalizationProps, ILocalizationStat
     }
 }
 
-export class H3 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+export class H3 extends LocalizableElement<
+    ILocalizationProps,
+    ILocalizationState
+> {
     render() {
         return (
             <h3 className={this.getClassName()}>
@@ -140,17 +177,21 @@ export class H3 extends LocalizableElement<ILocalizationProps, ILocalizationStat
     }
 }
 
-export class P extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+export class P extends LocalizableElement<
+    ILocalizationProps,
+    ILocalizationState
+> {
     render() {
         return (
-            <p className={this.getClassName()}>
-                {this.getLocalizedContent()}
-            </p>
+            <p className={this.getClassName()}>{this.getLocalizedContent()}</p>
         );
     }
 }
 
-export class Div extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+export class Div extends LocalizableElement<
+    ILocalizationProps,
+    ILocalizationState
+> {
     render() {
         return (
             <div className={this.getClassName()}>
@@ -167,14 +208,16 @@ export interface ILabelProps extends ILocalizationProps {
 export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
     render() {
         return (
-            <label className={this.getClassName()} onClick={() => {
-                if (this.props.onClick) {
-                    this.props.onClick();
-                }
-            }}>
+            <label
+                className={this.getClassName()}
+                onClick={() => {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    }
+                }}
+            >
                 {this.getLocalizedContent()}
             </label>
         );
     }
 }
-

@@ -21,7 +21,7 @@ const kSocketName = "webSocket";
 var thumbnailTimerInterval = 200;
 var listenerFunction;
 
-$(window).ready(function () {
+$(window).ready(function() {
     $(".gridly").gridly({
         base: 35, // px
         gutter: 10, // px
@@ -30,7 +30,7 @@ $(window).ready(function () {
             reordered: reorder
         }
     });
-    jQuery(".gridItem").click(function (e) {
+    jQuery(".gridItem").click(function(e) {
         // adding "preventDefault()"" here and the cursor css might make the
         // invisibleThumbnailCover unneccessary, but all of it together should be plenty
         // of defense against the user getting unwanted results by clicking on thumbnails.
@@ -41,16 +41,21 @@ $(window).ready(function () {
 
     // start the thumbnail timer
     var timerSetting = document.body.dataset[timerName];
-    if (timerSetting)
-        thumbnailTimerInterval = parseInt(timerSetting, 10);//reviewslog: was timerSetting.value, but timerSetting is a string)
+    if (timerSetting) thumbnailTimerInterval = parseInt(timerSetting, 10); //reviewslog: was timerSetting.value, but timerSetting is a string)
 
     // This timeout expires before the main page is displayed to the user, so we're using
     // thumbnailTimerInterval * 2 for the first interval to give the UI more time to catch up.
     setTimeout(loadNextThumbnail, thumbnailTimerInterval * 2);
 
-    jQuery("#menu").click(function (event) {
+    jQuery("#menu").click(function(event) {
         event.stopPropagation();
-        fireCSharpEvent("menuClicked", $(this).parent().parent().attr("id"));
+        fireCSharpEvent(
+            "menuClicked",
+            $(this)
+                .parent()
+                .parent()
+                .attr("id")
+        );
     });
 
     let localizedNotification = "";
@@ -79,14 +84,16 @@ $(window).ready(function () {
         }
     };
 
-    theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...", "").done(savingNotification => {
-        localizedNotification = savingNotification;
-        // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        var socket = getWebSocket();
-        if (socket) {
-            socket.addEventListener("message", listenerFunction);
-        }
-    });
+    theOneLocalizationManager
+        .asyncGetText("EditTab.SavingNotification", "Saving...", "")
+        .done(savingNotification => {
+            localizedNotification = savingNotification;
+            // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
+            var socket = getWebSocket();
+            if (socket) {
+                socket.addEventListener("message", listenerFunction);
+            }
+        });
 });
 
 export function stopListeningForSave() {
@@ -104,13 +111,19 @@ function getWebSocket(): WebSocket {
         //currently we use a different port for this websocket, and it's the main port + 1
         let websocketPort = parseInt(window.location.port, 10) + 1;
         //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-        window[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
+        window[kSocketName] = new WebSocket(
+            "ws://127.0.0.1:" + websocketPort.toString()
+        );
     }
     return window[kSocketName];
 }
 
 function fireCSharpEvent(eventName, eventData) {
-    var event = new MessageEvent(eventName, { "bubbles": true, "cancelable": true, "data": eventData });
+    var event = new MessageEvent(eventName, {
+        bubbles: true,
+        cancelable: true,
+        data: eventData
+    });
     top.document.dispatchEvent(event);
 }
 
@@ -118,10 +131,12 @@ function loadNextThumbnail() {
     // The "thumb-src" attribute is added to the img tags on the server while the page is being built. The value
     // of the "src" attribute is copied into it and then the "src" attribute is set to an empty string so the
     // images can be loaded here in a controlled manner so as not to overwhelm system memory.
-    var nextImg = jQuery("body").find("*[thumb-src]").first();
+    var nextImg = jQuery("body")
+        .find("*[thumb-src]")
+        .first();
 
     // stop processing if there are no more images
-    if ((!nextImg) || (nextImg.length === 0)) return;
+    if (!nextImg || nextImg.length === 0) return;
 
     var img = nextImg[0];
 
@@ -147,10 +162,9 @@ function loadNextThumbnail() {
 
 function reorder(elements) {
     var ids = "";
-    elements.each(function () {
+    elements.each(function() {
         var id = $(this).attr("id");
-        if (id)
-            ids += "," + id;
+        if (id) ids += "," + id;
     });
     fireCSharpEvent("gridReordered", ids);
 }

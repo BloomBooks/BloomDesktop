@@ -1,5 +1,4 @@
-﻿﻿@import "../../../bloomUI.less";
-
+﻿@import "../../../bloomUI.less";
 
 @textColor: @bloom-buff;
 @hoverBackgroundColor: @bloom-buff;
@@ -10,192 +9,233 @@
 
 //highlight of the text on the page
 span.ui-audioCurrent:not(.disableHighlight) {
-        background: @highlightColor;
+    background: @highlightColor;
 
-        &:before{
-                background-image: url(currentTextIndicator.svg);
-                background-repeat: no-repeat;
-                background-size: 10px 13px;
-                background-position: 2px 5px;
-                left: -15px;
-                width: 15px;
-                height: 19px;
-                position: absolute;
-                content: " ";
-        }
-}
-
-.ui-audioBody{
-        padding-left: 15px;
-        padding-right: 15px;
-        *, a{color: @textColor;}
-        background-color: @toolboxBackgroundColor;
-
-        background-position: center;
-
-        .ui-audioTitle {
-                font-size:larger;
-                margin-top: 5px;
-                font-size:large;
-                }
-
-        .ui-audio-button {
-                height:@buttonColumnWidth;
-                width: @buttonColumnWidth;
-                border:none;
-                background-size:contain;
-                background-color:transparent;
-                background-repeat:no-repeat;
-                display:inline-block;
-                margin-bottom:5px;
-        }
-
-        #audio-prev, #audio-clear {
-                height:20px;
-                //width:20px;
-                //margin-left: 10px;
-                background-position: center
-     }
-
-        .disabled{
-                opacity: 0.4;
-        }
-
-        #audio-record{
-                background-image: url(record_enabled.svg);
-                &.expected {background-image: url(record_expected.svg)}
-                &.active {background-image: url(record_active.svg)}
-        }
-        #audio-play {
-                background-image: url(audio/play_enabled.svg);
-                height:45px;
-                width:45px; // visually same width as record button
-
-                &.expected {background-image: url(audio/play_expected.svg)}
-                &.active {background-image: url(audio/play_active.svg)}
-        }
-
-    .audio-about {margin-top:@sectionVerticalGap;}
-    #audio-look-at, #audio-check{max-width:none;}
-
-    #audio-listen-label {
-        position:relative;
-        top:12px;
-        width:80px;
+    &:before {
+        background-image: url(currentTextIndicator.svg);
+        background-repeat: no-repeat;
+        background-size: 10px 13px;
+        background-position: 2px 5px;
+        left: -15px;
+        width: 15px;
+        height: 19px;
+        position: absolute;
+        content: " ";
     }
+}
+.ui-audioBody {
+    padding-left: 15px;
+    padding-right: 15px;
+    *,
+    a {
+        color: @textColor;
+    }
+    background-color: @toolboxBackgroundColor;
 
+    background-position: center;
 
+    .ui-audioTitle {
+        font-size: larger;
+        margin-top: 5px;
+        font-size: large;
+    }
+    .ui-audio-button {
+        height: @buttonColumnWidth;
+        width: @buttonColumnWidth;
+        border: none;
+        background-size: contain;
+        background-color: transparent;
+        background-repeat: no-repeat;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+    #audio-prev,
+    #audio-clear {
+        height: 20px;
+        //width:20px;
+        //margin-left: 10px;
+        background-position: center;
+    }
+    .disabled {
+        opacity: 0.4;
+    }
+    #audio-record {
+        background-image: url(record_enabled.svg);
+        &.expected {
+            background-image: url(record_expected.svg);
+        }
+        &.active {
+            background-image: url(record_active.svg);
+        }
+    }
+    #audio-play {
+        background-image: url(audio/play_enabled.svg);
+        height: 45px;
+        width: 45px; // visually same width as record button
+
+        &.expected {
+            background-image: url(audio/play_expected.svg);
+        }
+        &.active {
+            background-image: url(audio/play_active.svg);
+        }
+    }
+    .audio-about {
+        margin-top: @sectionVerticalGap;
+    }
+    #audio-look-at,
+    #audio-check {
+        max-width: none;
+    }
+    #audio-listen-label {
+        position: relative;
+        top: 12px;
+        width: 80px;
+    }
     a {
         display: block; //start on a new line
-        margin-top:10px;
-        text-decoration:underline;
-        cursor:pointer
+        margin-top: 10px;
+        text-decoration: underline;
+        cursor: pointer;
     }
-
-    .ui-audioFooter {margin-top: 30px; margin-bottom: 5px}
-    .ui-audioInput, div.ui-audioMeter {display:inline-block;}
-
-    .ui-audioInputGroup {margin-top:5px;margin-bottom:12px;}
-    img#audio-input-dev {height:30px;width:30px;}
-
+    .ui-audioFooter {
+        margin-top: 30px;
+        margin-bottom: 5px;
+    }
+    .ui-audioInput,
+    div.ui-audioMeter {
+        display: inline-block;
+    }
+    .ui-audioInputGroup {
+        margin-top: 5px;
+        margin-bottom: 12px;
+    }
+    img#audio-input-dev {
+        height: 30px;
+        width: 30px;
+    }
     // hidden unless we need to choose between three or more input devices.
     #audio-devlist {
-        display:none;
-        position:absolute;
-        background-color:white;
-        width:180px;
-        padding-left:0;
-        list-style:none;
-        cursor:pointer;
-        z-index:1000;
-        overflow-x:hidden;
+        display: none;
+        position: absolute;
+        background-color: white;
+        width: 180px;
+        padding-left: 0;
+        list-style: none;
+        cursor: pointer;
+        z-index: 1000;
+        overflow-x: hidden;
         li {
-            min-height:20px;
-            font-size:12px;
-            color:black;
-            padding-left:5px;
-            white-space:nowrap;
-            &:hover {background-color: @hoverBackgroundColor}
+            min-height: 20px;
+            font-size: 12px;
+            color: black;
+            padding-left: 5px;
+            white-space: nowrap;
+            &:hover {
+                background-color: @hoverBackgroundColor;
+            }
         }
     }
-
     #audio-next {
-            background-image: url(audio/next_enabled.svg);
-            &.expected {background-image: url(audio/next_expected.svg)}
+        background-image: url(audio/next_enabled.svg);
+        &.expected {
+            background-image: url(audio/next_expected.svg);
+        }
     }
-
-    #audio-prev {background-image: url(audio/prev_enabled.svg)}
-
+    #audio-prev {
+        background-image: url(audio/prev_enabled.svg);
+    }
     #audio-listen {
-            margin-left:2px; // visually centered
-            background-image: url(audio/listen_enabled.svg);
-            &.active {background-image: url(audio/listen_active.svg)}
+        margin-left: 2px; // visually centered
+        background-image: url(audio/listen_enabled.svg);
+        &.active {
+            background-image: url(audio/listen_active.svg);
+        }
     }
-
-    #audio-clear {background-image: url(audio/clear_enabled.svg)}
-
-    .button-label-wrapper {margin-top: 10px;}
-    .button-wrapper {display:inline-block;min-width: 60px;}
-
+    #audio-clear {
+        background-image: url(audio/clear_enabled.svg);
+    }
+    .button-label-wrapper {
+        margin-top: 10px;
+    }
+    .button-wrapper {
+        display: inline-block;
+        min-width: 60px;
+    }
     .audio-label {
-            display:inline-block;
-            max-width:100px;
+        display: inline-block;
+        max-width: 100px;
 
-            &.expected {
-                    color: @highlightColor;
-                    //font-weight: bold;
-                    //font-size: 11pt;
-            }
+        &.expected {
+            color: @highlightColor;
+            //font-weight: bold;
+            //font-size: 11pt;
+        }
     }
-
-    .audio-about {margin-top:@sectionVerticalGap;}
-    #audio-look-at, #audio-check{max-width:none;}
-
+    .audio-about {
+        margin-top: @sectionVerticalGap;
+    }
+    #audio-look-at,
+    #audio-check {
+        max-width: none;
+    }
     #audio-listen-label {
-            position:relative;
-            top:12px;
-            width:80px;
+        position: relative;
+        top: 12px;
+        width: 80px;
     }
-
     a {
-            display: block; //start on a new line
-            margin-top:10px;
-            text-decoration:underline;
-            cursor:pointer
+        display: block; //start on a new line
+        margin-top: 10px;
+        text-decoration: underline;
+        cursor: pointer;
     }
-
-    .ui-audioFooter {margin-top: 30px; margin-bottom: 5px}
-    .ui-audioInput, div.ui-audioMeter {display:inline-block;}
-
-    .ui-audioInputGroup {margin-top:5px;margin-bottom:12px;}
-    img#audio-input-dev {height:30px;width:30px;}
-
+    .ui-audioFooter {
+        margin-top: 30px;
+        margin-bottom: 5px;
+    }
+    .ui-audioInput,
+    div.ui-audioMeter {
+        display: inline-block;
+    }
+    .ui-audioInputGroup {
+        margin-top: 5px;
+        margin-bottom: 12px;
+    }
+    img#audio-input-dev {
+        height: 30px;
+        width: 30px;
+    }
     // hidden unless we need to choose between three or more input devices.
     #audio-devlist {
-            display:none;
-            position:absolute;
-            background-color:white;
-            width:200px;
-            li {min-height:20px; font-size:12px;
-                    &:hover {background-color: @hoverBackgroundColor}
+        display: none;
+        position: absolute;
+        background-color: white;
+        width: 200px;
+        li {
+            min-height: 20px;
+            font-size: 12px;
+            &:hover {
+                background-color: @hoverBackgroundColor;
             }
-            #audio-input-dev  {margin-top: 2px; width:15px;}
+        }
+        #audio-input-dev {
+            margin-top: 2px;
+            width: 15px;
+        }
     }
 }
-
 #toast-container {
     z-index: 999999 !important;
-    font-family: "Segoe UI","sans-serif";
+    font-family: "Segoe UI", "sans-serif";
     font-size: 9pt;
 }
-
-#toast-container > .toast{
-    opacity: 1.0 !important;
+#toast-container > .toast {
+    opacity: 1 !important;
     box-shadow: none !important;
     background-image: none !important;
     padding-left: 8px; //don't leave room for the icon
 }
-
 .toast-toolbox-bottom {
     left: 32px;
     bottom: 46px;

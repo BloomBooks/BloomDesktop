@@ -26,7 +26,7 @@ export interface IButtonProps extends ILocalizationProps {
 export default class BloomButton extends LocalizableElement<
     IButtonProps,
     ILocalizationState
-    > {
+> {
     constructor(props: IButtonProps) {
         super(props);
     }
@@ -56,9 +56,7 @@ export default class BloomButton extends LocalizableElement<
                     this.props.className + (this.props.hidden ? " hidden" : "")
                 }
                 title={tip}
-                onClick={() =>
-                    BloomApi.post("api/" + this.props.clickEndpoint)
-                }
+                onClick={() => BloomApi.post("api/" + this.props.clickEndpoint)}
                 disabled={!this.props.enabled}
             >
                 {image}

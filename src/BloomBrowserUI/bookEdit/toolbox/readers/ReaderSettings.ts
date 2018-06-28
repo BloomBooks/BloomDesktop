@@ -6,20 +6,19 @@
 export class ReaderSettings {
     levels: ReaderLevel[] = [];
     stages: ReaderStage[] = [];
-    letters: string = '';
-  sentencePunct: string = '';
-    moreWords: string = '';
+    letters: string = "";
+    sentencePunct: string = "";
+    moreWords: string = "";
     useAllowedWords: number = 0;
 }
 
 // Defines an object to hold data about one stage in the decodable books tool
 export class ReaderStage {
-
     name: string;
-    sightWords: string = '';
-    letters: string = '';
+    sightWords: string = "";
+    letters: string = "";
     words: string[];
-    allowedWordsFile: string = '';
+    allowedWordsFile: string = "";
     allowedWords: string[];
 
     constructor(name: string) {
@@ -38,7 +37,6 @@ export class ReaderStage {
 
 // Defines an object to hold data about one level in the leveled reader tool
 export class ReaderLevel {
-
     name: string;
     thingsToRemember: string[] = [];
 

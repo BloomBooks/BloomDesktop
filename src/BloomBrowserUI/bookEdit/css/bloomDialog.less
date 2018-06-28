@@ -45,7 +45,7 @@
     }
     .indentBlock {
         width: 100px;
-        img{
+        img {
             margin-left: 3px;
             margin-top: 1px;
         }
@@ -70,7 +70,7 @@
     display: inline-block;
     padding: 2px;
 }
-.bloomDialogContainer .icon16x16 IMG {
+.bloomDialogContainer .icon16x16 img {
     margin-top: 1px;
     margin-left: 1px;
     vertical-align: 5px;
@@ -130,28 +130,39 @@
 .bloomDialogContainer .control-section {
     margin: 0 0 12px 0;
 }
-.bloomDialogContainer BUTTON, .bloomDialogContainer INPUT{
+.bloomDialogContainer button,
+.bloomDialogContainer input {
     background: linear-gradient(@backgroundColorLight, @backgroundColorDark);
 }
-.bloomDialogContainer BUTTON {
+.bloomDialogContainer button {
     .bdRounded;
     border: 1px solid @buttonBorder;
     box-shadow: 1px 2px 7px @buttonShadow;
 }
-.bloomDialogContainer BUTTON:hover, .bloomDialogContainer INPUT:hover, .bloomDialogContainer SELECT:hover , .bloomDialogContainer .select2-container--default:HOVER, .bloomDialogContainer .select2-container--focus{
-    background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
+.bloomDialogContainer button:hover,
+.bloomDialogContainer input:hover,
+.bloomDialogContainer select:hover,
+.bloomDialogContainer .select2-container--default:hover,
+.bloomDialogContainer .select2-container--focus {
+    background: linear-gradient(
+        @backgroundColorHoverLight,
+        @backgroundColorHoverDark
+    );
 }
-.bloomDialogContainer BUTTON[disabled] {
+.bloomDialogContainer button[disabled] {
     border: 1px solid @disabledText;
     background: @backgroundColorLight;
     color: @disabledText;
 }
-.bloomDialogContainer .propButton:NOT(.selectedIcon) {
+.bloomDialogContainer .propButton:not(.selectedIcon) {
     border: 1px solid @disabledText;
     .bdRounded;
 }
 .bloomDialogContainer .propButton:hover {
-    background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
+    background: linear-gradient(
+        @backgroundColorHoverLight,
+        @backgroundColorHoverDark
+    );
 }
 .bloomDialogContainer {
     background-color: @backgroundColorWhite;
@@ -163,11 +174,11 @@
 }
 .bloomDialogContainer .bloomDialogTitleBar {
     background-color: @backgroundColorTitleBar;
-    opacity:1;
-    position:relative;
-    top:0;
-    left:0;
-    right:0;
+    opacity: 1;
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 2em;
     text-align: center;
 }
@@ -178,19 +189,19 @@
     font-size: 10pt;
 }
 
-.bloomDialogContainer .select2-container--default .select2-selection--single{
+.bloomDialogContainer .select2-container--default .select2-selection--single {
     border-radius: 0;
     border-color: grey;
-
 }
 
 //the actual dropdown part of select2 controls is appended to the body, rather than our format dialog .iconBox
-.select2-dropdown{
+.select2-dropdown {
     border-radius: 0 !important;
     border-color: black !important;
-
 }
 
-.select2-container--default .select2-selection--single .select2-selection__rendered{
+.select2-container--default
+    .select2-selection--single
+    .select2-selection__rendered {
     color: black !important;
 }

@@ -5,104 +5,95 @@ ENDLAYOUTS
 */
 /*Top with Picture and a little text*/
 @base-image-height: 365px;
-@A5PageHeight: 	14.8cm;
-@A5PageWidth: 	21cm;
+@A5PageHeight: 14.8cm;
+@A5PageWidth: 21cm;
 
-.calendarMonthTop .bloom-imageContainer
-{
-	height: @base-image-height;
+.calendarMonthTop .bloom-imageContainer {
+    height: @base-image-height;
 }
-.bloom-translationGroup.calendarBelowBigPictureText
-{
-	/*+placement:anchor-bottom-left 0 0;*/
-	position: absolute;
-	left: 0;
-	text-align: center;
-	width: 100%;
-	padding-top: 20px; // fudge since without display: table + table-cell we can't get vertical-alignment: bottom
+.bloom-translationGroup.calendarBelowBigPictureText {
+    /*+placement:anchor-bottom-left 0 0;*/
+    position: absolute;
+    left: 0;
+    text-align: center;
+    width: 100%;
+    padding-top: 20px; // fudge since without display: table + table-cell we can't get vertical-alignment: bottom
 }
 
 /*Bottom with day grid*/
-.month TABLE
-{
-	padding: 1cm;
+.month table {
+    padding: 1cm;
 }
-DIV.calendarMonthTop DIV.imageHolder
-{
-	/*+placement:anchor-top-left 42px 45px;*/
-	position: absolute;
-	left: 42px;
-	top: 45px;
-	width: 690px;
-	height: 383px;
+div.calendarMonthTop div.imageHolder {
+    /*+placement:anchor-top-left 42px 45px;*/
+    position: absolute;
+    left: 42px;
+    top: 45px;
+    width: 690px;
+    height: 383px;
 }
-.month THEAD TD
-{
-	font-weight: bold;
-	font-size: 14pt;
+.month thead td {
+    font-weight: bold;
+    font-size: 14pt;
 }
-.month THEAD TH
-{
-	width: 3em;
-	text-align: center;
+.month thead th {
+    width: 3em;
+    text-align: center;
 }
-.month TD
-{
-	text-align: center;
+.month td {
+    text-align: center;
 }
-.calendarMonthBottom TABLE{
-	border-collapse: collapse;
+.calendarMonthBottom table {
+    border-collapse: collapse;
 }
 
-.calendarMonthBottom TH {
-	text-align: center;
-	font-weight: bold;
-	display: table-cell;
-	width: 107px;
+.calendarMonthBottom th {
+    text-align: center;
+    font-weight: bold;
+    display: table-cell;
+    width: 107px;
 }
 
-.calendarMonthBottom TD {
-	border: 1px solid black;
-	padding-left: 3px;
-	padding-right: 3px;
-	position: relative;
-	font-size: inherit; //override the (later to be removed) "143%" we get from basePage.css
-	line-height: inherit; //override the (later to be removed) rule we get from basePage.css
-	display: table-cell;
-	height: 72px; // NB: have to allow for up to 6 rows of calendar, not 5!!!!!!!!!!!!
-    width: 101px;//103 is good during editing
+.calendarMonthBottom td {
+    border: 1px solid black;
+    padding-left: 3px;
+    padding-right: 3px;
+    position: relative;
+    font-size: inherit; //override the (later to be removed) "143%" we get from basePage.css
+    line-height: inherit; //override the (later to be removed) rule we get from basePage.css
+    display: table-cell;
+    height: 72px; // NB: have to allow for up to 6 rows of calendar, not 5!!!!!!!!!!!!
+    width: 101px; //103 is good during editing
 
-	vertical-align: top;
+    vertical-align: top;
 }
 
-.calendarMonthBottom TD TEXTAREA {
-	overflow: hidden;
-	font-size: 9pt;
-	line-height: 1.3em;
-	text-indent: 2.3em;
-	margin-top: 4px;
-	height: 65px;
+.calendarMonthBottom td textarea {
+    overflow: hidden;
+    font-size: 9pt;
+    line-height: 1.3em;
+    text-indent: 2.3em;
+    margin-top: 4px;
+    height: 65px;
 }
 
-.calendarMonthBottom TD P {
-	font-style: italic;
-	z-index: 5; // keeps day number in play when textarea overflows
-	font-size: 14pt;
-	position: absolute;
+.calendarMonthBottom td p {
+    font-style: italic;
+    z-index: 5; // keeps day number in play when textarea overflows
+    font-size: 14pt;
+    position: absolute;
 
-	//top:0;  //<--- NO. For some reason in Bloom 3.1, will put all the numbers at the top (but not in later Firefox, so maybe in the future this will be fine)
-	//so we do this instead
-	margin-top: -4px;
+    //top:0;  //<--- NO. For some reason in Bloom 3.1, will put all the numbers at the top (but not in later Firefox, so maybe in the future this will be fine)
+    //so we do this instead
+    margin-top: -4px;
 }
 
-
-.calendarBottomPageHeader
-{
-	text-align: center;
-	font-size: 30pt;
-	width: 100%;
-	height: 32px;
-	margin-bottom: 5mm;
+.calendarBottomPageHeader {
+    text-align: center;
+    font-size: 30pt;
+    width: 100%;
+    height: 32px;
+    margin-bottom: 5mm;
 }
 @Border: 5mm;
 @DayTableWidth: @A5PageWidth - (2 * @Border);
@@ -111,22 +102,19 @@ DIV.calendarMonthTop DIV.imageHolder
 	which makes the 'left' rule here need the '!important' tag (since it is less 'specific';
 	we want it to apply to Edit mode too.) */
 .A5Landscape.calendarMonthBottom .marginBox {
-	top: @Border;
-	left: @Border !important;
-	margin-left: 0;
-	width: @DayTableWidth;
-	height: @A5PageHeight - (2 * @Border);
+    top: @Border;
+    left: @Border !important;
+    margin-left: 0;
+    width: @DayTableWidth;
+    height: @A5PageHeight - (2 * @Border);
 }
 
-
 /* bilingual */
-.calendarMonthTop.bloom-bilingual .bloom-imageContainer
-{
-	height: @base-image-height - 45;
+.calendarMonthTop.bloom-bilingual .bloom-imageContainer {
+    height: @base-image-height - 45;
 }
 
 /* trilingual */
-.calendarMonthTop.bloom-trilingual .bloom-imageContainer
-{
-	height: @base-image-height - 85;
+.calendarMonthTop.bloom-trilingual .bloom-imageContainer {
+    height: @base-image-height - 85;
 }

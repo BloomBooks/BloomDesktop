@@ -31,7 +31,8 @@
     overlaying the border of the main content. This stylesheet is supposed to have everything
     it doesn't set explicitly use default positioning.
 */
-.dynamic-tab-pane-control, .dynamic-tab-pane-control * {
+.dynamic-tab-pane-control,
+.dynamic-tab-pane-control * {
     position: static;
 }
 
@@ -44,7 +45,10 @@
     margin: 1px -2px 1px 2px;
     float: left;
     padding: 0px 5px 3px 5px;
-    background: linear-gradient(@tabBackgroundColorLight, @tabBackgroundColorDark);
+    background: linear-gradient(
+        @tabBackgroundColorLight,
+        @tabBackgroundColorDark
+    );
     border: 1px solid;
     border-color: @borderColor;
     border-bottom: 0;
@@ -65,7 +69,10 @@
 }
 
 .tab-row .tab:hover {
-    background: linear-gradient(@tabBackgroundColorHoverLight, @tabBackgroundColorHoverDark);
+    background: linear-gradient(
+        @tabBackgroundColorHoverLight,
+        @tabBackgroundColorHoverDark
+    );
 }
 
 .dynamic-tab-pane-control .tab-row .tab a {

@@ -1,4 +1,3 @@
-
 interface JQuery {
     checkLeveledReader(options: any): JQuery;
     checkDecodableReader(options: any): JQuery;
@@ -8,7 +7,11 @@ interface JQuery {
 }
 
 interface JQueryStatic {
-    markupGraphemes(word: string, gpcForm: string[], desiredGPCs?: string[]): string
+    markupGraphemes(
+        word: string,
+        gpcForm: string[],
+        desiredGPCs?: string[]
+    ): string;
 }
 
 declare var jQuery: JQueryStatic;

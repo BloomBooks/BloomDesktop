@@ -6,11 +6,11 @@
 .SetMarginBoxDevice(@PageWidth, @PageHeight) {
     height: @PageHeight - (@DeviceMargin*2);
     width: @PageWidth - (@DeviceMargin*2);
-    IMG {
+    img {
         max-width: @PageWidth - (@DeviceMargin*2);
     }
-    top:@DeviceMargin;
-    left:@DeviceMargin !important;
+    top: @DeviceMargin;
+    left: @DeviceMargin !important;
 }
 
 // Mixin to leave space for page number at the bottom of the marginBox
@@ -18,20 +18,20 @@
     height: @PageHeight - @DeviceBottomMargin;
 }
 
-.bloom-page{
-    &.Device16x9Portrait{
+.bloom-page {
+    &.Device16x9Portrait {
         min-width: @Device16x9Portrait-Width;
         max-width: @Device16x9Portrait-Width;
         min-height: @Device16x9Portrait-Height;
         max-height: @Device16x9Portrait-Height;
     }
-    &.Device16x9Landscape{
+    &.Device16x9Landscape {
         min-width: @Device16x9Landscape-Width;
         max-width: @Device16x9Landscape-Width;
         min-height: @Device16x9Landscape-Height;
         max-height: @Device16x9Landscape-Height;
     }
-    &.PictureStoryLandscape{
+    &.PictureStoryLandscape {
         min-width: @PictureStoryLandscape-Width;
         max-width: @PictureStoryLandscape-Width;
         min-height: @PictureStoryLandscape-Height;
@@ -39,58 +39,80 @@
     }
 }
 
-.Device16x9Landscape, .PictureStoryLandscape{
+.Device16x9Landscape,
+.PictureStoryLandscape {
     //TODO: This is only for videos
     // Why is this not used for Device16x9Portrait too?!
     background-color: black;
-    img{ background-color: white; } // so that transparent images show
+    img {
+        background-color: white;
+    } // so that transparent images show
 }
 
-.Device16x9Landscape, .Device16x9Portrait, .PictureStoryLandscape{
+.Device16x9Landscape,
+.Device16x9Portrait,
+.PictureStoryLandscape {
     .marginBox {
-        .split-pane.horizontal-percent > .split-pane-component.position-top{
+        .split-pane.horizontal-percent > .split-pane-component.position-top {
             margin-bottom: 0;
         }
 
-        .bloom-imageContainer{
+        .bloom-imageContainer {
             //the basePage.css has a "- 3px" that leaves the bottom of the screen unused
             height: calc(100%) !important;
         }
     }
-    &.numberedPage{
-        &::after{
+    &.numberedPage {
+        &::after {
             bottom: 5px;
         }
-        &.side-left::after{
-            left: calc(~"100% / 2 - "(@DeviceMargin)); // center page number on Device layouts
+        &.side-left::after {
+            left: calc(
+                ~"100% / 2 - " (@DeviceMargin)
+            ); // center page number on Device layouts
         }
-        &.side-right::after{
-            right: calc(~"100% / 2 - "(@DeviceMargin)); // center page number on Device layouts
+        &.side-right::after {
+            right: calc(
+                ~"100% / 2 - " (@DeviceMargin)
+            ); // center page number on Device layouts
         }
     }
 }
 
 .marginBox {
     .Device16x9Portrait & {
-        .SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
+        .SetMarginBoxDevice(
+            @Device16x9Portrait-Width,
+            @Device16x9Portrait-Height
+        );
     }
     .numberedPage.Device16x9Portrait & {
         .LeaveMarginForPageNumber(@Device16x9Portrait-Height);
     }
 
     .Device16x9Landscape & {
-        .SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
+        .SetMarginBoxDevice(
+            @Device16x9Landscape-Width,
+            @Device16x9Landscape-Height
+        );
     }
     .numberedPage.Device16x9Landscape & {
         .LeaveMarginForPageNumber(@Device16x9Landscape-Height);
     }
 
     .PictureStoryLandscape & {
-        .SetMarginBoxDevice(@PictureStoryLandscape-Width, @PictureStoryLandscape-Height);
+        .SetMarginBoxDevice(
+            @PictureStoryLandscape-Width,
+            @PictureStoryLandscape-Height
+        );
 
         // make the top half take up the whole screen
-        .position-top{ bottom: 0 !important; }
-        .position-bottom{ display: none; }
+        .position-top {
+            bottom: 0 !important;
+        }
+        .position-bottom {
+            display: none;
+        }
     }
     .numberedPage.PictureStoryLandscape & {
         .LeaveMarginForPageNumber(@PictureStoryLandscape-Height);

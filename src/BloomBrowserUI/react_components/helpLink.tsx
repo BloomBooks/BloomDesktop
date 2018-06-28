@@ -1,7 +1,6 @@
 import * as React from "react";
 import { ILocalizationProps, LocalizableElement } from "./l10n";
 
-
 interface IHelpLinkProps extends ILocalizationProps {
     helpId: string;
 }

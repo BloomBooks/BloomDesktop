@@ -1,4 +1,4 @@
-@import '../../xMatter/bloom-xmatter-common.less';
+@import "../../xMatter/bloom-xmatter-common.less";
 
 @XMatterPackName: "MXB Pamphlet";
 
@@ -13,10 +13,13 @@
         margin-bottom: 1em;
     }
     // shrink things down even more if it's a small paper size
-    &.A6Landscape, &.A6Portrait, &.QuarterLetterLandscape, &.QuarterLetterPortrait {
+    &.A6Landscape,
+    &.A6Portrait,
+    &.QuarterLetterLandscape,
+    &.QuarterLetterPortrait {
         #titlePageTitleBlock {
             margin-bottom: 0;
-            DIV {
+            div {
                 margin-bottom: 0;
             }
         }
@@ -33,9 +36,9 @@
         // available space.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4614.)
         .Printer-Statement-style.bloom-editable.bloom-visibility-code-on {
             // display:flex is needed for justify-content:flex-end to apply
-            display: flex;      // has been reset to block by .bloom-editable.bloom-visibility-code-on
-            flex-direction: column;     // stack paragraphs in a column
-            justify-content: flex-end;  // push text to the bottom of the available space
+            display: flex; // has been reset to block by .bloom-editable.bloom-visibility-code-on
+            flex-direction: column; // stack paragraphs in a column
+            justify-content: flex-end; // push text to the bottom of the available space
             padding-bottom: 20px;
             text-align: center;
             font-size: 10pt;
@@ -55,11 +58,12 @@
     }
     // default values for the Printing History section
     .PrintingHistory-style.bloom-contentNational1 {
-    font-size: 10pt;
-    display: block;
+        font-size: 10pt;
+        display: block;
     }
     // scrunch things down as much as possible
-    .originalAcknowledgments .bloom-contentNational1,.bloom-content1 {
+    .originalAcknowledgments .bloom-contentNational1,
+    .bloom-content1 {
         margin-bottom: 0.5em;
     }
 }
@@ -70,7 +74,7 @@
 }
 
 // override .bloom-content1 min-height 3em from bloom-xmatter-common.less
-BODY[bookcreationtype="original"] {
+body[bookcreationtype="original"] {
     .titlePage {
         #originalContributions {
             .bloom-content1 {
@@ -86,7 +90,7 @@ BODY[bookcreationtype="original"] {
 }
 
 // override .bloom-contentNational1 min-height 3em from bloom-xmatter-common.less
-BODY[bookcreationtype="translation"] {
+body[bookcreationtype="translation"] {
     .titlePage {
         #originalContributions {
             .bloom-contentNational1 {

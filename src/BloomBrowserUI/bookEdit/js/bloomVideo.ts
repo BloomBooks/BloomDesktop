@@ -49,7 +49,10 @@ export function SetupVideoEditing(container) {
     });
 }
 
-function SetupVideoContainer(containerDiv: Element, isEnterpriseEnabled: boolean) {
+function SetupVideoContainer(
+    containerDiv: Element,
+    isEnterpriseEnabled: boolean
+) {
     var videoElts = containerDiv.getElementsByTagName("video");
     for (var i = 0; i < videoElts.length; i++) {
         // Early sign language code included this; now we do it only on hover.
@@ -66,44 +69,50 @@ function SetupVideoContainer(containerDiv: Element, isEnterpriseEnabled: boolean
     // BL-6133 - Only set up the Change Video button on the container,
     //   if Enterprise features are enabled.
     if (isEnterpriseEnabled) {
-        theOneLocalizationManager.asyncGetText("EditTab.Video.ChangeVideo", "Change Video", "")
-            .done(function (changeVideoText) {
-                $(containerDiv).mouseenter(function () {
-                    var $this = $(this);
+        theOneLocalizationManager
+            .asyncGetText("EditTab.Video.ChangeVideo", "Change Video", "")
+            .done(function(changeVideoText) {
+                $(containerDiv)
+                    .mouseenter(function() {
+                        var $this = $(this);
 
-                    var buttonModifier = GetButtonModifier($this);
+                        var buttonModifier = GetButtonModifier($this);
 
-                    // The code that executes when this button is clicked is currently C#.
-                    // See EditingView._browser1_OnBrowserClick for the start of the chain.
-                    $this.prepend(
-                        "<button class='changeVideoButton imageButton " + buttonModifier +
-                        "' title='" + changeVideoText + "'></button>"
-                    );
+                        // The code that executes when this button is clicked is currently C#.
+                        // See EditingView._browser1_OnBrowserClick for the start of the chain.
+                        $this.prepend(
+                            "<button class='changeVideoButton imageButton " +
+                                buttonModifier +
+                                "' title='" +
+                                changeVideoText +
+                                "'></button>"
+                        );
 
-                    //SetImageTooltip(containerDiv, img);
+                        //SetImageTooltip(containerDiv, img);
 
-                    // Enhance: we will have to do something about license information for videos, but it's complicated.
-                    // I don't think we have fully determined how to store the information with the video, though I believe
-                    // we can embed EXIF data as we do for pictures. But rights over a video are more complicated.
-                    // Many people may have rights if they haven't been explicitly given up...producer, videographer,
-                    // copyright owner of script, actors, owners of music used, copyright owner of work script is based on,
-                    // possibly some subject matter may be copyright (the Eiffel tower at night is a notorious example).
-                    // if (IsImageReal(img)) {
-                    //     $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' +
-                    //         theOneLocalizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
-                    //     $this.find('.miniButton').each(function () {
-                    //         $(this).removeClass('disabled');
-                    //     });
-                    // }
+                        // Enhance: we will have to do something about license information for videos, but it's complicated.
+                        // I don't think we have fully determined how to store the information with the video, though I believe
+                        // we can embed EXIF data as we do for pictures. But rights over a video are more complicated.
+                        // Many people may have rights if they haven't been explicitly given up...producer, videographer,
+                        // copyright owner of script, actors, owners of music used, copyright owner of work script is based on,
+                        // possibly some subject matter may be copyright (the Eiffel tower at night is a notorious example).
+                        // if (IsImageReal(img)) {
+                        //     $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' +
+                        //         theOneLocalizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
+                        //     $this.find('.miniButton').each(function () {
+                        //         $(this).removeClass('disabled');
+                        //     });
+                        // }
 
-                    $this.addClass("hoverUp");
-                }).mouseleave(function () {
-                    var $this = $(this);
-                    $this.removeClass("hoverUp");
-                    $this.find(".changeVideoButton").each(function () {
-                        $(this).remove();
+                        $this.addClass("hoverUp");
+                    })
+                    .mouseleave(function() {
+                        var $this = $(this);
+                        $this.removeClass("hoverUp");
+                        $this.find(".changeVideoButton").each(function() {
+                            $(this).remove();
+                        });
                     });
-                });
             });
     }
 }
@@ -111,7 +120,7 @@ function SetupVideoContainer(containerDiv: Element, isEnterpriseEnabled: boolean
 function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // if the user clicks on the video placeholder, bring up the sign language tool
     if (containerDiv.classList.contains("bloom-noVideoSelected")) {
-        $(containerDiv).click(function () {
+        $(containerDiv).click(function() {
             let toolboxFrameExports = getToolboxFrameExports();
             let toolbox = toolboxFrameExports.getTheOneToolbox();
             if (!toolbox.toolboxIsShowing()) {

@@ -1,6 +1,5 @@
 ﻿// Type definitions for toolbarjs
 
-
 interface ToolBarOptions {
     content: string;
     position?: string;

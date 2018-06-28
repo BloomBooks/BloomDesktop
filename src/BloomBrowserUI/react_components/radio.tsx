@@ -26,11 +26,28 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
     }
     render() {
         return (
-            <div className={Radio.combineClasses("radioButton", this.props.className)}>
-                <input type="radio" className={Radio.combineClasses("radioInput", this.props.inputClass)}
-                    value={this.props.value} checked={this.props.checked}
-                    onClick={() => this.props.onSelected(this.props.value)} />
-                <div className={Radio.combineClasses("radioLabel", this.props.labelClass)}>
+            <div
+                className={Radio.combineClasses(
+                    "radioButton",
+                    this.props.className
+                )}
+            >
+                <input
+                    type="radio"
+                    className={Radio.combineClasses(
+                        "radioInput",
+                        this.props.inputClass
+                    )}
+                    value={this.props.value}
+                    checked={this.props.checked}
+                    onClick={() => this.props.onSelected(this.props.value)}
+                />
+                <div
+                    className={Radio.combineClasses(
+                        "radioLabel",
+                        this.props.labelClass
+                    )}
+                >
                     {this.getLocalizedContent()}
                 </div>
             </div>
@@ -77,7 +94,9 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
                 // If it's an element OTHER than a Radio, we'll process it recursively, in case it
                 // contains Radio children which need our modifications.
                 // This allows other, non Radio elements to be in the RadioGroup, and to contain Radio children.
-                childProps.children = this.recursiveFixRadio(childElt.props.children);
+                childProps.children = this.recursiveFixRadio(
+                    childElt.props.children
+                );
                 return React.cloneElement(childElt, childProps);
             }
             // And if it's an element but somehow has no props at all (if this is even possible),
@@ -87,7 +106,12 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
     }
     render() {
         return (
-            <div className={Radio.combineClasses("radioGroup", this.props.className)}>
+            <div
+                className={Radio.combineClasses(
+                    "radioGroup",
+                    this.props.className
+                )}
+            >
                 {this.recursiveFixRadio(this.props.children)}
             </div>
         );

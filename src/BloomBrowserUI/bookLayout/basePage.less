@@ -15,13 +15,31 @@
         padding: 0;
         font-size: 1em;
     }
-    h1, h2, h3, h4, h5, h6, th {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    th {
         font-weight: inherit;
     }
-    address, cite, dfn, var {
+    address,
+    cite,
+    dfn,
+    var {
         font-style: inherit;
     }
-    caption, code, kbd, pre, samp, tt, input, textarea, select, button {
+    caption,
+    code,
+    kbd,
+    pre,
+    samp,
+    tt,
+    input,
+    textarea,
+    select,
+    button {
         font-family: inherit;
     }
     table {
@@ -30,13 +48,22 @@
     th {
         text-align: left;
     }
-    html, body, thead, tbody, tfoot, tr, th, td, br {
+    html,
+    body,
+    thead,
+    tbody,
+    tfoot,
+    tr,
+    th,
+    td,
+    br {
         position: static;
     }
-    input[type=hidden] {
+    input[type="hidden"] {
         display: none !important;
     }
-    fieldset, a img {
+    fieldset,
+    a img {
         border: 0;
     }
     body {
@@ -45,8 +72,7 @@
 
 .Browser-Reset();
 
-body
-{
+body {
     /*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
@@ -58,9 +84,11 @@ To handling the mis-match.*/
 
 // when making a thumbnail for a template page, add a kind of text mockup to text areas
 .bloom-templateThumbnail {
-    .numberedPage:after { display:none }
+    .numberedPage:after {
+        display: none;
+    }
     .bloom-editable {
-        background-image: url('templateThumbnailText.svg');
+        background-image: url("templateThumbnailText.svg");
         background-repeat: repeat-y;
         //height in ems so it is sentitive to font size. The '3' here is not necessarily
         //ideal, and was just arrived at through experimentation, balancing accuracy
@@ -81,33 +109,30 @@ To handling the mis-match.*/
         background-size: 70%;
     }
 }
-div.ui-tooltip-content
-{
+div.ui-tooltip-content {
     overflow: visible !important;
     font-size: 10pt;
     padding: 0px 9px;
 }
-.uibloomSourceTextsBubble .ui-tooltip-content
-{
+.uibloomSourceTextsBubble .ui-tooltip-content {
     /*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
     min-height: 60px !important;
 }
-.bloom-imageContainer
-{
+.bloom-imageContainer {
     min-height: 50px;
     z-index: 100;
 }
-p{
-  min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+p {
+    min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }
-textarea, .bloom-editable
-{
+textarea,
+.bloom-editable {
     resize: none;
     /*don't show those cute little resize controls in Firefox 4 and greater*/
     overflow: visible;
     // this is just... bogus! removing it will cause some problems, but.. but... font-size: 143%;
     line-height: @defaultLineHeight;
-    min-height:  @defaultLineHeight + .3em;
+    min-height: @defaultLineHeight + 0.3em;
     width: 100%;
     height: 100%;
     // visible .bloom-editables are made display:flex rather than display:none
@@ -120,42 +145,38 @@ textarea, .bloom-editable
     but at this point we are about to go release candidate with 3.1 so it will have to wait.
     When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
 */
-TD {
+td {
     resize: none;
     /*don't show those cute little resize controls in Firefox 4 and greater*/
     overflow: visible;
     font-size: 143%;
     line-height: @defaultLineHeight;
-    min-height: @defaultLineHeight + .3em;
+    min-height: @defaultLineHeight + 0.3em;
     width: 100%;
 }
 
-p{
-  min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+p {
+    min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }
 
 //user can get this in by pressing shift-enter. See bloomField.ts
 span.bloom-linebreak {
-  display: block;
-  text-indent: 0;
+    display: block;
+    text-indent: 0;
 }
 
-div.bloom-page
-{
+div.bloom-page {
     display: block;
     page-break-after: auto;
     background-color: @bloom-page-background;
 }
-div#bloomDataDiv
-{
+div#bloomDataDiv {
     display: none;
 }
-.centered
-{
+.centered {
     text-align: center;
 }
-.centerJustify
-{
+.centerJustify {
     text-align: center;
 }
 
@@ -192,7 +213,8 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
         min-height: @B5Portrait-Height;
         max-height: @B5Portrait-Height;
     }
-    &.A4Landscape, &.A4LandscapeSideBySide {
+    &.A4Landscape,
+    &.A4LandscapeSideBySide {
         min-width: @A4Landscape-Width;
         max-width: @A4Landscape-Width;
         min-height: @A4Landscape-Height;
@@ -298,7 +320,7 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     height: @PageHeight - (@MarginTop + @MarginBottom);
 }
 
-.marginBox{
+.marginBox {
     position: absolute;
     top: @MarginTop;
 }
@@ -306,9 +328,10 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
 // Mixin for setting .marginBox margins.
 .SetMarginBox(@PageWidth, @PageHeight) {
     height: @PageHeight - (@MarginTop + @MarginBottom);
-    width: @PageWidth - ( @MarginOuter + @MarginInner );
-    IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-        max-width: @PageWidth - ( @MarginOuter + @MarginInner );
+    width: @PageWidth - (@MarginOuter + @MarginInner);
+    img {
+        /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+        max-width: @PageWidth - (@MarginOuter + @MarginInner);
     }
 }
 
@@ -339,10 +362,16 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     }
 
     .QuarterLetterPortrait & {
-        .SetMarginBox(@QuarterLetterPortrait-Width, @QuarterLetterPortrait-Height);
+        .SetMarginBox(
+            @QuarterLetterPortrait-Width,
+            @QuarterLetterPortrait-Height
+        );
     }
     .QuarterLetterLandscape & {
-        .SetMarginBox(@QuarterLetterLandscape-Width, @QuarterLetterLandscape-Height);
+        .SetMarginBox(
+            @QuarterLetterLandscape-Width,
+            @QuarterLetterLandscape-Height
+        );
     }
     .HalfLetterPortrait & {
         .SetMarginBox(@HalfLetterPortrait-Width, @HalfLetterPortrait-Height);
@@ -365,24 +394,25 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     }
 }
 
-:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only){
+:not(.calendarFold)
+    :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only) {
     &.side-left  // maintained by c#
-    {
-        .marginBox{
+ {
+        .marginBox {
             left: @MarginOuter;
         }
     }
 
     &.side-right // maintained by c#
-    {
-        .marginBox{
+ {
+        .marginBox {
             left: @MarginInner;
         }
     }
 }
 
 .screen-only {
-    .marginBox{
+    .marginBox {
         left: 20px;
         width: ~"calc(100% - 40px)";
     }
@@ -391,7 +421,7 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
 // The publishModel needs to make that decision (perhaps, in the future, user will be able to control that when
 // making the pdf). From the stylesheet's view, we just need to see this calendarFold class on the Body
 
-.calendarFold{
+.calendarFold {
     .marginBox {
         /* balanced margin*/
         left: @MarginBalanced;
@@ -399,15 +429,16 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
 }
 
 // pageDescription is for javascript to read, we never display it directly on the page
-.pageDescription{display:none}
-
-/*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
-label.bubble, label.placeholder
-{
+.pageDescription {
     display: none;
 }
-.superscript
-{
+
+/*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
+label.bubble,
+label.placeholder {
+    display: none;
+}
+.superscript {
     vertical-align: super;
     font-size: 80%;
 }
@@ -415,8 +446,7 @@ label.bubble, label.placeholder
 sup {
     font-size: smaller;
 }
-h1
-{
+h1 {
     font-size: 1.5em;
 }
 
@@ -425,7 +455,7 @@ h2 {
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
 /* If this is not important, it can be overridden by display:flex in languageDisplayTemplate.css (BL-3555, BL-3711) */
-.box-header-off{
+.box-header-off {
     display: none !important;
 }
 
@@ -445,8 +475,8 @@ h2 {
     }
     .bloom-videoContainer {
         box-sizing: border-box;
-        width:100%;
-        height:100%;
+        width: 100%;
+        height: 100%;
         &.bloom-noVideoSelected {
             background: url("video-placeholder.svg") no-repeat center;
             background-size: contain;
@@ -467,14 +497,15 @@ h2 {
     .bloom-editable {
         overflow-y: hidden;
     }
-    .bloom-translationGroup{
+    .bloom-translationGroup {
         height: ~"calc(100% - 2px)";
         width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
     }
     /* other rules normally make bloom-editable divs height: 100%. That won't work for a bilingual or trilingual block.
     This rule makes them start out the size they need to be, then whatever space is left over is divided between them.
     */
-    &.bloom-bilingual, &.bloom-trilingual {
+    &.bloom-bilingual,
+    &.bloom-trilingual {
         .bloom-editable {
             height: auto;
             flex-grow: 1;
@@ -503,14 +534,14 @@ h2 {
 // visible. The rules that make them something other than display:none
 // must use display:flex. I think all of those are in languageDisplay.less.
 .bloom-vertical-align-center {
-    justify-content:center;
+    justify-content: center;
     &:not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
         justify-content: center;
     }
 }
 
 .bloom-vertical-align-bottom {
-    justify-content:flex-end;
+    justify-content: flex-end;
     &:not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
         justify-content: flex-end;
     }
@@ -524,7 +555,7 @@ h2 {
 //Each bloom-translationGroup has 0 or more div.bloom-editables.
 //Each .bloom-editable has a lang attribute to tell us what language it is in.
 //Each of these is assumed to be unwanted:
-.bloom-editable	{
+.bloom-editable {
     display: none;
     order: 99; //if somehow we don't have an order for this, show it last (default is 0, which would be first)
 }
@@ -549,22 +580,23 @@ h2 {
     order: 2;
 }
 
-
 //Enhance: I think these could be computed, based on the current margin
 @OddPageNumberPosition: 57px;
 @EvenPageNumberPosition: 60px;
 
-.numberedPage{
+.numberedPage {
     &:after {
         content: attr(data-page-number);
         font-size: 14pt;
         position: absolute;
         bottom: 20px;
     }
-    &.side-left:after { // side-___ maintained by c#
+    &.side-left:after {
+        // side-___ maintained by c#
         left: @OddPageNumberPosition;
     }
-    &.side-right:after { // side-___ maintained by c#
+    &.side-right:after {
+        // side-___ maintained by c#
         right: @EvenPageNumberPosition;
         text-align: right;
     }
@@ -576,10 +608,10 @@ h2 {
 // This rule would like to live in basePage-sharedRules, but we need display:flex in Bloom and display:block
 // in epubs.
 .bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
-        // We really just want to turn off the display:none that usually applies to image descriptions
-        // inside image containers, but we have to set something. Fortunately, translation groups
-        // are always display:flex (when not hidden) in Bloom itself.
-        display:flex;
+    // We really just want to turn off the display:none that usually applies to image descriptions
+    // inside image containers, but we have to set something. Fortunately, translation groups
+    // are always display:flex (when not hidden) in Bloom itself.
+    display: flex;
 }
 
 // When bloom-showImageDescriptions is set (typically only when the relevant toolbox is showing, currently,
@@ -592,11 +624,11 @@ h2 {
     background-size: 50% auto;
     background-position-x: 0;
     .bloom-imageDescription {
-        width:50%;
+        width: 50%;
         // not needed in content pages, but for some reason on cover.
         // Overridden in edit mode to make room for special border on top.
         height: 100%;
-        top:0;
+        top: 0;
 
         position: absolute;
         left: 50%;

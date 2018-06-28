@@ -16,26 +16,42 @@ export interface IComponentState {
 // on the content page body.
 // Often it will be convenient to use this by embedding the controls to be hidden in a
 // RequiresBloomEnterpriseWrapper, also defined in this file.
-export class RequiresBloomEnterprise extends React.Component<{}, IComponentState> {
-
+export class RequiresBloomEnterprise extends React.Component<
+    {},
+    IComponentState
+> {
     constructor(props) {
         super(props);
         this.state = { visible: false };
-        enterpriseFeaturesEnabled().then(enabled => this.setState({ visible: !enabled }));
+        enterpriseFeaturesEnabled().then(enabled =>
+            this.setState({ visible: !enabled })
+        );
     }
 
     public render() {
-        return (<div className="requiresBloomEnterprise" style={this.state.visible ? {} : { display: "none" }}>
-            <div className="redTriangle"><span className="triangleContent">!</span></div>
-            <div className="messageHelpWrapper">
-                <Label l10nKey="EditTab.Toolbox.RequiresEnterprise">Requires Bloom Enterprise Subscription.</Label>
-                <div className="requiresEnterpriseHelp">
-                    <HelpLink
-                        helpId="Tasks/Edit_tasks/Enterprise/EnterpriseRequired.htm"
-                        l10nKey="Common.Help">Help</HelpLink>
+        return (
+            <div
+                className="requiresBloomEnterprise"
+                style={this.state.visible ? {} : { display: "none" }}
+            >
+                <div className="redTriangle">
+                    <span className="triangleContent">!</span>
+                </div>
+                <div className="messageHelpWrapper">
+                    <Label l10nKey="EditTab.Toolbox.RequiresEnterprise">
+                        Requires Bloom Enterprise Subscription.
+                    </Label>
+                    <div className="requiresEnterpriseHelp">
+                        <HelpLink
+                            helpId="Tasks/Edit_tasks/Enterprise/EnterpriseRequired.htm"
+                            l10nKey="Common.Help"
+                        >
+                            Help
+                        </HelpLink>
+                    </div>
                 </div>
             </div>
-        </div>);
+        );
     }
 }
 
@@ -45,20 +61,30 @@ export interface IWrapperComponentState {
 
 // The children of this component will be displayed if an enterprise project has been selected;
 // otherwise, the RequiresBloomEnterprise message will be displayed.
-export class RequiresBloomEnterpriseWrapper extends React.Component<{}, IWrapperComponentState> {
+export class RequiresBloomEnterpriseWrapper extends React.Component<
+    {},
+    IWrapperComponentState
+> {
     constructor(props) {
         super(props);
         this.state = { enterprise: true };
-        enterpriseFeaturesEnabled().then(enabled => this.setState({ enterprise: enabled }));
+        enterpriseFeaturesEnabled().then(enabled =>
+            this.setState({ enterprise: enabled })
+        );
     }
     public render() {
         return (
             <div>
-                <div style={{ display: (this.state.enterprise ? "block" : "none") }}>
+                <div
+                    style={{
+                        display: this.state.enterprise ? "block" : "none"
+                    }}
+                >
                     {this.props.children}
                 </div>
                 <RequiresBloomEnterprise />
-            </div>);
+            </div>
+        );
     }
 }
 

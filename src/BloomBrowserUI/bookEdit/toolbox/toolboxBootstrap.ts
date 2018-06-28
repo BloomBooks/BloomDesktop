@@ -5,7 +5,7 @@ import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
-    showOrHideTool_click,
+    showOrHideTool_click
 } from "./toolbox";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
@@ -53,7 +53,7 @@ export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
 
-$(document).ready(function () {
+$(document).ready(function() {
     getTheOneToolbox().initialize();
 });
 

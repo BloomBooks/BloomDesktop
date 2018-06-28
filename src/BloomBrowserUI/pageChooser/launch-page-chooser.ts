@@ -1,4 +1,4 @@
-import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
+import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 // Confusingly, this function is not used by the HTML that primarily loads the JS built from this
 // file (the pageChooserBundle, loaded by page-chooser-main.pug). Instead, it is imported into
 // the editViewFrame and exported from there so it can be invoked directly from C#, in the context of
@@ -20,12 +20,12 @@ export function showAddPageDialog(forChooseLayout: boolean) {
         return;
     }
 
-    var key = 'EditTab.AddPageDialog.Title';
-    var english = 'Add Page...';
+    var key = "EditTab.AddPageDialog.Title";
+    var english = "Add Page...";
 
     if (forChooseLayout) {
-        key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
-        english = 'Choose Different Layout...';
+        key = "EditTab.AddPageDialog.ChooseLayoutTitle";
+        english = "Choose Different Layout...";
     }
 
     theOneLocalizationManager.asyncGetText(key, english, "").done(title => {
@@ -39,34 +39,37 @@ export function showAddPageDialog(forChooseLayout: boolean) {
             width: 795,
             height: 550,
             position: {
-                my: "left bottom", at: "left bottom", of: window
+                my: "left bottom",
+                at: "left bottom",
+                of: window
             },
             title: title,
-            close: function () {
+            close: function() {
                 $(this).remove();
-                fireCSharpEvent('setModalStateEvent', 'false');
-            },
+                fireCSharpEvent("setModalStateEvent", "false");
+            }
         });
 
         //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
         // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
 
-        jQuery(document).on('click', 'body > .ui-widget-overlay', function () {
-            $(".ui-dialog-titlebar-close").trigger('click');
+        jQuery(document).on("click", "body > .ui-widget-overlay", function() {
+            $(".ui-dialog-titlebar-close").trigger("click");
             return false;
         });
-        fireCSharpEvent('setModalStateEvent', 'true');
-        theDialog.dialog('open');
+        fireCSharpEvent("setModalStateEvent", "true");
+        theDialog.dialog("open");
 
         //parentElement.$.notify("testing notify",{});
     });
 }
 
 function CreateAddPageDiv() {
-    var dialogContents = $('<div id="addPageConfig"/>').appendTo($('body'));
+    var dialogContents = $('<div id="addPageConfig"/>').appendTo($("body"));
 
     // For some reason when the height is 100% we get an unwanted scroll bar on the far right.
-    var html = "<iframe id=\"addPage_frame\" src=\"/bloom/pageChooser/page-chooser-main.html\" scrolling=\"no\" style=\"width: 100%; height: 99%; border: none; margin: 0\"></iframe>";
+    var html =
+        '<iframe id="addPage_frame" src="/bloom/pageChooser/page-chooser-main.html" scrolling="no" style="width: 100%; height: 99%; border: none; margin: 0"></iframe>';
     dialogContents.append(html);
     return dialogContents;
 }
@@ -79,7 +82,11 @@ function CreateAddPageDiv() {
  */
 // Enhance: JT notes that this method pops up from time to time; can we consolidate?
 function fireCSharpEvent(eventName, eventData, dispatchWindow?: Window) {
-    var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles': true, 'cancelable': true, 'data': eventData });
+    var event = new MessageEvent(eventName, {
+        /*'view' : window,*/ bubbles: true,
+        cancelable: true,
+        data: eventData
+    });
     if (dispatchWindow) {
         dispatchWindow.document.dispatchEvent(event);
     } else {

@@ -7,11 +7,7 @@ import { ApiBackedCheckbox } from "../../react_components/apiBackedCheckbox";
 import { Checkbox } from "../../react_components/checkbox";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
-import {
-    H1,
-    H2,
-    IUILanguageAwareProps
-} from "../../react_components/l10n";
+import { H1, H2, IUILanguageAwareProps } from "../../react_components/l10n";
 import "./epubPublishUI.less";
 import EpubPreview from "./EpubPreview";
 // import { RadioGroup, Radio } from "../../react_components/radio";
@@ -25,11 +21,17 @@ interface IPublishSettings {
 
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
-class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSettings> {
+class EpubPublishUI extends React.Component<
+    IUILanguageAwareProps,
+    IPublishSettings
+> {
     private isLinux: boolean;
     constructor(props: IUILanguageAwareProps) {
         super(props);
-        this.state = { howToPublishImageDescriptions: "None", removeFontSizes: false };
+        this.state = {
+            howToPublishImageDescriptions: "None",
+            removeFontSizes: false
+        };
 
         BloomApi.get("api/publish/epub/epubSettings", result => {
             this.setState(result.data);
@@ -75,7 +77,9 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
                             </H2>
                             <ProgressBox
                                 lifetimeLabel={kWebSocketLifetime}
-                                onReadyToReceive={() => this.readyToReceiveProgress()}
+                                onReadyToReceive={() =>
+                                    this.readyToReceiveProgress()
+                                }
                             />
                         </div>
                     </section>
@@ -107,22 +111,37 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
                             {/* todo: pick correct l10nkey */}
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
-                        <H1 l10nKey="PublishTab.Epub.BooksForBlind">Books for the Blind</H1>
+                        <H1 l10nKey="PublishTab.Epub.BooksForBlind">
+                            Books for the Blind
+                        </H1>
                         {/* Can't use ApiBackedCheckbox here, because it is backed by an enum. */}
-                        <Checkbox name="includeImageDesc" checked={this.state.howToPublishImageDescriptions === "OnPage"}
-                            onCheckChanged={val => this.setPublishRadio(val ? "OnPage" : "None")}
+                        <Checkbox
+                            name="includeImageDesc"
+                            checked={
+                                this.state.howToPublishImageDescriptions ===
+                                "OnPage"
+                            }
+                            onCheckChanged={val =>
+                                this.setPublishRadio(val ? "OnPage" : "None")
+                            }
                             l10nKey="PublishTab.Epub.IncludeOnPage"
-                        >Include image descriptions on page</Checkbox>
+                        >
+                            Include image descriptions on page
+                        </Checkbox>
                         <ApiBackedCheckbox
                             apiEndpoint="api/publish/epub/removeFontSizesSetting"
                             l10nKey="PublishTab.Epub.RemoveFontSizes"
-                        >Use ePUB reader's text size</ApiBackedCheckbox>
+                        >
+                            Use ePUB reader's text size
+                        </ApiBackedCheckbox>
                         {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                         <Link
                             id="a11yCheckerLink"
                             l10nKey="AccessibilityCheck.AccessibilityChecker"
                             onClick={() =>
-                                BloomApi.post("api/accessibilityCheck/showAccessibilityChecker")
+                                BloomApi.post(
+                                    "api/accessibilityCheck/showAccessibilityChecker"
+                                )
                             }
                         >
                             Accessibility Checker
@@ -144,8 +163,11 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IPublishSetti
     // (e.g., the implemented but not shipped "links" option)
     private setPublishRadio(val: string) {
         this.setState({ howToPublishImageDescriptions: val });
-        BloomApi.postDataWithConfig("api/publish/epub/imageDescriptionSetting", val,
-            { headers: { "Content-Type": "application/json" } });
+        BloomApi.postDataWithConfig(
+            "api/publish/epub/imageDescriptionSetting",
+            val,
+            { headers: { "Content-Type": "application/json" } }
+        );
     }
 }
 

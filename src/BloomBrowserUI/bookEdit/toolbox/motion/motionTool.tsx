@@ -177,10 +177,14 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 // could drag the rectangles off the picture.  This event handler programmatically enforces the desired
                 // containment.  (Setting the containment to a boundary array just didn't work for some reason.)
                 drag: (event, ui) => {
-                    const xpos = Math.min(Math.max(0, ui.position.left / scale),
-                        firstImage.clientWidth - ui.helper.width());
-                    const ypos = Math.min(Math.max(0, ui.position.top / scale),
-                        firstImage.clientHeight - ui.helper.height());
+                    const xpos = Math.min(
+                        Math.max(0, ui.position.left / scale),
+                        firstImage.clientWidth - ui.helper.width()
+                    );
+                    const ypos = Math.min(
+                        Math.max(0, ui.position.top / scale),
+                        firstImage.clientHeight - ui.helper.height()
+                    );
                     ui.position.top = ypos;
                     ui.position.left = xpos;
                 }
@@ -354,8 +358,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const actualImage = firstImage.getElementsByTagName("img")[0];
         const imageHeight = this.getHeight(actualImage);
         const imageWidth = this.getWidth(actualImage);
-        let actualTop = (top * imageHeight) + actualImage.offsetTop;
-        let actualLeft = (left * imageWidth) + actualImage.offsetLeft;
+        let actualTop = top * imageHeight + actualImage.offsetTop;
+        let actualLeft = left * imageWidth + actualImage.offsetLeft;
         let actualWidth = width * imageWidth;
         let actualHeight = height * imageHeight;
         // We want things to fit in the image container. This can be broken in various ways:
@@ -385,11 +389,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // "small enough to fit" adjustment might throw off the aspect ratio.
         if (actualWidth / actualHeight > imageWidth / imageHeight + 0.001) {
             // proposed rectangle is too wide for height. Reduce width.
-            actualWidth = actualHeight * imageWidth / imageHeight;
+            actualWidth = (actualHeight * imageWidth) / imageHeight;
             needToSaveRectangle = true;
         } else if (width / height < imageWidth / imageHeight - 0.001) {
             // too high for width. Reduce height.
-            actualHeight = actualWidth * imageHeight / imageWidth;
+            actualHeight = (actualWidth * imageHeight) / imageWidth;
             needToSaveRectangle = true;
         }
         // Now make sure it's not positioned outside the container.
@@ -673,7 +677,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         // Make a div with the shape of a typical phone screen in lansdscape mode which
         // will be the root for displaying the animation.
-        var animationPageHeight = pageWidth / this.animationPreviewAspectRatio * scale;
+        var animationPageHeight =
+            (pageWidth / this.animationPreviewAspectRatio) * scale;
         var animationPageWidth = pageWidth * scale;
         this.animationRootDiv = getPageFrameExports().makeElement(
             "<div " +
@@ -1113,7 +1118,9 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                     <HelpLink
                         helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm"
                         l10nKey="Common.Help"
-                    >Help</HelpLink>
+                    >
+                        Help
+                    </HelpLink>
                 </div>
                 <audio id="pzMusicPlayer" preload="none" />
             </div>

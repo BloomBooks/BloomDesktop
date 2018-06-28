@@ -1,7 +1,7 @@
 import { removeCommentsFromEditableHtml } from "./toolbox";
 
-describe("toolbox tests", function () {
-    it("removeCommentsFromEditableHtml removes comments correctly including ones with new lines", function () {
+describe("toolbox tests", function() {
+    it("removeCommentsFromEditableHtml removes comments correctly including ones with new lines", function() {
         var p = document.createElement("p");
         var span1 = document.createElement("span");
         span1.appendChild(document.createTextNode("text"));
@@ -15,7 +15,9 @@ describe("toolbox tests", function () {
         p.appendChild(span2);
 
         // validate our setup
-        expect(p.innerHTML).toBe("<span>text</span><!--comment--><span><!--another \r\ncomment-->more <!---->text</span>");
+        expect(p.innerHTML).toBe(
+            "<span>text</span><!--comment--><span><!--another \r\ncomment-->more <!---->text</span>"
+        );
 
         removeCommentsFromEditableHtml(p);
         expect(p.innerHTML).toBe("<span>text</span><span>more text</span>");

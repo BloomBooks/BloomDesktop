@@ -5,7 +5,6 @@
  * pattern: "/bloom/directoryWatcher/..."
  */
 export class DirectoryWatcher {
-
     private directoryToWatch: string;
     private refreshInterval: number = 0;
     private changeEventHandlers = {};
@@ -16,10 +15,12 @@ export class DirectoryWatcher {
      * @param {Number} [refreshIntervalSeconds] If missing or less than one, automatic updating will be disabled.
      */
     constructor(directoryToWatch: string, refreshIntervalSeconds: number) {
-
         this.directoryToWatch = directoryToWatch;
 
-        if ((typeof refreshIntervalSeconds !== 'undefined') && (refreshIntervalSeconds > 0))
+        if (
+            typeof refreshIntervalSeconds !== "undefined" &&
+            refreshIntervalSeconds > 0
+        )
             this.refreshInterval = Math.ceil(refreshIntervalSeconds);
     }
 
@@ -37,7 +38,7 @@ export class DirectoryWatcher {
      */
     checkNow(self): void {
         var postData = { dir: self.directoryToWatch };
-        var url = '/bloom/directoryWatcher/';
+        var url = "/bloom/directoryWatcher/";
         this.watcherAjaxPost(url, self, postData);
     }
 
@@ -47,12 +48,10 @@ export class DirectoryWatcher {
      * @param {DirectoryWatcher} self
      */
     ifChangedFireEvents(responseData, self): void {
-
-        var changed = (responseData === 'yes');
+        var changed = responseData === "yes";
 
         // if there were changes, call the registered onChanged handlers
         if (changed) {
-
             var handlers = Object.keys(self.changeEventHandlers);
             for (var j = 0; j < handlers.length; j++)
                 self.changeEventHandlers[handlers[j]]();
@@ -66,10 +65,11 @@ export class DirectoryWatcher {
      * @param {DirectoryWatcher} self
      */
     private restartTimer(self): void {
-
         if (self.run === true) {
             if (self.refreshInterval > 0) {
-                setTimeout(function () { self.checkNow(self); }, self.refreshInterval * 1000);
+                setTimeout(function() {
+                    self.checkNow(self);
+                }, self.refreshInterval * 1000);
             }
         }
     }
@@ -81,15 +81,14 @@ export class DirectoryWatcher {
      * @param {Object} [postKeyValueDataObject] Values passed in the post.
      */
     watcherAjaxPost(url, self, postKeyValueDataObject): void {
-
-        var ajaxSettings = { type: 'POST', url: url };
-        if (postKeyValueDataObject) ajaxSettings['data'] = postKeyValueDataObject;
+        var ajaxSettings = { type: "POST", url: url };
+        if (postKeyValueDataObject)
+            ajaxSettings["data"] = postKeyValueDataObject;
 
         // we are expecting the value returned in 'data' to be either 'yes' or 'no'
-        $.ajax(ajaxSettings)
-            .done(function (data) {
-                self.ifChangedFireEvents(data, self);
-            });
+        $.ajax(ajaxSettings).done(function(data) {
+            self.ifChangedFireEvents(data, self);
+        });
     }
 
     /**

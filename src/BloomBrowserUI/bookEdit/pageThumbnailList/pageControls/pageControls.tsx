@@ -32,7 +32,12 @@ class PageControls extends React.Component<{}, IPageControlsState> {
         super(props);
 
         // set a default state
-        this.state = { canAddState: true, canDeleteState: false, canDuplicateState: false, lockState: "OriginalBookMode" };
+        this.state = {
+            canAddState: true,
+            canDeleteState: false,
+            canDuplicateState: false,
+            lockState: "OriginalBookMode"
+        };
 
         // (Comment copied from androidPublishUI.tsx)
         // For some reason setting the callback to "this.updateStateForEvent" calls updateStateForEvent()
@@ -94,13 +99,13 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                 <div>
                     <BloomButton
                         l10nKey="EditTab.AddPageDialog.AddPageButton"
-                        l10nComment=
-                        "This is for the button that LAUNCHES the dialog, not the \'Add this page\' button that is IN the dialog."
+                        l10nComment="This is for the button that LAUNCHES the dialog, not the \'Add this page\' button that is IN the dialog."
                         enabled={this.state.canAddState}
                         clickEndpoint="edit/pageControls/addPage"
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/addPage.png"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/addPageDisabled.png"
-                        hasText={true}>
+                        hasText={true}
+                    >
                         Add Page
                     </BloomButton>
                 </div>
@@ -114,8 +119,8 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePageDisabled.svg"
                         hasText={false}
                         l10nTipEnglishEnabled="Insert a new page which is a duplicate of this one"
-                        l10nTipEnglishDisabled="This page cannot be duplicated">
-                    </BloomButton>
+                        l10nTipEnglishDisabled="This page cannot be duplicated"
+                    />
                     <BloomButton
                         l10nKey="EditTab.DeletePageButton"
                         l10nComment="Button that tells Bloom to delete the currently selected page."
@@ -125,56 +130,49 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePageDisabled.svg"
                         hasText={false}
                         l10nTipEnglishEnabled="Remove this page from the book"
-                        l10nTipEnglishDisabled="This page cannot be removed">
-                    </BloomButton>
-                    {this.state.lockState !== "OriginalBookMode" &&
+                        l10nTipEnglishDisabled="This page cannot be removed"
+                    />
+                    {this.state.lockState !== "OriginalBookMode" && (
                         <span>
-                            {this.state.lockState === "BookLocked" &&
+                            {this.state.lockState === "BookLocked" && (
                                 <BloomButton
                                     l10nKey="EditTab.UnlockBook"
-                                    l10nComment=
-                                    "Button that tells Bloom to temporarily unlock a shell book for editing other than translation."
+                                    l10nComment="Button that tells Bloom to temporarily unlock a shell book for editing other than translation."
                                     enabled={true}
                                     clickEndpoint="edit/pageControls/unlockBook"
                                     enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/lockedPage.svg"
                                     hasText={false}
-                                    l10nTipEnglishEnabled=
-                                    "This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.">
-                                </BloomButton>
-                            }
-                            {this.state.lockState === "BookUnlocked" &&
+                                    l10nTipEnglishEnabled="This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book."
+                                />
+                            )}
+                            {this.state.lockState === "BookUnlocked" && (
                                 <BloomButton
                                     l10nKey="EditTab.LockBook"
-                                    l10nComment=
-                                    "Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation)."
+                                    l10nComment="Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation)."
                                     enabled={true}
                                     clickEndpoint="edit/pageControls/lockBook"
                                     enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/unlockedPage.svg"
                                     hasText={false}
-                                    l10nTipEnglishEnabled="This book is temporarily unlocked.">
-                                </BloomButton>
-                            }
-                            {this.state.lockState === "NoLocking" &&
+                                    l10nTipEnglishEnabled="This book is temporarily unlocked."
+                                />
+                            )}
+                            {this.state.lockState === "NoLocking" && (
                                 <BloomButton
                                     l10nKey="EditTab.NeverLocked"
-                                    l10nComment=
-                                    "Button in a state that indicates books in this collection are always unlocked."
+                                    l10nComment="Button in a state that indicates books in this collection are always unlocked."
                                     enabled={false}
                                     clickEndpoint="edit/pageControls/lockBook"
                                     disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/unlockedPage.svg"
                                     hasText={false}
-                                    l10nTipEnglishEnabled="Books are never locked in a Source Collection.">
-                                </BloomButton>
-                            }
+                                    l10nTipEnglishEnabled="Books are never locked in a Source Collection."
+                                />
+                            )}
                         </span>
-                    }
+                    )}
                 </div>
             </div>
         );
     }
 }
 
-ReactDOM.render(
-    <PageControls />,
-    document.getElementById("PageControls")
-);
+ReactDOM.render(<PageControls />, document.getElementById("PageControls"));

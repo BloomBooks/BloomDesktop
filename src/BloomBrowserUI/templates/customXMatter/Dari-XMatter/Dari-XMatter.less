@@ -1,4 +1,4 @@
-@import '../../xMatter/bloom-xmatter-common.less';
+@import "../../xMatter/bloom-xmatter-common.less";
 
 @XMatterPackName: "Afghanistan";
 
@@ -6,27 +6,32 @@
     height: 5em;
 }
 
-.titlePage .marginBox, .credits .marginBox {
-    display:flex; // so we can move #titlePagePrintInfo as low as possible easily
+.titlePage .marginBox,
+.credits .marginBox {
+    display: flex; // so we can move #titlePagePrintInfo as low as possible easily
     flex-direction: column;
 }
 
 #titlePagePrintInfo {
-    margin-top:auto; // moves it as near bottom as possible (flex container)
+    margin-top: auto; // moves it as near bottom as possible (flex container)
 }
 
 #funding {
-    margin-top:auto; // as near bottom as possible
+    margin-top: auto; // as near bottom as possible
 }
 
 // center the bismallah image
 .bismallah .marginBox {
-    display:flex;
-    align-items:center;
+    display: flex;
+    align-items: center;
 }
 
 .credits {
-    .author, .editor, .illustrator {margin-bottom: 1em;}
+    .author,
+    .editor,
+    .illustrator {
+        margin-bottom: 1em;
+    }
 }
 
 .outsideBackCover .ownership {
@@ -40,13 +45,14 @@
     margin-top: 65%;
 }
 .frontCover {
-    .bookTitle,#originalContributions {
+    .bookTitle,
+    #originalContributions {
         margin-left: 30%;
     }
 }
 
 #titlePageTitleBlock {
-    margin-top:20%;
+    margin-top: 20%;
 }
 #titlePageExtraBlock {
     margin-top: 1em;

@@ -24,8 +24,8 @@
     "author": "SIL International",
     "license": "MIT",
     "dependencies": {
-        "@types/react": "16.4.2",
         "@types/rc-slider": "^8.2.2",
+        "@types/react": "16.4.2",
         "@types/react-tabs": "^1.0.4",
         "@types/webrtc": "^0.0.23",
         "axios": "^0.16.2",
@@ -79,6 +79,7 @@
         "markdown-it-attrs": "^1.2.1",
         "markdown-it-container": "^2.0.0",
         "path": "^0.12.7",
+        "prettier": "1.13.6",
         "replace-ext": "^1.0.0",
         "run-sequence": "^2.2.1",
         "semver": "^5.5.0",

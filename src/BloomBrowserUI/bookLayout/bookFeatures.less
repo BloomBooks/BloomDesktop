@@ -32,12 +32,15 @@
     }
 }
 
+// prettier mangles mixins
+// prettier-ignore
 .bookFeature("hidepagenumbers",{
     &::after {
         content: unset;
     }
 });
 
+// prettier-ignore
 .bookFeature("fullscreenpicture",{
     //nb: this might negatively interact with "textOverlay" when we implement that
     .bloom-translationGroup{
@@ -64,14 +67,16 @@
             width: @Device16x9Portrait-Width;
         }
     }
-});;
+});
 
+// prettier-ignore
 .bookFeature("textoverlay",{
     // TODO
     border-right: solid yellow;
-});;
+});
 
+// prettier-ignore
 .bookFeature("nomargin",{
     // TODO
     border-bottom:solid green;
-});;
+});

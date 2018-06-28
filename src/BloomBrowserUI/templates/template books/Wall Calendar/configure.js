@@ -36,63 +36,95 @@ function runUpdate(jsonConfig) {
 //
 // Used to create a calendar in a Wall Calendar book
 //
-var CalendarConfigurator = (function () {
+var CalendarConfigurator = (function() {
     function CalendarConfigurator(jsonConfig) {
-        if (jsonConfig && jsonConfig['library'])
+        if (jsonConfig && jsonConfig["library"])
             this.configObject = new CalendarConfigObject(jsonConfig);
-        else
-            this.configObject = new CalendarConfigObject(); // shouldn't happen, even in test...
+        else this.configObject = new CalendarConfigObject(); // shouldn't happen, even in test...
     }
     //
     // Updates the dom to reflect the given configuration settings
     //
-    CalendarConfigurator.prototype.updateDom = function () {
+    CalendarConfigurator.prototype.updateDom = function() {
         var year = this.configObject.year;
-        var originalMonthsPicturePage = $('.calendarMonthTop')[0];
+        var originalMonthsPicturePage = $(".calendarMonthTop")[0];
         var pageToInsertAfter = originalMonthsPicturePage;
         for (var month = 0; month < 12; month++) {
             var monthsPicturePage = $(originalMonthsPicturePage).clone()[0];
-            $(monthsPicturePage).removeClass('templateOnly').removeAttr('id'); // don't want to copy a Guid!
+            $(monthsPicturePage)
+                .removeClass("templateOnly")
+                .removeAttr("id"); // don't want to copy a Guid!
             $(pageToInsertAfter).after(monthsPicturePage);
-            var monthDaysPage = this.generateMonth(year, month, this.configObject.monthNames[month], this.configObject.dayAbbreviations);
+            var monthDaysPage = this.generateMonth(
+                year,
+                month,
+                this.configObject.monthNames[month],
+                this.configObject.dayAbbreviations
+            );
             $(monthsPicturePage).after(monthDaysPage);
             pageToInsertAfter = monthDaysPage;
         }
-        $('.templateOnly').remove(); // removes 2 template pages (calendarMonthTop and calendarMonthBottom)
+        $(".templateOnly").remove(); // removes 2 template pages (calendarMonthTop and calendarMonthBottom)
     };
-    CalendarConfigurator.prototype.generateMonth = function (year, month, monthName, dayAbbreviations) {
-        var marginBox = document.createElement('div');
-        $(marginBox).addClass('marginBox');
-        var monthPage = document.createElement('div');
-        $(monthPage).addClass('bloom-page bloom-required A5Landscape calendarMonthBottom');
-        $(monthPage).attr('data-page', 'required');
-        this.buildCalendarBottomPage(marginBox, year, month, monthName, dayAbbreviations);
+    CalendarConfigurator.prototype.generateMonth = function(
+        year,
+        month,
+        monthName,
+        dayAbbreviations
+    ) {
+        var marginBox = document.createElement("div");
+        $(marginBox).addClass("marginBox");
+        var monthPage = document.createElement("div");
+        $(monthPage).addClass(
+            "bloom-page bloom-required A5Landscape calendarMonthBottom"
+        );
+        $(monthPage).attr("data-page", "required");
+        this.buildCalendarBottomPage(
+            marginBox,
+            year,
+            month,
+            monthName,
+            dayAbbreviations
+        );
         monthPage.appendChild(marginBox);
         return monthPage;
     };
-    CalendarConfigurator.prototype.buildCalendarBottomPage = function (bottomPageContainer, year, month, monthName, dayAbbreviations) {
-        var header = document.createElement('p');
-        $(header).addClass('calendarBottomPageHeader');
+    CalendarConfigurator.prototype.buildCalendarBottomPage = function(
+        bottomPageContainer,
+        year,
+        month,
+        monthName,
+        dayAbbreviations
+    ) {
+        var header = document.createElement("p");
+        $(header).addClass("calendarBottomPageHeader");
         $(header).text(monthName + " " + year);
         $(bottomPageContainer).append(header);
-        var table = document.createElement('table');
+        var table = document.createElement("table");
         this.buildCalendarHeader(table, dayAbbreviations);
         this.buildCalendarBody(table, year, month);
         $(bottomPageContainer).append(table);
     };
-    CalendarConfigurator.prototype.buildCalendarHeader = function (containingTable, dayAbbreviations) {
-        var thead = document.createElement('thead');
-        var row = document.createElement('tr');
-        dayAbbreviations.forEach(function (abbr) {
-            var thElem = document.createElement('th');
+    CalendarConfigurator.prototype.buildCalendarHeader = function(
+        containingTable,
+        dayAbbreviations
+    ) {
+        var thead = document.createElement("thead");
+        var row = document.createElement("tr");
+        dayAbbreviations.forEach(function(abbr) {
+            var thElem = document.createElement("th");
             $(thElem).text(abbr);
             $(row).append(thElem);
         });
         $(thead).append(row);
         $(containingTable).append(thead);
     };
-    CalendarConfigurator.prototype.buildCalendarBody = function (containingTable, year, month) {
-        var body = document.createElement('tbody');
+    CalendarConfigurator.prototype.buildCalendarBody = function(
+        containingTable,
+        year,
+        month
+    ) {
+        var body = document.createElement("tbody");
         var start = new Date(parseInt(year), month, 1);
         start.setDate(1 - start.getDay());
         do {
@@ -100,15 +132,15 @@ var CalendarConfigurator = (function () {
         } while (start.getMonth() == month);
         $(containingTable).append(body);
     };
-    CalendarConfigurator.prototype.buildWeek = function (body, date, month) {
-        var row = document.createElement('tr');
+    CalendarConfigurator.prototype.buildWeek = function(body, date, month) {
+        var row = document.createElement("tr");
         for (var i = 0; i < 7; i++) {
-            var dayCell = document.createElement('td');
+            var dayCell = document.createElement("td");
             if (date.getMonth() == month) {
-                var dayNumberElement = document.createElement('p');
+                var dayNumberElement = document.createElement("p");
                 $(dayNumberElement).text(date.getDate());
                 $(dayCell).append(dayNumberElement);
-                var dayCellTextArea = document.createElement('textarea');
+                var dayCellTextArea = document.createElement("textarea");
                 $(dayCell).append(dayCellTextArea);
             }
             $(row).append(dayCell);
@@ -119,18 +151,39 @@ var CalendarConfigurator = (function () {
     };
     return CalendarConfigurator;
 })();
-var CalendarConfigObject = (function () {
+var CalendarConfigObject = (function() {
     function CalendarConfigObject(jsonConfig) {
         this.defaultConfig = {
-            "calendar": { "year": "2015" },
-            "library": {
-                "calendar": {
-                    "monthNames": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],
-                    "dayAbbreviations": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+            calendar: { year: "2015" },
+            library: {
+                calendar: {
+                    monthNames: [
+                        "jan",
+                        "feb",
+                        "mar",
+                        "apr",
+                        "may",
+                        "jun",
+                        "jul",
+                        "aug",
+                        "sep",
+                        "oct",
+                        "nov",
+                        "dec"
+                    ],
+                    dayAbbreviations: [
+                        "Sun",
+                        "Mon",
+                        "Tue",
+                        "Wed",
+                        "Thu",
+                        "Fri",
+                        "Sat"
+                    ]
                 }
             }
         };
-        if (typeof jsonConfig === "undefined" || !jsonConfig['library'])
+        if (typeof jsonConfig === "undefined" || !jsonConfig["library"])
             jsonConfig = this.defaultConfig;
         this.year = jsonConfig.calendar.year;
         this.monthNames = jsonConfig.library.calendar.monthNames;
@@ -141,10 +194,14 @@ var CalendarConfigObject = (function () {
 // Test class for manual debugging
 // Just load DistFiles\factoryCollections\Templates\Wall Calendar\Wall Calendar.htm into Firefox
 // and type "TestCalendar()" in Firefox's Console tab to debug
-var TestCalendar = (function () {
+var TestCalendar = (function() {
     function TestCalendar() {
         // test config is in French, just for fun
-        this.testConfig = '{"calendar": { "year": "2015" },' + '"library":  {"calendar": {' + '"monthNames": ["janv", "fév", "mars", "avr", "mai", "juin", "juil", "aôut", "sept", "oct", "nov", "déc"],' + '"dayAbbreviations": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]}}}';
+        this.testConfig =
+            '{"calendar": { "year": "2015" },' +
+            '"library":  {"calendar": {' +
+            '"monthNames": ["janv", "fév", "mars", "avr", "mai", "juin", "juil", "aôut", "sept", "oct", "nov", "déc"],' +
+            '"dayAbbreviations": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]}}}';
         var configurator = new CalendarConfigurator(this.testConfig);
         configurator.updateDom();
     }

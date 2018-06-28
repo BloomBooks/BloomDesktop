@@ -12,7 +12,6 @@ const kSocketName = "webSocket";
 
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 class TextOverPictureManager {
-
     listenerFunction: (MessageEvent) => void;
 
     public initializeTextOverPictureManager(): void {
@@ -33,7 +32,6 @@ class TextOverPictureManager {
         if (socket) {
             socket.addEventListener("message", this.listenerFunction);
         }
-
     }
 
     public removeTextOverPictureListener(): void {
@@ -51,7 +49,9 @@ class TextOverPictureManager {
             //currently we use a different port for this websocket, and it's the main port + 1
             let websocketPort = parseInt(window.location.port, 10) + 1;
             //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-            window[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
+            window[kSocketName] = new WebSocket(
+                "ws://127.0.0.1:" + websocketPort.toString()
+            );
         }
         return window[kSocketName];
     }
@@ -64,17 +64,34 @@ class TextOverPictureManager {
             return; // don't add a TOP box if we can't find the containing imageContainer
         }
         // add a draggable text bubble to the html dom of the current page
-        const editableDivClasses = "bloom-editable bloom-content1 bloom-visibility-code-on normal-style";
-        const editableDivHtml = "<div class='" + editableDivClasses + "' ><p></p></div>";
-        const transGroupDivClasses = "bloom-translationGroup bloom-leadingElement normal-style";
-        const transGroupHtml = "<div class='" + transGroupDivClasses + "' data-default-languages='V'>" + editableDivHtml + "</div>";
+        const editableDivClasses =
+            "bloom-editable bloom-content1 bloom-visibility-code-on normal-style";
+        const editableDivHtml =
+            "<div class='" + editableDivClasses + "' ><p></p></div>";
+        const transGroupDivClasses =
+            "bloom-translationGroup bloom-leadingElement normal-style";
+        const transGroupHtml =
+            "<div class='" +
+            transGroupDivClasses +
+            "' data-default-languages='V'>" +
+            editableDivHtml +
+            "</div>";
         const handleHtml = "<div class='bloom-dragHandleTOP'></div>";
-        const wrapperHtml = "<div class='bloom-textOverPicture'>" + handleHtml + transGroupHtml + "</div>";
+        const wrapperHtml =
+            "<div class='bloom-textOverPicture'>" +
+            handleHtml +
+            transGroupHtml +
+            "</div>";
         // add textbox as first child of .bloom-imageContainer
         var firstContainerChild = container.children().first();
         var wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
         // initial mouseX, mouseY coordinates are relative to viewport
-        this.calculateAndFixInitialLocation(wrapperBox, container, mouseX, mouseY);
+        this.calculateAndFixInitialLocation(
+            wrapperBox,
+            container,
+            mouseX,
+            mouseY
+        );
         // I tried to do without this... it didn't work. This causes page changes to get saved and fills
         // things in for editing.
         // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
@@ -85,16 +102,23 @@ class TextOverPictureManager {
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
     private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
-        return $(document.elementFromPoint(mouseX, mouseY)).closest(".bloom-imageContainer");
+        return $(document.elementFromPoint(mouseX, mouseY)).closest(
+            ".bloom-imageContainer"
+        );
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
-    private calculateAndFixInitialLocation(wrapperBox: JQuery, container: JQuery, mouseX: number, mouseY: number) {
+    private calculateAndFixInitialLocation(
+        wrapperBox: JQuery,
+        container: JQuery,
+        mouseX: number,
+        mouseY: number
+    ) {
         var scale = EditableDivUtils.getPageScale();
         var containerPosition = container[0].getBoundingClientRect();
-        var xOffset = ((mouseX - containerPosition.left) / scale);
-        var yOffset = ((mouseY - containerPosition.top) / scale);
+        var xOffset = (mouseX - containerPosition.left) / scale;
+        var yOffset = (mouseY - containerPosition.top) / scale;
         var location = "left: " + xOffset + "px; top: " + yOffset + "px;";
         wrapperBox.attr("style", location);
         this.calculatePercentagesAndFixTextboxPosition(wrapperBox); // translate px to %
@@ -103,13 +127,18 @@ class TextOverPictureManager {
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
     private deleteFloatingTOPBox(mouseX: number, mouseY: number) {
-        var focusedBubble = $(document.elementFromPoint(mouseX, mouseY)).closest(".bloom-textOverPicture");
+        var focusedBubble = $(
+            document.elementFromPoint(mouseX, mouseY)
+        ).closest(".bloom-textOverPicture");
         if (focusedBubble && focusedBubble.length > 0) {
             focusedBubble.remove();
         }
     }
 
-    private makeTOPBoxDraggableAndClickable(thisTOPBox: JQuery, scale: number): void {
+    private makeTOPBoxDraggableAndClickable(
+        thisTOPBox: JQuery,
+        scale: number
+    ): void {
         var image = this.getImageContainer(thisTOPBox);
         var imagePos = image[0].getBoundingClientRect();
         var wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
@@ -117,13 +146,16 @@ class TextOverPictureManager {
         // factor was last changed. Therefore we force saving the page after setZoom() in bloomEditing.
         thisTOPBox.draggable({
             // adjust containment by scaling
-            containment: [imagePos.left, imagePos.top,
-            imagePos.left + imagePos.width - wrapperBoxRectangle.width,
-            imagePos.top + imagePos.height - wrapperBoxRectangle.height],
+            containment: [
+                imagePos.left,
+                imagePos.top,
+                imagePos.left + imagePos.width - wrapperBoxRectangle.width,
+                imagePos.top + imagePos.height - wrapperBoxRectangle.height
+            ],
             drag: (event, ui) => {
                 ui.helper.children(".bloom-editable").blur();
-                ui.position.top = (ui.position.top / scale);
-                ui.position.left = (ui.position.left / scale);
+                ui.position.top = ui.position.top / scale;
+                ui.position.left = ui.position.left / scale;
             },
             handle: ".bloom-dragHandleTOP",
             stop: (event, ui) => {
@@ -131,7 +163,7 @@ class TextOverPictureManager {
             }
         });
 
-        thisTOPBox.find(".bloom-editable").click(function (e) {
+        thisTOPBox.find(".bloom-editable").click(function(e) {
             this.focus();
         });
     }
@@ -159,7 +191,11 @@ class TextOverPictureManager {
         this.makeTOPBoxDraggableAndClickable(textOverPictureElems, scale);
 
         if (textOverPictureElems.length > 0) {
-            textOverPictureElems.first().find(".bloom-editable.bloom-visibility-code-on").first().focus();
+            textOverPictureElems
+                .first()
+                .find(".bloom-editable.bloom-visibility-code-on")
+                .first()
+                .focus();
         }
     }
 
@@ -173,10 +209,17 @@ class TextOverPictureManager {
             height: container.height(),
             width: container.width()
         };
-        wrapperBox.css("left", (pos.left / scale / containerSize.width * 100) + "%")
-            .css("top", (pos.top / scale / containerSize.height * 100) + "%")
-            .css("width", (wrapperBox.width() / containerSize.width * 100) + "%")
-            .css("height", (wrapperBox.height() / containerSize.height * 100) + "%");
+        wrapperBox
+            .css("left", (pos.left / scale / containerSize.width) * 100 + "%")
+            .css("top", (pos.top / scale / containerSize.height) * 100 + "%")
+            .css(
+                "width",
+                (wrapperBox.width() / containerSize.width) * 100 + "%"
+            )
+            .css(
+                "height",
+                (wrapperBox.height() / containerSize.height) * 100 + "%"
+            );
     }
 
     // Gets the bloom-imageContainer that hosts this TextOverPictureManager textbox.
@@ -189,8 +232,7 @@ class TextOverPictureManager {
 export var theOneTextOverPictureManager: TextOverPictureManager;
 
 export function initializeTextOverPictureManager() {
-    if (theOneTextOverPictureManager)
-        return;
+    if (theOneTextOverPictureManager) return;
     theOneTextOverPictureManager = new TextOverPictureManager();
     theOneTextOverPictureManager.initializeTextOverPictureManager();
 }

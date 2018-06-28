@@ -1,7 +1,7 @@
 //putting (less) here makes it actually start this file off with the contents of the select2.css,
 //which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
-@import (less) '../../node_modules/select2/dist/css/select2.css';
-@import (reference) "../css/bloomDialog.less";  // needed for @dialogZindexPlusOne
+@import (less) "../../node_modules/select2/dist/css/select2.css";
+@import (reference) "../css/bloomDialog.less"; // needed for @dialogZindexPlusOne
 
 @hint-tab-indent: 20px;
 @main-label-width: 420px; // currently controls width of hint bubbles tab
@@ -10,36 +10,37 @@
 @hint-content-wrapper-margin-right: 10px;
 // Giving #include-lang this calculated width makes the expanding hint-content box line up with the language menu
 // when the include-lang label is visible.
-@include-lang-width: @main-label-width - @lang-select-width - @hint-content-margin-right - @hint-content-wrapper-margin-right;
+@include-lang-width: @main-label-width - @lang-select-width -
+    @hint-content-margin-right - @hint-content-wrapper-margin-right;
 @hint-content-group-margin-top: 10px;
 @label-font-size: 8pt;
 
 //the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
-.select2-container{
+.select2-container {
     z-index: @dialogZindexPlusOne;
 }
 
 // select2 select controls are way too narrow if we don't force a width.
 // Need a considerable one for some of the longer language names.
-#lang-select + .select2-container{
+#lang-select + .select2-container {
     width: @lang-select-width !important;
     margin-top: 10px;
     margin-left: @hint-tab-indent;
 }
 
-#hint-scope + .select2-container{
+#hint-scope + .select2-container {
     width: 300px !important;
     margin-top: 3px;
     margin-left: @hint-tab-indent;
 }
 
-.select2-container--open .select2-selection__rendered{
+.select2-container--open .select2-selection__rendered {
     background-color: lightblue;
 }
 
 #text-properties-dialog {
-    H2{
-        font-size:10pt;
+    h2 {
+        font-size: 10pt;
     }
     .tab-page {
         .main-label {
@@ -66,7 +67,7 @@
 }
 
 #hint-content-wrapper {
-    display:flex;
+    display: flex;
     margin-right: @hint-content-wrapper-margin-right;
 }
 

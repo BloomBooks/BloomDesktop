@@ -62,6 +62,6 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
 }
 
 // allow plain 'ol javascript in the html to connect up react
-(window as any).connectAccessibilityCheckScreen = function (element) {
+(window as any).connectAccessibilityCheckScreen = function(element) {
     ReactDOM.render(<AccessibilityCheckScreen />, element);
 };

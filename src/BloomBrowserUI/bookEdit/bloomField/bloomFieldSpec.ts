@@ -1,9 +1,9 @@
 /// <reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import BloomField from './BloomField';
+import BloomField from "./BloomField";
 
 function WireUp() {
-    $(".bloom-editable").each(function () {
+    $(".bloom-editable").each(function() {
         BloomField.ManageField(this);
     });
 }

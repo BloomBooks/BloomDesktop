@@ -8,7 +8,7 @@ import WebSocketManager from "../../utils/WebSocketManager";
 
 export class AccessibilityChecklist extends React.Component<
     IUILanguageAwareProps
-    > {
+> {
     constructor(props) {
         super(props);
     }

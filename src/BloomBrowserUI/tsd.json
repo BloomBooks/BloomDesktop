@@ -1,33 +1,33 @@
 {
-  "version": "v4",
-  "repo": "borisyankov/DefinitelyTyped",
-  "ref": "master",
-  "path": "typings",
-  "bundle": "typings/bundledFromTSC.d.ts",
-  "installed": {
-    "jquery/jquery.d.ts": {
-      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
-    },
-    "jasmine/jasmine.d.ts": {
-      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
-    },
-    "underscore/underscore.d.ts": {
-      "commit": "627b6c158b73494c803f36fc2fe00ad75faa8fde"
-    },
-    "jqueryui/jqueryui.d.ts": {
-      "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
-    },
-    "axios/axios.d.ts": {
-      "commit": "86dbea8fc37d9473fee465da4f0a21bea4f8cbd9"
-    },
-    "jasmine-jquery/jasmine-jquery.d.ts": {
-      "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
-    },
-    "query-string/query-string.d.ts": {
-      "commit": "4ec3c5bf291bc02f49eb30c1077340b235165c67"
-    },
-    "select2/select2.d.ts": {
-      "commit": "94d8775a947f626269b06ccadd6f5e61839389d0"
+    "version": "v4",
+    "repo": "borisyankov/DefinitelyTyped",
+    "ref": "master",
+    "path": "typings",
+    "bundle": "typings/bundledFromTSC.d.ts",
+    "installed": {
+        "jquery/jquery.d.ts": {
+            "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
+        },
+        "jasmine/jasmine.d.ts": {
+            "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
+        },
+        "underscore/underscore.d.ts": {
+            "commit": "627b6c158b73494c803f36fc2fe00ad75faa8fde"
+        },
+        "jqueryui/jqueryui.d.ts": {
+            "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
+        },
+        "axios/axios.d.ts": {
+            "commit": "86dbea8fc37d9473fee465da4f0a21bea4f8cbd9"
+        },
+        "jasmine-jquery/jasmine-jquery.d.ts": {
+            "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
+        },
+        "query-string/query-string.d.ts": {
+            "commit": "4ec3c5bf291bc02f49eb30c1077340b235165c67"
+        },
+        "select2/select2.d.ts": {
+            "commit": "94d8775a947f626269b06ccadd6f5e61839389d0"
+        }
     }
-  }
 }

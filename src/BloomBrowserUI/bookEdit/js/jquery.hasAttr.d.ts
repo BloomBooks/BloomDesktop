@@ -1,5 +1,5 @@
-interface JQuery{
-    hasAttr(attr: string) :boolean;
+interface JQuery {
+    hasAttr(attr: string): boolean;
 
-    CenterVerticallyInParent() : JQuery;
+    CenterVerticallyInParent(): JQuery;
 }

@@ -33,7 +33,7 @@ interface BlobEvent {
 }
 
 interface MediaRecorder {
-    new(source: MediaStream, options: any);
+    new (source: MediaStream, options: any);
     start(): void;
     stop(): void;
     ondataavailable: (ev: BlobEvent) => void;
@@ -42,7 +42,7 @@ interface MediaRecorder {
 
 declare var MediaRecorder: {
     prototype: MediaRecorder;
-    new(s: MediaStream, options: any): MediaRecorder;
+    new (s: MediaStream, options: any): MediaRecorder;
 };
 
 // This react class implements the UI for the sign language (video) toolbox.
@@ -53,7 +53,7 @@ declare var MediaRecorder: {
 export class SignLanguageToolControls extends React.Component<
     {},
     IComponentState
-    > {
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -288,7 +288,7 @@ export class SignLanguageToolControls extends React.Component<
         // "open in browser".
         alert(
             "Could not access video camera...is something else using it? Details: " +
-            reason
+                reason
         );
     }
 

@@ -1,7 +1,9 @@
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
-export function SayHello() { alert("Hello from editViewFrame"); }
+export function SayHello() {
+    alert("Hello from editViewFrame");
+}
 
 // These functions should be available for calling by non-module code (such as C# directly)
 // using the FrameExports object (see more details in bloomFrames.ts)
@@ -24,8 +26,7 @@ export function handleUndo(): void {
     var toolboxWindow = getToolboxFrameExports();
     if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
         (<any>toolboxWindow).undo();
-    }
-    else if (contentWindow && contentWindow.ckeditorCanUndo()) {
+    } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
         contentWindow.ckeditorUndo();
     }
     // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
@@ -33,7 +34,7 @@ export function handleUndo(): void {
 
 export function switchContentPage(newSource: string) {
     this.getPageFrameExports().pageUnloading();
-    let iframe = (<HTMLIFrameElement>document.getElementById("page"));
+    let iframe = <HTMLIFrameElement>document.getElementById("page");
     // We want to call getToolboxFrameExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
     // This gets a bit complicated because we want the tool to actually see the new
@@ -78,7 +79,11 @@ export function closeDialog(id: string) {
     $("#" + id).dialog("close");
 }
 
-export function toolboxIsShowing() { return (<HTMLInputElement>$(document).find("#pure-toggle-right").get(0)).checked; }
+export function toolboxIsShowing() {
+    return (<HTMLInputElement>$(document)
+        .find("#pure-toggle-right")
+        .get(0)).checked;
+}
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
 // (The value passed to the task function will be the value from getToolboxFrameExports(). Unfortunately we
@@ -87,8 +92,7 @@ export function doWhenToolboxLoaded(task: (toolboxFrameExports: any) => any) {
     let toolboxWindow = getToolboxFrameExports();
     if (toolboxWindow) {
         task(toolboxWindow);
-    }
-    else {
+    } else {
         setTimeout(() => {
             doWhenToolboxLoaded(task);
         }, 10);
@@ -99,9 +103,15 @@ export function doWhenToolboxLoaded(task: (toolboxFrameExports: any) => any) {
 export function canUndo(): string {
     // See comments on handleUndo()
     var contentWindow = getPageFrameExports();
-    if (contentWindow && (<any>contentWindow).origamiCanUndo()) { return "yes"; }
+    if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
+        return "yes";
+    }
     var toolboxWindow = getToolboxFrameExports();
-    if (toolboxWindow && (<any>toolboxWindow).canUndo && (<any>toolboxWindow).canUndo()) {
+    if (
+        toolboxWindow &&
+        (<any>toolboxWindow).canUndo &&
+        (<any>toolboxWindow).canUndo()
+    ) {
         return "yes";
     }
     if (contentWindow && contentWindow.ckeditorCanUndo()) {

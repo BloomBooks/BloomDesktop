@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../toolbox.ts" />
-import { getTheOneReaderToolsModel, DRTState, } from "../readerToolsModel";
+import { getTheOneReaderToolsModel, DRTState } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
 import { ToolBox } from "../../toolbox";
@@ -11,22 +11,27 @@ export class LeveledReaderToolboxTool implements ITool {
     }
     beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
-            if (opts['leveledReaderState']) {
+            if (opts["leveledReaderState"]) {
                 // The true passed here prevents re-saving the state we just read.
                 // One non-obvious implication is that simply opening a level-4 book
                 // will not switch the default level for new books to 4. That only
                 // happens when you CHANGE the level in the toolbox.
-                getTheOneReaderToolsModel().setLevelNumber(parseInt(opts['leveledReaderState'], 10), true);
+                getTheOneReaderToolsModel().setLevelNumber(
+                    parseInt(opts["leveledReaderState"], 10),
+                    true
+                );
             } else {
                 BloomApi.get("api/readers/io/defaultLevel", result => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
-                    getTheOneReaderToolsModel().setLevelNumber(parseInt(result.data, 10));
+                    getTheOneReaderToolsModel().setLevelNumber(
+                        parseInt(result.data, 10)
+                    );
                 });
             }
         });
     }
 
-    configureElements(container: HTMLElement) { }
+    configureElements(container: HTMLElement) {}
     isAlwaysEnabled(): boolean {
         return false;
     }
@@ -59,7 +64,9 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    id() { return 'leveledReader'; }
+    id() {
+        return "leveledReader";
+    }
 
     hasRestoredSettings: boolean;
 

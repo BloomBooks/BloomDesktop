@@ -51,7 +51,8 @@
             "name": "Launch in Chrome",
             "type": "chrome",
             "request": "launch",
-            "runtimeExecutable": "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+            "runtimeExecutable":
+                "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
             // these args don't appear to work... trying to get it to not offer to restore previous pages
             //"runtimeArgs": [ "--no-first-run --kiosk --disable-session-crashed-bubble --disable-infobars --incognito --disable-extensions"],
             "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
@@ -61,7 +62,7 @@
             "breakOnLoad": true,
             "sourceMapPathOverrides": {
                 "webpack://FrameExports/./*": "${workspaceFolder}/*"
-            },
+            }
             // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
         },
         {
@@ -105,8 +106,8 @@
             "breakOnLoad": true,
             "sourceMapPathOverrides": {
                 "webpack://FrameExports/./*": "${workspaceFolder}/*"
-            },
+            }
             // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
-        },
+        }
     ]
 }

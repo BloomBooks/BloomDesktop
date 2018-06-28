@@ -1,20 +1,23 @@
-import * as _ from 'underscore';
-import * as $ from 'jquery';
-import 'jquery-ui/jquery-ui-1.10.3.custom.min.js'; //for dialog()
-import 'errorHandler';
-import 'jquery.i18n.custom.ts'; //localize()
-import 'long-press/jquery.mousewheel.js';
-import 'long-press/jquery.longpress.js';
-import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
+import * as _ from "underscore";
+import * as $ from "jquery";
+import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
+import "errorHandler";
+import "jquery.i18n.custom.ts"; //localize()
+import "long-press/jquery.mousewheel.js";
+import "long-press/jquery.longpress.js";
+import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 
-import '../jquery.div-columns.ts';
+import "../jquery.div-columns.ts";
 import "../libSynphony/jquery.text-markup.ts";
-import { ReaderStage, ReaderLevel, ReaderSettings } from '../ReaderSettings';
-import { theOneLanguageDataInstance, theOneLibSynphony } from '../libSynphony/synphony_lib';
+import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
+import {
+    theOneLanguageDataInstance,
+    theOneLibSynphony
+} from "../libSynphony/synphony_lib";
 
-import { DataWord, TextFragment } from '../libSynphony/bloomSynphonyExtensions';
-import './readerSetup.io';
-import './readerSetup.ui';
+import { DataWord, TextFragment } from "../libSynphony/bloomSynphonyExtensions";
+import "./readerSetup.io";
+import "./readerSetup.ui";
 
 // //script(src='/bloom/lib/errorHandler.js')
 // script(src='/bloom/bookEdit/toolbox/decodableReader/jquery.div-columns.js')
@@ -32,9 +35,7 @@ import './readerSetup.ui';
 // script(src='/bloom/bookEdit/toolbox/decodableReader/readerSetup/readerSetup.ui.js')
 // script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
 
-
-
 //was $(function() {$("#dlstabs").tabs();});
 $(document).ready(() => {
     $("#dlstabs").tabs();
-})
+});

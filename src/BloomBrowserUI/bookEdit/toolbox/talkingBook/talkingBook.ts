@@ -1,7 +1,7 @@
 ﻿import { ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
-import * as AudioRecorder from './audioRecording';
-import { theOneAudioRecorder } from './audioRecording';
+import * as AudioRecorder from "./audioRecording";
+import { theOneAudioRecorder } from "./audioRecording";
 
 export default class TalkingBookTool implements ITool {
     makeRootElement(): HTMLDivElement {
@@ -22,7 +22,7 @@ export default class TalkingBookTool implements ITool {
         return false;
     }
 
-    configureElements(container: HTMLElement) { }
+    configureElements(container: HTMLElement) {}
 
     showTool() {
         this.showImageDescriptionsIfAny();
@@ -58,10 +58,14 @@ export default class TalkingBookTool implements ITool {
         // If we have any image descriptions we need to show them so we can record them.
         // (Also because we WILL select them, which is confusing if they are not visible.)
         const page = ToolBox.getPage();
-        var imageContainers = page.getElementsByClassName("bloom-imageContainer");
+        var imageContainers = page.getElementsByClassName(
+            "bloom-imageContainer"
+        );
         for (var i = 0; i < imageContainers.length; i++) {
             const container = imageContainers[i];
-            var imageDescriptions = container.getElementsByClassName("bloom-imageDescription");
+            var imageDescriptions = container.getElementsByClassName(
+                "bloom-imageDescription"
+            );
             for (var j = 0; j < imageDescriptions.length; j++) {
                 if (imageDescriptions[j].textContent.trim().length > 0) {
                     page.classList.add("bloom-showImageDescriptions");
@@ -71,7 +75,9 @@ export default class TalkingBookTool implements ITool {
         }
     }
 
-    id() { return "talkingBook"; }
+    id() {
+        return "talkingBook";
+    }
 
     hasRestoredSettings: boolean;
 

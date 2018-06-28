@@ -1,9 +1,8 @@
 ﻿/* Unless otherwise noted, these rules have been moved from editMode.css
     BODY is not within the scoped css DIV */
 
-BODY
-{
-/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+body {
+    /*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2-5% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
 Therefore, in the basePage.css, we have 10pt, but here, 11pt.
@@ -13,31 +12,27 @@ To handling the mis-match.*/
     margin: 0;
 }
 
-.ui-dialog
-{
+.ui-dialog {
     z-index: 20000;
 }
 
 /* Qtip won't work if these rules are inside the scoped DIV */
-.qtip-content
-{
+.qtip-content {
     font-family: "Segoe UI", "Open Sans", Arial, sans-serif;
 }
-DIV.ui-tooltip-title
-{
+div.ui-tooltip-title {
     text-align: justify;
     margin-left: -9px;
     margin-bottom: -19px;
     margin-top: -8px;
 }
-.ui-languageToolTip.ui-tooltip-titlebar, .ui-languageToolTip .ui-tooltip-content
-{
+.ui-languageToolTip.ui-tooltip-titlebar,
+.ui-languageToolTip .ui-tooltip-content {
     background-color: transparent !important;
-    color: #96A9B3 !important;
+    color: #96a9b3 !important;
     border-color: transparent !important;
 }
-.ui-languageToolTip
-{
+.ui-languageToolTip {
     background-color: transparent !important;
     /*Same grey color as pageLabel*/
     color: rgba(0, 0, 0, 0.2) !important;
@@ -45,8 +40,7 @@ DIV.ui-tooltip-title
 }
 
 /* These items are for the font size toolbar, also stored outside of the scoped-css DIV */
-.tool-items:after
-{
+.tool-items:after {
     content: ".";
     display: block;
     height: 0;
@@ -54,40 +48,34 @@ DIV.ui-tooltip-title
     visibility: hidden;
     font-size: 0;
 }
-.tool-items
-{
+.tool-items {
     display: inline-block;
 }
-.tool-items
-{
+.tool-items {
     display: block;
     height: 1px;
 }
-.tool-item
-{
+.tool-item {
     font: 17.9pt Andika;
     text-decoration: none;
     color: #716666;
 }
-.tool-item:Hover
-{
+.tool-item:hover {
     color: black;
 }
-.smallerFontButton.tool-item IMG
-{
+.smallerFontButton.tool-item img {
     width: 11px;
     /*+placement:shift 0px -7px;*/
     position: relative;
     left: 0px;
     top: -7px;
 }
-.largerFontButton.tool-item
-{
+.largerFontButton.tool-item {
     font-size: 17.7pt;
 }
-/*[clearfix]*/.tool-items
-{
-    border: 1px solid #DFDFDF;
+/*[clearfix]*/
+.tool-items {
+    border: 1px solid #dfdfdf;
     /*+border-radius:3pt;*/
     -moz-border-radius: 3pt;
     -webkit-border-radius: 3pt;
@@ -96,19 +84,19 @@ DIV.ui-tooltip-title
 }
 
 /* 	Book.GetEditableHtmlDomForPage() now adds an 'bookcreationtype' attribute to the BODY element to distinguish the rules. */
-BODY[bookcreationtype="original"] DIV.ui-sourceTextsForBubble TEXTAREA, BODY[bookcreationtype="original"] DIV.ui-sourceTextsForBubble DIV
-{
+body[bookcreationtype="original"] div.ui-sourceTextsForBubble textarea,
+body[bookcreationtype="original"] div.ui-sourceTextsForBubble div {
     background-color: transparent;
     border: none;
     overflow: auto;
 }
 
-BODY[bookcreationtype="translation"] DIV.uibloomSourceTextsBubble DIV.ui-tooltip-content
-{
+body[bookcreationtype="translation"]
+    div.uibloomSourceTextsBubble
+    div.ui-tooltip-content {
     width: 210px;
 }
-BODY[bookcreationtype="translation"] DIV DIV.ui-sourceTextsForBubble TEXTAREA
-{
+body[bookcreationtype="translation"] div div.ui-sourceTextsForBubble textarea {
     height: 304px;
     background: transparent;
     border: none;
@@ -116,15 +104,18 @@ BODY[bookcreationtype="translation"] DIV DIV.ui-sourceTextsForBubble TEXTAREA
     width: 320px;
     margin: 11px 0 0;
 }
-BODY[bookcreationtype="translation"] .ui-tooltip .qtip .uibloomSourceTextsBubble
-{
+body[bookcreationtype="translation"]
+    .ui-tooltip
+    .qtip
+    .uibloomSourceTextsBubble {
     width: 293px !important;
     height: 138px;
     max-width: 1009px !important;
 }
-BODY[bookcreationtype="translation"] DIV.ui-sourceTextsForBubble UL
-{
+body[bookcreationtype="translation"] div.ui-sourceTextsForBubble ul {
     background: none;
 }
 
-.ui-front { z-index: 19000; }
+.ui-front {
+    z-index: 19000;
+}

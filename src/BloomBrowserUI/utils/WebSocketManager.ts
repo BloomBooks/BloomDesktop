@@ -3,23 +3,25 @@
 // You can add listeners (for "message") with addListener(),
 // and close the socket with closeSocket().
 export default class WebSocketManager {
-
     private static listeners: ((event: MessageEvent) => void)[] = new Array();
 
     /**
-      *  In an attempt to make it easier to come to grips with some lifetime issues, we
-      * are naming the websocket by a "socketName" and making this private, so
-      * that clients don't have direct access to the client.
-      * Instead the client should call "addListener(socketName)" and then when cleaning
-      * up, call "closeSocket(socketName)".
-      */
+     *  In an attempt to make it easier to come to grips with some lifetime issues, we
+     * are naming the websocket by a "socketName" and making this private, so
+     * that clients don't have direct access to the client.
+     * Instead the client should call "addListener(socketName)" and then when cleaning
+     * up, call "closeSocket(socketName)".
+     */
     private static getWebSocket(socketName: string): WebSocket {
         if (!window[socketName]) {
             //currently we use a different port for this websocket, and it's the main port + 1
             let websocketPort = parseInt(window.location.port, 10) + 1;
             //here we're passing "socketName" in the "subprotocol" parameter, just for ease of identifying
             //sockets on the server side when debugging.
-            window[socketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString(), socketName);
+            window[socketName] = new WebSocket(
+                "ws://127.0.0.1:" + websocketPort.toString(),
+                socketName
+            );
 
             // the following is a refactored holdover from a situation where we were having trouble
             // getting the web ui to properly close its own listeners and socket, so we had to
@@ -55,7 +57,10 @@ export default class WebSocketManager {
      * Find or create a websocket and add a listener to it.
      * @param {string} socketName - should use the same name through the lifetime of the window
      */
-    public static addListener(socketName: string, listener: (ev: MessageEvent) => void): void {
+    public static addListener(
+        socketName: string,
+        listener: (ev: MessageEvent) => void
+    ): void {
         this.getWebSocket(socketName).addEventListener("message", listener);
         this.listeners.push(listener);
     }
@@ -68,7 +73,8 @@ export default class WebSocketManager {
      */
     public static notifyReady(socketName: string, onReady: () => void) {
         var socket = this.getWebSocket(socketName);
-        if (socket.readyState === 0) { // CONNECTING
+        if (socket.readyState === 0) {
+            // CONNECTING
             var openFunc = () => {
                 socket.removeEventListener("open", openFunc);
                 onReady();

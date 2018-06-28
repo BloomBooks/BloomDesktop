@@ -21,14 +21,17 @@
 
 export default class BloomField {
     static ManageField(bloomEditableDiv: HTMLElement) {
-
         BloomField.PreventRemovalOfSomeElements(bloomEditableDiv);
         BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
         // ManageWhatHappensIfTheyDeleteEverything() is actually enough, it cleans things up. But can still show some momentary cursor
         // weirdness. So at least in this common case, we prevent the backspace altogether.
-        BloomField.PreventBackspaceAtStartFromRemovingParagraph(bloomEditableDiv);
+        BloomField.PreventBackspaceAtStartFromRemovingParagraph(
+            bloomEditableDiv
+        );
         BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
-        BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
+        BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(
+            bloomEditableDiv
+        );
 
         BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
         //For furture: this works, but we need more time to think about it. BloomField.MakeTabEnterTabElement(bloomEditableDiv);
@@ -64,8 +67,7 @@ export default class BloomField {
                 e.stopPropagation();
                 e.preventDefault();
             }
-        }
-        );
+        });
     }
 
     private static InsertLineBreak() {
@@ -73,7 +75,11 @@ export default class BloomField {
         //which have either indents or prefixes (like "step 1", "step 2").
         //The difficult part is that the browser will leave our cursor inside of the new span, which isn't really
         //what we want. So we also add a zero-width-non-joiner (&#xfeff;) there so that we can get outside of the span.
-        document.execCommand("insertHTML", false, "<span class='bloom-linebreak'></span>&#xfeff;");
+        document.execCommand(
+            "insertHTML",
+            false,
+            "<span class='bloom-linebreak'></span>&#xfeff;"
+        );
     }
 
     // This BloomField thing was done before ckeditor; ckeditor kinda expects to the only thing
@@ -81,8 +87,11 @@ export default class BloomField {
     // re-cast everything in this BloomField class as a plugin or at least callbacks to ckeditor.
     // For now, I just want to fix BL-3009, where this class could no longer get access to shift-enter
     // keypresses. To regain access, we have to wire up to ckeditor.
-    static WireToCKEditor(bloomEditableDiv: HTMLElement, ckeditor: CKEDITOR.editor) {
-        ckeditor.on('key', event => {
+    static WireToCKEditor(
+        bloomEditableDiv: HTMLElement,
+        ckeditor: CKEDITOR.editor
+    ) {
+        ckeditor.on("key", event => {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
                 BloomField.InsertLineBreak();
                 event.cancel();
@@ -91,7 +100,7 @@ export default class BloomField {
         // ckeditor.on('afterPasteFromWord', event => {
         //     alert(event.data.dataValue);
         // });
-        ckeditor.on('paste', event => {
+        ckeditor.on("paste", event => {
             var endMkr = "";
             let paras = event.data.dataValue.match(/<p>/g);
             if (!paras) {
@@ -107,17 +116,19 @@ export default class BloomField {
                 // Unwrapping the one and only <p> will leave no break between what used to be that
                 // paragraph and the following text, which should now start a new paragraph.
                 // We insert an empty paragraph to force a break, but that will leave an unwanted
-                // empty paragraph! So we have an afterPaste event to remove it. 
-                endMkr += "<p class='removeMe'></p>"
+                // empty paragraph! So we have an afterPaste event to remove it.
+                endMkr += "<p class='removeMe'></p>";
             }
             // However many paragraphs there are, we will remove the FIRST <p> (if any) and its
             // corresponding </p> (possibly inserting in its place the empty paragraph which
             // will be removed after the paste).
-            event.data.dataValue = event.data.dataValue.replace("<p>", "").replace("</p>", endMkr);
+            event.data.dataValue = event.data.dataValue
+                .replace("<p>", "")
+                .replace("</p>", endMkr);
         });
-        ckeditor.on('afterPaste', event => {
+        ckeditor.on("afterPaste", event => {
             // clean up possible unwanted paragraph inserted by paste event.
-            $('.removeMe').remove();
+            $(".removeMe").remove();
         });
 
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
@@ -128,7 +139,8 @@ export default class BloomField {
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
         $(field).keypress(e => {
             //NB: This will not fire in the (now normal case) that ckeditor is in charge of this field.
-            if (e.which === 13) { //enter key
+            if (e.which === 13) {
+                //enter key
                 if (e.shiftKey) {
                     BloomField.InsertLineBreak();
                 } else {
@@ -172,13 +184,19 @@ export default class BloomField {
     //}
 
     // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.
-    private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(field: HTMLElement) {
-
-        if ($(field).find('.bloom-keepFirstInField.bloom-preventRemoval').length == 0) {
+    private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(
+        field: HTMLElement
+    ) {
+        if (
+            $(field).find(".bloom-keepFirstInField.bloom-preventRemoval")
+                .length == 0
+        ) {
             return;
         }
 
-        var divToProtect = $(field).find('.bloom-keepFirstInField.bloom-preventRemoval')[0];
+        var divToProtect = $(field).find(
+            ".bloom-keepFirstInField.bloom-preventRemoval"
+        )[0];
 
         //We have this to fix up cases existing before we introduced this prevention, and also
         // as a backup plan, in case there is some way we haven't discovered to bypass the
@@ -187,18 +205,27 @@ export default class BloomField {
         //The following checks the top level elemenents and only allows divs; the two items
         //that we expect in there are the div for the "imagePusherDowner" and the div for
         //the image - container(which in turn contains the caption).
-        $(divToProtect).children().filter(function () {
-            return this.localName.toLowerCase() != 'div';
-        }).each(function () {
-            //divToProtect.removeChild(this);
-        });
+        $(divToProtect)
+            .children()
+            .filter(function() {
+                return this.localName.toLowerCase() != "div";
+            })
+            .each(function() {
+                //divToProtect.removeChild(this);
+            });
         //also remove any raw text nodes, which you can only get at with "contents"
         //note this is still only one level deep, so it doesn't endanger the caption
-        $(divToProtect).contents().filter(function () {
-            return this.nodeType == Node.TEXT_NODE && this.textContent.trim().length > 0;
-        }).each(function () {
-            // divToProtect.removeChild(this);
-        });
+        $(divToProtect)
+            .contents()
+            .filter(function() {
+                return (
+                    this.nodeType == Node.TEXT_NODE &&
+                    this.textContent.trim().length > 0
+                );
+            })
+            .each(function() {
+                // divToProtect.removeChild(this);
+            });
 
         //Enhance: Currently, this will prevent backspacing sometimes when it should be OK. Specifically,
         //If we are in the first paragraph and the cursor is to the left of the first character of another
@@ -215,8 +242,13 @@ export default class BloomField {
                     //Embedded image divs come before the first editable paragraph, so we look at the previous element and
                     //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
                     //be merging with.
-                    var previousElement = $(sel.anchorNode).closest('P').prev();
-                    if (previousElement.length > 0 && previousElement[0] == divToProtect) {
+                    var previousElement = $(sel.anchorNode)
+                        .closest("P")
+                        .prev();
+                    if (
+                        previousElement.length > 0 &&
+                        previousElement[0] == divToProtect
+                    ) {
                         e.stopPropagation();
                         e.preventDefault();
                         console.log("Prevented Backspace");
@@ -229,32 +261,51 @@ export default class BloomField {
     // Without this, ctrl+a followed by a left-arrow or right-arrow gets you out of all paragraphs,
     // so you can start messing things up.
     private static PreventArrowingOutIntoField(field: HTMLElement) {
-        $(field).keydown(function (e) {
+        $(field).keydown(function(e) {
             var leftArrowPressed = e.which === 37;
             var rightArrowPressed = e.which === 39;
             if (leftArrowPressed || rightArrowPressed) {
                 var sel = window.getSelection();
                 if (sel.anchorNode === this) {
                     e.preventDefault();
-                    BloomField.MoveCursorToEdgeOfField(this, leftArrowPressed ? CursorPosition.start : CursorPosition.end);
+                    BloomField.MoveCursorToEdgeOfField(
+                        this,
+                        leftArrowPressed
+                            ? CursorPosition.start
+                            : CursorPosition.end
+                    );
                 }
             }
         });
     }
 
     private static EnsureStartsWithParagraphElement(field: HTMLElement) {
-        if ($(field).children().length > 0 && ($(field).children().first().prop("tagName").toLowerCase() === 'p')) {
+        if (
+            $(field).children().length > 0 &&
+            $(field)
+                .children()
+                .first()
+                .prop("tagName")
+                .toLowerCase() === "p"
+        ) {
             return;
         }
-        $(field).prepend('<p></p>');
+        $(field).prepend("<p></p>");
     }
 
     private static EnsureEndsWithParagraphElement(field: HTMLElement) {
         //Enhance: move any errant paragraphs to after the imageContainer
-        if ($(field).children().length > 0 && ($(field).children().last().prop("tagName").toLowerCase() === 'p')) {
+        if (
+            $(field).children().length > 0 &&
+            $(field)
+                .children()
+                .last()
+                .prop("tagName")
+                .toLowerCase() === "p"
+        ) {
             return;
         }
-        $(field).append('<p></p>');
+        $(field).append("<p></p>");
     }
 
     private static ConvertTopLevelTextNodesToParagraphs(field: HTMLElement) {
@@ -262,9 +313,10 @@ export default class BloomField {
         var nodes = field.childNodes;
         for (var n = 0; n < nodes.length; n++) {
             var node = nodes[n];
-            if (node.nodeType === 3) {//Node.TEXT_NODE
-                var paragraph = document.createElement('p');
-                if (node.textContent.trim() !== '') {
+            if (node.nodeType === 3) {
+                //Node.TEXT_NODE
+                var paragraph = document.createElement("p");
+                if (node.textContent.trim() !== "") {
                     paragraph.textContent = node.textContent;
                     node.parentNode.insertBefore(paragraph, node);
                 }
@@ -281,16 +333,17 @@ export default class BloomField {
     // 3) corner cases that aren't handled by as-you-edit events. E.g., pressing "ctrl+a DEL"
     private static ModifyForParagraphMode(field: HTMLElement) {
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
-        $(field).find('br').remove();
+        $(field)
+            .find("br")
+            .remove();
 
         // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the
         // end, for reason of wrapping. See SHRP C1P4 Pupils Book
         //if(x.startsWith('<div')){
-        if ($(field).find('.bloom-keepFirstInField').length > 0) {
+        if ($(field).find(".bloom-keepFirstInField").length > 0) {
             BloomField.EnsureEndsWithParagraphElement(field);
             return;
-        }
-        else {
+        } else {
             BloomField.EnsureStartsWithParagraphElement(field);
         }
     }
@@ -301,15 +354,25 @@ export default class BloomField {
     }
     */
 
-    private static MoveCursorToEdgeOfField(field: HTMLElement, position: CursorPosition) {
+    private static MoveCursorToEdgeOfField(
+        field: HTMLElement,
+        position: CursorPosition
+    ) {
         var range = document.createRange();
         if (position === CursorPosition.start) {
-            range.selectNodeContents($(field).find('p').first()[0]);
+            range.selectNodeContents(
+                $(field)
+                    .find("p")
+                    .first()[0]
+            );
+        } else {
+            range.selectNodeContents(
+                $(field)
+                    .find("p")
+                    .last()[0]
+            );
         }
-        else {
-            range.selectNodeContents($(field).find('p').last()[0]);
-        }
-        range.collapse(position === CursorPosition.start);//true puts it at the start
+        range.collapse(position === CursorPosition.start); //true puts it at the start
         var sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
@@ -320,7 +383,7 @@ export default class BloomField {
         // if the user types (ctrl+a, 'blah'), then we get blah outside of any paragraph
 
         $(field).keyup(e => {
-            if ($(this).find('p').length === 0) {
+            if ($(this).find("p").length === 0) {
                 BloomField.ModifyForParagraphMode(field);
 
                 // Now put the cursor in the paragraph, *after* the character they may have just typed or the
@@ -335,11 +398,15 @@ export default class BloomField {
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
-        var numberThatShouldBeThere = $(field).find(".bloom-preventRemoval").length;
+        var numberThatShouldBeThere = $(field).find(".bloom-preventRemoval")
+            .length;
         if (numberThatShouldBeThere > 0) {
             $(field).keyup(e => {
-                if ($(this).find(".bloom-preventRemoval").length < numberThatShouldBeThere) {
-                    document.execCommand('undo');
+                if (
+                    $(this).find(".bloom-preventRemoval").length <
+                    numberThatShouldBeThere
+                ) {
+                    document.execCommand("undo");
                     e.preventDefault();
                 }
             });
@@ -351,10 +418,16 @@ export default class BloomField {
         // Since the elements that should not be deleted are part of a parallel field in a
         // template language, initial page setup will copy it into a new version of the messed
         // up one if the relevant language version is missing altogether
-        $(field).blur(function (e) {
-            if ($(this).html().indexOf('RESETRESET') > -1) {
+        $(field).blur(function(e) {
+            if (
+                $(this)
+                    .html()
+                    .indexOf("RESETRESET") > -1
+            ) {
                 $(this).remove();
-                alert("Now go to another book, then back to this book and page.");
+                alert(
+                    "Now go to another book, then back to this book and page."
+                );
             }
         });
     }
@@ -384,7 +457,6 @@ export default class BloomField {
     //     });
     // }
 
-
     //In PrepareNonParagraphField(), to work around a FF bug, we made a text box non-empty so that the cursor would show up correctly.
     //Now, they have entered something, so remove it
     private static FixUpOnFirstInput(event: any) {
@@ -392,7 +464,11 @@ export default class BloomField {
         //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason,
         //and that gets characters in the wrong place because this messes with the insertion point. So now
         //we check to see if the space is still there before touching it
-        if ($(field).html().indexOf("&nbsp;") === 0) {
+        if (
+            $(field)
+                .html()
+                .indexOf("&nbsp;") === 0
+        ) {
             //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
             //now remove it a soon as they type something
 
@@ -409,17 +485,18 @@ export default class BloomField {
                 // if we've typed a backspace, delete, or arrow key, don't do it and call this method again next time.
                 // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
                 if (typeof event.charCode == "number" && event.charCode == 0) {
-                    doNotDeleteOrMove = (event.keyCode == 8 /*backspace*/ ||
+                    doNotDeleteOrMove =
+                        event.keyCode == 8 /*backspace*/ ||
                         event.keyCode == 46 /*delete*/ ||
                         event.keyCode == 37 /*left arrow*/ ||
                         event.keyCode == 38 /*up arrow*/ ||
                         event.keyCode == 39 /*right arrow*/ ||
-                        event.keyCode == 40 /*down arrow*/);
+                        event.keyCode == 40 /*down arrow*/;
                 }
                 if (doNotDeleteOrMove) {
                     event.stopImmediatePropagation();
                     event.stopPropagation();
-                    $(field).one('paste keypress', this.FixUpOnFirstInput);
+                    $(field).one("paste keypress", this.FixUpOnFirstInput);
                 } else {
                     selection.modify("extend", "forward", "character");
                     //REVIEW: I actually don't know why this is necessary; the pending keypress should do the same thing
@@ -433,14 +510,18 @@ export default class BloomField {
         }
     }
 
-    private static PreventBackspaceAtStartFromRemovingParagraph(field: HTMLElement) {
+    private static PreventBackspaceAtStartFromRemovingParagraph(
+        field: HTMLElement
+    ) {
         $(field).keydown(e => {
             if (e.which === 8 /* backspace*/) {
                 var sel = window.getSelection();
                 //Are we at the start of a paragraph with nothing selected?
                 if (sel.anchorOffset == 0 && sel.isCollapsed) {
                     //Are we in the first paragraph?
-                    var previousElement = $(sel.anchorNode).closest('P').prev();
+                    var previousElement = $(sel.anchorNode)
+                        .closest("P")
+                        .prev();
                     if (previousElement.length == 0) {
                         e.stopPropagation();
                         e.preventDefault();
@@ -451,7 +532,10 @@ export default class BloomField {
         });
     }
 }
-enum CursorPosition { start, end }
+enum CursorPosition {
+    start,
+    end
+}
 interface FFSelection extends Selection {
     //This is nonstandard, but supported by firefox. So we have to tell typescript about it
     modify(alter: string, direction: string, granularity: string): Selection;

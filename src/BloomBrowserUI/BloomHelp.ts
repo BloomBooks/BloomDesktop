@@ -6,10 +6,10 @@ import { BloomApi } from "./utils/bloomApi";
  */
 export default class BloomHelp {
     /**
- * Opens the application help topic
- * @param topic
- * @returns {boolean} Returns false to prevent navigation if link clicked.
- */
+     * Opens the application help topic
+     * @param topic
+     * @returns {boolean} Returns false to prevent navigation if link clicked.
+     */
     static show(topic: string): boolean {
         BloomApi.postData("help", topic);
         return false;

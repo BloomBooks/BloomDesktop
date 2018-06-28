@@ -8,7 +8,6 @@ import "../lib/jquery.qtipSecondary.js";
 // first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
 import "jquery.hotkeys.js";
 
-
 import "editablePageBundle.js";
 
 // John Thomson: Added this last because currently its document ready function has to execute AFTER the bootstrap call in bloomEditing.ts,

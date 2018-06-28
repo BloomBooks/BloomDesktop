@@ -1,6 +1,5 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosPromise } from "axios";
 
-
 export class BloomApi {
     // This function is designed to be used lilke this:
     // BloomApi.wrapAxios(axios.{get, post, etc}().then(...));
@@ -31,9 +30,11 @@ export class BloomApi {
             // property, though we code defensively against the possibility
             // that it does not.
             if (error && error.message && error.stack) {
-                fullError.message = "Unexpected promise failure: " + error.message;
+                fullError.message =
+                    "Unexpected promise failure: " + error.message;
                 if (error.response && error.response.statusText) {
-                    fullError.message += " (response: " + error.response.statusText;
+                    fullError.message +=
+                        " (response: " + error.response.statusText;
                 }
                 fullError.stack += "\ninner exception:\n" + error.stack;
             } else {
@@ -48,38 +49,68 @@ export class BloomApi {
     }
 
     // This method is used to get a result from Bloom.
-    public static get(urlSuffix: string, successCallback: (r: AxiosResponse) => void) {
-        BloomApi.wrapAxios(axios.get("/bloom/" + urlSuffix).then(successCallback));
+    public static get(
+        urlSuffix: string,
+        successCallback: (r: AxiosResponse) => void
+    ) {
+        BloomApi.wrapAxios(
+            axios.get("/bloom/" + urlSuffix).then(successCallback)
+        );
     }
 
     // This method is used to get a result from Bloom, passing paramaters to the nested axios call.
-    public static getWithConfig(urlSuffix: string, config: AxiosRequestConfig, successCallback: (r: AxiosResponse) => void) {
-        BloomApi.wrapAxios(axios.get("/bloom/" + urlSuffix, config).then(successCallback));
+    public static getWithConfig(
+        urlSuffix: string,
+        config: AxiosRequestConfig,
+        successCallback: (r: AxiosResponse) => void
+    ) {
+        BloomApi.wrapAxios(
+            axios.get("/bloom/" + urlSuffix, config).then(successCallback)
+        );
     }
 
     // This method is used to post something from Bloom.
-    public static post(urlSuffix: string, successCallback?: (r: AxiosResponse) => void) {
+    public static post(
+        urlSuffix: string,
+        successCallback?: (r: AxiosResponse) => void
+    ) {
         if (successCallback) {
-            BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix).then(successCallback));
+            BloomApi.wrapAxios(
+                axios.post("/bloom/" + urlSuffix).then(successCallback)
+            );
         } else {
             BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix));
         }
     }
 
     // This method is used to post something from Bloom with data.
-    public static postData(urlSuffix: string, data: any, successCallback?: (r: AxiosResponse) => void) {
+    public static postData(
+        urlSuffix: string,
+        data: any,
+        successCallback?: (r: AxiosResponse) => void
+    ) {
         if (successCallback) {
-            BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix, data).then(successCallback));
+            BloomApi.wrapAxios(
+                axios.post("/bloom/" + urlSuffix, data).then(successCallback)
+            );
         } else {
             BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix, data));
         }
     }
 
     // This method is used to post something from Bloom with data and params.
-    public static postDataWithConfig(urlSuffix: string, data: any, config: AxiosRequestConfig,
-        successCallback?: (r: AxiosResponse) => void) {
+    public static postDataWithConfig(
+        urlSuffix: string,
+        data: any,
+        config: AxiosRequestConfig,
+        successCallback?: (r: AxiosResponse) => void
+    ) {
         if (successCallback) {
-            BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix, data, config).then(successCallback));
+            BloomApi.wrapAxios(
+                axios
+                    .post("/bloom/" + urlSuffix, data, config)
+                    .then(successCallback)
+            );
         } else {
             BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix, data, config));
         }

@@ -3,13 +3,15 @@
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 /// <reference path="ReaderSettings.ts" />
 
-import { theOneLanguageDataInstance, theOneLibSynphony, LanguageData } from './libSynphony/synphony_lib';
-import { ReaderStage, ReaderLevel, ReaderSettings } from './ReaderSettings';
-import * as _ from 'underscore';
-
+import {
+    theOneLanguageDataInstance,
+    theOneLibSynphony,
+    LanguageData
+} from "./libSynphony/synphony_lib";
+import { ReaderStage, ReaderLevel, ReaderSettings } from "./ReaderSettings";
+import * as _ from "underscore";
 
 export default class ReadersSynphonyWrapper {
-
     stages: ReaderStage[] = [];
     levels: ReaderLevel[] = [];
     source: ReaderSettings;
@@ -19,24 +21,37 @@ export default class ReadersSynphonyWrapper {
      * @param fileContent
      */
     loadSettings(fileContent): void {
-
         //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
 
         if (!fileContent) return;
 
-        this.source = <ReaderSettings>jQuery.extend(new ReaderSettings(), fileContent);
+        this.source = <ReaderSettings>(
+            jQuery.extend(new ReaderSettings(), fileContent)
+        );
 
-        if (this.source.letters !== '') {
-            theOneLanguageDataInstance.addGrapheme(this.source.letters.split(' '));
-            theOneLanguageDataInstance.addWord(this.source.moreWords.split(' '));
-            theOneLanguageDataInstance.LanguageSortOrder = this.source.letters.split(' ');
+        if (this.source.letters !== "") {
+            theOneLanguageDataInstance.addGrapheme(
+                this.source.letters.split(" ")
+            );
+            theOneLanguageDataInstance.addWord(
+                this.source.moreWords.split(" ")
+            );
+            theOneLanguageDataInstance.LanguageSortOrder = this.source.letters.split(
+                " "
+            );
         }
 
         var stgs = this.source.stages;
         if (stgs) {
             this.stages = [];
             for (var j = 0; j < stgs.length; j++) {
-                this.AddStage(<ReaderStage>jQuery.extend(true, new ReaderStage((j + 1).toString()), stgs[j]));
+                this.AddStage(<ReaderStage>(
+                    jQuery.extend(
+                        true,
+                        new ReaderStage((j + 1).toString()),
+                        stgs[j]
+                    )
+                ));
             }
         }
 
@@ -44,22 +59,30 @@ export default class ReadersSynphonyWrapper {
         if (lvls) {
             this.levels = [];
             for (var i = 0; i < lvls.length; i++) {
-                this.addLevel(<ReaderLevel>jQuery.extend(true, new ReaderLevel((i + 1).toString()), lvls[i]));
+                this.addLevel(<ReaderLevel>(
+                    jQuery.extend(
+                        true,
+                        new ReaderLevel((i + 1).toString()),
+                        lvls[i]
+                    )
+                ));
             }
         }
-    theOneLibSynphony.setExtraSentencePunctuation(this.source.sentencePunct);
+        theOneLibSynphony.setExtraSentencePunctuation(
+            this.source.sentencePunct
+        );
     }
 
     loadFromLangData(langData: LanguageData): void {
-
         if (!this.source) this.source = new ReaderSettings();
 
-        if (this.source.letters === '') {
-
-            var sorted = langData.LanguageSortOrder.join(' ').toLowerCase().split(' ');
+        if (this.source.letters === "") {
+            var sorted = langData.LanguageSortOrder.join(" ")
+                .toLowerCase()
+                .split(" ");
             sorted = _.uniq(sorted);
 
-            this.source.letters = sorted.join(' ');
+            this.source.letters = sorted.join(" ");
         }
     }
 
@@ -73,14 +96,16 @@ export default class ReadersSynphonyWrapper {
      * @param {Object} words The keys are the words, and the values are the counts
      */
     static addWords(words: Object) {
-
         if (!words) return;
 
         var wordNames = Object.keys(words);
 
         //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
         for (var i = 0; i < wordNames.length; i++) {
-            theOneLanguageDataInstance.addWord(wordNames[i], words[wordNames[i]]);
+            theOneLanguageDataInstance.addWord(
+                wordNames[i],
+                words[wordNames[i]]
+            );
         }
     }
 
@@ -90,11 +115,8 @@ export default class ReadersSynphonyWrapper {
      * @returns {ReaderStage[]} An array of ReaderStage objects
      */
     getStages(stageNumber?: number): ReaderStage[] {
-
-        if (typeof stageNumber === 'undefined')
-            return this.stages;
-        else
-            return _.first(this.stages, stageNumber);
+        if (typeof stageNumber === "undefined") return this.stages;
+        else return _.first(this.stages, stageNumber);
     }
 
     getLevels(): ReaderLevel[] {

@@ -33,7 +33,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // audio file name (relative to the audio folder) and the volume (a fraction
     // of full volume).
     private static musicAttrName = "data-backgroundaudio";
-    private static musicVolumeAttrName = MusicToolControls.musicAttrName + "volume";
+    private static musicVolumeAttrName =
+        MusicToolControls.musicAttrName + "volume";
     private static kDefaultVolumeFraction = 0.5;
     private static narrationPlayer: AudioRecording;
     private addedListenerToPlayer: boolean;

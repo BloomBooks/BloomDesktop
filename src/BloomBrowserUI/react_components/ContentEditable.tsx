@@ -10,7 +10,10 @@ interface IContentEditableProps {
 // Property onChange is a function that triggers when the editable content changes.
 // If onEnterKeyPressed is set, it will be called when the user types that key.
 // content property is the current text of the div.
-export default class ContentEditable extends React.Component<IContentEditableProps, {}> {
+export default class ContentEditable extends React.Component<
+    IContentEditableProps,
+    {}
+> {
     lastContent: string;
     editDiv: HTMLDivElement;
     ipPosition: number;
@@ -20,19 +23,29 @@ export default class ContentEditable extends React.Component<IContentEditablePro
         super(props);
     }
     render() {
-        return <div id="contenteditable"
-            onInput={event => this.emitChange(event)}
-            onBlur={event => this.emitChange(event)}
-            onKeyPress={event => {
-                if (event.which === 13 && this.props.onEnterKeyPressed != null) {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    this.props.onEnterKeyPressed();
-                }
-            }}
-            contentEditable
-            ref={(div) => { this.editDiv = div; }}
-        >{this.props.content}</div>;
+        return (
+            <div
+                id="contenteditable"
+                onInput={event => this.emitChange(event)}
+                onBlur={event => this.emitChange(event)}
+                onKeyPress={event => {
+                    if (
+                        event.which === 13 &&
+                        this.props.onEnterKeyPressed != null
+                    ) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        this.props.onEnterKeyPressed();
+                    }
+                }}
+                contentEditable
+                ref={div => {
+                    this.editDiv = div;
+                }}
+            >
+                {this.props.content}
+            </div>
+        );
     }
 
     // The idea here is to minimise updating the div when content didn't really change, to reduce

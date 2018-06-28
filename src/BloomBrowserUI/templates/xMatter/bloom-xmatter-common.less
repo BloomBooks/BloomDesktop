@@ -4,7 +4,8 @@
 @XMatterPackName: "unknown";
 
 //This hack is used to localize the xMatter label. data-after-content is set in bloomEditing.ts
-.bloom-frontMatter, .bloom-backMatter {
+.bloom-frontMatter,
+.bloom-backMatter {
     .pageLabel:before {
         content: "@{XMatterPackName}";
         display: none;
@@ -17,14 +18,15 @@
 @BottomMargin-SmallerForCover: 10mm;
 //normally the marginBox sizing is done by the basePage, but for the front and back cover, we want to cheat to have
 //a smaller bottom margin, since there is no page number
-.outsideFrontCover .marginBox, .outsideBackCover .marginBox {
+.outsideFrontCover .marginBox,
+.outsideBackCover .marginBox {
     .SetMarginBoxCover(@PageHeight, @PageWidth) {
         /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
         height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
         //Just center the margin box, (for now, we're ignoring the binding)
         left: @MarginOuter;
         width: @PageWidth - (2 * @MarginOuter);
-        IMG {
+        img {
             /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
             max-width: @PageWidth - (2 * @MarginOuter);
         }
@@ -60,16 +62,28 @@
         .SetMarginBoxCover(@LetterLandscape-Height, @LetterLandscape-Width);
     }
     .HalfLetterPortrait& {
-        .SetMarginBoxCover(@HalfLetterPortrait-Height, @HalfLetterPortrait-Width);
+        .SetMarginBoxCover(
+            @HalfLetterPortrait-Height,
+            @HalfLetterPortrait-Width
+        );
     }
     .HalfLetterLandscape& {
-        .SetMarginBoxCover(@HalfLetterLandscape-Height, @HalfLetterLandscape-Width);
+        .SetMarginBoxCover(
+            @HalfLetterLandscape-Height,
+            @HalfLetterLandscape-Width
+        );
     }
     .QuarterLetterPortrait& {
-        .SetMarginBoxCover(@QuarterLetterPortrait-Height, @QuarterLetterPortrait-Width);
+        .SetMarginBoxCover(
+            @QuarterLetterPortrait-Height,
+            @QuarterLetterPortrait-Width
+        );
     }
     .QuarterLetterLandscape& {
-        .SetMarginBoxCover(@QuarterLetterLandscape-Height, @QuarterLetterLandscape-Width);
+        .SetMarginBoxCover(
+            @QuarterLetterLandscape-Height,
+            @QuarterLetterLandscape-Width
+        );
     }
 }
 
@@ -135,7 +149,8 @@
             // }
         }
     }
-    .placeholder, .bloom-imageContainer {
+    .placeholder,
+    .bloom-imageContainer {
         order: 1; //second part of the page, after the title
         flex: 1 1 auto;
         margin-top: @MarginBetweenMajorItems;
@@ -158,7 +173,7 @@
         }
 
         // this contains the smallCoverCredits text box row, followed by the row that has the language names and topic
-        .bottomTextContent{
+        .bottomTextContent {
             flex: 1 0 auto; // this element is happy to take up space relative to its parent, bottomBlock
             order: 1; // after the optional branding logo
 
@@ -194,7 +209,8 @@
                     height: @BottomRowHeight;
                     min-width: 1px; //without this, we don't get the qtip that lets you choose a topic
                     text-align: right;
-                    .bloom-editable { //.bloom-contentNational1 {
+                    .bloom-editable {
+                        //.bloom-contentNational1 {
                         display: inline !important;
                         bottom: -4px;
                         padding-right: 1px;
@@ -233,7 +249,6 @@
     }
 }
 
-
 //note that we allow ".verso" for historical reasons (verso means something like "backside of title page") but we can
 //put the credits page anywhere.
 .credits {
@@ -245,26 +260,34 @@
     .originalAcknowledgments .bloom-editable {
         margin-bottom: @MarginBetweenBlocks;
     }
-    .versionAcknowledgments .bloom-editable{
+    .versionAcknowledgments .bloom-editable {
         height: auto;
         margin-bottom: 1em;
     }
     .licenseUrl {
         display: none;
     }
-    @MarginBetweenBlocks_SmallPaper: .5em;
-    &.A6Landscape, &.A6Portrait, &.QuarterLetterLandscape, &.QuarterLetterPortrait {
-        .licenseImage {width: 65px};
+    @MarginBetweenBlocks_SmallPaper: 0.5em;
+    &.A6Landscape,
+    &.A6Portrait,
+    &.QuarterLetterLandscape,
+    &.QuarterLetterPortrait {
+        .licenseImage {
+            width: 65px;
+        }
 
-//        .copyright, .ISBNContainer, .licenseBlock, .originalAcknowledgments .bloom-contentNational1{
-        .copyright, .ISBNContainer, .licenseBlock, .originalAcknowledgments .bloom-editable{
+        //        .copyright, .ISBNContainer, .licenseBlock, .originalAcknowledgments .bloom-contentNational1{
+        .copyright,
+        .ISBNContainer,
+        .licenseBlock,
+        .originalAcknowledgments .bloom-editable {
             margin-bottom: @MarginBetweenBlocks_SmallPaper;
         }
         //.licenseAndCopyrightBlock {
         //    .licenseBlock{margin-bottom: 1em;}
         //}
     }
-   .branding{
+    .branding {
         position: absolute;
         bottom: 0;
         left: 0; // allows centering even though position absolute
@@ -273,10 +296,10 @@
     }
 }
 
-BODY[bookcreationtype="original"] {
+body[bookcreationtype="original"] {
     .titlePage {
         #originalContributions {
-           .bloom-editable {
+            .bloom-editable {
                 min-height: 3em; // two lines
             }
         }
@@ -288,10 +311,10 @@ BODY[bookcreationtype="original"] {
     }
 }
 
-BODY[bookcreationtype="translation"] {
+body[bookcreationtype="translation"] {
     .titlePage {
         #originalContributions {
-            .bloom-editable  {
+            .bloom-editable {
                 min-height: 3em; // two lines
             }
         }
@@ -304,14 +327,14 @@ BODY[bookcreationtype="translation"] {
 }
 
 .titlePage {
-    @MarginBetweenMinorItems: .5em;
+    @MarginBetweenMinorItems: 0.5em;
     @MarginBetweenTitleAndFunding: 3em;
 
     .Title-On-Title-Page-style {
         font-size: 14pt;
     }
-//    .Title-On-Title-Page-style.bloom-content1 {
-    .Title-On-Title-Page-style[data-order='1'] {
+    //    .Title-On-Title-Page-style.bloom-content1 {
+    .Title-On-Title-Page-style[data-order="1"] {
         font-size: 20pt;
     }
     text-align: center;
@@ -347,11 +370,11 @@ BODY[bookcreationtype="translation"] {
         // }
     }
 
-    .bottomImageWrapper{
+    .bottomImageWrapper {
         width: 100%; // this allows the branding to center.
         position: absolute;
         bottom: 0;
-        .branding{
+        .branding {
             height: 1in;
         }
     }
@@ -384,23 +407,23 @@ BODY[bookcreationtype="translation"] {
     // Ideally, we might allow a little css to come with each icon.
 
     // For now, the compromise is this: by default, we assume it's just one logo and that the height is some amount we set here:
-    height: .5in;
+    height: 0.5in;
     width: auto;
 
     // However if the branding pack requires a big max-width logo, then it should name the logo with a "-wide" suffix, and the
     // pug template will use that instead, along with this "branding-wide" class, triggering these rules to override the defaults:
-    &.branding-wide{
+    &.branding-wide {
         height: auto;
         width: 100%;
     }
 }
 
-.outsideBackCover{
+.outsideBackCover {
     .marginBox {
         display: flex;
         flex-direction: column;
 
-        .bloom-translationGroup{
+        .bloom-translationGroup {
             height: 100%;
 
             .bloom-editable {
@@ -426,11 +449,11 @@ BODY[bookcreationtype="translation"] {
         max-height: 1.8em;
         min-height: 1.8em;
 
-        &[lang='*'] {
+        &[lang="*"] {
             display: inline-block;
         }
     }
-    .ISBNContainer SPAN {
+    .ISBNContainer span {
         vertical-align: top;
     }
     margin-bottom: @MarginBetweenBlocks;

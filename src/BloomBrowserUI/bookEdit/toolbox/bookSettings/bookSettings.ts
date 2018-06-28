@@ -9,11 +9,17 @@ $(document).ready(() => {
         // Only show this if we are editing a shell book. Otherwise, it's already not locked.
         if (!settings.isRecordedAsLockedDown) {
             $(".showOnlyWhenBookWouldNormallyBeLocked").css("display", "none");
-            $("input[name='isTemplateBook']").prop("checked", settings.isTemplateBook);
+            $("input[name='isTemplateBook']").prop(
+                "checked",
+                settings.isTemplateBook
+            );
         } else {
             $(".showOnlyIfBookIsNeverLocked").css("display", "none");
             // enhance: this is just dirt-poor binding of 1 checkbox for now
-            $("input[name='unlockShellBook']").prop("checked", settings.unlockShellBook);
+            $("input[name='unlockShellBook']").prop(
+                "checked",
+                settings.unlockShellBook
+            );
         }
     });
 });
@@ -50,14 +56,13 @@ export class BookSettings implements ITool {
     }
     isExperimental(): boolean {
         return false;
-    }
-    /* tslint:disable:no-empty */ // We need these to implement the interface, but don't need them to do anything.
-    configureElements(container: HTMLElement) { }
-    showTool() { }
-    hideTool() { }
-    updateMarkup() { }
-    newPageReady() { }
-    detachFromPage() { }
-    finishToolLocalization(pane: HTMLElement) { }
+    } // We need these to implement the interface, but don't need them to do anything.
+    /* tslint:disable:no-empty */ configureElements(container: HTMLElement) {}
+    showTool() {}
+    hideTool() {}
+    updateMarkup() {}
+    newPageReady() {}
+    detachFromPage() {}
+    finishToolLocalization(pane: HTMLElement) {}
     /* tslint:enable:no-empty */
 }

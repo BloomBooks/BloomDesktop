@@ -171,8 +171,7 @@ export default class AudioRecording {
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
-        page
-            .find(".ui-audioCurrent")
+        page.find(".ui-audioCurrent")
             .removeClass("ui-audioCurrent")
             .removeClass("disableHighlight");
         var socket = this.getWebSocket();
@@ -204,7 +203,7 @@ export default class AudioRecording {
         var divs = this.getPage().find(
             ":not(.bloom-noAudio) > div.bloom-editable.bloom-content1"
         );
-        return divs.filter(function (idx, elt) {
+        return divs.filter(function(idx, elt) {
             return theOneLibSynphony
                 .stringToSentences(elt.innerHTML)
                 .some(frag => {
@@ -313,7 +312,9 @@ export default class AudioRecording {
         var player = $("#player");
         player.attr(
             "src",
-            this.currentAudioUrl(this.idOfCurrentSentence) + "?nocache=" + new Date().getTime()
+            this.currentAudioUrl(this.idOfCurrentSentence) +
+                "?nocache=" +
+                new Date().getTime()
         );
     }
 
@@ -477,7 +478,7 @@ export default class AudioRecording {
             (<any>devList)
                 .one(
                     "click",
-                    function (event) {
+                    function(event) {
                         devList.hide();
                         var choice = $(event.target).data("choice");
                         axios
@@ -564,7 +565,9 @@ export default class AudioRecording {
                 // Note: this is not foolproof because the durationchange handler is
                 // being called asynchronously with stale data and sometimes restoring
                 // the deleted attribute.
-                var current = this.getPage().find("span#" + this.idOfCurrentSentence);
+                var current = this.getPage().find(
+                    "span#" + this.idOfCurrentSentence
+                );
                 if (current.length !== 0) {
                     current.first().removeAttr("data-duration");
                 }
@@ -974,7 +977,7 @@ export default class AudioRecording {
 
         var markedSentences = elt.find("span.audio-sentence");
         var reuse = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
-        markedSentences.each(function (index) {
+        markedSentences.each(function(index) {
             reuse.push({
                 id: $(this).attr("id"),
                 md5: $(this).attr("recordingmd5")
@@ -1105,7 +1108,10 @@ export default class AudioRecording {
 
         //set play and clear buttons based on whether we have an audio file for this
         axios
-            .get("/bloom/api/audio/checkForSegment?id=" + this.idOfCurrentSentence)
+            .get(
+                "/bloom/api/audio/checkForSegment?id=" +
+                    this.idOfCurrentSentence
+            )
             .then(response => {
                 if (response.data === "exists") {
                     this.setStatus("clear", Status.Enabled);
@@ -1128,7 +1134,7 @@ export default class AudioRecording {
 
         //set listen button based on whether we have an audio at all for this page
         var ids = [];
-        this.getAudioElements().each(function () {
+        this.getAudioElements().each(function() {
             ids.push(this.id);
         });
         axios

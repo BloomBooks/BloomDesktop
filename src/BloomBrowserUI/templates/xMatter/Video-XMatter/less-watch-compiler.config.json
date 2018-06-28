@@ -1,4 +1,4 @@
 {
-    "allowedExtensions":[".less"],
+    "allowedExtensions": [".less"],
     "minified": false
 }

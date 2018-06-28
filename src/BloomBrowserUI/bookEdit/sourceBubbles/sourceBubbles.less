@@ -1,12 +1,12 @@
 ﻿// This file gets imported by editMode.less
-@BubbleBorder:#E0DEB7;
-@BubbleBackground:#faf7cc;
+@BubbleBorder: #e0deb7;
+@BubbleBackground: #faf7cc;
 @TabColor: @BubbleBorder;
 @TabBorder: @BubbleBackground;
 
 @BubbleTextColor: black;
 
-.qtip-default{
+.qtip-default {
     background-color: @BubbleBackground !important;
     border-color: @BubbleBorder !important;
     color: @BubbleTextColor !important;
@@ -49,14 +49,14 @@
     position: relative;
     border-color: @BubbleBorder;
     max-height: inherit;
-    NAV {
+    nav {
         display: block;
         height: 34px;
         margin: 0 -8px;
         //background-color: @TabColor;
         border-top-right-radius: 15px;
         border-top-left-radius: 15px;
-        > UL {
+        > ul {
             z-index: 1;
             background-color: transparent;
             text-align: center;
@@ -75,7 +75,7 @@
                 border-bottom: 2px solid @TabBorder;
                 z-index: 2;
             }
-            > LI {
+            > li {
                 font-size: 9pt;
                 height: 31px;
                 border-right: 1px solid @TabBorder;
@@ -95,7 +95,7 @@
                     border-bottom-color: @BubbleBackground; // make active tab appear in front
                     z-index: 3;
                 }
-                A {
+                a {
                     max-width: 79px;
                     white-space: nowrap;
                     text-overflow: ellipsis;
@@ -113,12 +113,12 @@
                         text-decoration: underline;
                         background-color: @BubbleBackground;
                     }
-                    > IMG {
+                    > img {
                         // makes "i" inside the information-licenseCC0.png icon about as high as a capital letter.
                         // If you change, regenerate the png from the svg at the new size.
                         height: 13px;
                         margin-top: 5px; // aligns nicely with text
-                    } 
+                    }
                 }
             }
         }
@@ -134,7 +134,10 @@
 
         //thai script languages. If using Arial, they need to be 30% bigger or so. With the
         // popular Angsana New, it would need to be like 100% bigger
-        &:lang(th), &:lang(km),&:lang(kjg), &:lang(prt){
+        &:lang(th),
+        &:lang(km),
+        &:lang(kjg),
+        &:lang(prt) {
             font-size: 18pt;
         }
     }
@@ -158,7 +161,7 @@
     top: 0;
     font-size: 9pt;
     z-index: 5;
-    LI {
+    li {
         &:hover {
             background-color: @DropdownHovered;
         }
@@ -168,11 +171,11 @@
     width: 32px;
     border: none !important;
     &:hover {
-        UL {
+        ul {
             display: inline-block;
         }
     }
-    DIV {
+    div {
         margin: 4px 0 0 0;
         display: block;
         &::before {
@@ -182,12 +185,11 @@
             content: ")";
         }
     }
-    UL {
+    ul {
         display: none;
     }
 }
-.panel-container
-{
+.panel-container {
     border: 1px solid black;
     padding: 0 10px;
 }

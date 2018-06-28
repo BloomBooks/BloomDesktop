@@ -33,7 +33,7 @@ interface IComponentState {
 class AndroidPublishUI extends React.Component<
     IUILanguageAwareProps,
     IComponentState
-    > {
+> {
     isLinux: boolean;
     constructor(props) {
         super(props);
@@ -63,8 +63,12 @@ class AndroidPublishUI extends React.Component<
         BloomApi.get("api/publish/android/method", result => {
             this.setState({ method: result.data });
         });
-        BloomApi.get("api/publish/android/backColor", result => this.setState({ backColor: result.data }));
-        BloomApi.get("api/publish/android/motionBookMode", result => this.setState({ motionBookMode: result.data }));
+        BloomApi.get("api/publish/android/backColor", result =>
+            this.setState({ backColor: result.data })
+        );
+        BloomApi.get("api/publish/android/motionBookMode", result =>
+            this.setState({ motionBookMode: result.data })
+        );
     }
 
     public componentDidMount() {
@@ -228,16 +232,22 @@ class AndroidPublishUI extends React.Component<
                     <select
                         className={`method-shared method-root ${
                             this.state.method
-                            }-method-option`}
+                        }-method-option`}
                         disabled={this.state.stateId !== "stopped"}
                         value={this.state.method}
                         onChange={event => {
                             this.setState({ method: event.target.value });
-                            BloomApi.wrapAxios(axios.post(
-                                "/bloom/api/publish/android/method",
-                                event.target.value,
-                                { headers: { "Content-Type": "text/plain" } }
-                            ));
+                            BloomApi.wrapAxios(
+                                axios.post(
+                                    "/bloom/api/publish/android/method",
+                                    event.target.value,
+                                    {
+                                        headers: {
+                                            "Content-Type": "text/plain"
+                                        }
+                                    }
+                                )
+                            );
                         }}
                     >
                         <Option

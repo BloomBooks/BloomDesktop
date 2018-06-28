@@ -6,14 +6,16 @@ interface qtipInterface extends JQuery {
 }
 
 export class EditableDivUtils {
-
     static getElementSelectionIndex(element: HTMLElement): number {
-
-        var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
+        var page: HTMLIFrameElement = <HTMLIFrameElement>(
+            parent.window.document.getElementById("page")
+        );
         if (!page) return -1; // unit testing?
 
         var selection = page.contentWindow.getSelection();
-        var active = $(selection.anchorNode).closest('div').get(0);
+        var active = $(selection.anchorNode)
+            .closest("div")
+            .get(0);
         if (active != element) return -1; // huh??
         if (!active || selection.rangeCount == 0) {
             return -1;
@@ -24,8 +26,9 @@ export class EditableDivUtils {
     }
 
     static selectAtOffset(node: Node, offset: number): void {
-
-        var iframeWindow: Window = (<HTMLIFrameElement>parent.window.document.getElementById('page')).contentWindow;
+        var iframeWindow: Window = (<HTMLIFrameElement>(
+            parent.window.document.getElementById("page")
+        )).contentWindow;
 
         var range = iframeWindow.document.createRange();
         range.setStart(node, offset);
@@ -43,8 +46,12 @@ export class EditableDivUtils {
      * @param node
      * @param offset
      */
-    static makeSelectionIn(node: Node, offset: number, divBrCount: number, atStart: boolean): boolean {
-
+    static makeSelectionIn(
+        node: Node,
+        offset: number,
+        divBrCount: number,
+        atStart: boolean
+    ): boolean {
         if (node.nodeType === 3) {
             // drilled down to a text node. Make the selection.
             EditableDivUtils.selectAtOffset(node, offset);
@@ -60,10 +67,14 @@ export class EditableDivUtils {
             len = childNode.textContent.length;
             if (divBrCount >= 0 && len == offset) {
                 // We want the selection after childNode itself, plus if possible an additional divBrCount <br> elements
-                for (i++;
-                    i < node.childNodes.length && divBrCount > 0 && node.childNodes[i].textContent.length == 0;
-                    i++) {
-                    if (node.childNodes[i].localName === 'br') divBrCount--;
+                for (
+                    i++;
+                    i < node.childNodes.length &&
+                    divBrCount > 0 &&
+                    node.childNodes[i].textContent.length == 0;
+                    i++
+                ) {
+                    if (node.childNodes[i].localName === "br") divBrCount--;
                 }
                 // We want the selection in node itself, before childNode[i].
                 EditableDivUtils.selectAtOffset(node, i);
@@ -76,8 +87,18 @@ export class EditableDivUtils {
             // (But, of course, if it is the last node we must be able to put the IP at the very end.)
             // When trying to do a precise restore, we pass atStart carefully, as it may control
             // whether we end up before or after some <br>s
-            if (offset < len || (offset == len && (i == node.childNodes.length - 1 || !atStart))) {
-                if (EditableDivUtils.makeSelectionIn(childNode, offset, -1, atStart)) {
+            if (
+                offset < len ||
+                (offset == len && (i == node.childNodes.length - 1 || !atStart))
+            ) {
+                if (
+                    EditableDivUtils.makeSelectionIn(
+                        childNode,
+                        offset,
+                        -1,
+                        atStart
+                    )
+                ) {
                     return true;
                 }
             }
@@ -102,27 +123,40 @@ export class EditableDivUtils {
     // current viewport. Method takes into consideration zoom factor. If the dialog is draggable,
     // it also modifies the draggable options to account for a scrolling bug in jqueryui.
     // @param dialogBox
-    static positionDialogAndSetDraggable(dialogBox: JQuery, gearIcon: JQuery): void {
+    static positionDialogAndSetDraggable(
+        dialogBox: JQuery,
+        gearIcon: JQuery
+    ): void {
         // A zoom on the body affects offset but not outerHeight, which messes things up if we don't account for it.
-        var scale = dialogBox[0].getBoundingClientRect().height / dialogBox[0].offsetHeight;
+        var scale =
+            dialogBox[0].getBoundingClientRect().height /
+            dialogBox[0].offsetHeight;
         var adjustmentFactor = 30;
         var pxAdjToScale = (adjustmentFactor / scale).toFixed(); // rounded to nearest integer
-        var myOptionValue = 'left+' + pxAdjToScale + ' top-' + pxAdjToScale;
+        var myOptionValue = "left+" + pxAdjToScale + " top-" + pxAdjToScale;
 
         // Set the dialog 30px (adjusted for 'scale') to the right and up from the gear icon.
         // If it won't fit there for some reason, .position() will 'fit' it in by moving it away from the viewport edges.
-        dialogBox.position({ my: myOptionValue, at: 'right top', of: gearIcon, collision: 'fit' });
+        dialogBox.position({
+            my: myOptionValue,
+            at: "right top",
+            of: gearIcon,
+            collision: "fit"
+        });
 
         // unless we're debugging, the dialog html should be initially created with visibility set to 'hidden'
-        dialogBox.css('visibility', 'visible');
+        dialogBox.css("visibility", "visible");
 
-        if (dialogBox.is('.ui-draggable')) {
-            EditableDivUtils.adjustDraggableOptionsForScaleBug(dialogBox, scale);
+        if (dialogBox.is(".ui-draggable")) {
+            EditableDivUtils.adjustDraggableOptionsForScaleBug(
+                dialogBox,
+                scale
+            );
         }
     }
 
     static getPageFrame(): HTMLIFrameElement {
-        return <HTMLIFrameElement>window.top.document.getElementById('page');
+        return <HTMLIFrameElement>window.top.document.getElementById("page");
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -135,7 +169,9 @@ export class EditableDivUtils {
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     static getPageScale(): number {
         var scale = 1.0;
-        var styleString = this.getPage().find("div#page-scaling-container").attr("style");
+        var styleString = this.getPage()
+            .find("div#page-scaling-container")
+            .attr("style");
         var searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
         if (searchData) {
             scale = parseFloat(searchData[1]);
@@ -149,13 +185,17 @@ export class EditableDivUtils {
             // fix adapted from majcherek2048's about 2/3 down this page https://bugs.jqueryui.com/ticket/3740.
             // If we upgrade our jqueryui to a version that doesn't have this bug (1.10.3 or later?),
             // we'll need to back out this change.
-            start: function (event, ui) {
-                $(this).data('startingScrollTop', $('html').scrollTop());
-                $(this).data('startingScrollLeft', $('html').scrollLeft());
+            start: function(event, ui) {
+                $(this).data("startingScrollTop", $("html").scrollTop());
+                $(this).data("startingScrollLeft", $("html").scrollLeft());
             },
-            drag: function (event, ui) {
-                ui.position.top = (ui.position.top - $(this).data('startingScrollTop')) / scale;
-                ui.position.left = (ui.position.left - $(this).data('startingScrollLeft')) / scale;
+            drag: function(event, ui) {
+                ui.position.top =
+                    (ui.position.top - $(this).data("startingScrollTop")) /
+                    scale;
+                ui.position.left =
+                    (ui.position.left - $(this).data("startingScrollLeft")) /
+                    scale;
             }
         });
     }
@@ -164,8 +204,7 @@ export class EditableDivUtils {
         var activeElement = document.activeElement;
         BloomApi.get("api/image/imageCreditsForWholeBook", result => {
             var data = result.data;
-            if (!data)
-                return;     // nothing to insert: no images apparently...
+            if (!data) return; // nothing to insert: no images apparently...
 
             // This is a global method, called from an href attribute of an <a> element.
             // document.activeElement must be that <a> element, which is owned by a qtip-content
@@ -173,16 +212,20 @@ export class EditableDivUtils {
             // div element to which the qtip bubble is attached has an aria-describedby attribute
             // that refers to the div.qtip's id.
             var bubble = activeElement.parentElement.parentElement;
-            var query = "[aria-describedby='" + bubble.getAttribute("id") + "']";
+            var query =
+                "[aria-describedby='" + bubble.getAttribute("id") + "']";
             var artists = null;
             var credits = document.querySelectorAll(query);
             if (credits.length > 0) {
                 artists = credits[0];
             } else {
-                if (activeElement.getAttribute("data-book") == "originalContributions" &&
+                if (
+                    activeElement.getAttribute("data-book") ==
+                        "originalContributions" &&
                     activeElement.getAttribute("contenteditable") == "true" &&
                     activeElement.getAttribute("role") == "textbox" &&
-                    activeElement.getAttribute("aria-label") == "false") {
+                    activeElement.getAttribute("aria-label") == "false"
+                ) {
                     // If we're coming from a tab in a source-bubble instead of a pure
                     // hint-bubble, then the activeElement is the actual text-box we
                     // want to insert into.  I don't know why it isn't the <a> element.
@@ -206,7 +249,7 @@ export class EditableDivUtils {
             }
         });
         // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-        setTimeout(function () {
+        setTimeout(function() {
             (<qtipInterface>$("div[data-hasqtip]")).qtip("reposition");
         }, 100); // make sure the DOM has the inserted text before we try to reposition qtips
     }

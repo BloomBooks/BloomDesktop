@@ -18,7 +18,7 @@ var savedSettings: string;
 
 var keypressTimer: any = null;
 
-var showExperimentalTools: boolean;  // set by Toolbox.initialize()
+var showExperimentalTools: boolean; // set by Toolbox.initialize()
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
@@ -53,8 +53,16 @@ export interface ITool {
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 export class ToolBox {
-    public toolboxIsShowing() { return (<HTMLInputElement>$(parent.window.document).find("#pure-toggle-right").get(0)).checked; }
-    public toggleToolbox() { (<HTMLInputElement>$(parent.window.document).find("#pure-toggle-right").get(0)).click(); }
+    public toolboxIsShowing() {
+        return (<HTMLInputElement>$(parent.window.document)
+            .find("#pure-toggle-right")
+            .get(0)).checked;
+    }
+    public toggleToolbox() {
+        (<HTMLInputElement>$(parent.window.document)
+            .find("#pure-toggle-right")
+            .get(0)).click();
+    }
     public configureElementsForTools(container: HTMLElement) {
         for (var i = 0; i < masterToolList.length; i++) {
             masterToolList[i].configureElements(container);
@@ -100,25 +108,30 @@ export class ToolBox {
                     puzzle will emerge.
             */
 
-            $(container).find(".bloom-editable").keydown(function (event) {
-                //don't do markup on cursor keys
-                if (event.keyCode >= 37 && event.keyCode <= 40) {
-                    // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
-                    // if all they did was move the cursor, we don't need to look at markup.
-                    console.log("skipping markup on arrow key");
-                    return;
-                }
-                handleKeyboardInput();
-            }).on("compositionend", function (argument) {
-                // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
-                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
-                handleKeyboardInput();
-            });
+            $(container)
+                .find(".bloom-editable")
+                .keydown(function(event) {
+                    //don't do markup on cursor keys
+                    if (event.keyCode >= 37 && event.keyCode <= 40) {
+                        // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
+                        // if all they did was move the cursor, we don't need to look at markup.
+                        console.log("skipping markup on arrow key");
+                        return;
+                    }
+                    handleKeyboardInput();
+                })
+                .on("compositionend", function(argument) {
+                    // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
+                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
+                    handleKeyboardInput();
+                });
         }
     }
 
     public static getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById("page") as HTMLIFrameElement;
+        return parent.window.document.getElementById(
+            "page"
+        ) as HTMLIFrameElement;
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -134,12 +147,17 @@ export class ToolBox {
      * @param {String} eventData
      */
     static fireCSharpToolboxEvent(eventName: string, eventData: string) {
-
-        var event = new MessageEvent(eventName, { "bubbles": true, "cancelable": true, "data": eventData });
+        var event = new MessageEvent(eventName, {
+            bubbles: true,
+            cancelable: true,
+            data: eventData
+        });
         top.document.dispatchEvent(event);
     }
 
-    static registerTool(tool: ITool) { masterToolList.push(tool); }
+    static registerTool(tool: ITool) {
+        masterToolList.push(tool);
+    }
 
     private getShowAdvancedFeatures() {
         // Using axios directly because api calls for returning the promise.
@@ -155,69 +173,96 @@ export class ToolBox {
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
         // toolbox one. Nothing outside toolbox imports it directly, so it must be some indirect link.
         // It's important that this function is only hooked up to the real toolbox instance.
-        $(parent.window.document).ready(function () {
-            $(parent.window.document).find("#pure-toggle-right").change(function () { showToolboxChanged(!this.checked); });
+        $(parent.window.document).ready(function() {
+            $(parent.window.document)
+                .find("#pure-toggle-right")
+                .change(function() {
+                    showToolboxChanged(!this.checked);
+                });
         });
 
         // Using axios directly because BloomApi doesn't support merging promises with .all
-        BloomApi.wrapAxios(axios.all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
-            .then(axios.spread(function (showAdvancedFeatures, enabledTools) {
-                // Both requests are complete
-                // remove the experimental tools if the user doesn't want them
-                showExperimentalTools = showAdvancedFeatures.data.toString() === "true";
-                if (!showExperimentalTools) {
-                    for (var i = masterToolList.length - 1; i >= 0; i--) {
-                        if (masterToolList[i].isExperimental()) {
-                            masterToolList.splice(i, 1);
+        BloomApi.wrapAxios(
+            axios
+                .all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
+                .then(
+                    axios.spread(function(showAdvancedFeatures, enabledTools) {
+                        // Both requests are complete
+                        // remove the experimental tools if the user doesn't want them
+                        showExperimentalTools =
+                            showAdvancedFeatures.data.toString() === "true";
+                        if (!showExperimentalTools) {
+                            for (
+                                var i = masterToolList.length - 1;
+                                i >= 0;
+                                i--
+                            ) {
+                                if (masterToolList[i].isExperimental()) {
+                                    masterToolList.splice(i, 1);
+                                }
+                            }
                         }
-                    }
-                }
-                const toolsToLoad = enabledTools.data.split(",");
-                // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
-                for (var i = toolsToLoad.length - 1; i >= 0; i--) {
-                    if (!masterToolList.some(mod => mod.id() === toolsToLoad[i])) {
-                        toolsToLoad.splice(i, 1);
-                    }
-                }
-                // add any tools we always show
-                for (var j = 0; j < masterToolList.length; j++) {
-                    if (masterToolList[j].isAlwaysEnabled() && !toolsToLoad.includes(masterToolList[j].id())) {
-                        toolsToLoad.push(masterToolList[j].id());
-                    }
-                }
-                // for correct positioning and so we can find check boxes when adding others must load this one first,
-                // which means putting it last in the array.
-                toolsToLoad.push("settings");
-                $("#toolbox").hide();
-                const loadNextTool = function () {
-                    if (toolsToLoad.length === 0) {
-                        $("#toolbox").accordion({
-                            heightStyle: "fill"
-                        });
-                        $("body").find("*[data-i18n]").localize(); // run localization
+                        const toolsToLoad = enabledTools.data.split(",");
+                        // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
+                        for (var i = toolsToLoad.length - 1; i >= 0; i--) {
+                            if (
+                                !masterToolList.some(
+                                    mod => mod.id() === toolsToLoad[i]
+                                )
+                            ) {
+                                toolsToLoad.splice(i, 1);
+                            }
+                        }
+                        // add any tools we always show
+                        for (var j = 0; j < masterToolList.length; j++) {
+                            if (
+                                masterToolList[j].isAlwaysEnabled() &&
+                                !toolsToLoad.includes(masterToolList[j].id())
+                            ) {
+                                toolsToLoad.push(masterToolList[j].id());
+                            }
+                        }
+                        // for correct positioning and so we can find check boxes when adding others must load this one first,
+                        // which means putting it last in the array.
+                        toolsToLoad.push("settings");
+                        $("#toolbox").hide();
+                        const loadNextTool = function() {
+                            if (toolsToLoad.length === 0) {
+                                $("#toolbox").accordion({
+                                    heightStyle: "fill"
+                                });
+                                $("body")
+                                    .find("*[data-i18n]")
+                                    .localize(); // run localization
 
-                        // Now bind the window's resize function to the toolbox resizer
-                        $(window).bind("resize", function () {
-                            clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-                            resizeTimer = setTimeout(resizeToolbox, 100);
-                        });
-                        // loaded them all, now we can deal with settings.
-                        restoreToolboxSettings();
-                        $("#toolbox").show();
-                        // I don't know why, but the accordion refresh inside resizeToolbox is needed
-                        // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
-                        setTimeout(resizeToolbox, 0);
-                    } else {
-                        // optimize: maybe we can overlap these?
-                        const nextToolId = toolsToLoad.pop();
-                        const checkBoxId = nextToolId + "Check";
-                        const toolId = nextToolId + "Tool";
-                        beginAddTool(checkBoxId, toolId, false, () => loadNextTool());
-                    }
-                };
-                loadNextTool();
-            })));
-
+                                // Now bind the window's resize function to the toolbox resizer
+                                $(window).bind("resize", function() {
+                                    clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
+                                    resizeTimer = setTimeout(
+                                        resizeToolbox,
+                                        100
+                                    );
+                                });
+                                // loaded them all, now we can deal with settings.
+                                restoreToolboxSettings();
+                                $("#toolbox").show();
+                                // I don't know why, but the accordion refresh inside resizeToolbox is needed
+                                // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
+                                setTimeout(resizeToolbox, 0);
+                            } else {
+                                // optimize: maybe we can overlap these?
+                                const nextToolId = toolsToLoad.pop();
+                                const checkBoxId = nextToolId + "Check";
+                                const toolId = nextToolId + "Tool";
+                                beginAddTool(checkBoxId, toolId, false, () =>
+                                    loadNextTool()
+                                );
+                            }
+                        };
+                        loadNextTool();
+                    })
+                )
+        );
     }
 }
 
@@ -237,19 +282,28 @@ var currentTool: ITool;
  * @param chkbox
  */
 export function showOrHideTool_click(chkbox) {
-
     var tool = $(chkbox).data("tool");
 
     if (chkbox.innerHTML === "") {
         chkbox.innerHTML = checkMarkString;
-        ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "active\t" + chkbox.id + "\t1");
+        ToolBox.fireCSharpToolboxEvent(
+            "saveToolboxSettingsEvent",
+            "active\t" + chkbox.id + "\t1"
+        );
         if (tool) {
             beginAddTool(chkbox.id, tool, true, null);
         }
     } else {
         chkbox.innerHTML = "";
-        ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "active\t" + chkbox.id + "\t0");
-        $("*[data-toolId]").filter(function () { return $(this).attr("data-toolId") === tool; }).remove();
+        ToolBox.fireCSharpToolboxEvent(
+            "saveToolboxSettingsEvent",
+            "active\t" + chkbox.id + "\t0"
+        );
+        $("*[data-toolId]")
+            .filter(function() {
+                return $(this).attr("data-toolId") === tool;
+            })
+            .remove();
     }
 
     resizeToolbox();
@@ -282,7 +336,9 @@ export function restoreToolboxSettings() {
         var pageFrame = getPageFrame();
         if (pageFrame.contentWindow.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
-            $(pageFrame.contentWindow.document).ready(e => restoreToolboxSettingsWhenPageReady(result.data));
+            $(pageFrame.contentWindow.document).ready(e =>
+                restoreToolboxSettingsWhenPageReady(result.data)
+            );
             return;
         }
         restoreToolboxSettingsWhenPageReady(result.data); // not loading, we can proceed immediately.
@@ -316,12 +372,21 @@ function doWhenPageReady(action: () => void) {
 // but it seems a precaution worth keeping.
 function doWhenCkEditorReady(action: () => void) {
     var removers = [];
-    doWhenCkEditorReadyCore({ removers: removers, done: false, action: action });
+    doWhenCkEditorReadyCore({
+        removers: removers,
+        done: false,
+        action: action
+    });
 }
 
-function doWhenCkEditorReadyCore(arg: { removers: Array<any>, done: boolean, action: () => void }): void {
+function doWhenCkEditorReadyCore(arg: {
+    removers: Array<any>;
+    done: boolean;
+    action: () => void;
+}): void {
     if ((<any>getPageFrame().contentWindow).CKEDITOR) {
-        var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
+        var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR
+            .instances;
         // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
         // This wipes out (at least) our page initialization.
         // To prevent this we hold our initialization until CKEditor has done initializing.
@@ -333,18 +398,24 @@ function doWhenCkEditorReadyCore(arg: { removers: Array<any>, done: boolean, act
             if (instance == null) {
                 if (i === 0) {
                     // no instance at all...if one is later created, get us invoked.
-                    arg.removers.push((<any>this.getPageFrame().contentWindow).CKEDITOR.on("instanceReady",
-                        e => {
-                            doWhenCkEditorReadyCore(arg);
-                        }));
+                    arg.removers.push(
+                        (<any>this.getPageFrame().contentWindow).CKEDITOR.on(
+                            "instanceReady",
+                            e => {
+                                doWhenCkEditorReadyCore(arg);
+                            }
+                        )
+                    );
                     return;
                 }
                 break; // if we get here all instances are ready
             }
             if (!instance.instanceReady) {
-                arg.removers.push(instance.on("instanceReady", e => {
-                    doWhenCkEditorReadyCore(arg);
-                }));
+                arg.removers.push(
+                    instance.on("instanceReady", e => {
+                        doWhenCkEditorReadyCore(arg);
+                    })
+                );
                 return;
             }
         }
@@ -392,7 +463,10 @@ function getPage(): JQuery {
 
 function switchTool(newToolName: string) {
     // Have Bloom remember which tool is active. (Might be none)
-    ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "current\t" + newToolName);
+    ToolBox.fireCSharpToolboxEvent(
+        "saveToolboxSettingsEvent",
+        "current\t" + newToolName
+    );
     var newTool = null;
     if (newToolName) {
         for (var i = 0; i < masterToolList.length; i++) {
@@ -437,13 +511,15 @@ function getToolElement(tool: ITool): HTMLElement {
     var toolElement = null;
     if (tool) {
         var toolName = tool.id() + "Tool";
-        $("#toolbox").find("> h3").each(function () {
-            if ($(this).attr("data-toolId") === toolName) {
-                toolElement = this;
-                return false; // break from the each() loop
-            }
-            return true; // continue the each() loop
-        });
+        $("#toolbox")
+            .find("> h3")
+            .each(function() {
+                if ($(this).attr("data-toolId") === toolName) {
+                    toolElement = this;
+                    return false; // break from the each() loop
+                }
+                return true; // continue the each() loop
+            });
     }
     return <HTMLElement>toolElement;
 }
@@ -460,9 +536,8 @@ function setCurrentTool(currentTool) {
 
     const accordionHeaders = toolbox.find("> h3");
     if (currentTool) {
-
         // find the index of the tool whose "data-toolId" attribute equals the value of "currentTool"
-        accordionHeaders.each(function () {
+        accordionHeaders.each(function() {
             if ($(this).attr("data-toolId") === currentTool) {
                 // break from the each() loop
                 return false;
@@ -472,7 +547,10 @@ function setCurrentTool(currentTool) {
         });
     } else {
         // Leave idx at 0, and update currentTool to the corresponding ID.
-        currentTool = toolbox.find("> h3").first().attr("data-toolId");
+        currentTool = toolbox
+            .find("> h3")
+            .first()
+            .attr("data-toolId");
     }
     if (idx >= accordionHeaders.length - 1) {
         // don't pick the More... tool, pick whatever happens to be first.
@@ -494,7 +572,7 @@ function setCurrentTool(currentTool) {
     // the active tool (if it's already the one we want, typically the first), so we can't rely on
     // the activate event happening in the initial call. Instead, we make SURE to call it for the
     // tool we are making active.
-    toolbox.onSafe("accordionactivate.toolbox", function (event, ui) {
+    toolbox.onSafe("accordionactivate.toolbox", function(event, ui) {
         var newToolName = "";
         if (ui.newHeader.attr("data-toolId")) {
             newToolName = ui.newHeader.attr("data-toolId").toString();
@@ -520,30 +598,42 @@ function getITool(toolId: string): ITool {
  * initializing the toolbox for those that are already checked.
  */
 // these last three parameters were never used: function requestTool(checkBoxId, toolId, loadNextCallback, tools, currentTool) {
-function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean, whenLoaded: () => void): void {
+function beginAddTool(
+    checkBoxId: string,
+    toolId: string,
+    openTool: boolean,
+    whenLoaded: () => void
+): void {
     var chkBox = document.getElementById(checkBoxId);
-    if (chkBox) { // always-enabled tools don't have checkboxes.
+    if (chkBox) {
+        // always-enabled tools don't have checkboxes.
         chkBox.innerHTML = checkMarkString;
     }
 
     var subpath = {
-        "talkingBookTool": "talkingBook/talkingBookToolboxTool.html",
-        "decodableReaderTool": "readers/decodableReader/decodableReaderToolboxTool.html",
-        "leveledReaderTool": "readers/leveledReader/leveledReaderToolboxTool.html",
-        "bookSettingsTool": "bookSettings/bookSettingsToolboxTool.html",
-        "toolboxSettingsTool": "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
-        "settingsTool": "settings/Settings.html"
+        talkingBookTool: "talkingBook/talkingBookToolboxTool.html",
+        decodableReaderTool:
+            "readers/decodableReader/decodableReaderToolboxTool.html",
+        leveledReaderTool:
+            "readers/leveledReader/leveledReaderToolboxTool.html",
+        bookSettingsTool: "bookSettings/bookSettingsToolboxTool.html",
+        toolboxSettingsTool:
+            "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
+        settingsTool: "settings/Settings.html"
         // none for music: done in React
     };
     const subPathToPremadeHtml = subpath[toolId];
     if (subPathToPremadeHtml) {
         // old-style tool implemented in pug and typescript
-        BloomApi.get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml, result => {
-            loadToolboxToolText(result.data, toolId, openTool);
-            if (whenLoaded) {
-                whenLoaded();
+        BloomApi.get(
+            "/bloom/bookEdit/toolbox/" + subPathToPremadeHtml,
+            result => {
+                loadToolboxToolText(result.data, toolId, openTool);
+                if (whenLoaded) {
+                    whenLoaded();
+                }
             }
-        });
+        );
     } else {
         // new-style tool implemented in React
         var tool = getITool(toolId);
@@ -552,13 +642,17 @@ function beginAddTool(checkBoxId: string, toolId: string, openTool: boolean, whe
         // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
         //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
 
-        const toolIdUpper = tool.id()[0].toUpperCase() + tool.id().substring(1, tool.id().length);
+        const toolIdUpper =
+            tool.id()[0].toUpperCase() +
+            tool.id().substring(1, tool.id().length);
         var i18Id = "EditTab.Toolbox." + toolIdUpper + ".Heading";
         // Not sure this will always work, but we can do something more complicated...maybe a new method
         // on ITool...if we need it. Note that this is just a way to come up with the English,
         // we don't do it to localizations. But in English, the code value beats the xlf one.
         var toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim() + " Tool";
-        const header = $("<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>");
+        const header = $(
+            "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
+        );
         // must both have this attr and value for removing if disabled.
         header.attr("data-toolId", toolName);
         content.attr("data-toolId", toolName);
@@ -581,18 +675,24 @@ function handleKeyboardInput(): void {
     //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
     //  this.keypressTimer.clearTimeout();
     //}
-    if (keypressTimer)
-        clearTimeout(keypressTimer);
-    keypressTimer = setTimeout(function () {
-
+    if (keypressTimer) clearTimeout(keypressTimer);
+    keypressTimer = setTimeout(function() {
         // This happens 500ms after the user stops typing.
-        var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById("page");
+        var page: HTMLIFrameElement = <HTMLIFrameElement>(
+            parent.window.document.getElementById("page")
+        );
         if (!page) return; // unit testing?
 
         var selection: Selection = page.contentWindow.getSelection();
         var current: Node = selection.anchorNode;
-        var active = <HTMLDivElement>$(selection.anchorNode).closest("div").get(0);
-        if (!active || selection.rangeCount > 1 || (selection.rangeCount === 1 && !selection.getRangeAt(0).collapsed)) {
+        var active = <HTMLDivElement>$(selection.anchorNode)
+            .closest("div")
+            .get(0);
+        if (
+            !active ||
+            selection.rangeCount > 1 ||
+            (selection.rangeCount === 1 && !selection.getRangeAt(0).collapsed)
+        ) {
             return; // don't even try to adjust markup while there is some complex selection
         }
 
@@ -619,7 +719,9 @@ function handleKeyboardInput(): void {
         // clicks away, the markup will be redone and fixed. So this is a known tradeoff; we get
         // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
         // markup.
-        const editableDiv = $(selection.anchorNode).parents(".bloom-editable")[0];
+        const editableDiv = $(selection.anchorNode).parents(
+            ".bloom-editable"
+        )[0];
         // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
         // presumably we could adjust the above query to still get the div it's looking for.
         if (editableDiv) {
@@ -659,7 +761,6 @@ function handleKeyboardInput(): void {
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;
-
     }, 500);
 }
 
@@ -702,8 +803,12 @@ function loadToolboxToolText(newContent, toolId, openTool: boolean) {
 
     loadToolboxTool(header, content, toolId, openTool);
 }
-function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: boolean) {
-
+function loadToolboxTool(
+    header: JQuery,
+    content: JQuery,
+    toolId,
+    openTool: boolean
+) {
     var toolboxElt = $("#toolbox");
     var label = header.text();
     if (toolId === "settingsTool" && !showExperimentalTools) {
@@ -717,10 +822,17 @@ function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: bool
         toolboxElt.append(header);
         toolboxElt.append(content);
     } else {
-        var insertBefore = toolboxElt.children().filter(function () { return $(this).text() > label; }).first();
+        var insertBefore = toolboxElt
+            .children()
+            .filter(function() {
+                return $(this).text() > label;
+            })
+            .first();
         if (insertBefore.length === 0) {
             // Nothing is greater, but still insert before "More". Two children represent "More", so before the second last.
-            insertBefore = $(toolboxElt.children()[toolboxElt.children.length - 2]);
+            insertBefore = $(
+                toolboxElt.children()[toolboxElt.children.length - 2]
+            );
         }
         header.insertBefore(insertBefore);
         content.insertBefore(insertBefore);
@@ -736,7 +848,10 @@ function loadToolboxTool(header: JQuery, content: JQuery, toolId, openTool: bool
 }
 
 function showToolboxChanged(wasShowing: boolean): void {
-    ToolBox.fireCSharpToolboxEvent("saveToolboxSettingsEvent", "visibility\t" + (wasShowing ? "" : "visible"));
+    ToolBox.fireCSharpToolboxEvent(
+        "saveToolboxSettingsEvent",
+        "visibility\t" + (wasShowing ? "" : "visible")
+    );
     if (currentTool) {
         if (wasShowing) {
             currentTool.detachFromPage();
@@ -747,7 +862,10 @@ function showToolboxChanged(wasShowing: boolean): void {
     } else {
         // starting up for the very first time in this book...no tool is current,
         // so select and properly initialize the first one.
-        var newToolName = $("#toolbox").find(("> h3")).first().attr("data-toolId");
+        var newToolName = $("#toolbox")
+            .find("> h3")
+            .first()
+            .attr("data-toolId");
         if (!newToolName) {
             // This should never happen; we're just being defensive.
             // At one point (BL-5330) this code could run against the document in the wrong iframe
