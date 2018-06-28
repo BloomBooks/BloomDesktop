@@ -202,7 +202,7 @@ export class EditableDivUtils {
 
     static pasteImageCredits() {
         var activeElement = document.activeElement;
-        BloomApi.get("api/image/imageCreditsForWholeBook", result => {
+        BloomApi.get("image/imageCreditsForWholeBook", result => {
             var data = result.data;
             if (!data) return; // nothing to insert: no images apparently...
 

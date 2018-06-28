@@ -21,7 +21,7 @@ export class LeveledReaderToolboxTool implements ITool {
                     true
                 );
             } else {
-                BloomApi.get("api/readers/io/defaultLevel", result => {
+                BloomApi.get("readers/io/defaultLevel", result => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
                     getTheOneReaderToolsModel().setLevelNumber(
                         parseInt(result.data, 10)

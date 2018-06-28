@@ -60,13 +60,13 @@ class AndroidPublishUI extends React.Component<
             }
         });
 
-        BloomApi.get("api/publish/android/method", result => {
+        BloomApi.get("publish/android/method", result => {
             this.setState({ method: result.data });
         });
-        BloomApi.get("api/publish/android/backColor", result =>
+        BloomApi.get("publish/android/backColor", result =>
             this.setState({ backColor: result.data })
         );
-        BloomApi.get("api/publish/android/motionBookMode", result =>
+        BloomApi.get("publish/android/motionBookMode", result =>
             this.setState({ motionBookMode: result.data })
         );
     }
@@ -83,7 +83,7 @@ class AndroidPublishUI extends React.Component<
     }
 
     componentCleanup() {
-        BloomApi.post("api/publish/android/cleanup", result => {
+        BloomApi.post("publish/android/cleanup", result => {
             WebSocketManager.closeSocket(kWebSocketLifetime);
         });
     }
@@ -108,7 +108,7 @@ class AndroidPublishUI extends React.Component<
         // I tried using react-copy-to-clipboard, but kept getting runtime errors as if the component was not found.
         // I tried using document.execCommand("copy"), but though it worked in FF and Chrome, it did not work in Bloom.
         BloomApi.postDataWithConfig(
-            "api/publish/android/textToClipboard",
+            "publish/android/textToClipboard",
             document.getElementById("progress-box").innerText,
             { headers: { "Content-Type": "text/plain" } }
         );
@@ -141,7 +141,7 @@ class AndroidPublishUI extends React.Component<
                         backColorSetting={this.state.backColor}
                         onColorChanged={colorChoice => {
                             BloomApi.postDataWithConfig(
-                                "api/publish/android/backColor",
+                                "publish/android/backColor",
                                 colorChoice,
                                 {
                                     headers: {
@@ -170,7 +170,7 @@ class AndroidPublishUI extends React.Component<
                             onCheckChanged={checked => {
                                 this.setState({ motionBookMode: checked });
                                 BloomApi.postDataWithConfig(
-                                    "api/publish/android/motionBookMode",
+                                    "publish/android/motionBookMode",
                                     checked,
                                     {
                                         headers: {

@@ -30,7 +30,7 @@ const mouseOutFunction = e => {
 };
 
 export function SetupVideoEditing(container) {
-    BloomApi.get("api/featurecontrol/enterpriseEnabled", result => {
+    BloomApi.get("featurecontrol/enterpriseEnabled", result => {
         const isEnterpriseEnabled = result.data;
         $(container)
             .find(".bloom-videoContainer")

@@ -96,7 +96,7 @@ export function enterpriseFeaturesEnabled(): EnterpriseEnabledPromise {
 // The function will be called with argument true if enterprise features are enabled, false otherwise.
 class EnterpriseEnabledPromise {
     public then(resolve: (boolean) => void) {
-        BloomApi.get("api/common/enterpriseFeaturesEnabled", response => {
+        BloomApi.get("common/enterpriseFeaturesEnabled", response => {
             resolve(response.data);
         });
     }

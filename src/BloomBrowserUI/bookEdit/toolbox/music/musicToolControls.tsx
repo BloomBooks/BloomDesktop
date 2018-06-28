@@ -379,7 +379,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 
     private chooseMusicFile() {
-        BloomApi.get("api/music/ui/chooseFile", result => {
+        BloomApi.get("music/ui/chooseFile", result => {
             const fileName = result.data;
             if (!fileName) {
                 return;

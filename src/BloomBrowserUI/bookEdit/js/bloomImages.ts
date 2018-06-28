@@ -184,7 +184,7 @@ function SetImageTooltip(container, img) {
         return;
     }
     BloomApi.getWithConfig(
-        "api/image/info",
+        "image/info",
         { params: { image: GetRawImageUrl(img) } },
         result => {
             var image: any = result.data;

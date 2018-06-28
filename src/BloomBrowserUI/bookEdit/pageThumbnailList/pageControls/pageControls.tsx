@@ -57,7 +57,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
     public componentDidMount() {
         window.addEventListener("beforeunload", this.componentCleanup);
         // Get the initial state from C#-land, now that we're ready for it.
-        BloomApi.get("api/edit/pageControls/requestState", result => {
+        BloomApi.get("edit/pageControls/requestState", result => {
             var jsonObj = result.data; // Axios apparently recognizes the JSON and parses it automatically.
             // something like: {"CanAddPages":true,"CanDeletePage":true,"CanDuplicatePage":true,"BookLockedState":"OriginalBookMode"}
             this.setPageControlState(jsonObj);
@@ -72,7 +72,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
     }
 
     componentCleanup() {
-        BloomApi.post("api/edit/pageControls/cleanup", result => {
+        BloomApi.post("edit/pageControls/cleanup", result => {
             WebSocketManager.closeSocket(kWebSocketLifetime);
         });
     }

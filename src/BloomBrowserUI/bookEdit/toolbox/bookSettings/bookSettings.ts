@@ -3,7 +3,7 @@ import { ITool, ToolBox } from "../toolbox";
 
 $(document).ready(() => {
     // request our model and set the controls
-    BloomApi.get("api/book/settings", result => {
+    BloomApi.get("book/settings", result => {
         var settings = result.data;
 
         // Only show this if we are editing a shell book. Otherwise, it's already not locked.
@@ -33,7 +33,7 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
         o[input.name] = $(input).prop("checked");
         return o;
     })[0];
-    BloomApi.post("api/book/settings", settings);
+    BloomApi.post("book/settings", settings);
 }
 
 // We need a minimal model to get ourselves loaded

@@ -1,6 +1,7 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosPromise } from "axios";
 
 export class BloomApi {
+    private static kBloomApiPrefix = "/bloom/api/";
     // This function is designed to be used lilke this:
     // BloomApi.wrapAxios(axios.{get, post, etc}().then(...));
     // That is, the argument should be an AxiosPromise;
@@ -54,7 +55,7 @@ export class BloomApi {
         successCallback: (r: AxiosResponse) => void
     ) {
         BloomApi.wrapAxios(
-            axios.get("/bloom/" + urlSuffix).then(successCallback)
+            axios.get(this.kBloomApiPrefix + urlSuffix).then(successCallback)
         );
     }
 
@@ -65,7 +66,9 @@ export class BloomApi {
         successCallback: (r: AxiosResponse) => void
     ) {
         BloomApi.wrapAxios(
-            axios.get("/bloom/" + urlSuffix, config).then(successCallback)
+            axios
+                .get(this.kBloomApiPrefix + urlSuffix, config)
+                .then(successCallback)
         );
     }
 
@@ -76,10 +79,12 @@ export class BloomApi {
     ) {
         if (successCallback) {
             BloomApi.wrapAxios(
-                axios.post("/bloom/" + urlSuffix).then(successCallback)
+                axios
+                    .post(this.kBloomApiPrefix + urlSuffix)
+                    .then(successCallback)
             );
         } else {
-            BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix));
+            BloomApi.wrapAxios(axios.post(this.kBloomApiPrefix + urlSuffix));
         }
     }
 
@@ -91,10 +96,14 @@ export class BloomApi {
     ) {
         if (successCallback) {
             BloomApi.wrapAxios(
-                axios.post("/bloom/" + urlSuffix, data).then(successCallback)
+                axios
+                    .post(this.kBloomApiPrefix + urlSuffix, data)
+                    .then(successCallback)
             );
         } else {
-            BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix, data));
+            BloomApi.wrapAxios(
+                axios.post(this.kBloomApiPrefix + urlSuffix, data)
+            );
         }
     }
 
@@ -108,11 +117,13 @@ export class BloomApi {
         if (successCallback) {
             BloomApi.wrapAxios(
                 axios
-                    .post("/bloom/" + urlSuffix, data, config)
+                    .post(this.kBloomApiPrefix + urlSuffix, data, config)
                     .then(successCallback)
             );
         } else {
-            BloomApi.wrapAxios(axios.post("/bloom/" + urlSuffix, data, config));
+            BloomApi.wrapAxios(
+                axios.post(this.kBloomApiPrefix + urlSuffix, data, config)
+            );
         }
     }
 }

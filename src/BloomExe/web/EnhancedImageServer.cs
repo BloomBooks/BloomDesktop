@@ -418,7 +418,7 @@ namespace Bloom.Api
 					list.Sort();
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
 					return true;
-				case "uiLanguages":
+				case "api/uiLanguages":
 					// Returns json with property languages, an array of objects (one for each UI language Bloom knows about)
 					// each having label (what to show in a menu) and tag (the language code).
 					// Used in language select control in hint bubbles tab of text box properties dialog
@@ -433,7 +433,7 @@ namespace Bloom.Api
 					info.ContentType = "application/json";
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new {languages=langs}));
 					return true;
-				case "bubbleLanguages":
+				case "api/bubbleLanguages":
 					// Returns a list of lang codes such that if a block has hints in multiple languages,
 					// we prefer the one that comes first in the list.
 					// Used to select the best label to show in a hint bubble when a bloom-translationGroup has multiple
@@ -456,11 +456,11 @@ namespace Bloom.Api
 					info.ContentType = "application/json";
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new { langs = bubbleLangs }));
 					return true;
-				case "authorMode":
+				case "api/authorMode":
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
-				case "topics":
+				case "api/topics":
 					return GetTopicList(info);
 			}
 			return ProcessAnyFileContent(info, localPath);

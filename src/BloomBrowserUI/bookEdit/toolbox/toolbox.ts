@@ -331,7 +331,7 @@ export function activateSignLanguageTool() {
 }
 
 export function restoreToolboxSettings() {
-    BloomApi.get("api/toolbox/settings", result => {
+    BloomApi.get("toolbox/settings", result => {
         savedSettings = result.data;
         var pageFrame = getPageFrame();
         if (pageFrame.contentWindow.document.readyState === "loading") {
@@ -625,14 +625,17 @@ function beginAddTool(
     const subPathToPremadeHtml = subpath[toolId];
     if (subPathToPremadeHtml) {
         // old-style tool implemented in pug and typescript
-        BloomApi.get(
-            "/bloom/bookEdit/toolbox/" + subPathToPremadeHtml,
-            result => {
-                loadToolboxToolText(result.data, toolId, openTool);
-                if (whenLoaded) {
-                    whenLoaded();
-                }
-            }
+        // Using axios because this is retrieving a file, not invoking an api,
+        // so the required path does not start with /bloom/api/
+        BloomApi.wrapAxios(
+            axios
+                .get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml)
+                .then(result => {
+                    loadToolboxToolText(result.data, toolId, openTool);
+                    if (whenLoaded) {
+                        whenLoaded();
+                    }
+                })
         );
     } else {
         // new-style tool implemented in React
