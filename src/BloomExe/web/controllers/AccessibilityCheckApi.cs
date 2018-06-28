@@ -149,8 +149,23 @@ namespace Bloom.web.controllers
 				var progress = new NullProgress();
 				_webSocketProgress.MessageWithoutLocalizing("Running Ace by Daisy");
 			
-				var res = CommandLineRunner.Run("node", arguments, Encoding.UTF8, daisyDirectory, kSecondsBeforeTimeout, progress,
-					(dummy) => { });
+				ExecutionResult res = null;
+				string ldpath = null;
+				try
+				{
+					// Without this variable switching on Linux, the chrome inside ace finds the
+					// wrong version of a library as part of our mozilla code.
+					ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
+					Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
+					res = CommandLineRunner.Run("node", arguments, Encoding.UTF8, daisyDirectory, kSecondsBeforeTimeout, progress,
+						(dummy) => { });
+				}
+				finally
+				{
+					// Restore the variable for our next geckofx browser to find.
+					if (!String.IsNullOrEmpty(ldpath))
+						Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", ldpath);
+				}
 				if (res.DidTimeOut)
 				{
 					errorMessage = $"Daisy Ace timed out after {kSecondsBeforeTimeout} seconds.";
@@ -196,12 +211,14 @@ namespace Bloom.web.controllers
 		private string FindAceByDaisyOrTellUser(ApiRequest request)
 		{
 			_webSocketProgress.MessageWithoutLocalizing("Finding Ace by Daisy on this computer...");
-			var whereResult = CommandLineRunner.Run("where", "npm.cmd", Encoding.ASCII, "", 2, new NullProgress());
+			var whereProgram = Platform.IsWindows ? "where" : "which";
+			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
+			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
 			if (!String.IsNullOrEmpty(whereResult.StandardError))
 			{
 				_webSocketProgress.ErrorWithoutLocalizing(whereResult.StandardError);
 			}
-			if (!whereResult.StandardOutput.Contains("npm.cmd"))
+			if (!whereResult.StandardOutput.Contains(npmFileName))
 			{
 				ReportErrorAndFailTheRequest(request, whereResult, "Could could not find npm.");
 				return null;
@@ -210,7 +227,6 @@ namespace Bloom.web.controllers
 			var fullNpmPath = whereResult.StandardOutput.Split('\n')[0].Trim();
 			// note: things like nvm will mess with where the global node_modules lives. The best way seems to be
 			// to ask npm:
-			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
 			var result = CommandLineRunner.Run(npmFileName, "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
 				new NullProgress());
 
@@ -232,7 +248,7 @@ namespace Bloom.web.controllers
 				return null;
 			}
 
-			if (result?.StandardOutput == null || !result.StandardOutput.Contains("node_modules"))
+			if (!result.StandardOutput.Contains("node_modules"))
 			{
 				ReportErrorAndFailTheRequest(request, whereResult, kCoreError);
 				return null;
@@ -272,7 +288,19 @@ namespace Bloom.web.controllers
 		private void ReportErrorAndFailTheRequest(ApiRequest request, string error)
 		{
 			_webSocketProgress.ErrorWithoutLocalizing(error);
-			_webSocketProgress.MessageWithoutLocalizing("Please follow <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >these instructions</a> to install the Ace By Daisy system on this computer.");
+			if (Platform.IsWindows)
+			{
+				_webSocketProgress.MessageWithoutLocalizing("Please follow <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >these instructions</a> to install the Ace By Daisy system on this computer.");
+			}
+			else
+			{
+				var programPath = System.Reflection.Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
+				var folder = Path.GetDirectoryName(programPath);
+				if (folder.EndsWith("/output/Debug") || folder.EndsWith("/output/Release"))
+					folder = "";
+				var scriptPath = Path.Combine(folder, "DistFiles", "InstallAce.sh");
+				_webSocketProgress.MessageWithoutLocalizing("Please run the "+ scriptPath + " script to install the Ace by Daisy system on this Linux computer.");
+			}
 			request.Failed();
 		}
 
