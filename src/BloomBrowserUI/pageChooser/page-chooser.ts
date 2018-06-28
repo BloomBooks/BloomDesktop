@@ -8,7 +8,7 @@ import { BloomApi } from "../utils/bloomApi";
 import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
 
 $(window).ready(() => {
-    BloomApi.get("api/pageTemplates", result => {
+    BloomApi.get("pageTemplates", result => {
         var templatesJSON = result.data;
         var pageChooser = new PageChooser(JSON.stringify(templatesJSON));
         pageChooser.loadPageGroups();

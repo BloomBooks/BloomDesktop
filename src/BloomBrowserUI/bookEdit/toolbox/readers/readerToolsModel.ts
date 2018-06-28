@@ -174,8 +174,7 @@ export class ReaderToolsModel {
                         // When we're actually changing the stage number is the only time we want
                         // to update the default.
                         BloomApi.post(
-                            "api/readers/io/defaultStage?stage=" +
-                                this.stageNumber
+                            "readers/io/defaultStage?stage=" + this.stageNumber
                         );
                     }
 
@@ -224,9 +223,7 @@ export class ReaderToolsModel {
             this.saveState();
             // When we're actually changing the level is the only time we want
             // to update the default.
-            BloomApi.post(
-                "api/readers/io/defaultLevel?level=" + this.levelNumber
-            );
+            BloomApi.post("readers/io/defaultLevel?level=" + this.levelNumber);
         }
         this.doMarkup();
     }
@@ -955,7 +952,7 @@ export class ReaderToolsModel {
     //   }
 
     getTextOfWholeBook(): void {
-        BloomApi.get("api/readers/io/textOfContentPages", result => {
+        BloomApi.get("readers/io/textOfContentPages", result => {
             //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
             this.pageIDToText = result.data as any[];
             this.doMarkup();
@@ -1197,7 +1194,7 @@ export class ReaderToolsModel {
                 //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
                 //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
                 BloomApi.postData(
-                    "api/readers/io/synphonyLanguageData",
+                    "readers/io/synphonyLanguageData",
                     theOneLanguageDataInstance
                 );
             }, 200);
@@ -1435,7 +1432,7 @@ export class ReaderToolsModel {
                 // the setAllowedWordsListList() method.
                 if (stage.allowedWordsFile) {
                     BloomApi.getWithConfig(
-                        "api/readers/io/allowedWordsList",
+                        "readers/io/allowedWordsList",
                         { params: { fileName: stage.allowedWordsFile } },
                         result =>
                             this.setAllowedWordsListList(result.data, index)

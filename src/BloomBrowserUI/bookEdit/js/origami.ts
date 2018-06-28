@@ -133,7 +133,7 @@ function layoutToggleClickHandler() {
         const toggleTransitionLength = 450;
         setTimeout(function() {
             $("html").off("keydown.origami");
-            BloomApi.post("api/toolbox/saveChangesAndRethinkPageEvent");
+            BloomApi.post("toolbox/saveChangesAndRethinkPageEvent");
         }, toggleTransitionLength);
     }
 }
@@ -458,7 +458,7 @@ function makeVideoFieldClickHandler(e) {
     // the image needs to be in the book folder. Unlike the regular placeholder, which we copy
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
-    BloomApi.post("api/edit/pageControls/requestVideoPlaceHolder");
+    BloomApi.post("edit/pageControls/requestVideoPlaceHolder");
     $(this)
         .closest(".selector-links")
         .remove();

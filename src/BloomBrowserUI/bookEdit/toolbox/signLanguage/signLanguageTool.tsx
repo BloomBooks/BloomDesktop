@@ -250,19 +250,19 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private importRecording() {
-        BloomApi.post("api/toolbox/importVideo");
+        BloomApi.post("toolbox/importVideo");
     }
 
     private deleteRecording() {
-        BloomApi.post("api/toolbox/deleteVideo");
+        BloomApi.post("toolbox/deleteVideo");
     }
 
     private editOutside() {
-        BloomApi.post("api/toolbox/editVideo");
+        BloomApi.post("toolbox/editVideo");
     }
 
     private restoreOriginal() {
-        BloomApi.post("api/toolbox/restoreOriginal");
+        BloomApi.post("toolbox/restoreOriginal");
     }
 
     public turnOnVideo() {
@@ -391,7 +391,7 @@ export class SignLanguageToolControls extends React.Component<
             // raised when the user clicks stop and we call this.mediaRecorder.stop() above.
             var blob = new Blob(this.chunks, { type: "video/webm" });
             this.chunks = []; // enable garbage collection?
-            BloomApi.postDataWithConfig("api/toolbox/recordedVideo", blob, {
+            BloomApi.postDataWithConfig("toolbox/recordedVideo", blob, {
                 headers: {
                     "Content-Type": "video/mp4"
                 }
@@ -566,11 +566,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             });
             return;
         }
-        BloomApi.get("api/toolbox/fileExists?filename=" + src, result => {
+        BloomApi.get("toolbox/fileExists?filename=" + src, result => {
             this.reactControls.setState({ haveRecording: result.data });
         });
         BloomApi.get(
-            "api/toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
+            "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
             result => {
                 this.reactControls.setState({ originalExists: result.data });
             }

@@ -213,10 +213,10 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     }
     readerToolsInitialized = true;
 
-    BloomApi.get("api/collection/defaultFont", result =>
+    BloomApi.get("collection/defaultFont", result =>
         setDefaultFont(result.data)
     );
-    BloomApi.get("api/readers/io/readerToolSettings", settingsFileContent => {
+    BloomApi.get("readers/io/readerToolSettings", settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
         console.log("done synphony init");
         result.resolve();
@@ -255,7 +255,7 @@ function initializeSynphony(settingsFileContent: string): void {
         getTheOneReaderToolsModel().getAllowedWordsLists();
     } else {
         // get the list of sample texts
-        BloomApi.get("api/readers/ui/sampleTextsList", result =>
+        BloomApi.get("readers/ui/sampleTextsList", result =>
             beginSetTextsList(result.data)
         );
     }

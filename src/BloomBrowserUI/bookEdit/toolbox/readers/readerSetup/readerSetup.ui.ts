@@ -141,7 +141,7 @@ function process_UI_Message(event: MessageEvent): void {
                     break;
                 default:
             }
-            if (helpFile) BloomApi.post("api/help/" + helpFile);
+            if (helpFile) BloomApi.post("help/" + helpFile);
             return;
 
         default:
@@ -857,7 +857,7 @@ function firstSetupLetters(): boolean {
 function attachEventHandlers(): void {
     if (typeof $ === "function") {
         $("#open-text-folder").onSafe("click", function() {
-            BloomApi.post("api/readers/ui/openTextsFolder");
+            BloomApi.post("readers/ui/openTextsFolder");
             return false;
         });
 
@@ -919,18 +919,15 @@ function attachEventHandlers(): void {
         });
 
         $("#setup-choose-allowed-words-file").onSafe("click", function() {
-            BloomApi.get(
-                "api/readers/ui/chooseAllowedWordsListFile",
-                result => {
-                    var fileName = result.data;
-                    if (fileName) setAllowedWordsFile(fileName);
+            BloomApi.get("readers/ui/chooseAllowedWordsListFile", result => {
+                var fileName = result.data;
+                if (fileName) setAllowedWordsFile(fileName);
 
-                    // hide stale controls
-                    $("#setup-stage-matching-words")
-                        .find("div")
-                        .hide();
-                }
-            );
+                // hide stale controls
+                $("#setup-stage-matching-words")
+                    .find("div")
+                    .hide();
+            });
             return false;
         });
 

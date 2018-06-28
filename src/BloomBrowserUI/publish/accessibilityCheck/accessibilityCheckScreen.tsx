@@ -26,7 +26,7 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
         this.refresh();
     }
     private refresh() {
-        BloomApi.get("api/accessibilityCheck/bookName", result => {
+        BloomApi.get("accessibilityCheck/bookName", result => {
             this.setState({
                 bookName: result.data
             });

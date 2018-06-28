@@ -43,7 +43,7 @@ export class DecodableReaderToolboxTool implements ITool {
                     );
                 }
             } else {
-                BloomApi.get("api/readers/io/defaultStage", result => {
+                BloomApi.get("readers/io/defaultStage", result => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
                     getTheOneReaderToolsModel().setStageNumber(
                         parseInt(result.data, 10)

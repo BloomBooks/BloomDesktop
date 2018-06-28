@@ -33,7 +33,7 @@ class EpubPublishUI extends React.Component<
             removeFontSizes: false
         };
 
-        BloomApi.get("api/publish/epub/epubSettings", result => {
+        BloomApi.get("publish/epub/epubSettings", result => {
             this.setState(result.data);
         });
     }
@@ -42,7 +42,7 @@ class EpubPublishUI extends React.Component<
         // once the progress box is ready, we can start generating a preview.
         // If we don't wait for that, it's pretty random whether we get the
         // "preparing preview" message.
-        BloomApi.postData("api/publish/epub/updatePreview", this.state);
+        BloomApi.postData("publish/epub/updatePreview", this.state);
     }
 
     public render() {
@@ -129,7 +129,7 @@ class EpubPublishUI extends React.Component<
                             Include image descriptions on page
                         </Checkbox>
                         <ApiBackedCheckbox
-                            apiEndpoint="api/publish/epub/removeFontSizesSetting"
+                            apiEndpoint="publish/epub/removeFontSizesSetting"
                             l10nKey="PublishTab.Epub.RemoveFontSizes"
                         >
                             Use ePUB reader's text size
@@ -140,7 +140,7 @@ class EpubPublishUI extends React.Component<
                             l10nKey="AccessibilityCheck.AccessibilityChecker"
                             onClick={() =>
                                 BloomApi.post(
-                                    "api/accessibilityCheck/showAccessibilityChecker"
+                                    "accessibilityCheck/showAccessibilityChecker"
                                 )
                             }
                         >
@@ -164,7 +164,7 @@ class EpubPublishUI extends React.Component<
     private setPublishRadio(val: string) {
         this.setState({ howToPublishImageDescriptions: val });
         BloomApi.postDataWithConfig(
-            "api/publish/epub/imageDescriptionSetting",
+            "publish/epub/imageDescriptionSetting",
             val,
             { headers: { "Content-Type": "application/json" } }
         );
