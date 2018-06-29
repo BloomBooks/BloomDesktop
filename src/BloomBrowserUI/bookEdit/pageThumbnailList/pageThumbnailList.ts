@@ -14,6 +14,7 @@ import * as toastr from "toastr";
 import * as $ from "jquery";
 import "../../modified_libraries/gridly/jquery.gridly.js";
 import { SetImageElementUrl } from "../js/bloomImages";
+import "errorHandler";
 
 const timerName = "thumbnailInterval";
 const kSocketName = "webSocket";

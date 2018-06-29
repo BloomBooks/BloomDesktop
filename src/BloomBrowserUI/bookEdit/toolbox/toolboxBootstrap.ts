@@ -18,6 +18,7 @@ import TalkingBookTool from "./talkingBook/talkingBook";
 import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
+import "errorHandler";
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
 export { activateSignLanguageTool, removeToolboxMarkup, showOrHideTool_click };

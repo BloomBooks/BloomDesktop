@@ -6,6 +6,7 @@ import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import axios from "axios";
 import { BloomApi } from "../utils/bloomApi";
 import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
+import "errorHandler";
 
 $(window).ready(() => {
     BloomApi.get("pageTemplates", result => {

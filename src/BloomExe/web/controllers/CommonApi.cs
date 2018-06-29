@@ -11,6 +11,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
+using ApplicationException = System.ApplicationException;
 
 namespace Bloom.web.controllers
 {
@@ -37,6 +38,7 @@ namespace Bloom.web.controllers
 			server.RegisterEndpointHandler("authorMode", HandleAuthorMode, false);
 			server.RegisterEndpointHandler("topics", HandleTopics, false);
 			server.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
+			server.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
 		}
 
 		/// <summary>
@@ -117,6 +119,22 @@ namespace Bloom.web.controllers
 			lock (request)
 			{
 				request.ReplyWithText(_settings.HaveEnterpriseFeatures ? "true" : "false");
+			}
+		}
+
+		public void HandleJavascriptError(ApiRequest request)
+		{
+			lock (request)
+			{
+				var details = DynamicJson.Parse(request.RequiredPostJson());
+				var ex = new ApplicationException(details.message + Environment.NewLine + details.stack);
+				// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
+				// more than a toast, even for developers.
+				// It would seem logical that we should consider Browser.SuppressJavaScriptErrors here,
+				// but somehow none are being reported while making an epub preview, which was its main
+				// purpose. So I'm leaving that out until we know we need it.
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred", details.message, ex);
+				request.PostSucceeded();
 			}
 		}
 	}

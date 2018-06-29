@@ -27,6 +27,7 @@
     "dependencies": {
         "@types/rc-slider": "^8.2.2",
         "@types/react-tabs": "^1.0.4",
+        "@types/stacktrace-js": "^0.0.32",
         "@types/webrtc": "^0.0.23",
         "axios": "^0.16.2",
         "css-element-queries": "^0.3.2",
@@ -40,6 +41,7 @@
         "react-tabs": "^2.2.2",
         "requirejs": "^2.1.22",
         "select2": "^4.0.2",
+        "stacktrace-js": "^2.0.0",
         "time-require": "^0.1.2",
         "toastr": "^2.1.2",
         "underscore": "^1.8.3",

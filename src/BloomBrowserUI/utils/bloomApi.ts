@@ -1,4 +1,6 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosPromise } from "axios";
+import * as StackTrace from "stacktrace-js";
+import { reportError } from "../lib/errorHandler";
 
 export class BloomApi {
     private static kBloomApiPrefix = "/bloom/api/";
@@ -24,28 +26,60 @@ export class BloomApi {
         // to report it, we have to save it even if we don't need it.
         // But fortunately, axios calls tend not to be used for very
         // performance-critical calls.
-        var fullError = new Error("dummy");
+        var axiosCallState = new Error("dummy");
         call.catch(error => {
-            // The error object we get from Axios is typically a Javascript
-            // Error (with message and stack), and often also has a response
-            // property, though we code defensively against the possibility
-            // that it does not.
-            if (error && error.message && error.stack) {
-                fullError.message =
-                    "Unexpected promise failure: " + error.message;
-                if (error.response && error.response.statusText) {
-                    fullError.message +=
-                        " (response: " + error.response.statusText;
+            // We want to report a two-part stack: the one from axiosCallState
+            // showing where the request came from, and the one from our
+            // error argument, which may sometimes show where the code in a
+            // 'then' clause failed, though more often it is just internal
+            // axios code. To get a combined stack and report it the way we
+            // want we need to map the stacks to the original source code
+            // separately.
+            // (throwing an exception here bypasses our window.onerror function
+            // altogether, for some unknown reason; calling window.onerror with a composed stack
+            // defeats its stack mapping.)
+            StackTrace.fromError(axiosCallState).then(stackframes => {
+                var stringifiedStackAxiosCall = stackframes
+                    .map(function(sf) {
+                        return sf.toString();
+                    })
+                    .join("\n");
+                // The error object we get from Axios is typically a Javascript
+                // Error (with message and stack), and often also has a response
+                // property, though we code defensively against the possibility
+                // that it does not.
+                if (error && error.message && error.stack) {
+                    StackTrace.fromError(error).then(stackframes => {
+                        var stringifiedStackError = stackframes
+                            .map(function(sf) {
+                                return sf.toString();
+                            })
+                            .join("\n");
+                        var msg =
+                            "Unexpected promise failure: " + error.message;
+                        if (error.response && error.response.statusText) {
+                            msg +=
+                                " (response: " +
+                                error.response.statusText +
+                                ")";
+                        }
+                        reportError(
+                            msg,
+                            stringifiedStackAxiosCall +
+                                "\ninner exception\n" +
+                                stringifiedStackError
+                        );
+                    });
+                } else {
+                    // don't know what error is, can't get a stack from it, just include
+                    // whatever JavaScript can make of it in the report, along with the
+                    // main stack.
+                    reportError(
+                        "Unexpected promise failure: " + error,
+                        stringifiedStackAxiosCall
+                    );
                 }
-                fullError.stack += "\ninner exception:\n" + error.stack;
-            } else {
-                fullError.message = "Unexpected promise failure: " + error;
-            }
-            // until we have better error handling, we only seem to see the stack
-            // at the point where we threw. Put the one we want into the message
-            // so we will have it.
-            fullError.message += "\n stack:\n" + fullError.stack;
-            throw fullError;
+            });
         });
     }
 

@@ -18,6 +18,7 @@ import {
 } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
 import "./androidPublishUI.less";
+import "errorHandler";
 
 const kWebSocketLifetime = "publish-android";
 
