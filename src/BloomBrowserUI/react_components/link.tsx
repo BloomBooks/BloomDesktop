@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { ILocalizationProps, LocalizableElement } from "./l10n";
 
 interface ILinkProps extends ILocalizationProps {
@@ -14,7 +13,9 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
         return (
             <a
                 id={"" + this.props.id}
-                href={this.props.href}
+                // href must be defined in order to maintain normal link UI
+                // I tried to do like the 'id' attribute above, but it caused an error.
+                href={this.props.href ? this.props.href : ""}
                 onClick={this.props.onClick}
             >
                 {this.getLocalizedContent()}
