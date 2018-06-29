@@ -508,10 +508,10 @@ namespace Bloom.CollectionTab
 			{
 				try
 				{
-					if (bookInfo.ShowThisBook())
+					if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection || bookInfo.ShowThisBook())
 					{
-						loadedAtLeastOneBook = true;
 						AddOneBook(bookInfo, flowLayoutPanel, collection);
+						loadedAtLeastOneBook = true;
 					}
 				}
 				catch (Exception error)
