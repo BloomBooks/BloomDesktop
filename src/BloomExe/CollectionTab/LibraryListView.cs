@@ -987,6 +987,8 @@ namespace Bloom.CollectionTab
 				{
 					_bookThumbnails.Images[imageIndex] = image;
 					var button = FindBookButton(bookInfo);
+					if (button == null || button.IsDisposed)
+						return; // I (gjm) found that this condition occurred sometimes when testing BL-6100
 					button.Image = IsUsableBook(button) ? image : MakeDim(image);
 				}
 			}
