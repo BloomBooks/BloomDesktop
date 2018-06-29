@@ -13,6 +13,7 @@ import { getPageFrameExports } from "./js/bloomFrames";
 export { getPageFrameExports };
 import { showAddPageDialog } from "../pageChooser/launch-page-chooser";
 export { showAddPageDialog };
+import "errorHandler";
 
 //Called by c# using FrameExports.handleUndo()
 export function handleUndo(): void {

@@ -70,30 +70,6 @@ namespace Bloom
 #endif
 			Xpcom.Initialize(xulRunnerPath);
 
-			var errorsToHide = new List<string>
-			{
-				"['Shockwave Flash'] is undefined", // can happen when mootools (used by calendar) is loaded
-				"mootools", // can happen when mootools (used by calendar) is loaded
-				"PlacesCategoriesStarter.js", // happens if you let bloom sit there long enough
-				"PlacesDBUtils", // happens if you let bloom sit there long enough
-				"privatebrowsing", // no idea why it shows this error sometimes
-				"xulrunner", // can happen when mootools (used by calendar) is loaded
-				"FrameExports", // this can happen while switching pages quickly, when the page unloads after the script starts executing.
-				"resource://", // these errors/warnings are coming from internal firefox files
-				"chrome://",   // these errors/warnings are coming from internal firefox files
-				"jar:",        // these errors/warnings are coming from internal firefox files
-
-				//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js
-				//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
-				//it will continue to show in firebug, so i won't forget about it
-				"jquery.js at line 622",
-
-				// Warnings began popping up when we started using http rather than file urls for script tags.
-				// 21 JUL 2014, PH: This is a confirmed bug in firefox (https://bugzilla.mozilla.org/show_bug.cgi?id=1020846)
-				//   and is supposed to be fixed in firefox 33.
-				"is being assigned a //# sourceMappingURL, but already has one"
-			};
-
 			// BL-535: 404 error if system proxy settings not configured to bypass proxy for localhost
 			// See: https://developer.mozilla.org/en-US/docs/Mozilla/Preferences/Mozilla_networking_preferences
 			GeckoPreferences.User["network.proxy.http"] = string.Empty;
@@ -397,16 +373,6 @@ namespace Bloom
 
 			_browser.ConsoleMessage += OnConsoleMessage;
 
-
-			//Developers can turn this on when you're tracking something, but unfortunately the number of false positives
-			//is extremely high. Even caught exceptions get reported here, e.g. libraries trying to figure out which
-			//browser they are running in intentionally test for things that aren't there, and those get reported.
-			//When we upgrate to Firefox 45, which has a totally different debugging system, we can see if maybe we
-			//can turn this back on. Meanwhile, running in a browser is a good way to see real errors.
-
-			//_browser.JavascriptError += OnJavascriptError;
-
-
 			// This makes any zooming zoom everything, not just enlarge text.
 			// May be obsolete, since I don't think we are using the sort of zooming it controls.
 			// Instead we implement zoom ourselves in a more controlled way using transform: scale
@@ -457,29 +423,6 @@ namespace Bloom
 			foreach (var action in list)
 				action();
 			_timingNotificationRequests.Remove(id);
-		}
-
-		private void OnJavascriptError(object sender, JavascriptErrorEventArgs e)
-		{
-			if(e.Message.Contains("sourceMapping"))
-				return;
-			var file = e.Filename.Split(new char[] { '/' }).Last();
-			var line = (int) e.Line;
-			var dir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
-			var mapPath = Path.Combine(dir, file + ".map");
-			if(RobustFile.Exists(mapPath))
-			{
-				var consumer = new SourceMapDotNet.SourceMapConsumer(RobustFile.ReadAllText(mapPath));
-				foreach(var match in consumer.OriginalPositionsFor(line))
-				{
-					file = match.File;
-					line = match.LineNumber;
-					break;
-				}
-			}
-			Debug.WriteLine("{0} in {1}:{2}", e.Message,file, line);
-			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, e.Message,
-				string.Format("{0} in {1}:{2}", e.Message, file, line));
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
@@ -1170,8 +1113,9 @@ namespace Bloom
 		private void ReportJavaScriptError(GeckoJavaScriptException ex)
 		{
 			// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
-			// more than a toast, even for developers.
-			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred", ex.Message, ex);
+			// more than a toast, even for developers. But they should now be reported through CommonApi.HandleJavascriptError.
+			// Any that still come here we want to know about.
+			NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", ex.Message, ex);
 		}
 
 		HashSet<string> _knownEvents = new HashSet<string>();

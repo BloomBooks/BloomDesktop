@@ -295,12 +295,7 @@ namespace Bloom.Api
 				return ProcessAnyFileContent(info, localPath);
 			}
 
-			if (localPath.StartsWith("error", StringComparison.InvariantCulture))
-			{
-				ProcessError(info);
-				return true;
-			}
-			else if (localPath.StartsWith("i18n/", StringComparison.InvariantCulture))
+			if (localPath.StartsWith("i18n/", StringComparison.InvariantCulture))
 			{
 				if (ProcessI18N(localPath, info))
 					return true;
@@ -352,25 +347,6 @@ namespace Bloom.Api
 				pathArray[1] = ':';
 			return new String(pathArray);
 #endif
-		}
-
-
-		private static void ProcessError(IRequestInfo info)
-		{
-			// pop-up the error messages if a debugger is attached or an environment variable is set
-			var popUpErrors = Debugger.IsAttached || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DEBUG_BLOOM"));
-
-			var post = info.GetPostDataWhenFormEncoded();
-
-			// log the error message
-			var errorMsg = post["message"] + Environment.NewLine + "File: " + post["url"].FromLocalhost()
-				+ Environment.NewLine + "Line: " + post["line"] + " Column: " + post["column"] + Environment.NewLine;
-
-			Logger.WriteMinorEvent(errorMsg);
-			Console.Out.WriteLine(errorMsg);
-
-			if (popUpErrors)
-				Shell.DisplayProblemToUser(errorMsg);
 		}
 
 		private bool ProcessI18N(string localPath, IRequestInfo info)

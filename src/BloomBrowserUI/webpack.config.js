@@ -31,7 +31,9 @@ module.exports = {
     devtool: "source-map",
     //Bloom is not (yet) one webapp; it's actually a several loosely related ones.
     //So we have multiple "entry points" that we need to emit. Fortunately the webpack 4
-    //optimization.splitChunks extracts the code that is common to more than one into "commonBundle.js"
+    //optimization.splitChunks extracts the code that is common to more than one into "commonBundle.js".
+    // The root file for each bundle should import errorHandler.ts to enable Bloom's custom
+    // error handling for that web page.
     entry: {
         editTabRootBundle: "./bookEdit/editViewFrame.ts",
         readerSetupBundle:

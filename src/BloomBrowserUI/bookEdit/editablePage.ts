@@ -8,6 +8,7 @@ import { bootstrap } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/jquery.i18n.custom.ts"; //localize()
 import "../lib/jquery.myimgscale.js"; //scaleImage()
+import "errorHandler";
 
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.

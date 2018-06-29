@@ -4,6 +4,7 @@ import * as ReactDOM from "react-dom";
 import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import "./pageControls.less";
+import "errorHandler";
 
 // This is one of the root files for our webpack build, the root from which
 // pageControlsBundle.js is built. Currently, contrary to our usual practice,

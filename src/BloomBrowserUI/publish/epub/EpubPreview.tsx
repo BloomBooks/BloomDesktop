@@ -1,6 +1,7 @@
 import * as React from "react";
 import { IUILanguageAwareProps } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
+import "errorHandler";
 
 interface IPreviewProps extends IUILanguageAwareProps {
     lifetimeLabel: string;
