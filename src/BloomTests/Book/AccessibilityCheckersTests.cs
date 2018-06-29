@@ -231,6 +231,23 @@ namespace BloomTests.Book
 			Assert.AreEqual(numberOfErrorsExpected, results.Count(), "Number of errors does not match expected");
 		}
 
+		[Test]
+		public void CheckAudioForAllImageDescriptions_AudioFolderMissing_JustReturnsNormalMissingAudioError()
+		{
+			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup bloom-imageDescription'>
+								<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{
+					_collectionSettings.Language1Iso639Code
+				}'>
+									{"<p><span id='bogus123' class='audio-sentence'>A flower.</span></p>"}
+								</div>
+							</div>
+						</div>");
+			SIL.IO.RobustIO.DeleteDirectoryAndContents(AudioProcessor.GetAudioFolderPath(testBook.FolderPath));
+			var results = AccessibilityCheckers.CheckAudioForAllImageDescriptions(testBook);
+			Assert.AreEqual(1, results.Count(), "Number of errors does not match expected");
+		}
+
+
 		private Bloom.Book.Book GetBookWithImage(string translationGroupText, string pageNumber = "1",
 			string pageLabel = "Some page label")
 		{
