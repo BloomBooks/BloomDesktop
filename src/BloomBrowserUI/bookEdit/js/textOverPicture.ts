@@ -7,6 +7,7 @@
 
 import { fireCSharpEditEvent } from "./bloomEditing";
 import { EditableDivUtils } from "./editableDivUtils";
+import { BloomApi } from "../../utils/bloomApi";
 
 const kSocketName = "webSocket";
 
@@ -96,7 +97,7 @@ class TextOverPictureManager {
         // things in for editing.
         // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
         // makeTextOverPictureBoxDraggableClickableAndResizable to get called by bloomEditing.ts.
-        fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
+        BloomApi.post("toolbox/saveChangesAndRethinkPageEvent");
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
