@@ -256,6 +256,8 @@ namespace Bloom.web.controllers
 			var imageNameToPages = new Dictionary<string, List<string>>();
 			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(domBody as XmlElement))
 			{
+				if (IsElementNotInAPage(img))
+					continue;
 				var name = HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded;
 				var pageNum = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(img);
 				if (string.IsNullOrWhiteSpace(pageNum))
@@ -274,6 +276,11 @@ namespace Bloom.web.controllers
 				}
 			}
 			return imageNameToPages;
+		}
+
+		private static bool IsElementNotInAPage(XmlElement element)
+		{
+			return !(element.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]") is XmlElement);
 		}
 
 		/// <summary>
