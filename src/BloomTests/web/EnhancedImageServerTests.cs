@@ -15,6 +15,7 @@ using SIL.IO;
 using Bloom;
 using Bloom.ImageProcessing;
 using Bloom.Api;
+using Bloom.web.controllers;
 using SIL.Reporting;
 using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
 
@@ -230,19 +231,21 @@ namespace BloomTests.web
 		[Test]
 		public void Topics_ReturnsFrenchFor_NoTopic_()
 		{
-			Assert.AreEqual("Aucun thème", QueryServerForJson("topics")["NoTopic"].ToString());
+			Assert.AreEqual("Aucun thème", QueryServerForJson("api/topics")["NoTopic"].ToString());
 		}
 
 		[Test]
 		public void Topics_ReturnsFrenchFor_Dictionary_()
 		{
-			Assert.AreEqual("Dictionnaire", QueryServerForJson("topics")["Dictionary"]);
+			Assert.AreEqual("Dictionnaire", QueryServerForJson("api/topics")["Dictionary"]);
 		}
 
 		private Dictionary<string, string> QueryServerForJson(string query)
 		{
 			using (var server = CreateImageServer())
 			{
+				var commonApi = new CommonApi(null, null);
+				commonApi.RegisterWithServer(server);
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + query);
 				server.MakeReply(transaction);
 				Debug.WriteLine(transaction.ReplyContents);

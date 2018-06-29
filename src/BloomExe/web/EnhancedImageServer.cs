@@ -130,7 +130,6 @@ namespace Bloom.Api
 
 		public string CurrentPageContent { get; set; }
 		public string ToolboxContent { get; set; }
-		public bool AuthorMode { get; set; }
 
 		public Book.Book CurrentBook => _bookSelection?.CurrentSelection;
 
@@ -418,85 +417,8 @@ namespace Bloom.Api
 					list.Sort();
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
 					return true;
-				case "api/uiLanguages":
-					// Returns json with property languages, an array of objects (one for each UI language Bloom knows about)
-					// each having label (what to show in a menu) and tag (the language code).
-					// Used in language select control in hint bubbles tab of text box properties dialog
-					// brought up from cog control in origami mode.
-
-					var langs = new List<object>();
-					foreach (var code in L10NSharp.LocalizationManager.GetAvailableLocalizedLanguages())
-					{
-						var langItem = WorkspaceView.CreateLanguageItem(code);
-						langs.Add(new {label=langItem.MenuText, tag=code});
-					}
-					info.ContentType = "application/json";
-					info.WriteCompleteOutput(JsonConvert.SerializeObject(new {languages=langs}));
-					return true;
-				case "api/bubbleLanguages":
-					// Returns a list of lang codes such that if a block has hints in multiple languages,
-					// we prefer the one that comes first in the list.
-					// Used to select the best label to show in a hint bubble when a bloom-translationGroup has multiple
-					// labels with different languages.
-					var bubbleLangs = new List<string>();
-					bubbleLangs.Add(LocalizationManager.UILanguageId);
-					if (_bookSelection.CurrentSelection.MultilingualContentLanguage2 != null)
-						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage2);
-					if (_bookSelection.CurrentSelection.MultilingualContentLanguage3 != null)
-						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage3);
-					bubbleLangs.AddRange(new [] { "en", "fr", "sp", "ko", "zh-Hans"});
-					// If we don't have a hint in the UI language or any major language, it's still
-					// possible the page was made just for this langauge and has a hint in that language.
-					// Not sure whether this should be before or after the list above.
-					// Definitely wants to be after UILangage, otherwise we get the surprising result
-					// that in a French collection these hints stay French even when all the rest of the
-					// UI changes to English.
-					bubbleLangs.Add(_bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code);
-					// if it isn't available in any of those we'll arbitrarily take the first one.
-					info.ContentType = "application/json";
-					info.WriteCompleteOutput(JsonConvert.SerializeObject(new { langs = bubbleLangs }));
-					return true;
-				case "api/authorMode":
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
-					return true;
-				case "api/topics":
-					return GetTopicList(info);
 			}
 			return ProcessAnyFileContent(info, localPath);
-		}
-
-		private static bool GetTopicList(IRequestInfo info)
-		{
-			var keyToLocalizedTopicDictionary = new Dictionary<string, string>();
-			foreach (var topic in BookInfo.TopicsKeys)
-			{
-				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic,
-					@"shows in the topics chooser in the edit tab");
-				keyToLocalizedTopicDictionary.Add(topic, localized);
-			}
-			string localizedNoTopic = LocalizationManager.GetDynamicString("Bloom", "Topics.NoTopic", "No Topic",
-				@"shows in the topics chooser in the edit tab");
-			var arrayOfKeyValuePairs = from key in keyToLocalizedTopicDictionary.Keys
-				orderby keyToLocalizedTopicDictionary[key]
-				select string.Format("\"{0}\": \"{1}\"",key,keyToLocalizedTopicDictionary[key]);
-			var pairs = arrayOfKeyValuePairs.Concat(",");
-			info.ContentType = "application/json";
-			var data = string.Format("{{\"NoTopic\": \"{0}\", {1} }}", localizedNoTopic, pairs);
-
-			info.WriteCompleteOutput(data);
-			/*			var data = new {NoTopic = localizedNoTopic, pairs = arrayOfKeyValuePairs};
-			 * var serializeObject = JsonConvert.SerializeObject(data, new JsonSerializerSettings
-						{
-							TypeNameHandling = TypeNameHandling.None,
-							TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
-						});
-						*/
-			//info.WriteCompleteOutput(serializeObject);
-
-
-
-			return true;
 		}
 
 		private bool ProcessAnyFileContent(IRequestInfo info, string localPath)

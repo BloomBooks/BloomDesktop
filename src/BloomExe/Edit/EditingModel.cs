@@ -13,6 +13,7 @@ using Bloom.Collection;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using Bloom.MiscUI;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
@@ -682,7 +683,7 @@ namespace Bloom.Edit
 			InsertLabelAndLayoutTogglePane(_domForCurrentPage);
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 			CheckForBL2634("made simulated page");
-			_server.AuthorMode = CanAddPages;
+			CommonApi.AuthorMode = CanAddPages;
 		}
 
 		private static void InsertLabelAndLayoutTogglePane(HtmlDom dom)
