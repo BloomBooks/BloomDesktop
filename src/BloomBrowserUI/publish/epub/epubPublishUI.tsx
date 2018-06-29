@@ -138,6 +138,9 @@ class EpubPublishUI extends React.Component<
                         <Link
                             id="a11yCheckerLink"
                             l10nKey="AccessibilityCheck.AccessibilityChecker"
+                            // Need href defined to maintain normal link UI behavior,
+                            // but putting in "dummy" causes an error.
+                            href=""
                             onClick={() =>
                                 BloomApi.post(
                                     "accessibilityCheck/showAccessibilityChecker"
