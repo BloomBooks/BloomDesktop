@@ -11,11 +11,14 @@ sudo apt-get install -y curl
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
-# The next line comes from https://daisy.github.io/ace/help/troubleshooting/
+# The next line comes from https://daisy.github.io/ace/help/troubleshooting/.
 sudo /usr/bin/npm install -g @daisy/ace --unsafe-perm=true --allow-root
 
 # The installation from "npm install -g" has broken permissions: only root can
 # access a lot of files added for chrome.  Fix that by giving everyone read
 # permission for everything.
-cd /usr/lib/node_modules/@daisy/ace/node_modules/puppeteer/.local-chromium/
-sudo chmod --recursive +r *
+sudo chmod --recursive +r /usr/lib/node_modules/@daisy/ace/node_modules/puppeteer/.local-chromium/*
+
+# The installation also leaves some files in the user's area belonging to root.
+# This also needs to be fixed.
+sudo chown -R $USER:$(id -gn $USER) $HOME/.config
