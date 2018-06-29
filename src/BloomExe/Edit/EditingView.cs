@@ -111,8 +111,63 @@ namespace Bloom.Edit
 			_cutButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 			_pasteButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 			_copyButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+
+			// Prevent the layout choices and book language dropdown menus from closing
+			// immediately in Linux/Gnome (default for ubuntu 18.04 aka bionic).
+			_layoutChoices.DropDown.Closing += DropDown_Closing;
+			_contentLanguagesDropdown.DropDown.Closing += DropDown_Closing;
+			_layoutChoices.DropDown.Opening += DropDown_Opening;
+			_contentLanguagesDropdown.DropDown.Opening += DropDown_Opening;
 #endif
 		}
+
+#if __MonoCS__
+		private bool _ignoreNextAppFocusChange;
+		/// <summary>
+		/// Prevent the book language and layout dropdown menus from closing prematurely.
+		/// This is a big problem for Gnome, which is the default window manager in Ubuntu 18.04.
+		/// (This must be due to the way Gnome sends out various windowing messages.)
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6107.
+		/// See also WorkspaceView.DropDown_Closing (UI language menu dropdown), which has largely
+		/// been in place for some time.  This is similar to that method.
+		/// The side-effect of this method on systems other than Gnome is that the first click
+		/// outside the menu will not close it.  But since we don't have a good way to detect
+		/// Gnome, this seems like a minimal price to pay for allowing Gnome to work.
+		/// </remarks>
+		void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+		{
+			// ReSharper disable once SwitchStatementMissingSomeCases
+			switch (e.CloseReason)
+			{
+				case ToolStripDropDownCloseReason.AppFocusChange:
+					// With Linux/Gnome, a spurious focus change happens as soon as the menu is opened.
+					// So we want to ignore the first closing caused by AppFocusChange.
+					e.Cancel = _ignoreNextAppFocusChange;
+					break;
+				case ToolStripDropDownCloseReason.Keyboard:
+					// "reason" is Keyboard, but this seems to be generated just by moving the mouse over
+					// the adjacent (visible) button.
+					var mousePos = _layoutChoices.Owner.PointToClient(MousePosition);
+					var bounds = (sender == _layoutChoices.DropDown) ? _contentLanguagesDropdown.Bounds : _layoutChoices.Bounds;
+					if (bounds.Contains(mousePos))
+					{
+						e.Cancel = true; // probably a false positive
+					}
+					break;
+				default: // includes ItemClicked, CloseCalled, AppClicked
+					break;
+			}
+			_ignoreNextAppFocusChange = false;
+			Debug.WriteLine("DEBUG EditingView.DropDown_Closing: reason={0}, cancel={1}", e.CloseReason.ToString(), e.Cancel);
+		}
+
+		void DropDown_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			_ignoreNextAppFocusChange = true;
+		}
+#endif
 
 		/// <summary>
 		/// Might add a menu item to the Gecko context menu.
