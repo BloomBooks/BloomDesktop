@@ -142,7 +142,8 @@ namespace Bloom.web.controllers
 							//Whatever the audio extension, here we assume other parts of Bloom are taking care of that,
 							// and just want to see some file with a base name that matches the id.
 							// Note: GlobFiles handles the case of the audioFolder being non-existant just fine.
-							if (!audioFolderInfo.GlobFiles(id + ".*").Any())
+							if (!Directory.Exists(audioFolderInfo.FullName) ||
+								!audioFolderInfo.GlobFiles(id + ".*").Any())
 								return childElement.InnerText;
 							// else go on to the sibling of this child
 						} else if (childElement.Name == "label")

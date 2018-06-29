@@ -52,7 +52,16 @@ export class CheckItem extends React.Component<IProps, IState> {
                 this.setState({
                     checkResult: {
                         resultClass: "unknown",
-                        problems: [error.response.statusText]
+                        problems: [
+                            {
+                                // note "file not found" here may have nothing to do with files
+                                // it may just be a poor choice of return codes.
+                                message: `Error from Bloom Server: ${
+                                    error.message
+                                } ${error.response.statusText}`,
+                                problemText: ""
+                            }
+                        ]
                     }
                 });
             });
