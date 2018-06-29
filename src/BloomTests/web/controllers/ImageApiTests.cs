@@ -307,6 +307,24 @@ namespace BloomTests.web.controllers
 		}
 
 		[Test]
+		public void GetFilteredImageNameToPagesDictionary_WorksWithBishmallahImageInDataDiv()
+		{
+			const string xhtml = @"
+<body>
+	<div id=""bloomDataDiv"">
+		<div lang=""*"" data-book=""bishmallah"">
+			<img alt="""" src=""myBishmallahImage.png""/>
+		</div>
+	</div>
+</body>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(xhtml);
+			var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(dom.SelectSingleNode("//body"));
+			Assert.AreEqual(0, imageNameToPages.Keys.Count, "Unique image is not on a bloom-page");
+		}
+
+		[Test]
 		public void CollectFormattedCredits_SingleCredit_Works()
 		{
 			_creditsToFormat.Add("my credit", new List<string> {"Front Cover", "2"});

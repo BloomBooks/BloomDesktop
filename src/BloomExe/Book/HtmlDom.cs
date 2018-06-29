@@ -1812,7 +1812,14 @@ namespace Bloom.Book
 		public static string GetNumberOrLabelOfPageWhereElementLives(XmlElement childElement)
 		{
 			var pageElement = childElement.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]") as XmlElement;
-			// optional becuase unit tests might be missing data-page-number
+			if (pageElement == null)
+			{
+#if DEBUG
+				throw new ApplicationException("Don't feed non-page images to this method!");
+#endif
+				return "unknown";
+			}
+			// optional because unit tests might be missing data-page-number
 			var pageNumber = pageElement.GetOptionalStringAttribute("data-page-number","unknown");
 			if (
 				// front matter won't have a pageNumber
