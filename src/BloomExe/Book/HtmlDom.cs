@@ -1812,7 +1812,15 @@ namespace Bloom.Book
 		public static string GetNumberOrLabelOfPageWhereElementLives(XmlElement childElement)
 		{
 			var pageElement = childElement.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]") as XmlElement;
-			// optional becuase unit tests might be missing data-page-number
+			// BL-6167: It's possible to have an img tag in the data-div, in which case it isn't inside of a bloom-page at all!
+			if (pageElement == null)
+			{
+				var databookElement = childElement.SelectSingleNode("ancestor-or-self::div[@data-book]") as XmlElement;
+				if (databookElement != null)
+					return databookElement.GetAttribute("data-book"); // at least we can say which data-book item it came from
+				return string.Empty;
+			}
+			// optional because unit tests might be missing data-page-number
 			var pageNumber = pageElement.GetOptionalStringAttribute("data-page-number","unknown");
 			if (
 				// front matter won't have a pageNumber

@@ -307,6 +307,28 @@ namespace BloomTests.web.controllers
 		}
 
 		[Test]
+		public void GetFilteredImageNameToPagesDictionary_WorksWithBishmallahImageInDataDiv()
+		{
+			const string xhtml = @"
+<body>
+	<div id=""bloomDataDiv"">
+		<div lang=""*"" data-book=""bishmallah"">
+			<img alt="""" src=""myBishmallahImage.png""/>
+		</div>
+	</div>
+</body>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(xhtml);
+			var imageNameToPages = _apiObject.GetFilteredImageNameToPagesDictionary(dom.SelectSingleNode("//body"));
+			Assert.AreEqual(1, imageNameToPages.Keys.Count, "Should be only 1 unique image");
+			Assert.IsTrue(imageNameToPages.ContainsKey("myBishmallahImage.png"), "Missing bishmallah image");
+			var bishmallah = imageNameToPages["myBishmallahImage.png"];
+			Assert.AreEqual(1, bishmallah.Count, "Wrong number of images");
+			Assert.AreEqual(new SortedSet<string> { "bishmallah" }, bishmallah, "Should return data-book name");
+		}
+
+		[Test]
 		public void CollectFormattedCredits_SingleCredit_Works()
 		{
 			_creditsToFormat.Add("my credit", new List<string> {"Front Cover", "2"});
