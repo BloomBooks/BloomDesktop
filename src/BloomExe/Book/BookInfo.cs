@@ -476,10 +476,10 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Check whether this book should be shown.  If it is not experimental, the answer is always "yes".
-		/// If it is experimental, then show it only if the user wants experimental features.
+		/// Check whether this book (or its pages) should be shown as a source.  If it is not experimental, the answer
+		/// is always "yes".  If it is experimental, then show it only if the user wants experimental features.
 		/// </summary>
-		internal bool ShowThisBook()
+		internal bool ShowThisBookAsSource()
 		{
 			return !IsExperimental || Settings.Default.ShowExperimentalFeatures;
 		}
