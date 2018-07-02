@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -12,6 +13,7 @@ using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using ApplicationException = System.ApplicationException;
+using Timer = System.Windows.Forms.Timer;
 
 namespace Bloom.web.controllers
 {
@@ -39,6 +41,7 @@ namespace Bloom.web.controllers
 			server.RegisterEndpointHandler("topics", HandleTopics, false);
 			server.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
 			server.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
+			server.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
 		}
 
 		/// <summary>
@@ -124,16 +127,84 @@ namespace Bloom.web.controllers
 
 		public void HandleJavascriptError(ApiRequest request)
 		{
+			lock (lockJsError)
+			{
+				preliminaryJavascriptError = null; // got a real report.
+			}
 			lock (request)
 			{
 				var details = DynamicJson.Parse(request.RequiredPostJson());
-				var ex = new ApplicationException(details.message + Environment.NewLine + details.stack);
-				// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
-				// more than a toast, even for developers.
-				// It would seem logical that we should consider Browser.SuppressJavaScriptErrors here,
-				// but somehow none are being reported while making an epub preview, which was its main
-				// purpose. So I'm leaving that out until we know we need it.
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred", details.message, ex);
+				ReportJavascriptError(details);
+				request.PostSucceeded();
+			}
+		}
+
+		private static void ReportJavascriptError(dynamic details)
+		{
+			var ex = new ApplicationException(details.message + Environment.NewLine + details.stack);
+			// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
+			// more than a toast, even for developers.
+			// It would seem logical that we should consider Browser.SuppressJavaScriptErrors here,
+			// but somehow none are being reported while making an epub preview, which was its main
+			// purpose. So I'm leaving that out until we know we need it.
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred", details.message, ex);
+		}
+
+		object lockJsError = new object();
+		private dynamic preliminaryJavascriptError;
+		private Timer jsErrorTimer;
+
+		// This api receives javascript errors with stack dumps that have not been converted to source.
+		// Javascript code will then attempt to convert them and report using HandleJavascriptError.
+		// In case that fails, after 200ms we will make the report using the unconverted stack.
+		public void HandlePreliminaryJavascriptError(ApiRequest request)
+		{
+			lock (request)
+			{
+				lock (lockJsError)
+				{
+					if (preliminaryJavascriptError != null)
+					{
+						// If we get more than one of these without a real report, the first is most likely to be useful, I think.
+						// This also avoids ever having more than one timer running.
+						request.PostSucceeded();
+						return;
+					}
+					preliminaryJavascriptError = DynamicJson.Parse(request.RequiredPostJson());
+				}
+
+				var form = Application.OpenForms.Cast<Form>().Last();
+				// If we don't have an active Bloom form, I think we can afford to discard this report.
+				if (form != null)
+				{
+					form.BeginInvoke((Action) (() =>
+					{
+						// Arrange to report the error if we don't get a better report of it in 200ms.
+						jsErrorTimer?.Stop(); // probably redundant
+						jsErrorTimer?.Dispose(); // left over from previous report that had follow-up?
+						jsErrorTimer = new Timer {Interval = 200};
+						jsErrorTimer.Tick += (sender, args) =>
+						{
+							jsErrorTimer.Stop(); // probably redundant?
+							// not well documented but found some evidence this is OK inside event handler.
+							jsErrorTimer.Dispose();
+							jsErrorTimer = null;
+
+							dynamic temp;
+							lock (lockJsError)
+							{
+								temp = preliminaryJavascriptError;
+								preliminaryJavascriptError = null;
+							}
+
+							if (temp != null)
+							{
+								ReportJavascriptError(temp);
+							}
+						};
+						jsErrorTimer.Start();
+					}));
+				}
 				request.PostSucceeded();
 			}
 		}
