@@ -1115,7 +1115,8 @@ namespace Bloom
 			// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
 			// more than a toast, even for developers. But they should now be reported through CommonApi.HandleJavascriptError.
 			// Any that still come here we want to know about.
-			NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", ex.Message, ex);
+			// But, myseriously, we're still getting more than we can deal with, so going back to toast-only for now.
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", ex.Message, ex);
 		}
 
 		HashSet<string> _knownEvents = new HashSet<string>();
