@@ -2,6 +2,7 @@
 import * as $ from "jquery";
 import * as StackTrace from "stacktrace-js";
 import { BloomApi } from "../utils/bloomApi";
+import Axios from "axios";
 
 // This file implements custom Bloom global error handling.
 // It should be imported by the root module in each bundle.
@@ -9,13 +10,41 @@ import { BloomApi } from "../utils/bloomApi";
 // This function is shared by code that wants to report errors but for some
 // reason shouldn't do so by throwing.
 export function reportError(message: string, stack: string) {
-    BloomApi.postData("common/error", { message: message, stack: stack });
+    if (typeof (window as any).__karma__) {
+        console.log(
+            "skipping post to common/error because in unit tests: \r\n" +
+                message +
+                "\r\n" +
+                stack
+        );
+        return;
+    }
+    console.log("Posting to common/error " + message + " " + stack);
+    // we don't want to use the error handling bloomapi wrapper here...
+    // else we will recursively report errors about attempts to report errors
+    Axios.post("common/error", { message: message, stack: stack }).catch(e => {
+        console.log("*****Got error trying report error");
+    });
 }
 
 export function reportPreliminaryError(message: string, stack: string) {
-    BloomApi.postData("common/preliminaryError", {
+    if (typeof (window as any).__karma__) {
+        console.log(
+            "skipping post to common/error because in unit tests: \r\n" +
+                message +
+                "\r\n" +
+                stack
+        );
+        return;
+    }
+    // we don't want to use the error handling bloomapi wrapper here...
+    // else we will recursively report errors about attempts to report errors
+    //    BloomApi.postData("common/preliminaryError", {
+    Axios.post("common/preliminaryError", {
         message: message,
         stack: stack
+    }).catch(e => {
+        console.log("*****Got error trying report preliminaryError");
     });
 }
 
