@@ -508,7 +508,7 @@ namespace Bloom.CollectionTab
 			{
 				try
 				{
-					if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection || bookInfo.ShowThisBook())
+					if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection || bookInfo.ShowThisBookAsSource())
 					{
 						AddOneBook(bookInfo, flowLayoutPanel, collection);
 						loadedAtLeastOneBook = true;

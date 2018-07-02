@@ -299,7 +299,7 @@ namespace Bloom.web.controllers
 		{
 			var folderPath = Path.GetDirectoryName(templatePath);
 			var info = new BookInfo(folderPath, true);
-			return !info.ShowThisBook();
+			return !info.ShowThisBookAsSource();
 		}
 
 		private dynamic GetPageGroup(string path)
