@@ -13,7 +13,10 @@ export class BloomApi {
     // if the server unexpectedly returns a failure result
     // (or an exception is thrown in the .then code)
     // You can also pass a get, post, etc. call without a .then().
-    public static wrapAxios(call: AxiosPromise | Promise<void>) {
+    public static wrapAxios(
+        call: AxiosPromise | Promise<void>,
+        report: boolean = true
+    ) {
         // Save the place where the original axios call was made.
         // The stack in the error passed to catch is usually not very
         // useful, containing just a few levels from the axios code
@@ -28,6 +31,9 @@ export class BloomApi {
         // performance-critical calls.
         var axiosCallState = new Error("dummy");
         call.catch(error => {
+            if (!report) {
+                return;
+            }
             // We want to report a two-part stack: the one from axiosCallState
             // showing where the request came from, and the one from our
             // error argument, which may sometimes show where the code in a
@@ -133,6 +139,23 @@ export class BloomApi {
         } else {
             BloomApi.wrapAxios(axios.post(this.kBloomApiPrefix + urlSuffix));
         }
+    }
+
+    // Do a post (like duplicate page) that might result in navigating the browser
+    // containing the code that calls post. This messes up the network connection
+    // and results in spurious network errors being reported.
+    // Note that this method deliberately doesn't have a successCallback.
+    // We are suppressing ALL exceptions from the post.
+    // If we one day need to do this with a callback, we will need to think very
+    // hard about possible exceptions during the callback (and the possibility
+    // that the callback is somehow messed up by the page reloading).
+    public static postThatMightNavigate(urlSuffix: string) {
+        // The internal catch should suppress any errors. In case that fails (which it has), passing
+        // false to wrapAxios further suppresses any error reporting.
+        BloomApi.wrapAxios(
+            axios.post(this.kBloomApiPrefix + urlSuffix).catch(),
+            false
+        );
     }
 
     // This method is used to post something from Bloom with data.
