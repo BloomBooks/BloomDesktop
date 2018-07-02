@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
 using Newtonsoft.Json;
@@ -31,34 +30,6 @@ namespace Bloom.Edit
 			UpdateState(); // tell React model that the C# state changed
 		}
 
-
-		// kick off an operation that typically will refresh the current page.
-		// We want to post success BEFORE we proceed with an operation that will unload the page that sent
-		// the request, otherwise, we tend to get spurious error messages, depending on just how unloaded
-		// the page is by the time the post success message arrives.
-		// Most of these operations also need to happen on the UI thread, so the BeginInvoke
-		// serves a double purpose by achieving that and delaying the action.
-		// Note that we never try to call EndInvoke. This is OK for control.BeingInvoke;
-		// any unhandled exceptions will be sent to the unhandled event hander eventually.
-		void ClaimSuccessThenDo(ApiRequest request, Action doSomething)
-		{
-			request.PostSucceeded();
-			if (Program.RunningUnitTests)
-			{
-				doSomething();
-				return;
-			}
-
-			var syncForm = Application.OpenForms.Cast<Form>().Last();
-			if (syncForm != null)
-			{
-				syncForm.BeginInvoke(doSomething);
-				return;
-			}
-			// strange situation...maybe we can still do it?
-			doSomething();
-		}
-
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
 			server.RegisterEndpointHandler(kApiUrlPart + "requestState", request =>
@@ -76,22 +47,22 @@ namespace Bloom.Edit
 
 			server.RegisterEndpointHandler(kApiUrlPart + "addPage", request =>
 			{
-				ClaimSuccessThenDo(request, () => AddPageButton_Click());
-			}, false);
+				AddPageButton_Click();
+				request.PostSucceeded();
+			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "duplicatePage", request =>
 			{
-				ClaimSuccessThenDo(request, () =>_editingModel.OnDuplicatePage());
-			}, false);
+				_editingModel.OnDuplicatePage();
+				request.PostSucceeded();
+			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "deletePage", request =>
 			{
-				ClaimSuccessThenDo(request, () =>
-				{
-					if (ConfirmRemovePageDialog.Confirm())
-						_editingModel.OnDeletePage();
-				});
-			}, false);
+				if (ConfirmRemovePageDialog.Confirm())
+					_editingModel.OnDeletePage();
+				request.PostSucceeded();
+			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "lockBook", request =>
 			{
