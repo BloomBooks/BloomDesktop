@@ -12,6 +12,13 @@ export function reportError(message: string, stack: string) {
     BloomApi.postData("common/error", { message: message, stack: stack });
 }
 
+export function reportPreliminaryError(message: string, stack: string) {
+    BloomApi.postData("common/preliminaryError", {
+        message: message,
+        stack: stack
+    });
+}
+
 // This collects javascript exceptions not handled in a try...catch block and forwards them to the server.
 // Catching them like this allows us to apply stacktrace-js to the stack, converting it
 // from locations in our packed bundles to locations in the original source files.
@@ -19,6 +26,9 @@ export function reportError(message: string, stack: string) {
 // way of dealing with unhandled exceptions, and helps us distinguish thrown
 // from unhandled ones, which some Gecko45 reporting doesn't.
 window.onerror = function(msg, url, line, col, error) {
+    // Make a preliminary report, which will be discarded if the stack conversion succeeds.
+    reportPreliminaryError(msg.toString(), error.stack);
+    // Try to make the report using source stack.
     StackTrace.fromError(error).then(stackframes => {
         var stringifiedStack = stackframes
             .map(function(sf) {

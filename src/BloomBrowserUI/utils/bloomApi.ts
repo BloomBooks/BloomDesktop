@@ -1,6 +1,6 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosPromise } from "axios";
 import * as StackTrace from "stacktrace-js";
-import { reportError } from "../lib/errorHandler";
+import { reportError, reportPreliminaryError } from "../lib/errorHandler";
 
 export class BloomApi {
     private static kBloomApiPrefix = "/bloom/api/";
@@ -38,6 +38,30 @@ export class BloomApi {
             // (throwing an exception here bypasses our window.onerror function
             // altogether, for some unknown reason; calling window.onerror with a composed stack
             // defeats its stack mapping.)
+
+            var msg: string;
+            if (error && error.message && error.stack) {
+                msg = "Unexpected promise failure: " + error.message;
+                if (error.response && error.response.statusText) {
+                    msg += " (response: " + error.response.statusText + ")";
+                }
+            } else {
+                msg = "Unexpected promise failure: " + error;
+            }
+
+            // First we make a preliminary report that doesn't involve going to the server for source maps.
+            // See the full report code below for comments. This should be the same report as generated
+            // by the main report code below, except for not converting the stacks.
+            if (error && error.message && error.stack) {
+                reportPreliminaryError(
+                    msg,
+                    axiosCallState.stack + "\ninner exception\n" + error.stack
+                );
+            } else {
+                reportPreliminaryError(msg, axiosCallState.stack);
+            }
+
+            // If all goes well this better report will replace it:
             StackTrace.fromError(axiosCallState).then(stackframes => {
                 var stringifiedStackAxiosCall = stackframes
                     .map(function(sf) {
@@ -55,14 +79,6 @@ export class BloomApi {
                                 return sf.toString();
                             })
                             .join("\n");
-                        var msg =
-                            "Unexpected promise failure: " + error.message;
-                        if (error.response && error.response.statusText) {
-                            msg +=
-                                " (response: " +
-                                error.response.statusText +
-                                ")";
-                        }
                         reportError(
                             msg,
                             stringifiedStackAxiosCall +
@@ -74,10 +90,7 @@ export class BloomApi {
                     // don't know what error is, can't get a stack from it, just include
                     // whatever JavaScript can make of it in the report, along with the
                     // main stack.
-                    reportError(
-                        "Unexpected promise failure: " + error,
-                        stringifiedStackAxiosCall
-                    );
+                    reportError(msg, stringifiedStackAxiosCall);
                 }
             });
         });
