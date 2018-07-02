@@ -133,25 +133,39 @@ namespace Bloom.web.controllers
 			}
 			lock (request)
 			{
-				var details = DynamicJson.Parse(request.RequiredPostJson());
-				ReportJavascriptError(details);
+				ReportJavascriptError(request.RequiredPostJson());
 				request.PostSucceeded();
 			}
 		}
 
-		private static void ReportJavascriptError(dynamic details)
+		private static void ReportJavascriptError(string detailsJson)
 		{
-			var ex = new ApplicationException(details.message + Environment.NewLine + details.stack);
+			string detailsMessage;
+			string detailsStack;
+			try
+			{
+				var details = DynamicJson.Parse(detailsJson);
+				detailsMessage = details.message;
+				detailsStack = details.stack;
+			}
+			catch (Exception e)
+			{
+				// Somehow a problem here seems to kill Bloom. So in desperation we catch everything.
+				detailsMessage = "Javascript error reporting failed: " + e.Message;
+				detailsStack = detailsJson;
+			}
+
+			var ex = new ApplicationException(detailsMessage + Environment.NewLine + detailsStack);
 			// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
 			// more than a toast, even for developers.
 			// It would seem logical that we should consider Browser.SuppressJavaScriptErrors here,
 			// but somehow none are being reported while making an epub preview, which was its main
 			// purpose. So I'm leaving that out until we know we need it.
-			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred", details.message, ex);
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred", detailsMessage, ex);
 		}
 
 		object lockJsError = new object();
-		private dynamic preliminaryJavascriptError;
+		private string preliminaryJavascriptError;
 		private Timer jsErrorTimer;
 
 		// This api receives javascript errors with stack dumps that have not been converted to source.
@@ -170,7 +184,7 @@ namespace Bloom.web.controllers
 						request.PostSucceeded();
 						return;
 					}
-					preliminaryJavascriptError = DynamicJson.Parse(request.RequiredPostJson());
+					preliminaryJavascriptError = request.RequiredPostJson();
 				}
 
 				var form = Application.OpenForms.Cast<Form>().Last();
