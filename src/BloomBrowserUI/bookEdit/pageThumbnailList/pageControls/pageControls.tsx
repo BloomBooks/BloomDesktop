@@ -103,6 +103,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         l10nComment="This is for the button that LAUNCHES the dialog, not the \'Add this page\' button that is IN the dialog."
                         enabled={this.state.canAddState}
                         clickEndpoint="edit/pageControls/addPage"
+                        mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/addPage.png"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/addPageDisabled.png"
                         hasText={true}
@@ -116,6 +117,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         l10nKey="EditTab.DuplicatePageButton"
                         l10nComment="Button that tells Bloom to duplicate the currently selected page."
                         clickEndpoint="edit/pageControls/duplicatePage"
+                        mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePage.svg"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePageDisabled.svg"
                         hasText={false}
@@ -127,6 +129,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         l10nComment="Button that tells Bloom to delete the currently selected page."
                         enabled={this.state.canDeleteState}
                         clickEndpoint="edit/pageControls/deletePage"
+                        mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePage.svg"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePageDisabled.svg"
                         hasText={false}
