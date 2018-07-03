@@ -409,12 +409,21 @@ body[bookcreationtype="translation"] {
     // For now, the compromise is this: by default, we assume it's just one logo and that the height is some amount we set here:
     height: 0.5in;
     width: auto;
+    align-self: center;
+    object-fit: contain; // in more complex size cases, ensures we keep aspect ratio and the whole thing visible
 
     // However if the branding pack requires a big max-width logo, then it should name the logo with a "-wide" suffix, and the
-    // pug template will use that instead, along with this "branding-wide" class, triggering these rules to override the defaults:
+    // pug template will use that instead, along with this "branding-wide" class, triggering these rules to override the defaults.
+    // 30% makes it a pretty respectable height, but still allows for a lot of text in the translation group above.
+    // If there's room to make it bigger (without distortion, which can happen by forcing width:100%) it will grow.
+    // the flex-basis provides a minimum size independent of the original image size.
     &.branding-wide {
+        min-height: 30%;
         height: auto;
+        flex-grow: 1;
+        flex-basis: 1in;
         width: 100%;
+        background-color: transparent;
     }
 }
 
@@ -423,8 +432,11 @@ body[bookcreationtype="translation"] {
         display: flex;
         flex-direction: column;
 
+        // Setting a min-height on this helps to prevent a large branding image from completely dominating the page
+        // if there is little or no text. min-height is better than height because it allows it to grow
+        // (and shrink the branding image) if there is more text than will fit in 30%.
         .bloom-translationGroup {
-            height: 100%;
+            min-height: 30%;
 
             .bloom-editable {
                 text-align: center;
