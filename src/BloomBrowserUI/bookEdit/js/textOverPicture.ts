@@ -97,7 +97,9 @@ class TextOverPictureManager {
         // things in for editing.
         // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
         // makeTextOverPictureBoxDraggableClickableAndResizable to get called by bloomEditing.ts.
-        BloomApi.post("toolbox/saveChangesAndRethinkPageEvent");
+        BloomApi.postThatMightNavigate(
+            "toolbox/saveChangesAndRethinkPageEvent"
+        );
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
