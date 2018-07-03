@@ -38,7 +38,7 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
             <div id="accessibilityCheckReactRoot" className={"screen-root"}>
                 <div className="header">
                     <div className="book-name">{this.state.bookName}</div>
-                    <div className="overall-status">Status: TODO</div>
+                    {/* <div className="overall-status">Status: TODO</div> */}
                 </div>
                 <Tabs defaultIndex={1}>
                     <TabList>
