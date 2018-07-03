@@ -130,7 +130,7 @@ export class BloomApi {
         urlSuffix: string,
         successCallback?: (r: AxiosResponse) => void
     ) {
-        if (typeof (window as any).__karma__) {
+        if ((window as any).__karma__) {
             console.log(`skipping post to ${urlSuffix} because in unit tests`);
             return;
         }

@@ -28,7 +28,7 @@ export function reportError(message: string, stack: string) {
 }
 
 export function reportPreliminaryError(message: string, stack: string) {
-    if (typeof (window as any).__karma__) {
+    if ((window as any).__karma__) {
         console.log(
             "skipping post to common/error because in unit tests: \r\n" +
                 message +
