@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 import WebSocketManager from "../utils/WebSocketManager";
 
 interface IProgressBoxProps {
-    lifetimeLabel: string;
+    clientContext: string;
     // If the client is going to start doing something right away that will
     // cause progress messages to happen, it had better wait until this is invoked;
     // otherwise, some of the early ones may be lost. This function will be called
@@ -27,22 +27,21 @@ export default class ProgressBox extends React.Component<
         let self = this;
         this.state = { progress: "" };
         //get progress messages from c#
-        WebSocketManager.addListener(props.lifetimeLabel, event => {
-            var e = JSON.parse(event.data);
+        WebSocketManager.addListener(props.clientContext, e => {
             if (e.id === "progress") {
-                if (e.style) {
+                if (e.cssStyleRule) {
                     this.writeLine(
-                        `<span style='${e.style}'>${e.payload}</span>`
+                        `<span style='${e.cssStyleRule}'>${e.message}</span>`
                     );
                 } else {
-                    this.writeLine(e.payload);
+                    this.writeLine(e.message);
                 }
                 this.tryScrollToBottom();
             }
         });
         if (props.onReadyToReceive) {
             WebSocketManager.notifyReady(
-                props.lifetimeLabel,
+                props.clientContext,
                 props.onReadyToReceive
             );
         }

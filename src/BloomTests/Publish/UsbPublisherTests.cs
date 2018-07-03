@@ -43,7 +43,7 @@ namespace BloomTests.Publish
 		{
 			spy = new WebSocketServerSpy();
 			spy.Init("webSocketServerSpy");
-			return new WebSocketProgress(spy);
+			return new WebSocketProgress( spy, "ummm...");
 		}
 
 		[Test]

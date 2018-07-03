@@ -37,6 +37,7 @@ namespace Bloom.Edit
 		private AudioRecorder _recorder;
 		private bool _exitHookSet;
 		BloomWebSocketServer _webSocketServer;
+		private const string kWebsocketContext = "audio-recording"; // must match that found in audioRecording.tsx
 
 		/// <summary>
 		/// The file we want to record to
@@ -160,7 +161,7 @@ namespace Bloom.Edit
 			if(level != _previousLevel)
 			{
 				_previousLevel = level;
-				_webSocketServer.Send("peakAudioLevel", level.ToString(CultureInfo.InvariantCulture));
+				_webSocketServer.SendString(kWebsocketContext, "peakAudioLevel", level.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 

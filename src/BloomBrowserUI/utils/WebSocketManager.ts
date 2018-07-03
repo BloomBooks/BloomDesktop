@@ -1,68 +1,104 @@
-// This class manages a websocket, currently at the window level, currently with
-// a fixed name. (Possible enhancement: support top window level).
+interface IBloomWebSocketEvent {
+    clientContext: string;
+    id: string;
+    message?: string;
+    cssStyleRule?: string;
+}
+
+// This class manages a websocket, currently at the WebSocketManager.socketMap level, currently with
+// a fixed name. (Possible enhancement: support top WebSocketManager.socketMap level).
 // You can add listeners (for "message") with addListener(),
 // and close the socket with closeSocket().
 export default class WebSocketManager {
-    private static listeners: ((event: MessageEvent) => void)[] = new Array();
+    // map from clientContext to the real listener function created in getWebSocket and
+    // attached to the socket.
+    private static clientContextToDispatcherFunction: {
+        [clientContext: string]: (event: MessageEvent) => void;
+    } = {};
+
+    // the dispatcher above will then cycle through these:
+    // map from clientContext to functions to call when we get a message for that clientContext
+    private static clientContextCallbacks: {
+        [clientContext: string]: Array<(messageEvent: object) => void>;
+    } = {};
+
+    private static socketMap: { [clientContext: string]: WebSocket } = {};
 
     /**
      *  In an attempt to make it easier to come to grips with some lifetime issues, we
-     * are naming the websocket by a "socketName" and making this private, so
+     * are naming the websocket by a "clientContext" and making this private, so
      * that clients don't have direct access to the client.
-     * Instead the client should call "addListener(socketName)" and then when cleaning
-     * up, call "closeSocket(socketName)".
+     * Instead the client should call "addListener(clientContext)" and then when cleaning
+     * up, call "closeSocket(clientContext)".
      */
-    private static getWebSocket(socketName: string): WebSocket {
-        if (!window[socketName]) {
+    private static getOrCreateWebSocket(clientContext: string): WebSocket {
+        if (!WebSocketManager.socketMap[clientContext]) {
             //currently we use a different port for this websocket, and it's the main port + 1
             let websocketPort = parseInt(window.location.port, 10) + 1;
             //here we're passing "socketName" in the "subprotocol" parameter, just for ease of identifying
             //sockets on the server side when debugging.
-            window[socketName] = new WebSocket(
+            WebSocketManager.socketMap[clientContext] = new WebSocket(
                 "ws://127.0.0.1:" + websocketPort.toString(),
-                socketName
+                clientContext
             );
-
+            if (!WebSocketManager.clientContextCallbacks[clientContext]) {
+                WebSocketManager.clientContextCallbacks[clientContext] = [];
+            }
             // the following is a refactored holdover from a situation where we were having trouble
             // getting the web ui to properly close its own listeners and socket, so we had to
             // revert to have c# send a message that would close this down. It may or may not be
             // used, but it's here if we need it. The perfered method is for the client UI to call closeSocket().
-            let closeListener = (event: MessageEvent) => {
-                var e = JSON.parse(event.data);
-                if (e.id === "websocketControl/close/" + socketName) {
-                    this.closeSocket(socketName);
+            let listener = (event: MessageEvent) => {
+                var e: IBloomWebSocketEvent = JSON.parse(event.data);
+                if (e.id === "websocketControl/close/" + clientContext) {
+                    WebSocketManager.closeSocket(clientContext);
+                } else if (e.clientContext === clientContext) {
+                    WebSocketManager.clientContextCallbacks[
+                        clientContext
+                    ].forEach(callback => callback(e));
                 }
             };
-            this.addListener(socketName, closeListener);
+            WebSocketManager.clientContextToDispatcherFunction[
+                clientContext
+            ] = listener;
+            WebSocketManager.socketMap[clientContext].addEventListener(
+                "message",
+                listener
+            );
         }
-        return window[socketName];
+        return WebSocketManager.socketMap[clientContext];
     }
 
     /**
      * Disconnect all listeners and close the websocket.
-     * @param {string} socketName - should use the same name through the lifetime of the window
+     * @param {string} clientContext - should use the same name through the lifetime of the WebSocketManager.socketMap
      */
-    public static closeSocket(socketName: string): void {
-        let webSocket: WebSocket = window[socketName];
+    public static closeSocket(clientContext: string): void {
+        delete WebSocketManager.clientContextCallbacks[clientContext];
+        let webSocket: WebSocket = WebSocketManager.socketMap[clientContext];
         if (webSocket) {
-            while (this.listeners.length) {
-                webSocket.removeEventListener("message", this.listeners.pop());
-            }
+            webSocket.removeEventListener(
+                "message",
+                WebSocketManager.clientContextToDispatcherFunction[
+                    clientContext
+                ]
+            );
             webSocket.close();
-            window[socketName] = null;
+            WebSocketManager.socketMap[clientContext] = null;
         }
     }
-
     /**
      * Find or create a websocket and add a listener to it.
-     * @param {string} socketName - should use the same name through the lifetime of the window
+     * When a message is received on the socket whose data parses into an object whose clientContext property
+     * is equal to the given clientContext, the parsed data object will be passed to the listener function.
+     * @param {string} clientContext - should use the same name through the lifetime of the WebSocketManager.socketMap
      */
     public static addListener(
-        socketName: string,
-        listener: (ev: MessageEvent) => void
+        clientContext: string,
+        listener: (messageEvent: IBloomWebSocketEvent) => void
     ): void {
-        this.getWebSocket(socketName).addEventListener("message", listener);
-        this.listeners.push(listener);
+        WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
+        WebSocketManager.clientContextCallbacks[clientContext].push(listener);
     }
 
     /**
@@ -71,8 +107,8 @@ export default class WebSocketManager {
      * receive (and send) messages. If the socket is already open, onReady() will be called at
      * once, before the call to this method returns.
      */
-    public static notifyReady(socketName: string, onReady: () => void) {
-        var socket = this.getWebSocket(socketName);
+    public static notifyReady(clientContext: string, onReady: () => void) {
+        var socket = WebSocketManager.getOrCreateWebSocket(clientContext);
         if (socket.readyState === 0) {
             // CONNECTING
             var openFunc = () => {

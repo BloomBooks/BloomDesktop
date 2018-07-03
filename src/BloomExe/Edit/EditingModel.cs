@@ -956,7 +956,7 @@ namespace Bloom.Edit
 				var watch = Stopwatch.StartNew();
 				try
 				{
-					_webSocketServer.Send("saving", "");
+					_webSocketServer.SendLegacy("saving", "");
 
 					// CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
 					// If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,

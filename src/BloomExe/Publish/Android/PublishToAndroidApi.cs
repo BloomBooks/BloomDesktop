@@ -26,7 +26,7 @@ namespace Bloom.Publish.Android
 	public class PublishToAndroidApi
 	{
 		private const string kApiUrlPart = "publish/android/";
-		private const string kWebsocketStateId = "publish/android/state";
+		private const string kWebsocketState_EventId = "publish/android/state";
 		private readonly WiFiPublisher _wifiPublisher;
 #if !__MonoCS__
 		private readonly UsbPublisher _usbPublisher;
@@ -34,7 +34,7 @@ namespace Bloom.Publish.Android
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookServer _bookServer;
 		private readonly WebSocketProgress _progress;
-
+		private const string kWebSocketContext = "publish-android"; // must match what is in AndroidPublish.tsx
 		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
 		private Book.Book _coverColorSourceBook;
 
@@ -45,7 +45,7 @@ namespace Bloom.Publish.Android
 			_webSocketServer = bloomWebSocketServer;
 			_bookServer = bookServer;
 			_imageProcessor = imageProcessor;
-			_progress = new WebSocketProgress(_webSocketServer);
+			_progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_wifiPublisher = new WiFiPublisher(_progress, _bookServer);
 #if !__MonoCS__
 			_usbPublisher = new UsbPublisher(_progress, _bookServer)
@@ -229,7 +229,7 @@ namespace Bloom.Publish.Android
 
 		private void SetState(string state)
 		{
-			_webSocketServer.Send(kWebsocketStateId, state);
+			_webSocketServer.SendString(kWebSocketContext, kWebsocketState_EventId, state);
 		}
 
 		public static void ReportAnalytics(string mode, Book.Book book)

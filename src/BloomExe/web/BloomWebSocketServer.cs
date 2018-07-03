@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Windows.Forms;
+using Bloom;
+using Bloom.Api;
 using Bloom.web;
 using Fleck;
 using SIL.Reporting;
@@ -10,15 +12,17 @@ using SIL.Reporting;
 namespace Bloom.Api
 {
 	/// <summary>
-	/// Runs a websocket on the given port. Useful for high-frequency messages (like audio levels) and allows the backend to send messages to the client.
+	/// Runs a web socket server on the given port. Useful for high-frequency messages (like audio levels) and allows the backend to send messages to the client.
 	///
-	/// About ports... we could have a single server that is used to pass any number of messages. We could have a single connection on the client
-	/// with a means to distribute messages around the client depending on, say, a message identifier. Or we could have multiple connections (sockets) from
-	/// various parts in the client, each just filtering out the message stream to the ones they are interested in.
+	/// About ports... we currently only have a single server that is used to pass any number of messages. 
+	/// Then on the client side, we have multiple connections to this same server; each connection is called a "socket",
+	/// note that these are on the same port.
+	/// For outgoing messages from c# to the client code, we have 3 levels:
+	/// * clientContext: normally the screen, like "publish to android".
+	/// * eventId: things like "progress message"
+	/// * message: (optional) for events that need some text, it goes in here
+	/// * cssStyleRule: (optional) for events that need some css styles. (JH isn't so happy about this one, seems rather special case)
 	///
-	/// Alternatively, you could have multiple instances of this class, each with its own "port" parameter, and intended for use by a single, simple end point.
-	/// That is the case as this is introduced in Bloom 3.6, for getting the peak level of the audio coming from a microphone.
-	/// 
 	/// The IBloomWebSocketServer interface allows tests to use a spy to see what messages have been sent.
 	/// </summary>
 	public class BloomWebSocketServer : IBloomWebSocketServer, IDisposable
@@ -81,17 +85,26 @@ namespace Bloom.Api
 			Application.Exit();
 		}
 
-		public void Send(string eventId, string eventData, string eventStyle = null)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="clientContext">This serves a couple of purposes. First, it is used to filter out messages
+		/// to those aimed at a particular client context. For example, two screens, both containing progress boxes,
+		/// could be on screen at the same time. The ClientContext would tell us which one is supposed to be 
+		/// printing out messages coming with the "progress" eventId. </param>
+		/// <param name="eventId"></param>
+		/// <param name="eventBundle"></param>
+		public void SendBundle(string clientContext, string eventId, dynamic eventBundle)
 		{
-			dynamic e = new DynamicJson();
-			e.id = eventId;
-			e.payload = eventData;
-			if (!String.IsNullOrEmpty(eventStyle))
-				e.style = eventStyle;
+			// We're going to take this and add routing info to it, so it's
+			// no longer just the "details".
+			var eventObject = eventBundle;
+			eventObject.clientContext = clientContext;
+			eventObject.id = eventId;
 
 			//note, if there is no open socket, this isn't going to do anything, and
 			//that's (currently) fine.
-			lock(this)
+			lock (this)
 			{
 				// the ToArray() here gives us a copy so that if a socket
 				// is removed while we're doing this, it will be ok
@@ -104,7 +117,7 @@ namespace Bloom.Api
 						// I don't know if Sending on a closed socket would throw, so we'll catch it in any case
 						try
 						{
-							socket?.Send(e.ToString());
+							socket?.Send(eventObject.ToString());
 						}
 						catch (Exception error)
 						{
@@ -113,6 +126,25 @@ namespace Bloom.Api
 					}
 				}
 			}
+		}
+
+		// we have 3 places in javascript land that are not yet using our WebSocketManager; they
+		// don't know about "clientContext"s yet.
+		public void SendLegacy(string eventId, string message)
+		{
+			SendString("legacy", eventId, message);
+		}
+
+		public void SendString(string clientContext, string eventId, string message)
+		{
+			dynamic eventBundle = new DynamicJson();
+			eventBundle.message = message;
+			SendBundle(clientContext, eventId, eventBundle);
+		}
+		public void SendEvent(string clientContext, string eventId)
+		{
+			dynamic eventBundle = new DynamicJson(); // nothing to put in it
+			SendBundle(clientContext, eventId, eventBundle);
 		}
 
 		public void Dispose()

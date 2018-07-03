@@ -11,8 +11,9 @@ import { H1, H2, IUILanguageAwareProps } from "../../react_components/l10n";
 import "./epubPublishUI.less";
 import EpubPreview from "./EpubPreview";
 // import { RadioGroup, Radio } from "../../react_components/radio";
+import WebSocketManager from "../../utils/WebSocketManager";
 
-const kWebSocketLifetime = "publish-epub";
+const kWebSocketClientContext = "publish-epub";
 
 interface IPublishSettings {
     howToPublishImageDescriptions: string; // one of "None", "OnPage", "Links"
@@ -45,6 +46,17 @@ class EpubPublishUI extends React.Component<
         BloomApi.postData("publish/epub/updatePreview", this.state);
     }
 
+    // Apparently, we have to rely on the window event when closing or refreshing the page.
+    // componentWillUnmount will not get called in those cases.
+    public componentWillUnmount() {
+        this.componentCleanup();
+        window.removeEventListener("beforeunload", this.componentCleanup);
+    }
+
+    private componentCleanup() {
+        WebSocketManager.closeSocket(kWebSocketClientContext);
+    }
+
     public render() {
         return (
             <div id="epubPublishReactRoot" className={"screen-root"}>
@@ -55,7 +67,9 @@ class EpubPublishUI extends React.Component<
                 <div className="sections">
                     <section className="preview-section">
                         <H1 l10nKey="Common.Preview">Preview</H1>
-                        <EpubPreview lifetimeLabel={kWebSocketLifetime} />
+                        <EpubPreview
+                            websocketClientContext={kWebSocketClientContext}
+                        />
                     </section>
                     <section className="publish-section">
                         <H1 l10nKey="PublishTab.Publish">Publish</H1>
@@ -76,7 +90,7 @@ class EpubPublishUI extends React.Component<
                                 Progress
                             </H2>
                             <ProgressBox
-                                lifetimeLabel={kWebSocketLifetime}
+                                clientContext={kWebSocketClientContext}
                                 onReadyToReceive={() =>
                                     this.readyToReceiveProgress()
                                 }

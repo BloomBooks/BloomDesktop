@@ -17,7 +17,7 @@ import { SetImageElementUrl } from "../js/bloomImages";
 import "errorHandler";
 
 const timerName = "thumbnailInterval";
-const kSocketName = "webSocket";
+const kSocketName = "webSocket"; // TODO BL-6129 upgrade this to use WebSocketManger and a proper clientContext
 
 var thumbnailTimerInterval = 200;
 var listenerFunction;

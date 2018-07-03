@@ -4,7 +4,7 @@ import WebSocketManager from "../../utils/WebSocketManager";
 import "errorHandler";
 
 interface IPreviewProps extends IUILanguageAwareProps {
-    lifetimeLabel: string;
+    websocketClientContext: string;
 }
 
 interface IComponentState {
@@ -13,7 +13,7 @@ interface IComponentState {
 // This component shows a simulated device with a live epub inside of it.
 // The preview lives in an iframe and is activated by setting the src of the iframe
 // by broadcasting a message on the web socket. The message should have id 'preview'
-// and payload the URL for the preview iframe. An empty string may be broadcast
+// and the "message" should be the URL for the preview iframe. An empty string may be broadcast
 // to clear the preview.
 export default class EpubPreview extends React.Component<
     IPreviewProps,
@@ -21,10 +21,9 @@ export default class EpubPreview extends React.Component<
 > {
     constructor(props) {
         super(props);
-        WebSocketManager.addListener(props.lifetimeLabel, event => {
-            var e = JSON.parse(event.data);
+        WebSocketManager.addListener(props.websocketClientContext, e => {
             if (e.id === "epubPreview") {
-                this.setState({ previewSrc: e.payload });
+                this.setState({ previewSrc: e.message });
             }
         });
         this.state = { previewSrc: "" };

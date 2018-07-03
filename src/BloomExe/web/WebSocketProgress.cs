@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Bloom.Api;
 using L10NSharp;
 
 namespace Bloom.web
@@ -10,24 +11,31 @@ namespace Bloom.web
 	public class WebSocketProgress: IWebSocketProgress
 	{
 		private readonly IBloomWebSocketServer _bloomWebSocketServer;
+		private readonly string _clientContext;
 		private string _l10IdPrefix;
 
 		/// <summary>
 		/// Get a new WebSocketProgress that will prefix each localization id with the given string
 		/// </summary>
 		/// <param name="localizationIdPrefix"></param>
-		/// <returns></returns>
 		public WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
 		{
-			return new WebSocketProgress(_bloomWebSocketServer)
+			return new WebSocketProgress(_bloomWebSocketServer, _clientContext)
 			{
 				_l10IdPrefix = localizationIdPrefix
 			};
 		}
 
-		public WebSocketProgress(IBloomWebSocketServer bloomWebSocketServer)
+		/// <summary>
+		/// Get an object that you can use to send messages to a given clientContext
+		/// </summary>
+		/// <param name="bloomWebSocketServer"></param>
+		/// <param name="clientContext">This goes out with our messages and, on the client side (typescript), messages are filtered
+		/// down to the context (usualy a screen) that requested them.</param>
+		public WebSocketProgress(IBloomWebSocketServer bloomWebSocketServer, string clientContext)
 		{
 			_bloomWebSocketServer = bloomWebSocketServer;
+			_clientContext = clientContext;
 		}
 
 		public void ErrorWithoutLocalizing(string message, params object[] args)
@@ -41,12 +49,15 @@ namespace Bloom.web
 
 		public void MessageWithoutLocalizing(string message, params object[] args)
 		{
-			_bloomWebSocketServer.Send("progress", String.Format(message, args));
+			_bloomWebSocketServer.SendString(_clientContext, "progress", String.Format(message, args));
 		}
 
-		public void MessageWithStyleWithoutLocalizing(string message, string style)
+		public void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
 		{
-			_bloomWebSocketServer.Send("progress", message, style);
+			dynamic messageBundle = new DynamicJson();
+			messageBundle.message = message;
+			messageBundle.cssStyleRule = cssStyleRules;
+			_bloomWebSocketServer.SendBundle(_clientContext, "progress", messageBundle);
 		}
 
 		public void Message(string idSuffix, string comment, string message)

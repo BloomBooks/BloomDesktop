@@ -23,12 +23,16 @@ namespace Bloom.web.controllers
 		// Define a socket to signal the client window to refresh
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly EpubMaker.Factory _epubMakerFactory;
-		private const string kWebsocketId = "a11yChecklist";
 
 		private readonly NavigationIsolator _isolator;
 		private readonly BookServer _bookServer;
 		private WebSocketProgress _webSocketProgress;
+
 		public const string kApiUrlPart = "accessibilityCheck/";
+
+		// This goes out with our messages and, on the client side (typescript), messages are filtered
+		// down to the context (usualy a screen) that requested them. 
+		private const string kWebSocketContext = "a11yChecklist"; // must match what is in accsesibilityChecklist.tsx
 
 		// must match what's in the typescript
 		private const string kBookSelectionChanged = "bookSelectionChanged";
@@ -44,9 +48,9 @@ namespace Bloom.web.controllers
 									BookRefreshEvent bookRefreshEvent, EpubMaker.Factory epubMakerFactory)
 		{
 			_webSocketServer = webSocketServer;
-			_webSocketProgress = new WebSocketProgress(_webSocketServer);
+			_webSocketProgress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_epubMakerFactory = epubMakerFactory;
-			bookSelection.SelectionChanged += (unused1, unused2) => _webSocketServer.Send(kWebsocketId, kBookSelectionChanged);
+			bookSelection.SelectionChanged += (unused1, unused2) => _webSocketServer.SendEvent(kWebSocketContext, kBookSelectionChanged);
 			bookRefreshEvent.Subscribe((book) => RefreshClient());
 		}
 		
@@ -59,7 +63,7 @@ namespace Bloom.web.controllers
 
 			server.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>
 			{
-				AccessibilityCheckWindow.StaticShow(()=>_webSocketServer.Send(kWebsocketId, kWindowActivated));
+				AccessibilityCheckWindow.StaticShow(()=>_webSocketServer.SendEvent(kWebSocketContext, kWindowActivated));
 				request.PostSucceeded();
 			}, true);
 
@@ -306,7 +310,7 @@ namespace Bloom.web.controllers
 
 		private void RefreshClient()
 		{
-			_webSocketServer.Send(kWebsocketId, kBookContentsMayHaveChanged);
+			_webSocketServer.SendEvent(kWebSocketContext, kBookContentsMayHaveChanged);
 		}
 	}
 }

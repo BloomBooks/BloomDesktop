@@ -9,7 +9,7 @@ import { fireCSharpEditEvent } from "./bloomEditing";
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 
-const kSocketName = "webSocket";
+const kSocketName = "webSocket"; // TODO BL-6129 upgrade this to use WebSocketManger and a proper clientContext
 
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 class TextOverPictureManager {
@@ -18,7 +18,7 @@ class TextOverPictureManager {
     public initializeTextOverPictureManager(): void {
         this.listenerFunction = event => {
             var e = JSON.parse(event.data);
-            var locationArray = e.payload.split(","); // mouse right-click coordinates
+            var locationArray = e.message.split(","); // mouse right-click coordinates
             if (e.id === "addTextBox")
                 this.addFloatingTOPBox(locationArray[0], locationArray[1]);
             if (e.id === "deleteTextBox")

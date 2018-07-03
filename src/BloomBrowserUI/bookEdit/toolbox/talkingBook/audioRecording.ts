@@ -50,6 +50,7 @@ import { TextFragment } from "../readers/libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
 import { BloomApi } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
+import WebSocketManager from "../../../utils/WebSocketManager";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -58,7 +59,7 @@ enum Status {
     Active // Button now active (Play while playing; Record while held down)
 }
 
-const kSocketName = "webSocket";
+const kWebsocketContext = "audio-recording";
 
 export default class AudioRecording {
     private recording: boolean;
@@ -154,16 +155,9 @@ export default class AudioRecording {
 
     // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
     public addAudioLevelListener(): void {
-        this.listenerFunction = event => {
-            var e = JSON.parse(event.data);
-            if (e.id == "peakAudioLevel") this.setstaticPeakLevel(e.payload);
-        };
-
-        // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        var socket = this.getWebSocket();
-        if (socket) {
-            socket.addEventListener("message", this.listenerFunction);
-        }
+        WebSocketManager.addListener(kWebsocketContext, e => {
+            if (e.id == "peakAudioLevel") this.setstaticPeakLevel(e.message);
+        });
     }
 
     // Called by TalkingBookModel.detachFromPage(), which is called when changing tools, hiding the toolbox,
@@ -174,24 +168,8 @@ export default class AudioRecording {
         page.find(".ui-audioCurrent")
             .removeClass("ui-audioCurrent")
             .removeClass("disableHighlight");
-        var socket = this.getWebSocket();
-        if (socket) {
-            socket.removeEventListener("message", this.listenerFunction);
-        }
-    }
 
-    // N.B. Apparently when the window is shutting down, it is still possible to return from this
-    // function with window[kSocketName] undefined.
-    private getWebSocket(): WebSocket {
-        if (!window.top[kSocketName]) {
-            //currently we use a different port for this websocket, and it's the main port + 1
-            let websocketPort = parseInt(window.location.port, 10) + 1;
-            //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-            window.top[kSocketName] = new WebSocket(
-                "ws://127.0.0.1:" + websocketPort.toString()
-            );
-        }
-        return window.top[kSocketName];
+        WebSocketManager.closeSocket(kWebsocketContext);
     }
 
     // We only do recording in editable divs in the main content language.

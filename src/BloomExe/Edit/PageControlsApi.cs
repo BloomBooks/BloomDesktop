@@ -106,16 +106,15 @@ namespace Bloom.Edit
 				request.PostSucceeded();
 			}, true);
 		}
-
 		private void SendCleanupState()
 		{
 			var endState = "{\"CanAddPages\":false,\"CanDeletePage\":false,\"CanDuplicatePage\":false,\"BookLockedState\":\"OriginalBookMode\"}";
-			_webSocketServer.Send(kWebsocketStateId, endState);
+			_webSocketServer.SendLegacy(kWebsocketStateId, endState);
 		}
 
 		private void UpdateState()
 		{
-			_webSocketServer.Send(kWebsocketStateId, CurrentStateString);
+			_webSocketServer.SendLegacy(kWebsocketStateId, CurrentStateString);
 		}
 
 		private string CurrentStateString

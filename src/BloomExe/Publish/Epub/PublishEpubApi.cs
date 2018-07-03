@@ -36,14 +36,18 @@ namespace Bloom.Publish.Epub
 		private BackgroundWorker _previewWorker;
 		private string _previewSrc;
 
+		// This goes out with our messages and, on the client side (typescript), messages are filtered
+		// down to the context (usualy a screen) that requested them. 
+		private const string kWebsocketContext = "publish-epub";
+
 		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
-		private const string kWebsocketPreviewId = "epubPreview";
+		private const string kWebsocketEventId_Preview = "epubPreview";
 
 		private string _lastDirectory; // where we saved the most recent previous epub, if any
 
 
 		// This constant must match the ID that is used for the listener set up in the React component ProgressBox
-		private const string kWebsocketProgressId = "progress";
+		private const string kWebsocketEventId_Progress = "progress";
 
 		private EpubMaker EpubMaker { get; set; }
 
@@ -55,13 +59,13 @@ namespace Bloom.Publish.Epub
 			_bookSelection = bookSelection;
 			_collectionSettings = collectionSettings;
 			_webSocketServer = webSocketServer;
-			_progress = new WebSocketProgress(_webSocketServer);
+			_progress = new WebSocketProgress(_webSocketServer, kWebsocketContext);
 		}
 
 		// Message is presumed already localized.
 		private void ReportProgress(string message)
 		{
-			_webSocketServer.Send(kWebsocketProgressId, message);
+			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Progress, message);
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -316,7 +320,7 @@ namespace Bloom.Publish.Epub
 			EpubMaker.RemoveFontSizes = newSettings.removeFontSizes;
 			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 			// we will really be changing the src attr in the preview iframe so the display will update.
-			_webSocketServer.Send(kWebsocketPreviewId, "");
+			_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_Preview);
 			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
 			_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
 			_previewWorker.DoWork += (sender, args) =>
@@ -372,7 +376,7 @@ namespace Bloom.Publish.Epub
 				}
 			}
 
-			_webSocketServer.Send(kWebsocketPreviewId, _previewSrc);
+			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Preview, _previewSrc);
 			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
 		}
 

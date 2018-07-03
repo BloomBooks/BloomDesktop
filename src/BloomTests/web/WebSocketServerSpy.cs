@@ -19,15 +19,19 @@ namespace BloomTests.web
 			_isInitialized = false;
 		}
 
-		public void Send(string eventId, string eventData, string eventStyle = null)
+		public void SendString(string clientContext, string eventId, string message)
 		{
 			if (!_isInitialized)
 				throw new ApplicationException("WebSocketServerSpy: Send() attempted when not initialized!");
 
 			_events.Add(new KeyValuePair<string, Tuple<string, string>>(eventId, 
-				new Tuple<string, string>(eventData, eventStyle ?? string.Empty)));
+				new Tuple<string, string>(message, clientContext)));
 		}
-
+		public void SendBundle(string clientContext, string eventId, dynamic messageBundle)
+		{
+			_events.Add(new KeyValuePair<string, Tuple<string, string>>(eventId,
+				new Tuple<string, string>(messageBundle.message, clientContext)));
+		}
 		public void Init(string dummy)
 		{
 			_isInitialized = true;

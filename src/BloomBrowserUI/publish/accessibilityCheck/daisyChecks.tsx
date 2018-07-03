@@ -50,7 +50,7 @@ export class DaisyChecks extends React.Component<
                 ) : (
                     <ProgressBox
                         ref={r => (this.progressBox = r)}
-                        lifetimeLabel={kWebSocketLifetime}
+                        clientContext={kWebSocketLifetime}
                     />
                 )}
             </div>
