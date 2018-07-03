@@ -22,7 +22,10 @@ export function reportError(message: string, stack: string) {
     console.log("Posting to common/error " + message + " " + stack);
     // we don't want to use the error handling bloomapi wrapper here...
     // else we will recursively report errors about attempts to report errors
-    Axios.post("common/error", { message: message, stack: stack }).catch(e => {
+    Axios.post("/bloom/api/common/error", {
+        message: message,
+        stack: stack
+    }).catch(e => {
         console.log("*****Got error trying report error");
     });
 }
@@ -40,7 +43,7 @@ export function reportPreliminaryError(message: string, stack: string) {
     // we don't want to use the error handling bloomapi wrapper here...
     // else we will recursively report errors about attempts to report errors
     //    BloomApi.postData("common/preliminaryError", {
-    Axios.post("common/preliminaryError", {
+    Axios.post("/bloom/api/common/preliminaryError", {
         message: message,
         stack: stack
     }).catch(e => {
