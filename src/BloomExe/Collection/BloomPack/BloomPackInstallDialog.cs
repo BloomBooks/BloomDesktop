@@ -16,6 +16,7 @@ namespace Bloom.Collection.BloomPack
 	{
 		private readonly string _path;
 		private string _folderName;
+		private string _rootDestFolder;
 
 		public BloomPackInstallDialog(string path)
 		{
@@ -59,7 +60,12 @@ namespace Bloom.Collection.BloomPack
 			Logger.WriteEvent("BloomPackInstallDialog.BeginInstall. _folderName is " + _folderName);
 			if (_folderName == null)
 				return;
-			string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
+
+			_rootDestFolder = ProjectContext.GetInstalledCollectionsDirectory();
+			if (_folderName.ToLowerInvariant().Contains("xmatter"))
+				_rootDestFolder = ProjectContext.XMatterAppDataFolder;
+			string destinationFolder = Path.Combine(_rootDestFolder, _folderName);
+
 			if (Directory.Exists(destinationFolder))
 			{
 				Logger.WriteEvent("Bloom Pack already exists, asking...");
@@ -193,7 +199,7 @@ namespace Bloom.Collection.BloomPack
 				byte[] buffer = new byte[4096];     // 4K is optimum
 				foreach (ZipEntry entry in zip)
 				{
-					var fullOutputPath = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), entry.Name);
+					var fullOutputPath = Path.Combine(_rootDestFolder, entry.Name);
 					if (entry.IsDirectory)
 					{
 						Directory.CreateDirectory(fullOutputPath);
@@ -227,6 +233,10 @@ namespace Bloom.Collection.BloomPack
 					zip.Close();
 			}
 
+			// If the bloompack IS an xmatter one at its root, we don't need to move children or look for
+			// tool settings.
+			if (_rootDestFolder == ProjectContext.XMatterAppDataFolder)
+				return;
 			var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 			CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
 			ToolboxView.CopyToolSettingsForBloomPack(newlyAddedFolderOfThePack);
