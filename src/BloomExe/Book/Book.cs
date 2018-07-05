@@ -888,6 +888,7 @@ namespace Bloom.Book
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress, string oldMetaData = "")
 		{
 			RemoveImgTagInDataDiv(bookDOM);
+			RemoveCkeEditorResidue(bookDOM);
 			if (Title.Contains("allowSharedUpdate"))
 			{
 				// Original version of this code that suffers BL_3166
@@ -907,6 +908,22 @@ namespace Bloom.Book
 			}
 			RemoveObsoleteSoundAttributes(bookDOM);
 			BringBookInfoUpToDate(oldMetaData);
+		}
+
+		// Some books got corrupted with CKE temp data, possibly before we prevented this happening when
+		// pasting HTML (e.g., from Word). A typical example (BL-6050/BL-6058) is
+		//  <div data-cke-hidden-sel="1" data-cke-temp="1" style="position:fixed;top:0;left:-1000px" class="bloom-contentNational2">
+		//		<br>
+		//	</div>
+		// We want to remove this. In the example problem book, every example has both data-cke-temp and data-cke-hidden-sel
+		// (both set to 1), but data-cke-temp feels like a more generic thing to look for, increasing our chances
+		// of catching more junk.
+		private void RemoveCkeEditorResidue(HtmlDom bookDom)
+		{
+			foreach (var problemDiv in bookDom.SafeSelectNodes(".//div[@data-cke-temp]").Cast<XmlElement>().ToArray())
+			{
+				problemDiv.ParentNode.RemoveChild(problemDiv);
+			}
 		}
 
 		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)

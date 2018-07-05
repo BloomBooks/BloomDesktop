@@ -69,6 +69,29 @@ namespace BloomTests.Book
 			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals("myImage.png"));
 		}
 
+		[Test]
+		public void BringBookUpToDate_DataCkeTempRemoved()
+		{
+			// Some books got corrupted with CKE temp data, possibly before we prevented this happening when
+			// pasting HTML (e.g., from Word). This tests that we clean it up.
+			SetDom(@"<div class='bloom-page numberedPage customPage A5Portrait'>
+						<div id='testDiv' class='marginBox'>
+							<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style'>
+								<div class='bloom-editable normal-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+									<div data-cke-hidden-sel='1' data-cke-temp='1' style='position:fixed;top:0;left:-1000px' class='bloom-contentNational2'>
+										<br />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			//AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@data-cke-hidden-sel]");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='testDiv']//br");
+		}
+
 
 		[Test]
 		public void BringBookUpToDate_EmbeddedEmptyImgTagRemoved()
