@@ -345,14 +345,6 @@ body[bookcreationtype="translation"] {
             //min-height: 1.4em; messes up BL-1200
             line-height: 1.4em; // supports ไปทั่วพื้ ที่นั่ ชื่ ปู ช้ต่างป
         }
-        margin-bottom: @MarginBetweenTitleAndFunding;
-    }
-
-    #originalContributions {
-        margin-bottom: @MarginBetweenMinorItems;
-    }
-    #funding {
-        margin-bottom: @MarginBetweenTitleAndFunding;
     }
 
     #languageInformation {
@@ -370,13 +362,49 @@ body[bookcreationtype="translation"] {
         // }
     }
 
+    .marginBox {
+        display: flex;
+        flex-direction: column;
+    }
+    // Positioning and sizing the image at the bottom of the title page is tricky.
+    // We'd like an icon an inch high and whatever width its shape requires.
+    // Depending on the page size and how much text is in various other blocks, that may leave us short of space.
+    // To handle this, the containing marginBox has been made display:flex, and the canonical title page
+    // has some invisible divs. We put a .smallFlexGap div where we'd like @MarginBetweenMinorItems,
+    // a .largeFlexGap where we'd like @MarginBetweenTitleAndFunding, and a single fillPageFlexGap
+    // right above the .bottomImageWrapper.
+    // The flexbox magic then says that the .bottomImageWrapper would like to be an inch high.
+    // It doesn't grow, but it can shrink. The separate min-height setting stops it shrinking
+    // away to nothing.
+    // Then (below), the gaps have the appropriate "like to be" size (flex-basis, the 3rd argument),
+    // they can shrink as necessary, and the .fillPageFlexGap is the only thing
+    // on the page that can grow at all, so once all the other things reach their preferred sizes
+    // it will grow to fill all the rest of the space, thus putting the .bottomImageWrapper
+    // at the bottom of the .marginBox.
+    // The different numbers in the shrink field mean that the branding image will shrink
+    // twice as fast as the small gap, but only half as fast as the large gaps.
+    // It only remains to make the actual branding image fill the height of the .bottomImageWrapper,
+    // and to make it 'fit' that space in a way that does not allow it to be distorted or clipped.
+    // (Centering is automatic with object-fit: contain.)
+    // Unfortunately, the gap between the two versions of the title is not adjustable in this way,
+    // because it inside another div and not involved in the layout of the .marginBox.
     .bottomImageWrapper {
-        width: 100%; // this allows the branding to center.
-        position: absolute;
-        bottom: 0;
+        width: 100%; // this allows the branding to grow horizontally and center.
+        flex: 0 2 1in;
+        min-height: 0.25in;
         .branding {
-            height: 1in;
+            height: 100%;
+            object-fit: contain;
         }
+    }
+    .smallFlexGap {
+        flex: 0 1 @MarginBetweenMinorItems;
+    }
+    .largeFlexGap {
+        flex: 0 4 @MarginBetweenTitleAndFunding;
+    }
+    .fillPageFlexGap {
+        flex: 1 4 @MarginBetweenTitleAndFunding;
     }
 }
 

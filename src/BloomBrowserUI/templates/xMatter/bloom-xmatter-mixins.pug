@@ -183,6 +183,7 @@ mixin title-page-contents
 	+field-prototypeDeclaredExplicity("V,N1")#titlePageTitleBlock
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+	div.largeFlexGap
 	block originalContributions
 		+field-prototypeDeclaredExplicity("N1")#originalContributions
 			block originalContributionsLabel
@@ -190,14 +191,17 @@ mixin title-page-contents
 				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
 					| The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
+	div.smallFlexGap
 	+field-prototypeDeclaredExplicity("N1")#funding
 		label.bubble Use this to acknowledge any funding agencies.
 		+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+	div.largeFlexGap
 	#languageInformation.Content-On-Title-Page-style
 	.languagesOfBook(data-book='languagesOfBook')
 	//- review: can we get rid of these "langName" classes?
 	.langName('data-library'='dialect')
 	.langName(data-library='languageLocation').bloom-writeOnly
+	div.fillPageFlexGap.
 	+field-title-page-branding
 
 mixin standard-blankInsideFrontCover
