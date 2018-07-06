@@ -580,7 +580,7 @@ namespace Bloom.Workspace
 				if (!_toolStrip.Items.Contains(_zoomWrapper))
 					_toolStrip.Items.Add(_zoomWrapper);
 				_zoomControl.Zoom = zoomManager.Zoom;
-				_zoomControl.ZoomChanged += (sender, args) => zoomManager.Zoom = _zoomControl.Zoom;
+				_zoomControl.ZoomChanged += (sender, args) => zoomManager.SetZoom(_zoomControl.Zoom);
 			}
 			else
 			{

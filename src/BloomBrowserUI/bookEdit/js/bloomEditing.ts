@@ -889,19 +889,6 @@ interface String {
     startsWith(string): boolean;
 }
 
-export function setZoom(newScale: string) {
-    $("div#page-scaling-container").attr(
-        "style",
-        "transform: scale(" + newScale + "); transform-origin: top left;"
-    );
-    // Save changes, so TextOverPicture draggables work correctly.
-    BloomApi.post("toolbox/saveChangesAndRethinkPageEvent");
-}
-
-// This is used to keep wheel zooming messages from happening too fast.
-// The program will crash otherwise, at least on Linux.
-var wheelZoomOkay: boolean = true;
-
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
@@ -911,34 +898,6 @@ export function bootstrap() {
     $.fn.reverse = function() {
         return this.pushStack(this.get().reverse(), arguments);
     };
-
-    // Attach a function to implement zooming on mouse wheel with ctrl
-    $("body").on("wheel", function(e) {
-        var theEvent = e.originalEvent as WheelEvent;
-        if (!theEvent.ctrlKey) return;
-        var command: string = null;
-        // Note the direction of the zoom is opposite the direction of the scroll.
-        if (theEvent.deltaY < 0) {
-            command = "/bloom/api/edit/pageControls/zoomPlus";
-        } else if (theEvent.deltaY > 0) {
-            command = "/bloom/api/edit/pageControls/zoomMinus";
-        }
-        if (command != null && wheelZoomOkay) {
-            wheelZoomOkay = false;
-            // Using axios directly because we want a special catch clause.
-            axios
-                .post(command)
-                .then(() => {
-                    wheelZoomOkay = true;
-                })
-                .catch(() => {
-                    wheelZoomOkay = true;
-                });
-        }
-        // Setting the zoom is all we want to do in this context.
-        e.preventDefault();
-        e.cancelBubble = true;
-    });
 
     /* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok
             //if this browser doesn't have endsWith built in, add it
@@ -1029,15 +988,53 @@ export function bootstrap() {
                 }
             });
 
-            // hide the toolbar when ckeditor starts
+            // hide the toolbar when ckeditor starts...and finally set up wheel zooming
             ckedit.on("instanceReady", function(evt) {
                 var editor = evt["editor"];
                 var bar = $("body").find("." + editor.id);
                 bar.hide();
+                // This needs to be one of the very last things we do, because as soon as we do it,
+                // if the user is busy spinning the wheel, we'll make a new page and start loading
+                // that, and THIS page will then be UNloading. Various things we do in the process
+                // of starting up a page don't like it if the page we are loading is already unloading.
+                // One of them seems to be the init of CkEditor, so we wait for that before
+                // enabling zoom. If something else is added that happens even later, consider
+                // moving setupWheelZooming after that!
+                setupWheelZooming();
             });
 
             BloomField.WireToCKEditor(this, ckedit);
         });
+}
+// Attach a function to implement zooming on mouse wheel with ctrl.
+// Setting this up should be one of the last things we do when loading the page...
+// see the comment above where it is called.
+// (Unfortunately, this tends to make zooming feel rather sluggish...we could
+// try to optimize that, possibly by trying to keep track of how many wheel events
+// we got and using bigger increments...it should be safe to set up a handler
+// that just counts them, as long as we don't initiate a new page load until we
+// get done loading this one. Or maybe there are some events in page load that
+// we could abort if we already got another zoom event. For now, just trying
+// to stop it crashing.)
+function setupWheelZooming() {
+    $("body").on("wheel", function(e) {
+        var theEvent = e.originalEvent as WheelEvent;
+        if (!theEvent.ctrlKey) return;
+        var command: string = null;
+        // Note the direction of the zoom is opposite the direction of the scroll.
+        if (theEvent.deltaY < 0) {
+            command = "edit/pageControls/zoomPlus";
+        } else if (theEvent.deltaY > 0) {
+            command = "edit/pageControls/zoomMinus";
+        }
+        if (command != null) {
+            // Zooming re-loads the page (because of a text-over-picture issue)
+            BloomApi.postThatMightNavigate(command);
+        }
+        // Setting the zoom is all we want to do in this context.
+        e.preventDefault();
+        e.cancelBubble = true;
+    });
 }
 
 function localizeCkeditorTooltips(bar: JQuery) {
