@@ -4,6 +4,7 @@ import { reportError, reportPreliminaryError } from "../lib/errorHandler";
 
 export class BloomApi {
     private static kBloomApiPrefix = "/bloom/api/";
+    private static pageIsClosing: boolean = false;
     // This function is designed to be used lilke this:
     // BloomApi.wrapAxios(axios.{get, post, etc}().then(...));
     // That is, the argument should be an AxiosPromise;
@@ -32,6 +33,9 @@ export class BloomApi {
         var axiosCallState = new Error("dummy");
         call.catch(error => {
             if (!report) {
+                return;
+            }
+            if (BloomApi.pageIsClosing) {
                 return;
             }
             // We want to report a two-part stack: the one from axiosCallState
@@ -100,6 +104,12 @@ export class BloomApi {
                 }
             });
         });
+    }
+
+    // This is called when a page starts to shut down. Attempts at sending to
+    // the server after this tend to fail unpredictably. Give up on reporting errors.
+    public static NotifyPageClosing() {
+        BloomApi.pageIsClosing = true;
     }
 
     // This method is used to get a result from Bloom.

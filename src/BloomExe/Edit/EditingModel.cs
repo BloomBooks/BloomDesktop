@@ -910,7 +910,7 @@ namespace Bloom.Edit
 			request.PostSucceeded();
 		}
 
-		private void RethinkPageAndReloadIt()
+		internal void RethinkPageAndReloadIt()
 		{
 			if (CannotSavePage())
 				return;

@@ -1501,11 +1501,13 @@ namespace Bloom.Edit
 			{
 				Settings.Default.PageZoom = value.ToString(CultureInfo.InvariantCulture);
 				Settings.Default.Save();
-				if (_browser1 != null)
-				{
-					RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().setZoom(" +
-								(value / 100.0).ToString() + ");}");
-				}
+				// The main current reason a zoom change requires us to reload the page is that
+				// Text-over-picture boxes don't otherwise adjust their size and position properly.
+				// If that gets fixed, we could consider reinstating a JS function we used to call
+				// here, SetZoom, which originally just changed the transform on the scaling container.
+				// However, when it was later changed to post a request for reloading the page,
+				// it became cleaner to just do the reload directly here.
+				_model.RethinkPageAndReloadIt();
 			}
 		}
 

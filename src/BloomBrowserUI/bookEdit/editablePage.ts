@@ -16,14 +16,12 @@ import {
     pageSelectionChanging,
     pageUnloading,
     disconnectForGarbageCollection,
-    setZoom,
     makeElement
 } from "./js/bloomEditing";
 export {
     pageSelectionChanging,
     pageUnloading,
     disconnectForGarbageCollection,
-    setZoom,
     makeElement
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";

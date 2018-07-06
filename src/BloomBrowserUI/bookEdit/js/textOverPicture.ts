@@ -146,7 +146,8 @@ class TextOverPictureManager {
         var imagePos = image[0].getBoundingClientRect();
         var wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
         // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
-        // factor was last changed. Therefore we force saving the page after setZoom() in bloomEditing.
+        // factor was last changed. Therefore we force reconstructing the page
+        // in the EditingView.Zoom setter (in C#).
         thisTOPBox.draggable({
             // adjust containment by scaling
             containment: [
