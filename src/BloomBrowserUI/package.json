@@ -10,13 +10,20 @@
         "node": "~8.10.0"
     },
     "scripts": {
-        "test": "karma start --browsers Firefox",
-        "testWithChromeContinuous": "karma start --browsers Chrome",
+        "test": "karma start --browsers Firefox  --single-run",
+        "testWatch": "karma start --browsers Firefox",
+        "testWatchChrome": "karma start --browsers Chrome",
         "teamcitytest": "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
+        "//": {
+            "build": "does a nice new clean build of the output/brower folder.",
+            "watch": "compiles TS, Less, Pug, etc automatically. Doesn't handle all non-code things like 'build' does."
+        },
         "build": "gulp",
-        "gitClean": "git clean -X --dry-run --exclude='!node_modules'",
+        "watch": "webpack --watch",
+        "gitSemiClean": "git clean -X --dry-run --exclude='!node_modules'",
         "precommit": "pretty-quick --staged",
-        "gitCleanForReal": "git clean -fX --exclude='!node_modules'"
+        "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
+        "tslint": "tslint --project tsconfig.json"
     },
     "repository": {
         "type": "git",
