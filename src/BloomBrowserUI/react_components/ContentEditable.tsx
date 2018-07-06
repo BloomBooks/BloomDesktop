@@ -38,7 +38,7 @@ export default class ContentEditable extends React.Component<
                         this.props.onEnterKeyPressed();
                     }
                 }}
-                contentEditable
+                contentEditable={true}
                 ref={div => {
                     this.editDiv = div;
                 }}

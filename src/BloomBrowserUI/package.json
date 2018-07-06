@@ -16,7 +16,8 @@
         "build": "gulp",
         "gitClean": "git clean -X --dry-run --exclude='!node_modules'",
         "precommit": "pretty-quick --staged",
-        "gitCleanForReal": "git clean -fX --exclude='!node_modules'"
+        "gitCleanForReal": "git clean -fX --exclude='!node_modules'",
+        "tslint": "tslint --project tsconfig.json"
     },
     "repository": {
         "type": "git",
@@ -82,14 +83,16 @@
         "markdown-it-attrs": "^1.2.1",
         "markdown-it-container": "^2.0.0",
         "path": "^0.12.7",
-        "prettier": "1.13.6",
+        "prettier": "latest",
         "pretty-quick": "^1.6.0",
         "replace-ext": "^1.0.0",
         "run-sequence": "^2.2.1",
         "semver": "^5.5.0",
         "style-loader": "^0.20.3",
         "ts-loader": "^4.1.0",
-        "tslint": "^5.9.1",
+        "tslint": "latest",
+        "tslint-config-prettier": "^1.13.0",
+        "tslint-react": "^3.6.0",
         "typescript": "^2.8.1",
         "webpack": "^4.6.0",
         "webpack-cli": "^2.1.2",
