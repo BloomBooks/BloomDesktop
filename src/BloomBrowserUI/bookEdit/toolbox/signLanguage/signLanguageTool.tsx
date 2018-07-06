@@ -250,19 +250,19 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private importRecording() {
-        BloomApi.post("toolbox/importVideo");
+        BloomApi.post("signLanguage/importVideo");
     }
 
     private deleteRecording() {
-        BloomApi.post("toolbox/deleteVideo");
+        BloomApi.post("signLanguage/deleteVideo");
     }
 
     private editOutside() {
-        BloomApi.post("toolbox/editVideo");
+        BloomApi.post("signLanguage/editVideo");
     }
 
     private restoreOriginal() {
-        BloomApi.post("toolbox/restoreOriginal");
+        BloomApi.post("signLanguage/restoreOriginal");
     }
 
     public turnOnVideo() {
@@ -391,7 +391,7 @@ export class SignLanguageToolControls extends React.Component<
             // raised when the user clicks stop and we call this.mediaRecorder.stop() above.
             var blob = new Blob(this.chunks, { type: "video/webm" });
             this.chunks = []; // enable garbage collection?
-            BloomApi.postDataWithConfig("toolbox/recordedVideo", blob, {
+            BloomApi.postDataWithConfig("signLanguage/recordedVideo", blob, {
                 headers: {
                     "Content-Type": "video/mp4"
                 }

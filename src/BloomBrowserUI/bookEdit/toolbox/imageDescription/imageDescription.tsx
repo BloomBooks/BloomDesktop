@@ -311,7 +311,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         }
         if (addedTranslationGroup) {
             // This inserts all the right bloom-editable divs in whatever languages are needed.
-            BloomApi.post("toolbox/saveChangesAndRethinkPageEvent");
+            BloomApi.postThatMightNavigate(
+                "common/saveChangesAndRethinkPageEvent"
+            );
             // This return is currently redundant but it emphasizes that you can't count on anything
             // more happening in this branch.The page will unload somewhere in the
             // course of saveChangesAndRethinkPageEvent. Then a new page will load and updateMarkup()
