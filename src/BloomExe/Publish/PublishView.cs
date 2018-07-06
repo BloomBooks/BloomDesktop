@@ -502,9 +502,11 @@ namespace Bloom.Publish
 					break;
 				}
 				case PublishModel.DisplayModes.Android:
+					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "android", "androidPublishUI.html"));
 					break;
 				case PublishModel.DisplayModes.EPUB:
+					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					// We rather mangled the Readium code in the process of cutting away its own navigation
 					// and other controls. It produces all kinds of JavaScript errors, but it seems to do
 					// what we want in our preview. So just suppress the toasts for all of them. This is unfortunate because
