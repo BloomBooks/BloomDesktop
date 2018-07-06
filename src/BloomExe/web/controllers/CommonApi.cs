@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -25,6 +26,7 @@ namespace Bloom.web.controllers
 		private readonly CollectionSettings _settings;
 		private readonly BookSelection _bookSelection;
 		public static bool AuthorMode { get; set; }
+		public EditingModel Model { get; set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
 		public CommonApi(CollectionSettings settings, BookSelection bookSelection)
@@ -42,6 +44,12 @@ namespace Bloom.web.controllers
 			server.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
 			server.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
 			server.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
+			server.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
+		}
+
+		private void RethinkPageAndReloadIt(ApiRequest request)
+		{
+			Model.RethinkPageAndReloadIt(request);
 		}
 
 		/// <summary>
@@ -95,7 +103,6 @@ namespace Bloom.web.controllers
 				request.ReplyWithText(AuthorMode ? "true" : "false");
 			}
 		}
-
 
 		public void HandleTopics(ApiRequest request)
 		{

@@ -52,7 +52,7 @@ namespace Bloom.Edit
 
 		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
 			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
-			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, SignLanguageApi signLanguageApi)
+			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, SignLanguageApi signLanguageApi, CommonApi commonApi)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -74,6 +74,7 @@ namespace Bloom.Edit
 			_signLanguageApi = signLanguageApi;
 			signLanguageApi.Model = _model;
 			signLanguageApi.View = this;
+			commonApi.Model = _model;
 			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
 			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
