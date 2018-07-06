@@ -37,19 +37,12 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("toolbox/recordedVideo", HandleRecordedVideoRequest, true);
-			server.RegisterEndpointHandler("toolbox/editVideo", HandleEditVideoRequest, true);
-			server.RegisterEndpointHandler("toolbox/deleteVideo", HandleDeleteVideoRequest, true);
-			server.RegisterEndpointHandler("toolbox/restoreOriginal", HandleRestoreOriginalRequest, true);
-			server.RegisterEndpointHandler("toolbox/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
-			server.RegisterEndpointHandler("toolbox/importVideo", HandleImportVideoRequest, true);
+			server.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
+			server.RegisterEndpointHandler("signLanguage/editVideo", HandleEditVideoRequest, true);
+			server.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
+			server.RegisterEndpointHandler("signLanguage/restoreOriginal", HandleRestoreOriginalRequest, true);
+			server.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
 		}
-
-		private void RethinkPageAndReloadIt(ApiRequest request)
-		{
-			Model.RethinkPageAndReloadIt(request);
-		}
-
 
 		public Book.Book CurrentBook
 		{
@@ -275,17 +268,15 @@ namespace Bloom.web.controllers
 				if (result == DialogResult.OK)
 					path = dlg.FileName;
 			}));
-			if (string.IsNullOrEmpty(path))
-			{
-				request.Failed("user did not select video file");
-			}
-			else
+			if (!string.IsNullOrEmpty(path))
 			{
 				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				RobustFile.Copy(path, newVideoPath);
 				SaveChangedVideo(videoContainer, newVideoPath, "Bloom had a problem including that video");
-				request.PostSucceeded();
 			}
+			// If the user canceled, we didn't exactly succeed, but having the user cancel is such a normal
+			// event that posting a failure, which is a nuisance to ignore, is not warranted.
+			request.PostSucceeded();
 		}
 
 		// Request from sign language tool to delete the selected video.
@@ -307,7 +298,9 @@ namespace Bloom.web.controllers
 				var didDelete = ConfirmRecycleDialog.ConfirmThenRecycle(label, videoPath);
 				if (!didDelete)
 				{
-					request.Failed("user canceled");
+					// We didn't exactly succeed, but having the user cancel is such a normal
+					// event that posting a failure, which is a nuisance to ignore, is not warranted.
+					request.PostSucceeded();
 					return;
 
 				}
