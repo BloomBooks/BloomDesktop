@@ -90,9 +90,7 @@ function setupLayoutMode() {
         $this.append(getTextBoxIdentifier());
     });
     // Text should not be editable in layout mode
-    $(".bloom-editable:visible[contentEditable=true]").removeAttr(
-        "contentEditable"
-    );
+    $(".bloom-editable[contentEditable=true]").removeAttr("contentEditable");
     // Images cannot be changed (other than growing/shrinking with container) in layout mode
     $(".bloom-imageContainer")
         .off("mouseenter")
@@ -133,7 +131,9 @@ function layoutToggleClickHandler() {
         const toggleTransitionLength = 450;
         setTimeout(function() {
             $("html").off("keydown.origami");
-            BloomApi.post("toolbox/saveChangesAndRethinkPageEvent");
+            BloomApi.postThatMightNavigate(
+                "common/saveChangesAndRethinkPageEvent"
+            );
         }, toggleTransitionLength);
     }
 }

@@ -895,7 +895,7 @@ export function setZoom(newScale: string) {
         "transform: scale(" + newScale + "); transform-origin: top left;"
     );
     // Save changes, so TextOverPicture draggables work correctly.
-    BloomApi.post("toolbox/saveChangesAndRethinkPageEvent");
+    BloomApi.post("common/saveChangesAndRethinkPageEvent");
 }
 
 // This is used to keep wheel zooming messages from happening too fast.
