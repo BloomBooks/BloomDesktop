@@ -951,6 +951,7 @@ namespace Bloom.Book
 			//hack
 			if (bookDOM == OurHtmlDom) //we already have a data for this
 			{
+				_bookData.MergeBrandingSettings(_collectionSettings.BrandingProjectKey);
 				_bookData.SynchronizeDataItemsThroughoutDOM();
 
 				// I think we should only mess with tags if we are updating the book for real.

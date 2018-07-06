@@ -148,6 +148,116 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void MergeSettings_NoSettings_DoesNothing()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+				</div>
+			 </body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			data.MergeBrandingSettings("nonsense");
+			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+		}
+
+		[Test]
+		public void MergeSettings_UpdatesEmptyField()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+						<div data-book='insideBackCover' lang='xyz'></div>
+				</div>
+			 </body></html>");
+
+			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+					// First item tests successful setting;
+					// Second tests setting of another language of same property;
+					// Third tests setting of another property;
+					// Fourth tests overwrite prevented by existing value;
+					// Remaining ones should be ignored, present to verify this.
+					@"{
+	""DefaultData"": [{
+		""DataBook"": ""insideBackCover"",
+		""Lang"": ""xyz"",
+		""Content"": ""stuff from settings""
+	}, {
+		""DataBook"": ""insideBackCover"",
+		""Lang"": ""en"",
+		""Content"": ""English stuff from settings""
+	},  {
+		""DataBook"": ""title"",
+		""Lang"": ""xyz"",
+		""Content"": ""xyz title""
+	}, {
+		""DataBook"": ""bookTitle"",
+		""Lang"": ""xyz"",
+		""Content"": ""stuff from settings that should not be used""
+	}, {
+		""Lang"": ""xyz"",
+		""Content"": ""stuff from settings that should not be used""
+	}, {
+		""DataBook"": ""bookTitle"",
+		""Content"": ""stuff from settings that should not be used""
+	}, {
+		""DataBook"": ""bookTitle"",
+		""Lang"": ""xyz""
+	}, {
+		""DataBook"": "" "",
+		""Lang"": ""xyz"",
+		""Content"": ""stuff from settings that should not be used""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+
+				Assert.AreEqual("stuff from settings", data.GetVariableOrNull("insideBackCover", "xyz"));
+				Assert.AreEqual("English stuff from settings", data.GetVariableOrNull("insideBackCover", "en"));
+				Assert.AreEqual("xyz title", data.GetVariableOrNull("title", "xyz"));
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			}
+		}
+
+		[Test]
+		public void MergeSettings_OverridesIfSpecified()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+						<div data-book='insideBackCover' lang='xyz'>original back cover</div>
+				</div>
+			 </body></html>");
+
+			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+					// First item tests successful setting;
+					// Second tests setting of another language of same property;
+					@"{
+	""DefaultData"": [{
+		""DataBook"": ""insideBackCover"",
+		""Lang"": ""xyz"",
+		""Content"": ""stuff from settings"",
+		""Override"": true
+	}, {
+		""DataBook"": ""bookTitle"",
+		""Lang"": ""xyz"",
+		""Content"": ""stuff from settings that should not be used""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+
+				Assert.AreEqual("stuff from settings", data.GetVariableOrNull("insideBackCover", "xyz"));
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			}
+		}
+
+		[Test]
 		public void SuckInDataFromEditedDom_XmatterPageAttributeAddedToXmatterPage_XmatterPageAttributeAddedToBookDataAndDataDiv()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html><head></head><body>

@@ -95,11 +95,20 @@ namespace Bloom.Api
 			return path;
 		}
 
+		public class DefaultDataItem
+		{
+			public string DataBook;
+			public string Lang;
+			public string Content;
+			public bool Override;
+		}
+
 		public class Settings
 		{
 			public string CopyrightNotice;
 			public string LicenseUrl;
 			public string LicenseRightsStatement;
+			public DefaultDataItem[] DefaultData;
 		}
 
 		/// <summary>
