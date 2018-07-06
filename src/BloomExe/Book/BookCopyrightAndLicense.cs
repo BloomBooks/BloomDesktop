@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -31,16 +32,16 @@ namespace Bloom.Book
 		/// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
 		//but unit tests can instead provide a path to the folder.
 		/// </param>
-		public static Metadata GetMetadata(HtmlDom dom, string brandingNameOrFolderPath = "")
+		public static Metadata GetMetadata(HtmlDom dom)
 		{
 			if (ShouldSetToDefaultCopyrightAndLicense(dom))
 			{
-				return GetMetadataWithDefaultCopyrightAndLicense(brandingNameOrFolderPath);
+				return GetMetadataWithDefaultCopyrightAndLicense();
 			}
 			return CreateMetadata(dom.GetBookSetting("copyright"), GetLicenseUrl(dom), dom.GetBookSetting("licenseNotes"));
 		}
 
-		public static Metadata GetOriginalMetadata(HtmlDom dom, string brandingNameOrFolderPath = "")
+		public static Metadata GetOriginalMetadata(HtmlDom dom)
 		{
 			return CreateMetadata(dom.GetBookSetting("originalCopyright"), dom.GetBookSetting("originalLicenseUrl").GetExactAlternative("*"), dom.GetBookSetting("originalLicenseNotes"));
 		}
@@ -105,30 +106,11 @@ namespace Bloom.Book
 			return dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });
 		}
 
-		private static Metadata GetMetadataWithDefaultCopyrightAndLicense(string brandingNameOrPath)
+		private static Metadata GetMetadataWithDefaultCopyrightAndLicense()
 		{
 			var metadata = new Metadata();
 			Logger.WriteEvent("For BL-3166 Investigation: GetMetadata() setting to default license");
 			metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
-
-			//OK, that's all we need, the rest is blank. That is, unless we are we are working with a brand
-			//that has declared some defaults in a settings.json file:
-			var settings = BrandingApi.GetSettings(brandingNameOrPath);
-			if(settings != null)
-			{
-				if(!string.IsNullOrEmpty(settings.CopyrightNotice))
-				{
-					metadata.CopyrightNotice = settings.CopyrightNotice;
-				}
-				if(!string.IsNullOrEmpty(settings.LicenseUrl))
-				{
-					metadata.License = CreativeCommonsLicense.FromLicenseUrl(settings.LicenseUrl);
-				}
-				if(!string.IsNullOrEmpty(settings.LicenseUrl))
-				{
-					metadata.License.RightsStatement = settings.LicenseRightsStatement;
-				}
-			}
 			return metadata;
 		}
 
@@ -305,14 +287,17 @@ namespace Bloom.Book
 			storage.Dom.RemoveBookSetting("licenseNotes");
 		}
 
+		public static IEnumerable<string> SettingsToCheckForDefaultCopyright => new[] {"copyright", "licenseUrl", "licenseNotes"};
+
 		private static bool ShouldSetToDefaultCopyrightAndLicense(HtmlDom dom)
 		{
-			var hasCopyright = !dom.GetBookSetting("copyright").Empty;
-			var hasLicenseUrl = !dom.GetBookSetting("licenseUrl").Empty;
-			var hasLicenseNotes = !dom.GetBookSetting("licenseNotes").Empty;
-
 			//Enhance: this logic is perhaps overly restrictive?
-			return !hasCopyright && !hasLicenseUrl && !hasLicenseNotes;
+			foreach (var setting in SettingsToCheckForDefaultCopyright)
+			{
+				if (!dom.GetBookSetting(setting).Empty)
+					return false;
+			}
+			return true;
 		}
 
 		public static void LogMetdata(HtmlDom dom)

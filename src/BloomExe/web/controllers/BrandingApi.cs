@@ -101,11 +101,22 @@ namespace Bloom.Api
 			return path;
 		}
 
+		public class PresetItem
+		{
+			[JsonProperty("data-book")]
+			public string DataBook;
+			[JsonProperty("lang")]
+			public string Lang;
+			[JsonProperty("content")]
+			public string Content;
+			[JsonProperty("condition")]
+			public string Condition; // one of always (override), ifEmpty (default), ifAllCopyrightEmpty
+		}
+
 		public class Settings
 		{
-			public string CopyrightNotice;
-			public string LicenseUrl;
-			public string LicenseRightsStatement;
+			[JsonProperty("presets")]
+			public PresetItem[] Presets;
 		}
 
 		/// <summary>
