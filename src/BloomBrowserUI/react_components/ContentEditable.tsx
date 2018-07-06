@@ -14,15 +14,15 @@ export default class ContentEditable extends React.Component<
     IContentEditableProps,
     {}
 > {
-    lastContent: string;
-    editDiv: HTMLDivElement;
-    ipPosition: number;
-    ipNode: Node;
+    private lastContent: string;
+    private editDiv: HTMLDivElement;
+    private ipPosition: number;
+    private ipNode: Node;
 
     constructor(props: IContentEditableProps) {
         super(props);
     }
-    render() {
+    public render() {
         return (
             <div
                 id="contenteditable"
@@ -51,12 +51,12 @@ export default class ContentEditable extends React.Component<
     // The idea here is to minimise updating the div when content didn't really change, to reduce
     // the frequency with which the cursor gets messed up and (hopefully) restored. I'm not sure how
     // much it helps; it wasn't enough without the componentDidUpdate trick.
-    shouldComponentUpdate(nextProps) {
+    public shouldComponentUpdate(nextProps) {
         let result = nextProps.content !== this.props.content;
         return result;
     }
 
-    componentDidUpdate() {
+    public componentDidUpdate() {
         if (this.ipNode !== window.getSelection().anchorNode) {
             // updated for some other reason than user editing...don't mess with window selection.
             return;
@@ -70,7 +70,7 @@ export default class ContentEditable extends React.Component<
         sel.addRange(range);
     }
 
-    emitChange(event: React.FormEvent<HTMLDivElement>) {
+    private emitChange(event: React.FormEvent<HTMLDivElement>) {
         var content: string = event.currentTarget.innerText;
         if (this.props.onChange && content !== this.lastContent) {
             // onChange will re-render, messing up the cursor position. So save it.

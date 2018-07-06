@@ -14,10 +14,10 @@ import theOneLocalizationManager from "../../../../lib/localizationManager/local
 import { BloomApi } from "../../../../utils/bloomApi";
 
 export class DecodableReaderToolboxTool implements ITool {
-    makeRootElement(): HTMLDivElement {
+    public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
             if (settings["decodableReaderState"]) {
                 var state = new DRTState();
@@ -52,14 +52,14 @@ export class DecodableReaderToolboxTool implements ITool {
             }
         });
     }
-    isAlwaysEnabled(): boolean {
+    public isAlwaysEnabled(): boolean {
         return false;
     }
-    isExperimental(): boolean {
+    public isExperimental(): boolean {
         return false;
     }
 
-    setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
+    public setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.
         $(container)
             .find(".bloom-editable")
@@ -97,7 +97,7 @@ export class DecodableReaderToolboxTool implements ITool {
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
-    finishToolLocalization(paneDOM: HTMLElement) {
+    public finishToolLocalization(paneDOM: HTMLElement) {
         // DRT has sort buttons with tooltips that are HTML 'i' elements with 'title' attributes.
         // Update those 'title' attributes from localizationManager.
 
@@ -134,7 +134,7 @@ export class DecodableReaderToolboxTool implements ITool {
             });
     }
 
-    setTitleOfI(paneDOM: HTMLElement, rootId: string, val: string) {
+    public setTitleOfI(paneDOM: HTMLElement, rootId: string, val: string) {
         // Apparently in some cases asyncGetText may return before the document is ready.
         $(paneDOM.ownerDocument).ready(() => {
             $(paneDOM.ownerDocument)
@@ -144,16 +144,16 @@ export class DecodableReaderToolboxTool implements ITool {
         });
     }
 
-    configureElements(container: HTMLElement) {
+    public configureElements(container: HTMLElement) {
         this.setupReaderKeyAndFocusHandlers(container);
     }
 
-    showTool() {
+    public showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
     }
 
-    newPageReady() {
+    public newPageReady() {
         // Most cases don't require setMarkupType(), but when switching pages
         // it will have been set to 0 by detachFromPage() on the old page.
         getTheOneReaderToolsModel().setMarkupType(1);
@@ -161,21 +161,21 @@ export class DecodableReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    hideTool() {
+    public hideTool() {
         // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
     }
 
-    detachFromPage() {
+    public detachFromPage() {
         getTheOneReaderToolsModel().setMarkupType(0);
     }
 
-    updateMarkup() {
+    public updateMarkup() {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    id() {
+    public id() {
         return "decodableReader";
     }
 
-    hasRestoredSettings: boolean;
+    public hasRestoredSettings: boolean;
 }

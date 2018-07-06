@@ -9,7 +9,7 @@ interface IOptionProps extends ILocalizationProps {
 
 // An <option> element that is localizable.
 export default class Option extends LocalizableElement<IOptionProps, {}> {
-    render() {
+    public render() {
         return (
             <option className={this.props.className} value={this.props.value}>
                 {this.getLocalizedContent()}

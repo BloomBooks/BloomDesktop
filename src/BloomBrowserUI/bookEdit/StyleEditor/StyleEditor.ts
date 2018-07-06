@@ -67,7 +67,7 @@ export default class StyleEditor {
         this._supportFilesRoot = supportFilesRoot;
     }
 
-    static GetStyleClassFromElement(target: HTMLElement) {
+    public static GetStyleClassFromElement(target: HTMLElement) {
         var c = $(target).attr("class");
         if (!c) {
             c = "";
@@ -99,7 +99,7 @@ export default class StyleEditor {
         return coverTitleClass;
     }
 
-    static updateCoverStyleName(
+    private static updateCoverStyleName(
         target: HTMLElement,
         oldCoverTitleClass: string
     ): string {
@@ -115,17 +115,17 @@ export default class StyleEditor {
     }
 
     // obsolete?
-    MakeBigger(target: HTMLElement) {
+    public MakeBigger(target: HTMLElement) {
         this.ChangeSize(target, 2);
         $("div.bloom-editable, textarea").qtipSecondary("reposition");
     }
     // obsolete?
-    MakeSmaller(target: HTMLElement) {
+    public MakeSmaller(target: HTMLElement) {
         this.ChangeSize(target, -2);
         $("div.bloom-editable, textarea").qtipSecondary("reposition");
     }
 
-    static MigratePreStyleBook(target: HTMLElement): string {
+    private static MigratePreStyleBook(target: HTMLElement): string {
         var parentPage: HTMLDivElement = <HTMLDivElement>(
             (<any>$(target).closest(".bloom-page")[0])
         );
@@ -140,7 +140,7 @@ export default class StyleEditor {
         return null;
     }
 
-    static GetStyleNameForElement(target: HTMLElement): string {
+    private static GetStyleNameForElement(target: HTMLElement): string {
         var styleName: string = this.GetStyleClassFromElement(target);
         if (!styleName) {
             // The style name is probably on the parent translationGroup element
@@ -169,7 +169,7 @@ export default class StyleEditor {
         return styleName;
     }
 
-    static GetBaseStyleNameForElement(target: HTMLElement): string {
+    private static GetBaseStyleNameForElement(target: HTMLElement): string {
         var styleName = StyleEditor.GetStyleNameForElement(target); // with '-style'
         var suffixIndex = styleName.indexOf("-style");
         if (suffixIndex < 0) {
@@ -178,13 +178,16 @@ export default class StyleEditor {
         return styleName.substr(0, suffixIndex);
     }
 
-    static SetStyleNameForElement(target: HTMLElement, newStyle: string) {
+    private static SetStyleNameForElement(
+        target: HTMLElement,
+        newStyle: string
+    ) {
         var oldStyle: string = this.GetStyleClassFromElement(target);
         $(target).removeClass(oldStyle);
         $(target).addClass(newStyle);
     }
 
-    static GetLangValueOrNull(target: HTMLElement): string {
+    private static GetLangValueOrNull(target: HTMLElement): string {
         var langAttr = $(target).attr("lang");
         if (!langAttr) {
             return null;
@@ -193,7 +196,7 @@ export default class StyleEditor {
     }
 
     // obsolete?
-    ChangeSize(target: HTMLElement, change: number) {
+    private ChangeSize(target: HTMLElement, change: number) {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
             return;
@@ -219,12 +222,12 @@ export default class StyleEditor {
         this.AddQtipToElement($("#formatButton"), toolTip);
     }
 
-    GetCalculatedFontSizeInPoints(target: HTMLElement): number {
+    public GetCalculatedFontSizeInPoints(target: HTMLElement): number {
         var sizeInPx = $(target).css("font-size");
         return this.ConvertPxToPt(parseInt(sizeInPx, 10));
     }
 
-    ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
+    public ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
         var styleName = StyleEditor.GetStyleNameForElement(target); // finds 'x-style' class or null
         if (!styleName) {
             alert(
@@ -256,7 +259,7 @@ export default class StyleEditor {
     // Only the last class in a sequence is used; this lets us predefine
     // styles like DIV.bloom-editing.Heading1 and make their selectors specific enough to work,
     // but not impossible to override with a custom definition.
-    getFormattingStyles(): FormattingStyle[] {
+    public getFormattingStyles(): FormattingStyle[] {
         var styles: FormattingStyle[] = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
             var sheet = <StyleSheet>(<any>document.styleSheets[i]);
@@ -301,7 +304,7 @@ export default class StyleEditor {
     // but we would have needed this switch to deal with existing books anyway, so...
     // we'll just use the switch.
     // Changes here should be reflected in the Bloom.xlf file too.
-    getDisplayName(ruleId: string): string {
+    public getDisplayName(ruleId: string): string {
         var displayName: string = null;
         switch (ruleId) {
             case "BigWords":
@@ -341,7 +344,7 @@ export default class StyleEditor {
 
     // Get the existing rule for the specified style.
     // Will return null if the style has no definition, OR if it already has a user-defined version
-    getPredefinedStyle(target: string): CSSRule {
+    public getPredefinedStyle(target: string): CSSRule {
         var result = null;
         for (var i = 0; i < document.styleSheets.length; i++) {
             var sheet = <StyleSheet>(<any>document.styleSheets[i]);
@@ -391,7 +394,7 @@ export default class StyleEditor {
     }
 
     //note, this currently just makes an element in the document, not a separate file
-    GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet {
+    public GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet {
         var styleSheet = this.FindExistingUserModifiedStyleSheet();
         if (styleSheet == null) {
             var newSheet = document.createElement("style");
@@ -414,7 +417,7 @@ export default class StyleEditor {
     // This is used for all of character tab when localizing, and always for font name.
     // if forChildParas is true, the rule sought will have a selector like ".mystyle-style p" to select paragraphs
     // inside the block that has the style.
-    GetOrCreateRuleForStyle(
+    public GetOrCreateRuleForStyle(
         styleName: string,
         langAttrValue: string,
         ignoreLanguage: boolean,
@@ -471,7 +474,7 @@ export default class StyleEditor {
     }
 
     // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
-    ReplaceExistingStyle(
+    public ReplaceExistingStyle(
         sheet: CSSStyleSheet,
         index: number,
         newStyle: string
@@ -480,7 +483,7 @@ export default class StyleEditor {
         sheet.insertRule(newStyle, index);
     }
 
-    ConvertPxToPt(pxSize: number, round = true): number {
+    public ConvertPxToPt(pxSize: number, round = true): number {
         var tempDiv = document.createElement("div");
         tempDiv.style.width = "1000pt";
         document.body.appendChild(tempDiv);
@@ -500,7 +503,7 @@ export default class StyleEditor {
      * @param {string} styleName the style whose information we are reporting
      * @return returns the tooltip string
      */
-    GetToolTip(targetBox: HTMLElement, styleName: string): string {
+    public GetToolTip(targetBox: HTMLElement, styleName: string): string {
         //Review: Gordon (JH) I'm not clear if this is still used or why, since it seems to be duplicated in AttachToBox
         styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
         styleName = styleName.replace(/-/g, " "); //show users a space instead of dashes
@@ -528,7 +531,11 @@ export default class StyleEditor {
      * @param toolTip the text of the tooltip to display
      * @param delay how many milliseconds we want to display the tooltip (defaults to 3sec) -- currently ignored
      */
-    AddQtipToElement(element: JQuery, toolTip: string, delay: number = 3000) {
+    public AddQtipToElement(
+        element: JQuery,
+        toolTip: string,
+        delay: number = 3000
+    ) {
         if (element.length === 0) return;
         // When the element is a span or similar this produces the tooltip
         element.attr("title", toolTip);
@@ -554,7 +561,7 @@ export default class StyleEditor {
         this.AddQtipToElement(element.find("select"), toolTip, delay);
     }
 
-    static GetClosestValueInList(
+    public static GetClosestValueInList(
         listOfOptions: Array<string>,
         valueToMatch: number
     ) {
@@ -587,7 +594,7 @@ export default class StyleEditor {
         return lineHeight;
     }
 
-    getPointSizes() {
+    public getPointSizes() {
         // perhaps temporary until we allow arbitrary values (BL-948), as a favor to Mike:
         return [
             "7",
@@ -623,7 +630,7 @@ export default class StyleEditor {
         //return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
     }
 
-    getLineSpaceOptions() {
+    public getLineSpaceOptions() {
         return [
             "0.7",
             "0.8",
@@ -641,7 +648,7 @@ export default class StyleEditor {
         ];
     }
 
-    getWordSpaceOptions(): string[] {
+    public getWordSpaceOptions(): string[] {
         return [
             theOneLocalizationManager.getText(
                 "EditTab.FormatDialog.WordSpacingNormal",
@@ -660,7 +667,7 @@ export default class StyleEditor {
 
     // We need to get localized versions of all the default styles and not return until we get them all.
     // "all" function from http://hermanradtke.com/2011/05/12/managing-multiple-jquery-promises.html
-    all(promises: JQueryPromise<string>[]): JQueryPromise<any> {
+    public all(promises: JQueryPromise<string>[]): JQueryPromise<any> {
         var deferred = $.Deferred();
         var fulfilled = 0;
         var length = promises.length;
@@ -683,7 +690,9 @@ export default class StyleEditor {
     }
 
     // Collects all the style name promises to use in an async version of populateSelect()
-    getStylePromises(styles: FormattingStyle[]): JQueryPromise<string>[] {
+    public getStylePromises(
+        styles: FormattingStyle[]
+    ): JQueryPromise<string>[] {
         var results: string[] = [];
         var promises: JQueryPromise<string>[] = [];
 
@@ -701,12 +710,12 @@ export default class StyleEditor {
         return promises;
     }
 
-    getParagraphSpaceOptions() {
+    public getParagraphSpaceOptions() {
         return ["0", "0.5", "0.75", "1", "1.25"];
     }
 
     // Returns an object giving the current selection for each format control.
-    getFormatValues() {
+    public getFormatValues() {
         var box = $(this.boxBeingEdited);
         var sizeString = box.css("font-size");
         var pxSize = parseInt(sizeString, 10);
@@ -787,7 +796,7 @@ export default class StyleEditor {
         };
     }
 
-    AdjustFormatButton(element: Element): void {
+    public AdjustFormatButton(element: Element): void {
         // Bizarrely, bottom:0 means to place it where the bottom of the content would be
         // if not scrolled. That's where we want it, but we want it to stay at the bottom
         // even if the block is overflowing and scrolled, and bottom:0 doesn't keep it
@@ -798,7 +807,7 @@ export default class StyleEditor {
         });
     }
 
-    AttachToBox(targetBox: HTMLElement) {
+    public AttachToBox(targetBox: HTMLElement) {
         // This method is called when the window gets focus. This may be before CkEditor has finished loading.
         // Somewhere in the course of loading, it detects editable divs that are empty except for our gear icon.
         // It decides to insert some content...typically <p><br></p>, and in doing so, replaces the gear icon div.
@@ -1123,7 +1132,7 @@ export default class StyleEditor {
         });
     }
 
-    setupSelectControls(fonts, current, styleName) {
+    public setupSelectControls(fonts, current, styleName) {
         this.populateSelect(
             fonts,
             current.fontName,
@@ -1170,7 +1179,7 @@ export default class StyleEditor {
         );
     }
 
-    getButtonIds() {
+    public getButtonIds() {
         return [
             "bold",
             "italic",
@@ -1183,7 +1192,7 @@ export default class StyleEditor {
         ];
     }
 
-    selectButtons(current) {
+    public selectButtons(current) {
         this.selectButton("bold", current.bold);
         this.selectButton("italic", current.italic);
         this.selectButton("underline", current.underline);
@@ -1193,7 +1202,7 @@ export default class StyleEditor {
     }
 
     // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
-    stateChange(id: string, newState: string) {
+    public stateChange(id: string, newState: string) {
         var stateToAdd = "state-" + newState;
         var stateElement = $("#" + id);
         var existingClasses = stateElement.attr("class").split(/\s+/);
@@ -1206,7 +1215,7 @@ export default class StyleEditor {
     }
 
     // Specific State Machine changes the Style section state
-    styleStateChange(newState: string) {
+    public styleStateChange(newState: string) {
         if (newState === "enteringStyle" && $("#style-select-input").val()) {
             $("#create-button").removeAttr("disabled");
         } else {
@@ -1215,7 +1224,7 @@ export default class StyleEditor {
         this.stateChange("style-group", newState);
     }
 
-    styleInputChanged() {
+    public styleInputChanged() {
         var typedStyle = $("#style-select-input").val();
         // change state based on input
         if (typedStyle) {
@@ -1227,13 +1236,13 @@ export default class StyleEditor {
         this.styleStateChange("enteringStyle");
     }
 
-    showCreateStyle() {
+    public showCreateStyle() {
         this.styleStateChange("enteringStyle");
         $("#style-select-input").focus();
         return false; // prevent default click
     }
 
-    buttonClick(buttonDiv) {
+    public buttonClick(buttonDiv) {
         var button = $(buttonDiv);
         var id = button.attr("id");
         var index = id.indexOf("-");
@@ -1271,14 +1280,14 @@ export default class StyleEditor {
         }
     }
 
-    selectButton(id: string, val: boolean) {
+    public selectButton(id: string, val: boolean) {
         if (val) {
             $("#" + id).addClass("selectedIcon");
         }
     }
 
     // The Char tab description is language-dependent when localizing, not when authoring.
-    getCharTabDescription() {
+    public getCharTabDescription() {
         var styleName = StyleEditor.GetBaseStyleNameForElement(
             this.boxBeingEdited
         );
@@ -1316,7 +1325,7 @@ export default class StyleEditor {
     }
 
     // The More tab settings are never language-dependent
-    getParagraphTabDescription() {
+    public getParagraphTabDescription() {
         var styleName = StyleEditor.GetBaseStyleNameForElement(
             this.boxBeingEdited
         );
@@ -1334,13 +1343,13 @@ export default class StyleEditor {
     }
 
     // did the user type the name of an existing style?
-    inputStyleExists(): boolean {
+    public inputStyleExists(): boolean {
         var typedStyle = $("#style-select-input").val();
         return this.styles.some(style => style.hasStyleId(typedStyle));
     }
 
     // Make a new style. Initialize to all current values. Caller should ensure it is a valid new style.
-    createStyle() {
+    public createStyle() {
         var typedStyle = $("#style-select-input").val();
         StyleEditor.SetStyleNameForElement(
             this.boxBeingEdited,
@@ -1363,7 +1372,7 @@ export default class StyleEditor {
         $("#style-select-input").val("");
     }
 
-    updateStyle() {
+    public updateStyle() {
         this.changeFont();
         this.changeSize();
         this.changeLineheight();
@@ -1377,7 +1386,7 @@ export default class StyleEditor {
         this.styleStateChange("initial"); // go back to initial state so user knows it worked
     }
 
-    asyncPopulateSelect(
+    public asyncPopulateSelect(
         selectId: string,
         styles: FormattingStyle[],
         localizedNamePromises: JQueryPromise<string>[],
@@ -1420,7 +1429,7 @@ export default class StyleEditor {
         );
     }
 
-    sortByLocalizedName(styles: FormattingStyle[]): FormattingStyle[] {
+    public sortByLocalizedName(styles: FormattingStyle[]): FormattingStyle[] {
         return styles.sort((s1: FormattingStyle, s2: FormattingStyle) => {
             if (s1.getLocalizedName() > s2.getLocalizedName()) {
                 return 1;
@@ -1432,7 +1441,7 @@ export default class StyleEditor {
         });
     }
 
-    stringSort(items: string[]): string[] {
+    public stringSort(items: string[]): string[] {
         return items.sort((a: string, b: string) => {
             if (a > b) {
                 return 1;
@@ -1444,7 +1453,7 @@ export default class StyleEditor {
         });
     }
 
-    populateSelect(
+    public populateSelect(
         items: string[],
         current,
         id,
@@ -1503,7 +1512,7 @@ export default class StyleEditor {
         $("#" + id).html(options);
     }
 
-    changeBold() {
+    public changeBold() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1525,7 +1534,7 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    changeItalic() {
+    public changeItalic() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1547,7 +1556,7 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    changeUnderline() {
+    public changeUnderline() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1569,7 +1578,7 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    changeFont() {
+    public changeFont() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1585,7 +1594,7 @@ export default class StyleEditor {
     // to be available to us through the injected setting 'languageForNewTextBoxes'.
     // (If that concept diverges from 'the language whose style settings are the default' we may need to
     // inject a distinct value.)
-    shouldSetDefaultRule() {
+    public shouldSetDefaultRule() {
         var target = this.boxBeingEdited;
         // GetSettings is injected into the page by C#.
         var defLang = (<any>GetSettings()).languageForNewTextBoxes;
@@ -1598,7 +1607,7 @@ export default class StyleEditor {
         return !$(target).hasClass("bloom-nodefaultstylerule");
     }
 
-    changeSize() {
+    public changeSize() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1623,7 +1632,7 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    changeLineheight() {
+    public changeLineheight() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1637,7 +1646,7 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    changeWordSpace() {
+    public changeWordSpace() {
         //careful here: the labels we get are localized, so you can't just compare to English ones (BL-3527)
         if (this.ignoreControlChanges) {
             return;
@@ -1663,7 +1672,7 @@ export default class StyleEditor {
         }
         this.cleanupAfterStyleChange();
     }
-    changeParaSpacing() {
+    public changeParaSpacing() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1673,7 +1682,7 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    changePosition() {
+    public changePosition() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1687,7 +1696,7 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    changeIndent() {
+    public changeIndent() {
         if (this.ignoreControlChanges) {
             return;
         }
@@ -1710,7 +1719,7 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    getSettings(ruleInput: string): string[] {
+    public getSettings(ruleInput: string): string[] {
         var index1 = ruleInput.indexOf("{");
         var rule = ruleInput;
         if (index1 >= 0) {
@@ -1720,7 +1729,7 @@ export default class StyleEditor {
         return rule.split(";");
     }
 
-    selectStyle() {
+    public selectStyle() {
         var style = $("#styleSelect").val();
         $("#style-select-input").val(""); // we've chosen a style from the list, so we aren't creating a new one.
         StyleEditor.SetStyleNameForElement(
@@ -1766,7 +1775,7 @@ export default class StyleEditor {
         this.UpdateControlsToReflectAppliedStyle();
     }
 
-    UpdateControlsToReflectAppliedStyle() {
+    public UpdateControlsToReflectAppliedStyle() {
         var current = this.getFormatValues();
         this.ignoreControlChanges = true;
 
@@ -1802,13 +1811,13 @@ export default class StyleEditor {
     // was actually neglecting to prepend # before the id. The old solution left the problem BL-3422
     // which was eventually fixed by changing createStyle so that it doesn't need to use this
     // method at all. As far as I can tell, doing this works.
-    setValueAndUpdateSelect2Control(id: string, value: string) {
+    public setValueAndUpdateSelect2Control(id: string, value: string) {
         $("#" + id)
             .val(value)
             .trigger("change");
     }
 
-    getStyleRule(ignoreLanguage: boolean, forChildPara?: boolean) {
+    public getStyleRule(ignoreLanguage: boolean, forChildPara?: boolean) {
         var target = this.boxBeingEdited;
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
@@ -1823,7 +1832,7 @@ export default class StyleEditor {
         );
     }
 
-    cleanupAfterStyleChange() {
+    public cleanupAfterStyleChange() {
         var target = this.boxBeingEdited;
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {

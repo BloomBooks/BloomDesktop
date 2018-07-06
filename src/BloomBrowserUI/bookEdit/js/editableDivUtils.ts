@@ -6,7 +6,7 @@ interface qtipInterface extends JQuery {
 }
 
 export class EditableDivUtils {
-    static getElementSelectionIndex(element: HTMLElement): number {
+    public static getElementSelectionIndex(element: HTMLElement): number {
         var page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")
         );
@@ -25,7 +25,7 @@ export class EditableDivUtils {
         return myRange.toString().length;
     }
 
-    static selectAtOffset(node: Node, offset: number): void {
+    public static selectAtOffset(node: Node, offset: number): void {
         var iframeWindow: Window = (<HTMLIFrameElement>(
             parent.window.document.getElementById("page")
         )).contentWindow;
@@ -46,7 +46,7 @@ export class EditableDivUtils {
      * @param node
      * @param offset
      */
-    static makeSelectionIn(
+    public static makeSelectionIn(
         node: Node,
         offset: number,
         divBrCount: number,
@@ -123,7 +123,7 @@ export class EditableDivUtils {
     // current viewport. Method takes into consideration zoom factor. If the dialog is draggable,
     // it also modifies the draggable options to account for a scrolling bug in jqueryui.
     // @param dialogBox
-    static positionDialogAndSetDraggable(
+    public static positionDialogAndSetDraggable(
         dialogBox: JQuery,
         gearIcon: JQuery
     ): void {
@@ -155,19 +155,19 @@ export class EditableDivUtils {
         }
     }
 
-    static getPageFrame(): HTMLIFrameElement {
+    public static getPageFrame(): HTMLIFrameElement {
         return <HTMLIFrameElement>window.top.document.getElementById("page");
     }
 
     // The body of the editable page, a root for searching for document content.
-    static getPage(): JQuery {
+    public static getPage(): JQuery {
         var page = this.getPageFrame();
         if (!page) return null;
         return $(page.contentWindow.document.body);
     }
 
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
-    static getPageScale(): number {
+    public static getPageScale(): number {
         var scale = 1.0;
         var styleString = this.getPage()
             .find("div#page-scaling-container")
@@ -179,7 +179,10 @@ export class EditableDivUtils {
         return scale;
     }
 
-    static adjustDraggableOptionsForScaleBug(dialogBox: JQuery, scale: number) {
+    public static adjustDraggableOptionsForScaleBug(
+        dialogBox: JQuery,
+        scale: number
+    ) {
         dialogBox.draggable({
             // BL-4293 the 'start' and 'drag' functions here work around a known bug in jqueryui.
             // fix adapted from majcherek2048's about 2/3 down this page https://bugs.jqueryui.com/ticket/3740.
@@ -200,7 +203,7 @@ export class EditableDivUtils {
         });
     }
 
-    static pasteImageCredits() {
+    public static pasteImageCredits() {
         var activeElement = document.activeElement;
         BloomApi.get("image/imageCreditsForWholeBook", result => {
             var data = result.data;

@@ -71,7 +71,7 @@ export default class AudioRecording {
     private idOfCurrentSentence: string;
     private awaitingNewRecording: boolean;
 
-    listenerFunction: (MessageEvent) => void;
+    private listenerFunction: (MessageEvent) => void;
 
     // Class method called by exported function of the same name.
     public initializeTalkingBookTool() {
@@ -525,7 +525,7 @@ export default class AudioRecording {
     }
 
     // Clear the recording for this sentence
-    clearRecording(): void {
+    private clearRecording(): void {
         toastr.clear();
 
         if (!this.isEnabledOrExpected("clear")) {

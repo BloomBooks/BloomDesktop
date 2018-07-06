@@ -28,10 +28,10 @@ export class LocalizableElement<
     P extends ILocalizationProps,
     S extends ILocalizationState
 > extends React.Component<P, ILocalizationState> {
-    localizationRequestCancelToken: CancelTokenStatic;
-    isComponentMounted: boolean;
-    tooltipKey: string;
-    disabledTooltipKey: string;
+    private localizationRequestCancelToken: CancelTokenStatic;
+    private isComponentMounted: boolean;
+    private tooltipKey: string;
+    private disabledTooltipKey: string;
 
     constructor(props: ILocalizationProps) {
         super(props as P);
@@ -142,7 +142,7 @@ export class H1 extends LocalizableElement<
     ILocalizationProps,
     ILocalizationState
 > {
-    render() {
+    public render() {
         return (
             <h1 className={this.getClassName()}>
                 {this.getLocalizedContent()}
@@ -155,7 +155,7 @@ export class H2 extends LocalizableElement<
     ILocalizationProps,
     ILocalizationState
 > {
-    render() {
+    public render() {
         return (
             <h2 className={this.getClassName()}>
                 {this.getLocalizedContent()}
@@ -168,7 +168,7 @@ export class H3 extends LocalizableElement<
     ILocalizationProps,
     ILocalizationState
 > {
-    render() {
+    public render() {
         return (
             <h3 className={this.getClassName()}>
                 {this.getLocalizedContent()}
@@ -181,7 +181,7 @@ export class P extends LocalizableElement<
     ILocalizationProps,
     ILocalizationState
 > {
-    render() {
+    public render() {
         return (
             <p className={this.getClassName()}>{this.getLocalizedContent()}</p>
         );
@@ -192,7 +192,7 @@ export class Div extends LocalizableElement<
     ILocalizationProps,
     ILocalizationState
 > {
-    render() {
+    public render() {
         return (
             <div className={this.getClassName()}>
                 {this.getLocalizedContent()}
@@ -206,7 +206,7 @@ export interface ILabelProps extends ILocalizationProps {
 }
 
 export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
-    render() {
+    public render() {
         return (
             <label
                 className={this.getClassName()}

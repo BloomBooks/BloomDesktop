@@ -29,14 +29,14 @@ export class DirectoryWatcher {
         this.checkNow(this);
     }
 
-    stop(): void {
+    public stop(): void {
         this.run = false;
     }
 
     /**
      * Sends request to localhost
      */
-    checkNow(self): void {
+    public checkNow(self): void {
         var postData = { dir: self.directoryToWatch };
         var url = "/bloom/directoryWatcher/";
         this.watcherAjaxPost(url, self, postData);
@@ -47,7 +47,7 @@ export class DirectoryWatcher {
      * @param responseData 'yes' = changed, 'no' = not changed
      * @param {DirectoryWatcher} self
      */
-    ifChangedFireEvents(responseData, self): void {
+    public ifChangedFireEvents(responseData, self): void {
         var changed = responseData === "yes";
 
         // if there were changes, call the registered onChanged handlers
@@ -80,7 +80,7 @@ export class DirectoryWatcher {
      * @param {DirectoryWatcher} self
      * @param {Object} [postKeyValueDataObject] Values passed in the post.
      */
-    watcherAjaxPost(url, self, postKeyValueDataObject): void {
+    public watcherAjaxPost(url, self, postKeyValueDataObject): void {
         var ajaxSettings = { type: "POST", url: url };
         if (postKeyValueDataObject)
             ajaxSettings["data"] = postKeyValueDataObject;
@@ -104,7 +104,7 @@ export class DirectoryWatcher {
      * Removes a listener for the changed event.
      * @param listenerNameAndContext Name and context that identifies the handler to remove.
      */
-    offChanged(listenerNameAndContext: string): void {
+    public offChanged(listenerNameAndContext: string): void {
         if (this.changeEventHandlers.hasOwnProperty(listenerNameAndContext))
             delete this.changeEventHandlers[listenerNameAndContext];
     }

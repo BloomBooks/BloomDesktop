@@ -33,9 +33,7 @@ import axios from "axios";
  */
 declare function GetInlineDictionary(): any; //c# injects this
 
-
 export class LocalizationManager {
-
     public dictionary: any;
     private inlineDictionaryLoaded: boolean = false;
 
@@ -52,29 +50,31 @@ export class LocalizationManager {
      * @param [elementsToLocalize]
      * @param {Function} [callbackDone] Optional function to call when done.
      */
-    loadStrings(keyValuePairs, elementsToLocalize, callbackDone): void {
-
+    public loadStrings(keyValuePairs, elementsToLocalize, callbackDone): void {
         // NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
 
-        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'POST', url: '/bloom/i18n/loadStrings' };
-        if (keyValuePairs) ajaxSettings['data'] = keyValuePairs;
+        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
+            type: "POST",
+            url: "/bloom/i18n/loadStrings"
+        };
+        if (keyValuePairs) ajaxSettings["data"] = keyValuePairs;
 
-        $.ajax(ajaxSettings)
-            .done(function (data) {
-                theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
+        $.ajax(ajaxSettings).done(function(data) {
+            theOneLocalizationManager.dictionary = $.extend(
+                theOneLocalizationManager.dictionary,
+                data
+            );
 
-                // if callback is passes without a list of elements to localize...
-                if (typeof elementsToLocalize === 'function') {
-                    elementsToLocalize()
-                }
-                else if (elementsToLocalize) {
-                    $(elementsToLocalize).each(function () {
-                        theOneLocalizationManager.setElementText(this);
-                    });
-                    if (typeof callbackDone === 'function') callbackDone();
-                }
-                else if (typeof callbackDone === 'function') callbackDone();
-            });
+            // if callback is passes without a list of elements to localize...
+            if (typeof elementsToLocalize === "function") {
+                elementsToLocalize();
+            } else if (elementsToLocalize) {
+                $(elementsToLocalize).each(function() {
+                    theOneLocalizationManager.setElementText(this);
+                });
+                if (typeof callbackDone === "function") callbackDone();
+            } else if (typeof callbackDone === "function") callbackDone();
+        });
     }
 
     /**
@@ -82,7 +82,7 @@ export class LocalizationManager {
      * Used in Bloom 2.0
      * @param {Object} keyValuePairObject
      */
-    loadStringsFromObject(keyValuePairObject): void {
+    public loadStringsFromObject(keyValuePairObject): void {
         // TODO: Evaluate if this function is needed in Bloom 2.1
         this.dictionary = keyValuePairObject;
     }
@@ -98,18 +98,25 @@ export class LocalizationManager {
      * @returns {String}
      */
     public getText(stringId: string, englishText?: string, ...args): string {
-        if (typeof stringId === 'undefined') {
+        if (typeof stringId === "undefined") {
             try {
-                throw new Error('localizationManager.getText() stringid was undefined');
-            }
-            catch (e) {
-                throw (e.message + e.stack);
+                throw new Error(
+                    "localizationManager.getText() stringid was undefined"
+                );
+            } catch (e) {
+                throw e.message + e.stack;
             }
         }
-        if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
+        if (
+            !this.inlineDictionaryLoaded &&
+            typeof GetInlineDictionary === "function"
+        ) {
             if (Object.keys(this.dictionary).length == 0) {
                 this.inlineDictionaryLoaded = true;
-                $.extend(theOneLocalizationManager.dictionary, GetInlineDictionary());
+                $.extend(
+                    theOneLocalizationManager.dictionary,
+                    GetInlineDictionary()
+                );
             }
         }
 
@@ -119,21 +126,25 @@ export class LocalizationManager {
         // get the translation
         var text = this.dictionary[stringId];
         if (!text) {
-            text = this.dictionary[stringId.replace('&', '&amp;')];
+            text = this.dictionary[stringId.replace("&", "&amp;")];
         }
 
         // try to get from L10NSharp
         if (!text) {
-
-            var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'POST', url: '/bloom/i18n/loadStrings' };
+            var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
+                type: "POST",
+                url: "/bloom/i18n/loadStrings"
+            };
             var pair = {};
             pair[stringId] = englishText;
-            ajaxSettings['data'] = pair;
+            ajaxSettings["data"] = pair;
 
-            $.ajax(ajaxSettings)
-                .done(data => {
-                    theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
-                });
+            $.ajax(ajaxSettings).done(data => {
+                theOneLocalizationManager.dictionary = $.extend(
+                    theOneLocalizationManager.dictionary,
+                    data
+                );
+            });
 
             text = englishText;
         }
@@ -141,7 +152,6 @@ export class LocalizationManager {
         text = HtmlDecode(text);
         // is this a string.format style request?
         if (args.length > 0) {
-
             // Do the formatting.
             text = this.simpleDotNetFormat(text, args);
         }
@@ -165,8 +175,21 @@ export class LocalizationManager {
      *          $(this).text(translation);
      *      });
     */
-    asyncGetTextInLang(id: string, englishText: string, langId: string, comment: string, ...args): JQueryPromise<any> {
-        return this.asyncGetTextInLangCommon(id, englishText, langId, comment, false, args);
+    public asyncGetTextInLang(
+        id: string,
+        englishText: string,
+        langId: string,
+        comment: string,
+        ...args
+    ): JQueryPromise<any> {
+        return this.asyncGetTextInLangCommon(
+            id,
+            englishText,
+            langId,
+            comment,
+            false,
+            args
+        );
     }
     /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
      * UI language, it returns the english formatted text in the same way getText does.
@@ -183,11 +206,30 @@ export class LocalizationManager {
      *          $(this).text(translation);
      *      });
     */
-    asyncGetText(id: string, englishText: string, comment: string, ...args): JQueryPromise<any> {
-        return this.asyncGetTextInLangCommon(id, englishText, "UI", comment, true, args);
+    public asyncGetText(
+        id: string,
+        englishText: string,
+        comment: string,
+        ...args
+    ): JQueryPromise<any> {
+        return this.asyncGetTextInLangCommon(
+            id,
+            englishText,
+            "UI",
+            comment,
+            true,
+            args
+        );
     }
 
-    asyncGetTextInLangCommon(id: string, englishText: string, langId: string, comment: string, englishDefault: boolean, args): JQueryPromise<any> {
+    public asyncGetTextInLangCommon(
+        id: string,
+        englishText: string,
+        langId: string,
+        comment: string,
+        englishDefault: boolean,
+        args
+    ): JQueryPromise<any> {
         // We already get a promise from the async call, and could just return that.
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
@@ -195,9 +237,14 @@ export class LocalizationManager {
 
         //when the async call comes back, we massage the text
         // Using axios directly because we have specific catch behavior
-        axios.get("/bloom/i18n/translate",
-            {
-                params: { key: id, englishText: englishText, langId: langId, comment: comment }
+        axios
+            .get("/bloom/i18n/translate", {
+                params: {
+                    key: id,
+                    englishText: englishText,
+                    langId: langId,
+                    comment: comment
+                }
             })
             .then(response => {
                 var text = HtmlDecode(response.data);
@@ -223,19 +270,26 @@ export class LocalizationManager {
         return deferred.promise();
     }
 
-    localizeThenSetElementText(element: HTMLElement, stringId: string, englishText: string): void {
-        this.asyncGetText(stringId, englishText, $(element).attr("l10nComment")).then((translation) => {
+    public localizeThenSetElementText(
+        element: HTMLElement,
+        stringId: string,
+        englishText: string
+    ): void {
+        this.asyncGetText(
+            stringId,
+            englishText,
+            $(element).attr("l10nComment")
+        ).then(translation => {
             element.innerText = translation;
         });
     }
 
     /**
-         * Sets the translated text of element.
-         * @param element
-         */
-    setElementText(element): void {
-
-        var key = element.dataset['i18n'];
+     * Sets the translated text of element.
+     * @param element
+     */
+    public setElementText(element): void {
+        var key = element.dataset["i18n"];
         if (!key) return;
 
         var elem = $(element);
@@ -251,8 +305,7 @@ export class LocalizationManager {
      * @param {element} targetElement
      * @returns {String}
      */
-    getLocalizedHint(whatToSay, targetElement: any): string {
-
+    public getLocalizedHint(whatToSay, targetElement: any): string {
         var args = Array.prototype.slice.call(arguments);
         args[1] = null; //we're passing null into the gettext englishText arg
         // this awkward, fragile method call sends along the 2 fixed arguments
@@ -265,12 +318,14 @@ export class LocalizationManager {
     }
 
     // Hints sometimes have a {lang} tag in the text that needs to be substituted.
-    insertLangIntoHint(whatToSay, targetElement: any) {
+    public insertLangIntoHint(whatToSay, targetElement: any) {
         var translated = whatToSay;
-        if (translated.indexOf('{lang}') != -1) {
+        if (translated.indexOf("{lang}") != -1) {
             //This is the preferred approach, but it's not working yet.
             //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
-            var languageName = GetInlineDictionary()[$(targetElement).attr('lang')];
+            var languageName = GetInlineDictionary()[
+                $(targetElement).attr("lang")
+            ];
             if (!languageName) {
                 //This can happen, for example, if the user enters {lang} in a hint bubble on a group
                 return translated;
@@ -281,11 +336,11 @@ export class LocalizationManager {
         return translated;
     }
 
-    getVernacularLang(): string {
-        return this.getText('vernacularLang');
+    public getVernacularLang(): string {
+        return this.getText("vernacularLang");
     }
 
-    getLanguageName(iso): string {
+    public getLanguageName(iso): string {
         return this.getText(iso);
     }
 
@@ -296,9 +351,12 @@ export class LocalizationManager {
      * @param {String[]} args
      * @returns {String}
      */
-    simpleDotNetFormat(format: string, args: string[]) {
-        return format.replace(/{(\d+)}/g, function (match: string, index: number) {
-            return (typeof args[index] !== 'undefined') ? args[index] : match;
+    public simpleDotNetFormat(format: string, args: string[]) {
+        return format.replace(/{(\d+)}/g, function(
+            match: string,
+            index: number
+        ) {
+            return typeof args[index] !== "undefined" ? args[index] : match;
         });
     }
 }
@@ -308,10 +366,11 @@ export class LocalizationManager {
  * @param {String} text
  */
 function HtmlDecode(text): string {
-    if (text === "") {   //an empty string leads to div.firstChild, below, being null.
+    if (text === "") {
+        //an empty string leads to div.firstChild, below, being null.
         return text;
     }
-    var div = document.createElement('div');
+    var div = document.createElement("div");
     div.innerHTML = text;
     return div.firstChild.nodeValue;
 }
