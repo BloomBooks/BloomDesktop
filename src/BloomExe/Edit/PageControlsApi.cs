@@ -14,6 +14,7 @@ namespace Bloom.Edit
 	{
 		private const string kApiUrlPart = "edit/pageControls/";
 		private const string kWebsocketStateId = "edit/pageControls/state";
+		private const string kWebsocketContext = "pageThumbnailList-pageControls";
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly EditingModel _editingModel;
 		private DateTime _lastButtonClickedTime = DateTime.Now; // initially, instance creation time
@@ -114,7 +115,7 @@ namespace Bloom.Edit
 
 		private void UpdateState()
 		{
-			_webSocketServer.SendLegacy(kWebsocketStateId, CurrentStateString);
+			_webSocketServer.SendString(kWebsocketContext, kWebsocketStateId, CurrentStateString);
 		}
 
 		private string CurrentStateString

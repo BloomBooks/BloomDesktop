@@ -17,7 +17,7 @@ import "errorHandler";
 // hinted at in webpack.config.js to give each bundle a different root name
 // for its exports.
 
-const kWebSocketLifetime = "pageThumbnailList-pageControls";
+const kPageControlsContext = "pageThumbnailList-pageControls";
 
 interface IPageControlsState {
     canAddState: boolean;
@@ -47,7 +47,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
         this.updateStateForEvent = this.updateStateForEvent.bind(this);
 
         // Listen for changes to state from C#-land
-        WebSocketManager.addListener(kWebSocketLifetime, e => {
+        WebSocketManager.addListener(kPageControlsContext, e => {
             if (e.id === "edit/pageControls/state") {
                 this.updateStateForEvent(e.message);
             }
@@ -73,7 +73,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
 
     componentCleanup() {
         BloomApi.post("edit/pageControls/cleanup", result => {
-            WebSocketManager.closeSocket(kWebSocketLifetime);
+            WebSocketManager.closeSocket(kPageControlsContext);
         });
     }
 
