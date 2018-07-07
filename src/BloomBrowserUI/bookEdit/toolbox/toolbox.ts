@@ -146,7 +146,7 @@ export class ToolBox {
      * @param {String} eventName
      * @param {String} eventData
      */
-    static fireCSharpToolboxEvent(eventName: string, eventData: string) {
+    public static fireCSharpToolboxEvent(eventName: string, eventData: string) {
         var event = new MessageEvent(eventName, {
             bubbles: true,
             cancelable: true,
@@ -155,7 +155,7 @@ export class ToolBox {
         top.document.dispatchEvent(event);
     }
 
-    static registerTool(tool: ITool) {
+    public static registerTool(tool: ITool) {
         masterToolList.push(tool);
     }
 
@@ -169,7 +169,7 @@ export class ToolBox {
     }
 
     // Called from document.ready, initializes the whole toolbox.
-    initialize(): void {
+    public initialize(): void {
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
         // toolbox one. Nothing outside toolbox imports it directly, so it must be some indirect link.
         // It's important that this function is only hooked up to the real toolbox instance.

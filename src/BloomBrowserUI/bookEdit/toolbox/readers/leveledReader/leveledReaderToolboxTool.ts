@@ -6,10 +6,10 @@ import { ToolBox } from "../../toolbox";
 import { BloomApi } from "../../../../utils/bloomApi";
 
 export class LeveledReaderToolboxTool implements ITool {
-    makeRootElement(): HTMLDivElement {
+    public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
-    beginRestoreSettings(opts: string): JQueryPromise<void> {
+    public beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts["leveledReaderState"]) {
                 // The true passed here prevents re-saving the state we just read.
@@ -31,28 +31,28 @@ export class LeveledReaderToolboxTool implements ITool {
         });
     }
 
-    configureElements(container: HTMLElement) {}
-    isAlwaysEnabled(): boolean {
+    public configureElements(container: HTMLElement) {}
+    public isAlwaysEnabled(): boolean {
         return false;
     }
-    isExperimental(): boolean {
+    public isExperimental(): boolean {
         return false;
     }
 
-    showTool() {
+    public showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
     }
 
-    hideTool() {
+    public hideTool() {
         // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
     }
 
-    detachFromPage() {
+    public detachFromPage() {
         getTheOneReaderToolsModel().setMarkupType(0);
     }
 
-    newPageReady() {
+    public newPageReady() {
         // Most cases don't require setMarkupType(), but when switching pages
         // it will have been set to 0 by detachFromPage() on the old page.
         getTheOneReaderToolsModel().setMarkupType(2);
@@ -60,19 +60,19 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    updateMarkup() {
+    public updateMarkup() {
         getTheOneReaderToolsModel().doMarkup();
     }
 
-    id() {
+    public id() {
         return "leveledReader";
     }
 
-    hasRestoredSettings: boolean;
+    public hasRestoredSettings: boolean;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
-    finishToolLocalization(paneDOM: HTMLElement) {
+    public finishToolLocalization(paneDOM: HTMLElement) {
         // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
         // 'translates' external links to include the current UI language.
     }

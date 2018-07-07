@@ -35,7 +35,7 @@ class AndroidPublishUI extends React.Component<
     IUILanguageAwareProps,
     IComponentState
 > {
-    isLinux: boolean;
+    private isLinux: boolean;
     constructor(props) {
         super(props);
 
@@ -82,18 +82,18 @@ class AndroidPublishUI extends React.Component<
         window.removeEventListener("beforeunload", this.componentCleanup);
     }
 
-    componentCleanup() {
+    private componentCleanup() {
         BloomApi.post("publish/android/cleanup", result => {
             WebSocketManager.closeSocket(kWebSocketLifetime);
         });
     }
 
-    handleUpdateState(s: string): void {
+    private handleUpdateState(s: string): void {
         this.setState({ stateId: s });
         //console.log("this.state is " + JSON.stringify(this.state));
     }
 
-    getIsLinuxFromUrl(): boolean {
+    private getIsLinuxFromUrl(): boolean {
         let searchString = window.location.search;
         let i = searchString.indexOf("isLinux=");
         if (i >= 0) {
@@ -101,7 +101,7 @@ class AndroidPublishUI extends React.Component<
         }
     }
 
-    onCopy(e) {
+    private onCopy(e) {
         e.preventDefault();
 
         // Yes, this is a hack. I simply could not get the client to populate the clipboard.
@@ -114,7 +114,7 @@ class AndroidPublishUI extends React.Component<
         );
     }
 
-    render() {
+    public render() {
         return (
             <div id="androidPublishReactRoot">
                 <Div

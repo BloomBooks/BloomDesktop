@@ -12,15 +12,15 @@ import { ReaderStage, ReaderLevel, ReaderSettings } from "./ReaderSettings";
 import * as _ from "underscore";
 
 export default class ReadersSynphonyWrapper {
-    stages: ReaderStage[] = [];
-    levels: ReaderLevel[] = [];
-    source: ReaderSettings;
+    public stages: ReaderStage[] = [];
+    public levels: ReaderLevel[] = [];
+    public source: ReaderSettings;
 
     /**
      *
      * @param fileContent
      */
-    loadSettings(fileContent): void {
+    public loadSettings(fileContent): void {
         //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
 
         if (!fileContent) return;
@@ -73,7 +73,7 @@ export default class ReadersSynphonyWrapper {
         );
     }
 
-    loadFromLangData(langData: LanguageData): void {
+    public loadFromLangData(langData: LanguageData): void {
         if (!this.source) this.source = new ReaderSettings();
 
         if (this.source.letters === "") {
@@ -87,7 +87,7 @@ export default class ReadersSynphonyWrapper {
     }
 
     // This is at least useful for testing; maybe for real use.
-    AddStage(stage: ReaderStage): void {
+    public AddStage(stage: ReaderStage): void {
         this.stages.push(stage);
     }
 
@@ -95,7 +95,7 @@ export default class ReadersSynphonyWrapper {
      * Add a list of words to the lang_data object
      * @param {Object} words The keys are the words, and the values are the counts
      */
-    static addWords(words: Object) {
+    public static addWords(words: Object) {
         if (!words) return;
 
         var wordNames = Object.keys(words);
@@ -114,16 +114,16 @@ export default class ReadersSynphonyWrapper {
      * @param {int} [stageNumber] Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
      * @returns {ReaderStage[]} An array of ReaderStage objects
      */
-    getStages(stageNumber?: number): ReaderStage[] {
+    public getStages(stageNumber?: number): ReaderStage[] {
         if (typeof stageNumber === "undefined") return this.stages;
         else return _.first(this.stages, stageNumber);
     }
 
-    getLevels(): ReaderLevel[] {
+    public getLevels(): ReaderLevel[] {
         return this.levels;
     }
 
-    addLevel(aLevel: ReaderLevel): void {
+    public addLevel(aLevel: ReaderLevel): void {
         this.levels.push(aLevel);
     }
 }

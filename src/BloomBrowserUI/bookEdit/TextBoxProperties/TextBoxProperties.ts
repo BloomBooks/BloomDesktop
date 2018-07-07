@@ -24,7 +24,7 @@ export default class TextBoxProperties {
 
     // This method is called when the origami panel gets focus.
     // targetBox is actually the '.textBox-identifier' div that overlaps with the '.bloom-translationGroup' we want.
-    AttachToBox(targetBox: HTMLElement) {
+    public AttachToBox(targetBox: HTMLElement) {
         var propDlg = this;
         this._previousBox = targetBox;
 
@@ -143,7 +143,7 @@ export default class TextBoxProperties {
         });
     }
 
-    getButtonIds() {
+    private getButtonIds() {
         return [
             "align-top",
             "align-center",
@@ -164,14 +164,14 @@ export default class TextBoxProperties {
         ];
     }
 
-    removeButtonSelection() {
+    private removeButtonSelection() {
         var buttonIds = this.getButtonIds();
         for (var i = 0; i < buttonIds.length; i++) {
             $("#" + buttonIds[i]).removeClass("selectedIcon");
         }
     }
 
-    setButtonClickActions() {
+    private setButtonClickActions() {
         var buttonIds = this.getButtonIds();
         for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
             var button = $("#" + buttonIds[idIndex]);
@@ -180,7 +180,7 @@ export default class TextBoxProperties {
     }
 
     // set uiChangeOnly to true to change only the appearance of buttons
-    buttonClick(buttonDiv, uiChangeOnly = false) {
+    private buttonClick(buttonDiv, uiChangeOnly = false) {
         var button = $(buttonDiv);
         var id = button.attr("id");
         var index = id.indexOf("-");
@@ -227,7 +227,7 @@ export default class TextBoxProperties {
         }
     }
 
-    changeLanguageGroup() {
+    private changeLanguageGroup() {
         // get radio button value and set 'data-default-languages' attribute
         var radioValue = $('input[name="languageRadioGroup"]:checked').val();
         var targetGroup = $(
@@ -245,7 +245,7 @@ export default class TextBoxProperties {
         this.updateHintTabControls();
     }
 
-    initializeAlignment() {
+    private initializeAlignment() {
         var targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
@@ -260,7 +260,7 @@ export default class TextBoxProperties {
         }
     }
 
-    changeAlignment() {
+    private changeAlignment() {
         var targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
@@ -275,7 +275,7 @@ export default class TextBoxProperties {
         }
     }
 
-    initializeBorderStyle() {
+    private initializeBorderStyle() {
         var targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
@@ -308,7 +308,7 @@ export default class TextBoxProperties {
     }
 
     // styleChanged is true if the change was to the style of border, false if it involved one of the border side controls
-    changeBorder(targetGroup, styleChanged: boolean) {
+    private changeBorder(targetGroup, styleChanged: boolean) {
         if (!targetGroup) {
             return;
         }
@@ -358,7 +358,7 @@ export default class TextBoxProperties {
         }
     }
 
-    borderStyleIsNotNone(): boolean {
+    private borderStyleIsNotNone(): boolean {
         return (
             $("#borderstyle-black").hasClass("selectedIcon") ||
             $("#borderstyle-black-round").hasClass("selectedIcon") ||
@@ -367,7 +367,7 @@ export default class TextBoxProperties {
         );
     }
 
-    anyBorderSideSelected(): boolean {
+    private anyBorderSideSelected(): boolean {
         return (
             $("#bordertop").hasClass("selectedIcon") ||
             $("#borderbottom").hasClass("selectedIcon") ||
@@ -376,21 +376,21 @@ export default class TextBoxProperties {
         );
     }
 
-    selectAllBorderSideButtons() {
+    private selectAllBorderSideButtons() {
         $("#bordertop").addClass("selectedIcon");
         $("#borderbottom").addClass("selectedIcon");
         $("#borderleft").addClass("selectedIcon");
         $("#borderright").addClass("selectedIcon");
     }
 
-    deselectAllBorderSideButtons() {
+    private deselectAllBorderSideButtons() {
         $("#bordertop").removeClass("selectedIcon");
         $("#borderbottom").removeClass("selectedIcon");
         $("#borderleft").removeClass("selectedIcon");
         $("#borderright").removeClass("selectedIcon");
     }
 
-    initializeBackground() {
+    private initializeBackground() {
         var targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
@@ -403,7 +403,7 @@ export default class TextBoxProperties {
         }
     }
 
-    changeBackground(targetGroup) {
+    private changeBackground(targetGroup) {
         if (targetGroup) {
             targetGroup.removeClass("bloom-background-none");
             targetGroup.removeClass("bloom-background-gray");
@@ -416,7 +416,7 @@ export default class TextBoxProperties {
         }
     }
 
-    getTextBoxLanguage(targetBox: HTMLElement): string {
+    private getTextBoxLanguage(targetBox: HTMLElement): string {
         var targetGroup = $(this.getAffectedTranslationGroup(targetBox));
         if (!targetGroup || !targetGroup.hasAttr("data-default-languages")) {
             return "Auto";
@@ -426,7 +426,7 @@ export default class TextBoxProperties {
         return acceptable.indexOf(result) > -1 ? result : "Auto";
     }
 
-    getAffectedTranslationGroup(targetBox: HTMLElement): HTMLElement {
+    private getAffectedTranslationGroup(targetBox: HTMLElement): HTMLElement {
         var container = $(targetBox).parent();
         // I'm not sure (gjm) how often another translationGroup with box-header-off shows up,
         // but I found at least one instance, so make sure that's not the one we grab.
@@ -436,7 +436,7 @@ export default class TextBoxProperties {
     }
 
     // The z-index puts the formatButton above the origami-ui stuff so a click will find it.
-    getDialogActivationButton(): string {
+    private getDialogActivationButton(): string {
         return (
             '<div contenteditable="false" class="bloom-ui formatButton">' +
             '<img  contenteditable="false" src="' +
@@ -445,7 +445,7 @@ export default class TextBoxProperties {
         );
     }
 
-    makeLanguageSelect() {
+    private makeLanguageSelect() {
         // items comes back as something like languages: [{label: 'English', tag: 'en'},{label: 'French', tag: 'fr'} ]
         BloomApi.get("uiLanguages", result => {
             var items: Array<any> = (<any>result.data).languages;
@@ -458,7 +458,7 @@ export default class TextBoxProperties {
 
     // Assumes a <select> with the specified id already exists. Makes the child elements and selects the current one.
     // This version assumes items is an array of objects with label and tag (see example in makeLanguageSelect).
-    makeSelectItems(items: any[], current, id, maxlength?) {
+    private makeSelectItems(items: any[], current, id, maxlength?) {
         var result = "";
         // May need this someday to handle missing items.
         // if (current && items.indexOf(current.toString()) === -1) {
@@ -493,7 +493,7 @@ export default class TextBoxProperties {
         parent.html(result);
     }
 
-    preventDragStealingClicksOnHintText() {
+    private preventDragStealingClicksOnHintText() {
         // By default, ui-draggable makes any click in the whole dialog an attempt to drag
         // the dialog around. We need to suppress this so the user can click in the hint
         // box and type.
@@ -503,11 +503,11 @@ export default class TextBoxProperties {
         $("#hint-content").mousemove((e: Event) => e.stopPropagation());
     }
 
-    classNameForHintOnEach(): string {
+    private classNameForHintOnEach(): string {
         return "bloom-showHintOnEach";
     }
 
-    initializeHintTab() {
+    private initializeHintTab() {
         if ($(this.boxBeingEdited).closest(".bloom-templateMode").length == 0) {
             // not in template mode: hide the hint tab
             $("#hint-header").hide();
@@ -520,7 +520,7 @@ export default class TextBoxProperties {
         });
     }
 
-    updateHintTabControls() {
+    private updateHintTabControls() {
         var groupCanHaveMoreThanOneLanguage =
             $('input[name="languageRadioGroup"]:checked').val() == "Auto";
         var showHintOnEachGroupDiv = $("#show-hint-on-each-group");
@@ -545,12 +545,12 @@ export default class TextBoxProperties {
         }
     }
 
-    showHintOnEachIsSelected() {
+    private showHintOnEachIsSelected() {
         var selectedItem = $("#hint-scope option:selected");
         return selectedItem.attr("id") === "show-on-each";
     }
 
-    changeShowHintOnEach() {
+    private changeShowHintOnEach() {
         var targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
@@ -569,7 +569,7 @@ export default class TextBoxProperties {
         );
     }
 
-    initializeHintText() {
+    private initializeHintText() {
         this.preventDragStealingClicksOnHintText();
         // it's tempting to go for the current UI language as default, but we REALLY
         // want them to include at least an English hint, as that seems to be the
@@ -597,7 +597,7 @@ export default class TextBoxProperties {
         });
     }
 
-    setHintTextForLang(lang: string) {
+    private setHintTextForLang(lang: string) {
         var targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );

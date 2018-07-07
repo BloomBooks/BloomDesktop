@@ -48,7 +48,7 @@ export class ColorChooser extends React.Component<
         }
         this.state = { colorsVisible: useVisibility };
     }
-    render() {
+    public render() {
         return (
             <div
                 className="cc-outer-wrapper"

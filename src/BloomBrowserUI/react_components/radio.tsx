@@ -24,7 +24,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
         }
         return class1;
     }
-    render() {
+    public render() {
         return (
             <div
                 className={Radio.combineClasses(
@@ -77,7 +77,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
     // (re-using leaves that it doesn't need to modify)
     // replacing <Radio> elements with a clone that has the required
     // onSelected and checked properties to function in the group.
-    recursiveFixRadio(children: React.ReactNode): React.ReactNode {
+    private recursiveFixRadio(children: React.ReactNode): React.ReactNode {
         return React.Children.map(children, child => {
             let childProps: any = {};
             const childElt = child as React.ReactElement<any>;
@@ -104,7 +104,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
             return child;
         });
     }
-    render() {
+    public render() {
         return (
             <div
                 className={Radio.combineClasses(

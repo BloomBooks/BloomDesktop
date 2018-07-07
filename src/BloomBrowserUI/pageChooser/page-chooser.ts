@@ -57,7 +57,7 @@ class PageChooser {
         this._scrollTopOfTheScrollingDiv = 0;
     }
 
-    thumbnailClickHandler(clickedDiv, evt): void {
+    private thumbnailClickHandler(clickedDiv, evt): void {
         // 'div' is an .invisibleThumbCover
         // Select new thumbnail
         var newsel = this.findProperElement(clickedDiv, evt);
@@ -163,7 +163,7 @@ class PageChooser {
     // Note that the offset().top values returned by jquery properly take into account
     // the scrollTop of the scrolling parent div.  Which makes me think the bug may be
     // below the jquery level!?
-    findProperElement(clickedDiv, evt): JQuery {
+    private findProperElement(clickedDiv, evt): JQuery {
         var gridItem = $(clickedDiv).parent();
         if (evt) {
             var currentScrollTop = this._scrollingDiv.scrollTop();
@@ -202,7 +202,7 @@ class PageChooser {
     // The localization ID to look up is made by concatenating the supplied prefix and the id
     // parameter, which defaults to the defaultText since we often use the English text of a
     // label as the last part of its ID.
-    setLocalizedText(
+    private setLocalizedText(
         elt: JQuery,
         idPrefix: string,
         defaultText: string,
@@ -223,7 +223,7 @@ class PageChooser {
         }
     }
 
-    addPageClickHandler(): void {
+    private addPageClickHandler(): void {
         if (
             this._selectedGridItem == undefined ||
             this._templateBookUrls == undefined
@@ -264,7 +264,7 @@ class PageChooser {
                 .then(() => this.closeup());
         }
     }
-    closeup(): void {
+    private closeup(): void {
         // End the disabling of other panes for the modal dialog. The final argument is because in this
         // method the current window is the dialog, and it's the parent window's document that is being
         // monitored for this event.
@@ -275,7 +275,7 @@ class PageChooser {
         getEditViewFrameExports().closeDialog("addPageConfig");
     }
 
-    continueCheckBoxChanged(): void {
+    private continueCheckBoxChanged(): void {
         if (!this._forChooseLayout) return;
         var cb = $("#convertAnywayCheckbox");
         $("#addPageButton").prop("disabled", !cb.is(":checked"));
@@ -283,7 +283,7 @@ class PageChooser {
 
     // This is the starting-point method that is invoked to initialize the dialog.
     // At the point where it is called, the json parameters that control what will be displayed
-    loadPageGroups(): void {
+    public loadPageGroups(): void {
         // Save a reference to the scrolling div that contains the various page items.
         this._scrollingDiv = $(".gridItemDisplay", document);
 
@@ -358,7 +358,7 @@ class PageChooser {
     // books get added in the order we want (which we couldn't control if we ask for them all
     // at once). Secondly, it ensures we get the most important template pages shown and ready
     // to use as quickly as possible.
-    loadNextPageGroup(
+    private loadNextPageGroup(
         queue,
         groupHTML,
         gridItemHTML,
@@ -487,7 +487,7 @@ class PageChooser {
             });
     }
 
-    loadPageFromGroup(
+    private loadPageFromGroup(
         currentGroup,
         pageArray,
         gridItemTemplate,
@@ -585,7 +585,7 @@ class PageChooser {
         }
     } // loadPageFromGroup
 
-    getPossibleImageUrl(
+    private getPossibleImageUrl(
         templateBookFolderUrl: string,
         pageLabel: string
     ): string {

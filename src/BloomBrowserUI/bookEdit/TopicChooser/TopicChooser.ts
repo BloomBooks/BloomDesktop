@@ -11,7 +11,7 @@ var ShowTopicChooser = () => {
 };
 
 export default class TopicChooser {
-    static showTopicChooser() {
+    public static showTopicChooser() {
         var currentTopicKey = $("div[data-book='topic']")
             .parent()
             .find("[lang='en']")
@@ -57,7 +57,7 @@ export default class TopicChooser {
         });
     }
 
-    static fireCSharpEvent(eventName, eventData): void {
+    private static fireCSharpEvent(eventName, eventData): void {
         var event = new MessageEvent(eventName, {
             bubbles: true,
             cancelable: true,
@@ -66,7 +66,7 @@ export default class TopicChooser {
         top.document.dispatchEvent(event);
     }
 
-    static createTopicDialogDiv(currentTopicKey: string) {
+    private static createTopicDialogDiv(currentTopicKey: string) {
         // if it's already there, remove it
         $("#topicChooser").remove();
 
@@ -84,7 +84,7 @@ export default class TopicChooser {
         this.populateTopics(currentTopicKey);
     }
 
-    static populateTopics(currentTopicKey: string) {
+    private static populateTopics(currentTopicKey: string) {
         BloomApi.get("topics", result => {
             var topics = result.data;
             // Here, topics will be an object with a property for each known topic. Each property is a key:value pair

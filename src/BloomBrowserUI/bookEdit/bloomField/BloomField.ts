@@ -20,7 +20,7 @@
 // for any element marked with a 'bloom-preventRemoval' class.
 
 export default class BloomField {
-    static ManageField(bloomEditableDiv: HTMLElement) {
+    public static ManageField(bloomEditableDiv: HTMLElement) {
         BloomField.PreventRemovalOfSomeElements(bloomEditableDiv);
         BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
         // ManageWhatHappensIfTheyDeleteEverything() is actually enough, it cleans things up. But can still show some momentary cursor
@@ -87,7 +87,7 @@ export default class BloomField {
     // re-cast everything in this BloomField class as a plugin or at least callbacks to ckeditor.
     // For now, I just want to fix BL-3009, where this class could no longer get access to shift-enter
     // keypresses. To regain access, we have to wire up to ckeditor.
-    static WireToCKEditor(
+    public static WireToCKEditor(
         bloomEditableDiv: HTMLElement,
         ckeditor: CKEDITOR.editor
     ) {

@@ -4,42 +4,42 @@ import * as AudioRecorder from "./audioRecording";
 import { theOneAudioRecorder } from "./audioRecording";
 
 export default class TalkingBookTool implements ITool {
-    makeRootElement(): HTMLDivElement {
+    public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();
         result.resolve();
         return result;
     }
 
-    isAlwaysEnabled(): boolean {
+    public isAlwaysEnabled(): boolean {
         return true;
     }
 
-    isExperimental(): boolean {
+    public isExperimental(): boolean {
         return false;
     }
 
-    configureElements(container: HTMLElement) {}
+    public configureElements(container: HTMLElement) {}
 
-    showTool() {
+    public showTool() {
         this.showImageDescriptionsIfAny();
         AudioRecorder.initializeTalkingBookTool();
         AudioRecorder.theOneAudioRecorder.setupForRecording();
     }
 
     // Called when a new page is loaded.
-    newPageReady() {
+    public newPageReady() {
         AudioRecorder.theOneAudioRecorder.addAudioLevelListener(); // keeps the peak audio level monitor functioning.
     }
 
-    hideTool() {
+    public hideTool() {
         // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
     }
 
-    detachFromPage() {
+    public detachFromPage() {
         // not quite sure how this can be called when never initialized, but if
         // we don't have the object we certainly can't use it.
         if (AudioRecorder.theOneAudioRecorder) {
@@ -49,7 +49,7 @@ export default class TalkingBookTool implements ITool {
     }
 
     // Called whenever the user edits text.
-    updateMarkup() {
+    public updateMarkup() {
         this.showImageDescriptionsIfAny();
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
     }
@@ -75,15 +75,15 @@ export default class TalkingBookTool implements ITool {
         }
     }
 
-    id() {
+    public id() {
         return "talkingBook";
     }
 
-    hasRestoredSettings: boolean;
+    public hasRestoredSettings: boolean;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
-    finishToolLocalization(paneDOM: HTMLElement) {
+    public finishToolLocalization(paneDOM: HTMLElement) {
         // So far unneeded in talkingBook
     }
 }

@@ -13,7 +13,7 @@ const kSocketName = "webSocket"; // TODO BL-6129 upgrade this to use WebSocketMa
 
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 class TextOverPictureManager {
-    listenerFunction: (MessageEvent) => void;
+    private listenerFunction: (MessageEvent) => void;
 
     public initializeTextOverPictureManager(): void {
         this.listenerFunction = event => {

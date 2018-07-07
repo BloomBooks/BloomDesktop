@@ -186,7 +186,7 @@ export default class BloomHintBubbles {
         });
     }
 
-    static wantHelpBubbleOnGroup(groupElement: JQuery) {
+    private static wantHelpBubbleOnGroup(groupElement: JQuery) {
         // For xMatter, we always want to show a hint for each field.
         return (
             !IsPageXMatter(groupElement) &&

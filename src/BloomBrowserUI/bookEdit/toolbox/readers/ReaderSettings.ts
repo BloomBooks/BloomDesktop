@@ -4,32 +4,32 @@
  * Decodable Leveled Reader Settings
  */
 export class ReaderSettings {
-    levels: ReaderLevel[] = [];
-    stages: ReaderStage[] = [];
-    letters: string = "";
-    sentencePunct: string = "";
-    moreWords: string = "";
-    useAllowedWords: number = 0;
+    public levels: ReaderLevel[] = [];
+    public stages: ReaderStage[] = [];
+    public letters: string = "";
+    public sentencePunct: string = "";
+    public moreWords: string = "";
+    public useAllowedWords: number = 0;
 }
 
 // Defines an object to hold data about one stage in the decodable books tool
 export class ReaderStage {
-    name: string;
-    sightWords: string = "";
-    letters: string = "";
-    words: string[];
-    allowedWordsFile: string = "";
-    allowedWords: string[];
+    public name: string;
+    public sightWords: string = "";
+    public letters: string = "";
+    public words: string[];
+    public allowedWordsFile: string = "";
+    public allowedWords: string[];
 
     constructor(name: string) {
         this.name = name;
     }
 
-    getName(): string {
+    public getName(): string {
         return this.name;
     }
 
-    setAllowedWordsString(fileContents: string): void {
+    public setAllowedWordsString(fileContents: string): void {
         // the list of words is being cleaned and deduped by the server
         this.allowedWords = fileContents.split(/[,]/);
     }
@@ -37,41 +37,41 @@ export class ReaderStage {
 
 // Defines an object to hold data about one level in the leveled reader tool
 export class ReaderLevel {
-    name: string;
-    thingsToRemember: string[] = [];
+    public name: string;
+    public thingsToRemember: string[] = [];
 
     // For each of these, 0 signifies unlimited.
-    maxWordsPerPage: number = 0;
-    maxWordsPerSentence: number = 0;
-    maxWordsPerBook: number = 0;
-    maxUniqueWordsPerBook: number = 0;
-    maxAverageWordsPerSentence: number = 0;
+    public maxWordsPerPage: number = 0;
+    public maxWordsPerSentence: number = 0;
+    public maxWordsPerBook: number = 0;
+    public maxUniqueWordsPerBook: number = 0;
+    public maxAverageWordsPerSentence: number = 0;
 
     constructor(name: string) {
         this.name = name;
     }
 
-    getName(): string {
+    public getName(): string {
         return this.name;
     }
 
-    getMaxWordsPerPage(): number {
+    public getMaxWordsPerPage(): number {
         return this.maxWordsPerPage || 0;
     }
 
-    getMaxWordsPerSentence(): number {
+    public getMaxWordsPerSentence(): number {
         return this.maxWordsPerSentence || 0;
     }
 
-    getMaxWordsPerBook(): number {
+    public getMaxWordsPerBook(): number {
         return this.maxWordsPerBook || 0;
     }
 
-    getMaxUniqueWordsPerBook(): number {
+    public getMaxUniqueWordsPerBook(): number {
         return this.maxUniqueWordsPerBook || 0;
     }
 
-    getMaxAverageWordsPerSentence(): number {
+    public getMaxAverageWordsPerSentence(): number {
         return this.maxAverageWordsPerSentence || 0;
     }
 }

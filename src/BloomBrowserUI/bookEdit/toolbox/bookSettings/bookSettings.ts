@@ -38,31 +38,33 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
 
 // We need a minimal model to get ourselves loaded
 export class BookSettings implements ITool {
-    makeRootElement(): HTMLDivElement {
+    public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         var result = $.Deferred<void>();
         result.resolve();
         return result;
     }
-    id(): string {
+    public id(): string {
         return "bookSettings";
     }
-    hasRestoredSettings: boolean;
-    isAlwaysEnabled(): boolean {
+    public hasRestoredSettings: boolean;
+    public isAlwaysEnabled(): boolean {
         return true;
     }
-    isExperimental(): boolean {
+    public isExperimental(): boolean {
         return false;
     } // We need these to implement the interface, but don't need them to do anything.
-    /* tslint:disable:no-empty */ configureElements(container: HTMLElement) {}
-    showTool() {}
-    hideTool() {}
-    updateMarkup() {}
-    newPageReady() {}
-    detachFromPage() {}
-    finishToolLocalization(pane: HTMLElement) {}
+    /* tslint:disable:no-empty */ public configureElements(
+        container: HTMLElement
+    ) {}
+    public showTool() {}
+    public hideTool() {}
+    public updateMarkup() {}
+    public newPageReady() {}
+    public detachFromPage() {}
+    public finishToolLocalization(pane: HTMLElement) {}
     /* tslint:enable:no-empty */
 }

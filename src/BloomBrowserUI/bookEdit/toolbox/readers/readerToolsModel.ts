@@ -43,44 +43,44 @@ var disabledIconClass = "disabledIcon"; // The class we apply to icons that are 
 var disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
 
 export class DRTState {
-    stage: number = 1;
-    level: number = 1;
-    markupType: number = MarkupType.Decodable;
+    public stage: number = 1;
+    public level: number = 1;
+    public markupType: number = MarkupType.Decodable;
 }
 
 export class ReaderToolsModel {
-    previousHeight: number = 0;
-    previousWidth: number = 0;
+    public previousHeight: number = 0;
+    public previousWidth: number = 0;
 
-    stageNumber: number = 1;
-    levelNumber: number = 1;
-    synphony: ReadersSynphonyWrapper = null; // to ensure detection of async issues, don't init until we load its settings
-    sort: string = SortType.alphabetic;
-    currentMarkupType: number = MarkupType.None;
-    allWords = {};
-    texts = [];
-    setupType: string = "";
-    fontName: string = "";
-    readableFileExtensions: string[] = [];
-    directoryWatcher: DirectoryWatcher = null;
-    maxAllowedWords: number = 10000;
+    public stageNumber: number = 1;
+    public levelNumber: number = 1;
+    public synphony: ReadersSynphonyWrapper = null; // to ensure detection of async issues, don't init until we load its settings
+    public sort: string = SortType.alphabetic;
+    public currentMarkupType: number = MarkupType.None;
+    public allWords = {};
+    public texts = [];
+    public setupType: string = "";
+    public fontName: string = "";
+    public readableFileExtensions: string[] = [];
+    public directoryWatcher: DirectoryWatcher = null;
+    public maxAllowedWords: number = 10000;
 
     // remember words so we can update the counts real-time
-    pageIDToText = [];
+    public pageIDToText = [];
 
     // BL-599: Speed up the decodable reader tool
-    stageGraphemes = [];
+    public stageGraphemes = [];
 
-    activeElement: HTMLElement;
-    undoStack: any[];
-    redoStack: any[];
+    public activeElement: HTMLElement;
+    public undoStack: any[];
+    public redoStack: any[];
 
-    wordListChangedListeners: any = {};
+    public wordListChangedListeners: any = {};
 
     // some things need to wait until the word list has finished loading
-    wordListLoaded: boolean = false;
-    ckEditorLoaded: boolean = false;
-    allowedWordFilesRemaining: number = 0;
+    public wordListLoaded: boolean = false;
+    public ckEditorLoaded: boolean = false;
+    public allowedWordFilesRemaining: number = 0;
 
     public clearForTest() {
         this.stageNumber = 1;
@@ -106,22 +106,22 @@ export class ReaderToolsModel {
         return ["txt", "js", "json"];
     }
 
-    readyToDoMarkup(): boolean {
+    public readyToDoMarkup(): boolean {
         return this.wordListLoaded && this.ckEditorLoaded;
     }
-    setCkEditorLoaded(): void {
+    public setCkEditorLoaded(): void {
         this.ckEditorLoaded = true;
     }
 
-    incrementStage(): void {
+    public incrementStage(): void {
         this.setStageNumber(this.stageNumber + 1);
     }
 
-    decrementStage(): void {
+    public decrementStage(): void {
         this.setStageNumber(this.stageNumber - 1);
     }
 
-    setStageNumber(stage: number, skipSave?: boolean): void {
+    public setStageNumber(stage: number, skipSave?: boolean): void {
         // this much needs to be done immediately; otherwise, the result of
         // different routines calling setStageNumber is unpredictable, depending on
         // when the different asyncGetText() calls complete.
@@ -187,7 +187,7 @@ export class ReaderToolsModel {
             });
     }
 
-    updateStageLabel(): void {
+    public updateStageLabel(): void {
         var stages = this.synphony.getStages();
         if (stages.length <= 0) {
             this.updateElementContent("stageNumber", "0");
@@ -202,15 +202,15 @@ export class ReaderToolsModel {
         );
     }
 
-    incrementLevel(): void {
+    public incrementLevel(): void {
         this.setLevelNumber(this.levelNumber + 1);
     }
 
-    decrementLevel(): void {
+    public decrementLevel(): void {
         this.setLevelNumber(this.levelNumber - 1);
     }
 
-    setLevelNumber(val: number, skipSave?: boolean): void {
+    public setLevelNumber(val: number, skipSave?: boolean): void {
         var levels = this.synphony.getLevels();
         if (val < 1 || val > levels.length) {
             return;
@@ -228,7 +228,7 @@ export class ReaderToolsModel {
         this.doMarkup();
     }
 
-    updateLevelLabel(): void {
+    public updateLevelLabel(): void {
         var levels = this.synphony.getLevels();
         if (levels.length <= 0) {
             this.updateElementContent("levelNumber", "0");
@@ -246,19 +246,19 @@ export class ReaderToolsModel {
         );
     }
 
-    sortByLength(): void {
+    public sortByLength(): void {
         this.setSort(SortType.byLength);
     }
 
-    sortByFrequency(): void {
+    public sortByFrequency(): void {
         this.setSort(SortType.byFrequency);
     }
 
-    sortAlphabetically(): void {
+    public sortAlphabetically(): void {
         this.setSort(SortType.alphabetic);
     }
 
-    setSort(sortType: string, skipSave?: boolean): void {
+    public setSort(sortType: string, skipSave?: boolean): void {
         this.sort = sortType;
         this.updateSortStatus();
         this.updateWordList();
@@ -267,7 +267,7 @@ export class ReaderToolsModel {
         }
     }
 
-    updateSortStatus(): void {
+    public updateSortStatus(): void {
         this.updateSelectedStatus(
             "sortAlphabetic",
             this.sort === SortType.alphabetic
@@ -282,7 +282,7 @@ export class ReaderToolsModel {
         );
     }
 
-    updateSelectedStatus(eltId: string, isSelected: boolean): void {
+    public updateSelectedStatus(eltId: string, isSelected: boolean): void {
         this.setPresenceOfClass(eltId, isSelected, sortIconSelectedClass);
     }
 
@@ -290,7 +290,7 @@ export class ReaderToolsModel {
      * Should be called when the browser has loaded the page, and when the user has changed configuration.
      * It updates various things in the UI to be consistent with the state of things in the model.
      */
-    updateControlContents(): void {
+    public updateControlContents(): void {
         this.updateLetterList();
         this.updateNumberOfStages();
         this.updateNumberOfLevels();
@@ -302,21 +302,21 @@ export class ReaderToolsModel {
         this.updateWordList();
     }
 
-    updateNumberOfStages(): void {
+    public updateNumberOfStages(): void {
         this.updateElementContent(
             "numberOfStages",
             this.synphony.getStages().length.toString()
         );
     }
 
-    updateNumberOfLevels(): void {
+    public updateNumberOfLevels(): void {
         this.updateElementContent(
             "numberOfLevels",
             this.synphony.getLevels().length.toString()
         );
     }
 
-    updateStageButtonsAvalibility(): void {
+    public updateStageButtonsAvalibility(): void {
         this.updateDisabledStatus("decStage", this.stageNumber <= 1);
         this.updateDisabledStatus(
             "incStage",
@@ -324,7 +324,7 @@ export class ReaderToolsModel {
         );
     }
 
-    updateDisabledStatus(eltId: string, isDisabled: boolean): void {
+    public updateDisabledStatus(eltId: string, isDisabled: boolean): void {
         this.setPresenceOfClass(eltId, isDisabled, disabledIconClass);
     }
 
@@ -334,7 +334,7 @@ export class ReaderToolsModel {
      * (Tests currently assume it will be added last, but this is not required.)
      * (class names used with this method should not occur as sub-strings within a longer class name)
      */
-    setPresenceOfClass(
+    public setPresenceOfClass(
         eltId: string,
         isWanted: boolean,
         className: string
@@ -362,7 +362,7 @@ export class ReaderToolsModel {
         }
     }
 
-    enableLevelButtons(): void {
+    public enableLevelButtons(): void {
         this.updateDisabledStatus("decLevel", this.levelNumber <= 1);
         this.updateDisabledStatus(
             "incLevel",
@@ -370,7 +370,7 @@ export class ReaderToolsModel {
         );
     }
 
-    updateLevelLimits(): void {
+    public updateLevelLimits(): void {
         var level = this.synphony.getLevels()[this.levelNumber - 1];
         if (!level) level = new ReaderLevel("");
 
@@ -407,21 +407,21 @@ export class ReaderToolsModel {
         }
     }
 
-    updateLevelLimit(id: string, limit: number): void {
+    public updateLevelLimit(id: string, limit: number): void {
         if (limit !== 0) {
             this.updateElementContent(id, limit.toString());
         }
         this.updateDisabledLimit(id, limit === 0);
     }
 
-    updateDisabledLimit(eltId: string, isDisabled: boolean): void {
+    public updateDisabledLimit(eltId: string, isDisabled: boolean): void {
         this.setPresenceOfClass(eltId, isDisabled, disabledLimitClass);
     }
 
     /**
      * Displays the list of words for the current Stage.
      */
-    updateWordList(): void {
+    public updateWordList(): void {
         // show the correct headings
         //reviewSLog
         var useAllowedWords = this.synphony.source
@@ -522,7 +522,7 @@ export class ReaderToolsModel {
     /**
      * Displays the list of letters for the current Stage.
      */
-    updateLetterList(): void {
+    public updateLetterList(): void {
         var stages = this.synphony.getStages();
         if (stages.length === 0) {
             // In case the user deletes all stages, and something had been displayed before.
@@ -564,7 +564,7 @@ export class ReaderToolsModel {
      * @param stageNumber
      * @returns An array of strings
      */
-    getSightWords(stageNumber?: number): string[] {
+    public getSightWords(stageNumber?: number): string[] {
         var stages: ReaderStage[] = this.synphony.getStages(stageNumber);
         var sightWords: string[] = [];
         if (stages.length > 0) {
@@ -586,7 +586,7 @@ export class ReaderToolsModel {
      * @param stageNumber
      * @returns An array of DataWord objects
      */
-    getSightWordsAsObjects(stageNumber: number): DataWord[] {
+    public getSightWordsAsObjects(stageNumber: number): DataWord[] {
         var words: string[] = this.getSightWords(stageNumber);
         var returnVal: DataWord[] = [];
 
@@ -604,7 +604,7 @@ export class ReaderToolsModel {
      * @param stageNumber
      * @returns An array of strings
      */
-    getKnownGraphemes(stageNumber: number): string[] {
+    public getKnownGraphemes(stageNumber: number): string[] {
         var stages = this.synphony.getStages(stageNumber);
 
         // compact to remove empty items if no graphemes are selected
@@ -619,7 +619,7 @@ export class ReaderToolsModel {
      *
      * @returns An array of DataWord objects
      */
-    getStageWords(): DataWord[] {
+    public getStageWords(): DataWord[] {
         if (!this.stageGraphemes || this.stageGraphemes.length === 0) return [];
         return this.selectWordsFromSynphony(
             false,
@@ -630,7 +630,7 @@ export class ReaderToolsModel {
         );
     }
 
-    getStageWordsAndSightWords(stageNumber: number): DataWord[] {
+    public getStageWordsAndSightWords(stageNumber: number): DataWord[] {
         if (!this.readyToDoMarkup()) return;
 
         // first get the sight words
@@ -649,7 +649,7 @@ export class ReaderToolsModel {
      * @param {int} markupType
      * returns true if doMarkup called
      */
-    setMarkupType(markupType: number): boolean {
+    public setMarkupType(markupType: number): boolean {
         var newMarkupType = null;
         switch (markupType) {
             case 1:
@@ -690,7 +690,7 @@ export class ReaderToolsModel {
         return didMarkup;
     }
 
-    getElementsToCheck(): JQuery {
+    public getElementsToCheck(): JQuery {
         var page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")
         );
@@ -712,7 +712,7 @@ export class ReaderToolsModel {
             .find(".bloom-content1.bloom-editable");
     }
 
-    noteFocus(element: HTMLElement): void {
+    public noteFocus(element: HTMLElement): void {
         this.activeElement = element;
         this.undoStack = [];
         this.redoStack = [];
@@ -725,11 +725,11 @@ export class ReaderToolsModel {
         });
     }
 
-    shouldHandleUndo(): boolean {
+    public shouldHandleUndo(): boolean {
         return this.currentMarkupType !== MarkupType.None;
     }
 
-    undo(): void {
+    public undo(): void {
         if (!this.activeElement) return;
         if (
             this.activeElement.textContent ==
@@ -751,7 +751,7 @@ export class ReaderToolsModel {
         );
     }
 
-    canUndo(): boolean {
+    public canUndo(): boolean {
         if (!this.activeElement) return false;
         if (
             this.undoStack &&
@@ -763,7 +763,7 @@ export class ReaderToolsModel {
         return false;
     }
 
-    redo(): void {
+    public redo(): void {
         if (!this.activeElement) return;
         if (this.redoStack.length > 0) {
             this.undoStack.push(this.redoStack.pop());
@@ -781,7 +781,7 @@ export class ReaderToolsModel {
         );
     }
 
-    getPageWindow(): Window {
+    public getPageWindow(): Window {
         return (<HTMLIFrameElement>top.document.getElementById("page"))
             .contentWindow;
     }
@@ -789,7 +789,7 @@ export class ReaderToolsModel {
     /**
      * Displays the correct markup for the current page.
      */
-    doMarkup(): void {
+    public doMarkup(): void {
         if (!this.readyToDoMarkup()) return;
         if (this.currentMarkupType === MarkupType.None) return;
 
@@ -893,7 +893,7 @@ export class ReaderToolsModel {
         if (page) page.contentWindow.postMessage("Qtips", "*");
     }
 
-    maxWordsPerSentenceOnThisPage(): number {
+    public maxWordsPerSentenceOnThisPage(): number {
         var levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
             return 9999;
@@ -901,7 +901,7 @@ export class ReaderToolsModel {
         return levels[this.levelNumber - 1].getMaxWordsPerSentence();
     }
 
-    maxWordsPerBook(): number {
+    public maxWordsPerBook(): number {
         var levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
             return 999999;
@@ -909,7 +909,7 @@ export class ReaderToolsModel {
         return levels[this.levelNumber - 1].getMaxWordsPerBook();
     }
 
-    maxUniqueWordsPerBook(): number {
+    public maxUniqueWordsPerBook(): number {
         var levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
             return 99999;
@@ -917,7 +917,7 @@ export class ReaderToolsModel {
         return levels[this.levelNumber - 1].getMaxUniqueWordsPerBook();
     }
 
-    maxAverageWordsPerSentence(): number {
+    public maxAverageWordsPerSentence(): number {
         var levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
             return 99999;
@@ -925,7 +925,7 @@ export class ReaderToolsModel {
         return levels[this.levelNumber - 1].getMaxAverageWordsPerSentence();
     }
 
-    maxWordsPerPage(): number {
+    public maxWordsPerPage(): number {
         var levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
             return 9999;
@@ -951,7 +951,7 @@ export class ReaderToolsModel {
     //     });
     //   }
 
-    getTextOfWholeBook(): void {
+    public getTextOfWholeBook(): void {
         BloomApi.get("readers/io/textOfContentPages", result => {
             //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
             this.pageIDToText = result.data as any[];
@@ -959,7 +959,7 @@ export class ReaderToolsModel {
         });
     }
 
-    displayBookTotals(): void {
+    public displayBookTotals(): void {
         if (this.pageIDToText.length === 0) {
             this.getTextOfWholeBook();
             return;
@@ -989,7 +989,7 @@ export class ReaderToolsModel {
         );
     }
 
-    countWordsInBook(pageStrings: string[]): number {
+    public countWordsInBook(pageStrings: string[]): number {
         var total = 0;
         for (var i = 0; i < pageStrings.length; i++) {
             var page = pageStrings[i];
@@ -1009,7 +1009,7 @@ export class ReaderToolsModel {
         return total;
     }
 
-    uniqueWordsInBook(pageStrings: string[]): number {
+    public uniqueWordsInBook(pageStrings: string[]): number {
         var wordMap = {};
         for (var i = 0; i < pageStrings.length; i++) {
             var page = pageStrings[i];
@@ -1032,7 +1032,7 @@ export class ReaderToolsModel {
         return Object.keys(wordMap).length;
     }
 
-    maxWordsPerPageInBook(pageStrings: string[]): number {
+    public maxWordsPerPageInBook(pageStrings: string[]): number {
         var maxWords = 0;
         for (var i = 0; i < pageStrings.length; i++) {
             var page = pageStrings[i];
@@ -1058,7 +1058,7 @@ export class ReaderToolsModel {
         return maxWords;
     }
 
-    averageWordsInSentence(pageStrings: string[]): number {
+    public averageWordsInSentence(pageStrings: string[]): number {
         var sentenceCount = 0;
         var wordCount = 0;
         for (var i = 0; i < pageStrings.length; i++) {
@@ -1084,7 +1084,7 @@ export class ReaderToolsModel {
         //return Math.round(10 * wordCount / sentenceCount) / 10; // for one decimal place
     }
 
-    updateActualCount(actual: number, max: number, id: string): void {
+    public updateActualCount(actual: number, max: number, id: string): void {
         $("#" + id).html(actual.toString());
         var acceptable = actual <= max || max === 0;
         // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
@@ -1094,7 +1094,7 @@ export class ReaderToolsModel {
         this.setPresenceOfClass(id, !acceptable, "tooLarge");
     }
 
-    updateMaxWordsPerSentenceOnPage(): void {
+    public updateMaxWordsPerSentenceOnPage(): void {
         this.updateActualCount(
             this.getElementsToCheck().getMaxSentenceLength(),
             this.maxWordsPerSentenceOnThisPage(),
@@ -1102,7 +1102,7 @@ export class ReaderToolsModel {
         );
     }
 
-    updateTotalWordsOnPage(): void {
+    public updateTotalWordsOnPage(): void {
         this.updateActualCount(
             this.getElementsToCheck().getTotalWordCount(),
             this.maxWordsPerPage(),
@@ -1111,7 +1111,7 @@ export class ReaderToolsModel {
     }
 
     /** Should be called early on, before other init. */
-    setSynphony(val: ReadersSynphonyWrapper): void {
+    public setSynphony(val: ReadersSynphonyWrapper): void {
         this.synphony = val;
     }
 
@@ -1123,15 +1123,19 @@ export class ReaderToolsModel {
      * This group of functions uses jquery (if loaded) to update the real model.
      * Unit testing should spy or otherwise replace these functions, since $ will not be usefully defined.
      */
-    updateElementContent(id: string, val: string): void {
+    public updateElementContent(id: string, val: string): void {
         $("#" + id).html(val);
     }
 
-    getElementAttribute(id: string, attrName: string): string {
+    public getElementAttribute(id: string, attrName: string): string {
         return $("#" + id).attr(attrName);
     }
 
-    setElementAttribute(id: string, attrName: string, val: string): void {
+    public setElementAttribute(
+        id: string,
+        attrName: string,
+        val: string
+    ): void {
         $("#" + id).attr(attrName, val);
     }
 
@@ -1139,7 +1143,7 @@ export class ReaderToolsModel {
      * Add words from a file to the list of all words. Does not produce duplicates.
      * @param fileContents
      */
-    addWordsFromFile(fileContents: string): void {
+    public addWordsFromFile(fileContents: string): void {
         //reviewslog: at the moment, thes first two clauses just do the same things
 
         // is this a Synphony data file?
@@ -1173,7 +1177,7 @@ export class ReaderToolsModel {
         }
     }
 
-    beginSetTextsList(textsArg: string[]): Promise<void> {
+    public beginSetTextsList(textsArg: string[]): Promise<void> {
         // only save the file types we can read
         this.texts = textsArg.filter(t => {
             var ext = t.split(".").pop();
@@ -1205,7 +1209,7 @@ export class ReaderToolsModel {
      * Called to process sample data files.
      * When all of them are read and processed, the promise is resolved.
      */
-    beginGetAllSampleFiles(): Promise<void> {
+    public beginGetAllSampleFiles(): Promise<void> {
         // The <any> works around a flaw in the declaration of axios.all in axios.d.ts.
         // Using axios directly because api calls for returning the promise.
         return (<any>axios).all(
@@ -1238,14 +1242,14 @@ export class ReaderToolsModel {
      * Called in response to a request for the contents of a sample text file
      * @param fileContents
      */
-    setSampleFileContents(fileContents: string): void {
+    public setSampleFileContents(fileContents: string): void {
         this.addWordsFromFile(fileContents);
     }
 
     /**
      * Notify anyone who wants to know that the word list changed
      */
-    processWordListChangedListeners(): void {
+    public processWordListChangedListeners(): void {
         var handlers = Object.keys(this.wordListChangedListeners);
         for (var j = 0; j < handlers.length; j++)
             this.wordListChangedListeners[handlers[j]]();
@@ -1254,7 +1258,7 @@ export class ReaderToolsModel {
     /**
      * Take the list of words collected from the sample files, add it to SynPhony, and update the Stages.
      */
-    addWordsToSynphony() {
+    public addWordsToSynphony() {
         // add words to the word list
         ReadersSynphonyWrapper.addWords(this.allWords);
         theOneLibSynphony.processVocabularyGroups();
@@ -1272,7 +1276,7 @@ export class ReaderToolsModel {
      * @param [partsOfSpeech] An array of strings, uses all parts of speech if empty
      * @returns An array of strings or DataWord objects
      */
-    selectWordsFromSynphony(
+    public selectWordsFromSynphony(
         justWordName: boolean,
         desiredGPCs: string[],
         knownGPCs: string[],
@@ -1322,7 +1326,7 @@ export class ReaderToolsModel {
             );
     }
 
-    selectWordsFromAllowedLists(stageNumber: number): string[] {
+    public selectWordsFromAllowedLists(stageNumber: number): string[] {
         var stages: ReaderStage[] = this.synphony.getStages(stageNumber);
 
         var words: string[] = [];
@@ -1339,7 +1343,7 @@ export class ReaderToolsModel {
         return words;
     }
 
-    getToolboxWindow(): Window {
+    public getToolboxWindow(): Window {
         // ReaderToolsModel is only loaded into the toolbox, so the toolbox window is simply the current window.
         //return window;
         return (<HTMLIFrameElement>document.getElementById("toolbox"))
@@ -1351,7 +1355,7 @@ export class ReaderToolsModel {
      * @param stageNumber
      * @returns An array of DataWord objects
      */
-    getAllowedWordsAsObjects(stageNumber: number): DataWord[] {
+    public getAllowedWordsAsObjects(stageNumber: number): DataWord[] {
         var words: string[] = this.selectWordsFromAllowedLists(stageNumber);
         var returnVal: DataWord[] = [];
 
@@ -1381,7 +1385,7 @@ export class ReaderToolsModel {
         return returnVal;
     }
 
-    saveState(): void {
+    public saveState(): void {
         // this is needed for unit testing
         var toolbox = $("#toolbox");
         if (typeof toolbox.accordion !== "function") return;
@@ -1404,7 +1408,7 @@ export class ReaderToolsModel {
         );
     }
 
-    restoreState(): void {
+    public restoreState(): void {
         // this is needed for unit testing
         var toolbox = $("#toolbox");
         if (typeof toolbox.accordion !== "function") return;
@@ -1419,7 +1423,7 @@ export class ReaderToolsModel {
         this.setLevelNumber(state.level, true);
     }
 
-    getAllowedWordsLists(): void {
+    public getAllowedWordsLists(): void {
         var stages = this.synphony.getStages();
 
         // remember how many we are loading so we know when we're finished
@@ -1447,7 +1451,10 @@ export class ReaderToolsModel {
         );
     }
 
-    setAllowedWordsListList(fileContents: string, stageIndex: number): void {
+    public setAllowedWordsListList(
+        fileContents: string,
+        stageIndex: number
+    ): void {
         // remove this one from the count of files remaining
         this.allowedWordFilesRemaining--;
 

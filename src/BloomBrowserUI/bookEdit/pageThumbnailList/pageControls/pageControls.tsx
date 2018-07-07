@@ -71,19 +71,19 @@ class PageControls extends React.Component<{}, IPageControlsState> {
         this.componentCleanup();
     }
 
-    componentCleanup() {
+    public componentCleanup() {
         BloomApi.post("edit/pageControls/cleanup", result => {
             WebSocketManager.closeSocket(kPageControlsContext);
         });
     }
 
-    updateStateForEvent(s: string): void {
+    public updateStateForEvent(s: string): void {
         var state = JSON.parse(s);
         this.setPageControlState(state);
         //console.log("this.state is " + JSON.stringify(this.state));
     }
 
-    setPageControlState(data: any): void {
+    public setPageControlState(data: any): void {
         this.setState({
             canAddState: data.CanAddPages,
             canDeleteState: data.CanDeletePage,
@@ -93,7 +93,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
         //console.log("this.state is " + JSON.stringify(this.state));
     }
 
-    render() {
+    public render() {
         return (
             <div id="pageControlsRoot">
                 <div>

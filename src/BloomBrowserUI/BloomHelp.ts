@@ -10,7 +10,7 @@ export default class BloomHelp {
      * @param topic
      * @returns {boolean} Returns false to prevent navigation if link clicked.
      */
-    static show(topic: string): boolean {
+    public static show(topic: string): boolean {
         BloomApi.postData("help", topic);
         return false;
     }

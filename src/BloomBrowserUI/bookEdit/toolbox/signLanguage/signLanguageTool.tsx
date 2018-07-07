@@ -85,7 +85,7 @@ export class SignLanguageToolControls extends React.Component<
                         Here is what your camera sees:
                     </Label>
                     <div id="videoMonitorWrapper">
-                        <video id="videoMonitor" autoPlay />
+                        <video id="videoMonitor" autoPlay={true} />
                     </div>
                     <div className="button-label-wrapper">
                         <div id="videoPlayAndLabelWrapper">

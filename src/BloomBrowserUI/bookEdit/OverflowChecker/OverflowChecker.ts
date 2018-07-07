@@ -309,7 +309,7 @@ export default class OverflowChecker {
 
     // Checks a couple of situations where we might need to modify min-height
     // If necessary, this will do the modification
-    static CheckOnMinHeight(box) {
+    private static CheckOnMinHeight(box) {
         var $box = $(box);
         var overflowy = $box.css("overflow-y");
         if (overflowy == "hidden") {

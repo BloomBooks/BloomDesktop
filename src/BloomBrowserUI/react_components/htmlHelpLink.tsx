@@ -12,7 +12,7 @@ export default class HtmlHelpLink extends LocalizableElement<
     IHtmlHelpLinkProps,
     {}
 > {
-    render() {
+    public render() {
         return (
             // we always provide the english path, but this api will return the best translation it finds
             <a
