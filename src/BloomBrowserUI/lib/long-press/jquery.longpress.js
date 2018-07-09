@@ -13,11 +13,10 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
 require("./jquery.mousewheel.js");
 
-(function ($, window, undefined) {
-
+(function($, window, undefined) {
     var lengthOfPreviouslyInsertedCharacter = 1; //when we convert to Typescript, this is a member variable
 
-    var pluginName = 'longPress',
+    var pluginName = "longPress",
         document = window.document,
         defaults = {
             instructions: ""
@@ -26,72 +25,72 @@ require("./jquery.mousewheel.js");
     var characterSets = splitCharacterSetsByGrapheme({
         // extended latin (and african latin)
         // upper
-        'A': 'ĀĂÀÁÂÃÄÅĄẠA̱ⱭÆ∀',
-        'B': 'Ɓ',
-        'C': 'ÇĆĈƆ̃ĊČƆƆ̃',
-        'D': 'ÐĎĐḎƊ',
-        'E': 'ÈÉÊẼËĒĖĘẸĚE̱ƏÆƎƐ€',
-        'F': 'ƑƩ',
-        'G': 'ĜĞĠǴĢƢ',
-        'H': 'ĤĦ',
-        'I': 'ÌÍȊĬÎǏÏḮĨȈĮĪỈỊḬI̱ƗİĲ',
-        'J': 'ĴĲ',
-        'K': 'ĶƘ',
-        'L': 'ĹĻĽŁΛ',
-        'N': 'ÑŃŅŇŊƝ₦',
-        'O': 'ÒÓÔÕÖŌŐỌO̱ØŒƠƟƆƆ̃',
-        'P': 'Ƥ¶',
-        'R': 'ŔŘɌⱤ',
-        'S': 'ßſŚŜŞṢŠÞ§',
-        'T': 'ŢŤṮƬƮ',
-        'U': 'ÙÚÛŨÜŪŬŮŰŲỤU̱ɄƯƱ',
-        'V': 'Ʋ',
-        'W': 'ŴẄΩ',
-        'X': 'Ẍ',
-        'Y': 'ÝŶŸƔƳ',
-        'Z': 'ŹŻŽƵƷẔ',
+        A: "ĀĂÀÁÂÃÄÅĄẠA̱ⱭÆ∀",
+        B: "Ɓ",
+        C: "ÇĆĈƆ̃ĊČƆƆ̃",
+        D: "ÐĎĐḎƊ",
+        E: "ÈÉÊẼËĒĖĘẸĚE̱ƏÆƎƐ€",
+        F: "ƑƩ",
+        G: "ĜĞĠǴĢƢ",
+        H: "ĤĦ",
+        I: "ÌÍȊĬÎǏÏḮĨȈĮĪỈỊḬI̱ƗİĲ",
+        J: "ĴĲ",
+        K: "ĶƘ",
+        L: "ĹĻĽŁΛ",
+        N: "ÑŃŅŇŊƝ₦",
+        O: "ÒÓÔÕÖŌŐỌO̱ØŒƠƟƆƆ̃",
+        P: "Ƥ¶",
+        R: "ŔŘɌⱤ",
+        S: "ßſŚŜŞṢŠÞ§",
+        T: "ŢŤṮƬƮ",
+        U: "ÙÚÛŨÜŪŬŮŰŲỤU̱ɄƯƱ",
+        V: "Ʋ",
+        W: "ŴẄΩ",
+        X: "Ẍ",
+        Y: "ÝŶŸƔƳ",
+        Z: "ŹŻŽƵƷẔ",
 
         // lower
-        'a': 'āăàáâãäåąạa̱ɑæαª',
-        'b': 'ßβɓ',
-        'c': 'çςćĉċčɔ̃¢ɔ©',
-        'd': 'ðďđɖḏɖɗ',
-        'e': 'èéêẽëēėęẹěe̱əæεɛ€',
-        'f': 'ƒʃƭ',
-        'g': 'ĝğġģǵɠƣ',
-        'h': 'ĥħɦẖ',
-        'i': 'ìíȋĭîǐïḯĩȉįīỉịḭi̱ɨıĳɪᵻᶖι',
-        'j': 'ĵɟʄĳ',
-        'k': 'ķƙ',
-        'l': 'ĺļľłλ',
-        'n': 'ñńņňŋɲ',
-        'o': 'òóôõöōọo̱øőœơɵ°ɔɔ̃',
-        'p': 'ƥ¶',
-        'r': 'ŕřɍɽ',
-        's': 'ßſśŝşṣšþ§',
-        't': 'ţťṯƭʈ',
-        'u': 'ùúûũüūŭůűųưμυụu̱ʉʊ',
-        'v': 'ʋ',
-        'w': 'ŵẅω',
-        'x': 'ẍ',
-        'y': 'ýŷÿɣyƴ',
-        'z': 'źżžƶẕʒƹ',
+        a: "āăàáâãäåąạa̱ɑæαª",
+        b: "ßβɓ",
+        c: "çςćĉċčɔ̃¢ɔ©",
+        d: "ðďđɖḏɖɗ",
+        e: "èéêẽëēėęẹěe̱əæεɛ€",
+        f: "ƒʃƭ",
+        g: "ĝğġģǵɠƣ",
+        h: "ĥħɦẖ",
+        i: "ìíȋĭîǐïḯĩȉįīỉịḭi̱ɨıĳɪᵻᶖι",
+        j: "ĵɟʄĳ",
+        k: "ķƙ",
+        l: "ĺļľłλ",
+        n: "ñńņňŋɲ",
+        o: "òóôõöōọo̱øőœơɵ°ɔɔ̃",
+        p: "ƥ¶",
+        r: "ŕřɍɽ",
+        s: "ßſśŝşṣšþ§",
+        t: "ţťṯƭʈ",
+        u: "ùúûũüūŭůűųưμυụu̱ʉʊ",
+        v: "ʋ",
+        w: "ŵẅω",
+        x: "ẍ",
+        y: "ýŷÿɣyƴ",
+        z: "źżžƶẕʒƹ",
 
         // Misc
-        '$': '£¥€₩₨₳Ƀ¤',
-        '!': '¡‼‽',
-        '?': '¿‽',
-        '%': '‰',
-        '.': '…•',
-        '-': '±‐–—',
-        '+': '±†‡',
-        '\\': '′″‴‘’‚‛',
-        "'": 'ꞌ',
-        '"': '“”„‟Ꞌ',
-        '<': '«≤‹',
-        '>': '»≥›',
-        '=': '≈≠≡',
-        '/': '÷',
+        $: "£¥€₩₨₳Ƀ¤",
+        "!": "¡‼‽",
+        "?": "¿‽",
+        "%": "‰",
+        ".": "…•",
+        "-": "±‐–—",
+        "+": "±†‡",
+        "\\": "′″‴‘’‚‛",
+        "'": "ꞌ",
+        '"': "“”„‟Ꞌ",
+        "<": "«≤‹",
+        ">": "»≥›",
+        "=": "≈≠≡",
+        "/": "÷"
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
@@ -113,8 +112,43 @@ require("./jquery.mousewheel.js");
     // 46 delete
     // Review: there are others we could add, function keys, num lock, scroll lock, break, forward & back slash, etc.
     //  not sure how much we gain from that...
-    var ignoredKeyDownKeyCodes = [8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
-    var ignoredKeyUpKeys = [8, 9, 13, /*16,*/ 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
+    var ignoredKeyDownKeyCodes = [
+        8,
+        9,
+        13,
+        16,
+        17,
+        18,
+        27,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        45,
+        46
+    ];
+    var ignoredKeyUpKeys = [
+        8,
+        9,
+        13,
+        /*16,*/ 17,
+        18,
+        27,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        45,
+        46
+    ];
 
     var selectedCharIndex;
     var activationKey;
@@ -128,13 +162,12 @@ require("./jquery.mousewheel.js");
 
     $(window).mousewheel(onWheel);
 
-
     //https://stackoverflow.com/questions/10758913/unicode-string-split-by-chars/39846360#39846360
     function splitIntoGraphemes(s) {
         const re = /.[\u0300-\u036F]*/g; // notice, currently only handles the Combining Diacritical Marks range
-        var match, matches = [];
-        while (match = re.exec(s))
-            matches.push(match[0]);
+        var match,
+            matches = [];
+        while ((match = re.exec(s))) matches.push(match[0]);
         return matches;
     }
 
@@ -165,13 +198,12 @@ require("./jquery.mousewheel.js");
             var key = String.fromCharCode(97 + i);
             if (key != skipKey && key != skipKey.toLowerCase()) {
                 //we use uppercase because that's what you see on the keys of the physical keyboard
-                shortcuts.push(key.toUpperCase());//97 is charcode for 'a';
+                shortcuts.push(key.toUpperCase()); //97 is charcode for 'a';
             }
         }
     }
 
     function onKeyDown(e) {
-
         // See comment for BL-5215 in toolbox.ts
         window.top[isLongPressEvaluating] = true;
 
@@ -200,10 +232,8 @@ require("./jquery.mousewheel.js");
             }
         }
 
-
         if (ignoredKeyDownKeyCodes.indexOf(e.which) > -1) return;
         activeElement = e.target;
-        ;
         if (e.key == activationKey) {
             e.preventDefault();
             e.stopPropagation(); //attempt to stop ckeditor from seeing this event
@@ -224,50 +254,65 @@ require("./jquery.mousewheel.js");
             timer = null;
 
             hidePopup();
-
         } finally {
             window.top[isLongPressEvaluating] = false;
         }
     }
     function onTimer() {
-        var typedChar = isTextArea() ?
-            $(activeElement).val().split('')[getTextAreaCaretPosition(activeElement) - 1] :
-            $(activeElement).text().split('')[getCaretPositionOffset(activeElement) - 1];
+        var typedChar = isTextArea()
+            ? $(activeElement)
+                  .val()
+                  .split("")[getTextAreaCaretPosition(activeElement) - 1]
+            : $(activeElement)
+                  .text()
+                  .split("")[getCaretPositionOffset(activeElement) - 1];
 
         if (characterSets[typedChar]) {
             storeCaretPosition();
-            showPopup((characterSets[typedChar]));
+            showPopup(characterSets[typedChar]);
         } else {
             hidePopup();
         }
     }
     function showPopup(chars) {
-        lengthOfPreviouslyInsertedCharacter = 1;//the key they are holding down will be a single character
-        popup.find('ul').empty();
+        lengthOfPreviouslyInsertedCharacter = 1; //the key they are holding down will be a single character
+        popup.find("ul").empty();
         var letter;
         for (var i = 0; i < chars.length; i++) {
-            letter = $('<li class=long-press-letter data-shortcut="' + shortcuts[i] + '">' + chars[i] + '</li>');
+            letter = $(
+                '<li class=long-press-letter data-shortcut="' +
+                    shortcuts[i] +
+                    '">' +
+                    chars[i] +
+                    "</li>"
+            );
             letter.mouseenter(activateLetter);
             letter.click(onPopupLetterClick);
-            popup.find('ul').append(letter);
+            popup.find("ul").append(letter);
         }
 
         //When the parent body is scaled, we don't want our popup to scale
-        var bodyScale = document.body.getBoundingClientRect().width / document.body.offsetWidth;
+        var bodyScale =
+            document.body.getBoundingClientRect().width /
+            document.body.offsetWidth;
         var compensationScale = 1.0 / bodyScale;
 
         // for now, a good test case is 1024px wide bloom window, and hold down 'i'
         // Height is automatic and vertical position is locked to the bottom of the window.
         //limit to the visible width that we can use
-        var visibleWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth || 0
+        var visibleWidth =
+            window.innerWidth ||
+            document.documentElement.clientWidth ||
+            document.body.clientWidth ||
+            0;
         visibleWidth = visibleWidth - 25; // fudge
-        popup.css('width', visibleWidth + "px");
+        popup.css("width", visibleWidth + "px");
 
         //reverse the scaling that we get from parent
-        popup.css('transform', "scale(" + compensationScale + ")");
-        popup.css('transform-origin', "top left");
+        popup.css("transform", "scale(" + compensationScale + ")");
+        popup.css("transform-origin", "top left");
 
-        $('body').append(popup);
+        $("body").append(popup);
         selectedCharIndex = -1;
         longpressPopupVisible = true;
     }
@@ -279,7 +324,10 @@ require("./jquery.mousewheel.js");
         selectCharIndex($(e.target).index());
     }
     function activateRelativeLetter(i) {
-        selectCharIndex(($('.long-press-letter').length + selectedCharIndex + i) % $('.long-press-letter').length);
+        selectCharIndex(
+            ($(".long-press-letter").length + selectedCharIndex + i) %
+                $(".long-press-letter").length
+        );
     }
     function activateNextLetter() {
         activateRelativeLetter(1);
@@ -292,31 +340,35 @@ require("./jquery.mousewheel.js");
         popup.detach();
     }
     function onWheel(e, delta, deltaX, deltaY) {
-        if ($('.long-press-popup').length == 0) return;
+        if ($(".long-press-popup").length == 0) return;
         e.preventDefault();
         delta < 0 ? activateNextLetter() : activePreviousLetter();
     }
     function selectCharIndex(i) {
-        $('.long-press-letter.selected').removeClass('selected');
-        $('.long-press-letter').eq(i).addClass('selected');
+        $(".long-press-letter.selected").removeClass("selected");
+        $(".long-press-letter")
+            .eq(i)
+            .addClass("selected");
         selectedCharIndex = i;
         updateChar();
     }
 
     function updateChar() {
-        var newChar = $('.long-press-letter.selected').text();
+        var newChar = $(".long-press-letter.selected").text();
         replacePreviousLetterWithNewLetter(newChar);
     }
 
     function isTextArea() {
-        return $(activeElement).is('textarea');
+        return $(activeElement).is("textarea");
     }
 
     function storeCaretPosition() {
         if (isTextArea()) {
             textAreaCaretPosition = getTextAreaCaretPosition(activeElement);
         } else {
-            storedOffset = EditableDivUtils.getElementSelectionIndex(activeElement);
+            storedOffset = EditableDivUtils.getElementSelectionIndex(
+                activeElement
+            );
         }
     }
 
@@ -328,33 +380,41 @@ require("./jquery.mousewheel.js");
             // ends up in the wrong place (BL-2717).
             if (activeElement && typeof activeElement.focus != "undefined") {
                 activeElement.focus();
-                EditableDivUtils.makeSelectionIn(activeElement, storedOffset, null, true);
+                EditableDivUtils.makeSelectionIn(
+                    activeElement,
+                    storedOffset,
+                    null,
+                    true
+                );
             }
         }
     }
 
     function setFocusDelayed() {
-        window.setTimeout(function () {
+        window.setTimeout(function() {
             if (activeElement && typeof activeElement.focus != "undefined") {
                 activeElement.focus();
             }
         }, 1);
     }
 
-
     // See notes on BL-3900 in toolbox.ts for important regression information.
     function replacePreviousLetterWithNewLetter(newLetter) {
-
         if (isTextArea()) {
             var pos = getTextAreaCaretPosition(activeElement);
-            var arVal = $(activeElement).val().split('');
+            var arVal = $(activeElement)
+                .val()
+                .split("");
             arVal[pos - 1] = newLetter;
-            $(activeElement).val(arVal.join(''));
+            $(activeElement).val(arVal.join(""));
             setTextAreaCaretPosition(activeElement, pos);
-        }
-        else {
+        } else {
             var insertPointRange = getCaretPosition();
-            if (window.getSelection && insertPointRange && insertPointRange.startOffset != 0) {
+            if (
+                window.getSelection &&
+                insertPointRange &&
+                insertPointRange.startOffset != 0
+            ) {
                 var sel = window.getSelection();
                 if (sel.getRangeAt && sel.rangeCount) {
                     //NB: From BL-3900 investigation:
@@ -364,13 +424,21 @@ require("./jquery.mousewheel.js");
                     //That code has been changed, so this should not happen, but if it does, this will save
                     //some debugging time.
                     if (insertPointRange.startContainer.nodeName != "#text") {
-                        throw "longpress: aborting becuase deleteContents() would have deleted all contents of a " + insertPointRange.startContainer.nodeName;
+                        throw "longpress: aborting becuase deleteContents() would have deleted all contents of a " +
+                            insertPointRange.startContainer.nodeName;
                     }
 
                     //remove the character they typed to open this tool
                     var rangeToRemoveStarterCharacter = insertPointRange.cloneRange();
-                    rangeToRemoveStarterCharacter.setStart(insertPointRange.startContainer, insertPointRange.startOffset - lengthOfPreviouslyInsertedCharacter);
-                    rangeToRemoveStarterCharacter.setEnd(insertPointRange.startContainer, insertPointRange.startOffset);
+                    rangeToRemoveStarterCharacter.setStart(
+                        insertPointRange.startContainer,
+                        insertPointRange.startOffset -
+                            lengthOfPreviouslyInsertedCharacter
+                    );
+                    rangeToRemoveStarterCharacter.setEnd(
+                        insertPointRange.startContainer,
+                        insertPointRange.startOffset
+                    );
                     rangeToRemoveStarterCharacter.deleteContents();
 
                     //stick in the replacement character
@@ -426,9 +494,9 @@ require("./jquery.mousewheel.js");
             // IE Support
             ctrl.focus();
             var sel = document.selection.createRange();
-            sel.moveStart('character', -ctrl.value.length);
+            sel.moveStart("character", -ctrl.value.length);
             caretPos = sel.text.length;
-        } else if (ctrl.selectionStart || ctrl.selectionStart == '0') {
+        } else if (ctrl.selectionStart || ctrl.selectionStart == "0") {
             // Firefox support
             caretPos = ctrl.selectionStart;
         }
@@ -441,14 +509,13 @@ require("./jquery.mousewheel.js");
         } else if (ctrl.createTextRange) {
             var range = ctrl.createTextRange();
             range.collapse(true);
-            range.moveEnd('character', pos);
-            range.moveStart('character', pos);
+            range.moveEnd("character", pos);
+            range.moveStart("character", pos);
             range.select();
         }
     }
 
     function LongPress(element, options) {
-
         this.element = element;
         this.options = $.extend({}, defaults, options);
 
@@ -457,25 +524,30 @@ require("./jquery.mousewheel.js");
 
         //popup = $('<div id="longpress" class="long-press-popup"><ul />' + this.options.instructions + '</div>');
 
-        popup = window.top.$('<div id="longpress" class="long-press-popup"><ul />' + this.options.instructions + '</div>');
+        popup = window.top.$(
+            '<div id="longpress" class="long-press-popup"><ul />' +
+                this.options.instructions +
+                "</div>"
+        );
         this.init();
     }
 
     LongPress.prototype = {
-
-        init: function () {
+        init: function() {
             $(this.element).keydown(onKeyDown);
             $(this.element).keyup(onKeyUp);
         }
-
     };
 
-    $.fn[pluginName] = function (options) {
-        return this.each(function () {
-            if (!$.data(this, 'plugin_' + pluginName)) {
-                $.data(this, 'plugin_' + pluginName, new LongPress(this, options));
+    $.fn[pluginName] = function(options) {
+        return this.each(function() {
+            if (!$.data(this, "plugin_" + pluginName)) {
+                $.data(
+                    this,
+                    "plugin_" + pluginName,
+                    new LongPress(this, options)
+                );
             }
         });
     };
-
-}(jQuery, window));
+})(jQuery, window);
