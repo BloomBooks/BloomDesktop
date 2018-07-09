@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IUILanguageAwareProps } from "../../react_components/l10n";
+import { IUILanguageAwareProps, Label } from "../../react_components/l10n";
 import axios from "axios";
 
 interface IProps extends IUILanguageAwareProps {
@@ -68,11 +68,10 @@ export class CheckItem extends React.Component<IProps, IState> {
     }
 
     public render() {
+        let labelKey = "AccessibilityCheck." + this.props.apiCheckName;
         return (
             <li className={`checkItem ${this.state.checkResult.resultClass}`}>
-                {
-                    this.props.label // TODO Make localizable, just based on our props.apiCheckName
-                }
+                <Label l10nKey={labelKey}>{this.props.label}</Label>
                 <ul>
                     {// problem descriptions are already localized by the backend
                     this.state.checkResult.problems.map((problem, index) => (
