@@ -22,7 +22,9 @@ mixin mxb-combinedTitleCreditsPage-inside-front-cover
 			.langName('data-library'='dialect')
 			.langName(data-library='languageLocation').bloom-writeOnly
 		+field-prototypeDeclaredExplicity("N1")#originalContributions
-			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
+			block originalContributionsLabel
+				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+					| The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalContributions')
 		+field-acknowledgments-localizedVersion
 		+field-acknowledgments-originalVersion

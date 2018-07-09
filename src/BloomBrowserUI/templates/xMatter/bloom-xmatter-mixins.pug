@@ -177,7 +177,8 @@ mixin title-page-contents
 	block originalContributions
 		+field-prototypeDeclaredExplicity("N1")#originalContributions
 			block originalContributionsLabel
-				//- if you modify this next line, modify it also in the SIL PNG custom xmatter
+				//- if you modify this next line, modify it also in the SIL PNG custom xmatter,
+				//- and probably the MXB custom Xmatter
 				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
 					| The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
