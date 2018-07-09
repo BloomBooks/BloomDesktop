@@ -1,5 +1,5 @@
 ﻿import * as React from "react";
-import { IUILanguageAwareProps } from "../../react_components/l10n";
+import { IUILanguageAwareProps, H1 } from "../../react_components/l10n";
 
 import "./accessibilityChecklist.less";
 import { CheckItem } from "./checkItem";
@@ -47,7 +47,9 @@ export class AccessibilityChecklist extends React.Component<
         return (
             <div className="checkList">
                 <section>
-                    <h1>Bloom can automatically check these for you</h1>
+                    <H1 l10nKey="AccessibilityCheck.AutomaticChecksHeading">
+                        Bloom can automatically check these for you:
+                    </H1>
                     <CheckItem
                         subscribeToRefresh={this.subscribeChildToRefreshEvent}
                         apiCheckName="audioForAllText"
@@ -66,7 +68,9 @@ export class AccessibilityChecklist extends React.Component<
                     {/* <CheckItem apirUrl="automatedEpubCheck" label="Automated ePUB Check" /> */}
                 </section>
                 <section>
-                    <h1>You need to check these yourself:</h1>
+                    <H1 l10nKey="AccessibilityCheck.ManualChecksHeading">
+                        You need to check these yourself:
+                    </H1>
                     {this.addCheck(
                         "noEssentialInfoByColor",
                         "No essential information by color"
@@ -87,7 +91,7 @@ export class AccessibilityChecklist extends React.Component<
         return (
             <ApiBackedCheckbox
                 subscribeToRefresh={this.subscribeChildToRefreshEvent}
-                l10nKey={"Accessibility." + key}
+                l10nKey={"AccessibilityCheck." + key}
                 apiEndpoint={"accessibilityCheck/" + key}
             >
                 {english}

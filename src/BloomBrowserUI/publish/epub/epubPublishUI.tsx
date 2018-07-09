@@ -111,7 +111,7 @@ class EpubPublishUI extends React.Component<
                                 About ePUBs
                             </HelpLink>
                             <HelpLink
-                                l10nKey="PublishTab.Epub.Help.BooksForBlind"
+                                l10nKey="PublishTab.Epub.BooksForBlind"
                                 helpId="Tasks/Publish_tasks/Create_an_ePUB_book_overview.htm"
                             >
                                 Books for the Blind
@@ -132,7 +132,6 @@ class EpubPublishUI extends React.Component<
                         <section
                             className={"settings-section section-below-another"}
                         >
-                            {/* todo: pick correct l10nkey */}
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
                         <H1 l10nKey="PublishTab.Epub.BooksForBlind">
