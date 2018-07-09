@@ -1292,7 +1292,10 @@ export default class StyleEditor {
             this.boxBeingEdited
         );
         // BL-2386 This one should NOT be language-dependent; only style dependent
-        if (this.shouldSetDefaultRule()) {
+        // BL-5616 This also applies if the textbox's default language is '*',
+        // like it is for an Arithmetic Equation.
+        var iso = $(this.boxBeingEdited).attr("lang");
+        if (this.shouldSetDefaultRule() || iso === "*") {
             theOneLocalizationManager
                 .asyncGetText(
                     "BookEditor.DefaultForText",
@@ -1306,7 +1309,6 @@ export default class StyleEditor {
             return;
         }
         //BL-982 Use language name that appears on text windows
-        var iso = $(this.boxBeingEdited).attr("lang");
         var lang = theOneLocalizationManager.getLanguageName(iso);
         if (!lang) {
             lang = iso;
