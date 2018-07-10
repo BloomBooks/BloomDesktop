@@ -4,6 +4,11 @@
 # (This is obviously for use on debian based Linux systems such as
 # ubuntu.)
 
+if [ $UID -eq 0 ]; then
+    echo Run this script without using sudo.  Any needed sudo commands are inside the script.
+    exit 1
+fi
+
 # we need this for the next line if the user doesn't already have it.
 sudo apt-get install -y curl
 
