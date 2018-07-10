@@ -256,13 +256,13 @@
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
-        <target xml:lang="az" state="needs-translation">Traditional</target>
+        <target xml:lang="az" state="translated">Ənənəvi</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
         <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
-        <target xml:lang="az" state="needs-translation">Video</target>
+        <target xml:lang="az" state="translated">Video</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
         <source xml:lang="en">Arabic-Indic</source>
