@@ -102,7 +102,13 @@ namespace Bloom.Edit
 			pageSelection.SelectionChanging += OnPageSelectionChanging;
 			templateInsertionCommand.InsertPage += OnInsertPage;
 
-			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
+			bookRefreshEvent.Subscribe((book) =>
+			{
+				if (book == CurrentBook)
+				{
+					OnBookSelectionChanged(null, null);
+				}
+			});
 			pageRefreshEvent.Subscribe((PageRefreshEvent.SaveBehavior behavior) =>
 			{
 				switch (behavior)
