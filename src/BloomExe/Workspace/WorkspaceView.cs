@@ -20,6 +20,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
+using Bloom.Publish.Epub;
 using Bloom.ToPalaso;
 using Gecko.Cache;
 using SIL.Windows.Forms.WritingSystems;
@@ -35,6 +36,7 @@ namespace Bloom.Workspace
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
+		private readonly PublishEpubApi _epubApi;
 #if CHORUS
 			private readonly ChorusSystem _chorusSystem;
 #else
@@ -78,7 +80,8 @@ namespace Bloom.Workspace
 							LocalizationChangedEvent localizationChangedEvent,
 							ProblemReporterDialog.Factory problemReportDialogFactory,
 							//ChorusSystem chorusSystem,
-							LocalizationManager localizationManager
+							LocalizationManager localizationManager,
+							PublishEpubApi epubApi
 
 			)
 		{
@@ -90,6 +93,7 @@ namespace Bloom.Workspace
 			_problemReportDialogFactory = problemReportDialogFactory;
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
+			_epubApi = epubApi;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
@@ -535,6 +539,7 @@ namespace Bloom.Workspace
 
 		private void SelectPage(Control view)
 		{
+			_epubApi.MainPageChanged();
 			CurrentTabView = view as IBloomTabArea;
 			// Warn the user if we're starting to use too much memory.
 			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
