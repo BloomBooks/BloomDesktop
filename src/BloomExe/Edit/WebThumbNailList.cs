@@ -157,6 +157,14 @@ namespace Bloom.Edit
 
 		public void SelectPage(IPage page)
 		{
+			if (InvokeRequired)
+				Invoke((Action)(() => SelectPageInternal(page)));
+			else
+				SelectPageInternal(page);
+		}
+
+		private void SelectPageInternal(IPage page)
+		{
 			if (_selectedPage != null && _selectedPage != page)
 			{
 				var oldGridElt = GetGridElementForPage(_selectedPage);
@@ -225,6 +233,21 @@ namespace Bloom.Edit
 		private string InvisbleThumbClass = "invisibleThumbnailCover";
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
+		{
+			List<IPage> result = null;
+			if (InvokeRequired)
+			{
+				Invoke((Action) (() => result = UpdateItemsInternal(pages)));
+			}
+			else
+			{
+				result = UpdateItemsInternal(pages);
+			}
+
+			return result;
+		}
+
+		private List<IPage> UpdateItemsInternal(IEnumerable<IPage> pages)
 		{
 			OnPaneContentsChanging(pages.Any());
 			var result = new List<IPage>();
