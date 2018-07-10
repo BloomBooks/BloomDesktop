@@ -431,7 +431,7 @@ namespace Bloom
 			// Don't try to make thumbnails on the UI thread. It's easy to get into a situation like BL-6208,
 			// where the UI thread is waiting for this lock, but another thread that holds the lock is waiting
 			// to do something (e.g., navigate a browser) that can only be done on the UI thread.
-			Debug.Assert(SynchronizationContext.Current == null, "Thumbnails must not be made on the UI thread");
+			Debug.Assert(!Program.RunningOnUiThread, "Thumbnails must not be made on the UI thread");
 
 			lock (this)
 			{

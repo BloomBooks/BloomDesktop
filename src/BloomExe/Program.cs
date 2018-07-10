@@ -46,6 +46,7 @@ namespace Bloom
 		/// properly dispose of various things when the project is closed.
 		/// </summary>
 		private static ProjectContext _projectContext;
+		private static int _uiThreadId;
 		private static ApplicationContainer _applicationContainer;
 		public static bool ApplicationExiting;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
@@ -73,10 +74,13 @@ namespace Bloom
 		/// </summary>
 		internal static CultureInfo UserInterfaceCulture = CultureInfo.CurrentUICulture;
 
+		public static bool RunningOnUiThread => Thread.CurrentThread.ManagedThreadId == _uiThreadId;
+
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
 		static int Main(string[] args1)
 		{
+			_uiThreadId = Thread.CurrentThread.ManagedThreadId;
 			Logger.Init();
 			CheckForCorruptUserConfig();
 			// We use crowdin for localizing, and they require a directory per language setup.
