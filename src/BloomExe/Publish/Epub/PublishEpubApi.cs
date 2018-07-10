@@ -28,13 +28,20 @@ namespace Bloom.Publish.Epub
 		private BookSelection _bookSelection;
 		private CollectionSettings _collectionSettings;
 		private BloomWebSocketServer _webSocketServer;
-		private readonly WebSocketProgress _progress;
+		// The usual place to report progress, read by the progress panel in the main epub preview window.
+		private readonly WebSocketProgress _standardProgress;
+		// The progress socket manager that is actually used to report progress with making epubs.
+		// Usually _standardProgress, but when the epub is being generated for another purpose
+		// besides the preview in the main epub window (e.g., for Daisy checker), we use that
+		// window's progress box.
+		private WebSocketProgress _progress;
 
 		private EpubPublishUiSettings _desiredEpubSettings = new EpubPublishUiSettings();
 		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
 		private Action<EpubMaker> _doWhenPreviewComplete; // Something to do when the current preview is complete (e.g., save it)
 		private BackgroundWorker _previewWorker;
 		private string _previewSrc;
+		private bool _mustUpdatePreview;
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
 		// down to the context (usualy a screen) that requested them. 
@@ -59,7 +66,15 @@ namespace Bloom.Publish.Epub
 			_bookSelection = bookSelection;
 			_collectionSettings = collectionSettings;
 			_webSocketServer = webSocketServer;
-			_progress = new WebSocketProgress(_webSocketServer, kWebsocketContext);
+			_standardProgress = new WebSocketProgress(_webSocketServer, kWebsocketContext);
+		}
+
+		public void MainPageChanged()
+		{
+			// User might have edited current book, perhaps after bringing up the Accessibility tool,
+			// but before selecting the DAISY tab.
+			if (EpubMaker != null)
+				_mustUpdatePreview = true;
 		}
 
 		// Message is presumed already localized.
@@ -264,35 +279,49 @@ namespace Bloom.Publish.Epub
 		internal string GetEpubSettings()
 		{
 			if (_bookSelection != null)
-			{
-				var info = _bookSelection.CurrentSelection.BookInfo;
-				_desiredEpubSettings.howToPublishImageDescriptions = info.MetaData.Epub_HowToPublishImageDescriptions;
-				_desiredEpubSettings.removeFontSizes = info.MetaData.Epub_RemoveFontSizes;
-			}
+				GetEpubSettingsForCurrentBook(_desiredEpubSettings);
 
 			return JsonConvert.SerializeObject(_desiredEpubSettings);
 		}
 
-		public void UpdatePreview(EpubPublishUiSettings newSettings, bool force)
+		public void GetEpubSettingsForCurrentBook(EpubPublishUiSettings epubPublishUiSettings)
 		{
+			var info = _bookSelection.CurrentSelection.BookInfo;
+			epubPublishUiSettings.howToPublishImageDescriptions = info.MetaData.Epub_HowToPublishImageDescriptions;
+			epubPublishUiSettings.removeFontSizes = info.MetaData.Epub_RemoveFontSizes;
+		}
+
+		public void UpdatePreview(EpubPublishUiSettings newSettings, bool force, WebSocketProgress progress = null)
+		{
+			_progress = progress ?? _standardProgress;
 			lock (this)
 			{
-				if (_desiredEpubSettings == newSettings && !force)
+				if (_desiredEpubSettings == newSettings && EpubMaker != null && EpubMaker.Book == _bookSelection.CurrentSelection && !force && !_mustUpdatePreview)
 					return; // getting a request really from the browser, and already in that state.
 				_desiredEpubSettings = newSettings;
-				if (_previewWorker != null)
+				_mustUpdatePreview = false;
+				// I think the only way _previewWorker can be non-null and EpubMaker is null
+				// is when things got messed up because debugging prevented there being an active Bloom
+				// form at a critical moment.
+				if (_previewWorker != null && EpubMaker != null)
 				{
-					// Something changed before we even finished generating the preview! abort the current attempt, which will lead
-					// to trying again.
-					EpubMaker.AbortRequested = true;
+					if (_desiredEpubSettings != newSettings || EpubMaker.Book != _bookSelection.CurrentSelection) {
+						// Something changed before we even finished generating the preview! abort the current attempt, which will lead
+						// to trying again. (If the current request is for the right book and state, just let it finish.)
+						EpubMaker.AbortRequested = true;
+					}
 					return;
 				}
 
-				if (_doWhenPreviewComplete != null)
+				if (_doWhenPreviewComplete != null && _previewWorker != null)
 				{
 					// We're committed to doing something with a completed preview...and we're done making the preview...
 					// so probably we're in the middle of doing the completed preview action.
 					// We need to let it complete; THEN we should update the preview again.
+					// (In normal operation, we should never get here when _previewWorker is null,
+					// but we check for it because if we abort here and are not in the middle of
+					// making a preview, we'll never get a preview completed event, and never
+					// start a new attempt, either. Hopefully this only happens when debugging.)
 					_needNewPreview = true;
 					return;
 				}
@@ -365,8 +394,15 @@ namespace Bloom.Publish.Epub
 				Debug.Assert(!EpubMaker.AbortRequested);
 				Debug.Assert(EpubMaker.PublishImageDescriptions == _desiredEpubSettings.howToPublishImageDescriptions);
 				Debug.Assert(EpubMaker.RemoveFontSizes == _desiredEpubSettings.removeFontSizes);
-				_doWhenPreviewComplete(EpubMaker);
-				_doWhenPreviewComplete = null;
+				try
+				{
+					_doWhenPreviewComplete(EpubMaker);
+				}
+				finally
+				{
+					// We must clear this, or all future attempts to set up the epub fail.
+					_doWhenPreviewComplete = null;
+				}
 
 				if (_needNewPreview)
 				{
@@ -397,9 +433,14 @@ namespace Bloom.Publish.Epub
 			Debug.Assert(!EpubMaker.AbortRequested);
 			Debug.Assert(EpubMaker.PublishImageDescriptions == _desiredEpubSettings.howToPublishImageDescriptions);
 			Debug.Assert(EpubMaker.RemoveFontSizes == _desiredEpubSettings.removeFontSizes);
-			_doWhenPreviewComplete(EpubMaker);
-
-			_doWhenPreviewComplete = null;
+			try
+			{
+				_doWhenPreviewComplete(EpubMaker);
+			}
+			finally
+			{
+				_doWhenPreviewComplete = null;
+			}
 
 			if (_needNewPreview) // we got a request during action processing
 				UpdatePreview(_desiredEpubSettings, true);

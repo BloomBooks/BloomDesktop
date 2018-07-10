@@ -23,6 +23,7 @@ namespace Bloom.web.controllers
 		// Define a socket to signal the client window to refresh
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly EpubMaker.Factory _epubMakerFactory;
+		private PublishEpubApi _epubApi;
 
 		private readonly NavigationIsolator _isolator;
 		private readonly BookServer _bookServer;
@@ -45,11 +46,13 @@ namespace Bloom.web.controllers
 
 
 		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection,
-									BookRefreshEvent bookRefreshEvent, EpubMaker.Factory epubMakerFactory)
+									BookRefreshEvent bookRefreshEvent, EpubMaker.Factory epubMakerFactory,
+			PublishEpubApi epubApi)
 		{
 			_webSocketServer = webSocketServer;
 			_webSocketProgress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_epubMakerFactory = epubMakerFactory;
+			_epubApi = epubApi;
 			bookSelection.SelectionChanged += (unused1, unused2) => _webSocketServer.SendEvent(kWebSocketContext, kBookSelectionChanged);
 			bookRefreshEvent.Subscribe((book) => RefreshClient());
 		}
@@ -110,9 +113,7 @@ namespace Bloom.web.controllers
 			
 			//enhance: this might have to become async to work on large books on slow computers
 			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
-				true // <-- ui thread needed to make epub for some reason.
-					 // This messes with our ability to make progress show up.
-					 // Card for fixing the epub maker is BL-6122 
+				false
 				);
 		}
 
@@ -139,77 +140,86 @@ namespace Bloom.web.controllers
 			// so give new folder names if needed
 			var haveReportedError = false;
 			var errorMessage = "Unknown Error";
-			
-			var epubPath = MakeEpub(request, reportRootDirectory, _webSocketProgress);
-			// Try 3 times. It could be that this is no longer needed, but working on a developer
-			// machine isn't proof.
-			for (var i = 0; i < 3; i++)
+
+			MakeEpub(request, reportRootDirectory, _webSocketProgress, epubPath =>
 			{
-				var randomName = Guid.NewGuid().ToString();
-				var reportDirectory = Path.Combine(reportRootDirectory, randomName);
-
-				var arguments = $"ace.js  -o \"{reportDirectory}\" \"{epubPath}\"";
-				const int kSecondsBeforeTimeout = 60;
-				var progress = new NullProgress();
-				_webSocketProgress.MessageWithoutLocalizing("Running Ace by Daisy");
-			
-				ExecutionResult res = null;
-				string ldpath = null;
-				try
+				// Try 3 times. It could be that this is no longer needed, but working on a developer
+				// machine isn't proof.
+				for (var i = 0; i < 3; i++)
 				{
-					// Without this variable switching on Linux, the chrome inside ace finds the
-					// wrong version of a library as part of our mozilla code.
-					ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
-					Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
-					res = CommandLineRunner.Run("node", arguments, Encoding.UTF8, daisyDirectory, kSecondsBeforeTimeout, progress,
-						(dummy) => { });
+					var randomName = Guid.NewGuid().ToString();
+					var reportDirectory = Path.Combine(reportRootDirectory, randomName);
+
+					var arguments = $"ace.js  -o \"{reportDirectory}\" \"{epubPath}\"";
+					const int kSecondsBeforeTimeout = 60;
+					var progress = new NullProgress();
+					_webSocketProgress.MessageWithoutLocalizing("Running Ace by Daisy");
+
+					ExecutionResult res = null;
+					string ldpath = null;
+					try
+					{
+						// Without this variable switching on Linux, the chrome inside ace finds the
+						// wrong version of a library as part of our mozilla code.
+						ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
+						Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
+						res = CommandLineRunner.Run("node", arguments, Encoding.UTF8, daisyDirectory, kSecondsBeforeTimeout, progress,
+							(dummy) => { });
+					}
+					finally
+					{
+						// Restore the variable for our next geckofx browser to find.
+						if (!String.IsNullOrEmpty(ldpath))
+							Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", ldpath);
+					}
+
+					if (res.DidTimeOut)
+					{
+						errorMessage = $"Daisy Ace timed out after {kSecondsBeforeTimeout} seconds.";
+						_webSocketProgress.ErrorWithoutLocalizing(errorMessage);
+						continue;
+					}
+
+					var answerPath = Path.Combine(reportDirectory, "report.html");
+					if (!File.Exists(answerPath))
+					{
+						// This hasn't been effectively reproduced, but there was a case where this would fail at least
+						// half the time on a book, reproducable. That book had 2 pages pointing at placeholder.png,
+						// and we were getting an error related to it being locked. So we deduce that ace was trying
+						// to copy the file twice, at the same time (normal nodejs code is highly async).
+						// Now the problem is not reproducable, but I'm leaving in this code that tried to deal with it.
+						errorMessage = $"Exit code{res.ExitCode}{Environment.NewLine}" +
+						               $"Standard Error{Environment.NewLine}{res.StandardError}{Environment.NewLine}" +
+						               $"Standard Out{res.StandardOutput}";
+
+						_webSocketProgress.ErrorWithoutLocalizing(errorMessage);
+
+						continue; // something went wrong, try again
+					}
+
+					// Send the url of the report to the HTML client
+					_webSocketServer.SendString(kWebSocketContext, "daisyResults", "/bloom/" + answerPath);
+					return;
 				}
-				finally
-				{
-					// Restore the variable for our next geckofx browser to find.
-					if (!String.IsNullOrEmpty(ldpath))
-						Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", ldpath);
-				}
-				if (res.DidTimeOut)
-				{
-					errorMessage = $"Daisy Ace timed out after {kSecondsBeforeTimeout} seconds.";
-					_webSocketProgress.ErrorWithoutLocalizing(errorMessage);
-					continue;
-				}
+				// Three tries, no report...
+				_webSocketProgress.ErrorWithoutLocalizing("Failed");
+			});
 
-				var answerPath = Path.Combine(reportDirectory, "report.html");
-				if (!File.Exists(answerPath))
-				{
-					// This hasn't been effectively reproduced, but there was a case where this would fail at least
-					// half the time on a book, reproducable. That book had 2 pages pointing at placeholder.png,
-					// and we were getting an error related to it being locked. So we deduce that ace was trying
-					// to copy the file twice, at the same time (normal nodejs code is highly async).
-					// Now the problem is not reproducable, but I'm leaving in this code that tried to deal with it.
-					errorMessage = $"Exit code{res.ExitCode}{Environment.NewLine}" +
-					               $"Standard Error{Environment.NewLine}{res.StandardError}{Environment.NewLine}" +
-					               $"Standard Out{res.StandardOutput}";
-
-					_webSocketProgress.ErrorWithoutLocalizing(errorMessage);
-
-					continue; // something went wrong, try again
-				}
-
-				// The html client is set to treat a text reply as a url of the report
-				request.ReplyWithText("/bloom/" + answerPath);
-				return;
-			}
-
-			// If we get this far, we give up.
-			ReportErrorAndFailTheRequest(request, errorMessage);
+			request.PostSucceeded();
 		}
 
-		private string MakeEpub(ApiRequest request, string parentDirectory, IWebSocketProgress progress)
+		private void MakeEpub(ApiRequest request, string parentDirectory, IWebSocketProgress progress, Action<string> doWhenReady)
 		{
-			var maker = _epubMakerFactory();
-			maker.Book = request.CurrentBook;
-			var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
-			maker.SaveEpub(path, progress);
-			return path;
+			var settings = new EpubPublishUiSettings();
+			_epubApi.GetEpubSettingsForCurrentBook(settings);
+			var forceNewEpub = request.RequiredPostBooleanAsJson();
+			_epubApi.UpdatePreview(settings, forceNewEpub, _webSocketProgress);
+			_epubApi.RequestPreviewOutput(maker =>
+			{
+				var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
+				maker.SaveEpub(path, progress);
+				doWhenReady(path);
+			});
 		}
 
 		private string FindAceByDaisyOrTellUser(ApiRequest request)
