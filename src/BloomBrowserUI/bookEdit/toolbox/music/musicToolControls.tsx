@@ -189,7 +189,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                     <div id="musicSetVolume">
                         <img
                             className="speaker-volume"
-                            src="/bloom/bookEdit/toolbox/music/speaker-volume.svg"
+                            src="speaker-volume.svg"
                         />
                         <div className="bgSliderWrapper">
                             <Slider
