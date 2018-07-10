@@ -144,7 +144,7 @@ export default class BloomHintBubbles {
         if (!whatToSay) return; // just forget adding a hint if there's no text.
         // Don't use the corresponding svg from artwork here. Somehow it causes about a 4 second delay (on a fast workstation)
         headers.prepend(
-            "<li id='hint'><a class='sourceTextTab' href='#hint'><img src='/bloom/images/information-licenseCC0.png'/></a></li>"
+            "<li id='hint'><a class='sourceTextTab' href='#hint'><img src='/bloom/images/information-i.png'/></a></li>"
         );
         var nav = $(headers.parent());
         var whatToSay =
