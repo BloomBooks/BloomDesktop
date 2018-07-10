@@ -224,7 +224,7 @@ namespace Bloom.web.controllers
 			}
 			if (!whereResult.StandardOutput.Contains(npmFileName))
 			{
-				ReportErrorAndFailTheRequest(request, whereResult, "Could could not find npm.");
+				ReportErrorAndFailTheRequest(request, whereResult, "Could not find npm.");
 				return null;
 			}
 
@@ -274,7 +274,7 @@ namespace Bloom.web.controllers
 				daisyDirectory = Path.Combine(nodeModulesDirectory, "@daisy/ace-cli/bin/");
 				if (!Directory.Exists((daisyDirectory)))
 				{
-					ReportErrorAndFailTheRequest(request, whereResult, $"Could could not find daisy-ace at {daisyDirectory}.");
+					ReportErrorAndFailTheRequest(request, whereResult, $"Could not find daisy-ace at {daisyDirectory}.");
 					return null;
 				}
 			}
@@ -303,7 +303,7 @@ namespace Bloom.web.controllers
 				if (folder.EndsWith("/output/Debug") || folder.EndsWith("/output/Release"))
 					folder = "";
 				var scriptPath = Path.Combine(folder, "DistFiles", "InstallAce.sh");
-				_webSocketProgress.MessageWithoutLocalizing("Please run the "+ scriptPath + " script to install the Ace by Daisy system on this Linux computer.");
+				_webSocketProgress.MessageWithoutLocalizing("Please run the "+ scriptPath + " script to install the Ace by Daisy system on this Linux computer.  Do not use sudo to run this script: it already contains any needed sudo commands internally.");
 			}
 			request.Failed();
 		}
