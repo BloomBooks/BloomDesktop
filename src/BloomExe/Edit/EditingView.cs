@@ -997,16 +997,15 @@ namespace Bloom.Edit
 			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to choose picture", false);
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
-			// one has a sticky scroll bar in applications that are using Gecko.  On Linux, we also
-			// need to use the Gecko version of the text box.  Except that the Gecko version of the
-			// text box totally freezes the system if the user is using LinuxMint/cinnamon (ie, Wasta).
-			// See https://jira.sil.org/browse/BL-1147.
+			// one has a sticky scroll bar in applications that are using Gecko.
 			ThumbnailViewer.UseWebViewer = true;
-			if(SIL.PlatformUtilities.Platform.IsUnix &&
-			   !(SIL.PlatformUtilities.Platform.IsWasta || SIL.PlatformUtilities.Platform.IsCinnamon))
-			{
-				TextInputBox.UseWebTextBox = true;
-			}
+			// The Gecko version of the text box keeps causing trouble on Linux, first with Wasta 14
+			// (Trusty/Ubuntu 14.04 + Mint + Cinnamon), now with Bionic/Ubuntu 18.04 + Gnome.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-1147 and
+			// https://silbloom.myjetbrains.com/youtrack/issue/BL-6126.
+			var useWebTextBox = TextInputBox.UseWebTextBox;
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				TextInputBox.UseWebTextBox = false;
 			using(var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
 				var searchLanguage = Settings.Default.ImageSearchLanguage;
@@ -1043,6 +1042,7 @@ namespace Bloom.Edit
 					Settings.Default.Save();
 				}
 			}
+			TextInputBox.UseWebTextBox = useWebTextBox;
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
 			imageInfo.Dispose(); // ensure memory doesn't leak
