@@ -87,7 +87,6 @@ export default class WebSocketManager {
             );
             webSocket.close();
             WebSocketManager.socketMap[clientContext] = null;
-            BloomApi.NotifyPageClosing();
         }
     }
     /**

@@ -46,6 +46,10 @@ class EpubPublishUI extends React.Component<
         BloomApi.postData("publish/epub/updatePreview", this.state);
     }
 
+    public componentDidMount() {
+        window.addEventListener("beforeunload", this.componentCleanup);
+    }
+
     // Apparently, we have to rely on the window event when closing or refreshing the page.
     // componentWillUnmount will not get called in those cases.
     public componentWillUnmount() {

@@ -212,3 +212,5 @@ export class BloomApi {
         }
     }
 }
+
+window.addEventListener("beforeunload", () => BloomApi.NotifyPageClosing());
