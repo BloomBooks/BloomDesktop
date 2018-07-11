@@ -1,3 +1,5 @@
+import { BloomApi } from "./bloomApi";
+
 interface IBloomWebSocketEvent {
     clientContext: string;
     id: string;
@@ -85,6 +87,7 @@ export default class WebSocketManager {
             );
             webSocket.close();
             WebSocketManager.socketMap[clientContext] = null;
+            BloomApi.NotifyPageClosing();
         }
     }
     /**

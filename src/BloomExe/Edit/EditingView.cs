@@ -1474,9 +1474,9 @@ namespace Bloom.Edit
 					float zoomFloat;
 					if (float.TryParse(zoomString, NumberStyles.Float, CultureInfo.InvariantCulture, out zoomFloat))
 					{
-						zoomInt = (int)Math.Round(zoomFloat * 10F) * 10;
+						zoomInt = (int) Math.Round(zoomFloat * 10F) * 10;
 						if (zoomInt < ZoomControl.kMinimumZoom || zoomInt > ZoomControl.kMaximumZoom)
-							return 100;		// bad antique value - normalize to real size.
+							return 100; // bad antique value - normalize to real size.
 						return zoomInt;
 					}
 					else
@@ -1484,6 +1484,7 @@ namespace Bloom.Edit
 						return 100;
 					}
 				}
+
 				if (int.TryParse(zoomString, System.Globalization.NumberStyles.Integer, CultureInfo.InvariantCulture, out zoomInt))
 				{
 					// we can't go below 30 (30%), so those must be old floating point values that rounded to an integer.
@@ -1498,16 +1499,19 @@ namespace Bloom.Edit
 					return 100;
 				}
 			}
-			set
-			{
-				Settings.Default.PageZoom = value.ToString(CultureInfo.InvariantCulture);
-				Settings.Default.Save();
-				if (_browser1 != null)
-				{
-					RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().setZoom(" +
-								(value / 100.0).ToString() + ");}");
-				}
-			}
+		}
+
+		public void SetZoom(int zoom)
+		{
+			Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
+			Settings.Default.Save();
+			// The main current reason a zoom change requires us to reload the page is that
+			// Text-over-picture boxes don't otherwise adjust their size and position properly.
+			// If that gets fixed, we could consider reinstating a JS function we used to call
+			// here, SetZoom, which originally just changed the transform on the scaling container.
+			// However, when it was later changed to post a request for reloading the page,
+			// it became cleaner to just do the reload directly here.
+			_model.RethinkPageAndReloadIt();
 		}
 
 		public void AdjustPageZoom(int delta)
