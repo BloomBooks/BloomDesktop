@@ -889,19 +889,6 @@ interface String {
     startsWith(string): boolean;
 }
 
-export function setZoom(newScale: string) {
-    $("div#page-scaling-container").attr(
-        "style",
-        "transform: scale(" + newScale + "); transform-origin: top left;"
-    );
-    // Save changes, so TextOverPicture draggables work correctly.
-    BloomApi.post("common/saveChangesAndRethinkPageEvent");
-}
-
-// This is used to keep wheel zooming messages from happening too fast.
-// The program will crash otherwise, at least on Linux.
-var wheelZoomOkay: boolean = true;
-
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
