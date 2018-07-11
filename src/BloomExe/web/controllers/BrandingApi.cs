@@ -44,6 +44,12 @@ namespace Bloom.Api
 				}
 #endif
 				var fileName = request.RequiredFileNameOrPath("id");
+				if (request.CurrentBook == null)
+				{
+					// Not sure how this can happen, but it did in one collection.
+					request.Failed("no current book");
+					return;
+				}
 				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectKey, fileName.NotEncoded, request.CurrentBook.GetLayout());
 
 				// And this is perfectly normal, to not have a branding image at all, for a particular page:

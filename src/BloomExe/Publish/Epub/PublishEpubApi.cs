@@ -328,34 +328,45 @@ namespace Bloom.Publish.Epub
 				_previewWorker = new BackgroundWorker();
 			}
 
-			// If we've changed books we can't reuse this EpubMaker.
-			if (EpubMaker != null && EpubMaker.Book != _bookSelection.CurrentSelection)
+			try
 			{
-				EpubMaker.Dispose();
-				EpubMaker = null;
+				// If we've changed books we can't reuse this EpubMaker.
+				if (EpubMaker != null && EpubMaker.Book != _bookSelection.CurrentSelection)
+				{
+					EpubMaker.Dispose();
+					EpubMaker = null;
+				}
+
+				// I believe initialization of the EpubMaker needs to happen on the UI thread,
+				// something to do with navigating its embedded browser.
+				if (EpubMaker == null)
+				{
+					if (Form.ActiveForm == null) // this is null when we are off debugging in firefox or chrome, not winforms
+						return;
+
+					Form.ActiveForm.Invoke((Action) (() => PrepareToStageEpub()));
+				}
+
+				EpubMaker.PublishImageDescriptions = newSettings.howToPublishImageDescriptions;
+				EpubMaker.RemoveFontSizes = newSettings.removeFontSizes;
+				// clear the obsolete preview, if any; this also ensures that when the new one gets done,
+				// we will really be changing the src attr in the preview iframe so the display will update.
+				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_Preview);
+				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
+				_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
+				_previewWorker.DoWork += (sender, args) => { _previewSrc = UpdateEpubControlContent(); };
 			}
-
-			// I believe initialization of the EpubMaker needs to happen on the UI thread,
-			// something to do with navigating its embedded browser.
-			if (EpubMaker == null)
+			catch (Exception ex)
 			{
-				if (Form.ActiveForm == null) // this is null when we are off debugging in firefox or chrome, not winforms
-					return;
-
-				Form.ActiveForm.Invoke((Action) (() => PrepareToStageEpub()));
+				lock (this)
+				{
+					// In case we somehow handle or lose this exception, try not to leave things in a state where
+					// we are expecting _previewWorker_RunWorkerCompleted() to be called but it never happens.
+					_previewWorker.Dispose();
+					_previewWorker = null;
+					throw;
+				}
 			}
-
-			EpubMaker.PublishImageDescriptions = newSettings.howToPublishImageDescriptions;
-			EpubMaker.RemoveFontSizes = newSettings.removeFontSizes;
-			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
-			// we will really be changing the src attr in the preview iframe so the display will update.
-			_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_Preview);
-			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
-			_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
-			_previewWorker.DoWork += (sender, args) =>
-			{
-				_previewSrc = UpdateEpubControlContent();
-			};
 			_previewWorker.RunWorkerAsync();
 		}
 
