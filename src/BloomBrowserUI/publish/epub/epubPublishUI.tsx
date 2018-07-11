@@ -107,7 +107,7 @@ class EpubPublishUI extends React.Component<
                                 About ePUBs
                             </HelpLink>
                             <HelpLink
-                                l10nKey="PublishTab.Epub.Help.BooksforBlind"
+                                l10nKey="PublishTab.Epub.Help.BooksForBlind"
                                 helpId="Tasks/Publish_tasks/Create_an_ePUB_book_overview.htm"
                             >
                                 Books for the Blind
