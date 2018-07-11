@@ -68,7 +68,7 @@ namespace Bloom.Edit
 			if (RobustFile.Exists("/usr/bin/lame"))
 				return "/usr/bin/lame";
 #else
-			return BloomFileLocator.GetFileDistributedWithApplication("lame.exe");
+			return FileLocationUtilities.GetFileDistributedWithApplication("lame.exe");
 #endif
 			return string.Empty;
 		}

@@ -38,7 +38,7 @@ namespace Bloom.Book
 				// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 				// 64dp in Bloom Reader.
 
-				MakeSizedThumbnail(modifiedBook, backColor, temp.FolderPath, 256);
+				MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
 
 				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
 					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
@@ -56,9 +56,24 @@ namespace Bloom.Book
 			// else, BR shows a default thumbnail for the book
 		}
 
+		/// <summary>
+		/// tempFolderPath is where to put the book. Note that a few files (e.g., customCollectionStyles.css)
+		/// are copied into its parent in order to be in the expected location relative to the book,
+		/// so that needs to be a folder we can write in.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="bookServer"></param>
+		/// <param name="tempFolderPath"></param>
+		/// <returns></returns>
 		public static Book MakeDeviceXmatterTempBook(Book book, BookServer bookServer, string tempFolderPath)
 		{
 			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
+			// We will later copy these into the book's own folder and adjust the style sheet refs.
+			// But in some cases (at least, where the book's primary stylesheet does not provide
+			// the information SizeAndOrientation.GetLayoutChoices() is looking for), we need them
+			// to exist in the originally expected lcoation: the book's parent directory for
+			// BringBookUpToDate to succeed.
+			BookStorage.CopyCollectionStyles(book.FolderPath, Path.GetDirectoryName(tempFolderPath));
 			var bookInfo = new BookInfo(tempFolderPath, true);
 			bookInfo.XMatterNameOverride = "Device";
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);

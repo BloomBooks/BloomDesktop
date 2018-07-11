@@ -10,10 +10,16 @@ using Bloom.Collection;
 using L10NSharp;
 using XliffForHtml;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom
 {
-	public class BloomFileLocator : FileLocator
+	/// <summary>
+	/// This class is a more complex version of LibPalaso's FileLocator class. It handles finding files in collections the user
+	/// has installed, which we (sometimes) want to do. We decided to just copy some of the implementation of that class,
+	/// rather than continuing to complicate it with hooks to allow Bloom to customize it.
+	/// </summary>
+	public class BloomFileLocator : IChangeableFileLocator
 	{
 		private readonly CollectionSettings _collectionSettings;
 		private readonly XMatterPackFinder _xMatterPackFinder;
@@ -34,7 +40,6 @@ namespace Bloom
 
 		public BloomFileLocator(CollectionSettings collectionSettings, XMatterPackFinder xMatterPackFinder, IEnumerable<string> factorySearchPaths, IEnumerable<string> userInstalledSearchPaths,
 			IEnumerable<string> afterXMatterSearchPaths = null)
-			: base(factorySearchPaths.Concat( userInstalledSearchPaths))//review: is this even used, since we override GetSearchPaths()?
 		{
 			if (afterXMatterSearchPaths == null)
 			{
@@ -50,16 +55,32 @@ namespace Bloom
 			sTheMostRecentBloomFileLocator = this;
 		}
 
-		public override void AddPath(string path)
+		public void AddPath(string path)
 		{
 			_bookSpecificSearchPaths.Add(path);
+		}
+
+		public void RemovePath(string path)
+		{
+			_bookSpecificSearchPaths.Remove(path);
+		}
+
+		public string LocateFile(string fileName)
+		{
+			foreach (var path in GetSearchPaths(fileName))
+			{
+				var fullPath = Path.Combine(path, fileName);
+				if (File.Exists(fullPath))
+					return fullPath;
+			}
+			return string.Empty;
 		}
 
 		/// <summary>
 		/// These are used (as of 26 aug 2016) only by LibPalaso's FileLocator.LocateFile(). Not used by GetFileDistributedWIthApplication().
 		/// </summary>
 		/// <returns></returns>
-		protected override IEnumerable<string> GetSearchPaths()
+		protected IEnumerable<string> GetSearchPaths(string fileName = null)
 		{
 			yield return BloomFileLocator.BrowserRoot;
 
@@ -105,9 +126,12 @@ namespace Bloom
 			}
 
 			//REVIEW: this one is just a big grab bag of all folders we find in their programdata, installed stuff. This could be insufficient.
-			foreach (var searchPath in _userInstalledSearchPaths)
+			if (ShouldSearchInstalledCollectionsForFile(fileName))
 			{
-				yield return searchPath;
+				foreach (var searchPath in _userInstalledSearchPaths)
+				{
+					yield return searchPath;
+				}
 			}
 
 			//Book-specific paths (added by AddPath()) are last because we want people to get the latest stylesheet,
@@ -125,7 +149,21 @@ namespace Bloom
 				yield return _collectionSettings.FolderPath;
 		}
 
-		public override IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)
+		bool ShouldSearchInstalledCollectionsForFile(string fileName)
+		{
+			if (fileName == null)
+				return true; // default if we weren't given the filename
+			// We definitely don't want to get random versions of these files from some arbitrary installed collection.
+			// Enhance: we're thinking of switching to some sort of "whitelist" approach, where only particular
+			// groups of files (e.g., *-template.css) would be looked for in these locations. There is significant
+			// danger of finding something irrelevant, and also, of hard-to-reproduce bugs that don't happen because
+			// the developer has different installed collections than the reporter.
+			return !fileName.Contains("settingsCollectionStyles.css")
+			       && !fileName.Contains("customCollectionStyles.css")
+			       && fileName != "customBookStyles.css";
+		}
+
+		public IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)
 		{
 			var locator= new BloomFileLocator(_collectionSettings, _xMatterPackFinder,_factorySearchPaths, _userInstalledSearchPaths, _afterXMatterSearchPaths);
 			foreach (var path in _bookSpecificSearchPaths)
@@ -270,7 +308,87 @@ namespace Bloom
 			}
 			if (Path.IsPathRooted(fileName) && RobustFile.Exists(fileName)) // also just for unit tests
 				return fileName;
-			return BloomFileLocator.GetFileDistributedWithApplication(true, "branding", brandingNameOrFolderPath, fileName);
+			return FileLocationUtilities.GetFileDistributedWithApplication(true, "branding", brandingNameOrFolderPath, fileName);
+		}
+
+		//-----------------------------------------------------
+		// Copied mostly unchanged from libpalaso/FileLocator. Bloom may not actually need all of these.
+		//----------------------------------------------------
+
+		public string LocateDirectory(string directoryName)
+		{
+			foreach (var path in GetSearchPaths())
+			{
+				var fullPath = Path.Combine(path, directoryName);
+				if (Directory.Exists(fullPath))
+					return fullPath;
+			}
+			return string.Empty;
+		}
+		public string LocateDirectory(string directoryName, string descriptionForErrorMessage)
+		{
+
+			var path = LocateDirectory(directoryName);
+			if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+			{
+				ErrorReport.NotifyUserOfProblem(
+					"{0} could not find the {1}.  It expected to find it in one of these locations: {2}",
+					UsageReporter.AppNameToUseInDialogs, descriptionForErrorMessage, string.Join(", ", GetSearchPaths())
+				);
+			}
+			return path;
+		}
+		public string LocateDirectoryWithThrow(string directoryName)
+		{
+			var path = LocateDirectory(directoryName);
+			if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+			{
+				throw new ApplicationException(String.Format("Could not find {0}.  It expected to find it in one of these locations: {1}",
+					directoryName, string.Join(Environment.NewLine, GetSearchPaths())));
+			}
+			return path;
+		}
+
+		public string LocateFile(string fileName, string descriptionForErrorMessage)
+		{
+
+			var path = LocateFile(fileName);
+			if (string.IsNullOrEmpty(path) || !File.Exists(path))
+			{
+				ErrorReport.NotifyUserOfProblem(
+					"{0} could not find the {1}.  It expected to find it in one of these locations: {2}",
+					UsageReporter.AppNameToUseInDialogs, descriptionForErrorMessage, string.Join(", ", GetSearchPaths(fileName))
+				);
+			}
+			return path;
+		}
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="fileName"></param>
+		/// <returns>null if not found</returns>
+		public string LocateOptionalFile(string fileName)
+		{
+			var path = LocateFile(fileName);
+			if (string.IsNullOrEmpty(path) || !File.Exists(path))
+			{
+				return null;
+			}
+			return path;
+		}
+
+		/// <summary>
+		/// Throws ApplicationException if not found.
+		/// </summary>
+		public string LocateFileWithThrow(string fileName)
+		{
+			var path = LocateFile(fileName);
+			if (string.IsNullOrEmpty(path) || !File.Exists(path))
+			{
+				throw new ApplicationException("Could not find " + fileName + ". It expected to find it in one of these locations: " + Environment.NewLine + string.Join(Environment.NewLine, GetSearchPaths(fileName)));
+			}
+			return path;
 		}
 	}
 }

@@ -19,7 +19,7 @@ namespace BloomTests.Book
 	[TestFixture]
 	public class BookStarterTests
 	{
-		private FileLocator _fileLocator;
+		private BloomFileLocator _fileLocator;
 		private BookStarter _starter;
 		private TemporaryFolder _shellCollectionFolder;
 		private TemporaryFolder _projectFolder;
