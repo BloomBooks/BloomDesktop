@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using L10NSharp;
+using SIL.IO;
 
 namespace Bloom.Collection
 {
@@ -20,7 +21,7 @@ namespace Bloom.Collection
 		public string Key;
 		public static IEnumerable<BrandingProject> GetProjectChoices()
 		{
-			var brandingDirectory = BloomFileLocator.GetDirectoryDistributedWithApplication("branding");
+			var brandingDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("branding");
 			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
 			{
 				var brand = new BrandingProject {Key = Path.GetFileName(brandDirectory)};

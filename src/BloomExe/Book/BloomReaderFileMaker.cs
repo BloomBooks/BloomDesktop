@@ -25,9 +25,12 @@ namespace Bloom.Book
 		public static Book PrepareBookForBloomReader(Book book, BookServer bookServer, TemporaryFolder temp, Color backColor,
 			IWebSocketProgress progress)
 		{
-			var modifiedBook = BookCompressor.MakeDeviceXmatterTempBook(book, bookServer, temp.FolderPath);
+			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
+			var bookFolderPath = Path.Combine(temp.FolderPath, "PlaceForBook");
+			Directory.CreateDirectory(bookFolderPath);
+			var modifiedBook = BookCompressor.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
 
-			var jsonPath = Path.Combine(temp.FolderPath, QuestionFileName);
+			var jsonPath = Path.Combine(bookFolderPath, QuestionFileName);
 			var questionPages = modifiedBook.RawDom.SafeSelectNodes(
 				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
 			var questions = new List<QuestionGroup>();

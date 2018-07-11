@@ -132,7 +132,7 @@ namespace BloomTests
 		[Test]
 		public void GetBestLocalizedFile_EnglishIsCurrentLang_GetEnglishOne()
 		{
-			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+			var englishPath = FileLocationUtilities.DirectoryOfTheApplicationExecutable.CombineForPath(
 				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
 			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
 			Assert.AreEqual(englishPath, bestLocalizedFile);
@@ -142,7 +142,7 @@ namespace BloomTests
 		public void GetBestLocalizedFile_DontHaveThatTranslation_GetEnglishOne()
 		{
 			LocalizationManager.SetUILanguage("gd", false);
-			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+			var englishPath = FileLocationUtilities.DirectoryOfTheApplicationExecutable.CombineForPath(
 				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
 			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
 			Assert.AreEqual(englishPath, bestLocalizedFile);
@@ -152,7 +152,7 @@ namespace BloomTests
 		public void GetBestLocalizedFile_HaveFrench_FindsIt()
 		{
 			LocalizationManager.SetUILanguage("fr", false);
-			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+			var englishPath = FileLocationUtilities.DirectoryOfTheApplicationExecutable.CombineForPath(
 				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
 			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
 			Assert.IsTrue(bestLocalizedFile.Contains("-fr"));
