@@ -25,7 +25,7 @@ export class LearnAboutAccessibility extends React.Component<
                     <ul>
                         <li>
                             <HelpLink
-                                l10nKey="EditTab.Toolbox.ImageDescription.Heading"
+                                l10nKey="EditTab.Toolbox.ImageDescriptionTool"
                                 helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
                             >
                                 Image Description Tool
