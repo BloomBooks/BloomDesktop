@@ -2496,10 +2496,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="fr">Merci d'appuyer sur le bouton jusqu'à la fin de votre enregistrement</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
-        <target xml:lang="fr" state="needs-translation">Talking Book Tool</target>
+        <target xml:lang="fr">Outil de livre audio</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
