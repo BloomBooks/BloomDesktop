@@ -14,6 +14,7 @@ using L10NSharp;
 using SIL.IO;
 using Bloom.Collection;
 using Bloom.Publish.Epub;
+using Bloom.web.controllers;
 using Bloom.Workspace;
 using Newtonsoft.Json;
 using SIL.Reporting;
@@ -315,6 +316,14 @@ namespace Bloom.Api
 				// Avoid having "output/browser/" removed on Linux developer machines.
 				// GetBrowserFile adds output to the path on developer machines, but not user installs.
 				return ProcessContent(info, localPath);
+			}
+			// This happens only when displaying Ace by Daisy reports on Windows.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197.
+			else if (localPath.StartsWith(AccessibilityCheckApi.kDataRelativeUrl) &&
+					!string.IsNullOrEmpty(AccessibilityCheckApi.DaisyReportFolder))
+			{
+				var path = Path.Combine(AccessibilityCheckApi.DaisyReportFolder, localPath);
+				return ProcessAnyFileContent(info, path);
 			}
 			//Firefox debugger, looking for a source map, was prefixing in this unexpected
 			//way.

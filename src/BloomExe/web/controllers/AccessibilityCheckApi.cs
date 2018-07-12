@@ -31,6 +31,11 @@ namespace Bloom.web.controllers
 
 		public const string kApiUrlPart = "accessibilityCheck/";
 
+		// The next two items are needed to handle image access from Ace by Daisy reports.  The <img src="..."> elements send
+		// a full absolute path to our server on Linux, but only the relative path on Windows.  See BL-6197.
+		public const string kDataRelativeUrl = "data/content\\images";
+		public static string DaisyReportFolder;
+
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
 		// down to the context (usualy a screen) that requested them. 
 		private const string kWebSocketContext = "a11yChecklist"; // must match what is in accsesibilityChecklist.tsx
@@ -140,6 +145,7 @@ namespace Bloom.web.controllers
 			// so give new folder names if needed
 			var haveReportedError = false;
 			var errorMessage = "Unknown Error";
+			DaisyReportFolder = null;
 
 			MakeEpub(request, reportRootDirectory, _webSocketProgress, epubPath =>
 			{
@@ -198,6 +204,7 @@ namespace Bloom.web.controllers
 					}
 
 					// Send the url of the report to the HTML client
+					DaisyReportFolder = reportDirectory;
 					_webSocketServer.SendString(kWebSocketContext, "daisyResults", "/bloom/" + answerPath);
 					return;
 				}
