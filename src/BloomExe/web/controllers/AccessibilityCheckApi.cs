@@ -197,8 +197,10 @@ namespace Bloom.web.controllers
 						continue; // something went wrong, try again
 					}
 
-					// Send the url of the report to the HTML client
-					_webSocketServer.SendString(kWebSocketContext, "daisyResults", "/bloom/" + answerPath);
+					// Send the url of the report to the HTML client.  Make sure it's valid for being a URL.
+					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197.
+					_webSocketServer.SendString(kWebSocketContext, "daisyResults",
+						"/bloom/" + answerPath.EscapeCharsForHttp().Replace(Path.DirectorySeparatorChar, '/'));
 					return;
 				}
 				// Three tries, no report...
