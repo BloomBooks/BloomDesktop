@@ -7,6 +7,7 @@ using System.Text;
 using System.Web;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom.Api;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
@@ -1268,5 +1269,53 @@ namespace Bloom.Book
 //            return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
 //        }
 
+		/// <summary>
+		/// Find the settings file for the specified branding (in unit tests, this may be a
+		/// path to a temporary folder). If it exists and parses as valid JSON and contains
+		/// a Presets section, use that to fill in any data-div elements which it
+		/// specifies and which are currently empty.
+		/// </summary>
+		/// <param name="brandingNameOrPath"></param>
+		public void MergeBrandingSettings(string brandingNameOrPath)
+		{
+			var settings = BrandingApi.GetSettings(brandingNameOrPath);
+
+			if (settings != null && settings.Presets != null)
+			{
+				// Determine this BEFORE we possibly start setting some of them!
+				var allCopyrightEmpty = true;
+				foreach (var setting in BookCopyrightAndLicense.SettingsToCheckForDefaultCopyright)
+				{
+					if (!string.IsNullOrWhiteSpace(GetVariableOrNull(setting, "*")))
+						allCopyrightEmpty = false;
+				}
+
+				foreach (var item in settings.Presets)
+				{
+					if (string.IsNullOrWhiteSpace(item.DataBook) || string.IsNullOrWhiteSpace(item.Lang) ||
+						string.IsNullOrWhiteSpace(item.Content) || string.IsNullOrWhiteSpace(item.Condition))
+						continue;
+					// In some places we might need to worry about content that looks empty but contains
+					// things like <br /> or empty <p> elements. But our data-div maintenance code
+					// seems to already eliminate anything that looks empty like that.
+					switch (item.Condition)
+					{
+						case "ifEmpty":
+							if (!string.IsNullOrWhiteSpace(GetVariableOrNull(item.DataBook, item.Lang)))
+								continue;
+							break;
+						case "ifAllCopyrightEmpty":
+							if (!allCopyrightEmpty)
+								continue;
+							break;
+						case "always":
+							break;
+						default: // any condition we don't recognize, don't do it.
+							continue;
+					}
+					Set(item.DataBook, item.Content, item.Lang);
+				}
+			}
+		}
 	}
 }
