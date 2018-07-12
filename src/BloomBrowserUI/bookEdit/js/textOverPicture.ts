@@ -8,41 +8,37 @@
 import { fireCSharpEditEvent } from "./bloomEditing";
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
+import WebSocketManager from "../../utils/WebSocketManager";
 
-const kSocketName = "webSocket"; // TODO BL-6129 upgrade this to use WebSocketManger and a proper clientContext
-
+// TODO BL-6129 Make sure c#classes know about the new "clientContext" values
+const kSocketName = "webSocket";
+const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 class TextOverPictureManager {
     private listenerFunction: (MessageEvent) => void;
 
     public initializeTextOverPictureManager(): void {
-        this.listenerFunction = event => {
-            var e = JSON.parse(event.data);
-            if (!("message" in e)) {
-                return;
-            }
-            var locationArray = e.message.split(","); // mouse right-click coordinates
-            if (e.id === "addTextBox")
+        WebSocketManager.addListener(kWebsocketContext, messageEvent => {
+            var message = JSON.parse(messageEvent.message);
+            var locationArray = message.split(","); // mouse right-click coordinates
+            if (messageEvent.id === "addTextBox")
                 this.addFloatingTOPBox(locationArray[0], locationArray[1]);
-            if (e.id === "deleteTextBox")
+            if (messageEvent.id === "deleteTextBox")
                 this.deleteFloatingTOPBox(locationArray[0], locationArray[1]);
-        };
-        // I (GJM) ran into problems setting the onmessage handler in two places (here and in audioRecording)
-        // The problem can be solved two ways: 1- by giving TextOverPictureManager's socket a different name,
-        // or 2- by switching to using addEventListener("message", eventhandler), which I've done. Also, the
-        // TextOverPictureManager's socket is now on the local window as opposed to window.top as in
-        // audioRecording.ts.
-        var socket = this.getWebSocket();
-        if (socket) {
-            socket.addEventListener("message", this.listenerFunction);
-        }
+        });
+
+        WebSocketManager.addListener(kWebsocketContext, messageEvent => {
+            if (messageEvent.id == "message")
+                this.listenerFunction(messageEvent.message);
+        });
     }
 
     public removeTextOverPictureListener(): void {
         var socket = this.getWebSocket();
         if (socket) {
-            socket.removeEventListener("message", this.listenerFunction);
-            socket.close();
+            WebSocketManager.closeSocket(kWebsocketContext);
+            //socket.removeEventListener("message", this.listenerFunction);
+            //socket.close();
         }
     }
 
