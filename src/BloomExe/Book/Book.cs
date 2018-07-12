@@ -929,7 +929,7 @@ namespace Bloom.Book
 		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
 		{
 			progress.WriteStatus("Updating Front/Back Matter...");
-			// Nothing in the update process should change the license info, so save what is current before we mess with
+			// With one exception, handled below, nothing in the update process should change the license info, so save what is current before we mess with
 			// anything (may fix BL-3166).
 			var licenseMetadata = GetLicenseMetadata();
 			BringXmatterHtmlUpToDate(bookDOM);
@@ -951,8 +951,12 @@ namespace Bloom.Book
 			//hack
 			if (bookDOM == OurHtmlDom) //we already have a data for this
 			{
+				// The one step that can legitimately change the metadata...though current branding packs
+				// will only do so if it is originally empty. So set the saved one before it and then get a new one.
+				BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings);
+				_bookData.MergeBrandingSettings(_collectionSettings.BrandingProjectKey);
 				_bookData.SynchronizeDataItemsThroughoutDOM();
-
+				licenseMetadata = GetLicenseMetadata();
 				// I think we should only mess with tags if we are updating the book for real.
 				var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
 				if (RobustFile.Exists(oldTagsPath))
@@ -2464,7 +2468,7 @@ namespace Bloom.Book
 		public Metadata GetLicenseMetadata()
 		{
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
-			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, _collectionSettings.BrandingProjectKey);
+			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom);
 
 			//Logger.WriteEvent("After");
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);

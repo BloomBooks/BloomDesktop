@@ -642,13 +642,13 @@ function beginAddTool(
         var tool = getITool(toolId);
         const content = $(tool.makeRootElement());
         const toolName = tool.id() + "Tool";
-        // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.Music.Heading'>"
+        // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
         //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
 
         const toolIdUpper =
             tool.id()[0].toUpperCase() +
             tool.id().substring(1, tool.id().length);
-        var i18Id = "EditTab.Toolbox." + toolIdUpper + ".Heading";
+        var i18Id = "EditTab.Toolbox." + toolIdUpper + "Tool";
         // Not sure this will always work, but we can do something more complicated...maybe a new method
         // on ITool...if we need it. Note that this is just a way to come up with the English,
         // we don't do it to localizations. But in English, the code value beats the xlf one.

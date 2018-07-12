@@ -7,10 +7,12 @@ using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
+using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 
 namespace BloomTests.Book
@@ -145,6 +147,337 @@ namespace BloomTests.Book
 		   data.SuckInDataFromEditedDom(editedPageDom);
 
 		   Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz"));
+		}
+
+		// BRANDING-RELATED TESTS
+
+		[Test]
+		public void MergeSettings_NoSettings_DoesNothing()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+				</div>
+			 </body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			data.MergeBrandingSettings("nonsense");
+			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+		}
+
+		[Test]
+		public void MergeSettings_SettingsExistsButIsEmpty_DoesNothing()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButIsEmpty_DoesNothing"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"), @"{}");
+
+				var data = new BookData(bookDom, _collectionSettings, null);
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				data.MergeBrandingSettings(tempFolder.Path);
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			}
+		}
+
+		[Test]
+		public void MergeSettings_SettingsExistsButHasBogusJson_DoesNothing()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButIsEmpty_DoesNothing"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"), "");
+
+				var data = new BookData(bookDom, _collectionSettings, null);
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				data.MergeBrandingSettings(tempFolder.Path);
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			}
+		}
+
+		[Test]
+		public void MergeSettings_SettingsExistsButLacksCondition_DoesNothing()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButLacksCondition_DoesNothing"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"), @"{
+	""presets"": [{
+		""data-book"": ""insideBackCover"",
+		""lang"": ""xyz"",
+		""content"": ""stuff from settings""
+	}, {
+		""data-book"": ""insideBackCover"",
+		""lang"": ""en"",
+		""content"": ""English stuff from settings""
+	},  {
+		""data-book"": ""title"",
+		""lang"": ""xyz"",
+		""content"": ""xyz title"",
+		""condition"":""someUnknownCondition""
+	}]
+}");
+
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				Assert.That(data.GetVariableOrNull("insideBackCover", "en"), Is.Null);
+				Assert.That(data.GetVariableOrNull("title", "xyz"), Is.Null);
+			}
+		}
+
+		[Test]
+		public void MergeSettings_UpdatesEmptyField()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+						<div data-book='insideBackCover' lang='xyz'></div>
+				</div>
+			 </body></html>");
+
+			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+					// First item tests successful setting;
+					// Second tests setting of another language of same property;
+					// Third tests setting of another property;
+					// Fourth tests overwrite prevented by existing value;
+					// Remaining ones should be ignored, present to verify this.
+					@"{
+	""presets"": [{
+		""data-book"": ""insideBackCover"",
+		""lang"": ""xyz"",
+		""content"": ""stuff from settings"",
+		""condition"":""ifEmpty""
+	}, {
+		""data-book"": ""insideBackCover"",
+		""lang"": ""en"",
+		""content"": ""English stuff from settings"",
+		""condition"":""ifEmpty""
+	},  {
+		""data-book"": ""title"",
+		""lang"": ""xyz"",
+		""content"": ""xyz title"",
+		""condition"":""ifEmpty""
+	}, {
+		""data-book"": ""bookTitle"",
+		""lang"": ""xyz"",
+		""content"": ""stuff from settings that should not be used"",
+		""condition"":""ifEmpty""
+	}, {
+		""lang"": ""xyz"",
+		""content"": ""stuff from settings that should not be used"",
+		""condition"":""ifEmpty""
+	}, {
+		""data-book"": ""bookTitle"",
+		""content"": ""stuff from settings that should not be used"",
+		""condition"":""ifEmpty""
+	}, {
+		""data-book"": ""bookTitle"",
+		""lang"": ""xyz"",
+		""condition"":""ifEmpty""
+	}, {
+		""data-book"": "" "",
+		""lang"": ""xyz"",
+		""content"": ""stuff from settings that should not be used"",
+		""condition"":""ifEmpty""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+
+				Assert.AreEqual("stuff from settings", data.GetVariableOrNull("insideBackCover", "xyz"));
+				Assert.AreEqual("English stuff from settings", data.GetVariableOrNull("insideBackCover", "en"));
+				Assert.AreEqual("xyz title", data.GetVariableOrNull("title", "xyz"));
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			}
+		}
+
+		[Test]
+		public void MergeSettings_OverridesIfSpecified()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+						<div data-book='insideBackCover' lang='xyz'>original back cover</div>
+				</div>
+			 </body></html>");
+
+			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+					// First item tests successful setting;
+					// Second tests setting of another language of same property;
+					@"{
+	""presets"": [{
+		""data-book"": ""insideBackCover"",
+		""lang"": ""xyz"",
+		""content"": ""stuff from settings"",
+		""condition"":""always""
+}, {
+		""data-book"": ""bookTitle"",
+		""lang"": ""xyz"",
+		""content"": ""stuff from settings that should not be used"",
+		""condition"":""ifEmpty""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+
+				Assert.AreEqual("stuff from settings", data.GetVariableOrNull("insideBackCover", "xyz"));
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			}
+		}
+
+		[Test]
+		public void MergeSettings_BrandingHasLicenseAndNotesButNotCopyright_MetadataMatches()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+						<div data-book='insideBackCover' lang='xyz'>original back cover</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+					// First item tests successful setting;
+					// Second tests setting of another language of same property;
+					@"{
+	""presets"": [{
+		""data-book"": ""licenseNotes"",
+		""lang"": ""*"",
+		""content"": ""These are custom notes."",
+		""condition"":""ifEmpty""
+	}, {
+		""data-book"": ""licenseUrl"",
+		""lang"": ""*"",
+		""content"": ""http://creativecommons.org/licenses/by/3.0/igo/"",
+		""condition"":""ifEmpty""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+				Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
+				Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
+				Assert.That(metadata.CopyrightNotice, Is.Null.Or.Empty);
+			}
+		}
+
+		[Test]
+		public void MergeSettings_HasCopyrightAndLicenseAndLicenseNotes_MetadataMatches()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+						<div data-book='insideBackCover' lang='xyz'>original back cover</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+					// First item tests successful setting;
+					// Second tests setting of another language of same property;
+					@"{
+	""presets"": [{
+		""data-book"": ""licenseNotes"",
+		""lang"": ""*"",
+		""content"": ""These are custom notes."",
+		""condition"":""ifAllCopyrightEmpty""
+	}, {
+		""data-book"": ""licenseUrl"",
+		""lang"": ""*"",
+		""content"": ""http://creativecommons.org/licenses/by/3.0/igo/"",
+		""condition"":""ifAllCopyrightEmpty""
+	}, {
+		""data-book"": ""copyright"",
+		""lang"": ""*"",
+		""content"": ""Copyright © 2016"",
+		""condition"":""ifAllCopyrightEmpty""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+
+				Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
+				Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
+				Assert.AreEqual("Copyright © 2016", metadata.CopyrightNotice);
+			}
+		}
+
+		// we don't want shell books to get this notice
+		[TestCase("copyright", "Copyright © 2012, test")]
+		[TestCase("licenseNotes", "Some extra notes")]
+		[TestCase("licenseUrl", "http://creativecommons.org/licenses/by-nd/3.0/bynd/")]
+		public void MergeSettings_HasCopyrightAlready_CustomBrandingStuffIgnored(string dataDivName, string dataDivContent)
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='" + dataDivName + "' lang='*'>" + dataDivContent + @"</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeSettings_HasCopyrightAlready_CustomBrandingStuffIgnored"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+					@"{
+	""presets"": [{
+		""data-book"": ""licenseNotes"",
+		""lang"": ""*"",
+		""content"": ""These are custom notes."",
+		""condition"":""ifAllCopyrightEmpty""
+	}, {
+		""data-book"": ""licenseUrl"",
+		""lang"": ""*"",
+		""content"": ""http://creativecommons.org/licenses/by/3.0/igo/"",
+		""condition"":""ifAllCopyrightEmpty""
+	}, {
+		""data-book"": ""copyright"",
+		""lang"": ""*"",
+		""content"": ""Copyright © 2016"",
+		""condition"":""ifAllCopyrightEmpty""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+				if (dataDivName == "copyright")
+					Assert.IsTrue(metadata.CopyrightNotice.Contains("2012")); // unchanged from testcase
+				else
+					Assert.That(metadata.CopyrightNotice, Is.Null);
+				if (dataDivName == "licenseUrl")
+				{
+					Assert.That(metadata.License, Is.InstanceOf<CreativeCommonsLicense>());
+					Assert.That(metadata.License.Url, Is.EqualTo("http://creativecommons.org/licenses/by-nd/3.0/bynd/"));
+				} else if (dataDivName == "copyright")
+				{
+					Assert.That(metadata.License, Is.InstanceOf<NullLicense>());
+				}
+				else
+				{
+					Assert.That(metadata.License is CustomLicense);
+				}
+
+				if (dataDivName == "licenseNotes")
+					Assert.That(metadata.License.RightsStatement, Is.EqualTo("Some extra notes"));
+				else 
+				Assert.That(metadata.License.RightsStatement, Is.Null.Or.Empty);
+			}
 		}
 
 		[Test]
