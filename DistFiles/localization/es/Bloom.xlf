@@ -3362,10 +3362,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="es-ES">Por favor, mantenga pulsado el botón hasta que haya terminado de grabar</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
-        <target xml:lang="es-ES" state="needs-translation">Talking Book Tool</target>
+        <target xml:lang="es-ES">Herramienta de Audiolibros</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
