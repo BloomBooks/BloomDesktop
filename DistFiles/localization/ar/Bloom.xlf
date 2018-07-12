@@ -2262,10 +2262,10 @@
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="ar">يُرجى الاستمرار بالضغط على الزر حتى ينتهي التسجيل</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
-        <target xml:lang="ar" state="needs-translation">Talking Book Tool</target>
+        <target xml:lang="ar">أداة الكتاب الناطق</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
