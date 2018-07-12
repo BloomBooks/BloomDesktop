@@ -36,7 +36,7 @@ export class LearnAboutAccessibility extends React.Component<
                         <li>
                             <HelpLink
                                 l10nKey="EditTab.Toolbox.TalkingBookTool"
-                                helpId="/Tasks/Edit_tasks/Record_Audio/Talking_Book_Tool_overview.htm"
+                                helpId="Tasks/Edit_tasks/Record_Audio/Talking_Book_Tool_overview.htm"
                             >
                                 Talking Book Tool
                             </HelpLink>
