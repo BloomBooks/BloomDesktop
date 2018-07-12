@@ -427,7 +427,8 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
 			}
-			if(displayMode != PublishModel.DisplayModes.Android || displayMode != PublishModel.DisplayModes.EPUB && _htmlControl != null && Controls.Contains(_htmlControl))
+			if((displayMode != PublishModel.DisplayModes.Android || displayMode != PublishModel.DisplayModes.EPUB)
+			   && _htmlControl != null && Controls.Contains(_htmlControl))
 			{
 				Controls.Remove(_htmlControl);
 
