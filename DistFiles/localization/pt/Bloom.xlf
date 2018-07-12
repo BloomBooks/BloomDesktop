@@ -2532,7 +2532,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
-        <target xml:lang="pt-PT" state="needs-translation">Talking Book Tool</target>
+        <target xml:lang="pt-PT" state="translated">Ferramenta de Áudio Livro</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
         <source xml:lang="en">Back</source>
