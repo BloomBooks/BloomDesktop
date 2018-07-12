@@ -2301,10 +2301,10 @@
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="zh-CN">录音结束再松手</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
-        <target xml:lang="zh-CN" state="needs-translation">Talking Book Tool</target>
+        <target xml:lang="zh-CN">有声书工具</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
