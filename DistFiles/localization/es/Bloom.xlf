@@ -2794,12 +2794,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.Heading" sil:dynamic="true">
-        <source xml:lang="en">Motion Tool</source>
-        <note>ID: EditTab.Toolbox.Motion.Heading</note>
-        <note>Used as the overall title of the toolbox panel</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de movimiento</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
@@ -2833,6 +2827,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.Motion.ThisPage</note>
         <target xml:lang="es-ES" state="translated">Habilitar movimiento en esta página</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.MotionTool" sil:dynamic="true">
+        <source xml:lang="en">Motion Tool</source>
+        <note>ID: EditTab.Toolbox.MotionTool</note>
+        <note>Used as the overall title of the toolbox panel</note>
+        <target xml:lang="es-ES" state="needs-translation">Motion Tool</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
@@ -2850,11 +2850,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Sound files</source>
         <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
         <target xml:lang="es-ES" state="translated">Archivos de sonido</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Music Tool</source>
-        <note>ID: EditTab.Toolbox.Music.Heading</note>
-        <target xml:lang="es-ES">Herramienta de música</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
@@ -2888,6 +2883,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">No Music</source>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
         <target xml:lang="es-ES">Sin música</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.MusicTool" sil:dynamic="true">
+        <source xml:lang="en">Music Tool</source>
+        <note>ID: EditTab.Toolbox.MusicTool</note>
+        <target xml:lang="es-ES" state="needs-translation">Music Tool</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -3018,10 +3018,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
         <target xml:lang="es-ES">de</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescription.Heading" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
-        <note>ID: EditTab.Toolbox.ImageDescription.Heading</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de descripción de imágenes</target>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
+        <target xml:lang="es-ES" state="needs-translation">Image Description Tool</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
         <source xml:lang="en">Be Concise</source>
@@ -3285,11 +3285,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
         <target xml:lang="es-ES" state="needs-translation">Video Files</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.Heading" sil:dynamic="true">
-        <source xml:lang="en">Sign Language Tool</source>
-        <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de lenguaje de signos</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
         <source xml:lang="en">Import Video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
@@ -3331,6 +3326,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
         <target xml:lang="es-ES" state="translated">Esto es lo que ve su cámara:</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguageTool" sil:dynamic="true">
+        <source xml:lang="en">Sign Language Tool</source>
+        <note>ID: EditTab.Toolbox.SignLanguageTool</note>
+        <target xml:lang="es-ES" state="needs-translation">Sign Language Tool</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.BadState" approved="yes">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
@@ -3361,6 +3361,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.TalkingBook.PleaseHoldMessage</note>
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="es-ES">Por favor, mantenga pulsado el botón hasta que haya terminado de grabar</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true">
+        <source xml:lang="en">Talking Book Tool</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool</note>
+        <target xml:lang="es-ES" state="needs-translation">Talking Book Tool</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
@@ -3393,20 +3398,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Clear</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
         <target xml:lang="es-ES">Borrar</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Talking Book Tool</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Heading</note>
-        <target xml:lang="es-ES">Herramienta de Audiolibros</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Herramienta de audiolibros</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Herramienta de libros sonoros</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Herramienta de libros parlantes</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Listen to the whole page</source>
