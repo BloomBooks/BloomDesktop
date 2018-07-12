@@ -2298,10 +2298,10 @@
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="az">Yazı bitirəncə düyməni basıb saxlayın</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
-        <target xml:lang="az" state="needs-translation">Talking Book Tool</target>
+        <target xml:lang="az">Danışan Kitab Aləti</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
