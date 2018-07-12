@@ -2262,10 +2262,10 @@
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="ne-NP">कृपया रेकर्ड गर्ने कार्य नसकिँदासम्म यो बटन थिचिराख्नुहोस्</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
-        <target xml:lang="ne-NP" state="needs-translation">Talking Book Tool</target>
+        <target xml:lang="ne-NP">श्रव्य पुस्तक उपकरण</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
