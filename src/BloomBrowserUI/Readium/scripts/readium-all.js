@@ -2035,14 +2035,10 @@ var requirejs, require, define;
                                 a > 1 && bt(h),
                                 a > 1 &&
                                     gt(
-                                        e
-                                            .slice(0, a - 1)
-                                            .concat({
-                                                value:
-                                                    e[a - 2].type === " "
-                                                        ? "*"
-                                                        : ""
-                                            })
+                                        e.slice(0, a - 1).concat({
+                                            value:
+                                                e[a - 2].type === " " ? "*" : ""
+                                        })
                                     ).replace(z, "$1"),
                                 n,
                                 a < i && xt(e.slice(a, i)),
@@ -42941,7 +42937,7 @@ define("annotations_module", ["epubCfi"], (function(e) {
                 F = null;
                 if (!x && t("#app-container").hasClass("toc-visible")) return;
                 var e = document.getElementById("app-navbar");
-                if (document.activeElement) {
+                if (e && document.activeElement) {
                     var n = jQuery.contains(e, document.activeElement);
                     if (n) return;
                 }
