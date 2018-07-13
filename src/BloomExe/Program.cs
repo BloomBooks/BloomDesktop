@@ -76,6 +76,11 @@ namespace Bloom
 
 		public static bool RunningOnUiThread => Thread.CurrentThread.ManagedThreadId == _uiThreadId;
 
+		// Background threads creating thumbnails need to be canceled if the project window
+		// closes down, which shuts down the EnhancedImageServer.
+		// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6214.
+		public static CancellationTokenSource BloomThreadCancelService;
+
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
 		static int Main(string[] args1)
@@ -747,6 +752,10 @@ namespace Bloom
 				if(_splashForm!=null)
 					_splashForm.StayAboveThisWindow(_projectContext.ProjectWindow);
 
+				if (BloomThreadCancelService != null)
+					BloomThreadCancelService.Dispose();
+				BloomThreadCancelService = new CancellationTokenSource();
+
 				return true;
 			}
 			catch (Exception e)
@@ -842,6 +851,8 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		static void HandleProjectWindowClosed(object sender, EventArgs e)
 		{
+			BloomThreadCancelService.Cancel();
+
 			#if Chorus
 			try
 			{
