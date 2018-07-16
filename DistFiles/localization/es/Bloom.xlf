@@ -5296,11 +5296,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: PublishTab.Publish</note>
         <target xml:lang="es-ES">Publicar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Save" sil:dynamic="true">
+      <trans-unit id="PublishTab.Save" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Save</note>
         <note>Button that tells Bloom to save the book in the current format.</note>
-        <target xml:lang="es-ES" state="needs-translation">Save...</target>
+        <target xml:lang="es-ES">Guardar...</target>
       </trans-unit>
       <trans-unit id="PublishTab.SaveButton" approved="yes">
         <source xml:lang="en">&amp;Save PDF...</source>
