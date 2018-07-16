@@ -3737,11 +3737,11 @@
         <note>ID: PublishTab.Publish</note>
         <target xml:lang="pbu">خپرول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Save" sil:dynamic="true">
+      <trans-unit id="PublishTab.Save" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Save</note>
         <note>Button that tells Bloom to save the book in the current format.</note>
-        <target xml:lang="pbu" state="needs-translation">Save...</target>
+        <target xml:lang="pbu">خوندي کول...</target>
       </trans-unit>
       <trans-unit id="PublishTab.SaveButton" approved="yes">
         <source xml:lang="en">&amp;Save PDF...</source>
