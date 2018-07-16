@@ -330,7 +330,7 @@ class AndroidPublishUI extends React.Component<
                 {this.state.method === "file" && (
                     <div>
                         <BloomButton
-                            l10nKey="PublishTab.Android.Save"
+                            l10nKey="PublishTab.Save"
                             l10nComment="Button that tells Bloom to save the book as a .bloomD file."
                             clickEndpoint="publish/android/file/save"
                             enabled={true}

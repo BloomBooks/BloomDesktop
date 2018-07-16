@@ -6,6 +6,30 @@
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
       </trans-unit>
+      <trans-unit id="AccessibilityCheck.audioForAllText">
+        <source xml:lang="en">Audio for all text</source>
+        <note>ID: AccessibilityCheck.audioForAllText</note>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions">
+        <source xml:lang="en">Audio for all image descriptions</source>
+        <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading">
+        <source xml:lang="en">Bloom can automatically check these for you:</source>
+        <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.descriptionsForAllImages">
+        <source xml:lang="en">Descriptions for all images</source>
+        <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.ManualChecksHeading">
+        <source xml:lang="en">You need to check these yourself:</source>
+        <note>ID: AccessibilityCheck.ManualChecksHeading</note>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor">
+        <source xml:lang="en">No essential information by color</source>
+        <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
+      </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
@@ -2453,11 +2477,6 @@
         <note>ID: PublishTab.Android.MotionBookMode</note>
         <note>Motion Book checkbox label</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Save" sil:dynamic="true">
-        <source xml:lang="en">Save...</source>
-        <note>ID: PublishTab.Android.Save</note>
-        <note>Button that tells Bloom to save the book as a .bloomD file.</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ThumbnailColor" sil:dynamic="true">
         <source xml:lang="en">Thumbnail Color</source>
         <note>ID: PublishTab.Android.ThumbnailColor</note>
@@ -2835,6 +2854,11 @@
       <trans-unit id="PublishTab.Publish">
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Save" sil:dynamic="true">
+        <source xml:lang="en">Save...</source>
+        <note>ID: PublishTab.Save</note>
+        <note>Button that tells Bloom to save the book in the current format.</note>
       </trans-unit>
       <trans-unit id="PublishTab.SaveButton">
         <source xml:lang="en">&amp;Save PDF...</source>
