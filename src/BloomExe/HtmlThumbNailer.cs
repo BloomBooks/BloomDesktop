@@ -211,6 +211,7 @@ namespace Bloom
 				ErrorCallback = errorCallback,
 				Document = document,
 				FolderForThumbNailCache = folderForThumbNailCache,
+				CancelToken = Program.BloomThreadCancelService,
 				Key = key
 			};
 			if (async)
@@ -425,6 +426,16 @@ namespace Bloom
 
 			if (Program.ApplicationExiting)
 				return;
+
+			try
+			{	// This doesn't have an IsDisposed() method, so catch a possible exception.
+				if (order.CancelToken.IsCancellationRequested)
+					return;
+			}
+			catch (ObjectDisposedException)
+			{
+				return;
+			}
 
 			Image pendingThumbnail = null;
 
@@ -737,5 +748,6 @@ namespace Bloom
 		public string ThumbNailFilePath;
 		public HtmlThumbNailer.ThumbnailOptions Options;
 		public AutoResetEvent WaitHandle;
+		public CancellationTokenSource CancelToken;
 	}
 }
