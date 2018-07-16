@@ -6,6 +6,11 @@
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
       </trans-unit>
+      <trans-unit id="AccessibilityCheck.ACEByDaisy">
+        <source xml:lang="en">ACE by Daisy Automated Checks</source>
+        <note>ID: AccessibilityCheck.ACEByDaisy</note>
+        <note>Used as the name on a tab of the Accessibility Checks screen.</note>
+      </trans-unit>
       <trans-unit id="AccessibilityCheck.audioForAllText">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
@@ -18,9 +23,19 @@
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
       </trans-unit>
+      <trans-unit id="AccessibilityCheck.Checklist">
+        <source xml:lang="en">Accessibility Checklist</source>
+        <note>ID: AccessibilityCheck.Checklist</note>
+        <note>Used as the name on a tab of the Accessibility Checks screen.</note>
+      </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout">
+        <source xml:lang="en">Learn About Accessibility</source>
+        <note>ID: AccessibilityCheck.LearnAbout</note>
+        <note>Used as the name on a tab of the Accessibility Checks screen.</note>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ManualChecksHeading">
         <source xml:lang="en">You need to check these yourself:</source>
