@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -163,6 +164,7 @@ namespace Bloom.Publish.Epub
 		// set true in real epub creation. Most of our unit tests predate it, however, and rather than
 		// try to update all that would be affected I am leaving the default false.
 		public bool OneAudioPerPage { get; set; }
+		public bool StagingEpub { get; private set; }
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -189,132 +191,149 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		public void StageEpub(IWebSocketProgress progress, bool publishWithoutAudio = false)
 		{
-			PublishWithoutAudio = publishWithoutAudio;
-			if(!string.IsNullOrEmpty(BookInStagingFolder))
-				return; //already staged
-
-			progress.Message("BuildingEPub", comment:"Shown in a progress box when Bloom is starting to create an ePUB", message:"Building ePUB");
-			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
-				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code };
-			else
-				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code, Book.CollectionSettings.Language3Iso639Code };
-
-			// robustly come up with a directory we can use, even if previously used directories are locked somehow
-			var exportRoot = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
-			Directory.CreateDirectory(exportRoot); // this is ok if it already exists
-			for (var i = 0; i < 20; i++)
+			StagingEpub = true;
+			try
 			{
-				var dir = Path.Combine(Path.GetTempPath(), kEPUBExportFolder, i.ToString());
-				
-				if (Directory.Exists(dir))
-				{
-					// see if we can delete this old directory first
-					if (!SIL.IO.RobustIO.DeleteDirectoryAndContents(dir))
+				PublishWithoutAudio = publishWithoutAudio;
+				if (!string.IsNullOrEmpty(BookInStagingFolder))
+					return; //already staged
+
+				progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
+					message: "Building ePUB");
+				if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
+					_langsForLocalization = new string[]
+						{Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code};
+				else
+					_langsForLocalization = new string[]
 					{
-						progress.MessageWithoutLocalizing("could not remove "+dir);
-						continue; // if not, let's change the target directory name and try again
+						Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code,
+						Book.CollectionSettings.Language3Iso639Code
+					};
+
+				// robustly come up with a directory we can use, even if previously used directories are locked somehow
+				var exportRoot = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
+				Directory.CreateDirectory(exportRoot); // this is ok if it already exists
+				for (var i = 0; i < 20; i++)
+				{
+					var dir = Path.Combine(Path.GetTempPath(), kEPUBExportFolder, i.ToString());
+
+					if (Directory.Exists(dir))
+					{
+						// see if we can delete this old directory first
+						if (!SIL.IO.RobustIO.DeleteDirectoryAndContents(dir))
+						{
+							progress.MessageWithoutLocalizing("could not remove " + dir);
+							continue; // if not, let's change the target directory name and try again
+						}
+					}
+
+					Directory.CreateDirectory(dir);
+					_outerStagingFolder = TemporaryFolder.TrackExisting(dir);
+					break;
+				}
+
+				var tempBookPath = Path.Combine(_outerStagingFolder.FolderPath, Path.GetFileName(Book.FolderPath));
+				_originalBook = _book;
+				if (_bookServer != null)
+				{
+					// It should only be null while running unit tests.
+					// Eventually, we want a unit test that checks this device xmatter behavior.
+					// But don't have time for now.
+					_book = BookCompressor.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
+				}
+
+				// The readium control remembers the current page for each book.
+				// So it is useful to have a unique name for each one.
+				// However, it needs to be something we can put in a URL without complications,
+				// so a guid is better than say the book's own folder name.
+				BookInStagingFolder = Path.Combine(_outerStagingFolder.FolderPath, _book.ID);
+				// in case of previous versions // Enhance: delete when done? Generate new name if conflict?
+				var contentFolderName = "content";
+				_contentFolder = Path.Combine(BookInStagingFolder, contentFolderName);
+				Directory.CreateDirectory(_contentFolder); // also creates parent staging directory
+				_pageIndex = 0;
+				_manifestItems = new List<string>();
+				_spineItems = new List<string>();
+				_nonLinearSpineItems = new HashSet<string>();
+				_pendingBackLinks = new Dictionary<XmlElement, List<Tuple<XmlElement, string>>>();
+				_desiredNameMap = new Dictionary<XmlElement, string>();
+				_scriptedItems = new List<string>();
+				_svgItems = new List<string>();
+				_firstContentPageItem = null;
+				HandleImageDescriptions(Book.OurHtmlDom);
+				foreach (XmlElement pageElement in Book.GetPageElements())
+				{
+					progress.MessageWithoutLocalizing(HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement));
+					// We could check for this in a few more places, but once per page seems enough in practice.
+					if (AbortRequested)
+						break;
+					MakePageFile(pageElement);
+				}
+
+				string coverPageImageFile = "thumbnail-256.png";
+				// This thumbnail is otherwise only made when uploading, so it may be out of date.
+				// Just remake it every time.
+				ApplicationException thumbNailException = null;
+				try
+				{
+					_thumbNailer.MakeThumbnailOfCover(Book, 256);
+				}
+				catch (ApplicationException e)
+				{
+					thumbNailException = e;
+				}
+
+				var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
+				if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+				{
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+						"Bloom failed to make a high-quality cover page for your book (BL-3209)",
+						"We will try to make the book anyway, but you may want to try again.",
+						thumbNailException);
+
+					coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
+					coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
+					if (!RobustFile.Exists(coverPageImagePath))
+					{
+						// I don't think we can make an epub without a cover page so at this point we've had it.
+						// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
+						// actually happens to real users.
+						throw new FileNotFoundException("Could not find or create thumbnail for cover page (BL-3209)",
+							coverPageImageFile);
 					}
 				}
 
-				Directory.CreateDirectory(dir);
-				_outerStagingFolder = TemporaryFolder.TrackExisting(dir);
-				break;
-			}
+				CopyFileToEpub(coverPageImagePath, true, true, kImagesFolder);
 
-			var tempBookPath = Path.Combine(_outerStagingFolder.FolderPath, Path.GetFileName(Book.FolderPath));
-			_originalBook = _book;
-			if (_bookServer != null)
-			{
-				// It should only be null while running unit tests.
-				// Eventually, we want a unit test that checks this device xmatter behavior.
-				// But don't have time for now.
-				_book = BookCompressor.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
-			}
+				EmbedFonts(); // must call after copying stylesheets
+				MakeNavPage();
 
-			// The readium control remembers the current page for each book.
-			// So it is useful to have a unique name for each one.
-			// However, it needs to be something we can put in a URL without complications,
-			// so a guid is better than say the book's own folder name.
-			BookInStagingFolder = Path.Combine(_outerStagingFolder.FolderPath, _book.ID);
-			// in case of previous versions // Enhance: delete when done? Generate new name if conflict?
-			var contentFolderName = "content";
-			_contentFolder = Path.Combine(BookInStagingFolder, contentFolderName);
-			Directory.CreateDirectory(_contentFolder); // also creates parent staging directory
-			_pageIndex = 0;
-			_manifestItems = new List<string>();
-			_spineItems = new List<string>();
-			_nonLinearSpineItems = new HashSet<string>();
-			_pendingBackLinks = new Dictionary<XmlElement, List<Tuple<XmlElement, string>>>();
-			_desiredNameMap = new Dictionary<XmlElement, string>();
-			_scriptedItems = new List<string>();
-			_svgItems = new List<string>();
-			_firstContentPageItem = null;
-			HandleImageDescriptions(Book.OurHtmlDom);
-			foreach (XmlElement pageElement in Book.GetPageElements())
-			{
-				progress.MessageWithoutLocalizing(HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement));
-				// We could check for this in a few more places, but once per page seems enough in practice.
-				if (AbortRequested)
-					break;
-				MakePageFile(pageElement);
-			}
+				//supporting files
 
-			string coverPageImageFile = "thumbnail-256.png";
-			// This thumbnail is otherwise only made when uploading, so it may be out of date.
-			// Just remake it every time.
-			ApplicationException thumbNailException = null;
-			try
-			{
-				_thumbNailer.MakeThumbnailOfCover(Book, 256);
-			}
-			catch(ApplicationException e)
-			{
-				thumbNailException = e;
-			}
-			var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-			if(thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
-			{
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
-					"Bloom failed to make a high-quality cover page for your book (BL-3209)",
-					"We will try to make the book anyway, but you may want to try again.",
-					thumbNailException);
+				// Fixed requirement for all epubs
+				RobustFile.WriteAllText(Path.Combine(BookInStagingFolder, "mimetype"), @"application/epub+zip");
 
-				coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
-				coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-				if(!RobustFile.Exists(coverPageImagePath))
-				{
-					// I don't think we can make an epub without a cover page so at this point we've had it.
-					// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
-					// actually happens to real users.
-					throw new FileNotFoundException("Could not find or create thumbnail for cover page (BL-3209)", coverPageImageFile);
-				}
-			}
-			CopyFileToEpub(coverPageImagePath, true, true, kImagesFolder);
-
-			EmbedFonts(); // must call after copying stylesheets
-			MakeNavPage();
-
-			//supporting files
-
-			// Fixed requirement for all epubs
-			RobustFile.WriteAllText(Path.Combine(BookInStagingFolder, "mimetype"), @"application/epub+zip");
-
-			var metaInfFolder = Path.Combine(BookInStagingFolder, "META-INF");
-			Directory.CreateDirectory(metaInfFolder);
-			var containerXmlPath = Path.Combine(metaInfFolder, "container.xml");
-			RobustFile.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
+				var metaInfFolder = Path.Combine(BookInStagingFolder, "META-INF");
+				Directory.CreateDirectory(metaInfFolder);
+				var containerXmlPath = Path.Combine(metaInfFolder, "container.xml");
+				RobustFile.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
 					<container version='1.0' xmlns='urn:oasis:names:tc:opendocument:xmlns:container'>
 					<rootfiles>
 					<rootfile full-path='content/content.opf' media-type='application/oebps-package+xml'/>
 					</rootfiles>
 					</container>");
 
-			MakeManifest(kImagesFolder+"/" + coverPageImageFile);
+				MakeManifest(kImagesFolder + "/" + coverPageImageFile);
 
-			foreach (var filename in Directory.EnumerateFiles(Path.Combine(_contentFolder, kImagesFolder), "*.*"))
+				foreach (var filename in Directory.EnumerateFiles(Path.Combine(_contentFolder, kImagesFolder), "*.*"))
+				{
+					if (Path.GetExtension(filename).ToLowerInvariant() == ".svg")
+						PruneSvgFileOfCruft(filename);
+				}
+			}
+			finally
 			{
-				if (Path.GetExtension(filename).ToLowerInvariant() == ".svg")
-					PruneSvgFileOfCruft(filename);
+				StagingEpub = false;
 			}
 		}
 
@@ -1800,15 +1819,40 @@ namespace Bloom.Publish.Epub
 			var normalDom = Book.GetHtmlDomWithJustOnePage (pageElt);
 			AddEpubVisibilityStylesheetAndClass (normalDom);
 
-			bool done = false;
 			var dummy = _browser.Handle; // gets WebBrowser created along with handle
+
+			// Without this block, I've seen a situation where the newly created WebBrowser is not ready
+			// just long enough to get us into the main loop below without navigation actually starting.
+			// Then it will never finish, which was a closed loop before I turned it into a timeout
+			// exception. Waiting until the browser doesn't think it's busy seems to be enough to prevent it.
+			bool done = false;
+			var navTimer = new Stopwatch();
+			navTimer.Start();
+			while (_browser.WebBrowser.IsBusy && navTimer.ElapsedMilliseconds < 1000)
+			{
+				Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
+				Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+			}
+			navTimer.Stop();
+			if (_browser.WebBrowser.IsBusy)
+			{
+				Debug.WriteLine("Browser still busy after a second");
+			}
+			navTimer.Reset();
+			navTimer.Start();
 			_browser.WebBrowser.DocumentCompleted += (sender, args) => done = true;
 			// just in case something goes wrong, keep program from deadlocking a few lines below.
 			_browser.WebBrowser.NavigationError += (object sender, Gecko.Events.GeckoNavigationErrorEventArgs e) => done = true;
 			_browser.Navigate (normalDom, source: "epub");
-			while (!done) {
+			while (!done &&  navTimer.ElapsedMilliseconds < 10000) {
 				Application.DoEvents (); // NOTE: this has bad consequences all down the line. See BL-6122.
 				Application.RaiseIdle (new EventArgs ()); // needed on Linux to avoid deadlock starving browser navigation
+			}
+			navTimer.Stop();
+
+			if (!done)
+			{
+				throw new ApplicationException("Browser unexpectedly took too long to load a book page");
 			}
 
 			var toBeDeleted = new List<XmlElement> ();

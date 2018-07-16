@@ -24,6 +24,11 @@ namespace Bloom.Publish.Epub
 			       && other.removeFontSizes == this.removeFontSizes;
 		}
 
+		public EpubPublishUiSettings Clone()
+		{
+			return new EpubPublishUiSettings() {howToPublishImageDescriptions = howToPublishImageDescriptions, removeFontSizes = removeFontSizes};
+		}
+
 		public override int GetHashCode()
 		{
 			return howToPublishImageDescriptions.GetHashCode() ^ removeFontSizes.GetHashCode();
