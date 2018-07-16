@@ -113,7 +113,7 @@ namespace Bloom.web.controllers
 			
 			//enhance: this might have to become async to work on large books on slow computers
 			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
-				false
+				false, false
 				);
 		}
 
@@ -141,11 +141,10 @@ namespace Bloom.web.controllers
 			var haveReportedError = false;
 			var errorMessage = "Unknown Error";
 
-			MakeEpub(request, reportRootDirectory, _webSocketProgress, epubPath =>
-			{
-				// Try 3 times. It could be that this is no longer needed, but working on a developer
-				// machine isn't proof.
-				for (var i = 0; i < 3; i++)
+			var epubPath = MakeEpub(reportRootDirectory, _webSocketProgress);
+			// Try 3 times. It could be that this is no longer needed, but working on a developer
+			// machine isn't proof.
+			for (var i = 0; i < 3; i++)
 				{
 					var randomName = Guid.NewGuid().ToString();
 					var reportDirectory = Path.Combine(reportRootDirectory, randomName);
@@ -197,31 +196,23 @@ namespace Bloom.web.controllers
 						continue; // something went wrong, try again
 					}
 
-					// Send the url of the report to the HTML client.  Make sure it's valid for being a URL.
-					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197.
-					_webSocketServer.SendString(kWebSocketContext, "daisyResults",
-						"/bloom/" + answerPath.EscapeCharsForHttp().Replace(Path.DirectorySeparatorChar, '/'));
-					return;
-				}
-				// Three tries, no report...
-				_webSocketProgress.ErrorWithoutLocalizing("Failed");
-			});
+				// The html client is set to treat a text reply as a url of the report. Make sure it's valid for being a URL. 
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197. 
+				request.ReplyWithText("/bloom/" + answerPath.EscapeCharsForHttp().Replace(Path.DirectorySeparatorChar, '/'));
+				return;
+			}
 
-			request.PostSucceeded();
+			// If we get this far, we give up.
+			ReportErrorAndFailTheRequest(request, errorMessage);
 		}
 
-		private void MakeEpub(ApiRequest request, string parentDirectory, IWebSocketProgress progress, Action<string> doWhenReady)
+		private string MakeEpub(string parentDirectory, IWebSocketProgress progress)
 		{
 			var settings = new EpubPublishUiSettings();
 			_epubApi.GetEpubSettingsForCurrentBook(settings);
-			var forceNewEpub = request.RequiredPostBooleanAsJson();
-			_epubApi.UpdatePreview(settings, forceNewEpub, _webSocketProgress);
-			_epubApi.RequestPreviewOutput(maker =>
-			{
-				var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
-				maker.SaveEpub(path, progress);
-				doWhenReady(path);
-			});
+			var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
+			_epubApi.UpdateAndSave(settings, path, true, _webSocketProgress);
+			return path;
 		}
 
 		private string FindAceByDaisyOrTellUser(ApiRequest request)
