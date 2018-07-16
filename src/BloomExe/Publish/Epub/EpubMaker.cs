@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -190,14 +191,20 @@ namespace Bloom.Publish.Epub
 		public void StageEpub(IWebSocketProgress progress, bool publishWithoutAudio = false)
 		{
 			PublishWithoutAudio = publishWithoutAudio;
-			if(!string.IsNullOrEmpty(BookInStagingFolder))
+			if (!string.IsNullOrEmpty(BookInStagingFolder))
 				return; //already staged
 
-			progress.Message("BuildingEPub", comment:"Shown in a progress box when Bloom is starting to create an ePUB", message:"Building ePUB");
+			progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
+				message: "Building ePUB");
 			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
-				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code };
+				_langsForLocalization = new string[]
+					{Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code};
 			else
-				_langsForLocalization = new string[] { Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code, Book.CollectionSettings.Language3Iso639Code };
+				_langsForLocalization = new string[]
+				{
+					Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code,
+					Book.CollectionSettings.Language3Iso639Code
+				};
 
 			// robustly come up with a directory we can use, even if previously used directories are locked somehow
 			var exportRoot = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
@@ -205,13 +212,13 @@ namespace Bloom.Publish.Epub
 			for (var i = 0; i < 20; i++)
 			{
 				var dir = Path.Combine(Path.GetTempPath(), kEPUBExportFolder, i.ToString());
-				
+
 				if (Directory.Exists(dir))
 				{
 					// see if we can delete this old directory first
 					if (!SIL.IO.RobustIO.DeleteDirectoryAndContents(dir))
 					{
-						progress.MessageWithoutLocalizing("could not remove "+dir);
+						progress.MessageWithoutLocalizing("could not remove " + dir);
 						continue; // if not, let's change the target directory name and try again
 					}
 				}
@@ -267,12 +274,13 @@ namespace Bloom.Publish.Epub
 			{
 				_thumbNailer.MakeThumbnailOfCover(Book, 256);
 			}
-			catch(ApplicationException e)
+			catch (ApplicationException e)
 			{
 				thumbNailException = e;
 			}
+
 			var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-			if(thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+			if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
 			{
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
 					"Bloom failed to make a high-quality cover page for your book (BL-3209)",
@@ -281,14 +289,16 @@ namespace Bloom.Publish.Epub
 
 				coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
 				coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-				if(!RobustFile.Exists(coverPageImagePath))
+				if (!RobustFile.Exists(coverPageImagePath))
 				{
 					// I don't think we can make an epub without a cover page so at this point we've had it.
 					// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
 					// actually happens to real users.
-					throw new FileNotFoundException("Could not find or create thumbnail for cover page (BL-3209)", coverPageImageFile);
+					throw new FileNotFoundException("Could not find or create thumbnail for cover page (BL-3209)",
+						coverPageImageFile);
 				}
 			}
+
 			CopyFileToEpub(coverPageImagePath, true, true, kImagesFolder);
 
 			EmbedFonts(); // must call after copying stylesheets
@@ -309,7 +319,7 @@ namespace Bloom.Publish.Epub
 					</rootfiles>
 					</container>");
 
-			MakeManifest(kImagesFolder+"/" + coverPageImageFile);
+			MakeManifest(kImagesFolder + "/" + coverPageImageFile);
 
 			foreach (var filename in Directory.EnumerateFiles(Path.Combine(_contentFolder, kImagesFolder), "*.*"))
 			{
@@ -1791,6 +1801,7 @@ namespace Bloom.Publish.Epub
 		/// <param name="pageDom"></param>
 		private void RemoveUnwantedContent (HtmlDom pageDom)
 		{
+			Debug.Assert(!ControlForInvoke.InvokeRequired); // should be called on UI thread.
 			var pageElt = (XmlElement)pageDom.Body.FirstChild;
 
 			// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
@@ -1800,16 +1811,7 @@ namespace Bloom.Publish.Epub
 			var normalDom = Book.GetHtmlDomWithJustOnePage (pageElt);
 			AddEpubVisibilityStylesheetAndClass (normalDom);
 
-			bool done = false;
-			var dummy = _browser.Handle; // gets WebBrowser created along with handle
-			_browser.WebBrowser.DocumentCompleted += (sender, args) => done = true;
-			// just in case something goes wrong, keep program from deadlocking a few lines below.
-			_browser.WebBrowser.NavigationError += (object sender, Gecko.Events.GeckoNavigationErrorEventArgs e) => done = true;
-			_browser.Navigate (normalDom, source: "epub");
-			while (!done) {
-				Application.DoEvents (); // NOTE: this has bad consequences all down the line. See BL-6122.
-				Application.RaiseIdle (new EventArgs ()); // needed on Linux to avoid deadlock starving browser navigation
-			}
+			_browser.NavigateAndWaitTillDone(normalDom, 10000, "epub");
 
 			var toBeDeleted = new List<XmlElement> ();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't

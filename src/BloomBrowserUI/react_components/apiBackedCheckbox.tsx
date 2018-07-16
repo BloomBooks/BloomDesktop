@@ -10,6 +10,8 @@ interface IProps extends ILocalizationProps {
     // The parent can give us this function which we use to subscribe to refresh events
     // See notes in accessibiltiyChecklist for a thorough discussion.
     subscribeToRefresh?: (queryData: () => void) => void;
+    // Extra function to call before posting apiEndpoint.
+    priorClickAction?: () => void;
 }
 interface IState {
     checked: boolean;
@@ -42,6 +44,9 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
                 l10nKey={this.props.l10nKey}
                 onCheckChanged={c => {
                     this.setState({ checked: c });
+                    if (this.props.priorClickAction) {
+                        this.props.priorClickAction();
+                    }
                     BloomApi.postDataWithConfig(this.props.apiEndpoint, c, {
                         headers: { "Content-Type": "application/json" }
                     });

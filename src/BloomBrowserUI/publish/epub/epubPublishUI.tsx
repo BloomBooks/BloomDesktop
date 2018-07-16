@@ -154,6 +154,7 @@ class EpubPublishUI extends React.Component<
                         <ApiBackedCheckbox
                             apiEndpoint="publish/epub/removeFontSizesSetting"
                             l10nKey="PublishTab.Epub.RemoveFontSizes"
+                            priorClickAction={() => this.abortPreview()}
                         >
                             Use ePUB reader's text size
                         </ApiBackedCheckbox>
@@ -186,11 +187,16 @@ class EpubPublishUI extends React.Component<
     // (e.g., the implemented but not shipped "links" option)
     private setPublishRadio(val: string) {
         this.setState({ howToPublishImageDescriptions: val });
+        this.abortPreview();
         BloomApi.postDataWithConfig(
             "publish/epub/imageDescriptionSetting",
             val,
             { headers: { "Content-Type": "application/json" } }
         );
+    }
+
+    private abortPreview() {
+        BloomApi.post("publish/epub/abortPreview");
     }
 }
 
