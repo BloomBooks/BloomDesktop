@@ -3837,7 +3837,7 @@
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Save</note>
         <note>Button that tells Bloom to save the book in the current format.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Save...</target>
+        <target xml:lang="pt-PT" state="translated">Salvar...</target>
       </trans-unit>
       <trans-unit id="PublishTab.SaveButton">
         <source xml:lang="en">&amp;Save PDF...</source>
