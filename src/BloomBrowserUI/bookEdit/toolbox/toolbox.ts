@@ -392,6 +392,9 @@ function getToolElement(tool: ITool): HTMLElement {
  * @param {String} currentTool
  */
 function setCurrentTool(currentTool) {
+    // Handle some legacy books
+    if (currentTool === "bookSettingsTool") currentTool = "";
+
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     var idx = 0;
     var toolbox = $("#toolbox");
