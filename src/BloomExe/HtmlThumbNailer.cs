@@ -429,7 +429,8 @@ namespace Bloom
 
 			try
 			{	// This doesn't have an IsDisposed() method, so catch a possible exception.
-				if (order.CancelToken.IsCancellationRequested)
+				// Note that tests won't have a order.CancelToken set.
+				if (order.CancelToken != null && order.CancelToken.IsCancellationRequested)
 					return;
 			}
 			catch (ObjectDisposedException)
