@@ -7,17 +7,20 @@ import { AccessibilityChecklist } from "./accessibilityChecklist";
 import { DaisyChecks } from "./daisyChecks";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
+import { String } from "../../react_components/l10n";
 
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
 interface IState {
     bookName: string;
 }
+
 class AccessibilityCheckScreen extends React.Component<{}, IState> {
     constructor(props) {
         super(props);
         this.state = { bookName: "?" };
     }
+
     public componentDidMount() {
         // Listen for changes to state from C#-land
         WebSocketManager.addListener("a11yChecklist", e => {
@@ -25,6 +28,7 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
         });
         this.refresh();
     }
+
     private refresh() {
         BloomApi.get("accessibilityCheck/bookName", result => {
             this.setState({
@@ -42,9 +46,30 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
                 </div>
                 <Tabs defaultIndex={1}>
                     <TabList>
-                        <Tab>Learn About Accessibility</Tab>
-                        <Tab>Accessibility Checklist</Tab>
-                        <Tab>ACE by Daisy Automated Checks</Tab>
+                        <Tab>
+                            <String
+                                l10nKey="AccessibilityCheck.LearnAbout"
+                                l10nComment="Used as the name on a tab of the Accessibility Checks screen."
+                            >
+                                Learn About Accessibility
+                            </String>
+                        </Tab>
+                        <Tab>
+                            <String
+                                l10nKey="AccessibilityCheck.Checklist"
+                                l10nComment="Used as the name on a tab of the Accessibility Checks screen."
+                            >
+                                Accessibility Checklist
+                            </String>
+                        </Tab>
+                        <Tab>
+                            <String
+                                l10nKey="AccessibilityCheck.ACEByDaisy"
+                                l10nComment="Used as the name on a tab of the Accessibility Checks screen."
+                            >
+                                ACE by Daisy Automated Checks
+                            </String>
+                        </Tab>
                     </TabList>
                     <TabPanel>
                         <LearnAboutAccessibility />
