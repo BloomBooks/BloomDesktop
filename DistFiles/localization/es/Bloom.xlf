@@ -2,6 +2,41 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="es-ES">
     <body>
+      <trans-unit id="AccessibilityCheck.AccessibilityChecker">
+        <source xml:lang="en">Accessibility Checker</source>
+        <note>ID: AccessibilityCheck.AccessibilityChecker</note>
+        <target xml:lang="es-ES" state="needs-translation">Accessibility Checker</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.audioForAllText">
+        <source xml:lang="en">Audio for all text</source>
+        <note>ID: AccessibilityCheck.audioForAllText</note>
+        <target xml:lang="es-ES" state="needs-translation">Audio for all text</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions">
+        <source xml:lang="en">Audio for all image descriptions</source>
+        <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
+        <target xml:lang="es-ES" state="needs-translation">Audio for all image descriptions</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading">
+        <source xml:lang="en">Bloom can automatically check these for you:</source>
+        <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
+        <target xml:lang="es-ES" state="needs-translation">Bloom can automatically check these for you:</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.descriptionsForAllImages">
+        <source xml:lang="en">Descriptions for all images</source>
+        <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
+        <target xml:lang="es-ES" state="needs-translation">Descriptions for all images</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.ManualChecksHeading">
+        <source xml:lang="en">You need to check these yourself:</source>
+        <note>ID: AccessibilityCheck.ManualChecksHeading</note>
+        <target xml:lang="es-ES" state="needs-translation">You need to check these yourself:</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor">
+        <source xml:lang="en">No essential information by color</source>
+        <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
+        <target xml:lang="es-ES" state="needs-translation">No essential information by color</target>
+      </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
@@ -256,7 +291,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="es-ES" state="translated">Mostrar los Comandos Experimentales</target>
+        <target xml:lang="es-ES" state="translated">Mostrar las Funciones Experimentales</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Mostrar los Comandos Experimentales</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Mostrar los Comandos Experimentales (p. ej. exportar XML para InDesign)</target>
         </alt-trans>
@@ -1332,11 +1370,26 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: Common.Optional</note>
         <target xml:lang="es-ES">opcional</target>
       </trans-unit>
+      <trans-unit id="Common.Preview">
+        <source xml:lang="en">Preview</source>
+        <note>ID: Common.Preview</note>
+        <target xml:lang="es-ES" state="needs-translation">Preview</target>
+      </trans-unit>
+      <trans-unit id="Common.Progress">
+        <source xml:lang="en">Progress</source>
+        <note>ID: Common.Progress</note>
+        <target xml:lang="es-ES" state="needs-translation">Progress</target>
+      </trans-unit>
       <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
         <target xml:lang="es-ES">Ver {0}.</target>
+      </trans-unit>
+      <trans-unit id="Common.Settings">
+        <source xml:lang="en">Settings</source>
+        <note>ID: Common.Settings</note>
+        <target xml:lang="es-ES" state="needs-translation">Settings</target>
       </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -2771,12 +2824,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.Heading" sil:dynamic="true">
-        <source xml:lang="en">Motion Tool</source>
-        <note>ID: EditTab.Toolbox.Motion.Heading</note>
-        <note>Used as the overall title of the toolbox panel</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de movimiento</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
@@ -2810,6 +2857,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.Motion.ThisPage</note>
         <target xml:lang="es-ES" state="translated">Habilitar movimiento en esta página</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.MotionTool" sil:dynamic="true">
+        <source xml:lang="en">Motion Tool</source>
+        <note>ID: EditTab.Toolbox.MotionTool</note>
+        <note>Used as the overall title of the toolbox panel</note>
+        <target xml:lang="es-ES" state="needs-translation">Motion Tool</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
@@ -2827,11 +2880,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Sound files</source>
         <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
         <target xml:lang="es-ES" state="translated">Archivos de sonido</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.Heading" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Music Tool</source>
-        <note>ID: EditTab.Toolbox.Music.Heading</note>
-        <target xml:lang="es-ES">Herramienta de música</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
@@ -2865,6 +2913,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">No Music</source>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
         <target xml:lang="es-ES">Sin música</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.MusicTool" sil:dynamic="true">
+        <source xml:lang="en">Music Tool</source>
+        <note>ID: EditTab.Toolbox.MusicTool</note>
+        <target xml:lang="es-ES" state="needs-translation">Music Tool</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -2995,10 +3048,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
         <target xml:lang="es-ES">de</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescription.Heading" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
-        <note>ID: EditTab.Toolbox.ImageDescription.Heading</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de descripción de imágenes</target>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
+        <target xml:lang="es-ES" state="needs-translation">Image Description Tool</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
         <source xml:lang="en">Be Concise</source>
@@ -3018,7 +3071,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
         <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
-        <note xml:lang="en">OLD TEXT (early 4.3, missing : at end) Check your image description against each of these reminders</note>
         <target xml:lang="es-ES" state="translated">Revise su descripción de la imagen tomando en cuenta estos recordatorios:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
@@ -3049,7 +3101,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
         <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
-        <note xml:lang="en">OLD TEXT (early 4.3, missing . at end, edited text slightly) Write your image description on the left, in the box to the right of the picture</note>
         <target xml:lang="es-ES" state="translated">Escribe su descripción de la imagen a la izquierda, en el cuadro al lado de la imagen.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
@@ -3218,6 +3269,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.More</note>
         <target xml:lang="es-ES">Más...</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.RequiresEnterprise" sil:dynamic="true">
+        <source xml:lang="en">Requires Bloom Enterprise Subscription.</source>
+        <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
+        <note>Appears in place of other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
+        <target xml:lang="es-ES" state="needs-translation">Requires Bloom Enterprise Subscription.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>
@@ -3253,10 +3310,15 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
         <target xml:lang="es-ES" state="translated">Editar fuera de Bloom</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.Heading" sil:dynamic="true">
-        <source xml:lang="en">Sign Language Tool</source>
-        <note>ID: EditTab.Toolbox.SignLanguage.Heading</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de lenguaje de signos</target>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles">
+        <source xml:lang="en">Video Files</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
+        <target xml:lang="es-ES" state="needs-translation">Video Files</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
+        <source xml:lang="en">Import Video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
+        <target xml:lang="es-ES" state="needs-translation">Import Video</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
         <source xml:lang="en">Press any key to cancel</source>
@@ -3294,6 +3356,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
         <target xml:lang="es-ES" state="translated">Esto es lo que ve su cámara:</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguageTool" sil:dynamic="true">
+        <source xml:lang="en">Sign Language Tool</source>
+        <note>ID: EditTab.Toolbox.SignLanguageTool</note>
+        <target xml:lang="es-ES" state="needs-translation">Sign Language Tool</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.BadState" approved="yes">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
@@ -3324,6 +3391,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.Toolbox.TalkingBook.PleaseHoldMessage</note>
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="es-ES">Por favor, mantenga pulsado el botón hasta que haya terminado de grabar</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Talking Book Tool</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool</note>
+        <target xml:lang="es-ES">Herramienta de Audiolibros</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
@@ -3356,20 +3428,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Clear</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
         <target xml:lang="es-ES">Borrar</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Talking Book Tool</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Heading</note>
-        <target xml:lang="es-ES">Herramienta de Audiolibros</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Herramienta de audiolibros</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Herramienta de libros sonoros</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Herramienta de libros parlantes</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Listen to the whole page</source>
@@ -4515,12 +4573,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Motion Book checkbox label</note>
         <target xml:lang="es-ES" state="translated">Libro con movimiento</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Save" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Save...</source>
-        <note>ID: PublishTab.Android.Save</note>
-        <note>Button that tells Bloom to save the book as a .bloomD file.</note>
-        <target xml:lang="es-ES">Guardar...</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.ThumbnailColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Thumbnail Color</source>
         <note>ID: PublishTab.Android.ThumbnailColor</note>
@@ -4908,6 +4960,21 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: PublishTab.Epub.Done</note>
         <target xml:lang="es-ES" state="translated">Terminado</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
+        <source xml:lang="en">About ePUBs</source>
+        <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
+        <target xml:lang="es-ES" state="needs-translation">About ePUBs</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.EReaders">
+        <source xml:lang="en">Compatible ePUB Readers</source>
+        <note>ID: PublishTab.Epub.Help.EReaders</note>
+        <target xml:lang="es-ES" state="needs-translation">Compatible ePUB Readers</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Help.Publishing">
+        <source xml:lang="en">Getting ePUBs onto a device</source>
+        <note>ID: PublishTab.Epub.Help.Publishing</note>
+        <target xml:lang="es-ES" state="needs-translation">Getting ePUBs onto a device</target>
+      </trans-unit>
       <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
@@ -4931,14 +4998,19 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="translated">Preparando la vista previa</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
-        <source xml:lang="en">Use epub reader's text size</source>
+        <source xml:lang="en">Use ePUB reader's text size</source>
         <note>ID: PublishTab.Epub.RemoveFontSizes</note>
-        <target xml:lang="es-ES" state="needs-translation">Use epub reader's text size</target>
+        <target xml:lang="es-ES" state="needs-translation">Use ePUB reader's text size</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Saving">
         <source xml:lang="en">Saving</source>
         <note>ID: PublishTab.Epub.Saving</note>
         <target xml:lang="es-ES" state="translated">Guardando</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Title">
+        <source xml:lang="en">Create an ePUB book</source>
+        <note>ID: PublishTab.Epub.Title</note>
+        <target xml:lang="es-ES" state="needs-translation">Create an ePUB book</target>
       </trans-unit>
       <trans-unit id="PublishTab.EpubButton" approved="yes">
         <source xml:lang="en">ePUB</source>
@@ -5223,6 +5295,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
         <target xml:lang="es-ES">Publicar</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Save" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Save...</source>
+        <note>ID: PublishTab.Save</note>
+        <note>Button that tells Bloom to save the book in the current format.</note>
+        <target xml:lang="es-ES">Guardar...</target>
       </trans-unit>
       <trans-unit id="PublishTab.SaveButton" approved="yes">
         <source xml:lang="en">&amp;Save PDF...</source>
