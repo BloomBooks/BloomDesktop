@@ -201,6 +201,15 @@ export class Div extends LocalizableElement<
     }
 }
 
+export class String extends LocalizableElement<
+    ILocalizationProps,
+    ILocalizationState
+> {
+    public render() {
+        return this.getLocalizedContent();
+    }
+}
+
 export interface ILabelProps extends ILocalizationProps {
     onClick?: () => void; // enhance: possibly promote to LocalizableElement?
 }
