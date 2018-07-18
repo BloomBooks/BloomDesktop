@@ -26,7 +26,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // audio file name (relative to the audio folder) and the volume (a fraction
     // of full volume).
     private static musicAttrName = "data-backgroundaudio";
-    private static musicVolumeAttrName = MusicToolControls.musicAttrName + "volume";
+    private static musicVolumeAttrName =
+        MusicToolControls.musicAttrName + "volume";
     private static kDefaultVolumeFraction = 0.5;
     private static narrationPlayer: AudioRecording;
     private addedListenerToPlayer: boolean;
@@ -34,19 +35,12 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         super({});
         this.state = this.getStateFromHtmlOfPage();
     }
-    public hideTool() {
+
+    public pausePlayer() {
         const rawPlayer = document.getElementById(
             "musicPlayer"
         ) as HTMLMediaElement;
         rawPlayer.pause();
-    }
-
-    public showTool() {
-        this.updateBasedOnContentsOfPage();
-    }
-
-    public newPageReady() {
-        this.updateBasedOnContentsOfPage();
     }
 
     public getStateFromHtmlOfPage(): IMusicState {
@@ -388,6 +382,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 }
 
+// This class implements the ITool interface through our adaptor's abstract methods by calling
+// the appropriate MusicToolControls methods.
 export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     private controlsElement: MusicToolControls;
     public makeRootElement(): HTMLDivElement {
@@ -403,12 +399,12 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
         return "music";
     }
     public showTool() {
-        this.controlsElement.showTool();
+        this.controlsElement.updateBasedOnContentsOfPage();
     }
     public hideTool() {
-        this.controlsElement.hideTool();
+        this.controlsElement.pausePlayer();
     }
     public newPageReady() {
-        this.controlsElement.newPageReady();
+        this.controlsElement.updateBasedOnContentsOfPage();
     }
 }
