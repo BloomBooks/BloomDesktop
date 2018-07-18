@@ -1,15 +1,8 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import {
-    H1,
-    Div,
-    IUILanguageAwareProps,
-    Label
-} from "../../../react_components/l10n";
+import { Div, Label } from "../../../react_components/l10n";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import axios from "axios";
-import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
 import "./music.less";
@@ -56,9 +49,6 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         this.updateBasedOnContentsOfPage();
     }
 
-    public updateMarkup() {
-        // nothing to do here.
-    }
     public getStateFromHtmlOfPage(): IMusicState {
         let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
             MusicToolControls.musicAttrName
@@ -153,7 +143,6 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                         </Label>
                     </div>
                 </RadioGroup>
-
                 <div
                     className={
                         "button-label-wrapper" +
@@ -419,7 +408,7 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     public hideTool() {
         this.controlsElement.hideTool();
     }
-    public updateMarkup() {
-        this.controlsElement.updateMarkup();
+    public newPageReady() {
+        this.controlsElement.newPageReady();
     }
 }
