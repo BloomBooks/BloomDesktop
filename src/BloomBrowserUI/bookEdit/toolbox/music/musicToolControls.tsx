@@ -20,13 +20,17 @@ interface IMusicState {
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which adds an instance of Music to ToolBox.getMasterToolList().
+// Some of this class's methods look like they implement the ITool interface, but actually the
+// MusicToolAdaptor (another class later in this file) extends our common ToolboxToolReactAdaptor
+// (which implements ITool) by calling these methods.
 export class MusicToolControls extends React.Component<{}, IMusicState> {
     // duplicates information in HtmlDom.cs
     // The names of the attributes (of the main page div) which store the background
     // audio file name (relative to the audio folder) and the volume (a fraction
     // of full volume).
     private static musicAttrName = "data-backgroundaudio";
-    private static musicVolumeAttrName = MusicToolControls.musicAttrName + "volume";
+    private static musicVolumeAttrName =
+        MusicToolControls.musicAttrName + "volume";
     private static kDefaultVolumeFraction = 0.5;
     private static narrationPlayer: AudioRecording;
     private addedListenerToPlayer: boolean;
@@ -34,6 +38,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         super({});
         this.state = this.getStateFromHtmlOfPage();
     }
+
+    // The MusicToolAdaptor class calls these next 3 methods as it implements the ITool interface.
     public hideTool() {
         const rawPlayer = document.getElementById(
             "musicPlayer"
@@ -388,6 +394,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 }
 
+// This class implements the ITool interface through our adaptor's abstract methods by calling
+// the appropriate MusicToolControls methods.
 export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     private controlsElement: MusicToolControls;
     public makeRootElement(): HTMLDivElement {
