@@ -536,16 +536,23 @@ function setCurrentTool(currentTool) {
 
     const accordionHeaders = toolbox.find("> h3");
     if (currentTool) {
+        let foundTool = false;
         // find the index of the tool whose "data-toolId" attribute equals the value of "currentTool"
         accordionHeaders.each(function() {
             if ($(this).attr("data-toolId") === currentTool) {
+                foundTool = true;
                 // break from the each() loop
                 return false;
             }
             idx++;
             return true; // continue the each() loop
         });
-    } else {
+        if (!foundTool) {
+            idx = 0;
+            currentTool = "";
+        }
+    }
+    if (!currentTool) {
         // Leave idx at 0, and update currentTool to the corresponding ID.
         currentTool = toolbox
             .find("> h3")
