@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Collection;
@@ -96,11 +97,11 @@ namespace Bloom.Book
 				return candidates.First();
 			else
 			{
-				var msg = new System.Text.StringBuilder();
+				var msg = new StringBuilder();
 				msg.AppendLineFormat("There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html or ReadMe-*.htm]:", folder);
 				foreach (var f in candidates)
 					msg.AppendLineFormat("    {0}", f);
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(msg.ToString());
+				ErrorReport.NotifyUserOfProblem(msg.ToString());
 				throw new ApplicationException();
 			}
 
@@ -184,12 +185,9 @@ namespace Bloom.Book
 
 			SetBookTitle(storage, bookData, usingTemplate);
 
-			if(!usingTemplate && !makingTemplate)
-			{
-				// If we're not making it from a template or making a template, we're deriving a translation from an existing book,
-				// and we should save the original copyright and license of that book.
-				BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(storage.Dom, bookData, _collectionSettings);
-			}
+			// If we're not making it from a template or making a template, we're deriving a translation from an existing book
+			var makingTranslation = !usingTemplate && !makingTemplate;
+			TransformCreditPageData(storage.Dom, bookData, _collectionSettings, storage, makingTranslation);
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
@@ -561,6 +559,57 @@ namespace Bloom.Book
 					CopyFolder(dirPath, Path.Combine(destinationPath, Path.GetFileName(dirPath)));
 				}
 			}
+		}
+
+		public static void TransformCreditPageData(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings,
+			BookStorage storage, bool makingTranslation)
+		{
+			// If we're deriving a translation from an existing book,
+			// we should save the original copyright and license of that book.
+			if (makingTranslation)
+				SetOriginalCopyrightAndLicense(dom, bookData, collectionSettings);
+			// a new book should never have the copyright holder set, whether it's a template, shell, or translation
+			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
+			storage.BookInfo.Copyright = null; // this might be redundant but let's play safe
+			// This is a place to put who it was translated by, usually in a national language.
+			// Doesn't apply to templates or (usually) to shells; but a translation can serve again as a shell.
+			// In that case, we expect it to be filled in with the new translator's information.
+			// Keeping the previous translator's details there is confusing (BL-6271)
+			bookData.RemoveAllForms("versionAcknowledgments");
+		}
+
+		/// <summary>
+		/// Copy the copyright & license info to the originalCopyrightAndLicense,
+		/// then remove the copyright so the translator can put in their own if they
+		/// want. We retain the license, but the translator is allowed to change that.
+		/// If the source is already a translation (already has original copyright or license)
+		/// we keep them unchanged.
+		/// </summary>
+		public static void SetOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
+		{
+			// At least one of these should exist if the source was a derivative, since we don't allow a
+			// book to have no license, nor to be uploaded without copyright...unless of course it was derived
+			// before 3.9, when we started doing this. In that case the best we can do is record the earliest
+			// information we have for this and later adaptations.
+			if (bookData.GetMultiTextVariableOrEmpty("originalLicenseUrl").Count > 0
+			    || bookData.GetMultiTextVariableOrEmpty("originalLicenseNotes").Count > 0
+			    || bookData.GetMultiTextVariableOrEmpty("originalCopyright").Count > 0)
+			{
+				return; //leave the original there.
+			}
+			// If there's no copyright information in a source-collection book, we're presumably making
+			// a new original book, and shouldn't try to record any original copyright and license information.
+			// This is somewhat redundant with the check in BookStarter.SetupNewDocumentContents(), the one
+			// non-unit-test current caller of this method, that doesn't call this at all if the source is
+			// a template book. I was trying for a minimal reasonable change for BL-5131, and therefore
+			// put in this extra check, since previously this method was simply NEVER called in a source
+			// collection.
+			var copyrightNotice = BookCopyrightAndLicense.GetMetadata(dom).CopyrightNotice;
+			if (String.IsNullOrEmpty(copyrightNotice) && collectionSettings.IsSourceCollection)
+				return;
+			bookData.Set("originalLicenseUrl", BookCopyrightAndLicense.GetLicenseUrl(dom), "*");
+			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(copyrightNotice), "*");
+			bookData.Set("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
 		}
 	}
 }
