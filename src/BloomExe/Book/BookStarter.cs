@@ -191,6 +191,16 @@ namespace Bloom.Book
 				BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(storage.Dom, bookData, _collectionSettings);
 			}
 
+			// a new book should never have the copyright holder set, whether it's a template, shell, or translation
+			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
+			storage.BookInfo.Copyright = null; // this might be redundant but let's play safe
+			// This is a place to put who it was translated by, usually in a national language.
+			// Doesn't apply to templates or (usually) to shells; but a translation can serve again as a shell.
+			// In that case, we expect it to be filled in with the new translator's information.
+			// Keeping the previous translator's details there is confusing (BL-6271)
+			bookData.RemoveAllForms("versionAcknowledgments");
+
+
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
 			TranslationGroupManager.SetInitialMultilingualSetting(bookData, multilingualLevel, _collectionSettings);

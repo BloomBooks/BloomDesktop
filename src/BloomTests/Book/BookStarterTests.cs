@@ -10,6 +10,7 @@ using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Reporting;
 using SIL.TestUtilities;
 using SIL.Xml;
@@ -880,6 +881,38 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'pageDescription') and @lang != 'en']", 0);
 			//should leave English as a placeholder
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'pageDescription') and not(normalize-space(.))]", 1);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromTranslatedMoonAndCap_HasNoCopyrightOrVersionAcknowledgements()
+		{
+			// Get the moon and cap book. This is a better sample than Vaccinations, which lacks the
+			// typical meta.json.
+			var source1 = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
+			// Make a 'translation' of moon and cap
+			var derivedBook = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source1, _projectFolder.Path));
+			// Modify it to have its own copyright and versionAcknowledgements.
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(derivedBook));
+			var source2 = Path.GetDirectoryName(derivedBook);
+			var bookdata = new BookData(dom, _librarySettings.Object,
+				imgNode => ImageUpdater.UpdateImgMetdataAttributesToMatchImage(source2, imgNode, new NullProgress()));
+			bookdata.Set("copyright", "Copyright 2018 some translator", "*");
+			bookdata.Set("versionAcknowledgments", "some translator worked on this", "en");
+			bookdata.UpdateDomFromDataset();
+			XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, derivedBook);
+			var metadata = BookMetaData.FromFolder(source2);
+			metadata.Copyright = "Copyright 2018 some translator";
+			metadata.WriteToFolder(source2);
+
+			// derive a new book from the modified translation.
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source2, _projectFolder.Path));
+
+			var assertThatHtmlInBook = AssertThatXmlIn.HtmlFile(path);
+			assertThatHtmlInBook.HasNoMatchForXpath("//div[@data-book='copyright']");
+			// Book typically has some empty versionAcknowledgements inserted as xmatter.
+			assertThatHtmlInBook.HasNoMatchForXpath("//div[@data-book='versionAcknowledgments' and text()]");
+			metadata = BookMetaData.FromFolder(Path.GetDirectoryName(path));
+			Assert.That(metadata.Copyright, Is.Null);
 		}
 
 		/// <summary>

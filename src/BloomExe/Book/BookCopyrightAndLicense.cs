@@ -354,7 +354,6 @@ namespace Bloom.Book
 			bookData.Set("originalLicenseUrl", GetLicenseUrl(dom), "*");
 			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(copyrightNotice), "*");
 			bookData.Set("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
-			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
 		}
 
 		internal static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, HtmlDom dom)

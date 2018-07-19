@@ -700,10 +700,6 @@ namespace BloomTests.Book
 			Assert.AreEqual(1, nodes1.Count);
 			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI & SILA. Licensed under CC-BY-NC-SA 4.0.", nodes1.Item(0).InnerText);
 			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI &amp; SILA. Licensed under CC-BY-NC-SA 4.0.", nodes1.Item(0).InnerXml);
-			var nodes2 = dom.RawDom.SelectNodes("/html/body//div[@data-derived='copyright']");
-			Assert.AreEqual(1, nodes2.Count);
-			Assert.AreEqual("", nodes2.Item(0).InnerText);
-			Assert.AreEqual("", nodes2.Item(0).InnerXml);
 			AssertOriginalCopyrightAndLicense(dom, "Copyright © 2011, LASI &amp; SILA", "http://creativecommons.org/licenses/by-nc-sa/4.0/");
 		}
 
