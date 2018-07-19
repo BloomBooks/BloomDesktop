@@ -16,6 +16,7 @@ namespace Bloom.Api
 	{
 		public bool HandleOnUIThread = true;
 		public EndpointHandler Handler;
+		public bool RequiresSync = true; // set false if handler does its own thread-handling.
 	}
 
 

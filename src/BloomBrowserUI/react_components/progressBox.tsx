@@ -39,10 +39,14 @@ export default class ProgressBox extends React.Component<
                 this.tryScrollToBottom();
             }
         });
-        if (props.onReadyToReceive) {
+    }
+
+    public componentDidMount() {
+        //alert("constructing progress box for " + this.props.clientContext);
+        if (this.props.onReadyToReceive) {
             WebSocketManager.notifyReady(
-                props.clientContext,
-                props.onReadyToReceive
+                this.props.clientContext,
+                this.props.onReadyToReceive
             );
         }
     }

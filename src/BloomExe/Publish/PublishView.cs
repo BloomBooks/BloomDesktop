@@ -514,6 +514,7 @@ namespace Bloom.Publish
 					// we'll lose them for all the other JS code in this pane. But I don't have a better solution.
 					// We still get them in the output window, in case we really want to look for one.
 					Browser.SuppressJavaScriptErrors = true;
+					PublishEpubApi.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "epub", "epubPublishUI.html"));
 					break;
 			}

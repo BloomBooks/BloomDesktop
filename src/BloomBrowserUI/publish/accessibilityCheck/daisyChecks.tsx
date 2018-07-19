@@ -3,8 +3,6 @@ import { IUILanguageAwareProps } from "../../react_components/l10n";
 import axios from "axios";
 import "./daisyChecks.less";
 import ProgressBox from "../../react_components/progressBox";
-import WebSocketManager from "../../utils/WebSocketManager";
-import { BloomApi } from "../../utils/bloomApi";
 
 const kWebSocketLifetime = "a11yChecklist";
 
@@ -23,34 +21,28 @@ export class DaisyChecks extends React.Component<
     constructor(props) {
         super(props);
         this.state = { reportUrl: "" };
-        WebSocketManager.addListener(kWebSocketLifetime, data => {
-            if (data.id == "daisyResults") {
-                this.setState({ reportUrl: data.message });
-            }
-        });
     }
     public componentDidMount() {
-        // when this component first comes up, we're in the publish tab, and have
-        // a current preview, or at least are in the process of making one. So we
-        // don't need to make a new one like we do when Refresh is clicked.
-        this.refresh(false);
+        this.refresh();
     }
-    private refresh(forceNewEpub: boolean) {
+    private refresh() {
         this.setState({ reportUrl: "" });
-        BloomApi.postDataWithConfig(
-            "accessibilityCheck/aceByDaisyReportUrl",
-            forceNewEpub,
-            {
-                headers: { "Content-Type": "application/json" }
-            }
-        );
+        // using axios directly because of explicit catch.
+        axios
+            .get("/bloom/api/accessibilityCheck/aceByDaisyReportUrl")
+            .then(result => {
+                this.setState({ reportUrl: result.data });
+            })
+            .catch(error => {
+                this.progressBox.writeLine("Failed");
+            });
     }
     public render() {
         return (
             <div id="daisyChecks">
                 {this.state.reportUrl.length > 0 ? (
                     <div id="report">
-                        <button id="refresh" onClick={() => this.refresh(true)}>
+                        <button id="refresh" onClick={() => this.refresh()}>
                             Refresh
                         </button>
                         <iframe src={this.state.reportUrl} />
