@@ -100,7 +100,7 @@ namespace Bloom.Book
 			return HtmlDom.ConvertHtmlBreaksToNewLines(WebUtility.HtmlDecode(multistring.GetFirstAlternative()));
 		}
 
-		private static string GetLicenseUrl(HtmlDom dom)
+		public static string GetLicenseUrl(HtmlDom dom)
 		{
 			return dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });
 		}
@@ -320,41 +320,6 @@ namespace Bloom.Book
 			Logger.WriteEvent("LicenseUrl: " + dom.GetBookSetting("licenseUrl"));
 			Logger.WriteEvent("LicenseNotes: " + dom.GetBookSetting("licenseNotes"));
 			Logger.WriteEvent("");
-		}
-
-		/// <summary>
-		/// Copy the copyright & license info to the originalCopyrightAndLicense,
-		/// then remove the copyright so the translator can put in their own if they
-		/// want. We retain the license, but the translator is allowed to change that.
-		/// If the source is already a translation (already has original copyright or license)
-		/// we keep them unchanged.
-		/// </summary>
-		public static void SetOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
-		{
-			// At least one of these should exist if the source was a derivative, since we don't allow a
-			// book to have no license, nor to be uploaded without copyright...unless of course it was derived
-			// before 3.9, when we started doing this. In that case the best we can do is record the earliest
-			// information we have for this and later adaptations.
-			if (bookData.GetMultiTextVariableOrEmpty("originalLicenseUrl").Count > 0
-				|| bookData.GetMultiTextVariableOrEmpty("originalLicenseNotes").Count > 0
-				|| bookData.GetMultiTextVariableOrEmpty("originalCopyright").Count > 0)
-			{
-				return; //leave the original there.
-			}
-			// If there's no copyright information in a source-collection book, we're presumably making
-			// a new original book, and shouldn't try to record any original copyright and license information.
-			// This is somewhat redundant with the check in BookStarter.SetupNewDocumentContents(), the one
-			// non-unit-test current caller of this method, that doesn't call this at all if the source is
-			// a template book. I was trying for a minimal reasonable change for BL-5131, and therefore
-			// put in this extra check, since previously this method was simply NEVER called in a source
-			// collection.
-			var copyrightNotice = GetMetadata(dom).CopyrightNotice;
-			if (string.IsNullOrEmpty(copyrightNotice) && collectionSettings.IsSourceCollection)
-				return;
-			bookData.Set("originalLicenseUrl", GetLicenseUrl(dom), "*");
-			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(copyrightNotice), "*");
-			bookData.Set("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
-			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
 		}
 
 		internal static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, HtmlDom dom)
