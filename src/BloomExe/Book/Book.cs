@@ -1702,7 +1702,12 @@ namespace Bloom.Book
 
 		public String GetCoverColor()
 		{
-			foreach (XmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
+			return GetCoverColorFromDom(RawDom);
+		}
+
+		public static String GetCoverColorFromDom(XmlDocument dom)
+		{
+			foreach (XmlElement stylesheet in dom.SafeSelectNodes("//style"))
 			{
 				string content = stylesheet.InnerText;
 				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
