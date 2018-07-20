@@ -1150,15 +1150,20 @@ namespace Bloom
 		public string RunJavaScript(string script)
 		{
 			Debug.Assert(!InvokeRequired);
+			return RunJavaScriptOn(_browser, script);
+		}
+
+		public static string RunJavaScriptOn(GeckoWebBrowser geckoWebBrowser, string script)
+		{
 			// Review JohnT: does this require integration with the NavigationIsolator?
-			if (_browser != null && _browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
+			if (geckoWebBrowser != null && geckoWebBrowser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
 			{
 				try
 				{
-					using (var context = new AutoJSContext(_browser.Window))
+					using (var context = new AutoJSContext(geckoWebBrowser.Window))
 					{
-						var result = context.EvaluateScript(script, (nsISupports) _browser.Window.DomWindow,
-							(nsISupports) _browser.Document.DomObject);
+						var result = context.EvaluateScript(script, (nsISupports)geckoWebBrowser.Window.DomWindow,
+							(nsISupports)geckoWebBrowser.Document.DomObject);
 						if (!result.IsString)
 							return null;
 						// This bit of magic was borrowed from GeckoFx's AutoJsContext.ConvertValueToString.
@@ -1176,7 +1181,7 @@ namespace Bloom
 			return null;
 		}
 
-		private void ReportJavaScriptError(GeckoJavaScriptException ex)
+		private static void ReportJavaScriptError(GeckoJavaScriptException ex)
 		{
 			// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
 			// more than a toast, even for developers. But they should now be reported through CommonApi.HandleJavascriptError.

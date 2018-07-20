@@ -309,11 +309,12 @@ namespace Bloom
 			return new Size(browser.Width, browser.Height);
 		}
 
-		private Image CreateImage(GeckoWebBrowser browser)
-						{
+		private Image CreateImage(GeckoWebBrowser browser, Color coverColor, int top, int bottom)
+		{
 			if (_syncControl.InvokeRequired)
 			{
-				return (Image)_syncControl.Invoke(new Func<GeckoWebBrowser, Image>(CreateImage), browser);
+				return (Image) _syncControl.Invoke(new Func<GeckoWebBrowser, Color, int, int, Image>(CreateImage), browser,
+					coverColor, top, bottom);
 			}
 
 #if __MonoCS__
@@ -322,17 +323,102 @@ namespace Bloom
 
 			return offscreenBrowser.GetBitmap(browser.Width, browser.Height);
 #else
-			var creator = new ImageCreator(browser);
-			byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
-			// Ensure image is still valid after the MemoryStream closes.
-			using (var stream = new MemoryStream(imageBytes))
+			// It's REALLY tricky to get the thumbnail created so that it reliably shows the image.
+			// See BL-4170 and then BL-6257. We tried all kinds of tricks to tell when the image is
+			// loaded into the document, such as checking image.completed and image.naturalWidth > 0
+			// and waiting for two cycles of window.requestAnimationFrame (which is supposed to cover
+			// starting and completing painting images) after the onload event fires. None of this
+			// helped appreciably. A 400ms delay was enough for most images on a fast desktop, but
+			// there was no way to tell how long would be enough on a slow laptop.
+			// So, we finally came up with this technique, which is to examine the actual bitmap
+			// that is produced to see whether there is something drawn in the image region of the
+			// page. Even that did not prove to be enough: it's quite possible (especially with a tall
+			// PNG image) for CanvasGetPngImage to return an image with the cover picture only partly
+			// drawn. Fortunately, it seems to consistently draw from the top down, so we can be pretty
+			// sure there is no more image to come if we do two cycles and there is no change in the
+			// last line that is drawn.
+			// On a typical tall PNG this loop has three iterations.
+			// image is partly drawn (~40ms); ~140ms to find last line
+			// image is fully drawn (~80ms); 1ms to find last line
+			// image is fully drawn again (~28ms); 1ms to find last line
+			// On a typical wide png, 2 iterations:
+			// ~40 to draw image, ~80 to find last line (and repeat)
+			// For jpg we seem to typically have three also:
+			// ~20ms to make image; ~200ms to determine nothing is there
+			// ~600ms to make image; ~40 to find last line
+			// ~120 to redraw; ~40 to find last line
+			while (true) // Exit when we settle on an image and return it.
 			{
-				using (var image = new Bitmap(stream))
+				var watch = new Stopwatch();
+				watch.Start();
+				int lastLineOfImage = -1;
+				while (true)
 				{
-					return new Bitmap((image));
+					var creator = new ImageCreator(browser);
+					byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
+					using (var stream = new MemoryStream(imageBytes))
+					{
+						using (var image = new Bitmap(stream))
+						{
+							if (watch.ElapsedMilliseconds > 5000)
+							{
+								// Maybe there's no image or it's color perfectly mathches the background?
+								// When we used to do this with a simple delay 400ms was usually enough;
+								// if we can't get it in 5s give up, and use whatever we've got.
+								watch.Stop();
+								Debug.WriteLine("returned possibly incomplete thumnail after more than 5000ms");
+								return new Bitmap(image);
+							}
+
+							var newLastLine = GetLastLineOfImage(coverColor, top, bottom, image);
+
+							// If nothing has been drawn yet, we want to keep trying until something is.
+							// If something has been drawn, we want to keep trying until a cycle when
+							// nothing more gets added.
+							if (newLastLine == -1 || newLastLine > lastLineOfImage)
+							{
+								lastLineOfImage = newLastLine;
+								// This is meant to give the browser more of a chance to load it.
+								// It may well have been working on it anyway in another thread
+								// while we were checking pixels. Not too sure about the best length
+								// for this delay; longer might mean less time wasted checking pixels,
+								// but the minimum delay is two times this interval, so we don't want
+								// it too long. 50ms, at least on my desktop, usually doesn't result
+								// in any wasted iterations, nor much delay.
+								Thread.Sleep(50);
+								continue; // try again
+							}
+
+							// No more image drawn than the last iteration, and we got something, so assume we have the whole thing.
+							watch.Stop();
+							Debug.WriteLine("Got image after waiting " + watch.ElapsedMilliseconds);
+							return new Bitmap(image);
+						}
+					}
 				}
 			}
 #endif
+		}
+
+		// Find the last line of the image between top and bottom which contains a pixel not
+		// matching coverColor. If no such pixel is found, return -1.
+		// (If there's no picture on the cover, somehow, top and bottom will be -1, and this
+		// routine will return -1 after doing no iterations. We'll give up after 5s.
+		// Could make this special case faster, but it complicates things for little benefit.
+		// Bloom makes it pretty hard to have no cover picture. It may not even be possible.
+		private static int GetLastLineOfImage(Color coverColor, int top, int bottom, Bitmap image)
+		{
+			for (int i = bottom - 1; i >= top; i--)
+			{
+				for (int j = 0; j < image.Width; j++)
+				{
+					var color = image.GetPixel(j, i);
+					if (color != coverColor)
+						return i;
+				}
+			}
+
+			return -1;
 		}
 
 		/// <summary>
@@ -350,6 +436,8 @@ namespace Bloom
 			{
 				order.Done = false;
 				browser.Tag = order;
+				Color coverColor;
+				ImageUtils.TryCssColorFromString(Book.Book.GetCoverColorFromDom(order.Document.RawDom), out coverColor);
 				if (!OpenTempFileInBrowser(browser, temp.Key))
 					return false;
 
@@ -362,6 +450,7 @@ namespace Bloom
 					Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width,
 						(uint) browserSize.Height,
 						Thread.CurrentThread.ManagedThreadId);
+#if __MonoCS__
 					// This short sleep was added to fix BL-4170, a problem where thumbnails were often generated without
 					// images. We're not sure what changed or why it became necessary. Possibly there was a change in GeckoFx 45
 					// which caused it report document-complete before background images are sufficiently loaded to show up
@@ -374,7 +463,12 @@ namespace Bloom
 					// 100 and 200ms can be needed by a really large (24mp/14M) image. 200ms is based on hoping that
 					// most computers are no worse than five times slower than mine and accepting that the slower ones
 					// might have problems with huge images.
-					Thread.Sleep(200);
+					// Then the problem reared its ugly head again (BL-6257), even for smaller files (typically just over 2M)
+					// so trying doubling again.
+					// It should be possible to replace this with code similar to what is used in Windows for CreateImage,
+					// but that needs to be explored on Linux since the actual image creation is different.
+					Thread.Sleep(400);
+#endif
 					//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
 					//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
 					//the placeholder thumbnail.
@@ -383,7 +477,22 @@ namespace Bloom
 						var paperSizeName = GetPaperSizeName(order.Document.RawDom);
 						throw new ApplicationException("Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
 					}
-					using (Image fullsizeImage = CreateImage(browser))
+
+					int topOfCoverImage = -1;
+					int bottomOfCoverImage = -1;
+					_syncControl.Invoke((Action) (() =>
+					{
+						var where = Browser.RunJavaScriptOn(browser,
+							"{var c = document.getElementsByClassName('bloom-imageContainer')[0]; if(!c) return ''; var r = c.getBoundingClientRect(); return JSON.stringify({top:r.top, bottom:r.bottom, doc:document.firstElementChild.clientHeight});}");
+						if (!string.IsNullOrEmpty(where))
+						{
+							var data = DynamicJson.Parse(where);
+							topOfCoverImage = (int) (data.top * browser.Height / data.doc);
+							bottomOfCoverImage = (int) (data.bottom * browser.Height / data.doc);
+						}
+					}));
+
+					using (Image fullsizeImage = CreateImage(browser, coverColor, topOfCoverImage, bottomOfCoverImage))
 					{
 						if (_disposed)
 							return false;

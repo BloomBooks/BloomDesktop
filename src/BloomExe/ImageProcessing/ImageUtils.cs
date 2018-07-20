@@ -41,7 +41,7 @@ namespace Bloom.ImageProcessing
 			if(ImageFormat.Jpeg.Equals(imageInfo.Image.PixelFormat))//review
 				return true;
 
-			if(string.IsNullOrEmpty(imageInfo.FileName))
+			if(String.IsNullOrEmpty(imageInfo.FileName))
 				return false;
 
 			return new[] { ".jpg", ".jpeg" }.Contains(Path.GetExtension(imageInfo.FileName).ToLowerInvariant());
@@ -119,13 +119,13 @@ namespace Bloom.ImageProcessing
 			}*/
 			catch (Exception error)
 			{
-				if (!string.IsNullOrEmpty(imageInfo.FileName) && RobustFile.Exists(imageInfo.OriginalFilePath))
+				if (!String.IsNullOrEmpty(imageInfo.FileName) && RobustFile.Exists(imageInfo.OriginalFilePath))
 				{
-					var megs = new System.IO.FileInfo(imageInfo.OriginalFilePath).Length/(1024*1000);
+					var megs = new FileInfo(imageInfo.OriginalFilePath).Length/(1024*1000);
 					if (megs > 2)
 					{
 						var msg =
-							string.Format(
+							String.Format(
 								"Bloom was not able to prepare that picture for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
 								megs);
 						if (isEncodedAsJpeg)
@@ -139,7 +139,7 @@ namespace Bloom.ImageProcessing
 
 				throw new ApplicationException(
 					"Bloom was not able to prepare that picture for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?" +
-					System.Environment.NewLine + imageInfo.FileName, error);
+					Environment.NewLine + imageInfo.FileName, error);
 			}
 		}
 
@@ -152,7 +152,7 @@ namespace Bloom.ImageProcessing
 			// know when to just replace the existing one with the same name... some other process will have
 			// to remove unused images.
 			string basename;
-			if (string.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
+			if (String.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
 			{
 				basename = "image";
 			}
@@ -307,7 +307,7 @@ namespace Bloom.ImageProcessing
 					parameters.Param[0] = new EncoderParameter(encoder, 100L);
 					RobustImageIO.SaveImage(safetyImage, temp.Path, jpgEncoder, parameters);
 				}
-				SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, destinationPath, null);
+				FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, destinationPath, null);
 			}
 		}
 
@@ -330,6 +330,22 @@ namespace Bloom.ImageProcessing
 					return new Bitmap(image);
 				}
 			}
+		}
+
+		public static bool TryCssColorFromString(string input, out Color result)
+		{
+			result = Color.White; // some default in case of error.
+			if (!input.StartsWith("#") || input.Length != 7)
+				return false; // arbitrary failure
+			try
+			{
+				result = ColorTranslator.FromHtml(input);
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+			return true;
 		}
 	}
 }
