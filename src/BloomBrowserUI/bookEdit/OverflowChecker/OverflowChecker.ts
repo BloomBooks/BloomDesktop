@@ -212,7 +212,7 @@ export default class OverflowChecker {
                 .done(overflowText => {
                     $box.qtip({
                         content:
-                            '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' +
+                            '<img height="20" width="20" style="vertical-align:middle" src="/bloom/Attention.svg">' +
                             overflowText,
                         show: { event: "mouseenter" },
                         hide: { event: "mouseleave" },
@@ -257,7 +257,7 @@ export default class OverflowChecker {
                     .done(overflowText => {
                         $overflowingAncestor.qtip({
                             content:
-                                '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' +
+                                '<img height="20" width="20" style="vertical-align:middle" src="/bloom/Attention.svg">' +
                                 overflowText,
                             show: { event: "enterBorder" }, // nonstandard events triggered by mouse move in code below
                             hide: { event: "leaveBorder" },

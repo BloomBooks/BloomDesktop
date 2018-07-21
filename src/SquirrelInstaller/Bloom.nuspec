@@ -25,21 +25,5 @@
 		 -->
 		<file src="..\..\output\browser\**\*.*" target="\lib\net45\browser" exclude="**\*.ts;**\*.map;**\*.pug;**\*.jade;**\*.less;**\*Spec.js;**\*.jsx"/>
 		<file src="Bloom*.ico" target="\lib\net45\"/>
-		<file src="..\..\src\BloomBrowserUI\**\*.*" target="\lib\net45\BloomBrowserUI" exclude="..\..\src\BloomBrowserUI\node_modules\**\*.*"/>
-
-		<!-- Starting with 3.7, for JS modules we get via javascript import, webpack bundles them into outpt/browser and so don't need to be mentioned.
-			However any that still show up in html <script> tags need to be added here (especially, see editalbePage.tss).
-
-			Also, some note modules have their own stylesheets. Ideally, these should be @import-ed in one of our less files.
-			If not, they too need to be listed here. -->
-
-<file src="..\..\src\BloomBrowserUI\node_modules\jquery\dist\jquery.js" target="\lib\net45\BloomBrowserUI\node_modules\jquery\dist"/>
-		<file src="..\..\src\BloomBrowserUI\node_modules\jquery.hotkeys\jquery.hotkeys.js" target="\lib\net45\BloomBrowserUI\node_modules\jquery.hotkeys"/>
-		<file src="..\..\src\BloomBrowserUI\node_modules\toastr\build\*.*" target="\lib\net45\BloomBrowserUI\node_modules\toastr\build\"/>
-		<!-- should come in from a LESS import
-				<file src="..\..\src\BloomBrowserUI\node_modules\select2\dist\css\select2.css" target="\lib\net45\BloomBrowserUI\node_modules\select2\dist\css\"/>
-		-->
-		<file src="..\..\src\BloomBrowserUI\node_modules\select2\dist\js\select2.js" target="\lib\net45\BloomBrowserUI\node_modules\select2\dist\js\"/>
-		<file src="..\..\src\BloomBrowserUI\node_modules\css-element-queries\src\*.*" target="\lib\net45\BloomBrowserUI\node_modules\css-element-queries\src"/>
 	</files>
 </package>
