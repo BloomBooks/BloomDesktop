@@ -16,13 +16,11 @@
             content: "" !important;
         }
     }
-    .bloom-textOverPicture {
-        .ui-resizable-handle {
-            display: none !important;
-        }
-        .bloom-dragHandleTOP {
-            display: none;
-        }
+    .ui-resizable-handle {
+        display: none !important;
+    }
+    .bloom-dragHandleTOP {
+        display: none;
     }
 }
 
@@ -38,7 +36,8 @@
         z-index: @textOverPictureZIndex;
         .bloom-dragHandleTOP {
             position: absolute;
-            background: url("img/dragHandleGrey.svg") no-repeat center;
+            background: url("/bloom/bookEdit/img/dragHandleGrey.svg") no-repeat
+                center;
             background-size: contain;
             background-color: @DragHandleBackgroundColor;
             width: 16px;

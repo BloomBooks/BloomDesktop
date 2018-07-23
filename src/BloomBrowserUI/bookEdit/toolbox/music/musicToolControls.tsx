@@ -1,12 +1,6 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import {
-    H1,
-    Div,
-    IUILanguageAwareProps,
-    Label
-} from "../../../react_components/l10n";
+import { Div, Label } from "../../../react_components/l10n";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { BloomApi } from "../../../utils/bloomApi";
 import { ToolBox, ITool } from "../toolbox";
@@ -43,24 +37,13 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         this.state = this.getStateFromHtmlOfPage();
     }
 
-    public detachFromPage() {
+    public pausePlayer() {
         const rawPlayer = document.getElementById(
             "musicPlayer"
         ) as HTMLMediaElement;
         rawPlayer.pause();
     }
 
-    public showTool() {
-        // nothing to do here.
-    }
-
-    public newPageReady() {
-        this.updateBasedOnContentsOfPage();
-    }
-
-    public updateMarkup() {
-        // nothing to do here.
-    }
     public getStateFromHtmlOfPage(): IMusicState {
         let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
             MusicToolControls.musicAttrName
@@ -155,7 +138,6 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                         </Label>
                     </div>
                 </RadioGroup>
-
                 <div
                     className={
                         "button-label-wrapper" +
@@ -401,6 +383,8 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 }
 
+// This class implements the ITool interface through our adaptor's abstract methods by calling
+// the appropriate MusicToolControls methods.
 export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     private controlsElement: MusicToolControls;
 
@@ -419,14 +403,12 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public showTool() {
-        this.controlsElement.showTool();
+        this.controlsElement.updateBasedOnContentsOfPage();
     }
-
-    public detachFromPage() {
-        this.controlsElement.detachFromPage();
+    public hideTool() {
+        this.controlsElement.pausePlayer();
     }
-
-    public updateMarkup() {
-        this.controlsElement.updateMarkup();
+    public newPageReady() {
+        this.controlsElement.updateBasedOnContentsOfPage();
     }
 }

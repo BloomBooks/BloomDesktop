@@ -765,6 +765,8 @@ namespace Bloom
 			_pageEditDom = editDom.RawDom;
 		}
 
+		private bool _hasNavigated;
+
 		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
 		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed
@@ -775,6 +777,33 @@ namespace Bloom
 			{
 				Invoke(new Action<HtmlDom, HtmlDom, bool, string>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging, source);
 				return;
+			}
+
+			// Make sure the browser is ready for business. Sometimes a newly created one is briefly busy.
+			if (!_hasNavigated)
+			{
+				_hasNavigated = true;
+				// gets WebBrowser created, if not already done.
+				var dummy = Handle;
+
+				// Without this block, I've seen a situation where the newly created WebBrowser is not ready
+				// just long enough so that when we actually ask it to navigate, it doesn't do anything.
+				// Then it will never finish, which was a causing timeouts in code like NavigateAndWaitTillDone().
+				// As of 18 July 2018, that can STILL happen, so I'm not entirely sure this helps.
+				// But it seemed to reduce the frequency somewhat, so I'm keeping it for now.
+				var startupTimer = new Stopwatch();
+				startupTimer.Start();
+				while (_browser.IsBusy && startupTimer.ElapsedMilliseconds < 1000)
+				{
+					Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
+					Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+				}
+				startupTimer.Stop();
+				if (_browser.IsBusy)
+				{
+					// I don't think I've seen this actually happen.
+					Debug.WriteLine("New browser still busy after a second");
+				}
 			}
 
 			XmlDocument dom = htmlDom.RawDom;
@@ -788,6 +817,43 @@ namespace Bloom
 			SetNewDependent(fakeTempFile);
 			_url = fakeTempFile.Key;
 			UpdateDisplay();
+		}
+
+		public void NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav")
+		{
+			// Should be called on UI thread. Since it is quite typical for this method to create the
+			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
+			Debug.Assert(Program.RunningOnUiThread);
+			var dummy = Handle; // gets WebBrowser created, if not already done.
+			var done = false;
+			var navTimer = new Stopwatch();
+			navTimer.Start();
+			_hasNavigated = false;
+			_browser.DocumentCompleted += (sender, args) => done = true;
+			// just in case something goes wrong, avoid the timeout if it fails rather than completing.
+			_browser.NavigationError += (sender, e) => done = true;
+			// var oldUrl = _browser.Url; // goes with commented out code below
+			Navigate(htmlDom, source: "epub");
+			int restarts = 0;
+			while (!done && navTimer.ElapsedMilliseconds < timeLimit)
+			{
+				Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
+				Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+				// Keeping this code as a reminder: it seems to be a reliable way of telling when
+				// the nothing happens when told to navigate problem is rearing its ugly head.
+				// But I'm not sure enough to throw what might be a premature exception.
+				//if (navTimer.ElapsedMilliseconds > 1000 && _browser.Url == oldUrl)
+				//{
+				//	throw new ApplicationException("Browser isn't even trying to navigate");
+				//}
+			}
+
+			navTimer.Stop();
+
+			if (!done)
+			{
+				throw new ApplicationException("Browser unexpectedly took too long to load a page");
+			}
 		}
 
 		public void NavigateRawHtml(string html)
