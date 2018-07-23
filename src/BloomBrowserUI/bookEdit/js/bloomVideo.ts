@@ -70,7 +70,11 @@ function SetupVideoContainer(
     //   if Enterprise features are enabled.
     if (isEnterpriseEnabled) {
         theOneLocalizationManager
-            .asyncGetText("EditTab.Video.ChangeVideo", "Change Video", "")
+            .asyncGetText(
+                "EditTab.Toolbox.SignLanguage.ImportVideo",
+                "Import Video",
+                ""
+            )
             .done(function(changeVideoText) {
                 $(containerDiv)
                     .mouseenter(function() {
@@ -81,7 +85,7 @@ function SetupVideoContainer(
                         // The code that executes when this button is clicked is currently C#.
                         // See EditingView._browser1_OnBrowserClick for the start of the chain.
                         $this.prepend(
-                            "<button class='changeVideoButton imageButton " +
+                            "<button class='importVideoButtonOverlay imageButton " +
                                 buttonModifier +
                                 "' title='" +
                                 changeVideoText +
@@ -109,9 +113,11 @@ function SetupVideoContainer(
                     .mouseleave(function() {
                         var $this = $(this);
                         $this.removeClass("hoverUp");
-                        $this.find(".changeVideoButton").each(function() {
-                            $(this).remove();
-                        });
+                        $this
+                            .find(".importVideoButtonOverlay")
+                            .each(function() {
+                                $(this).remove();
+                            });
                     });
             });
     }

@@ -14,8 +14,8 @@
    viewBox="0 0 40 40.000001"
    id="svg3987"
    version="1.1"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="ImportVideo.svg">
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="changeVideoButton.svg">
   <defs
      id="defs3989" />
   <sodipodi:namedview
@@ -25,16 +25,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="573.5"
-     inkscape:cy="331.79665"
+     inkscape:zoom="11.313708"
+     inkscape:cx="48.238961"
+     inkscape:cy="19.222142"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g1851"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1148"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-width="1823"
+     inkscape:window-height="1177"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:snap-page="true"
      inkscape:snap-global="true"
@@ -49,7 +49,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -66,10 +66,10 @@
          inkscape:connector-curvature="0"
          id="path1828"
          d="m -179.72441,63.643478 -4.16101,0 0,6.336705 6.4149,0 0,-3.835374"
-         style="fill:none;stroke:#59b4d3;stroke-width:0.58302855;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         style="fill:none;stroke:#000000;stroke-width:0.58302855;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <path
          sodipodi:nodetypes="cccccccccssccccc"
-         style="fill:#59b4d3;fill-opacity:1;stroke:#59b4d3;stroke-width:0.19434284;stroke-linecap:round;stroke-opacity:1"
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.19434284;stroke-linecap:round;stroke-opacity:1"
          id="path4-2"
          d="m -176.88813,62.77335 -4.69367,4.569999 0,-1.881151 c -9.3e-4,-0.379392 -0.56965,-0.379392 -0.57058,0 l 0,2.565739 c -0.002,0.01897 -0.002,0.03808 0,0.05705 l 0,0.08557 0.0207,0.0641 0.0789,0.02147 2.75167,0 c 0.38039,0 0.38039,-0.57049 0,-0.57049 l -1.88154,0 0.94855,-0.932793 3.74513,-3.580157 c 0.19792,-0.263879 -0.25824,-0.556301 -0.3994,-0.399343 z"
          data-name="Path"

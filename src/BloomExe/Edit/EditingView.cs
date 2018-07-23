@@ -589,7 +589,7 @@ namespace Bloom.Edit
 				OnCopyImage(ge);
 			if(target.ClassName.Contains("editMetadataButton"))
 				OnEditImageMetdata(ge);
-			if (target.ClassName.Contains("changeVideoButton"))
+			if (target.ClassName.Contains("importVideoButtonOverlay"))
 				_signLanguageApi.OnChangeVideo(ge);
 
 			var anchor = target as GeckoAnchorElement;
