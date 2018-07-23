@@ -1119,7 +1119,7 @@
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
-        <source xml:lang="en">Name of the translator, in {lang}</source>
+        <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       </trans-unit>
