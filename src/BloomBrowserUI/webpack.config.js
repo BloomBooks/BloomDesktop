@@ -182,6 +182,13 @@ module.exports = {
                         loader: "less-loader" // compiles Less to CSS
                     }
                 ]
+            },
+            {
+                // this allows things like background-image: url("myComponentsButton.svg") and have the resulting path look for the svg in the stylesheet's folder
+                test: /\.(svg|jpg|png)$/,
+                use: {
+                    loader: "file-loader"
+                }
             }
         ]
     }
