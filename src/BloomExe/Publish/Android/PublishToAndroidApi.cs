@@ -60,22 +60,6 @@ namespace Bloom.Publish.Android
 			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
 		}
 
-		private static bool TryCssColorFromString(string input, out Color result)
-		{
-			result = Color.White; // some default in case of error.
-			if (!input.StartsWith("#") || input.Length != 7)
-				return false; // arbitrary failure
-			try
-			{
-				result = ColorTranslator.FromHtml(input);
-			}
-			catch (Exception e)
-			{
-				return false;
-			}
-			return true;
-		}
-
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
 			// This is just for storing the user preference of method
@@ -112,7 +96,7 @@ namespace Bloom.Publish.Android
 					if (request.CurrentBook != _coverColorSourceBook)
 					{
 						_coverColorSourceBook = request.CurrentBook;
-						TryCssColorFromString(request.CurrentBook?.GetCoverColor()??"", out _thumbnailBackgroundColor);
+						ImageUtils.TryCssColorFromString(request.CurrentBook?.GetCoverColor()??"", out _thumbnailBackgroundColor);
 					}
 					request.ReplyWithText(ToCssColorString(_thumbnailBackgroundColor));
 				}
@@ -121,7 +105,7 @@ namespace Bloom.Publish.Android
 					// ignore invalid colors (very common while user is editing hex)
 					Color newColor;
 					var newColorAsString = request.RequiredPostString();
-					if (TryCssColorFromString(newColorAsString, out newColor))
+					if (ImageUtils.TryCssColorFromString(newColorAsString, out newColor))
 					{
 						_thumbnailBackgroundColor = newColor;
 						request.CurrentBook.SetCoverColor(newColorAsString);
@@ -159,7 +143,7 @@ namespace Bloom.Publish.Android
 					{
 						if(_thumbnailBackgroundColor == Color.Transparent)
 						{
-							TryCssColorFromString(request.CurrentBook?.GetCoverColor(), out _thumbnailBackgroundColor);
+							ImageUtils.TryCssColorFromString(request.CurrentBook?.GetCoverColor(), out _thumbnailBackgroundColor);
 						}
 						RuntimeImageProcessor.GenerateEBookThumbnail(coverImage, thumbnail.Path, 256, 256, _thumbnailBackgroundColor);
 						request.ReplyWithImage( thumbnail.Path);
