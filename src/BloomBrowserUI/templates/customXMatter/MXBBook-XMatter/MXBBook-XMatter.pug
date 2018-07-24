@@ -1,0 +1,61 @@
+
+include ../../xMatter/bloom-xmatter-mixins.pug
+// The above filepath will need updating if this xmatter ever becomes an official Bloom xmatter pack
+// since it will get moved from customXMatter to xMatter
+
+mixin mxb-printerStatement-insideBackCover
+	// Inside Back Cover
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')&attributes(attributes)#839e8eee-5e1a-45a7-bb01-2c171b56f8a4
+		+field-mono-meta("N1","printerStatement").Printer-Statement-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble Printer's Statement goes here.
+
+mixin mxb-nationalSummaryCreditsPage-back-title-page
+	// Credits page back of Title page
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+		+field-mono-meta("N1","insideCredits").Inside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
+		+field-acknowledgments-originalVersion
+		+block-licenseAndCopyright
+		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+		+field-ISBN
+		+field-prototypeDeclaredExplicity("N1")#printingHistory
+			label.bubble Use this for Printing History (1st Edition, etc.)
+			+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
+
+mixin mxb-titlePage
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+		+field-prototypeDeclaredExplicity("V, N1, N2")#titlePageTitleBlock
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+		#languageInformation.Credits-Page-style('lang'='N1')
+			.languagesOfBook(data-book='languagesOfBook')
+			//- review: can we get rid of these "langName" classes?
+			.langName('data-library'='dialect')
+			.langName(data-library='languageLocation').bloom-writeOnly
+		+field-prototypeDeclaredExplicity("N1")#originalContributions
+			block originalContributionsLabel
+				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+					| The contributions made by writers, illustrators, editors, etc., in {lang}
+			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalContributions')
+		+field-acknowledgments-localizedVersion
+		+field-prototypeDeclaredExplicity("N1")#funding
+			label.bubble Use this to acknowledge any funding agencies.
+			+editable(kLanguageForPrototypeOnly).funding.Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+		+field-title-page-branding
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title ILV Mexico Book Front & Back Matter
+		+stylesheets('MXBBook-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+		+standard-blankInsideFrontCover
+		+mxb-titlePage
+		+mxb-nationalSummaryCreditsPage-back-title-page
+		+mxb-printerStatement-insideBackCover
+		+factoryStandard-outsideBackCover
+
