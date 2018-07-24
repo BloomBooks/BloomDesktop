@@ -1,0 +1,131 @@
+@import "../../xMatter/bloom-xmatter-common.less";
+
+@XMatterPackName: "MXB Book";
+
+// moving the license and copyright block to a new place, it needs some top space
+.licenseAndCopyrightBlock {
+    margin-top: 0.5em;
+}
+
+.titlePage {
+    // shrink this down from 3em because we're combining the title and credits pages
+    #titlePageTitleBlock {
+        margin-bottom: 1em;
+    }
+    // shrink things down even more if it's a small paper size
+    &.A6Landscape,
+    &.A6Portrait,
+    &.QuarterLetterLandscape,
+    &.QuarterLetterPortrait {
+        #titlePageTitleBlock {
+            margin-bottom: 0;
+            div {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.insideBackCover {
+    .marginBox {
+        // Set the default style for the new Printer's Statement
+        // The text should be center aligned at the bottom of the available space.  (An earlier
+        // version of this code used .bloom-editable:only-child and .bloom-editable:not(:only-child)
+        // in a confusing and ineffective way that had the side-effect of displaying vernacular as
+        // well as national language data here, and also didn't push the text to the bottom of the
+        // available space.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4614.)
+        .Printer-Statement-style.bloom-editable.bloom-visibility-code-on {
+            // display:flex is needed for justify-content:flex-end to apply
+            display: flex; // has been reset to block by .bloom-editable.bloom-visibility-code-on
+            flex-direction: column; // stack paragraphs in a column
+            justify-content: flex-end; // push text to the bottom of the available space
+            padding-bottom: 20px;
+            text-align: center;
+            font-size: 10pt;
+            line-height: 1.2;
+        }
+        // Allow the two .bloom-translationGroup boxes contained in the .marginBox box to flex
+        // vertically.  They start out sharing the page 50-50, but the summary (or I suppose the
+        // printer statement) can take more space if needed.
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.credits {
+    #printingHistory .bloom-contentNational1 {
+        display: block;
+    }
+    // default values for the Printing History section
+    .PrintingHistory-style.bloom-contentNational1 {
+        font-size: 10pt;
+        display: block;
+    }
+    // scrunch things down as much as possible
+    .originalAcknowledgments .bloom-contentNational1,
+    .bloom-content1 {
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+    }
+}
+
+// more scrunching
+.titlePage #funding {
+    margin-bottom: 0.5em;
+}
+
+// override .bloom-content1 min-height 3em from bloom-xmatter-common.less
+body[bookcreationtype="original"] {
+    .titlePage {
+        #languageInformation {
+            .bloom-content1 {
+                min-height: 1em;
+                margin-bottom: 1em;
+            }
+        }
+        #originalContributions {
+            .bloom-content1 {
+                min-height: 1em;
+                margin-top: 3em;
+                margin-bottom: 2em;
+            }
+        }
+        #acknowledgmentsLocalizedVersion {
+            .bloom-content1 {
+                min-height: 1em;
+                margin-top: 5em;
+            }
+        }
+        #funding {
+            .bloom-content1 {
+                min-height: 1em;
+                margin-top: 8em;
+            }
+        }
+    }
+}
+
+// override .bloom-contentNational1 min-height 3em from bloom-xmatter-common.less
+body[bookcreationtype="translation"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-content1 {
+                min-height: 1em;
+                margin-top: 3em;
+                margin-bottom: 2em;
+            }
+        }
+        #acknowledgmentsLocalizedVersion {
+            .bloom-content1 {
+                min-height: 1em;
+                margin-top: 5em;
+            }
+        }
+        #funding {
+            .bloom-content1 {
+                min-height: 1em;
+                margin-top: 8em;
+            }
+        }
+    }
+}
