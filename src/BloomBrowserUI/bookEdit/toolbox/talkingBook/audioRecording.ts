@@ -170,8 +170,7 @@ export default class AudioRecording {
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
-        page
-            .find(".ui-audioCurrent")
+        page.find(".ui-audioCurrent")
             .removeClass("ui-audioCurrent")
             .removeClass("disableHighlight");
         var socket = this.getWebSocket();
@@ -360,8 +359,8 @@ export default class AudioRecording {
             })
             .catch(error => {
                 this.changeStateAndSetExpected("record"); //record failed, so we expect them to try again
-                toastr.error(error.statusText);
-                console.log(error.statusText);
+                toastr.error(error.response.statusText);
+                console.log(error.response.statusText);
                 this.updatePlayerStatus();
             });
     }
