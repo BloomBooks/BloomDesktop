@@ -264,6 +264,37 @@ export class ToolBox {
                 )
         );
     }
+
+    //currently just a wrapper around the global, to be enhanced someday when we get rid of all the globals
+    public getToolIfOffered(toolId: string): ITool {
+        return getITool(toolId);
+    }
+
+    public activateToolFromId(toolId: string) {
+        if (!getITool(toolId)) {
+            // Normally we won't even give a way to see this tool if it's
+            // not available for experimental reasons, but sometimes (e.g.
+            // clicking on a video placeholder, it will help the user to
+            // say why nothing is happening.
+            let msg =
+                "This tool requires that you enable Settings : Advanced Program Settings : Show Experimental Features";
+            alert(msg);
+            return;
+        }
+
+        if (!this.toolboxIsShowing()) {
+            this.toggleToolbox();
+        }
+        let checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
+        // if it was an actual "input" element, we would just check for "checked",
+        // but it's actually a div with possibly a checkmark character inside,
+        // so just check string length.
+        if (checkBox.innerText.length === 0) {
+            checkBox.click(); // will also activate
+        } else {
+            setCurrentTool(toolId);
+        }
+    }
 }
 
 var toolbox = new ToolBox();
@@ -307,27 +338,6 @@ export function showOrHideTool_click(chkbox) {
     }
 
     resizeToolbox();
-}
-
-export function activateSignLanguageTool() {
-    const toolId = "signLanguageTool";
-    let itool = getITool(toolId);
-    if (!itool) {
-        // experimental feature, but we have that turned off in settings
-        let msg = "The sign language tool requires that you enable Settings : ";
-        msg += "Advanced Program Settings : Show Experimental Features";
-        alert(msg);
-        return;
-    }
-    let signCheckBox = $("#signLanguageCheck").get(0) as HTMLDivElement;
-    // if it was an actual "input" element, we would just check for "checked",
-    // but it's actually a div with possibly a checkmark character inside,
-    // so just check string length.
-    if (signCheckBox.innerText.length === 0) {
-        signCheckBox.click(); // will also activate
-    } else {
-        setCurrentTool(toolId);
-    }
 }
 
 export function restoreToolboxSettings() {
@@ -527,19 +537,24 @@ function getToolElement(tool: ITool): HTMLElement {
 /**
  * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
  * of "currentTool" (the last tool displayed).
- * @param {String} currentTool
  */
-function setCurrentTool(currentTool) {
+function setCurrentTool(toolID: string) {
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     var idx = 0;
     var toolbox = $("#toolbox");
 
+    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
+    // For now I'm just making functions work with either form.
+
+    if (toolID.indexOf("Tool") === -1) {
+        toolID += "Tool";
+    }
     const accordionHeaders = toolbox.find("> h3");
-    if (currentTool) {
+    if (toolID) {
         let foundTool = false;
         // find the index of the tool whose "data-toolId" attribute equals the value of "currentTool"
         accordionHeaders.each(function() {
-            if ($(this).attr("data-toolId") === currentTool) {
+            if ($(this).attr("data-toolId") === toolID) {
                 foundTool = true;
                 // break from the each() loop
                 return false;
@@ -549,12 +564,12 @@ function setCurrentTool(currentTool) {
         });
         if (!foundTool) {
             idx = 0;
-            currentTool = "";
+            toolID = "";
         }
     }
-    if (!currentTool) {
+    if (!toolID) {
         // Leave idx at 0, and update currentTool to the corresponding ID.
-        currentTool = toolbox
+        toolID = toolbox
             .find("> h3")
             .first()
             .attr("data-toolId");
@@ -588,14 +603,19 @@ function setCurrentTool(currentTool) {
     });
     //alert("switching to " + currentTool + " which has index " + toolIndex);
     //setTimeout(e => switchTool(currentTool), 700);
-    switchTool(currentTool);
+    switchTool(toolID);
 }
 
 // Parameter 'toolId' is the complete tool id with the 'Tool' suffix
 // Can return undefined in the case of an experimental tool with
 // Advanced Program Settings: Show Experimental Features unchecked.
 function getITool(toolId: string): ITool {
-    const reactToolId = toolId.substring(0, toolId.length - 4); // strip off "Tool"
+    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
+    // For now I'm just making functions work with either form.
+    const reactToolId =
+        toolId.indexOf("Tool") > -1
+            ? toolId.substring(0, toolId.length - 4)
+            : toolId; // strip off "Tool"
     return (<any>masterToolList).find(tool => tool.id() === reactToolId);
 }
 

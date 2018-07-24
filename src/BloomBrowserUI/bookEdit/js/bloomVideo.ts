@@ -8,6 +8,7 @@ import { BloomApi } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { getToolboxFrameExports } from "./bloomFrames";
+import { SignLanguageToolControls } from "../toolbox/signLanguage/signLanguageTool";
 
 const mouseOverFunction = e => {
     var target = e.target as HTMLElement;
@@ -127,12 +128,9 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // if the user clicks on the video placeholder, bring up the sign language tool
     if (containerDiv.classList.contains("bloom-noVideoSelected")) {
         $(containerDiv).click(function() {
-            let toolboxFrameExports = getToolboxFrameExports();
-            let toolbox = toolboxFrameExports.getTheOneToolbox();
-            if (!toolbox.toolboxIsShowing()) {
-                toolbox.toggleToolbox();
-            }
-            toolboxFrameExports.activateSignLanguageTool();
+            getToolboxFrameExports()
+                .getTheOneToolbox()
+                .activateToolFromId(SignLanguageToolControls.kToolID);
         });
     }
 }

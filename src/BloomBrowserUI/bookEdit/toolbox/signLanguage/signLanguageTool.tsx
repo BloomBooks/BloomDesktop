@@ -54,6 +54,8 @@ export class SignLanguageToolControls extends React.Component<
     {},
     IComponentState
 > {
+    public static kToolID = "signLanguage";
+
     constructor(props) {
         super(props);
         this.state = {
