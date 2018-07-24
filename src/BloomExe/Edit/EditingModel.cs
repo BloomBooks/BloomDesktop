@@ -957,7 +957,7 @@ namespace Bloom.Edit
 
 		public void SaveNow()
 		{
-			if (_domForCurrentPage != null)
+			if (_domForCurrentPage != null && !_inProcessOfSaving)
 			{
 				var watch = Stopwatch.StartNew();
 				try
