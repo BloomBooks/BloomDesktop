@@ -988,23 +988,22 @@ export function bootstrap() {
                 }
             });
 
-            // hide the toolbar when ckeditor starts...and finally set up wheel zooming
+            // hide the toolbar when ckeditor starts
             ckedit.on("instanceReady", function(evt) {
                 var editor = evt["editor"];
                 var bar = $("body").find("." + editor.id);
                 bar.hide();
-                // This needs to be one of the very last things we do, because as soon as we do it,
-                // if the user is busy spinning the wheel, we'll make a new page and start loading
-                // that, and THIS page will then be UNloading. Various things we do in the process
-                // of starting up a page don't like it if the page we are loading is already unloading.
-                // One of them seems to be the init of CkEditor, so we wait for that before
-                // enabling zoom. If something else is added that happens even later, consider
-                // moving setupWheelZooming after that!
-                setupWheelZooming();
             });
 
             BloomField.WireToCKEditor(this, ckedit);
         });
+
+    // We want to do this as late in the page setup process as possible because a
+    // mouse zoom event will regenerate the page, and various things we do in the process
+    // of starting up a page don't like it if the page we are loading is already unloading.
+    // We currently suppress errors for pages which are in the process of going away, but better
+    // not to generate them than suppress them if we can help it.
+    setupWheelZooming();
 }
 // Attach a function to implement zooming on mouse wheel with ctrl.
 // Setting this up should be one of the last things we do when loading the page...

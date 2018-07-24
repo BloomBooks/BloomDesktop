@@ -1189,7 +1189,7 @@
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
-        <source xml:lang="en">Name of the translator, in {lang}</source>
+        <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       </trans-unit>
@@ -1934,10 +1934,6 @@
         <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Video.ChangeVideo" sil:dynamic="true">
-        <source xml:lang="en">Change Video</source>
-        <note>ID: EditTab.Video.ChangeVideo</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
