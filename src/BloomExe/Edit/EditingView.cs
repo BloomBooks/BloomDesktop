@@ -1399,7 +1399,11 @@ namespace Bloom.Edit
 			{
 				ParentForm.Activated += new EventHandler(ParentForm_Activated);
 				ParentForm.Deactivate += (sender, e1) => {
-					                                         _editButtonsUpdateTimer.Enabled = false;
+					_editButtonsUpdateTimer.Enabled = false;
+					// Save when we leave the main window, even just switching to the epub a11y check window.
+					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
+					// focus erratically on Linux, so we don't want this save on its LostFocus event.
+					_model.SaveNow();
 				};
 			}
 		}
