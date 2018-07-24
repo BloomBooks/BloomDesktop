@@ -82,6 +82,8 @@ namespace Bloom.Publish.Epub
 		public const string kFontsFolder = "fonts";
 		public const string kVideoFolder = "video";
 
+		public static readonly string EpubExportRootFolder = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
+
 		public Book.Book Book
 		{
 			get { return _book; }
@@ -207,11 +209,10 @@ namespace Bloom.Publish.Epub
 				};
 
 			// robustly come up with a directory we can use, even if previously used directories are locked somehow
-			var exportRoot = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
-			Directory.CreateDirectory(exportRoot); // this is ok if it already exists
+			Directory.CreateDirectory(EpubExportRootFolder); // this is ok if it already exists
 			for (var i = 0; i < 20; i++)
 			{
-				var dir = Path.Combine(Path.GetTempPath(), kEPUBExportFolder, i.ToString());
+				var dir = Path.Combine(EpubExportRootFolder, i.ToString());
 
 				if (Directory.Exists(dir))
 				{
