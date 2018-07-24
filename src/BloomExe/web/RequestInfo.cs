@@ -204,6 +204,8 @@ namespace Bloom.Api
 			// we want ShouldCache to do its tests on the original filename.
 			if ((originalPath ?? path).Replace('\\','/').StartsWith(DoNotCacheFolder))
 				return false; // in the folder we never cache, typically the editable project folder.
+			if ((originalPath ?? path).StartsWith(Bloom.Publish.Epub.EpubMaker.EpubExportRootFolder))
+				return false;	// ePUB export files should not be cached.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6253.
 
 			return _cacheableExtensions.Contains(Path.GetExtension(path));
 		}
