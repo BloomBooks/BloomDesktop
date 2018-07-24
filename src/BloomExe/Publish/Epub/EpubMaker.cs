@@ -67,6 +67,8 @@ namespace Bloom.Publish.Epub
 	{
 		public const string kEPUBExportFolder = "ePUB export";
 
+		public static readonly string EpubExportRootFolder = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
+
 		public Book.Book Book
 		{
 			get { return _book; }
@@ -146,7 +148,7 @@ namespace Bloom.Publish.Epub
 				return; //already staged
 
 			//I (JH) kept having trouble making epubs because this kept getting locked.
-			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
+			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(EpubExportRootFolder);
 
 			_outerStagingFolder = new TemporaryFolder(kEPUBExportFolder);
 			var tempBookPath = Path.Combine(_outerStagingFolder.FolderPath, Path.GetFileName(Book.FolderPath));
