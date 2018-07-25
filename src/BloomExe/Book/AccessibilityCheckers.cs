@@ -89,7 +89,7 @@ namespace Bloom.web.controllers
 			var audioFolderInfo = new DirectoryInfo(audioFolderPath);
 			foreach (XmlElement page in book.OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
-				var problemText = PageHasMissingAudio(book, page, audioFolderInfo, translationGroupConstraint);
+				var problemText = GetFirstTextOnPageWithMissingAudio(book, page, audioFolderInfo, translationGroupConstraint);
 				if (!string.IsNullOrEmpty(problemText))
 				{
 					var pageLabel = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(page);
@@ -99,18 +99,18 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private static string PageHasMissingAudio(Book.Book book, XmlElement page, DirectoryInfo audioFolderInfo,
+		private static string GetFirstTextOnPageWithMissingAudio(Book.Book book, XmlElement page, DirectoryInfo audioFolderInfo,
 			string translationGroupConstraint)
 		{
 			// NB: we're selecting for bloom-visibility-code-on instead of @lang
-			var elementsInTheRightLanguage = page.SelectNodes($".//div[contains(@class, 'bloom-translationGroup') " +
+			var visibleElements = page.SelectNodes($".//div[contains(@class, 'bloom-translationGroup') " +
 					"and not(contains(@class, 'bloom-recording-optional')) " + 
 					$"and {translationGroupConstraint}]/div[contains(@class, 'bloom-editable') " +
 					"and contains(@class, 'bloom-visibility-code-on')]")
 					//$"and @lang='{book.CollectionSettings.Language1Iso639Code}']")
 				.Cast<XmlElement>();
 
-			foreach (var editable in elementsInTheRightLanguage)
+			foreach (var editable in visibleElements)
 			{
 				var problemText = ElementContainsMissingAudio(editable, audioFolderInfo);
 				if (!string.IsNullOrEmpty(problemText))
