@@ -53,11 +53,10 @@ export class ImageDescriptionToolControls extends React.Component<
         let checkBoxes = [];
         for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
             // 'index' is in case 'i' changing affects earlier checkboxes;
-            // also use for the unique 'key' prop required by React for array or iterator children
             const index = i;
             checkBoxes.push(
                 <Checkbox
-                    key={index}
+                    key={i}
                     l10nKey={
                         "EditTab.Toolbox.ImageDescriptionTool." +
                         ImageDescriptionToolControls.i18ids[i]
