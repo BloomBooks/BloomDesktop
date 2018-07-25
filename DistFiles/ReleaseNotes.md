@@ -6,7 +6,7 @@
 - Publish
     - Fonts are now embedded in Bloom Reader books, if their embedded metadata allows that.
 
-## 4.1  (current release & beta)
+## 4.1
 - Settings
     - You can now customize how Language 2 and Language 3 are displayed, just like you previously could for Language 1.
     [See original feature request](https://community.software.sil.org/t/option-to-use-national-language-for-filenames/211)
