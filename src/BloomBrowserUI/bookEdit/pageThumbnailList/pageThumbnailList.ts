@@ -15,9 +15,10 @@ import * as $ from "jquery";
 import "../../modified_libraries/gridly/jquery.gridly.js";
 import { SetImageElementUrl } from "../js/bloomImages";
 import "errorHandler";
+import WebSocketManager from "../../utils/WebSocketManager";
 
 const timerName = "thumbnailInterval";
-const kSocketName = "webSocket"; // TODO BL-6129 upgrade this to use WebSocketManger and a proper clientContext
+const kWebsocketContext = "pageThumbnailList";
 
 var thumbnailTimerInterval = 200;
 var listenerFunction;
@@ -66,8 +67,7 @@ $(window).ready(function() {
     // We need a named function because it looks cleaner and we use it to remove the
     // listener when we shut down.
     listenerFunction = event => {
-        var e = JSON.parse(event.data);
-        if (e.id === "saving") {
+        if (event.id === "saving") {
             toastr.info(localizedNotification, "", {
                 positionClass: "toast-top-left",
                 preventDuplicates: true,
@@ -89,34 +89,12 @@ $(window).ready(function() {
         .asyncGetText("EditTab.SavingNotification", "Saving...", "")
         .done(savingNotification => {
             localizedNotification = savingNotification;
-            // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-            var socket = getWebSocket();
-            if (socket) {
-                socket.addEventListener("message", listenerFunction);
-            }
+            WebSocketManager.addListener(kWebsocketContext, listenerFunction);
         });
 });
 
 export function stopListeningForSave() {
-    var socket = getWebSocket();
-    if (socket) {
-        socket.removeEventListener("message", listenerFunction);
-        socket.close();
-    }
-}
-
-// N.B. Apparently when the window is shutting down, it is still possible to return from this
-// function with window[kSocketName] undefined.
-function getWebSocket(): WebSocket {
-    if (!window[kSocketName]) {
-        //currently we use a different port for this websocket, and it's the main port + 1
-        let websocketPort = parseInt(window.location.port, 10) + 1;
-        //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-        window[kSocketName] = new WebSocket(
-            "ws://127.0.0.1:" + websocketPort.toString()
-        );
-    }
-    return window[kSocketName];
+    WebSocketManager.closeSocket(kWebsocketContext);
 }
 
 function fireCSharpEvent(eventName, eventData) {

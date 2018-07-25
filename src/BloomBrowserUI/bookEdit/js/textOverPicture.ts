@@ -5,55 +5,25 @@
 // that the Bloom C# uses (in Browser.cs).
 ///<reference path="../../typings/jquery/jquery.d.ts"/>
 
-import { fireCSharpEditEvent } from "./bloomEditing";
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
 
-// TODO BL-6129 Make sure c#classes know about the new "clientContext" values
-const kSocketName = "webSocket";
 const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 class TextOverPictureManager {
-    private listenerFunction: (MessageEvent) => void;
-
     public initializeTextOverPictureManager(): void {
         WebSocketManager.addListener(kWebsocketContext, messageEvent => {
-            var message = JSON.parse(messageEvent.message);
-            var locationArray = message.split(","); // mouse right-click coordinates
+            var locationArray = messageEvent.message.split(","); // mouse right-click coordinates
             if (messageEvent.id === "addTextBox")
-                this.addFloatingTOPBox(locationArray[0], locationArray[1]);
+                this.addFloatingTOPBox(+locationArray[0], +locationArray[1]);
             if (messageEvent.id === "deleteTextBox")
-                this.deleteFloatingTOPBox(locationArray[0], locationArray[1]);
-        });
-
-        WebSocketManager.addListener(kWebsocketContext, messageEvent => {
-            if (messageEvent.id == "message")
-                this.listenerFunction(messageEvent.message);
+                this.deleteFloatingTOPBox(+locationArray[0], +locationArray[1]);
         });
     }
 
-    public removeTextOverPictureListener(): void {
-        var socket = this.getWebSocket();
-        if (socket) {
-            WebSocketManager.closeSocket(kWebsocketContext);
-            //socket.removeEventListener("message", this.listenerFunction);
-            //socket.close();
-        }
-    }
-
-    // N.B. Apparently when the window is shutting down, it is still possible to return from this
-    // function with window[kSocketName] undefined.
-    private getWebSocket(): WebSocket {
-        if (!window[kSocketName]) {
-            //currently we use a different port for this websocket, and it's the main port + 1
-            let websocketPort = parseInt(window.location.port, 10) + 1;
-            //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-            window[kSocketName] = new WebSocket(
-                "ws://127.0.0.1:" + websocketPort.toString()
-            );
-        }
-        return window[kSocketName];
+    public cleanUp(): void {
+        WebSocketManager.closeSocket(kWebsocketContext);
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
