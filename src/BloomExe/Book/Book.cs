@@ -2287,8 +2287,7 @@ namespace Bloom.Book
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
 
-			var pathSafeForWkHtml2Pdf = FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
-			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
+			BookStorage.SetBaseForRelativePaths(printingDom, FolderPath);
 
 			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting"));
 
