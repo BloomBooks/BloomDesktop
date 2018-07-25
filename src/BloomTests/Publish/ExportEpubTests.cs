@@ -252,12 +252,14 @@ namespace BloomTests.Publish
 			var navPageData = CheckNavPage();
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']", _ns, 1);
+			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml']", _ns, 1);
+			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml']", _ns, 1);
+			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml']", _ns, 1);
 			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml']", _ns);
-			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml']", _ns);
-			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml']", _ns);
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='6.xhtml']", _ns);
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml#pgFrontCover']", _ns, 1);
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
@@ -268,6 +270,8 @@ namespace BloomTests.Publish
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml#pgCreditsPage']", _ns, 1);
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml#pgTheEnd']", _ns, 1);
+			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[contains(@href, '6.xhtml')]", _ns);
 		}
 
 		[Test]

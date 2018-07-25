@@ -1805,7 +1805,8 @@ namespace Bloom.Publish.Epub
 		/// <param name="pageDom"></param>
 		private void RemoveUnwantedContent (HtmlDom pageDom)
 		{
-			Debug.Assert(!ControlForInvoke.InvokeRequired); // should be called on UI thread.
+			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
+			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
 			var pageElt = (XmlElement)pageDom.Body.FirstChild;
 
 			// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
