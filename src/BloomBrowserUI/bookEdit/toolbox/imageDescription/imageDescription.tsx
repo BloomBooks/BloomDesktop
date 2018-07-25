@@ -27,8 +27,8 @@ export class ImageDescriptionToolControls extends React.Component<
     {},
     IImageDescriptionState
 > {
-    constructor() {
-        super({});
+    constructor(props) {
+        super(props); // eliminate React warning by passing 'props' to super
         this.state = { enabled: true, checkBoxes: [] };
     }
 
@@ -52,9 +52,12 @@ export class ImageDescriptionToolControls extends React.Component<
     private createCheckboxes() {
         let checkBoxes = [];
         for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
-            const index = i; // in case 'i' changing affects earlier checkboxes
+            // 'index' is in case 'i' changing affects earlier checkboxes;
+            // also use for the unique 'key' prop required by React for array or iterator children
+            const index = i;
             checkBoxes.push(
                 <Checkbox
+                    key={index}
                     l10nKey={
                         "EditTab.Toolbox.ImageDescriptionTool." +
                         ImageDescriptionToolControls.i18ids[i]
