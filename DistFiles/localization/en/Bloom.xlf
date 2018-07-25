@@ -2689,6 +2689,11 @@
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.PageLabel.Content">
+        <source xml:lang="en">Content</source>
+        <note>ID: PublishTab.Epub.PageLabel.Content</note>
+        <note>label for the book content in the ePUB's Table of Contents</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.PreparingDoc">
         <source xml:lang="en">Preparing document</source>
         <note>ID: PublishTab.Epub.PreparingDoc</note>
