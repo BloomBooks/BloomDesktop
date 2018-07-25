@@ -404,7 +404,10 @@ namespace Bloom.Edit
 			// is the expected action.
 			try
 			{
-				RobustFile.Delete(PathToCurrentAudioSegment);
+				// Delete doesn't throw if the FILE doesn't exist, but if the Directory doesn't, you're toast.
+				// And the very first time a user tries this, the audio directory probably doesn't exist...
+				if (Directory.Exists(Path.GetDirectoryName(PathToCurrentAudioSegment)))
+					RobustFile.Delete(PathToCurrentAudioSegment);
 			}
 			catch (Exception error)
 			{

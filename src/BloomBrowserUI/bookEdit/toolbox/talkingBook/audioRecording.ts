@@ -341,8 +341,8 @@ export default class AudioRecording {
             })
             .catch(error => {
                 this.changeStateAndSetExpected("record"); //record failed, so we expect them to try again
-                toastr.error(error.statusText);
-                console.log(error.statusText);
+                toastr.error(error.response.statusText);
+                console.log(error.response.statusText);
                 this.updatePlayerStatus();
             });
     }
