@@ -1404,6 +1404,8 @@ namespace Bloom.Edit
 					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
 					// focus erratically on Linux, so we don't want this save on its LostFocus event.
 					_model.SaveNow();
+					// Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
+					RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getToolboxFrameExports().applyToolboxStateToPage();}");
 				};
 			}
 		}
