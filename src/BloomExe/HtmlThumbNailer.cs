@@ -316,13 +316,6 @@ namespace Bloom
 				return (Image) _syncControl.Invoke(new Func<GeckoWebBrowser, Color, int, int, Image>(CreateImage), browser,
 					coverColor, top, bottom);
 			}
-
-#if __MonoCS__
-			var offscreenBrowser = browser as OffScreenGeckoWebBrowser;
-			Debug.Assert(offscreenBrowser != null);
-
-			return offscreenBrowser.GetBitmap(browser.Width, browser.Height);
-#else
 			// It's REALLY tricky to get the thumbnail created so that it reliably shows the image.
 			// See BL-4170 and then BL-6257. We tried all kinds of tricks to tell when the image is
 			// loaded into the document, such as checking image.completed and image.naturalWidth > 0
@@ -397,7 +390,6 @@ namespace Bloom
 					}
 				}
 			}
-#endif
 		}
 
 		// Find the last line of the image between top and bottom which contains a pixel not
