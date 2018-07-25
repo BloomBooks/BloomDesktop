@@ -707,9 +707,13 @@ export class ReaderToolsModel {
         if (cover["length"] > 0) return $();
 
         // not a cover page, return elements to check
-        return $(".bloom-page", page.contentWindow.document)
-            .not(".bloom-frontMatter, .bloom-backMatter")
-            .find(".bloom-content1.bloom-editable");
+        return (
+            $(".bloom-page", page.contentWindow.document)
+                .not(".bloom-frontMatter, .bloom-backMatter")
+                // don't count image descriptions
+                .find(".bloom-content1")
+                .not(".ImageDescriptionEdit-style")
+        );
     }
 
     public noteFocus(element: HTMLElement): void {
