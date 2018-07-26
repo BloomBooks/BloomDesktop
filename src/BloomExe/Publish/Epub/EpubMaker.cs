@@ -528,6 +528,8 @@ namespace Bloom.Publish.Epub
 			if (IsBlankPage(pageDom.RawDom.DocumentElement))
 				return null;
 
+			FixDivOrdering(pageDom);
+
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
 			++_pageIndex;
@@ -886,6 +888,47 @@ namespace Bloom.Publish.Epub
 				ConvertStyleFromPxToPercent("margin-left", pageWidthMm, mulitplier, ref imgStyle);
 
 				img.SetAttribute("style", imgStyle);
+			}
+		}
+
+		/// <summary>
+		/// Reorder any div elements that need to be reordered for proper display in the ePUB.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6299.
+		/// </remarks>
+		private void FixDivOrdering(HtmlDom pageDom)
+		{
+			// Ensure local language text precedes national language text, national language text
+			// precedes regional language text, and regional language text precedes "other" language
+			// text.  (This code contains a bit of "future-proofing".)
+			foreach (var multilingualDiv in pageDom.RawDom.DocumentElement.SelectNodes("//div[contains(@class, 'translationGroup')]").Cast<XmlElement>())
+			{
+				var localDiv = multilingualDiv.SelectSingleNode("./div[contains(@class, 'bloom-content1')]") as XmlElement;
+				var nationalDiv = multilingualDiv.SelectSingleNode("./div[contains(@class, 'bloom-content2')]") as XmlElement;
+				var regionalDiv = multilingualDiv.SelectSingleNode("./div[contains(@class, 'bloom-content3')]") as XmlElement;
+				var otherlangDiv = multilingualDiv.SelectSingleNode("./div[contains(@class, 'bloom-content4')]") as XmlElement;
+				if (regionalDiv != null)
+				{
+					if (otherlangDiv != null)
+						multilingualDiv.InsertBefore(regionalDiv, otherlangDiv);
+				}
+				if (nationalDiv != null)
+				{
+					if (regionalDiv != null)
+						multilingualDiv.InsertBefore(nationalDiv, regionalDiv);
+					else if (otherlangDiv != null)
+						multilingualDiv.InsertBefore(nationalDiv, otherlangDiv);
+				}
+				if (localDiv != null)
+				{
+					if (nationalDiv != null)
+						multilingualDiv.InsertBefore(localDiv, nationalDiv);
+					else if (regionalDiv != null)
+						multilingualDiv.InsertBefore(localDiv, regionalDiv);
+					else if (otherlangDiv != null)
+						multilingualDiv.InsertBefore(localDiv, otherlangDiv);
+				}
 			}
 		}
 
