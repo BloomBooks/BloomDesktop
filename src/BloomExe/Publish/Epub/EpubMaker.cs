@@ -528,6 +528,8 @@ namespace Bloom.Publish.Epub
 			if (IsBlankPage(pageDom.RawDom.DocumentElement))
 				return null;
 
+			FixDivOrdering(pageDom);
+
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
 			++_pageIndex;
@@ -886,6 +888,31 @@ namespace Bloom.Publish.Epub
 				ConvertStyleFromPxToPercent("margin-left", pageWidthMm, mulitplier, ref imgStyle);
 
 				img.SetAttribute("style", imgStyle);
+			}
+		}
+
+		/// <summary>
+		/// Reorder any div elements that need to be reordered for proper display in the ePUB.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6299.
+		/// </remarks>
+		private void FixDivOrdering(HtmlDom pageDom)
+		{
+			var topDiv = pageDom.RawDom.DocumentElement.SelectSingleNode("/html/body/div") as XmlElement;
+			if (topDiv == null)
+				return;
+			var topDivClass = topDiv.GetAttribute("class");
+			if (!String.IsNullOrEmpty(topDivClass) && topDivClass.Contains("bloom-frontMatter") && topDivClass.Contains("outsideFrontCover"))
+			{
+				// Ensure the local language title precedes the national language title.
+				var titleDiv = topDiv.SelectSingleNode(".//div[contains(@class, 'bookTitle')]") as XmlElement;
+				if (titleDiv == null)
+					return;
+				var localDiv = titleDiv.SelectSingleNode("./div[contains(@class, 'bloom-content1')]") as XmlElement;
+				var nationalDiv = titleDiv.SelectSingleNode("./div[contains(@class, 'bloom-contentNational1')]") as XmlElement;
+				if (localDiv != null && nationalDiv != null)
+					titleDiv.InsertBefore(localDiv, nationalDiv);
 			}
 		}
 
