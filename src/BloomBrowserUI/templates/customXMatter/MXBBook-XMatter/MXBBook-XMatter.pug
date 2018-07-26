@@ -9,20 +9,6 @@ mixin mxb-printerStatement-insideBackCover
 		+field-mono-meta("N1","printerStatement").Printer-Statement-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble Printer's Statement goes here.
 
-mixin mxb-nationalSummaryCreditsPage-back-title-page
-	// Credits page back of Title page
-	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
-		+field-mono-meta("N1","insideCredits").Inside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
-			label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
-		+field-acknowledgments-originalVersion
-		+block-licenseAndCopyright
-		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
-		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
-		+field-ISBN
-		+field-prototypeDeclaredExplicity("N1")#printingHistory
-			label.bubble Use this for Printing History (1st Edition, etc.)
-			+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
-
 mixin mxb-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity("V, N1, N2")#titlePageTitleBlock
@@ -33,16 +19,35 @@ mixin mxb-titlePage
 			//- review: can we get rid of these "langName" classes?
 			.langName('data-library'='dialect')
 			.langName(data-library='languageLocation').bloom-writeOnly
-		+field-prototypeDeclaredExplicity("N1")#originalContributions
-			block originalContributionsLabel
-				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
-					| The contributions made by writers, illustrators, editors, etc., in {lang}
-			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalContributions')
-		+field-acknowledgments-localizedVersion
+		+field-prototypeDeclaredExplicity("N1")#contributions
+			label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+				| The contributions made by writers, illustrators, editors, etc., in {lang}
+			+editable("N1").contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
+		+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
+			label.bubble
+				| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
+			+editable("N1").versionAcknowledgments.LocalizedAcknowledgments-style(data-book="versionAcknowledgments")
 		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
-			+editable(kLanguageForPrototypeOnly).funding.Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+			+editable("N1").funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
 		+field-title-page-branding
+
+mixin mxb-nationalSummaryCreditsPage-back-title-page
+	// Credits page back of Title page
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+		+field-mono-meta("N1","insideCredits").NationalLanguage-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
+		+field-prototypeDeclaredExplicity("N1")#originalAcknowledgments
+			label.bubble Original (or Shell) Acknowledgments in {lang}
+			+editable("N1").bloom-copyFromOtherLanguageIfNecessary.OriginalAcknowledgments-style(data-book='originalAcknowledgments')
+				| {Original Acknowledgments}
+		+block-licenseAndCopyright
+		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+		+field-ISBN
+		+field-prototypeDeclaredExplicity("N1")#printingHistory
+			label.bubble Use this for Printing History (1st Edition, etc.)
+			+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
 
 doctype html
 html

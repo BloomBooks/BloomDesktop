@@ -1,10 +1,12 @@
 In order to release a new Custom XMatter pack:
 1. Update the version number in the 'description-en.txt' file.
    The version will be the first few characters of the file, e.g. "[V2]".
-2. Create a bloom pack by zipping up the compiled folder inside another folder of the same name
-   and change the extension to .BloomPack. For example, "MXB Pamphlet XMatter-v5.BloomPack" contains
-   folder "MXB Pamphlet XMatter" which contains folder "MXB Pamphlet XMatter" which contains the
-   compiled files from {repo}/output/browser/templates/customXMatter/MXB Pamphlet XMatter.
+2. Create a bloom pack by zipping up the compiled folder found at:
+   {repo}/output/browser/templates/customXMatter/{Your XMatter Folder}
+   Place your folder in a new folder also named {Your XMatter Folder}
+   Zip the new folder and change the extension to .BloomPack.
+   For example, "MXB Pamphlet XMatter-v5.BloomPack" contains folder "MXB Pamphlet XMatter"
+   which contains the compiled files from {repo}/output/browser/templates/customXMatter/MXB Pamphlet XMatter.
 3. Send the BloomPack to testers via Dropbox or GoogleDrive.
 4. Send the BloomPack to the user via Dropbox or GoogleDrive (or attach it to a YouTrack issue and 'at' mention
    the user).
