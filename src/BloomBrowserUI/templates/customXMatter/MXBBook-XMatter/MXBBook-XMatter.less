@@ -1,16 +1,22 @@
 @import "../../xMatter/bloom-xmatter-common.less";
 
 @XMatterPackName: "MXB Book";
+@fontSize: 10pt;
+@contentMarginBottom: 3em;
+@contentMarginTop: 1em;
+@contentAboveCCBuffer: 1em;
+@contentBelowCCBuffer: 3em;
+@contentMinimumHeight: 1em;
 
 // moving the license and copyright block to a new place, it needs some top space
 .licenseAndCopyrightBlock {
-    margin-top: 0.5em;
+    margin-bottom: @contentMarginBottom;
 }
 
 .titlePage {
     // shrink this down from 3em because we're combining the title and credits pages
     #titlePageTitleBlock {
-        margin-bottom: 1em;
+        margin-bottom: @contentMarginBottom;
     }
     // shrink things down even more if it's a small paper size
     &.A6Landscape,
@@ -23,6 +29,58 @@
                 margin-bottom: 0;
             }
         }
+    }
+}
+
+// more scrunching
+.titlePage {
+    // default values for the Original Contriutions section
+    .Contributions-style {
+        font-size: @fontSize;
+        display: block;
+        margin-top: @contentBelowCCBuffer;
+        margin-bottom: @contentMarginBottom;
+    }
+    // default values for the Localized Acknowledgments section
+    .LocalizedAcknowledgments-style {
+        font-size: @fontSize;
+        display: block;
+        margin-bottom: @contentMarginBottom;
+    }
+    // default values for the Funding section
+    .Funding-style {
+        font-size: @fontSize;
+        display: block;
+    }
+    #funding {
+        margin-bottom: @contentMarginBottom;
+    }
+}
+
+.credits {
+    #originalAcknowledgments .bloom-content1 {
+        display: block;
+        margin-bottom: @contentAboveCCBuffer;
+    }
+    #printingHistory .bloom-contentNational1 {
+        display: block;
+    }
+    // default values for the National Language section
+    .NationalLanguage-style {
+        font-size: @fontSize;
+        display: block;
+        margin-bottom: @contentMarginBottom;
+    }
+    // default values for the Original Acknowledgments section
+    .OriginalAcknowledgments-style {
+        font-size: @fontSize;
+        display: block;
+    }
+    // default values for the Printing History section
+    .PrintingHistory-style.bloom-contentNational1 {
+        font-size: @fontSize;
+        display: block;
+        margin-top: @contentMarginTop;
     }
 }
 
@@ -41,7 +99,7 @@
             justify-content: flex-end; // push text to the bottom of the available space
             padding-bottom: 20px;
             text-align: center;
-            font-size: 10pt;
+            font-size: @fontSize;
             line-height: 1.2;
         }
         // Allow the two .bloom-translationGroup boxes contained in the .marginBox box to flex
@@ -52,54 +110,34 @@
     }
 }
 
-.credits {
-    #printingHistory .bloom-contentNational1 {
-        display: block;
-    }
-    // default values for the Printing History section
-    .PrintingHistory-style.bloom-contentNational1 {
-        font-size: 10pt;
-        display: block;
-    }
-    // scrunch things down as much as possible
-    .originalAcknowledgments .bloom-contentNational1,
-    .bloom-content1 {
-        margin-top: 1em;
-        margin-bottom: 0.5em;
-    }
-}
-
-// more scrunching
-.titlePage #funding {
-    margin-bottom: 0.5em;
-}
-
 // override .bloom-content1 min-height 3em from bloom-xmatter-common.less
 body[bookcreationtype="original"] {
     .titlePage {
         #languageInformation {
             .bloom-content1 {
-                min-height: 1em;
-                margin-bottom: 1em;
+                min-height: @contentMinimumHeight;
+                margin-bottom: @contentMarginBottom;
             }
         }
-        #originalContributions {
+        #contributions {
             .bloom-content1 {
-                min-height: 1em;
-                margin-top: 3em;
-                margin-bottom: 2em;
+                min-height: @contentMinimumHeight;
+                margin-top: @contentBelowCCBuffer;
+                margin-bottom: @contentMarginBottom;
             }
         }
-        #acknowledgmentsLocalizedVersion {
+        #localizedAcknowledgments {
             .bloom-content1 {
-                min-height: 1em;
-                margin-top: 5em;
+                min-height: @contentMinimumHeight;
+                margin-top: @contentMarginTop;
+                margin-bottom: @contentMarginBottom;
             }
         }
         #funding {
             .bloom-content1 {
-                min-height: 1em;
-                margin-top: 8em;
+                min-height: @contentMinimumHeight;
+                margin-top: @contentMarginTop;
+                margin-bottom: @contentMarginBottom;
             }
         }
     }
@@ -108,23 +146,30 @@ body[bookcreationtype="original"] {
 // override .bloom-contentNational1 min-height 3em from bloom-xmatter-common.less
 body[bookcreationtype="translation"] {
     .titlePage {
-        #originalContributions {
+        #languageInformation {
             .bloom-content1 {
-                min-height: 1em;
-                margin-top: 3em;
-                margin-bottom: 2em;
+                min-height: @contentMinimumHeight;
+                margin-bottom: @contentMarginBottom;
             }
         }
-        #acknowledgmentsLocalizedVersion {
+        #Contributions {
             .bloom-content1 {
-                min-height: 1em;
-                margin-top: 5em;
+                min-height: @contentMinimumHeight;
+                margin-top: @contentBelowCCBuffer;
+                margin-bottom: @contentMarginBottom;
+            }
+        }
+        #localizedAcknowledgments {
+            .bloom-content1 {
+                min-height: @contentMinimumHeight;
+                margin-top: @contentMarginTop;
+                margin-bottom: @contentMarginBottom;
             }
         }
         #funding {
             .bloom-content1 {
-                min-height: 1em;
-                margin-top: 8em;
+                min-height: @contentMinimumHeight;
+                margin-top: @contentMarginTop;
             }
         }
     }
