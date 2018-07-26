@@ -1,4 +1,52 @@
-﻿## 4.2
+﻿## 4.3
+
+-   Branding
+
+    -   Branding packs can now have "presets" that pre-fill front or back matter fields with boilerplate text.
+
+-   Settings
+
+    In the "Lookup Language Code" dialog, you can now differentiate the language by declaring any of:
+
+    -   Script
+    -   Region
+    -   Variant
+
+-   Edit Tab
+
+    -   You can now add an "Instructions Page" to books. These are instructions for book creators, not book readers. They do not have a page number, do not contribute to page number advancement, and do not show up in PDFs, ePUB, or Bloom Reader publications.
+
+---
+
+This release is a stepping stone for a more complete set of features for making books for those with visual and hearing impairments. These features are marked as:
+
+-   _Experimental_, meaning that you will only see them if you go to Settings:Advanced:Show Experimental Features
+-   _Bloom Enterprise_, meaning that you must choose a "Bloom Enterprise Project" in Settings:Project. Note that one of the choices there is "Local Community", which makes all these features free to use for projects completely funded by the local community.
+
+---
+
+-   Accessible Books for people with visual impairments (Experimental, Bloom Enterprise)
+
+    This work is funded in part by [Book Boost](https://allchildrenreading.org/challenge/book-boost-access-challenge/). Note that this is a work in progress, and there are a couple more tools we will be building for Bloom 4.4. [This query](https://issues.bloomlibrary.org/youtrack/issues?q=project:%20Bloom%20state:%7BReady%20For%20Work%7D%20%23%7BBook%20Boost%7D%20) will show you what is coming.
+
+    -   New "Image Description Tool" allows you to type in a description of images, so that Talking Books can describe them to blind people.
+    -   New "Accessibility Checker" gives you tools to check that your ePUB is accessible.
+    -   The ePUB generator has new options for making accessible books
+
+-   Sign Language (Experimental, Bloom Enterprise)
+
+    Note that this is a work in progress, and there are many rough edges that we need to sort out. [This query](https://issues.bloomlibrary.org/youtrack/issues?q=project:%20Bloom%20state:%7BReady%20For%20Work%7D%20%23%7BSign%20Language%7D%20) will show you what we plan to do in the future, mostly in Bloom 4.5.
+
+    -   You can now use Bloom to make Sign Language books.
+    -   One way to use this is to make diglots which people who sign can use to read, and people who read can use to learn to sign.
+    -   You can import pre-made videos
+    -   You can easily record videos right in Bloom
+    -   (Experimental, Bloom Enterprise) you can now:
+        -   start a book with a "Sign Language Template"
+        -   add "Sign Language Template" pages to a book
+        -   add custom Video objects to pages, just like you could previously with Text and Picture
+
+## 4.2
 - Edit Tab
     - New "Motion Tool" allows you to specify pan/zoom effects of a page, to make a "Motion Book" in Bloom Reader. Then tick the "Motion Book" button when publishing to the Android Bloom Reader. What you'll get is a book that is a normal talking book in portrait mode, then goes to sit-back-and-watch mode when you turn the device sideways.
     - New "Music Tool" allow you to choose background music and levels, to go along with your Motion Book.
@@ -6,7 +54,7 @@
 - Publish
     - Fonts are now embedded in Bloom Reader books, if their embedded metadata allows that.
 
-## 4.1  (current release & beta)
+## 4.1
 - Settings
     - You can now customize how Language 2 and Language 3 are displayed, just like you previously could for Language 1.
     [See original feature request](https://community.software.sil.org/t/option-to-use-national-language-for-filenames/211)
