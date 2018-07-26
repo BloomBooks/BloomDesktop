@@ -164,17 +164,7 @@ namespace Bloom
 
 		}
 	}
-	/// <summary>
-	/// Accessibility Checker uses this... not exactly semantic, but it does give us the hook at the right time
-	/// </summary>
-	public class BookSavedEvent : Event<Book.Book>
-	{
-		public BookSavedEvent()
-			: base("BookSavedEvent", LoggingLevel.Minor)
-		{
 
-		}
-	}
 	/// <summary>
 	/// Anything displaying a book should re-load it the current page
 	/// </summary>

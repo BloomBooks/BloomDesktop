@@ -57,7 +57,7 @@ namespace Bloom.CLI
 
 			var bookInfo = new BookInfo(options.Path, true);
 			var book = new Book.Book(bookInfo, new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings),
-				null, collectionSettings, null, null, new BookRefreshEvent(), new BookSavedEvent());
+				null, collectionSettings, null, null, new BookRefreshEvent());
 
 			if (collectionSettings.XMatterPackName == "Video")
 			{

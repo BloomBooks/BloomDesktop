@@ -81,7 +81,7 @@ namespace Bloom.CLI
 
 			var templateBookInfo  = new BookInfo(Path.GetDirectoryName(bookPath), true);
 			var templateBook = new Book.Book(templateBookInfo, new BookStorage(templateBookInfo.FolderPath, locator, new BookRenamedEvent(), collectionSettings),
-				null, collectionSettings, null, null, new BookRefreshEvent(), new BookSavedEvent());
+				null, collectionSettings, null, null, new BookRefreshEvent());
 
 			var pageDictionary = templateBook.GetTemplatePagesIdDictionary();
 			IPage page = null;
@@ -99,7 +99,7 @@ namespace Bloom.CLI
 				{
 					var book = new Book.Book(bookInfo,
 						new BookStorage(bookInfo.FolderPath, locator, new BookRenamedEvent(), collectionSettings),
-						null, collectionSettings, null, null, new BookRefreshEvent(), new BookSavedEvent());
+						null, collectionSettings, null, null, new BookRefreshEvent());
 					//progress.WriteMessage("Processing " + book.TitleBestForUserDisplay + " " + i + "/" + collection.GetBookInfos().Count());
 					progress.ProgressIndicator.PercentCompleted = i * 100 / collection.GetBookInfos().Count();
 

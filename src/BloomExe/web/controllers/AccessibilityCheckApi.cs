@@ -46,21 +46,15 @@ namespace Bloom.web.controllers
 
 
 		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection,
-									BookSavedEvent bookSavedEvent, EpubMaker.Factory epubMakerFactory,
+									BookRefreshEvent bookRefreshEvent, EpubMaker.Factory epubMakerFactory,
 			PublishEpubApi epubApi)
 		{
 			_webSocketServer = webSocketServer;
 			_webSocketProgress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_epubMakerFactory = epubMakerFactory;
 			_epubApi = epubApi;
-			bookSelection.SelectionChanged += (unused1, unused2) =>
-			{
-				_webSocketServer.SendEvent(kWebSocketContext, kBookSelectionChanged);
-			};
-			bookSavedEvent.Subscribe((book) =>
-			{
-				RefreshClient();
-			});
+			bookSelection.SelectionChanged += (unused1, unused2) => _webSocketServer.SendEvent(kWebSocketContext, kBookSelectionChanged);
+			bookRefreshEvent.Subscribe((book) => RefreshClient());
 		}
 		
 		public void RegisterWithServer(EnhancedImageServer server)

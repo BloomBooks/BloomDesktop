@@ -9,7 +9,6 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
@@ -49,7 +48,6 @@ namespace Bloom.Book
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
 		private readonly BookRefreshEvent _bookRefreshEvent;
-		private readonly BookSavedEvent _bookSavedEvent;
 		private readonly IBookStorage _storage;
 		private List<IPage> _pagesCache;
 		internal const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
@@ -74,8 +72,7 @@ namespace Bloom.Book
 		   CollectionSettings collectionSettings,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent,
-			BookRefreshEvent bookRefreshEvent,
-			BookSavedEvent bookSavedEvent)
+			BookRefreshEvent bookRefreshEvent)
 		{
 			BookInfo = info;
 			UserPrefs = UserPrefs.LoadOrMakeNew(Path.Combine(info.FolderPath, "book.userPrefs"));
@@ -110,8 +107,6 @@ namespace Bloom.Book
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
 			_bookRefreshEvent = bookRefreshEvent;
-			_bookSavedEvent = bookSavedEvent;
-
 			_bookData = new BookData(OurHtmlDom,
 					_collectionSettings, UpdateImageMetadataAttributes);
 
@@ -2539,13 +2534,6 @@ namespace Bloom.Book
 				PageTemplateSource = Path.GetFileName(FolderPath);
 			}
 			_storage.Save();
-
-			// Tell the accessibility checker window (and any future subscriber) to re-compute.
-			// This Task.Delay() helps even with a delay of 0, becuase it means we get to finish with this command.
-			// I'm chooing 1 second at the moment as that feels about the longest I would want to
-			// wait to see if what I did made and accesibility check change. Of course we're *probably*
-			// ready to run this much, much sooner.
-			Task.Delay(1000).ContinueWith((task) => _bookSavedEvent.Raise(this));
 		}
 
 		/// <summary>
