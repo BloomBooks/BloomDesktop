@@ -1,0 +1,66 @@
+.ReactModalPortal {
+    z-index: 1000;
+}
+
+.ReactModal__Content {
+    z-index: 1000;
+    position: absolute;
+    border: 3px solid black;
+    background: white;
+    overflow: auto;
+    border-radius: 4px;
+    outline: none;
+    flex-direction: row;
+
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    bottom: auto;
+    top: 50%;
+
+    .dialogTitle {
+        padding: 10px;
+        font-weight: bold;
+    }
+    .dialogContent {
+        background-color: #f0f0f0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+
+        h1 {
+            font-size: 12px;
+            height: 1em;
+            font-weight: bold;
+            margin: 0;
+        }
+    }
+
+    .bottomButtonRow {
+        display: flex; // this makes the help button's margin-right:auto work
+
+        //todo: fix this
+        width: 558px;
+
+        position: absolute;
+        bottom: 20px;
+
+        //flex-direction: row; // would normally use for mac & Ubuntu.. but is the rest of Bloom like windows?
+
+        button {
+            width: auto;
+            min-width: 100px;
+            margin-left: 10px;
+        }
+        button:disabled {
+            color: gray;
+            border-color: lightgray;
+            border-style: solid;
+            border-width: 1px;
+        }
+        #helpButton {
+            //push the other buttons to the right margin
+            margin-right: auto;
+        }
+    }
+}
