@@ -11,6 +11,8 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using AngleSharp;
+using AngleSharp.Dom.Events;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
@@ -910,10 +912,52 @@ namespace Bloom.Book
 		private string ValidateBook(HtmlDom dom, string path)
 		{
 			Debug.WriteLine(String.Format("ValidateBook({0})", path));
+
+			var angleSharpBrowsingContext = BrowsingContext.New();
+			var builder = new StringBuilder();
+			string[] allLines = null;
+			angleSharpBrowsingContext.ParseError += (s, ev) =>
+			{
+				var err = ev as HtmlErrorEvent;
+				// anglesharp throws errors for regrettable things Bloom does, like <img></img>.
+				if (//err.Code != 71 /*doctype missing*/ &&
+				    err.Code != 34 && /* cannot self close*/
+					//(err.Code != 28) && /* this tag has been closed unexpectedly */
+				    err.Code != 114 /* complains about closing tags, as if it wants everyting that can be self-closing to be so */)
+				{
+					if (allLines == null)
+					{
+						allLines = File.ReadAllLines(path);
+					}
+					var line = allLines[err.Position.Line - 1];
+					//var lineUpToError = line.Substring(0, err.Position.Column-1).Replace("<", "&lt;").Replace(">", "&gt;");
+					var lineStartingWithError = line.Substring(err.Position.Column-1, line.Length- (err.Position.Column-1));
+					// for some reason <\img> gives this fits
+					if (!(err.Code == 28 && lineStartingWithError.ToLowerInvariant().StartsWith("</img>")))
+					{
+						lineStartingWithError = lineStartingWithError.Replace("<", "&lt;").Replace(">", "&gt;");
+						//builder.AppendLine(firstPart + " ---&gt;" + lastPart + "<br/>");
+						builder.AppendLine("<br/>" + err.Message + "<br/>");
+						builder.AppendLine(lineStartingWithError + "<br/><br/>");
+					}
+				}
+			};
+			var task = angleSharpBrowsingContext.OpenAsync(res => res.Content(File.ReadAllText(path)));
+			//run it now
+			task.GetAwaiter().GetResult();
+			if (builder.ToString().Length > 0)
+			{
+				return builder.ToString();
+			}
+
 			var msg= GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(dom,path);
 			return !String.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path, !BookInfo.IsSuitableForMakingTemplates);
 		}
 
+//		private string getHtmlLine(string path, int line)
+//		{
+//			return 
+//		}
 
 
 		#endregion
