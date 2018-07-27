@@ -528,6 +528,8 @@ namespace Bloom.Publish.Epub
 			if (IsBlankPage(pageDom.RawDom.DocumentElement))
 				return null;
 
+			FixDivOrdering(pageDom);
+
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
 			++_pageIndex;
@@ -887,6 +889,41 @@ namespace Bloom.Publish.Epub
 
 				img.SetAttribute("style", imgStyle);
 			}
+		}
+
+		/// <summary>
+		/// Reorder any div elements that need to be reordered for proper display in the ePUB.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6299.
+		/// </remarks>
+		private void FixDivOrdering(HtmlDom pageDom)
+		{
+			// Ensure local language text precedes national language text, national language text
+			// precedes regional language text, and regional language text precedes "other" language
+			// text.  (This code contains a bit of "future-proofing".)
+			foreach (var multilingualDiv in pageDom.RawDom.DocumentElement.SelectNodes("//div[contains(@class, 'translationGroup')]").Cast<XmlElement>())
+			{
+				var divs = multilingualDiv.SelectNodes("./div[contains(@class, 'bloom-content')]").Cast<XmlElement>().ToList();
+				divs.Sort(CompareMultilingualDivs);
+				for (var i = divs.Count - 1; i >= 1; --i)
+					multilingualDiv.InsertBefore(divs[i-1], divs[i]);
+			}
+		}
+
+		private static int CompareMultilingualDivs(XmlElement x, XmlElement y)
+		{
+			string xKey = ExtractKeyForMultilingualDivs(x);
+			string yKey = ExtractKeyForMultilingualDivs(y);
+			return string.Compare(xKey, yKey, StringComparison.Ordinal);
+		}
+
+		private static string ExtractKeyForMultilingualDivs(XmlElement x)
+		{
+			var xClass = x.GetAttribute("class").Replace("bloom-contentNational", "");
+			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
+			System.Diagnostics.Debug.Assert(idx >= 0);
+			return xClass.Substring(idx);
 		}
 
 		// Returns true if we don't find the expected style
