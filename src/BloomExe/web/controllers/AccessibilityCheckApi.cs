@@ -46,17 +46,24 @@ namespace Bloom.web.controllers
 
 
 		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection,
-									BookSavedEvent bookSavedEvent, EpubMaker.Factory epubMakerFactory,
+									BookRefreshEvent bookRefreshEvent, BookSavedEvent bookSavedEvent, EpubMaker.Factory epubMakerFactory,
 			PublishEpubApi epubApi)
 		{
 			_webSocketServer = webSocketServer;
 			_webSocketProgress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_epubMakerFactory = epubMakerFactory;
 			_epubApi = epubApi;
+			// we get this when a different book is selected
 			bookSelection.SelectionChanged += (unused1, unused2) =>
 			{
 				_webSocketServer.SendEvent(kWebSocketContext, kBookSelectionChanged);
 			};
+			// we get this when the book is renamed
+			bookRefreshEvent.Subscribe((book) =>
+			{
+				RefreshClient();
+			});
+			// we get this when the contents of the page might have changed
 			bookSavedEvent.Subscribe((book) =>
 			{
 				RefreshClient();
