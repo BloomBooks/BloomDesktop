@@ -75,9 +75,13 @@ namespace Bloom.Book
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent,
 			BookRefreshEvent bookRefreshEvent,
-			BookSavedEvent bookSavedEvent)
+			BookSavedEvent bookSavedEvent=null)
 		{
 			BookInfo = info;
+			if (bookSavedEvent == null) // unit testing
+			{
+				bookSavedEvent = new BookSavedEvent();
+			}
 			UserPrefs = UserPrefs.LoadOrMakeNew(Path.Combine(info.FolderPath, "book.userPrefs"));
 
 			Guard.AgainstNull(storage,"storage");
