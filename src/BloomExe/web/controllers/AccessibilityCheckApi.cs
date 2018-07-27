@@ -22,7 +22,6 @@ namespace Bloom.web.controllers
 	{
 		// Define a socket to signal the client window to refresh
 		private readonly BloomWebSocketServer _webSocketServer;
-		private readonly EpubMaker.Factory _epubMakerFactory;
 		private PublishEpubApi _epubApi;
 
 		private readonly NavigationIsolator _isolator;
@@ -46,17 +45,22 @@ namespace Bloom.web.controllers
 
 
 		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection,
-									BookSavedEvent bookSavedEvent, EpubMaker.Factory epubMakerFactory,
+			BookRenamedEvent bookRenamedEvent, BookSavedEvent bookSavedEvent, EpubMaker.Factory epubMakerFactory,
 			PublishEpubApi epubApi)
 		{
 			_webSocketServer = webSocketServer;
 			_webSocketProgress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
-			_epubMakerFactory = epubMakerFactory;
 			_epubApi = epubApi;
 			bookSelection.SelectionChanged += (unused1, unused2) =>
 			{
 				_webSocketServer.SendEvent(kWebSocketContext, kBookSelectionChanged);
 			};
+			// we get this when the book is renamed
+			bookRenamedEvent.Subscribe((book) =>
+			{
+				RefreshClient();
+			});
+			// we get this when the contents of the page might have changed
 			bookSavedEvent.Subscribe((book) =>
 			{
 				RefreshClient();
