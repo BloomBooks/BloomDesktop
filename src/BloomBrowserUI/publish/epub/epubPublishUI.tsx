@@ -111,10 +111,10 @@ class EpubPublishUI extends React.Component<
                                 About ePUBs
                             </HelpLink>
                             <HelpLink
-                                l10nKey="PublishTab.Epub.BooksForBlind"
+                                l10nKey="PublishTab.Epub.Accessibility"
                                 helpId="Tasks/Publish_tasks/Create_an_ePUB_book_overview.htm"
                             >
-                                Books for the Blind
+                                Accessibility
                             </HelpLink>
                             <HelpLink
                                 l10nKey="PublishTab.Epub.Help.EReaders"
@@ -134,8 +134,11 @@ class EpubPublishUI extends React.Component<
                         >
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
-                        <H1 l10nKey="PublishTab.Epub.BooksForBlind">
-                            Books for the Blind
+                        <H1
+                            l10nKey="PublishTab.Epub.Accessibility"
+                            l10nComment="Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc."
+                        >
+                            Accessibility
                         </H1>
                         {/* Can't use ApiBackedCheckbox here, because it is backed by an enum. */}
                         <Checkbox

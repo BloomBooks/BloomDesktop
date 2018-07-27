@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
@@ -2659,9 +2659,10 @@
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
       </trans-unit>
 	  <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
-      <trans-unit id="PublishTab.Epub.BooksForBlind">
-        <source xml:lang="en">Books for the Blind</source>
-        <note>ID: PublishTab.Epub.BooksForBlind</note>
+      <trans-unit id="PublishTab.Epub.Accessibility">
+        <source xml:lang="en">Accessibility</source>
+        <note>ID: PublishTab.Epub.Accessibility</note>
+        <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Done">
         <source xml:lang="en">Done</source>
