@@ -112,7 +112,7 @@ class EpubPublishUI extends React.Component<
                             </HelpLink>
                             <HelpLink
                                 l10nKey="PublishTab.Epub.Accessibility"
-                                helpId="Tasks/Publish_tasks/Create_an_ePUB_book_overview.htm"
+                                helpId="Tasks/Publish_tasks/Accessibility.htm"
                             >
                                 Accessibility
                             </HelpLink>
