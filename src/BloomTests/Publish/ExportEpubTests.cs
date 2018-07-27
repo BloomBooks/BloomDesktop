@@ -135,6 +135,12 @@ namespace BloomTests.Publish
 					</div>
 					{5}",
 				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
+
+			return CreateTestBook(body, createPhysicalFile);
+		}
+
+		Bloom.Book.Book CreateTestBook(string body, bool createPhysicalFile = false)
+		{
 			Bloom.Book.Book book;
 			string head = @"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
@@ -1158,6 +1164,50 @@ namespace BloomTests.Publish
 			var sb = new StringBuilder();
 			Assert.DoesNotThrow(() => EpubMaker.AddFontFace(sb, "myFont", "bold", "italic", null));
 			Assert.That(sb.Length, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void MultilingualTitlesOrderedCorrectly()
+		{
+			var book = CreateTestBook(@"
+<div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait' data-page='required singleton' id='7cecf56f-7e97-443e-910f-ddc13a9b0dfa'>
+  <div class='marginBox'>
+    <div class='bloom-translationGroup bookTitle' data-default-languages='V,N1,N2'>
+        <label class='bubble'>Book title in {lang}</label>
+        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='z' contenteditable='true' data-book='bookTitle'></div>
+        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content3 bloom-visibility-code-on' lang='es' contenteditable='true' data-book='bookTitle'>
+            <p>Libro de Pruebas</p>
+        </div>
+        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content2 bloom-visibility-code-on' lang='fr' contenteditable='true' data-book='bookTitle'>
+            <p>Livre de Test</p>
+        </div>
+        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='bookTitle'>
+            <p>Test Book</p>
+        </div>
+        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='*' contenteditable='true' data-book='bookTitle'></div>
+    </div>
+  </div>
+</div>");
+			MakeEpub("output", "MultilingualTitlesOrderedCorrectly", book);
+			CheckBasicsInManifest();
+			CheckBasicsInPage();
+			CheckNavPage();
+			CheckFontStylesheet();
+			var dom = new XmlDocument();
+			dom.LoadXml(_page1Data);
+			var titleDiv = dom.SelectSingleNode("//div[contains(@class, 'bookTitle')]") as XmlElement;
+			Assert.IsNotNull(titleDiv);
+			var divs = titleDiv.SelectNodes("./div");
+			Assert.AreEqual(3, divs.Count);
+			var class0 = divs[0].Attributes["class"];
+			Assert.IsNotNull(class0);
+			StringAssert.Contains("bloom-content1", class0.Value);
+			var class1 = divs[1].Attributes["class"];
+			Assert.IsNotNull(class1);
+			StringAssert.Contains("bloom-content2", class1.Value);
+			var class2 = divs[2].Attributes["class"];
+			Assert.IsNotNull(class2);
+			StringAssert.Contains("bloom-content3", class2.Value);
 		}
 	}
 
