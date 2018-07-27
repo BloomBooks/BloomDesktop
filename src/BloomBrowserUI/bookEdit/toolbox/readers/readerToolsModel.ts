@@ -699,7 +699,9 @@ export class ReaderToolsModel {
         if (!page) {
             return $(".bloom-page")
                 .not(".bloom-frontMatter, .bloom-backMatter")
-                .find(".bloom-content1.bloom-editable");
+                .find(
+                    ".bloom-translationGroup:not(.bloom-imageDescription) .bloom-content1"
+                );
         }
 
         // if this is a cover page, return an empty set
@@ -707,9 +709,14 @@ export class ReaderToolsModel {
         if (cover["length"] > 0) return $();
 
         // not a cover page, return elements to check
-        return $(".bloom-page", page.contentWindow.document)
-            .not(".bloom-frontMatter, .bloom-backMatter")
-            .find(".bloom-content1.bloom-editable");
+        return (
+            $(".bloom-page", page.contentWindow.document)
+                .not(".bloom-frontMatter, .bloom-backMatter")
+                // don't count image descriptions
+                .find(
+                    ".bloom-translationGroup:not(.bloom-imageDescription) .bloom-content1"
+                )
+        );
     }
 
     public noteFocus(element: HTMLElement): void {
