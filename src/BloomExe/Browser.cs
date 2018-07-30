@@ -104,7 +104,14 @@ namespace Bloom
 			// SurfaceCache is an imagelib-global service that allows caching of temporary
 			// surfaces. Surfaces normally expire from the cache automatically if they go
 			// too long without being accessed.
-			GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960;    // 40MB (default = 102400 == 100MB)
+			// 40MB is not enough for pdfjs to work reliably with some (large?) jpeg images with some test data.
+			// (See https://silbloom.myjetbrains.com/youtrack/issue/BL-6247.)  That value was chosen arbitrarily
+			// a couple of years ago, possibly to match image.mem.max_decoded_image_kb and javascript.options.mem.max
+			// above.  It seemed to work okay until we stumbled across occasional books that refused to display their
+			// jpeg files.  70MB appears to be enough in my testing of a couple of those books, but let's go with 80MB
+			// to be safe.  (Mozilla seems to have settled on 1GB for the default surfacecache size, but that doesn't
+			// appear to be needed in the Bloom context.)
+			GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 81920;    // 80MB (default = 1048576 == 1GB)
 			GeckoPreferences.User["image.mem.surfacecache.min_expiration_ms"] = 500;    // 500ms (default = 60000 == 60sec)
 
 			// maximum amount of memory for the browser cache (probably redundant with browser.cache.memory.enable above, but doesn't hurt)
