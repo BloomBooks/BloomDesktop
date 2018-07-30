@@ -258,14 +258,30 @@ namespace Bloom.Book
 
 			if (mustHavePages)
 			{
-				Ensure(RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count > 0, "Must have at least one page",
-					builder);
+				var pages = RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]");
+				Ensure(pages.Count > 0, "Must have at least one page", builder);
+
+				// Tried a couple of 3rd-party Html parsers (HtmlAgilityPack and AngleSharp) and they either
+				// found errors where they shouldn't have (Wall Calendar htm) or didn't find any errors at all.
+				// The below method verifies that each page is still at the right level of the DOM, which actually
+				// goes a long way to making sure that the htm parses correctly.
+				// BL-6273 hand-edited html was causing crashes because we didn't catch invalid html of page, so
+				// at least check that we can find each page.
+				foreach (XmlNode pageNode in pages)
+				{
+					var id = pageNode.Attributes["id"]?.Value;
+					// if there is a .bloom-page div with no id attribute, we're probably in a test.
+					if (string.IsNullOrEmpty(id) && Program.RunningUnitTests)
+						continue;
+					// test that the "page" is at the right level in the DOM
+					if (pageNode.ParentNode?.Name.ToLowerInvariant() != "body")
+						builder.AppendLine("Bloom-page element not found at root level: " + id);
+				}
 			}
 			EnsureIdsAreUnique(this, "textarea", ids, builder);
 			EnsureIdsAreUnique(this, "p", ids, builder);
 			EnsureIdsAreUnique(this, "img", ids, builder);
 
-			//TODO: validate other things, including html
 			var x = builder.ToString().Trim();
 			if(x.Length == 0)
 				Logger.WriteEvent("HtmlDom.ValidateBook({0}): No Errors", descriptionOfBookForErrorLog);
