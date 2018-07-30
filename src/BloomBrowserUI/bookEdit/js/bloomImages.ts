@@ -5,6 +5,8 @@ import { BloomApi } from "../../utils/bloomApi";
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
+import { ImageDescriptionAdapter } from "../toolbox/imageDescription/imageDescription";
+import { getToolboxFrameExports } from "../editViewFrame";
 
 declare function ResetRememberedSize(element: HTMLElement);
 
@@ -100,7 +102,7 @@ function SetupImageContainer(containerDiv) {
             var buttonModifier = GetButtonModifier($this);
 
             $this.prepend(
-                '<button class="miniButton cutImageButton disabled ' +
+                '<button class="miniButton cutImageButton imageOverlayButton disabled ' +
                     buttonModifier +
                     '" title="' +
                     theOneLocalizationManager.getText(
@@ -109,7 +111,7 @@ function SetupImageContainer(containerDiv) {
                     '"></button>'
             );
             $this.prepend(
-                '<button class="miniButton copyImageButton disabled ' +
+                '<button class="miniButton copyImageButton imageOverlayButton disabled ' +
                     buttonModifier +
                     '" title="' +
                     theOneLocalizationManager.getText(
@@ -118,7 +120,7 @@ function SetupImageContainer(containerDiv) {
                     '"></button>'
             );
             $this.prepend(
-                '<button class="pasteImageButton imageButton ' +
+                '<button class="pasteImageButton imageButton imageOverlayButton ' +
                     buttonModifier +
                     '" title="' +
                     theOneLocalizationManager.getText(
@@ -127,7 +129,7 @@ function SetupImageContainer(containerDiv) {
                     '"></button>'
             );
             $this.prepend(
-                '<button class="changeImageButton imageButton ' +
+                '<button class="changeImageButton imageButton imageOverlayButton ' +
                     buttonModifier +
                     '" title="' +
                     theOneLocalizationManager.getText(
@@ -136,11 +138,34 @@ function SetupImageContainer(containerDiv) {
                     '"></button>'
             );
 
+            if (
+                // Only show this button if the toolbox is also offering it. It might not offer it
+                // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
+                getToolboxFrameExports()
+                    .getTheOneToolbox()
+                    .getToolIfOffered(ImageDescriptionAdapter.kToolID)
+            ) {
+                $this.prepend(
+                    '<button class="imageDescriptionButton imageButton imageOverlayButton ' +
+                        buttonModifier +
+                        '" title="' +
+                        theOneLocalizationManager.getText(
+                            "EditTab.Toolbox.ImageDescriptionTool" // not quite the "Show Image Description Tool", but... feeling parsimonious
+                        ) +
+                        '"></button>'
+                );
+                $this.find(".imageDescriptionButton").click(() => {
+                    getToolboxFrameExports()
+                        .getTheOneToolbox()
+                        .activateToolFromId(ImageDescriptionAdapter.kToolID);
+                });
+            }
+
             SetImageTooltip(containerDiv, img);
 
             if (IsImageReal(img)) {
                 $this.prepend(
-                    '<button class="editMetadataButton imageButton ' +
+                    '<button class="editMetadataButton imageButton imageOverlayButton ' +
                         buttonModifier +
                         '" title="' +
                         theOneLocalizationManager.getText(
@@ -158,16 +183,8 @@ function SetupImageContainer(containerDiv) {
         .mouseleave(function() {
             var $this = $(this);
             $this.removeClass("hoverUp");
-            $this.find(".changeImageButton").each(function() {
-                $(this).remove();
-            });
-            $this.find(".pasteImageButton").each(function() {
-                $(this).remove();
-            });
-            $this.find(".miniButton").each(function() {
-                $(this).remove();
-            });
-            $this.find(".editMetadataButton").each(function() {
+            $this.find(".imageOverlayButton").each(function() {
+                // leave the problem indicator visible
                 if (!$(this).hasClass("imgMetadataProblem")) {
                     $(this).remove();
                 }

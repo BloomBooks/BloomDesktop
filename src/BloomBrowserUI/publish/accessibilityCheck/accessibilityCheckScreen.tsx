@@ -23,8 +23,15 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
 
     public componentDidMount() {
         // Listen for changes to state from C#-land
-        WebSocketManager.addListener("a11yChecklist", e => {
-            if (e.message === "bookSelectionChanged") this.refresh();
+        WebSocketManager.addListener("a11yChecklist", event => {
+            if (
+                // chose a different book
+                event.id === "bookSelectionChanged" ||
+                // get this if the title changed
+                event.id === "bookContentsMayHaveChanged"
+            ) {
+                this.refresh();
+            }
         });
         this.refresh();
     }

@@ -233,24 +233,29 @@ namespace Bloom.Api
 		{
 			var pageTexts = new List<string>();
 
-			var pages = CurrentBook.RawDom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]")
+			var pages = CurrentBook.RawDom.SafeSelectNodes("//div[" + GenerateXPathClassStringSearch("bloom-page") + "]")
 				.Cast<XmlElement>()
 				.Where(p =>
 				{
 					var cls = " " + p.Attributes["class"].Value + " ";
 					return !cls.Contains(" bloom-frontMatter ") && !cls.Contains(" bloom-backMatter ");
 				});
-
+			var xpathToTextContent = ".//div[not(" + GenerateXPathClassStringSearch("bloom-imageDescription") + ")]/div[" + GenerateXPathClassStringSearch("bloom-content1") + "]";
 			foreach (var page in pages)
 			{
 				var pageWords = String.Empty;
-				foreach (XmlElement node in page.SafeSelectNodes(".//div[contains(concat(' ', @class, ' '), ' bloom-content1 ')]"))
+				foreach (XmlElement node in page.SafeSelectNodes(xpathToTextContent))
 					pageWords += " " + node.InnerText;
 
 				pageTexts.Add("\"" + page.GetAttribute("id") + "\":\"" + EscapeJsonValue(pageWords.Trim()) + "\"");
 			}
 
 			return "{" + String.Join(",", pageTexts.ToArray()) + "}";
+		}
+
+		private static string GenerateXPathClassStringSearch(string className)
+		{
+			return $"contains(concat(' ', @class, ' '), ' {className} ')";
 		}
 
 		private static string EscapeJsonValue(string value)

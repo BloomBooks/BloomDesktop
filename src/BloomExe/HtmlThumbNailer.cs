@@ -316,13 +316,6 @@ namespace Bloom
 				return (Image) _syncControl.Invoke(new Func<GeckoWebBrowser, Color, int, int, Image>(CreateImage), browser,
 					coverColor, top, bottom);
 			}
-
-#if __MonoCS__
-			var offscreenBrowser = browser as OffScreenGeckoWebBrowser;
-			Debug.Assert(offscreenBrowser != null);
-
-			return offscreenBrowser.GetBitmap(browser.Width, browser.Height);
-#else
 			// It's REALLY tricky to get the thumbnail created so that it reliably shows the image.
 			// See BL-4170 and then BL-6257. We tried all kinds of tricks to tell when the image is
 			// loaded into the document, such as checking image.completed and image.naturalWidth > 0
@@ -397,7 +390,6 @@ namespace Bloom
 					}
 				}
 			}
-#endif
 		}
 
 		// Find the last line of the image between top and bottom which contains a pixel not
@@ -450,25 +442,6 @@ namespace Bloom
 					Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width,
 						(uint) browserSize.Height,
 						Thread.CurrentThread.ManagedThreadId);
-#if __MonoCS__
-					// This short sleep was added to fix BL-4170, a problem where thumbnails were often generated without
-					// images. We're not sure what changed or why it became necessary. Possibly there was a change in GeckoFx 45
-					// which caused it report document-complete before background images are sufficiently loaded to show up
-					// in a captured image. Testing indicated that our image server did finish returning the background
-					// images before the document-complete notification, but that doesn't prove they were fully rendered.
-					// Also casting doubt on this hypothesis, we tried delays (some much longer) in several seemingly
-					// more logical places where they didn't help, at least not without being unreasonably long.
-					// The length of the delay is of course problematic. Experiments on my fast desktop indicate that 10ms
-					// does not help; 20ms is enough for AOR images; 40ms for a 6mp/4M jpg photo; but somewhere between
-					// 100 and 200ms can be needed by a really large (24mp/14M) image. 200ms is based on hoping that
-					// most computers are no worse than five times slower than mine and accepting that the slower ones
-					// might have problems with huge images.
-					// Then the problem reared its ugly head again (BL-6257), even for smaller files (typically just over 2M)
-					// so trying doubling again.
-					// It should be possible to replace this with code similar to what is used in Windows for CreateImage,
-					// but that needs to be explored on Linux since the actual image creation is different.
-					Thread.Sleep(400);
-#endif
 					//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
 					//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
 					//the placeholder thumbnail.

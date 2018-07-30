@@ -380,21 +380,24 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // and the main bloom player code so that the playback rectangle shape
         // is determined by the initialRect. Also, to avoid distortion,
         // we need to make sure they are at least the SAME shape (as each other).
-        // The .001 is an attempt to avoid saving minute changes caused by rounding
-        // errors, lest they accumulate over multiple page openings or cause
-        // spurious downloads because the document has changed. It may not be
-        // sufficient. Possibly we should avoid saving if the actual size changes
-        // by less than a whole pixel. Not sure how best to determine that.
-        // This should be done AFTER we made them small enough to fit, because the
-        // "small enough to fit" adjustment might throw off the aspect ratio.
-        if (actualWidth / actualHeight > imageWidth / imageHeight + 0.001) {
+        // But, we don't want to save changes that are just caused by rounding errors
+        // converting % sizes to pixels.
+        // To ensure this, if the calculated adjustment is less than 2 pixels,
+        // we just don't make it.
+        if (actualWidth / actualHeight > imageWidth / imageHeight) {
             // proposed rectangle is too wide for height. Reduce width.
-            actualWidth = (actualHeight * imageWidth) / imageHeight;
-            needToSaveRectangle = true;
-        } else if (width / height < imageWidth / imageHeight - 0.001) {
+            const possibleWidth = (actualHeight * imageWidth) / imageHeight;
+            if (possibleWidth < actualWidth - 1) {
+                actualWidth = possibleWidth;
+                needToSaveRectangle = true;
+            }
+        } else if (actualWidth / actualHeight < imageWidth / imageHeight) {
             // too high for width. Reduce height.
-            actualHeight = (actualWidth * imageHeight) / imageWidth;
-            needToSaveRectangle = true;
+            const possibleHeight = (actualWidth * imageHeight) / imageWidth;
+            if (possibleHeight < actualHeight - 1) {
+                actualHeight = possibleHeight;
+                needToSaveRectangle = true;
+            }
         }
         // Now make sure it's not positioned outside the container.
         // This should be done after we settled on a size that will fit
@@ -596,6 +599,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private updateDataAttributes(): void {
+        //alert("updating data attributes " + new Error().stack);
         const page = this.getPage();
         const startRect = page.getElementById("animationStart");
         const endRect = page.getElementById("animationEnd");

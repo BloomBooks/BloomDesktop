@@ -137,7 +137,6 @@ namespace Bloom.Publish.Epub
 		string[] _langsForLocalization;
 		// We track the first page that is actually content and link to it in our rather trivial table of contents.
 		private string _firstContentPageItem;
-		private string _coverPage;
 		private string _contentFolder;
 		private string _navFileName;
 		// This temporary folder holds the staging folder with the bloom content. It also (temporarily)
@@ -150,6 +149,8 @@ namespace Bloom.Publish.Epub
 		public bool PublishWithoutAudio { get; set; }
 		Browser _browser = new Browser();
 		private BookServer _bookServer;
+		// Ordered list of Table of Content entries.
+		List<string> _tocList = new List<string>();
 		// Ordered list of page navigation list item elements.
 		private List<string> _pageList = new List<string>();
 		// flag whether we've seen the first page with class numberedPage
@@ -837,6 +838,8 @@ namespace Bloom.Publish.Epub
 			// expecting them to be divs.
 			ConvertHeadingStylesToHeadingElements(pageDom);
 
+			FixDivOrdering(pageDom);
+
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
 			++_pageIndex;
@@ -844,8 +847,6 @@ namespace Bloom.Publish.Epub
 			string preferedPageName;
 			if (_desiredNameMap.TryGetValue(pageElement, out preferedPageName))
 				pageDocName = preferedPageName;
-			if (_pageIndex == 1)
-				_coverPage = pageDocName;
 
 			CopyImages(pageDom);
 			CopyVideos(pageDom);
@@ -862,11 +863,7 @@ namespace Bloom.Publish.Epub
 			if(!PublishWithoutAudio)
 				AddAudioOverlay(pageDom, pageDocName);
 
-			// Record the first non-blank page that isn't front-matter as the first content page.
-			// Note that pageElement is a <div> with a class attribute that contains page level
-			// formatting information.
-			if (_firstContentPageItem == null && !pageElement.GetAttribute("class").Contains("bloom-frontMatter"))
-				_firstContentPageItem = pageDocName;
+			StoreTableOfContentInfo(pageElement, pageDocName);
 
 			// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
 			//to copy those stylesheets on the first page
@@ -889,6 +886,31 @@ namespace Bloom.Publish.Epub
 				foreach (var pendingBackLink in pendingBackLinks)
 					pendingBackLink.Item1.SetAttribute("href", pageDocName + "#" + pendingBackLink.Item2);
 			}
+		}
+
+		/// <summary>
+		/// Store the table of content information (if any) for this page.
+		/// </summary>
+		/// <param name="pageElement">a &lt;div&gt; with a class attribute that contains page level formatting information</param>
+		/// <param name="pageDocName">filename of the page's html file</param>
+		private void StoreTableOfContentInfo(XmlElement pageElement, string pageDocName)
+		{
+			var pageClasses = pageElement.GetAttribute("class").Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			string pageLabel = null;
+			if (pageClasses.Contains("bloom-frontMatter") || pageClasses.Contains ("bloom-backMatter"))
+			{
+				pageLabel = GetXMatterPageName(pageClasses);
+			}
+			else if (_firstContentPageItem == null)
+			{
+				// Record the first non-blank page that isn't front-matter as the first content page.
+				_firstContentPageItem = pageDocName;
+				string languageIdUsed;
+				pageLabel = LocalizationManager.GetString("PublishTab.Epub.PageLabel.Content", "Content", "label for the book content in the ePUB's Table of Contents",
+					_langsForLocalization, out languageIdUsed);
+			}
+			if (!String.IsNullOrEmpty(pageLabel))
+				_tocList.Add(String.Format("<li><a href=\"{0}\">{1}</a></li>", pageDocName, pageLabel));
 		}
 
 		private void ConvertHeadingStylesToHeadingElements(HtmlDom pageDom)
@@ -1253,6 +1275,21 @@ namespace Bloom.Publish.Epub
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns:epub", kEpubNamespace);
 		}
 
+		// The Item2 values are localized for displaying to the user.  Unfortunately, localizing to
+		// the national language is probably all we can achieve at the moment, and that's rather
+		// iffy at best.  (Since our localization is for the UI language, not the book language.)
+		// The Item3 values are not localized.
+		static List<Tuple<string,string,string>> classLabelIdList = new List<Tuple<string,string,string>>
+		{
+			// Item1 = HTML class, Item2 = Label displayed to user, Item3 = Internal HTML id
+			Tuple.Create("credits",          "Credits Page",       "pgCreditsPage"),
+			Tuple.Create("frontCover",       "Front Cover",        "pgFrontCover"),
+			Tuple.Create("insideBackCover",  "Inside Back Cover",  "pgInsideBackCover"),
+			Tuple.Create("insideFrontCover", "Inside Front Cover", "pgInsideFrontCover"),
+			Tuple.Create("outsideBackCover", "Outside Back Cover", "pgOutsideBackCover"),
+			Tuple.Create("theEndPage",       "The End",            "pgTheEnd"),
+			Tuple.Create("titlePage",        "Title Page",         "pgTitlePage")
+		};
 		private void AddPageBreakSpan(HtmlDom pageDom, string pageDocName)
 		{
 			var body = pageDom.Body;
@@ -1264,72 +1301,26 @@ namespace Bloom.Publish.Epub
 			var id = String.Empty;
 			if (classes.Contains("numberedPage"))
 			{
+				// This page number value is not localized.
 				page = div.GetStringAttribute("data-page-number");
 			}
 			else if (div.GetOptionalStringAttribute("data-page", "") == "required singleton")
 			{
-				string languageIdUsed;
-				if (classes.Contains("frontCover"))
-				{
-					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Front Cover", "Front Cover", "",
-						_langsForLocalization, out languageIdUsed);
-					id = "pgFrontCover";
-				}
-				else if (classes.Contains("titlePage"))
-				{
-					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Title Page", "Title Page", "",
-						_langsForLocalization, out languageIdUsed);
-					id = "pgTitlePage";
-				}
-				else if (classes.Contains("credits"))
-				{
-					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Credits Page", "Credits Page", "",
-						_langsForLocalization, out languageIdUsed);
-					id = "pgCreditsPage";
-				}
-				else if (classes.Contains("insideFrontCover"))
-				{
-					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Inside Back Cover", "Inside Front Cover", "",
-						_langsForLocalization, out languageIdUsed);
-					id = "pgInsideFrontCover";
-				}
-				else if (classes.Contains("insideBackCover"))
-				{
-					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Inside Back Cover", "Inside Back Cover", "",
-						_langsForLocalization, out languageIdUsed);
-					id = "pgInsideBackCover";
-				}
-				else if (classes.Contains("outsideBackCover"))
-				{
-					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.Outside Back Cover", "Back Cover", "",
-						_langsForLocalization, out languageIdUsed);
-					id = "pgBackCover";
-				}
-				else if (classes.Contains("theEndPage"))
-				{
-					page = L10NSharp.LocalizationManager.GetString("TemplateBooks.PageLabel.The End", "The End", "",
-						_langsForLocalization, out languageIdUsed);
-					id = "pgTheEnd";
-				}
-				else
-				{
-					// The 7 classes above match against what the device xmatter currently offers.  This handles any
-					// "required singleton" that doesn't have a matching class.  Perhaps not satisfactory, and perhaps
-					// not needed.
-					++_frontBackPage;
-					page = "x" + _frontBackPage.ToString(System.Globalization.CultureInfo.InvariantCulture);
-				}
+				page = GetXMatterPageName(classes);
+				var found = classLabelIdList.Find(x => classes.Contains(x.Item1));
+				// Note that GetXMatterPageName uses the same data, so the id will correspond to
+				// the right page name regardless of localization.  If nothing is found, then the
+				// value returned by GetXMatterPageName will not be localized (x1, x2, ...)
+				if (found != null)
+					id = found.Item3;
 			}
-			// REVIEW: If the page isn't a numbered page, and not an xmatter page, maybe we should ignore it?
-			//else
-			//{
-			//	++_frontBackPage;
-			//	page = "x" + _frontBackPage.ToString(System.Globalization.CultureInfo.InvariantCulture);
-			//}
 			if (!String.IsNullOrEmpty(page))
 			{
 				if (String.IsNullOrEmpty(id))
-					id = $"pg{page}";
+				{
+					// In this situation, 'page' will not be localized (and probably won't have spaces either).
+					id = "pg" + page.Replace(" ", "");
+				}
 				var newChild = pageDom.RawDom.CreateElement("span");
 				newChild.SetAttribute("type", kEpubNamespace, "pagebreak");
 				newChild.SetAttribute("role", "doc-pagebreak");
@@ -1349,6 +1340,20 @@ namespace Bloom.Publish.Epub
 				head.AppendChild(newStyle);
 				_pageList.Add( String.Format("<li><a href=\"{0}#{1}\">{2}</a></li>", pageDocName, id, page) );
 			}
+		}
+
+		private string GetXMatterPageName(string[] classes)
+		{
+			string languageIdUsed;
+			var found = classLabelIdList.Find(x => classes.Contains(x.Item1));
+			if (found != null)
+				return LocalizationManager.GetString("TemplateBooks.PageLabel."+found.Item2, found.Item2, "",
+						_langsForLocalization, out languageIdUsed);
+			// The 7 classes above match against what the device xmatter currently offers.  This handles any
+			// "required singleton" that doesn't have a matching class.  Perhaps not satisfactory, and perhaps
+			// not needed.
+			++_frontBackPage;
+			return "x" + _frontBackPage.ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		/// <summary>
@@ -1777,6 +1782,41 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
+		/// <summary>
+		/// Reorder any div elements that need to be reordered for proper display in the ePUB.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6299.
+		/// </remarks>
+		private void FixDivOrdering(HtmlDom pageDom)
+		{
+			// The different-language children of a translation group are ordered in Bloom proper by flex-box CSS
+			// that puts the div with class bloom-content1 before the one with bloom-content2 etc.  Since we don't
+			// (and can't) rely on flex-box in epubs, we need to actually put the elements in the right order.
+			foreach (var multilingualDiv in pageDom.RawDom.DocumentElement.SelectNodes("//div[contains(@class, 'translationGroup')]").Cast<XmlElement>())
+			{
+				var divs = multilingualDiv.SelectNodes("./div[contains(@class, 'bloom-content')]").Cast<XmlElement>().ToList();
+				divs.Sort(CompareMultilingualDivs);
+				for (var i = divs.Count - 1; i >= 1; --i)
+					multilingualDiv.InsertBefore(divs[i-1], divs[i]);
+			}
+		}
+
+		private static int CompareMultilingualDivs(XmlElement x, XmlElement y)
+		{
+			string xKey = ExtractKeyForMultilingualDivs(x);
+			string yKey = ExtractKeyForMultilingualDivs(y);
+			return string.Compare(xKey, yKey, StringComparison.Ordinal);
+		}
+
+		private static string ExtractKeyForMultilingualDivs(XmlElement x)
+		{
+			var xClass = x.GetAttribute("class").Replace("bloom-contentNational", "");
+			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
+			System.Diagnostics.Debug.Assert(idx >= 0);
+			return xClass.Substring(idx);
+		}
+
 		// Returns true if we don't find the expected style
 		private static bool ConvertStyleFromPxToPercent (string stylename, double pageWidthMm, double multiplier,
 			ref string imgStyle)
@@ -1802,7 +1842,8 @@ namespace Bloom.Publish.Epub
 		/// <param name="pageDom"></param>
 		private void RemoveUnwantedContent (HtmlDom pageDom)
 		{
-			Debug.Assert(!ControlForInvoke.InvokeRequired); // should be called on UI thread.
+			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
+			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
 			var pageElt = (XmlElement)pageDom.Body.FirstChild;
 
 			// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
@@ -2123,7 +2164,6 @@ namespace Bloom.Publish.Epub
 		private void MakeNavPage ()
 		{
 			XNamespace xhtml = "http://www.w3.org/1999/xhtml";
-			// Todo: improve this or at least make a way "Cover" and "Content" can be put in the book's language.
 			var sb = new StringBuilder ();
 			sb.Append (@"
 <html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'>
@@ -2132,16 +2172,21 @@ namespace Bloom.Publish.Epub
 	</head>
 	<body>
 		<nav epub:type='toc' id='toc'>
-			<ol>
-				<li><a>Cover</a></li>
-				<li><a>Content</a></li>
+			<ol>");
+			foreach (var item in _tocList)
+			{
+				sb.AppendLine();
+				sb.AppendFormat("\t\t\t\t{0}", item);
+			}
+			sb.Append(@"
 			</ol>
 		</nav>
 		<nav epub:type='page-list'>
 			<ol>");
-			foreach (var item in _pageList) {
-				sb.AppendFormat ("\t\t\t\t{0}", item);
-				sb.AppendLine ();
+			foreach (var item in _pageList)
+			{
+				sb.AppendLine();
+				sb.AppendFormat("\t\t\t\t{0}", item);
 			}
 			sb.Append (@"
 			</ol>
@@ -2149,18 +2194,6 @@ namespace Bloom.Publish.Epub
 	</body>
 </html>");
 			var content = XElement.Parse (sb.ToString ());
-			var ol = content.Element (xhtml + "body").Element (xhtml + "nav").Element (xhtml + "ol");
-			var items = ol.Elements (xhtml + "li").ToArray ();
-			var coverItem = items [0];
-			var contentItem = items [1];
-			if (_firstContentPageItem == null)
-				contentItem.Remove ();
-			else
-				contentItem.Element (xhtml + "a").SetAttributeValue ("href", _firstContentPageItem);
-			if (_coverPage == _firstContentPageItem)
-				coverItem.Remove ();
-			else
-				coverItem.Element (xhtml + "a").SetAttributeValue ("href", _coverPage);
 			_navFileName = "nav.xhtml";
 			var navPath = Path.Combine (_contentFolder, _navFileName);
 

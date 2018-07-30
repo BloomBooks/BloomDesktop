@@ -254,6 +254,23 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void ValidateBook_ReportsInvalidHtml()
+		{
+			// BL-6273 Hand-edited Html could pass ValidateBook, which led to improper handling of the resulting error.
+			// (ValidateBook is where we determine whether to try and use the .bak file instead, or not.)
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page' id='someId'><div class='marginBox'><div class='bloom-translationGroup'>" +
+					"<div class='bloom-editable'>" +
+					"</div></div>" + // not enough closing tags due to "hand-editing"
+					"<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>" +
+					"</div></div></div>" +
+					"</body></html>", false);
+			var result = storage.ValidateBook(storage.PathToExistingHtml);
+			Assert.IsTrue(result.StartsWith("Bloom-page element not found at root level: someOtherId"), "Bad Html should fail ValidateBook().");
+		}
+
+		[Test]
 		public void Save_BookHasMissingImages_NoCrash()
 		{
 			var storage = GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='marginBox'><img src='keepme.png'></img></div></div></body></html>");
@@ -318,13 +335,14 @@ namespace BloomTests.Book
 			return drivePath.Replace(driveLetter, "//localhost/" + driveLetter.Replace(":\\", "") + "$/");
 		}
 
-		private BookStorage GetInitialStorageWithCustomHtml(string html)
+		private BookStorage GetInitialStorageWithCustomHtml(string html, bool doSave = true)
 		{
 			RobustFile.WriteAllText(_bookPath, html);
 			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
-			storage.Save();
+			if (doSave)
+				storage.Save();
 			return storage;
 		}
 

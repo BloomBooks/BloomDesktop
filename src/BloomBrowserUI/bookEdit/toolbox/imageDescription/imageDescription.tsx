@@ -15,6 +15,7 @@ interface IImageDescriptionState {
     enabled: boolean;
     checkBoxes: Array<boolean>;
 }
+interface IProps {}
 
 // This react class implements the UI for image description toolbox.
 // (The ImageDescriptionAdapter class below implements the interface required for interaction with
@@ -24,11 +25,11 @@ interface IImageDescriptionState {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of ImageDescriptionTool to ToolBox.registerTool().
 export class ImageDescriptionToolControls extends React.Component<
-    {},
+    IProps,
     IImageDescriptionState
 > {
-    constructor() {
-        super({});
+    constructor(props: IProps, state: IImageDescriptionState) {
+        super(props, state); // we don't actually have props... all this is just to stop the error you get otherwise
         this.state = { enabled: true, checkBoxes: [] };
     }
 
@@ -55,6 +56,7 @@ export class ImageDescriptionToolControls extends React.Component<
             const index = i; // in case 'i' changing affects earlier checkboxes
             checkBoxes.push(
                 <Checkbox
+                    key={i}
                     l10nKey={
                         "EditTab.Toolbox.ImageDescriptionTool." +
                         ImageDescriptionToolControls.i18ids[i]
@@ -220,6 +222,7 @@ export class ImageDescriptionToolControls extends React.Component<
 
 export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     private reactControls: ImageDescriptionToolControls;
+    public static kToolID = "imageDescription";
 
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
@@ -237,7 +240,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         return true;
     }
     public id(): string {
-        return "imageDescription";
+        return ImageDescriptionAdapter.kToolID;
     }
 
     // If we declare the function in this normal way and pass it to addEventListener,

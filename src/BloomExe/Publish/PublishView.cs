@@ -408,7 +408,9 @@ namespace Bloom.Publish
 			_model.PageLayout = ((Layout)item.Tag);
 			ClearRadioButtons();
 			UpdateDisplay();
-			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
+			// A side effect of UpdateDisplay will select the appropriate radio button,
+			// since we haven't changed the display mode. If the selected button is a PDF
+			// one, that will trigger regenerating the PDF.
 		}
 
 		private void OnSinglePageModeChanged(object sender, EventArgs e)

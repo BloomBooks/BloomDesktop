@@ -79,6 +79,12 @@ namespace BloomTests.Publish
 
 		[Test]
 		public void ImageDescriptions_HowToPublishImageDescriptionsNone_AreRemoved()
+
+			return CreateTestBook(body, createPhysicalFile);
+		}
+
+		Bloom.Book.Book CreateTestBook(string body, bool createPhysicalFile = false)
+		{
 		{
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] {"image1"},
 				imageDescriptions: new[] {"This describes image 1"});
@@ -203,7 +209,11 @@ namespace BloomTests.Publish
 		[Test]
 		public void BookSwitchedToDeviceXMatter()
 		{
-			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true);
+			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true, extraContent:
+				@"<div id='bloomDataDiv'>
+					<div data-book='contentLanguage1' lang='*'>xyz</div>
+					<div data-book='contentLanguage2' lang='*'>en</div>
+				</div>");
 			MakeEpub("output", "BookSwitchedToDeviceXMatter", book);
 			// This is a rather crude way to test that it is switched to device XMatter, but we aren't even sure we
 			// really want to do that yet. This at least gets something in there which should fail if we somehow
@@ -252,12 +262,14 @@ namespace BloomTests.Publish
 			var navPageData = CheckNavPage();
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']", _ns, 1);
+			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml']", _ns, 1);
+			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml']", _ns, 1);
+			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml']", _ns, 1);
 			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml']", _ns);
-			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml']", _ns);
-			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml']", _ns);
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='6.xhtml']", _ns);
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml#pgFrontCover']", _ns, 1);
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
@@ -268,6 +280,8 @@ namespace BloomTests.Publish
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='4.xhtml#pgCreditsPage']", _ns, 1);
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='5.xhtml#pgTheEnd']", _ns, 1);
+			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[contains(@href, '6.xhtml')]", _ns);
 		}
 
 		[Test]
@@ -550,7 +564,11 @@ namespace BloomTests.Publish
 				extraContent:
 					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
 							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
-							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+							<div class='bloom-editable' lang='de'>German should never display in this collection</div>
+					<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>xyz</div>
+						<div data-book='contentLanguage2' lang='*'>en</div>
+					</div>",
 				extraEditGroupClasses: "bookTitle",
 				defaultLanguages: "V,N1");
 
@@ -1174,6 +1192,55 @@ namespace BloomTests.Publish
 			var sb = new StringBuilder();
 			Assert.DoesNotThrow(() => EpubMaker.AddFontFace(sb, "myFont", "bold", "italic", null));
 			Assert.That(sb.Length, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void MultilingualTitlesOrderedCorrectly()
+		{
+			var book = CreateTestBook(@"
+<div id='bloomDataDiv'>
+    <div data-book='contentLanguage1' lang='*'>xyz</div>
+    <div data-book='contentLanguage2' lang='*'>en</div>
+    <div data-book='contentLanguage3' lang='*'>fr</div>
+</div>
+<div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait' data-page='required singleton' id='7cecf56f-7e97-443e-910f-ddc13a9b0dfa'>
+	<div class='marginBox'>
+		<div class='bloom-translationGroup bookTitle' data-default-languages='V,N1,N2'>
+			<label class='bubble'>Book title in {lang}</label>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='z' contenteditable='true' data-book='bookTitle'></div>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content3 bloom-contentNational2 bloom-visibility-code-on' lang='fr' contenteditable='true' data-book='bookTitle'>
+				<p>Livre de Test</p>
+			</div>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='bookTitle'>
+				<p>Test Book</p>
+			</div>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content1 bloom-visibility-code-on' lang='xyz' contenteditable='true' data-book='bookTitle'>
+				<p>Libro de Pruebas</p>
+			</div>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='*' contenteditable='true' data-book='bookTitle'></div>
+		</div>
+	</div>
+</div>");
+			MakeEpub("output", "MultilingualTitlesOrderedCorrectly", book);
+			CheckBasicsInManifest();
+			CheckBasicsInPage();
+			CheckNavPage();
+			CheckFontStylesheet();
+			var dom = new XmlDocument();
+			dom.LoadXml(_page1Data);
+			var titleDiv = dom.DocumentElement.SelectSingleNode("//xhtml:div[contains(@class, 'bookTitle')]", _ns) as XmlElement;
+			Assert.IsNotNull(titleDiv);
+			var divs = titleDiv.SelectNodes("./xhtml:div", _ns);
+			Assert.AreEqual(3, divs.Count);
+			var class0 = divs[0].Attributes["class"];
+			Assert.IsNotNull(class0);
+			StringAssert.Contains("bloom-content1", class0.Value);
+			var class1 = divs[1].Attributes["class"];
+			Assert.IsNotNull(class1);
+			StringAssert.Contains("bloom-content2", class1.Value);
+			var class2 = divs[2].Attributes["class"];
+			Assert.IsNotNull(class2);
+			StringAssert.Contains("bloom-content3", class2.Value);
 		}
 
 		[Test]

@@ -136,6 +136,15 @@ div.hoverUp {
         background-color: @ChangeImageButtonColor;
         background-image: url("../img/changeButton.svg");
     }
+    &.imageDescriptionButton {
+        left: 0;
+        bottom: 0;
+        background-color: @bloom-blue;
+        background-image: url("../img/ImageDescriptionImageOverlayButton.svg");
+        // sorry, this background-size is kinda arbitrary, and "49px 40px" works at full size, but if we ever make these
+        //buttons shrink as the image container shrinks, this will still work.
+        background-size: 63%;
+    }
     &.importVideoButtonOverlay {
         right: 0;
         top: 0;

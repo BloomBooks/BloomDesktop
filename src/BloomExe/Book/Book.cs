@@ -9,6 +9,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
@@ -48,6 +49,7 @@ namespace Bloom.Book
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
 		private readonly BookRefreshEvent _bookRefreshEvent;
+		private readonly BookSavedEvent _bookSavedEvent;
 		private readonly IBookStorage _storage;
 		private List<IPage> _pagesCache;
 		internal const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
@@ -72,9 +74,14 @@ namespace Bloom.Book
 		   CollectionSettings collectionSettings,
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent,
-			BookRefreshEvent bookRefreshEvent)
+			BookRefreshEvent bookRefreshEvent,
+			BookSavedEvent bookSavedEvent=null)
 		{
 			BookInfo = info;
+			if (bookSavedEvent == null) // unit testing
+			{
+				bookSavedEvent = new BookSavedEvent();
+			}
 			UserPrefs = UserPrefs.LoadOrMakeNew(Path.Combine(info.FolderPath, "book.userPrefs"));
 
 			Guard.AgainstNull(storage,"storage");
@@ -107,6 +114,8 @@ namespace Bloom.Book
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
 			_bookRefreshEvent = bookRefreshEvent;
+			_bookSavedEvent = bookSavedEvent;
+
 			_bookData = new BookData(OurHtmlDom,
 					_collectionSettings, UpdateImageMetadataAttributes);
 
@@ -1149,8 +1158,21 @@ namespace Bloom.Book
 
 		public void UpdateBrandingForCurrentOrientation(HtmlDom bookDOM)
 		{
-			BringXmatterHtmlUpToDate(bookDOM);
-			bookDOM.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
+			BringBookUpToDate(bookDOM, new NullProgress());
+			// We need this to reinstate the classes that control visibility, otherwise no bloom-editable
+			// text is shown
+			UpdateMultilingualSettings(bookDOM);
+
+			// The following is PROBABLY enough; but since this is such a rare case that two major versions
+			// of Bloom shipped with it badly broken before we noticed (and no user ever reported it), it seems
+			// worth using the fullest possible version of updating the book to bring it in line
+			// with the current orientation.
+			//BringXmatterHtmlUpToDate(bookDOM); // wipes out xmatter content!
+			//bookDOM.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
+			// // restore xmatter page content from datadiv
+			//var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
+			//bd.SynchronizeDataItemsThroughoutDOM();
+			//UpdateMultilingualSettings(bookDOM); // fix visibility classes
 		}
 
 		public void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
@@ -2249,7 +2271,8 @@ namespace Bloom.Book
 			return -1;
 		}
 
-		public HtmlDom GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
+		public HtmlDom GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection,
+			BookServer bookServer, bool orientationChanging, Layout pageLayout)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			AddCreationTypeAttribute(printingDom);
@@ -2260,12 +2283,20 @@ namespace Bloom.Book
 				printingDom.SortStyleSheetLinks();
 			}
 
+			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(printingDom.RawDom, pageLayout);
 
+			if (orientationChanging)
+			{
+				// Need to update the xmatter in the print dom...it may use different images.
+				// Make sure we do this AFTER setting PageOrientation in Dom.
+				// Also must be BEFORE we delete unwanted pages
+				UpdateBrandingForCurrentOrientation(printingDom);
+			}
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
 
-			var pathSafeForWkHtml2Pdf = FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
-			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
+			BookStorage.SetBaseForRelativePaths(printingDom, FolderPath);
 
 			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting"));
 
@@ -2512,6 +2543,13 @@ namespace Bloom.Book
 				PageTemplateSource = Path.GetFileName(FolderPath);
 			}
 			_storage.Save();
+
+			// Tell the accessibility checker window (and any future subscriber) to re-compute.
+			// This Task.Delay() helps even with a delay of 0, becuase it means we get to finish with this command.
+			// I'm chooing 1 second at the moment as that feels about the longest I would want to
+			// wait to see if what I did made and accesibility check change. Of course we're *probably*
+			// ready to run this much, much sooner.
+			Task.Delay(1000).ContinueWith((task) => _bookSavedEvent.Raise(this));
 		}
 
 		/// <summary>

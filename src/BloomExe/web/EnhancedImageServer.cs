@@ -43,6 +43,9 @@ namespace Bloom.Api
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
+		// This is useful for debugging.
+		public static Dictionary<string, string> SimulatedPageContent => _urlToSimulatedPageContent;
+
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>

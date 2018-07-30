@@ -1,7 +1,6 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from "jquery";
 import {
-    activateSignLanguageTool,
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
@@ -21,7 +20,7 @@ import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
-export { activateSignLanguageTool, removeToolboxMarkup, showOrHideTool_click };
+export { removeToolboxMarkup, showOrHideTool_click };
 export {
     showSetupDialog,
     initializeReaderSetupDialog,
