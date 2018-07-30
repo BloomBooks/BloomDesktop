@@ -1403,11 +1403,24 @@ namespace Bloom.Edit
 					// Save when we leave the main window, even just switching to the epub a11y check window.
 					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
 					// focus erratically on Linux, so we don't want this save on its LostFocus event.
-					_model.SaveNow();
-					// Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
-					RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getToolboxFrameExports().applyToolboxStateToPage();}");
+					// But we do NOT want to Save right this instant. Deactivate happens a lot, especially while
+					// debugging. There's some evidence (BL-6303, BL-6296) that COM message pumping can
+					// cause the Deactivate event to be handled at apparently random moments, in the middle
+					// of doing something else. We might be trying to Save when the system isn't in a valid
+					// state, e.g., in the middle of refreshing everything because the user edited the title
+					// and the HTML file and containing folder changed name. Instead, arrange to Save when
+					// next idle.
+					Application.Idle += SaveWhenIdle;
 				};
 			}
+		}
+
+		private void SaveWhenIdle(object o, EventArgs eventArgs)
+		{
+			Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
+			_model.SaveNow();
+			// Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
+			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getToolboxFrameExports().applyToolboxStateToPage();}");
 		}
 
 		public string HelpTopicUrl
