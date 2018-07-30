@@ -363,7 +363,11 @@ namespace BloomTests.Publish
 		[Test]
 		public void BookSwitchedToDeviceXMatter()
 		{
-			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true);
+			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true, extraContent:
+				@"<div id='bloomDataDiv'>
+					<div data-book='contentLanguage1' lang='*'>xyz</div>
+					<div data-book='contentLanguage2' lang='*'>en</div>
+				</div>");
 			MakeEpub("output", "BookSwitchedToDeviceXMatter", book);
 			// This is a rather crude way to test that it is switched to device XMatter, but we aren't even sure we
 			// really want to do that yet. This at least gets something in there which should fail if we somehow
@@ -649,7 +653,11 @@ namespace BloomTests.Publish
 				extraContent:
 					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
 							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
-							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+							<div class='bloom-editable' lang='de'>German should never display in this collection</div>
+					<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>xyz</div>
+						<div data-book='contentLanguage2' lang='*'>en</div>
+					</div>",
 				extraEditGroupClasses: "bookTitle",
 				defaultLanguages: "V,N1");
 
@@ -1170,23 +1178,28 @@ namespace BloomTests.Publish
 		public void MultilingualTitlesOrderedCorrectly()
 		{
 			var book = CreateTestBook(@"
+<div id='bloomDataDiv'>
+    <div data-book='contentLanguage1' lang='*'>xyz</div>
+    <div data-book='contentLanguage2' lang='*'>en</div>
+    <div data-book='contentLanguage3' lang='*'>fr</div>
+</div>
 <div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait' data-page='required singleton' id='7cecf56f-7e97-443e-910f-ddc13a9b0dfa'>
-  <div class='marginBox'>
-    <div class='bloom-translationGroup bookTitle' data-default-languages='V,N1,N2'>
-        <label class='bubble'>Book title in {lang}</label>
-        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='z' contenteditable='true' data-book='bookTitle'></div>
-        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content3 bloom-visibility-code-on' lang='es' contenteditable='true' data-book='bookTitle'>
-            <p>Libro de Pruebas</p>
-        </div>
-        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content2 bloom-visibility-code-on' lang='fr' contenteditable='true' data-book='bookTitle'>
-            <p>Livre de Test</p>
-        </div>
-        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='bookTitle'>
-            <p>Test Book</p>
-        </div>
-        <div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='*' contenteditable='true' data-book='bookTitle'></div>
-    </div>
-  </div>
+	<div class='marginBox'>
+		<div class='bloom-translationGroup bookTitle' data-default-languages='V,N1,N2'>
+			<label class='bubble'>Book title in {lang}</label>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='z' contenteditable='true' data-book='bookTitle'></div>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content3 bloom-contentNational2 bloom-visibility-code-on' lang='fr' contenteditable='true' data-book='bookTitle'>
+				<p>Livre de Test</p>
+			</div>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='bookTitle'>
+				<p>Test Book</p>
+			</div>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content1 bloom-visibility-code-on' lang='xyz' contenteditable='true' data-book='bookTitle'>
+				<p>Libro de Pruebas</p>
+			</div>
+			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='*' contenteditable='true' data-book='bookTitle'></div>
+		</div>
+	</div>
 </div>");
 			MakeEpub("output", "MultilingualTitlesOrderedCorrectly", book);
 			CheckBasicsInManifest();
@@ -1195,9 +1208,9 @@ namespace BloomTests.Publish
 			CheckFontStylesheet();
 			var dom = new XmlDocument();
 			dom.LoadXml(_page1Data);
-			var titleDiv = dom.SelectSingleNode("//div[contains(@class, 'bookTitle')]") as XmlElement;
+			var titleDiv = dom.DocumentElement.SelectSingleNode("//xhtml:div[contains(@class, 'bookTitle')]", _ns) as XmlElement;
 			Assert.IsNotNull(titleDiv);
-			var divs = titleDiv.SelectNodes("./div");
+			var divs = titleDiv.SelectNodes("./xhtml:div", _ns);
 			Assert.AreEqual(3, divs.Count);
 			var class0 = divs[0].Attributes["class"];
 			Assert.IsNotNull(class0);
