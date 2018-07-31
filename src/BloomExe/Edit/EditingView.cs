@@ -1410,7 +1410,13 @@ namespace Bloom.Edit
 					// state, e.g., in the middle of refreshing everything because the user edited the title
 					// and the HTML file and containing folder changed name. Instead, arrange to Save when
 					// next idle.
-					Application.Idle += SaveWhenIdle;
+					// However, saving while not active runs into issues like BL-6299. Apparently running
+					// Javascript (which is also done elsewhere in SaveNow()) while the main window is
+					// inactive is quite disastrous in GeckoFx45, to the point of access violations that
+					// stop the program with a green screen. Pending decisions about possible UI changes or
+					// other ways of fixing this, we're just disabling it. One hope is that GeckoFx60,
+					// which is supposed to have a "headless" capability, may fix this.
+					//Application.Idle += SaveWhenIdle;
 				};
 			}
 		}
