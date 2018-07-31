@@ -1813,7 +1813,11 @@ namespace Bloom.Publish.Epub
 		{
 			var xClass = x.GetAttribute("class").Replace("bloom-contentNational", "");
 			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
-			System.Diagnostics.Debug.Assert(idx >= 0);
+			if (idx < 0)
+			{
+				Debug.Assert(idx >= 0);
+				return xClass;
+			}
 			return xClass.Substring(idx);
 		}
 

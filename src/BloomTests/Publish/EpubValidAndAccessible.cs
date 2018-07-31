@@ -33,6 +33,12 @@ namespace BloomTests.Publish
 			base.Setup(); // since this class represents just one test, we can do it here.
 
 			var book = SetupBookLong("This is some text", "xyz", " bloom-frontMatter frontCover' data-page='required singleton",
+				optionalDataDiv: @"
+<div id='bloomDataDiv'>
+	<div data-book='contentLanguage1' lang='*'>xyz</div>
+	<div data-book='contentLanguage2' lang='*'>en</div>
+</div>
+",
 				extraContentOutsideTranslationGroup: @"
 <div class=""bloom-imageContainer"">
 	<img data-book=""coverImage"" src=""DevilsSlide.png"" data-copyright=""Copyright © 2015, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by-sa""></img>
