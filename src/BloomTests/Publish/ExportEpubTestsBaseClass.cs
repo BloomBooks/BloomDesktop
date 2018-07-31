@@ -291,6 +291,12 @@ namespace BloomTests.Publish
 					</div>
 					{5}",
 				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
+
+			return CreateTestBook(body, createPhysicalFile, extraHeadContent);
+		}
+
+		protected Bloom.Book.Book CreateTestBook(string body, bool createPhysicalFile = false, string extraHeadContent = "")
+		{
 			Bloom.Book.Book book;
 			string head = @"<meta charset='UTF-8'/>
 				<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
