@@ -203,7 +203,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void BookSwitchedToDeviceXMatter()
 		{
-			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true, extraContent:
+			var book = SetupBookLong("This is some text", "en", createPhysicalFile: true, optionalDataDiv:
 				@"<div id='bloomDataDiv'>
 					<div data-book='contentLanguage1' lang='*'>xyz</div>
 					<div data-book='contentLanguage2' lang='*'>en</div>
@@ -558,8 +558,8 @@ namespace BloomTests.Publish
 				extraContent:
 					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
 							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
-							<div class='bloom-editable' lang='de'>German should never display in this collection</div>
-					<div id='bloomDataDiv'>
+							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+				optionalDataDiv: @"<div id='bloomDataDiv'>
 						<div data-book='contentLanguage1' lang='*'>xyz</div>
 						<div data-book='contentLanguage2' lang='*'>en</div>
 					</div>",
