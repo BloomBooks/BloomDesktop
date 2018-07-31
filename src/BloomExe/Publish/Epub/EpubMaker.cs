@@ -920,7 +920,10 @@ namespace Bloom.Publish.Epub
 
 		private static string ExtractKeyForMultilingualDivs(XmlElement x)
 		{
-			var xClass = x.GetAttribute("class").Replace("bloom-contentNational", "");
+			// bloom-content[23] do not seem to be reliable.  "1", "National1", and "National2" sort correctly.
+			// But I think we do want the newer markup to be reliable, so I'm leaving this line commented out.
+			//var xClass = x.GetAttribute("class").Replace("bloom-contentNational", "");
+			var xClass = x.GetAttribute("class");
 			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
 			System.Diagnostics.Debug.Assert(idx >= 0);
 			return xClass.Substring(idx);
