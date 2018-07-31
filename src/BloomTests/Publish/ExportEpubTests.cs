@@ -79,12 +79,6 @@ namespace BloomTests.Publish
 
 		[Test]
 		public void ImageDescriptions_HowToPublishImageDescriptionsNone_AreRemoved()
-
-			return CreateTestBook(body, createPhysicalFile);
-		}
-
-		Bloom.Book.Book CreateTestBook(string body, bool createPhysicalFile = false)
-		{
 		{
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] {"image1"},
 				imageDescriptions: new[] {"This describes image 1"});
