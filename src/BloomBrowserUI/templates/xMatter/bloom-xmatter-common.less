@@ -287,12 +287,17 @@
         //    .licenseBlock{margin-bottom: 1em;}
         //}
     }
+
     .branding {
         position: absolute;
         bottom: 0;
         left: 0; // allows centering even though position absolute
         right: 0; // allows centering even though position absolute
         height: 1in;
+    }
+    .branding-top {
+        position: initial; // turn off the absolute positioning we get from branding; top should put things downward
+        height: auto;
     }
 }
 

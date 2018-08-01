@@ -62,8 +62,11 @@ mixin optional-branding-image(key)
 mixin field-bottom-left-branding
 	+optional-branding-image('cover-bottom-left').branding
 
-mixin field-credits-branding
-	+optional-branding-image('credits-page').branding
+mixin field-credits-branding-top
+	+optional-branding-image('credits-page-top').branding.branding-top
+
+mixin field-credits-branding-bottom
+	+optional-branding-image('credits-page-bottom').branding.branding-bottom
 
 mixin field-title-page-branding
 	.bottomImageWrapper
@@ -155,6 +158,7 @@ mixin block-licenseAndCopyright
 
 mixin credits-contents(includeIsbn = true)
 	block creditsContent
+		+field-credits-branding-top
 		+block-licenseAndCopyright
 		+field-acknowledgments-localizedVersion
 		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
@@ -163,7 +167,7 @@ mixin credits-contents(includeIsbn = true)
 
 		if(includeIsbn)
 			+field-ISBN
-		+field-credits-branding
+		+field-credits-branding-bottom
 
 mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
