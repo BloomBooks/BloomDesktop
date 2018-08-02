@@ -1,7 +1,7 @@
-lib/dotnet/SIL.Core.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/SIL.Media.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/SIL.Windows.Forms.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/SIL.Windows.Forms.WritingSystems.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/SIL.WritingSystems.dll.mdb usr/lib/bloom-desktop-beta/
+lib/dotnet/SIL.Core.dll.mdb usr/lib/bloom-desktop/
+lib/dotnet/SIL.Media.dll.mdb usr/lib/bloom-desktop/
+lib/dotnet/SIL.Windows.Forms.dll.mdb usr/lib/bloom-desktop/
+lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll.mdb usr/lib/bloom-desktop/
+lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.mdb usr/lib/bloom-desktop/
+lib/dotnet/SIL.Windows.Forms.WritingSystems.dll.mdb usr/lib/bloom-desktop/
+lib/dotnet/SIL.WritingSystems.dll.mdb usr/lib/bloom-desktop/
