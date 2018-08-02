@@ -479,8 +479,8 @@ namespace Bloom.Edit
 				// We only get one notification per call to this function, so we need
 				// to set it up again each time we load a page. It's important to set it up before we start
 				// navigation; otherwise, we might miss the event and never enable saving for this page.
-				Browser.RequestJsNotification("editPagePainted", () => _model.PageIsFullyLoaded = true);
-				_model.PageIsFullyLoaded = false;
+				Browser.RequestJsNotification("editPagePainted", () => _model.NavigatingSoSuspendSaving = false);
+				_model.NavigatingSoSuspendSaving = true;
 				if (_model.AreToolboxAndOuterFrameCurrent())
 				{
 					var pageUrl = _model.GetUrlForCurrentPage();
