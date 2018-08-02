@@ -392,16 +392,16 @@ namespace Bloom
 
 			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
 
-			AddMessageEventListener("timingNotification", ReceiveTimingNotification);
+			AddMessageEventListener("jsNotification", ReceiveJsNotification);
 
 			RaiseGeckoReady();
 		}
 
-		static Dictionary<string, List<Action>> _timingNotificationRequests = new Dictionary<string, List<Action>>();
+		static Dictionary<string, List<Action>> _jsNotificationRequests = new Dictionary<string, List<Action>>();
 
 		/// <summary>
-		/// Allows some C# to receive a notification when Javascript (on any page) raises the timingNotification event,
-		/// typically by calling fireCSharpEditEvent('timingNotification', id), where id corresponds to the string
+		/// Allows some C# to receive a notification when Javascript (on any page) raises the jsNotification event,
+		/// typically by calling fireCSharpEditEvent('jsNotification', id), where id corresponds to the string
 		/// passed to this method.
 		/// fireCSharpEditEvent is usually implemented as
 		/// top.document.dispatchEvent(new MessageEvent(eventName, {"bubbles": true, "cancelable": true, "data": eventData });
@@ -411,25 +411,32 @@ namespace Bloom
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="action"></param>
-		public static void RequestTimingNotification(string id, Action action)
+		public static void RequestJsNotification(string id, Action action)
 		{
 			List<Action> list;
-			if (!_timingNotificationRequests.TryGetValue(id, out list))
+			if (!_jsNotificationRequests.TryGetValue(id, out list))
 			{
 				list = new List<Action>();
-				_timingNotificationRequests[id] = list;
+				_jsNotificationRequests[id] = list;
 			}
 			list.Add(action);
 		}
 
-		private void ReceiveTimingNotification(string id)
+		/// <summary>
+		/// This event is raised
+		/// </summary>
+		public event EventHandler PaintedPageNotificationFromJavaScript;
+
+		private void ReceiveJsNotification(string id)
 		{
+			if (id == "editPagePainted")
+				PaintedPageNotificationFromJavaScript?.Invoke(this, new EventArgs());
 			List<Action> list;
-			if (!_timingNotificationRequests.TryGetValue(id, out list))
+			if (!_jsNotificationRequests.TryGetValue(id, out list))
 				return;
 			foreach (var action in list)
 				action();
-			_timingNotificationRequests.Remove(id);
+			_jsNotificationRequests.Remove(id);
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
