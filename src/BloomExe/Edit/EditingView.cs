@@ -469,6 +469,15 @@ namespace Bloom.Edit
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				_model.SetupServerWithCurrentPageIframeContents();
 				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
+				// A page can't be 'dirty' in the interval between when we start to navigate to it and when it's visible.
+				// So we don't want anything trying to save it during that time. Apart from wasting time, such a save
+				// might fail (BL-2634, BL-6296) if the new page is not yet loaded enough to have the right ID.
+				// To detect that the page IS loaded, we're re-purposing some code originally made for timing
+				// the page load/paint process. We only get one notification per call to this function, so we need
+				// to set it up again each time we load a page. It's important to set it up before we start
+				// navigation; otherwise, we might miss the event and never enable saving for this page.
+				Browser.RequestTimingNotification("editPagePainted", () => _model.PageMightBeDirty = true);
+				_model.PageMightBeDirty = false;
 				if (_model.AreToolboxAndOuterFrameCurrent())
 				{
 					var pageUrl = _model.GetUrlForCurrentPage();
