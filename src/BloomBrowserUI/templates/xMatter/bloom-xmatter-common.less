@@ -287,12 +287,17 @@
         //    .licenseBlock{margin-bottom: 1em;}
         //}
     }
+
     .branding {
         position: absolute;
         bottom: 0;
         left: 0; // allows centering even though position absolute
         right: 0; // allows centering even though position absolute
         height: 1in;
+    }
+    .branding-top {
+        position: initial; // turn off the absolute positioning we get from branding; top should put things downward
+        height: auto;
     }
 }
 
@@ -445,6 +450,8 @@ body[bookcreationtype="translation"] {
     // 30% makes it a pretty respectable height, but still allows for a lot of text in the translation group above.
     // If there's room to make it bigger (without distortion, which can happen by forcing width:100%) it will grow.
     // the flex-basis provides a minimum size independent of the original image size.
+    // In case it's aspect ratio makes it not fill the entire height that the flex algorithm
+    // allocates to it, we position the actual image at the bottom of its space.
     &.branding-wide {
         min-height: 30%;
         height: auto;
@@ -452,6 +459,7 @@ body[bookcreationtype="translation"] {
         flex-basis: 1in;
         width: 100%;
         background-color: transparent;
+        object-position: bottom;
     }
 }
 
@@ -472,7 +480,7 @@ body[bookcreationtype="translation"] {
         }
 
         .branding {
-            margin-top: 10px;
+            margin-top: auto; // for simpler cases, puts image at bottom of containing flex box.
         }
     }
 }

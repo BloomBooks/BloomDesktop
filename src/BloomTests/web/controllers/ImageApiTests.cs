@@ -58,7 +58,7 @@ namespace BloomTests.web.controllers
 					<img class=""licenseImage"" src=""license.png""/>
 				</div>
 			</div>
-			<img class=""branding"" src=""credits-page.png?optional=true""/>
+			<img class=""branding"" src=""credits-page-bottom.png?optional=true""/>
 		</div>
 	</div>
 	<div class=""bloom-page bloom-frontMatter countPageButDoNotShowNumber"" data-page-number=""1"">
@@ -172,7 +172,7 @@ namespace BloomTests.web.controllers
 			Assert.AreEqual("Front Cover", imageNameToPages["AOR_aa013m.png"].First(), "Should include xmatter pics");
 			Assert.AreEqual("2", imageNameToPages["AOR_aa013m.png"].Last(), "Numbered pages should be after front matter");
 			Assert.IsFalse(imageNameToPages.ContainsKey("title-page.svg"), "Branding images get filtered out");
-			Assert.IsFalse(imageNameToPages.ContainsKey("credits-page.png"), "Branding images get filtered out");
+			Assert.IsFalse(imageNameToPages.ContainsKey("credits-page-bottom.png"), "Branding images get filtered out");
 			Assert.IsFalse(imageNameToPages.ContainsKey("back-cover-outside.svg"), "Branding images get filtered out");
 			Assert.IsFalse(imageNameToPages.ContainsKey("back-cover-outside-wide.png"), "Branding images get filtered out");
 			Assert.IsFalse(imageNameToPages.ContainsKey("placeHolder.png"), "Placeholder images get filtered out");
