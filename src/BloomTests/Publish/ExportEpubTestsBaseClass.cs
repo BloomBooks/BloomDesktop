@@ -276,7 +276,8 @@ namespace BloomTests.Publish
 			}
 
 			string containedImageDivs = "";
-			var body = optionalDataDiv + String.Format(@"<div class='bloom-page" + extraPageClass + @"'>
+			var body = optionalDataDiv + string.Format(
+				  @"<div class='bloom-page" + extraPageClass + @"'>
 						<div id='" + parentDivId + @"' class='marginBox'>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang='' data-default-languages='{8}'>
 								<div class='bloom-editable {6}' lang='{0}' contenteditable='true'>
