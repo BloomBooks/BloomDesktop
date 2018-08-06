@@ -28,7 +28,7 @@ export default class BookMetadataDialog extends React.Component<
         this.setState({ isOpen: false });
     }
 
-    public static async show() {
+    public static show() {
         BookMetadataDialog.singleton.setState({
             isOpen: true
         });
