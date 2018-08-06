@@ -12,6 +12,7 @@ import "./epubPublishUI.less";
 import EpubPreview from "./EpubPreview";
 // import { RadioGroup, Radio } from "../../react_components/radio";
 import WebSocketManager from "../../utils/WebSocketManager";
+import BookMetadataDialog from "../metadata/BookMetadataDialog";
 
 const kWebSocketClientContext = "publish-epub";
 
@@ -173,8 +174,17 @@ class EpubPublishUI extends React.Component<
                         >
                             Accessibility Checker
                         </Link>
+                        <Link
+                            id="bookMetadataDialogLink"
+                            l10nKey="Publish.BookMetadata"
+                            l10nComment="This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics."
+                            onClick={() => BookMetadataDialog.show()}
+                        >
+                            Book Metadata
+                        </Link>
                     </div>
                 </div>
+                <BookMetadataDialog />
             </div>
         );
     }
