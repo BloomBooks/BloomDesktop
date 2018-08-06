@@ -874,6 +874,15 @@ namespace Bloom.Book
 			var classesToDrop = new[] { "imageWholePage","imageOnTop","imageInMiddle","imageOnBottom","textWholePage","pictureAndWordPage" };
             HtmlDom.MergeClassesIntoNewPage(page, newPage, classesToDrop);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, layoutOfThisBook);
+			foreach (XmlAttribute attr in page.Attributes)
+			{
+				if (newPage.HasAttribute(attr.Name))
+					continue; // don't overwrite things specified in template, typically class, id, data-page
+				// Otherwise copy everything, even things we don't know about at the time of writing this
+				// code; if we add a new attribute that gets set before this code runs, we'd like to transfer
+				// it to the new element without having to remember to update this code.
+				newPage.SetAttribute(attr.Name, attr.Value);
+			}
 			bool dummy;
 			OurHtmlDom.MigrateEditableData(page, newPage, lineage.Replace(originalTemplateGuid, updateTo.Guid), true, out dummy);
 		}

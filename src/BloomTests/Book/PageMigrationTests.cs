@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using NUnit.Framework;
+using RestSharp.Extensions;
 using SIL.Xml;
 
 namespace BloomTests.Book
@@ -14,9 +15,9 @@ namespace BloomTests.Book
 	public class PageMigrationTests : BookTestsBase
 	{
 		[Test]
-		public void MigrateTextOnlyShellPage_CopiesText()
+		public void MigrateTextOnlyShellPage_CopiesTextAndAttrs()
 		{
-			SetDom(@"<div class='bloom-page' data-pagelineage='d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb' id='thePage'>
+			SetDom(@"<div class='bloom-page' data-pagelineage='d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb' id='thePage' data-page-number='3' nonsense='45'>
 			   <div class='marginBox'>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='en'>
@@ -48,6 +49,8 @@ namespace BloomTests.Book
 			CheckEditableText(newPage, "xyz", "Translation into xyz, the primary language.");
 			CheckEditableText(newPage, "z", "");
 			Assert.That(newPage.SafeSelectNodes("//div[@lang='z' and contains(@class,'bloom-editable')]"), Has.Count.EqualTo(1), "Failed to remove old child element");
+			Assert.That(newPage.GetAttribute("data-page-number"), Is.EqualTo("3"));
+			Assert.That(newPage.GetAttribute("nonsense"), Is.EqualTo("45"));
 		}
 
 		[Test]

@@ -9,7 +9,10 @@ import { Label } from "../../../react_components/l10n";
 import { Checkbox } from "../../../react_components/checkbox";
 import Link from "../../../react_components/link";
 import HelpLink from "../../../react_components/helpLink";
-import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
+import {
+    RequiresBloomEnterpriseWrapper,
+    enterpriseFeaturesEnabled
+} from "../../../react_components/requiresBloomEnterprise";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -256,69 +259,73 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // Make sure the page has the elements used to store image descriptions,
     // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
-        this.reactControls.setStateForNewPage();
-        var page = ToolBox.getPage();
-        // turn on special layout to make image descriptions visible (might already be on)
-        page.classList.add("bloom-showImageDescriptions");
-        // Make sure every image container has a child bloom-translationGroup to hold the image description.
-        var imageContainers = page.getElementsByClassName(
-            "bloom-imageContainer"
-        );
-        var addedTranslationGroup = false;
-        for (var i = 0; i < imageContainers.length; i++) {
-            const container = imageContainers[i];
-            var imageDescriptions = container.getElementsByClassName(
-                "bloom-imageDescription"
-            );
-
-            // Arrange to change which image the check boxes refer to when an image's description
-            // gets focus. Note that we do not change this or disable them if something other
-            // than an image description gets focus; this potentially allows the user to do things like
-            // moving the focus and selecting a check box using the keyboard.
-            for (let i = 0; i < imageDescriptions.length; i++) {
-                imageDescriptions[i].removeEventListener(
-                    "focus",
-                    this.descriptionGotFocus
-                ); // prevent duplicates
-                // look for it in capture phase so we see child elements getting focus
-                imageDescriptions[i].addEventListener(
-                    "focus",
-                    this.descriptionGotFocus,
-                    true
+        enterpriseFeaturesEnabled().then(enabled => {
+            if (enabled) {
+                this.reactControls.setStateForNewPage();
+                var page = ToolBox.getPage();
+                // turn on special layout to make image descriptions visible (might already be on)
+                page.classList.add("bloom-showImageDescriptions");
+                // Make sure every image container has a child bloom-translationGroup to hold the image description.
+                var imageContainers = page.getElementsByClassName(
+                    "bloom-imageContainer"
                 );
+                var addedTranslationGroup = false;
+                for (var i = 0; i < imageContainers.length; i++) {
+                    const container = imageContainers[i];
+                    var imageDescriptions = container.getElementsByClassName(
+                        "bloom-imageDescription"
+                    );
+
+                    // Arrange to change which image the check boxes refer to when an image's description
+                    // gets focus. Note that we do not change this or disable them if something other
+                    // than an image description gets focus; this potentially allows the user to do things like
+                    // moving the focus and selecting a check box using the keyboard.
+                    for (let i = 0; i < imageDescriptions.length; i++) {
+                        imageDescriptions[i].removeEventListener(
+                            "focus",
+                            this.descriptionGotFocus
+                        ); // prevent duplicates
+                        // look for it in capture phase so we see child elements getting focus
+                        imageDescriptions[i].addEventListener(
+                            "focus",
+                            this.descriptionGotFocus,
+                            true
+                        );
+                    }
+                    if (imageDescriptions.length === 0) {
+                        // from somewhere else I copied this as a typical default set of classes for a translation group,
+                        // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
+                        // textOverPicture) which might be nested in image containers.
+                        // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
+                        // anywhere. Image descriptions will get the book's default font and Bloom's default text size
+                        // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
+                        // Using a unique name serves to prevent image description from using the possibly very large
+                        // text set for the main content (normal-style); this style will inherit the defaults independently.
+                        // Including 'edit' in the name of the style is intended to convey that this style is only
+                        // intended for use in editing; we will style it otherwise if we actually make it visible
+                        // in an epub.
+                        const newTg = getPageFrameExports()
+                            .makeElement(
+                                "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement" +
+                                    " ImageDescriptionEdit-style'></div>"
+                            )
+                            .get(0);
+                        container.appendChild(newTg);
+                        addedTranslationGroup = true;
+                    }
+                }
+                if (addedTranslationGroup) {
+                    // This inserts all the right bloom-editable divs in whatever languages are needed.
+                    BloomApi.postThatMightNavigate(
+                        "common/saveChangesAndRethinkPageEvent"
+                    );
+                    // This return is currently redundant but it emphasizes that you can't count on anything
+                    // more happening in this branch.The page will unload somewhere in the
+                    // course of saveChangesAndRethinkPageEvent. Then a new page will load and updateMarkup()
+                    // will be called again...this time every image container should have a translation group.
+                    return;
+                }
             }
-            if (imageDescriptions.length === 0) {
-                // from somewhere else I copied this as a typical default set of classes for a translation group,
-                // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
-                // textOverPicture) which might be nested in image containers.
-                // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
-                // anywhere. Image descriptions will get the book's default font and Bloom's default text size
-                // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
-                // Using a unique name serves to prevent image description from using the possibly very large
-                // text set for the main content (normal-style); this style will inherit the defaults independently.
-                // Including 'edit' in the name of the style is intended to convey that this style is only
-                // intended for use in editing; we will style it otherwise if we actually make it visible
-                // in an epub.
-                const newTg = getPageFrameExports()
-                    .makeElement(
-                        "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement" +
-                            " ImageDescriptionEdit-style'></div>"
-                    )
-                    .get(0);
-                container.appendChild(newTg);
-                addedTranslationGroup = true;
-            }
-        }
-        if (addedTranslationGroup) {
-            // This inserts all the right bloom-editable divs in whatever languages are needed.
-            BloomApi.postThatMightNavigate(
-                "common/saveChangesAndRethinkPageEvent"
-            );
-            // This return is currently redundant but it emphasizes that you can't count on anything
-            // more happening in this branch.The page will unload somewhere in the
-            // course of saveChangesAndRethinkPageEvent. Then a new page will load and updateMarkup()
-            // will be called again...this time every image container should have a translation group.
-            return;
-        }
+        });
     }
 }
