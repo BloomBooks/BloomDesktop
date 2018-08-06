@@ -1,8 +1,23 @@
 @import "../../bloomDialog.less";
+@import "../../node_modules/react-table/react-table.css";
 
 .bookMetadataDialog {
     .dialogContent {
-        min-height: 800px;
-        min-width: 600px;
+        .ReactTable {
+            border: solid 1px black;
+            width: 500px;
+            .rt-thead.-header {
+                display: none;
+            }
+            // cover art
+            img {
+                height: 70px;
+            }
+            .loading {
+                margin-left: auto;
+                margin-right: auto;
+                margin-bottom: 2em;
+            }
+        }
     }
 }

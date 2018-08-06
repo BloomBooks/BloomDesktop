@@ -2857,6 +2857,11 @@ namespace Bloom.Book
 				doomedPage.ParentNode.RemoveChild(doomedPage);
 			}
 		}
+
+		public int getPageCount()
+		{
+			return -1; //TODO. This is BL-6331
+		}
 	}
 }
 

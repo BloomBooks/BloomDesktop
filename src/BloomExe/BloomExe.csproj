@@ -619,6 +619,7 @@
     <Compile Include="web\controllers\AddOrChangePageApi.cs" />
     <Compile Include="Publish\Android\wifi\AndroidMessageArgs.cs" />
     <Compile Include="Publish\Android\PublishToAndroidApi.cs" />
+    <Compile Include="web\controllers\BookMetadataApi.cs" />
     <Compile Include="web\controllers\CommonApi.cs" />
     <Compile Include="web\controllers\ImageApi.cs" />
     <Compile Include="web\controllers\PageTemplatesApi.cs" />

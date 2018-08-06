@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactModal from "react-modal";
 import "./BookMetadataDialog.less";
 import CloseOnEscape from "react-close-on-escape";
+import BookMetadataTable from "./BookMetadataTable";
 
 // tslint:disable-next-line:no-empty-interface
 interface IProps {}
@@ -41,13 +42,15 @@ export default class BookMetadataDialog extends React.Component<
                 }}
             >
                 <ReactModal
+                    ariaHideApp={false} //we're not trying to make Bloom work with screen readers
                     className="bookMetadataDialog"
                     isOpen={this.state.isOpen}
                     shouldCloseOnOverlayClick={true}
+                    onRequestClose={() => this.handleCloseModal(false)}
                 >
                     <div className={"dialogTitle"}>Book Metadata</div>
                     <div className="dialogContent">
-                        <div className="foobar">hello</div>
+                        <BookMetadataTable />
                         <div className={"bottomButtonRow"}>
                             <button id="helpButton" disabled={true}>
                                 Help
