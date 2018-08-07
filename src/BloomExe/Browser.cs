@@ -990,7 +990,8 @@ namespace Bloom
 				var thisPageId = browserDomPage.Attributes["id"].Value;
 				if(expectedPageId != thisPageId)
 				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(LocalizationManager.GetString("Browser.ProblemSaving",
+						"There was a problem while saving. Please return to the previous page and make sure it looks correct."));
 					return;
 				}
 				_pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
