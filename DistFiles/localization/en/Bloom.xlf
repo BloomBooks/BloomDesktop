@@ -149,6 +149,10 @@
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
       </trans-unit>
+      <trans-unit id="Browser.ProblemSaving">
+        <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
+        <note>ID: Browser.ProblemSaving</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise">
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
