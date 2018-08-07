@@ -113,6 +113,7 @@ namespace Bloom
 							typeof (EditingModel),
 							typeof (AudioRecording),
 							typeof(BookSettingsApi),
+							typeof(BookMetadataApi),
 							typeof(PublishToAndroidApi),
 							typeof(PublishEpubApi),
 							typeof(AccessibilityCheckApi),
@@ -303,6 +304,7 @@ namespace Bloom
 			_scope.Resolve<PageControlsApi>().RegisterWithServer(server);
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);
+			_scope.Resolve<BookMetadataApi>().RegisterWithServer(server);
 			_scope.Resolve<ImageApi>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 			_scope.Resolve<BrandingApi>().RegisterWithServer(server);
