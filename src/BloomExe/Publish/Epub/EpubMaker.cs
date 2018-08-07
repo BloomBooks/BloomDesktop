@@ -1012,6 +1012,10 @@ namespace Bloom.Publish.Epub
 					description.ParentNode.ParentNode.InsertAfter(asideContainer, description.ParentNode);
 					foreach (XmlNode activeDescription in activeDescriptions)
 					{
+						// If the inner xml is only an audioSentence recording, it will still create the aside.
+						// But if there really isn't anything here, skip it.
+						if (string.IsNullOrWhiteSpace(activeDescription.InnerXml))
+							continue;
 						var aside = description.OwnerDocument.CreateElement("aside");
 						// We want to preserve all the inner markup, especially the audio spans.
 						aside.InnerXml = activeDescription.InnerXml;
