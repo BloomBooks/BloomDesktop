@@ -954,10 +954,14 @@ namespace Bloom.Edit
 			return returnVal;
 		}
 
+		// We set this true for the interval between starting to navigate to a new
+		// page and when it is loaded. This prevents trying to save when things are in an unstable state
+		// (e.g., BL-2634, BL-6296). It may also prevent some wasted Saves and thus improve performance.
+		public bool NavigatingSoSuspendSaving = false;
 
 		public void SaveNow()
 		{
-			if (_domForCurrentPage != null && !_inProcessOfSaving)
+			if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
 			{
 				var watch = Stopwatch.StartNew();
 				try

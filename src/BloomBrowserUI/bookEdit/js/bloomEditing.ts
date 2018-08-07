@@ -365,7 +365,7 @@ window.onload = () => {
     // onload means we have all the parts, and waiting for one more animation frame
     // seems to mean it has actually been painted.
     window.requestAnimationFrame(() => {
-        fireCSharpEditEvent("timingNotification", "editPagePainted");
+        fireCSharpEditEvent("jsNotification", "editPagePainted");
     });
 };
 

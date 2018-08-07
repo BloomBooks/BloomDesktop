@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -838,7 +839,7 @@ namespace Bloom.Publish.Epub
 			// expecting them to be divs.
 			ConvertHeadingStylesToHeadingElements(pageDom);
 
-			FixDivOrdering(pageDom);
+			FixDivOrderingForPage(pageDom);
 
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
@@ -985,14 +986,11 @@ namespace Bloom.Publish.Epub
 					continue;
 				}
 				var desc = img.SelectSingleNode("following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]") as XmlElement;
-				if (desc != null)
+				var text = desc?.InnerText.Trim();
+				if (!string.IsNullOrEmpty(text))
 				{
-					var text = desc.InnerText.Trim();
-					if (!String.IsNullOrEmpty(text))
-					{
-						img.SetAttribute("alt", text);
-						continue;
-					}
+					img.SetAttribute("alt", text);
+					continue;
 				}
 				img.RemoveAttribute("alt");    // signal missing accessibility information
 			}
@@ -1000,20 +998,31 @@ namespace Bloom.Publish.Epub
 			if (PublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
+				FixDivOrdering(imageDescriptions.Cast<XmlElement>());
 				foreach (XmlElement description in imageDescriptions)
 				{
-					var activeDescription = description.SelectSingleNode("div[contains(@class, 'bloom-content1')]");
-					if (activeDescription != null)
+					var activeDescriptions = description.SafeSelectNodes("div[contains(@class, 'bloom-visibility-code-on')]");
+					if (activeDescriptions.Count == 0)
+						continue;
+					// Now that we need multiple asides (BL-6314), I'm putting them in a separate div and ordering
+					// them. Insert the div after the image container, thus not interfering with the
+					// reader's placement of the image itself.
+					var asideContainer = description.OwnerDocument.CreateElement("div");
+					asideContainer.SetAttribute("class", "asideContainer");
+					description.ParentNode.ParentNode.InsertAfter(asideContainer, description.ParentNode);
+					foreach (XmlNode activeDescription in activeDescriptions)
 					{
+						// If the inner xml is only an audioSentence recording, it will still create the aside.
+						// But if there really isn't anything here, skip it.
+						if (string.IsNullOrWhiteSpace(activeDescription.InnerXml))
+							continue;
 						var aside = description.OwnerDocument.CreateElement("aside");
 						// We want to preserve all the inner markup, especially the audio spans.
 						aside.InnerXml = activeDescription.InnerXml;
 						// As well as potentially being used by stylesheets, this is used by the AddAriaAccessibilityMarkup
 						// to identify the aside as an image description (and tie the image to it).
 						aside.SetAttribute("class", "imageDescription");
-						// For now we will insert the aside after the image container, thus not interfering with the reader's
-						// placement of the image itself.
-						description.ParentNode.ParentNode.InsertAfter(aside, description.ParentNode);
+						asideContainer.AppendChild(aside);
 					}
 				}
 			}
@@ -1022,8 +1031,8 @@ namespace Bloom.Publish.Epub
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
 				foreach (XmlElement description in imageDescriptions)
 				{
-					var activeDescription = description.SelectSingleNode("div[contains(@class, 'bloom-content1')]");
-					if (activeDescription != null)
+					var activeDescriptions = description.SafeSelectNodes("div[contains(@class, 'bloom-visibility-code-on')]");
+					foreach (XmlNode activeDescription in activeDescriptions)
 					{
 						++_imgCount;
 						var link = description.OwnerDocument.CreateElement("a");
@@ -1443,26 +1452,29 @@ namespace Bloom.Publish.Epub
 					_firstNumberedPageSeen = true;
 				}
 			}
-			// Note that the alt attribute is handled elsewhere.
+			// Note that the alt attribute is handled in HandleImageDescriptions().
 			foreach (var img in pageDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
 			{
 				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
 					continue;
 				div = img.SelectSingleNode("parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]") as XmlElement;
-				if (div != null)
+				// Typically by this point we've converted the image descriptions into asides whose container is the next
+				// sibling of the image container. Set Aria Accessibility stuff for them.
+				var asideContainer = div?.NextSibling as XmlElement;
+				if (asideContainer != null && asideContainer.Attributes["class"]?.Value == "asideContainer")
 				{
-					// Typically by this point we've converted the image description into an aside that is the next sibling
-					// of the image container.
-					var desc = div.NextSibling as XmlElement;
-					if (desc != null && desc.Attributes["class"]?.Value == "imageDescription" && !String.IsNullOrWhiteSpace (desc.InnerText))
+					++_imgCount;
+					var descCount = 0;
+					var bookFigId = "bookfig" + _imgCount.ToString(CultureInfo.InvariantCulture);
+					img.SetAttribute("id", bookFigId);
+					const string period = ".";
+					foreach (XmlElement asideNode in asideContainer.ChildNodes)
 					{
-						++_imgCount;
-						var bookFigId = "bookfig" + _imgCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
-						img.SetAttribute("id", bookFigId);
-						var figDescId = "figdesc" + _imgCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
-						desc.SetAttribute("id", figDescId);
-						img.SetAttribute("aria-describedby", figDescId);
-						continue;
+						var figDescId = "figdesc" + _imgCount.ToString(CultureInfo.InvariantCulture) + period + descCount.ToString(CultureInfo.InvariantCulture);
+						++descCount;
+						asideNode.SetAttribute("id", figDescId);
+						var ariaAttr = img.GetAttribute("aria-describedby");
+						img.SetAttribute("aria-describedby", (string.IsNullOrWhiteSpace(ariaAttr) ? "" : ariaAttr + " ") + figDescId);
 					}
 				}
 			}
@@ -1783,22 +1795,27 @@ namespace Bloom.Publish.Epub
 		}
 
 		/// <summary>
-		/// Reorder any div elements that need to be reordered for proper display in the ePUB.
+		/// Reorder any div elements on the given page that need to be reordered for proper display in the ePUB.
 		/// </summary>
 		/// <remarks>
 		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6299.
 		/// </remarks>
-		private void FixDivOrdering(HtmlDom pageDom)
+		private void FixDivOrderingForPage(HtmlDom pageDom)
+		{
+			FixDivOrdering(pageDom.RawDom.DocumentElement.SelectNodes("//div[contains(@class, 'translationGroup')]").Cast<XmlElement>());
+		}
+
+		private void FixDivOrdering(IEnumerable<XmlElement> nodeList)
 		{
 			// The different-language children of a translation group are ordered in Bloom proper by flex-box CSS
 			// that puts the div with class bloom-content1 before the one with bloom-content2 etc.  Since we don't
 			// (and can't) rely on flex-box in epubs, we need to actually put the elements in the right order.
-			foreach (var multilingualDiv in pageDom.RawDom.DocumentElement.SelectNodes("//div[contains(@class, 'translationGroup')]").Cast<XmlElement>())
+			foreach (var multilingualDiv in nodeList)
 			{
 				var divs = multilingualDiv.SelectNodes("./div[contains(@class, 'bloom-content')]").Cast<XmlElement>().ToList();
 				divs.Sort(CompareMultilingualDivs);
 				for (var i = divs.Count - 1; i >= 1; --i)
-					multilingualDiv.InsertBefore(divs[i-1], divs[i]);
+					multilingualDiv.InsertBefore(divs[i - 1], divs[i]);
 			}
 		}
 
