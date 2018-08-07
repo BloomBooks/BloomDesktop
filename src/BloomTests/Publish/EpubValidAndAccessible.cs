@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
-using Bloom;
-using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish.Epub;
-using BloomTemp;
-using BloomTests.Book;
-using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
 
@@ -341,12 +331,13 @@ namespace BloomTests.Publish
 
 		/// <summary>
 		/// Verify that an image has a description linked to it properly.
+		/// If this method needs to handle multiple descriptions for the same image someday, it'll need reworking.
 		/// </summary>
 		private void ImageDescriptionIsMarkedForAccessibility(string pageData, string figureNumber)
 		{
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby]", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc"+figureNumber+"' and @id='bookfig"+figureNumber+"']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:aside[@id='figdesc"+figureNumber+"']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc"+figureNumber+".0' and @id='bookfig"+figureNumber+"']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:aside[@id='figdesc"+figureNumber+".0']", _ns, 1);
 		}
 
 		/// <summary>
