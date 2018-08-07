@@ -124,7 +124,7 @@ namespace Bloom.Edit
 			if (handler != null && /*REVIEW */ page != null)
 			{
 				var stopwatch = Stopwatch.StartNew();
-				Browser.RequestTimingNotification("editPagePainted", () =>
+				Browser.RequestJsNotification("editPagePainted", () =>
 				{
 					var paintTime = stopwatch.ElapsedMilliseconds;
 					if (reportsSent++ >= 2)
