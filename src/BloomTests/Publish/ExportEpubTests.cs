@@ -96,8 +96,55 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, BookInfo.HowToPublishImageDescriptions.OnPage);
 			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
-			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:aside[.='This describes image 1']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns, 1);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@class='branding' and @alt='' and @role='presentation']", _ns, 1);
+		}
+
+		[Test]
+		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered()
+		{
+			var book = SetupBookLong("This is a more complicated page page", "xyz",
+				optionalDataDiv: // activate all 3 lgs
+					@"<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>xyz</div>
+						<div data-book='contentLanguage2' lang='*'>en</div>
+						<div data-book='contentLanguage3' lang='*'>fr</div>
+					</div>",
+				extraContentOutsideTranslationGroup:
+					@"<div title='image1.png' class='bloom-imageContainer'>
+						<img src='image1.png' />
+						<div class='bloom-translationGroup bloom-imageDescription'>
+							<div class='bloom-editable bloom-contentNational2 bloom-visibility-code-on' lang='fr'>
+								<p><span id='frdescguid' class='audio-sentence'>French image description</span></p>
+							</div>
+							<div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='xyz'>
+								<p><span id='xyzdescguid' class='audio-sentence'>Vernacular image description</span></p>
+							</div>
+							<div class='bloom-editable bloom-contentNational3' lang='xunk'>
+								<p><span id='nondescguid' class='audio-sentence'>Non-selected image description</span></p>
+							</div>
+							<div class='bloom-editable bloom-contentNational1 bloom-visibility-code-on' lang='en'>
+								<p><span id='engdescguid' class='audio-sentence'>English image description</span></p>
+							</div>
+						</div>
+					</div>");
+			MakeImageFiles(book, "image1"); // otherwise the img tag gets stripped out
+			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered", book, BookInfo.HowToPublishImageDescriptions.OnPage);
+			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
+			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside", _ns, 3);
+			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='Non-selected image description']", _ns);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[1][.='Vernacular image description']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[2][.='English image description']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[3][.='French image description']", _ns, 1);
+
+			// since this test creates actual image files, we can test the AriaAccessibilityMarkup
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@id='bookfig1']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@alt='Vernacular image description']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc1.0 figdesc1.1 figdesc1.2']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[1][@id='figdesc1.0']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[2][@id='figdesc1.1']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[3][@id='figdesc1.2']", _ns, 1);
 		}
 
 		private string CheckNavPage()
