@@ -14,6 +14,7 @@ export { getPageFrameExports };
 import { showAddPageDialog } from "../pageChooser/launch-page-chooser";
 export { showAddPageDialog };
 import "errorHandler";
+import { reportError } from "../lib/errorHandler";
 
 //Called by c# using FrameExports.handleUndo()
 export function handleUndo(): void {
@@ -34,7 +35,24 @@ export function handleUndo(): void {
 }
 
 export function switchContentPage(newSource: string) {
-    this.getPageFrameExports().pageUnloading();
+    try {
+        if (
+            this.getPageFrameExports &&
+            this.getPageFrameExports().pageUnloading
+        ) {
+            this.getPageFrameExports().pageUnloading();
+        }
+    } catch (e) {
+        // It's not too unlikely something goes wrong while trying to unload the previous
+        // page. If the user is clicking fast, it may not have had time to finish loading.
+        // We try to guard against this with all the checks above and some in pageUnloading,
+        // but it's disastrous if we fail to load the new page because of some problem
+        // with the old one. (See BL-6296, BL-2634.) So do our best to report any remaning
+        // problems, but don't let them stop us loading the new page.
+        try {
+            reportError(e.message, e.stack);
+        } catch (e2) {}
+    }
     let iframe = <HTMLIFrameElement>document.getElementById("page");
     // We want to call getToolboxFrameExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
