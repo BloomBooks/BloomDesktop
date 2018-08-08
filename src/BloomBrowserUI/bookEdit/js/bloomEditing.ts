@@ -1081,7 +1081,10 @@ export var pageSelectionChanging = function() {
 
 // For usage, see editViewFrame.switchContentPage()
 export var pageUnloading = function() {
-    theOneTextOverPictureManager.removeTextOverPictureListener();
+    // It should always exist, but sometimes we may unload a page before we finish loading it.
+    if (theOneTextOverPictureManager) {
+        theOneTextOverPictureManager.removeTextOverPictureListener();
+    }
 };
 
 // This is invoked from C# when we are about to leave a page (often right after the previous
