@@ -22,14 +22,14 @@ mixin mxb-titlePage
 		+field-prototypeDeclaredExplicity("N1")#contributions
 			label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
 				| The contributions made by writers, illustrators, editors, etc., in {lang}
-			+editable("N1").contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
+			+editable(kLanguageForPrototypeOnly).contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
 		+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
 			label.bubble
 				| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
-			+editable("N1").versionAcknowledgments.LocalizedAcknowledgments-style(data-book="versionAcknowledgments")
+			+editable(kLanguageForPrototypeOnly).versionAcknowledgments.LocalizedAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book="versionAcknowledgments")
 		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
-			+editable("N1").funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+			+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
 		+field-title-page-branding
 
 mixin mxb-nationalSummaryCreditsPage-back-title-page
@@ -39,11 +39,11 @@ mixin mxb-nationalSummaryCreditsPage-back-title-page
 			label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
 		+field-prototypeDeclaredExplicity("N1")#originalAcknowledgments
 			label.bubble Original (or Shell) Acknowledgments in {lang}
-			+editable("N1").bloom-copyFromOtherLanguageIfNecessary.OriginalAcknowledgments-style(data-book='originalAcknowledgments')
+			+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
 				| {Original Acknowledgments}
 		+block-licenseAndCopyright
 		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
-		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary
 		+field-ISBN
 		+field-prototypeDeclaredExplicity("N1")#printingHistory
 			label.bubble Use this for Printing History (1st Edition, etc.)

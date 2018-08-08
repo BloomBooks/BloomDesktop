@@ -2,21 +2,18 @@
 
 @XMatterPackName: "MXB Book";
 @fontSize: 10pt;
-@contentMarginBottom: 3em;
-@contentMarginTop: 1em;
-@contentAboveCCBuffer: 1em;
-@contentBelowCCBuffer: 3em;
+@MarginBetweenMajorItems: 3em;
 @contentMinimumHeight: 1em;
 
 // moving the license and copyright block to a new place, it needs some top space
 .licenseAndCopyrightBlock {
-    margin-bottom: @contentMarginBottom;
+    margin-bottom: @MarginBetweenMajorItems;
 }
 
 .titlePage {
     // shrink this down from 3em because we're combining the title and credits pages
     #titlePageTitleBlock {
-        margin-bottom: @contentMarginBottom;
+        margin-bottom: @MarginBetweenMajorItems;
     }
     // shrink things down even more if it's a small paper size
     &.A6Landscape,
@@ -35,52 +32,53 @@
 // more scrunching
 .titlePage {
     // default values for the Original Contriutions section
-    .Contributions-style {
+    .OriginalContributions-style.bloom-contentNational1 {
         font-size: @fontSize;
         display: block;
-        margin-top: @contentBelowCCBuffer;
-        margin-bottom: @contentMarginBottom;
+        margin-bottom: @MarginBetweenMajorItems;
+        margin-top: @MarginBetweenMajorItems;
     }
     // default values for the Localized Acknowledgments section
-    .LocalizedAcknowledgments-style {
+    .LocalizedAcknowledgments-style.bloom-contentNational1 {
         font-size: @fontSize;
         display: block;
-        margin-bottom: @contentMarginBottom;
+        margin-bottom: @MarginBetweenMajorItems;
     }
     // default values for the Funding section
-    .Funding-style {
+    .Funding-style.bloom-contentNational1 {
         font-size: @fontSize;
         display: block;
+        margin-bottom: @MarginBetweenMajorItems;
     }
-    #funding {
-        margin-bottom: @contentMarginBottom;
+    // scrunch things down as much as possible
+    .bloom-contentNational1,
+    .bloom-content1 {
+        margin-bottom: 0.5em;
     }
 }
 
 .credits {
-    #originalAcknowledgments .bloom-content1 {
-        display: block;
-        margin-bottom: @contentAboveCCBuffer;
-    }
-    #printingHistory .bloom-contentNational1 {
-        display: block;
-    }
     // default values for the National Language section
-    .NationalLanguage-style {
+    .NationalLanguage-style.bloom-contentNational1 {
         font-size: @fontSize;
         display: block;
-        margin-bottom: @contentMarginBottom;
+        margin-bottom: @MarginBetweenMajorItems;
     }
     // default values for the Original Acknowledgments section
-    .OriginalAcknowledgments-style {
+    .OriginalAcknowledgments-style.bloom-contentNational1 {
         font-size: @fontSize;
         display: block;
+        margin-bottom: @MarginBetweenMajorItems;
     }
     // default values for the Printing History section
     .PrintingHistory-style.bloom-contentNational1 {
         font-size: @fontSize;
         display: block;
-        margin-top: @contentMarginTop;
+    }
+    // scrunch things down as much as possible
+    .bloom-contentNational1,
+    .bloom-content1 {
+        margin-bottom: 0.5em;
     }
 }
 
@@ -116,28 +114,21 @@ body[bookcreationtype="original"] {
         #languageInformation {
             .bloom-content1 {
                 min-height: @contentMinimumHeight;
-                margin-bottom: @contentMarginBottom;
             }
         }
         #contributions {
             .bloom-content1 {
                 min-height: @contentMinimumHeight;
-                margin-top: @contentBelowCCBuffer;
-                margin-bottom: @contentMarginBottom;
             }
         }
         #localizedAcknowledgments {
             .bloom-content1 {
                 min-height: @contentMinimumHeight;
-                margin-top: @contentMarginTop;
-                margin-bottom: @contentMarginBottom;
             }
         }
         #funding {
             .bloom-content1 {
                 min-height: @contentMinimumHeight;
-                margin-top: @contentMarginTop;
-                margin-bottom: @contentMarginBottom;
             }
         }
     }
@@ -149,27 +140,21 @@ body[bookcreationtype="translation"] {
         #languageInformation {
             .bloom-content1 {
                 min-height: @contentMinimumHeight;
-                margin-bottom: @contentMarginBottom;
             }
         }
-        #Contributions {
+        #contributions {
             .bloom-content1 {
                 min-height: @contentMinimumHeight;
-                margin-top: @contentBelowCCBuffer;
-                margin-bottom: @contentMarginBottom;
             }
         }
         #localizedAcknowledgments {
             .bloom-content1 {
                 min-height: @contentMinimumHeight;
-                margin-top: @contentMarginTop;
-                margin-bottom: @contentMarginBottom;
             }
         }
         #funding {
             .bloom-content1 {
                 min-height: @contentMinimumHeight;
-                margin-top: @contentMarginTop;
             }
         }
     }
