@@ -3,7 +3,8 @@
         "target": "es5",
         "module": "commonjs",
         "sourceMap": true,
-        "jsx": "react"
+        "jsx": "react",
+        "lib": ["DOM", "ES5", "ScriptHost", "es2017.object"]
     },
     "exclude": ["node_modules", "typings"]
 }
