@@ -14,7 +14,7 @@ namespace Bloom.Api
 	/// <summary>
 	/// Runs a web socket server on the given port. Useful for high-frequency messages (like audio levels) and allows the backend to send messages to the client.
 	///
-	/// About ports... we currently only have a single server that is used to pass any number of messages. 
+	/// About ports... we currently only have a single server that is used to pass any number of messages.
 	/// Then on the client side, we have multiple connections to this same server; each connection is called a "socket",
 	/// note that these are on the same port.
 	/// For outgoing messages from c# to the client code, we have 3 levels:
@@ -86,11 +86,11 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
-		/// 
+		///
 		/// </summary>
 		/// <param name="clientContext">This serves a couple of purposes. First, it is used to filter out messages
 		/// to those aimed at a particular client context. For example, two screens, both containing progress boxes,
-		/// could be on screen at the same time. The ClientContext would tell us which one is supposed to be 
+		/// could be on screen at the same time. The ClientContext would tell us which one is supposed to be
 		/// printing out messages coming with the "progress" eventId. </param>
 		/// <param name="eventId"></param>
 		/// <param name="eventBundle"></param>
@@ -126,13 +126,6 @@ namespace Bloom.Api
 					}
 				}
 			}
-		}
-
-		// we have 3 places in javascript land that are not yet using our WebSocketManager; they
-		// don't know about "clientContext"s yet.
-		public void SendLegacy(string eventId, string message)
-		{
-			SendString("legacy", eventId, message);
 		}
 
 		public void SendString(string clientContext, string eventId, string message)

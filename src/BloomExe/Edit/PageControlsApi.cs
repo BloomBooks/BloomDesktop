@@ -110,7 +110,7 @@ namespace Bloom.Edit
 		private void SendCleanupState()
 		{
 			var endState = "{\"CanAddPages\":false,\"CanDeletePage\":false,\"CanDuplicatePage\":false,\"BookLockedState\":\"OriginalBookMode\"}";
-			_webSocketServer.SendLegacy(kWebsocketStateId, endState);
+			_webSocketServer.SendString(kWebsocketContext, kWebsocketStateId, endState);
 		}
 
 		private void UpdateState()

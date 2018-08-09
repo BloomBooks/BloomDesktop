@@ -5,59 +5,25 @@
 // that the Bloom C# uses (in Browser.cs).
 ///<reference path="../../typings/jquery/jquery.d.ts"/>
 
-import { fireCSharpEditEvent } from "./bloomEditing";
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
+import WebSocketManager from "../../utils/WebSocketManager";
 
-const kSocketName = "webSocket"; // TODO BL-6129 upgrade this to use WebSocketManger and a proper clientContext
-
+const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 class TextOverPictureManager {
-    private listenerFunction: (MessageEvent) => void;
-
     public initializeTextOverPictureManager(): void {
-        this.listenerFunction = event => {
-            var e = JSON.parse(event.data);
-            if (!("message" in e)) {
-                return;
-            }
-            var locationArray = e.message.split(","); // mouse right-click coordinates
-            if (e.id === "addTextBox")
-                this.addFloatingTOPBox(locationArray[0], locationArray[1]);
-            if (e.id === "deleteTextBox")
-                this.deleteFloatingTOPBox(locationArray[0], locationArray[1]);
-        };
-        // I (GJM) ran into problems setting the onmessage handler in two places (here and in audioRecording)
-        // The problem can be solved two ways: 1- by giving TextOverPictureManager's socket a different name,
-        // or 2- by switching to using addEventListener("message", eventhandler), which I've done. Also, the
-        // TextOverPictureManager's socket is now on the local window as opposed to window.top as in
-        // audioRecording.ts.
-        var socket = this.getWebSocket();
-        if (socket) {
-            socket.addEventListener("message", this.listenerFunction);
-        }
+        WebSocketManager.addListener(kWebsocketContext, messageEvent => {
+            var locationArray = messageEvent.message.split(","); // mouse right-click coordinates
+            if (messageEvent.id === "addTextBox")
+                this.addFloatingTOPBox(+locationArray[0], +locationArray[1]);
+            if (messageEvent.id === "deleteTextBox")
+                this.deleteFloatingTOPBox(+locationArray[0], +locationArray[1]);
+        });
     }
 
-    public removeTextOverPictureListener(): void {
-        var socket = this.getWebSocket();
-        if (socket) {
-            socket.removeEventListener("message", this.listenerFunction);
-            socket.close();
-        }
-    }
-
-    // N.B. Apparently when the window is shutting down, it is still possible to return from this
-    // function with window[kSocketName] undefined.
-    private getWebSocket(): WebSocket {
-        if (!window[kSocketName]) {
-            //currently we use a different port for this websocket, and it's the main port + 1
-            let websocketPort = parseInt(window.location.port, 10) + 1;
-            //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-            window[kSocketName] = new WebSocket(
-                "ws://127.0.0.1:" + websocketPort.toString()
-            );
-        }
-        return window[kSocketName];
+    public cleanUp(): void {
+        WebSocketManager.closeSocket(kWebsocketContext);
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
