@@ -38,7 +38,7 @@ namespace Bloom.web.controllers
 						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url },
 						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author },
 						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange},
-						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription }
+						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadlingLevelDescription }
 					};
 					request.ReplyWithJson((object)metadata);
 					break;
@@ -47,7 +47,7 @@ namespace Bloom.web.controllers
 					var settings = DynamicJson.Parse(json);
 					_bookSelection.CurrentSelection.BookInfo.MetaData.Author = settings["author"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange = settings["typicalAgeRange"].value.Trim();
-					_bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription = settings["level"].value.Trim();
+					_bookSelection.CurrentSelection.BookInfo.MetaData.ReadlingLevelDescription = settings["level"].value.Trim();
 					_bookSelection.CurrentSelection.Save();
 					request.PostSucceeded();
 					break;
