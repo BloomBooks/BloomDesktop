@@ -43,6 +43,7 @@ namespace Bloom.web.controllers
 		// must match what's in the typescript
 		private const string kWindowActivated = "a11yChecksWindowActivated"; // REVIEW later... are we going to use this event?
 
+		private bool _simulateCataracts;
 
 		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection,
 			BookRenamedEvent bookRenamedEvent, BookSavedEvent bookSavedEvent, EpubMaker.Factory epubMakerFactory,
@@ -125,6 +126,14 @@ namespace Bloom.web.controllers
 			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
 				false, false
 				);
+
+			// A checkbox that the user ticks in the Accessible Image tool to request a preview
+			// of how things might look with cataracts.
+			// For now this doesn't seem worth persisting, except for the session so it sticks from page to page.
+			server.RegisterBooleanEndpointHandler(kApiUrlPart + "cataracts",
+				request => _simulateCataracts,
+				(request, b) => { _simulateCataracts = b; },
+				false);
 		}
 
 		private void MakeAceByDaisyReport(ApiRequest request)

@@ -20,7 +20,7 @@ interface IMusicState {
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
-// which adds an instance of Music to ToolBox.getMasterToolList().
+// which passes an instance of MusicToolAdapter to ToolBox.registerTool();
 export class MusicToolControls extends React.Component<{}, IMusicState> {
     // duplicates information in HtmlDom.cs
     // The names of the attributes (of the main page div) which store the background
