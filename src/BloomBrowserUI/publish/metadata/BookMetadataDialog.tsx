@@ -3,28 +3,25 @@ import * as ReactModal from "react-modal";
 import "./BookMetadataDialog.less";
 import CloseOnEscape from "react-close-on-escape";
 import BookMetadataTable from "./BookMetadataTable";
+import { BloomApi } from "../../utils/bloomApi";
 
 // tslint:disable-next-line:no-empty-interface
 interface IProps {}
-interface IState {
-    isOpen: boolean;
-}
-export default class BookMetadataDialog extends React.Component<
-    IProps,
-    IState
-> {
+export default class BookMetadataDialog extends React.Component<IProps> {
     private static singleton: BookMetadataDialog;
-    public readonly state = { isOpen: false };
+    public readonly state = { isOpen: false, data: Object };
     constructor(props: IProps) {
         super(props);
         BookMetadataDialog.singleton = this;
     }
     public componentDidMount() {
-        //todo: query the metadata json via some api
+        BloomApi.get("book/metadata", result => {
+            this.setState({ data: result.data });
+        });
     }
     private handleCloseModal(doSave: boolean) {
         if (doSave) {
-            //post the edit json back via some api
+            BloomApi.postData("book/metadata", this.state.data);
         }
         this.setState({ isOpen: false });
     }
@@ -50,7 +47,7 @@ export default class BookMetadataDialog extends React.Component<
                 >
                     <div className={"dialogTitle"}>Book Metadata</div>
                     <div className="dialogContent">
-                        <BookMetadataTable />
+                        <BookMetadataTable data={this.state.data} />
                         <div className={"bottomButtonRow"}>
                             <button id="helpButton" disabled={true}>
                                 Help
