@@ -498,6 +498,8 @@ namespace Bloom.Collection
 
 			if (isRtl)
 				sb.AppendLine(" direction: rtl;");
+			else	// Ensure proper directionality: see https://silbloom.myjetbrains.com/youtrack/issue/BL-6256.
+				sb.AppendLine(" direction: ltr;");
 
 			if (lineHeight > 0)
 				sb.AppendLine(" line-height: " + lineHeight.ToString(CultureInfo.InvariantCulture) + ";");
