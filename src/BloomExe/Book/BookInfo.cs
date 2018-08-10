@@ -885,11 +885,19 @@ namespace Bloom.Book
 		[JsonProperty("author")]
 		public string Author { get; set; }
 
+		//https://www.w3.org/wiki/WebSchemas/Accessibility#Features_for_augmentation
+		[JsonProperty("hazards")]
+		public string Hazards { get; set; }
+
+		//https://www.w3.org/wiki/WebSchemas/Accessibility#Features_for_augmentation
+		[JsonProperty("a11yFeatures")]
+		public string A11yFeatures { get; set; }
+		
 		// Global Digital Library: Indicates reading level
 		// NB: this is just "level" in the Global Digital Library
 		// e.g. "Pratham Level 1"
-		[JsonProperty("readlingLevelDescription")]
-		public string ReadlingLevelDescription { get; set; }
+		[JsonProperty("readingLevelDescription")]
+		public string ReadingLevelDescription { get; set; }
 
 		// Global Digital Library: The typical range of ages the content’s intended end user.
 		[JsonProperty("typicalAgeRange")]
