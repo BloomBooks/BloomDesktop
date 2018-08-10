@@ -170,7 +170,10 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 
     public static setup(root): ImageDescriptionToolControls {
-        return ReactDOM.render(<ImageDescriptionToolControls />, root);
+        return ReactDOM.render(
+            <ImageDescriptionToolControls />,
+            root
+        ) as ImageDescriptionToolControls;
     }
 
     public selectImageDescription(description: Element): void {
