@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using Bloom.Api;
 using Bloom.Book;
-using Newtonsoft.Json;
 
 namespace Bloom.web.controllers
 {
@@ -38,7 +36,9 @@ namespace Bloom.web.controllers
 						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url },
 						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author },
 						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange},
-						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadlingLevelDescription }
+						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription },
+						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards },
+						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures }
 					};
 					request.ReplyWithJson((object)metadata);
 					break;
@@ -47,7 +47,9 @@ namespace Bloom.web.controllers
 					var settings = DynamicJson.Parse(json);
 					_bookSelection.CurrentSelection.BookInfo.MetaData.Author = settings["author"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange = settings["typicalAgeRange"].value.Trim();
-					_bookSelection.CurrentSelection.BookInfo.MetaData.ReadlingLevelDescription = settings["level"].value.Trim();
+					_bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription = settings["level"].value.Trim();
+					_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards = settings["hazards"].value.Trim();
+					_bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures = settings["a11yFeatures"].value.Trim();
 					_bookSelection.CurrentSelection.Save();
 					request.PostSucceeded();
 					break;

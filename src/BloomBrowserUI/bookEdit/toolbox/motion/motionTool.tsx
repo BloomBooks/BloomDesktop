@@ -42,7 +42,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 onMotionChanged={checked => this.motionChanged(checked)}
             />,
             root
-        );
+        ) as MotionControl;
         const initialState = this.getStateFromHtml();
         this.rootControl.setState(initialState);
         if (initialState.haveImageContainerButNoImage) {
