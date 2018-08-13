@@ -881,6 +881,19 @@ namespace Bloom.Book
 		[JsonProperty("toolboxIsOpen")]
 		[DefaultValue(false)]
 		public bool ToolboxIsOpen { get; set; }
+
+		[JsonProperty("author")]
+		public string Author { get; set; }
+
+		// Global Digital Library: Indicates reading level
+		// NB: this is just "level" in the Global Digital Library
+		// e.g. "Pratham Level 1"
+		[JsonProperty("readingLevelDescription")]
+		public string ReadingLevelDescription { get; set; }
+
+		// Global Digital Library: The typical range of ages the content’s intended end user.
+		[JsonProperty("typicalAgeRange")]
+		public string TypicalAgeRange { get; set; }
 	}
 
 	/// <summary>
