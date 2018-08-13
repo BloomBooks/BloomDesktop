@@ -12,6 +12,9 @@ interface IProps extends ILocalizationProps {
     subscribeToRefresh?: (queryData: () => void) => void;
     // Extra function to call before posting apiEndpoint.
     priorClickAction?: () => void;
+    // Extra function called when the checked value changes, including when we
+    // retrieve it from the backing API. (This means it MIGHT not actually have changed.)
+    onCheckChanged?: (boolean) => void;
 }
 interface IState {
     checked: boolean;
@@ -33,6 +36,9 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
         BloomApi.get(this.props.apiEndpoint, result => {
             const c = result.data as boolean;
             this.setState({ checked: c });
+            if (this.props.onCheckChanged) {
+                this.props.onCheckChanged(c);
+            }
         });
     }
 
@@ -50,6 +56,9 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
                     BloomApi.postDataWithConfig(this.props.apiEndpoint, c, {
                         headers: { "Content-Type": "application/json" }
                     });
+                    if (this.props.onCheckChanged) {
+                        this.props.onCheckChanged(c);
+                    }
                 }}
             >
                 {this.props.children}

@@ -598,3 +598,18 @@ div.long-press-popup {
     font-size: 40px;
     z-index: @imageContainerZIndex + 50; // stay above videoContainer
 }
+
+// This seems to produce about the amount of yellowing and blurring and darkness
+// seen in http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=0F77B0242324523646B4C8F5A0BDDA52?doi=10.1.1.656.6430&rep=rep1&type=pdf,
+// particularly Figure 1, "Visual acuity chart showing the blurring and color effects of a disabling brunescent cataract with a visual acuity of 20/200"
+body.simulateCataracts {
+    .bloom-imageContainer {
+        background-color: yellow;
+        img {
+            filter: blur(3px) brightness(50%);
+            mix-blend-mode: multiply;
+            font-size: 20px;
+            background-color: white;
+        }
+    }
+}
