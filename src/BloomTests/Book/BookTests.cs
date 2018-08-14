@@ -905,12 +905,15 @@ namespace BloomTests.Book
 		[Test]
 		public void DeletePage_AttemptDeleteLastRemaingPage_DoesntDelete()
 		{
-			var book = CreateBook();
+			var book = CreateBook(true);
 			foreach (var page in book.GetPages())
 			{
+				if (page.IsXMatter)
+					continue;
+
 				book.DeletePage(page);
 			}
-			AssertPageCount(book, 1);
+			AssertPageCount(book, 6); // now more accurately reflects reality with xmatter included
 		}
 
 		[Test]
