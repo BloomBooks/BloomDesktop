@@ -31,7 +31,7 @@ namespace Bloom.web.controllers
 					{
 						metapicture=  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath()},
 						name= new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleBestForUserDisplay },
-						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.getPageCount().ToString() },
+						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString() },
 						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code },
 						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url },
 						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author },
