@@ -186,7 +186,7 @@ namespace Bloom.Edit
 			gridElt.SetAttribute("class", classContent + " gridSelected");
 			var menuElt = GetElementForMenuHolder();
 			menuElt.ParentElement.RemoveChild(menuElt);
-			gridElt.DOMElement.AppendChild(menuElt.DOMElement);
+			gridElt.AppendChild(menuElt);
 		}
 
 		string ColorToHtmlCode(Color color)

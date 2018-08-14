@@ -885,9 +885,9 @@ namespace Bloom
 			}
 		}
 
-		static nsILocalFile toNsFile(string file)
+		static Gecko.nsILocalFileWin toNsFile(string file)
 		{
-			var nsfile = Xpcom.CreateInstance<nsILocalFile>("@mozilla.org/file/local;1");
+			var nsfile = Xpcom.CreateInstance<nsILocalFileWin>("@mozilla.org/file/local;1");
 			nsfile.InitWithPath(new nsAString(file));
 			return nsfile;
 		}
