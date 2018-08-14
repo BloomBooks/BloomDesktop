@@ -53,3 +53,28 @@
 .invisible {
     display: none !important;
 }
+
+/* all of this worked in the latest firefox, but not Bloom.
+    We may want it someday, as it sure seems clearer to put
+    in a ? than the black box that FF normally uses, to mean
+    indeterminate.
+
+input[type="checkbox"]:indeterminate {
+    background: white;
+    -moz-appearance: none;
+    appearance: none;
+    outline: 0;
+    height: 14px;
+    width: 14px;
+    border: 1px solid black;
+}
+input[type="checkbox"]:indeterminate::after {
+    content: "?";
+    position: absolute;
+    top: -2px;
+    left: 2px;
+    font-family: sans;
+    font-weight: bold;
+    //color: gray;
+}
+*/

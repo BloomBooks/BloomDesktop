@@ -410,7 +410,10 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public static setup(root): SignLanguageToolControls {
-        return ReactDOM.render(<SignLanguageToolControls />, root);
+        return ReactDOM.render(
+            <SignLanguageToolControls />,
+            root
+        ) as SignLanguageToolControls;
     }
 }
 

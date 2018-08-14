@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ITool } from "./toolbox";
+import { ReactElement } from "react";
 
 // Provides a base class with some common code for react-based tools that live
 // in Bloom's Edit Page Toolbox.
@@ -9,7 +10,7 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
     public abstract makeRootElement(): HTMLDivElement;
     public abstract id(): string;
 
-    protected adaptReactElement(element: ReactDOM.Element): HTMLDivElement {
+    protected adaptReactElement(element: ReactElement<any>): HTMLDivElement {
         // We need a wrapperDiv to hand back to our the toolbox because react wants some freedom to render asynchronously.
         // So we just create empty div now to hand back to the toolbox, and ask React to render into it eventually.
         const wrapperDiv = document.createElement("div");
