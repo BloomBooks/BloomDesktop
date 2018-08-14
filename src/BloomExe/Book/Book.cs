@@ -2066,7 +2066,7 @@ namespace Bloom.Book
 		{
 			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
-			if(GetPageCount() <2)
+			if(GetLastNumberedPageNumber() < 1)
 				return;
 
 			var pageToShowNext = GetPageToShowAfterDeletion(page);
@@ -2098,9 +2098,22 @@ namespace Bloom.Book
 			_pagesCache = null;
 		}
 
-		private int GetPageCount()
+		/// <summary>
+		/// Internal for use by BookMetadataApi, which wants to know the number of the highest page number in the book.
+		/// </summary>
+		/// <returns></returns>
+		internal int GetLastNumberedPageNumber()
 		{
-			return GetPages().Count();
+			var lastPageNumber = 0;
+			foreach (var page in GetPages())
+			{
+				if (page.IsBackMatter)
+					return lastPageNumber;
+
+				string dummy;
+				page.GetCaptionOrPageNumber(ref lastPageNumber, out dummy);
+			}
+			return lastPageNumber;
 		}
 
 
@@ -2856,11 +2869,6 @@ namespace Bloom.Book
 			{
 				doomedPage.ParentNode.RemoveChild(doomedPage);
 			}
-		}
-
-		public int getPageCount()
-		{
-			return -1; //TODO. This is BL-6331
 		}
 	}
 }
