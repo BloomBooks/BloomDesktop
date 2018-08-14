@@ -905,6 +905,7 @@ namespace BloomTests.Book
 		[Test]
 		public void DeletePage_AttemptDeleteLastRemaingPage_DoesntDelete()
 		{
+			// On a book with Null xmatter (for instance), we don't want Bloom to let us delete the last page.
 			var book = CreateBook();
 			foreach (var page in book.GetPages())
 			{

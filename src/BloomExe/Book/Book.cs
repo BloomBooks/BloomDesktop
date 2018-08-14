@@ -2066,7 +2066,7 @@ namespace Bloom.Book
 		{
 			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
-			if(GetLastNumberedPageNumber() < 1)
+			if(GetPages().Count() < 2)
 				return;
 
 			var pageToShowNext = GetPageToShowAfterDeletion(page);
