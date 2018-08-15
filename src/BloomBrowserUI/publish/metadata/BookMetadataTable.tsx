@@ -2,12 +2,70 @@ import * as React from "react";
 import ReactTable from "react-table";
 import * as mobxReact from "mobx-react";
 import { StringListCheckbox } from "../../react_components/stringListCheckbox";
+import thema from "./Thema_v1.3.0_en";
+import DropdownTreeSelect from "react-dropdown-tree-select";
+import "./BookMetadataTable.less";
 interface IProps {
     // We don't know or care what the top level elements are to this. We will show a row for each
     // of the top level entries that we find.
     // However the "value" of each entry must itself be an object of type {type:___, value:___}.
     // I don't know if it is possible to express that in Typescript and it doesn't seem worth a lot of effort.
     metadata: any;
+}
+
+// Subjects from Thema are organized as a hierarchical tree.
+// SubjectTreeNode represents the data from one node of that conceptual tree
+// in a form usable by the react-dropdown-tree-select component.
+// (The top node of the tree is not a subject, so we store an array of
+// these nodes to represent the top of the tree.)
+class SubjectTreeNode {
+    constructor(
+        public value: string,
+        public label: string,
+        public checked: boolean,
+        public children: SubjectTreeNode[]
+    ) {}
+}
+var subjectCodes: SubjectTreeNode[] = [];
+
+// Populate the tree we need for choosing one or more items using the
+// react-dropdown-tree-select component.
+thema.Codelist.ThemaCodes.Code.forEach(element => {
+    if (!element.CodeParent) {
+        subjectCodes.push(
+            new SubjectTreeNode(
+                element.CodeValue,
+                element.CodeDescription,
+                false,
+                []
+            )
+        );
+    } else {
+        var parent = findSubject(subjectCodes, element.CodeParent);
+        if (parent != null) {
+            parent.children.push(
+                new SubjectTreeNode(
+                    element.CodeValue,
+                    element.CodeDescription,
+                    false,
+                    []
+                )
+            );
+        }
+    }
+});
+// Recursively search the given array of tree nodes for the given subject code.
+function findSubject(
+    treeLevel: SubjectTreeNode[],
+    parentCode: string
+): SubjectTreeNode {
+    var nodes = treeLevel.filter(element => element.value == parentCode);
+    if (nodes.length >= 1) return nodes[0];
+    for (let subject of treeLevel) {
+        var retval = findSubject(subject.children, parentCode);
+        if (retval != null) return retval;
+    }
+    return null;
 }
 
 // The BookMetadataTable shows some elements of https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
@@ -79,10 +137,8 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                             </textarea>
                                         );
 
-                                    /* future BL-6173
-                                case "choices":
-                                    return this.makeSubjectChooser();
-                                break;*/
+                                    case "subjects":
+                                        return this.makeSubjectChooser();
                                     case "hazards":
                                         return this.makeHazardControls();
                                     case "a11yFeatures":
@@ -162,5 +218,79 @@ export default class BookMetadataTable extends React.Component<IProps> {
                     : "(none)"}
             </div>
         );
+    }
+
+    private makeSubjectChooser() {
+        var currentSubjects = " " + this.props.metadata.subjects.value + " ";
+        this.MarkSelectedNodes(subjectCodes, currentSubjects);
+        var chooseLabel = "Choose...";
+        // I don't know if we want to explicitly show the codes or not.
+        // The current react-dropdown-tree-select shows the label of only
+        // a parent node if checked, and none of the labels of its children
+        // even if one or more of them are checked.  It may be nontrivial
+        // to change that behavior.
+        return (
+            <div>
+                Thema Codes: {this.props.metadata.subjects.value}
+                <br />
+                <DropdownTreeSelect
+                    data={subjectCodes}
+                    onChange={this.handleSubjectChange}
+                    placeholderText={chooseLabel}
+                />
+            </div>
+        );
+    }
+    // Update the list of subject codes based on the current node that has just
+    // changed, either to being checked or unchecked.  This is part of how we get
+    // around the react-dropdown-tree-select behavior of checking all subnodes in
+    // the tree when the user checks a branch node instead of a leaf node.
+    handleSubjectChange = (
+        currentNode: SubjectTreeNode,
+        selectedNodes: SubjectTreeNode[] // not useful in our use of this component
+    ) => {
+        var subjects: string;
+        subjects = " " + this.props.metadata.subjects.value + " ";
+        if (currentNode.checked) {
+            subjects = subjects + currentNode.value;
+        } else {
+            subjects = subjects.replace(" " + currentNode.value + " ", " ");
+        }
+        subjects = subjects
+            .trim()
+            .split(" ")
+            .sort()
+            .join(" ");
+        this.props.metadata.subjects.value = subjects;
+    };
+    // Mark only the specifically selected nodes as checked.  This is part of how we
+    // get around the react-dropdown-tree-select behavior of checking all subnodes
+    // in the tree when the user checks a branch node instead of a leaf node.
+    private MarkSelectedNodes(
+        list: SubjectTreeNode[],
+        currentSubjects: string
+    ) {
+        list.forEach(element => {
+            if (this.matchCurrentSubject(element.value, currentSubjects)) {
+                element["checked"] = true;
+            } else {
+                element["checked"] = false;
+            }
+            this.MarkSelectedNodes(element.children, currentSubjects);
+        });
+    }
+    // Check whether given code is in the current set of subject codes.
+    // (This implementation uses simple string search.)
+    private matchCurrentSubject(
+        codeValue: string,
+        currentSubjects: string
+    ): boolean {
+        if (
+            this.props.metadata.subjects &&
+            this.props.metadata.subjects.value
+        ) {
+            return currentSubjects.indexOf(" " + codeValue + " ") >= 0;
+        }
+        return false;
     }
 }
