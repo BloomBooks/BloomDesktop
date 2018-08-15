@@ -38,6 +38,7 @@
         "@types/stacktrace-js": "^0.0.32",
         "@types/webrtc": "^0.0.23",
         "axios": "^0.16.2",
+        "color-blind": "^0.1.1",
         "css-element-queries": "^0.3.2",
         "global": "^4.3.2",
         "jquery": "^1.12.4",
