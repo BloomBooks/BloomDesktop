@@ -885,6 +885,10 @@ namespace Bloom.Book
 		[JsonProperty("author")]
 		public string Author { get; set; }
 
+		// tags from Thema (https://www.editeur.org/151/Thema/)
+		[JsonProperty("subjects")]
+		public string Subjects { get; set; }
+
 		//https://www.w3.org/wiki/WebSchemas/Accessibility#Features_for_augmentation
 		[JsonProperty("hazards")]
 		public string Hazards { get; set; }
