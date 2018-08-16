@@ -44,6 +44,15 @@ namespace Bloom.web.controllers
 		private const string kWindowActivated = "a11yChecksWindowActivated"; // REVIEW later... are we going to use this event?
 
 		private bool _simulateCataracts;
+		private bool _simulateColorBlindness;
+
+		// These options must match the ones used in accessibileImage.tsx
+		public enum KindOfColorBlindness
+		{
+			RedGreen, BlueYellow, Complete
+		}
+
+		private KindOfColorBlindness _kindOfColorBlindness;
 
 		public AccessibilityCheckApi(BloomWebSocketServer webSocketServer, BookSelection bookSelection,
 			BookRenamedEvent bookRenamedEvent, BookSavedEvent bookSavedEvent, EpubMaker.Factory epubMakerFactory,
@@ -134,6 +143,17 @@ namespace Bloom.web.controllers
 				request => _simulateCataracts,
 				(request, b) => { _simulateCataracts = b; },
 				false);
+			// A checkbox that the user ticks in the Accessible Image tool to request a preview
+			// of how things might look with color-blindness, and a set of radio buttons
+			// for choosing different kinds of color-blindness.
+			// For now these doesn't seem worth persisting, except for the session so it sticks from page to page.
+			server.RegisterBooleanEndpointHandler(kApiUrlPart + "colorBlindness",
+				request => _simulateColorBlindness,
+				(request, b) => { _simulateColorBlindness = b; },
+				false);
+			server.RegisterEnumEndpointHandler(kApiUrlPart + "kindOfColorBlindness",
+				request => _kindOfColorBlindness,
+				(request, kind) => _kindOfColorBlindness = kind, false);
 		}
 
 		private void MakeAceByDaisyReport(ApiRequest request)
