@@ -28,12 +28,12 @@ class EpubPublishUI extends React.Component<
     IPublishSettings
 > {
     private isLinux: boolean;
+    public readonly state: IPublishSettings = {
+        howToPublishImageDescriptions: "None",
+        removeFontSizes: false
+    };
     constructor(props: IUILanguageAwareProps) {
         super(props);
-        this.state = {
-            howToPublishImageDescriptions: "None",
-            removeFontSizes: false
-        };
 
         BloomApi.get("publish/epub/epubSettings", result => {
             this.setState(result.data);

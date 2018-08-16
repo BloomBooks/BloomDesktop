@@ -29,6 +29,7 @@ interface IComponentState {
     colorsVisible: boolean;
     motionBookMode: boolean;
 }
+
 // This is a screen of controls that gives the user instructions and controls
 // for pushing a book to a connected Android device running Bloom Reader.
 class AndroidPublishUI extends React.Component<
@@ -36,18 +37,18 @@ class AndroidPublishUI extends React.Component<
     IComponentState
 > {
     private isLinux: boolean;
+    public readonly state: IComponentState = {
+        stateId: "stopped",
+        method: "wifi",
+        backColor: "#FFFFFF",
+        colorsVisible: false,
+        motionBookMode: false
+    };
+
     constructor(props) {
         super(props);
 
         this.isLinux = this.getIsLinuxFromUrl();
-        this.state = {
-            stateId: "stopped",
-            method: "wifi",
-            backColor: "#FFFFFF",
-            colorsVisible: false,
-            motionBookMode: false
-        };
-
         // enhance: For some reason setting the callback to "this.handleUpdate" calls handleUpdate()
         // with "this" set to the button, not this overall control.
         // I don't quite have my head around this problem yet, but this oddity fixes it.

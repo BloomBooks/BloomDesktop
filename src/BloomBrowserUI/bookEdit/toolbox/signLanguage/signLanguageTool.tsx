@@ -55,18 +55,14 @@ export class SignLanguageToolControls extends React.Component<
     IComponentState
 > {
     public static kToolID = "signLanguage";
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            recording: false,
-            countdown: 0,
-            enabled: false,
-            stateClass: "idle",
-            haveRecording: false,
-            originalExists: false
-        };
-    }
+    public readonly state: IComponentState = {
+        recording: false,
+        countdown: 0,
+        enabled: false,
+        stateClass: "idle",
+        haveRecording: false,
+        originalExists: false
+    };
 
     private videoStream: MediaStream;
     private chunks: Blob[];

@@ -8,6 +8,7 @@ import { BloomApi } from "../utils/bloomApi";
 export interface IComponentState {
     visible: boolean;
 }
+
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
 // if a bloom enterprise project has not been selected; if one has, it displays nothing at all.
 // Typically, it is displayed along with a div that shows all the controls requiring the subscription,
@@ -20,9 +21,12 @@ export class RequiresBloomEnterprise extends React.Component<
     {},
     IComponentState
 > {
+    public readonly state: IComponentState = {
+        visible: false
+    };
+
     constructor(props) {
         super(props);
-        this.state = { visible: false };
         enterpriseFeaturesEnabled().then(enabled =>
             this.setState({ visible: !enabled })
         );

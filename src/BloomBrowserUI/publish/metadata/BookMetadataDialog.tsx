@@ -9,13 +9,19 @@ import * as mobxReact from "mobx-react";
 
 // tslint:disable-next-line:no-empty-interface
 interface IProps {}
+interface IState {
+    isOpen: boolean;
+}
 
 // @observer means mobx will automatically track which observables this component uses
 // in its render() function, and then re-render when they change.
 @mobxReact.observer
-export default class BookMetadataDialog extends React.Component<IProps> {
+export default class BookMetadataDialog extends React.Component<
+    IProps,
+    IState
+> {
     private static singleton: BookMetadataDialog;
-    public readonly state = { isOpen: false };
+    public readonly state: IState = { isOpen: false };
 
     // we want mobx to watch this, because we will pass it to the BookMetadataTable, which can change it.
     @mobx.observable
