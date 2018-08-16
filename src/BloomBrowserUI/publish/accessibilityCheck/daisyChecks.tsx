@@ -13,15 +13,17 @@ interface IState {
     // when the report is done, we get back from the Bloom server a url to get at the report that was generated
     reportUrl: string;
 }
+
+const InitialState: IState = {
+    reportUrl: ""
+};
 export class DaisyChecks extends React.Component<
     IUILanguageAwareProps,
     IState
 > {
     private progressBox: ProgressBox;
-    constructor(props) {
-        super(props);
-        this.state = { reportUrl: "" };
-    }
+    public readonly state = InitialState;
+
     public componentDidMount() {
         this.refresh();
     }

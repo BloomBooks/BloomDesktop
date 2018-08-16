@@ -21,6 +21,10 @@ interface IPublishSettings {
     removeFontSizes: boolean;
 }
 
+const InitialState: IPublishSettings = {
+    howToPublishImageDescriptions: "None",
+    removeFontSizes: false
+};
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
 class EpubPublishUI extends React.Component<
@@ -28,12 +32,10 @@ class EpubPublishUI extends React.Component<
     IPublishSettings
 > {
     private isLinux: boolean;
+    public readonly state = InitialState;
+
     constructor(props: IUILanguageAwareProps) {
         super(props);
-        this.state = {
-            howToPublishImageDescriptions: "None",
-            removeFontSizes: false
-        };
 
         BloomApi.get("publish/epub/epubSettings", result => {
             this.setState(result.data);

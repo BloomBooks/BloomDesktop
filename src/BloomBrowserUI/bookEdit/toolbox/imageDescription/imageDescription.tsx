@@ -19,7 +19,10 @@ interface IImageDescriptionState {
     checkBoxes: Array<boolean>;
 }
 interface IProps {}
-
+const InitialState: IImageDescriptionState = {
+    enabled: true,
+    checkBoxes: []
+};
 // This react class implements the UI for image description toolbox.
 // (The ImageDescriptionAdapter class below implements the interface required for interaction with
 // the toolbox.)
@@ -31,10 +34,7 @@ export class ImageDescriptionToolControls extends React.Component<
     IProps,
     IImageDescriptionState
 > {
-    constructor(props: IProps, state: IImageDescriptionState) {
-        super(props, state); // we don't actually have props... all this is just to stop the error you get otherwise
-        this.state = { enabled: true, checkBoxes: [] };
-    }
+    public readonly state = InitialState;
 
     private static i18ids = [
         "ContextKey",

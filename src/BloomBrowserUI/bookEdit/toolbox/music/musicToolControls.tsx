@@ -22,19 +22,28 @@ interface IMusicState {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of MusicToolAdapter to ToolBox.registerTool();
 export class MusicToolControls extends React.Component<{}, IMusicState> {
+    private InitialState: IMusicState = {
+        activeRadioValue: "continueMusic",
+        volumeSliderPosition: Math.round(
+            MusicToolControls.kDefaultVolumeFraction * 100
+        ),
+        audioEnabled: false,
+        musicName: "",
+        playing: false
+    };
     // duplicates information in HtmlDom.cs
     // The names of the attributes (of the main page div) which store the background
     // audio file name (relative to the audio folder) and the volume (a fraction
     // of full volume).
+    public readonly state = this.InitialState;
     private static musicAttrName = "data-backgroundaudio";
     private static musicVolumeAttrName =
         MusicToolControls.musicAttrName + "volume";
     private static kDefaultVolumeFraction = 0.5;
     private static narrationPlayer: AudioRecording;
     private addedListenerToPlayer: boolean;
-    constructor() {
-        super({});
-        this.state = this.getStateFromHtmlOfPage();
+    public componentDidMount() {
+        this.setState(this.getStateFromHtmlOfPage());
     }
 
     public pausePlayer() {
@@ -52,15 +61,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         if (!audioFileName) {
             audioFileName = ""; // null won't handle split
         }
-        const state = {
-            activeRadioValue: "continueMusic",
-            volumeSliderPosition: Math.round(
-                MusicToolControls.kDefaultVolumeFraction * 100
-            ),
-            audioEnabled: false,
-            musicName: "",
-            playing: false
-        }; // default state
+        const state = this.InitialState;
         if (!hasMusicAttr) {
             // No data-backgroundAudio attr at all is our default state, continue from previous page
             // (including possibly no audio, if previous page had none). If audio is set on a previous

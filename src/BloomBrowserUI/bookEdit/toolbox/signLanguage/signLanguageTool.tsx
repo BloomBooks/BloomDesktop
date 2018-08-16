@@ -25,6 +25,15 @@ interface IComponentState {
     originalExists: boolean;
 }
 
+const InitialState: IComponentState = {
+    recording: false,
+    countdown: 0,
+    enabled: false,
+    stateClass: "idle",
+    haveRecording: false,
+    originalExists: false
+};
+
 // incomplete typescript definitions for MediaRecorder and related types.
 // Can't find complete ones, so rather than just do without type checking altogether,
 // I've made declarations as accurately as I can figure out for the methods we actually use.
@@ -55,18 +64,7 @@ export class SignLanguageToolControls extends React.Component<
     IComponentState
 > {
     public static kToolID = "signLanguage";
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            recording: false,
-            countdown: 0,
-            enabled: false,
-            stateClass: "idle",
-            haveRecording: false,
-            originalExists: false
-        };
-    }
+    public readonly state = InitialState;
 
     private videoStream: MediaStream;
     private chunks: Blob[];

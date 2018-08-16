@@ -22,12 +22,14 @@ export interface ILocalizationState {
     tipEnabledTranslation?: string;
     tipDisabledTranslation?: string;
 }
+const InitialState: ILocalizationState = {};
 
 // A base class for all elements that display text. It uses Bloom's localizationManager wrapper to get strings.
 export class LocalizableElement<
     P extends ILocalizationProps,
     S extends ILocalizationState
 > extends React.Component<P, ILocalizationState> {
+    public readonly state = InitialState;
     private localizationRequestCancelToken: CancelTokenStatic;
     private isComponentMounted: boolean;
     private tooltipKey: string;
@@ -38,7 +40,6 @@ export class LocalizableElement<
         this.isComponentMounted = false; // This is an antipattern. See note on componentWillUnmount()
         this.tooltipKey = this.props.l10nKey + ".ToolTip";
         this.disabledTooltipKey = this.props.l10nKey + ".ToolTipWhenDisabled";
-        this.state = {};
     }
 
     private getOriginalEnglishStringContent(): string {

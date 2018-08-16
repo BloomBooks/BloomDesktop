@@ -14,12 +14,11 @@ import { String } from "../../react_components/l10n";
 interface IState {
     bookName: string;
 }
-
+const InitialState: IState = {
+    bookName: "?"
+};
 class AccessibilityCheckScreen extends React.Component<{}, IState> {
-    constructor(props) {
-        super(props);
-        this.state = { bookName: "?" };
-    }
+    public readonly state = InitialState;
 
     public componentDidMount() {
         // Listen for changes to state from C#-land

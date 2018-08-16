@@ -19,11 +19,12 @@ interface IProps extends ILocalizationProps {
 interface IState {
     checked: boolean;
 }
+
+const InitialState: IState = {
+    checked: false
+};
 export class ApiBackedCheckbox extends React.Component<IProps, IState> {
-    constructor(props) {
-        super(props);
-        this.state = { checked: false };
-    }
+    public readonly state = InitialState;
 
     public componentDidMount() {
         this.queryData();

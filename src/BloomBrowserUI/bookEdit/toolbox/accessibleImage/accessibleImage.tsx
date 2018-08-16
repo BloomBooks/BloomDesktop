@@ -13,16 +13,17 @@ interface IState {
     kindOfColorBlindness: string;
 }
 
+const InitialState: IState = {
+    kindOfColorBlindness: "redGreen"
+};
 // This react class implements the UI for the accessible images toolbox.
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which  passes an instance of AccessibleImageToolAdaptor to ToolBox.registerTool();
 export class AccessibleImageControls extends React.Component<{}, IState> {
-    constructor(state: IState) {
-        super({}, state);
-        this.state = { kindOfColorBlindness: "redGreen" };
-    }
+    public readonly state = InitialState;
+
     // This wants to be part of our state, passed as a prop to ApiBackedCheckbox.
     // But then we, and all the other clients of that class, have to be responsible
     // for interacting with the api to get and set that state. So, for the moment,
