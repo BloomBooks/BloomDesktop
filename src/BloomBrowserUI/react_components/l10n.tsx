@@ -34,6 +34,9 @@ export class LocalizableElement<
     private tooltipKey: string;
     private disabledTooltipKey: string;
 
+    // set the following boolean to turn all translated strings green
+    private turnTranslatedGreen: boolean = false;
+
     constructor(props: ILocalizationProps) {
         super(props as P);
         this.isComponentMounted = false; // This is an antipattern. See note on componentWillUnmount()
@@ -112,7 +115,16 @@ export class LocalizableElement<
 
     public getLocalizedContent(): JSX.Element {
         if (this.state && this.state.translation) {
-            return <span> {this.state.translation} </span>;
+            if (this.turnTranslatedGreen) {
+                return (
+                    <span style={{ color: "green" }}>
+                        {" "}
+                        {this.state.translation}{" "}
+                    </span>
+                );
+            } else {
+                return <span> {this.state.translation} </span>;
+            }
         } else {
             return (
                 <span style={{ color: "grey" }}>

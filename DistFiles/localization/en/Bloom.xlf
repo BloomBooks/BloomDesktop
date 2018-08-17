@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
@@ -132,6 +132,70 @@
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yFeatures" sil:dynamic="true">
+        <source xml:lang="en">Accessibility features</source>
+        <note>ID: BookMetadata.a11yFeatures</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
+        <source xml:lang="en">Alternative text</source>
+        <note>ID: BookMetadata.alternativeText</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.author" sil:dynamic="true">
+        <source xml:lang="en">Author</source>
+        <note>ID: BookMetadata.author</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.flashingHazard" sil:dynamic="true">
+        <source xml:lang="en">Flashing Hazard</source>
+        <note>ID: BookMetadata.flashingHazard</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.hazards" sil:dynamic="true">
+        <source xml:lang="en">Hazards</source>
+        <note>ID: BookMetadata.hazards</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.inLanguage" sil:dynamic="true">
+        <source xml:lang="en">Language</source>
+        <note>ID: BookMetadata.inLanguage</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.level" sil:dynamic="true">
+        <source xml:lang="en">Reading level</source>
+        <note>ID: BookMetadata.level</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.License" sil:dynamic="true">
+        <source xml:lang="en">License</source>
+        <note>ID: BookMetadata.License</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.metapicture" sil:dynamic="true">
+        <source xml:lang="en">Picture</source>
+        <note>ID: BookMetadata.metapicture</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.motionSimulationHazard" sil:dynamic="true">
+        <source xml:lang="en">Motion Simulation Hazard</source>
+        <note>ID: BookMetadata.motionSimulationHazard</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.name" sil:dynamic="true">
+        <source xml:lang="en">Name</source>
+        <note>ID: BookMetadata.name</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.numberOfPages" sil:dynamic="true">
+        <source xml:lang="en">Number of pages</source>
+        <note>ID: BookMetadata.numberOfPages</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.signLanguage" sil:dynamic="true">
+        <source xml:lang="en">Sign Language</source>
+        <note>ID: BookMetadata.signLanguage</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.soundHazard" sil:dynamic="true">
+        <source xml:lang="en">Sound Hazard</source>
+        <note>ID: BookMetadata.soundHazard</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.subjects" sil:dynamic="true">
+        <source xml:lang="en">Subjects</source>
+        <note>ID: BookMetadata.subjects</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.typicalAgeRange" sil:dynamic="true">
+        <source xml:lang="en">Typical age range</source>
+        <note>ID: BookMetadata.typicalAgeRange</note>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
@@ -2644,6 +2708,11 @@
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
         <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.BookMetadata">
+        <source xml:lang="en">Book Metadata</source>
+        <note>ID: PublishTab.BookMetadata</note>
+        <note>This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics.</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Share on the Web</source>
