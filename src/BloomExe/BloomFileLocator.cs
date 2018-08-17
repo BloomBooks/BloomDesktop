@@ -310,7 +310,10 @@ namespace Bloom
 				return fileName;
 			return FileLocationUtilities.GetFileDistributedWithApplication(true, "branding", brandingNameOrFolderPath, fileName);
 		}
-
+		public static string GetBrandingFolder(string brandingName)
+		{
+			return FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "branding", brandingName);
+		}
 		//-----------------------------------------------------
 		// Copied mostly unchanged from libpalaso/FileLocator. Bloom may not actually need all of these.
 		//----------------------------------------------------
