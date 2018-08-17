@@ -108,10 +108,16 @@ namespace Bloom
 			// (See https://silbloom.myjetbrains.com/youtrack/issue/BL-6247.)  That value was chosen arbitrarily
 			// a couple of years ago, possibly to match image.mem.max_decoded_image_kb and javascript.options.mem.max
 			// above.  It seemed to work okay until we stumbled across occasional books that refused to display their
-			// jpeg files.  70MB appears to be enough in my testing of a couple of those books, but let's go with 80MB
-			// to be safe.  (Mozilla seems to have settled on 1GB for the default surfacecache size, but that doesn't
-			// appear to be needed in the Bloom context.)
-			GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 81920;    // 80MB (default = 1048576 == 1GB)
+			// jpeg files.  70MB was enough in my testing of a couple of those books, but let's go with 100MB since
+			// other books may well need more.  (Mozilla seems to have settled on 1GB for the default surfacecache
+			// size, but that doesn't appear to be needed in the Bloom context.)  Most Linux systems are 64-bit and
+			// run a 64-bit version of of Bloom, while Bloom on Windows is still a 32-bit program regardless of the
+			// system.  Since Windows Bloom uses Adobe Acrobat code to display PDF files, it doesn't need the larger
+			// size for surfacecache, and that memory may be needed elsewhere.
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 102400;	// 100MB
+			else
+				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960;	// 40MB
 			GeckoPreferences.User["image.mem.surfacecache.min_expiration_ms"] = 500;    // 500ms (default = 60000 == 60sec)
 
 			// maximum amount of memory for the browser cache (probably redundant with browser.cache.memory.enable above, but doesn't hurt)
