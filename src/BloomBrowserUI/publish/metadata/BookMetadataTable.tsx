@@ -191,6 +191,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                     data={themaSubjectData}
                     onChange={this.handleSubjectChange}
                     placeholderText={chooseLabel}
+                    className="bloom-tree-select"
                 />
             </div>
         );
