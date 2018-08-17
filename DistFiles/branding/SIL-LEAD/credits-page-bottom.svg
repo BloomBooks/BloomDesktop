@@ -10,23 +10,23 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="926.16565mm"
-   height="281.30981mm"
-   viewBox="0 0 926.16564 281.30983"
+   width="986.68982mm"
+   height="243.24413mm"
+   viewBox="0 0 986.68981 243.24414"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="credits-page.svg">
+   sodipodi:docname="credits-page-bottom.svg">
   <title
      id="title3814">credits-page</title>
   <defs
      id="defs2">
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 143.00311 : 1"
-       inkscape:vp_y="0 : 1000 : 0"
-       inkscape:vp_z="925.32234 : 143.00311 : 1"
-       inkscape:persp3d-origin="462.66117 : 95.335405 : 1"
+       inkscape:vp_x="0 : 143.0031 : 1"
+       inkscape:vp_y="0 : 999.99992 : 0"
+       inkscape:vp_z="925.3223 : 143.0031 : 1"
+       inkscape:persp3d-origin="462.66115 : 95.335398 : 1"
        id="perspective28" />
   </defs>
   <sodipodi:namedview
@@ -37,8 +37,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="1790.7143"
-     inkscape:cy="576.54364"
+     inkscape:cx="843.72054"
+     inkscape:cy="478.50669"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -64,11 +64,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(13.266958,172.14398)">
+     transform="translate(10.947715,160.01725)">
     <a
        id="a3724"
        xlink:href="https://www.sil-lead.org/"
-       transform="translate(-13.998697,-191.70961)">
+       transform="translate(-11.376285,-182.41974)">
       <a
          xlink:href="https://www.sil-lead.org/"
          id="a29">
@@ -83,7 +83,7 @@
              sodipodi:role="line"
              x="-0.2604492"
              y="115.47911"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.79999924px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic';stroke-width:0.26458332">Website: www.sil-lead.org</tspan></text>
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:31.75000191px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic';stroke-width:0.26458332">Website: www.sil-lead.org</tspan></text>
       </a>
       <text
          xml:space="preserve"
@@ -100,14 +100,14 @@
     <a
        id="a3753"
        xlink:href="https://www.facebook.com/SIL.LEAD/"
-       transform="translate(418.19288,-125.5944)">
+       transform="translate(421.72482,-128.13812)">
       <text
          id="text3751"
          y="107.25595"
          x="-435.42859"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:50.79999924px;line-height:1.25;font-family:'Book Antiqua';-inkscape-font-specification:'Book Antiqua Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.79999924px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic';stroke-width:0.26458332"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:31.75000191px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic';stroke-width:0.26458332"
            y="107.25595"
            x="-435.42859"
            id="tspan3749"
@@ -126,14 +126,14 @@
          id="flowPara3763" /></flowRoot>    <a
        id="a3773"
        xlink:href="https://www.youtube.com/user/SILLEADInc"
-       transform="translate(420.53745,-139.5131)">
+       transform="translate(423.12199,-152.52127)">
       <text
          id="text3767"
          y="179.2982"
          x="-434.67258"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:50.79999924px;line-height:1.25;font-family:'Book Antiqua';-inkscape-font-specification:'Book Antiqua Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.79999924px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic';stroke-width:0.26458332"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:31.75000191px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic';stroke-width:0.26458332"
            y="179.2982"
            x="-434.67258"
            id="tspan3765"
@@ -142,14 +142,14 @@
     <a
        id="a3785"
        xlink:href="mailto:bloomhelp@sil-lead.org"
-       transform="translate(418.19288,-119.10156)">
+       transform="translate(421.72482,-141.85587)">
       <text
          id="text3779"
          y="216.1131"
          x="-435.42859"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:50.79999924px;line-height:1.25;font-family:'Book Antiqua';-inkscape-font-specification:'Book Antiqua Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.79999924px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic';stroke-width:0.26458332"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:31.75px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic';stroke-width:0.26458332"
            y="216.1131"
            x="-435.42859"
            id="tspan3777"
@@ -158,14 +158,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:50.79999924px;line-height:1.25;font-family:'Book Antiqua';-inkscape-font-specification:'Book Antiqua Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-17.235708"
-       y="-132.45648"
+       x="-13.531523"
+       y="-113.93571"
        id="text3808"><tspan
          sodipodi:role="line"
          id="tspan3806"
-         x="-17.235708"
-         y="-132.45648"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:50.79999924px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic Bold';stroke-width:0.26458332">Please visit or contact us at:</tspan></text>
+         x="-13.531523"
+         y="-113.93571"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:31.75000191px;font-family:'Andika New Basic';-inkscape-font-specification:'Andika New Basic Bold';stroke-width:0.26458332">Please visit or contact us at:</tspan></text>
     <flowRoot
        xml:space="preserve"
        id="flowRoot30"
@@ -177,5 +177,15 @@
            height="1460"
            x="-880"
            y="-209.72823" /></flowRegion><flowPara
-         id="flowPara36" /></flowRoot>  </g>
+         id="flowPara36" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot34"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:192px;line-height:1.25;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, ';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
+         id="flowRegion36"><rect
+           id="rect38"
+           width="2737.1428"
+           height="1437.1428"
+           x="-77.14286"
+           y="-185.35323" /></flowRegion><flowPara
+         id="flowPara40" /></flowRoot>  </g>
 </svg>
