@@ -7,6 +7,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import * as mobx from "mobx";
 import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
+import { Div } from "../../react_components/l10n";
 
 // tslint:disable-next-line:no-empty-interface
 interface IProps {}
@@ -17,16 +18,24 @@ interface IState {
 // @observer means mobx will automatically track which observables this component uses
 // in its render() function, and then re-render when they change.
 @mobxReact.observer
-export default class BookMetadataDialog extends React.Component<
-    IProps,
-    IState
-> {
+export default class BookMetadataDialog extends React.Component<{}, IState> {
     private static singleton: BookMetadataDialog;
     public readonly state: IState = { isOpen: false };
 
-    // we want mobx to watch this, because we will pass it to the BookMetadataTable, which can change it.
+    // We want mobx to watch this, because we will pass it to the BookMetadataTable, which can change it.
     @mobx.observable
-    private metadata: any = { test: { type: "readOnlyText", value: "test" } };
+    private metadata: any = {
+        test: {
+            type: "readOnlyText",
+            value: "test",
+            translatedLabel: "translation"
+        }
+    };
+
+    // We will also pass this to the BookMetadataTable, but mobx doesn't need to watch it, since it won't change.
+    private translatedControlStrings: any = {
+        key: "translatedString"
+    };
 
     constructor(props: IProps) {
         super(props);
@@ -34,7 +43,8 @@ export default class BookMetadataDialog extends React.Component<
     }
     public componentDidMount() {
         BloomApi.get("book/metadata", result => {
-            this.metadata = result.data;
+            this.metadata = result.data.metadata;
+            this.translatedControlStrings = result.data.translatedStringPairs;
         });
     }
     private handleCloseModal(doSave: boolean) {
@@ -62,9 +72,19 @@ export default class BookMetadataDialog extends React.Component<
                     shouldCloseOnOverlayClick={true}
                     onRequestClose={() => this.handleCloseModal(false)}
                 >
-                    <div className={"dialogTitle"}>Book Metadata</div>
+                    <Div
+                        className={"dialogTitle"}
+                        l10nKey="PublishTab.BookMetadata"
+                    >
+                        Book Metadata
+                    </Div>
                     <div className="dialogContent">
-                        <BookMetadataTable metadata={this.metadata} />
+                        <BookMetadataTable
+                            metadata={this.metadata}
+                            translatedControlStrings={
+                                this.translatedControlStrings
+                            }
+                        />
                         <div className={"bottomButtonRow"}>
                             <BloomButton
                                 id="helpButton"

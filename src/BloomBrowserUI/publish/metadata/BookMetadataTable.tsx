@@ -2,6 +2,7 @@ import * as React from "react";
 import ReactTable from "react-table";
 import * as mobxReact from "mobx-react";
 import { StringListCheckbox } from "../../react_components/stringListCheckbox";
+import { Label } from "../../react_components/l10n";
 import "./BookMetadataTable.less";
 import SubjectChooser from "./SubjectChooser";
 interface IProps {
@@ -10,6 +11,7 @@ interface IProps {
     // However the "value" of each entry must itself be an object of type {type:___, value:___}.
     // I don't know if it is possible to express that in Typescript and it doesn't seem worth a lot of effort.
     metadata: any;
+    translatedControlStrings: any;
 }
 
 // The BookMetadataTable shows some elements of https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
@@ -25,7 +27,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
     public componentDidMount() {}
     public render() {
         //console.log("rendering table");
-        const metadata = this.props.metadata as any;
         return (
             <div>
                 <ReactTable
@@ -40,7 +41,9 @@ export default class BookMetadataTable extends React.Component<IProps> {
                         return {
                             key,
                             value: this.props.metadata[key].value,
-                            type: this.props.metadata[key].type
+                            type: this.props.metadata[key].type,
+                            translatedLabel: this.props.metadata[key]
+                                .translatedLabel
                         };
                     })}
                     columns={[
@@ -51,7 +54,18 @@ export default class BookMetadataTable extends React.Component<IProps> {
                             accessor: "key",
                             className: "label",
                             Cell: (cellInfo: any) => {
-                                return <div>{cellInfo.value}</div>;
+                                return (
+                                    <div>
+                                        <Label
+                                            l10nKey={
+                                                "BookMetadata." + cellInfo.value
+                                            }
+                                            alreadyLocalized={true}
+                                        >
+                                            {cellInfo.original.translatedLabel}
+                                        </Label>
+                                    </div>
+                                );
                             }
                         },
                         {
@@ -80,9 +94,8 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                                     ].value =
                                                         event.currentTarget.value;
                                                 }}
-                                            >
-                                                {f.value}
-                                            </textarea>
+                                                defaultValue={f.value}
+                                            />
                                         );
 
                                     case "subjects":
@@ -121,6 +134,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                         <StringListCheckbox
                             key={hazardName}
                             l10nKey={"BookMetadata." + hazardName}
+                            alreadyLocalized={true}
                             list={this.props.metadata.hazards.value}
                             itemName={hazardName}
                             tristateItemOffName={"no" + hazardName}
@@ -128,8 +142,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                 (this.props.metadata.hazards.value = list)
                             }
                         >
-                            {/* TODO in BL-6336, separate the key from what we show as a label */}
-                            {hazardName}
+                            {this.props.translatedControlStrings[hazardName]}
                         </StringListCheckbox>
                     );
                 })}
@@ -152,14 +165,14 @@ export default class BookMetadataTable extends React.Component<IProps> {
                         <StringListCheckbox
                             key={featureName}
                             l10nKey={"BookMetadata." + featureName}
+                            alreadyLocalized={true}
                             list={this.props.metadata.a11yFeatures.value}
                             itemName={featureName}
                             onChange={list =>
                                 (this.props.metadata.a11yFeatures.value = list)
                             }
                         >
-                            {/* TODO in BL-6336, separate the key from what we show as a label */}
-                            {featureName}
+                            {this.props.translatedControlStrings[featureName]}
                         </StringListCheckbox>
                     );
                 })}

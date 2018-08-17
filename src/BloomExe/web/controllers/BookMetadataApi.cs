@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bloom.Api;
 using Bloom.Book;
+using L10NSharp;
 
 namespace Bloom.web.controllers
 {
@@ -29,19 +31,43 @@ namespace Bloom.web.controllers
 					// The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
 					var metadata = new
 					{
-						metapicture=  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath()},
-						name= new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleBestForUserDisplay },
-						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString() },
-						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code },
-						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url },
-						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author },
-						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange},
-						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription },
-						subjects = new { type = "subjects", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects },
-						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards },
-						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures }
+						metapicture =  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath(),
+							translatedLabel = LocalizationManager.GetString("BookMetadata.metapicture", "Picture")},
+						name = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleBestForUserDisplay,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.name", "Name") },
+						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString(),
+							translatedLabel = LocalizationManager.GetString("BookMetadata.numberOfPages", "Number of pages") },
+						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.inLanguage", "Language") },
+						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.License", "License") },
+						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.author", "Author") },
+						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.typicalAgeRange", "Typical age range") },
+						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.level", "Reading level") },
+						subjects = new { type = "subjects", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.subjects", "Subjects") },
+						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.hazards", "Hazards") },
+						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yFeatures", "Accessibility features") }
 					};
-					request.ReplyWithJson((object)metadata);
+					var translatedStringPairs = new
+					{
+						flashingHazard = LocalizationManager.GetString("BookMetadata.flashingHazard", "Flashing Hazard"),
+						motionSimulationHazard = LocalizationManager.GetString("BookMetadata.motionSimulationHazard", "Motion Simulation Hazard"),
+						soundHazard = LocalizationManager.GetString("BookMetadata.soundHazard", "Sound Hazard"),
+						alternativeText = LocalizationManager.GetString("BookMetadata.alternativeText", "Alternative Text"),
+						signLanguage = LocalizationManager.GetString("BookMetadata.signLanguage", "Sign Language"),
+					};
+					var blob = new
+					{
+						metadata,
+						translatedStringPairs,
+					};
+					request.ReplyWithJson(blob);
 					break;
 				case HttpMethods.Post:
 					var json = request.RequiredPostJson();

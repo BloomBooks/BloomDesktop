@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10n";
+import { ILocalizationProps, LocalizableElement, Label } from "./l10n";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
@@ -27,7 +27,7 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
     public componentDidMount() {
         // set the initial "unknown" state
         if (this.props.tristate) {
-            this.input.indeterminate = this.props.checked == undefined;
+            this.input.indeterminate = this.props.checked === undefined;
         }
     }
 
@@ -56,9 +56,14 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
                     }}
                     ref={input => (this.input = input)}
                 />
-                <label onClick={() => this.onLabelClicked()}>
-                    {this.getLocalizedContent()}
-                </label>
+                <Label
+                    l10nKey={this.props.l10nKey}
+                    alreadyLocalized={this.props.alreadyLocalized}
+                    onClick={() => this.onLabelClicked()}
+                >
+                    {/* this.props.children is the English text */}
+                    {this.props.children}
+                </Label>
             </div>
         );
     }
