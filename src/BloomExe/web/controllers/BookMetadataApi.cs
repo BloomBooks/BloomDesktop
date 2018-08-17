@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bloom.Api;
 using Bloom.Book;
+using L10NSharp;
 
 namespace Bloom.web.controllers
 {
@@ -19,6 +21,29 @@ namespace Bloom.web.controllers
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
 			server.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false);
+			server.RegisterEndpointHandler("book/controlsTranslation", HandleTranslationRequestForOtherControls, false);
+		}
+
+		private static void HandleTranslationRequestForOtherControls(ApiRequest request)
+		{
+			switch (request.HttpMethod)
+			{
+				case HttpMethods.Get:
+					var translatedStringPairs = new
+					{
+						flashingHazard = GetTranslation("flashingHazard", "Flashing Hazard"),
+						motionSimulationHazard = GetTranslation("motionSimulationHazard", "Motion Simulation Hazard"),
+						soundHazard = GetTranslation("soundHazard", "Sound Hazard"),
+						alternativeText = GetTranslation("alternativeText", "Alternative Text"),
+						signLanguage = GetTranslation("signLanguage", "Sign Language"),
+					};
+					request.ReplyWithJson(translatedStringPairs);
+					break;
+				case HttpMethods.Post:
+					throw new ArgumentException("Post method not implemented.");
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		private void HandleBookMetadata(ApiRequest request)
@@ -29,19 +54,30 @@ namespace Bloom.web.controllers
 					// The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
 					var metadata = new
 					{
-						metapicture=  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath()},
-						name= new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleBestForUserDisplay },
-						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString() },
-						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code },
-						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url },
-						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author },
-						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange},
-						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription },
-						subjects = new { type = "subjects", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects },
-						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards },
-						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures }
+						metapicture =  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath(),
+							translatedLabel = GetTranslation("metapicture", "Picture")},
+						name = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleBestForUserDisplay,
+							translatedLabel = GetTranslation("name", "Name") },
+						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString(),
+							translatedLabel = GetTranslation("numberOfPages", "Number of pages") },
+						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code,
+							translatedLabel = GetTranslation("inLanguage", "Language") },
+						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url,
+							translatedLabel = GetTranslation("License", "License") },
+						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author,
+							translatedLabel = GetTranslation("author", "Author") },
+						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange,
+							translatedLabel = GetTranslation("typicalAgeRange", "Typical age range") },
+						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription,
+							translatedLabel = GetTranslation("level", "Reading level") },
+						subjects = new { type = "subjects", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects,
+							translatedLabel = GetTranslation("subjects", "Subjects") },
+						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards,
+							translatedLabel = GetTranslation("hazards", "Hazards") },
+						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures,
+							translatedLabel = GetTranslation("a11yFeatures", "Accessibility features") }
 					};
-					request.ReplyWithJson((object)metadata);
+					request.ReplyWithJson(metadata);
 					break;
 				case HttpMethods.Post:
 					var json = request.RequiredPostJson();
@@ -58,6 +94,11 @@ namespace Bloom.web.controllers
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+
+		private static string GetTranslation(string key, string english)
+		{
+			return LocalizationManager.GetString("BookMetadata." + key, english);
 		}
 	}
 }

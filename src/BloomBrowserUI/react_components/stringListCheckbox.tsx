@@ -65,6 +65,7 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
             <Checkbox
                 tristate={this.props.tristateItemOffName !== undefined}
                 l10nKey={this.props.l10nKey}
+                alreadyLocalized={this.props.alreadyLocalized}
                 checked={checkStatus}
                 onCheckChanged={checked => {
                     this.props.onChange(this.getNewList(checked));
