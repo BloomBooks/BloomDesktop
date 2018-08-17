@@ -1156,6 +1156,36 @@ namespace Bloom.Book
 			{
 				ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
 			}
+
+			CopyBrandingFiles();
+		}
+
+		// Brandings come with logos and such... we want them in the book folder itself so that they work
+		// apart from Bloom and in web browsing, epub, and android contexts.
+		private void CopyBrandingFiles()
+		{
+			try
+			{
+				if (!string.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
+				{
+					var brandingFolder = BloomFileLocator.GetBrandingFolder(_collectionSettings.BrandingProjectKey);
+
+					var filesToCopy = Directory
+						.EnumerateFiles(brandingFolder) //<--- .NET 4.5
+						.Where(path => ".png,.svg,.jpg".Split(',').Contains(Path.GetExtension(path).ToLowerInvariant()));
+
+					foreach (var sourcePath in filesToCopy)
+					{
+						var fileName = Path.GetFileName(sourcePath);
+						RobustFile.Copy(sourcePath, Path.Combine(FolderPath, fileName), true);
+					}
+				}
+			}
+			catch (Exception err)
+			{
+				ErrorReport.ReportNonFatalExceptionWithMessage(err,
+					"There was a problem applying the branding: " + _collectionSettings.BrandingProjectKey);
+			}
 		}
 
 		private string PathToXMatterStylesheet
