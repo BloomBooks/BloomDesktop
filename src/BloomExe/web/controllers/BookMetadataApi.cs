@@ -19,6 +19,29 @@ namespace Bloom.web.controllers
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
 			server.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false);
+			server.RegisterEndpointHandler("book/checkboxEnglish", HandleCheckboxEnglishRequest, false);
+		}
+
+		private void HandleCheckboxEnglishRequest(ApiRequest request)
+		{
+			switch (request.HttpMethod)
+			{
+				case HttpMethods.Get:
+					var englishStrings = new
+					{
+						flashingHazard = new { value = "Flashing Hazard" },
+						motionSimulationHazard = new { value = "Motion Simulation Hazard" },
+						soundHazard = new { value = "Sound Hazard" },
+						alternativeText = new { value = "Alternative Text" },
+						signLanguage = new { value = "Sign Language" },
+					};
+					request.ReplyWithJson(englishStrings);
+					break;
+				case HttpMethods.Post:
+					throw new ArgumentException("Post method not implemented.");
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		private void HandleBookMetadata(ApiRequest request)
@@ -29,19 +52,19 @@ namespace Bloom.web.controllers
 					// The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
 					var metadata = new
 					{
-						metapicture=  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath()},
-						name= new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleBestForUserDisplay },
-						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString() },
-						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code },
-						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url },
-						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author },
-						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange},
-						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription },
-						subjects = new { type = "subjects", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects },
-						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards },
-						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures }
+						metapicture=  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath(), english = "Picture"},
+						name= new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleBestForUserDisplay, english = "Name" },
+						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString(), english = "Number of pages" },
+						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code, english = "Language" },
+						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url, english = "License" },
+						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author, english = "Author" },
+						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange, english = "Typical age range"},
+						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription, english = "Reading level" },
+						subjects = new { type = "subjects", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects, english = "Subjects" },
+						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards, english = "Hazards" },
+						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures, english = "Accessibility features" }
 					};
-					request.ReplyWithJson((object)metadata);
+					request.ReplyWithJson(metadata);
 					break;
 				case HttpMethods.Post:
 					var json = request.RequiredPostJson();

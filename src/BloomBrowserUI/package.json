@@ -34,6 +34,7 @@
     "dependencies": {
         "@types/rc-slider": "^8.2.2",
         "@types/react-select": "^2.0.2",
+        "@types/react-table": "^6.7.12",
         "@types/react-tabs": "^1.0.4",
         "@types/stacktrace-js": "^0.0.32",
         "@types/webrtc": "^0.0.23",
