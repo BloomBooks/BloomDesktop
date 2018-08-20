@@ -31,13 +31,17 @@
                 padding: 0;
 
                 & > * {
-                    padding: 7px 5px;
+                    padding-right: 5px; // also sets padding-left
+                }
+                & > not(textarea) {
+                    padding-top: 7px; // also sets padding-bottom
                 }
                 & > textarea {
                     height: 2em;
                     width: 100%;
                     border: none;
                     resize: none;
+                    padding-top: 3px; // also sets padding-bottom.  See BL-6350.
                 }
             }
             // cover art
