@@ -915,8 +915,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private cleanupAnimation() {
         (this.getPage().getElementsByClassName(
             "bloom-page"
-        )[0] as HTMLElement).style.visibility =
-            "";
+        )[0] as HTMLElement).style.visibility = "";
         // stop the animation itself by removing the root elements it adds.
         this.removeElt(this.animationStyleElement);
         this.animationStyleElement = null;
@@ -1015,19 +1014,16 @@ interface IMotionProps {
 
 // This react class implements the UI for the motion tool.
 export class MotionControl extends React.Component<IMotionProps, IMotionState> {
-    public constructor(props) {
-        super(props);
-        // This state won't last long, client sets the first two immediately. But must have something.
-        // To minimize flash we start with both off.
-        this.state = {
-            haveImageContainerButNoImage: false,
-            motionChecked: false,
-            motionPossible: true,
-            previewVoice: true,
-            previewMusic: true,
-            playing: false
-        };
-    }
+    // This state won't last long, client sets the first two immediately.
+    // But must have something. To minimize flash we start with both off.
+    public readonly state: IMotionState = {
+        haveImageContainerButNoImage: false,
+        motionChecked: false,
+        motionPossible: true,
+        previewVoice: true,
+        previewMusic: true,
+        playing: false
+    };
 
     private onMotionChanged(checked: boolean): void {
         this.setState({ motionChecked: checked });

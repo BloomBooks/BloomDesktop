@@ -28,6 +28,7 @@ export class LocalizableElement<
     P extends ILocalizationProps,
     S extends ILocalizationState
 > extends React.Component<P, ILocalizationState> {
+    public readonly state: ILocalizationState = {};
     private localizationRequestCancelToken: CancelTokenStatic;
     private isComponentMounted: boolean;
     private tooltipKey: string;
@@ -38,7 +39,6 @@ export class LocalizableElement<
         this.isComponentMounted = false; // This is an antipattern. See note on componentWillUnmount()
         this.tooltipKey = this.props.l10nKey + ".ToolTip";
         this.disabledTooltipKey = this.props.l10nKey + ".ToolTipWhenDisabled";
-        this.state = {};
     }
 
     private getOriginalEnglishStringContent(): string {

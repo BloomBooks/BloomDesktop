@@ -29,16 +29,16 @@ interface IPageControlsState {
 // This is a small area of controls at the bottom of the webThumbnailList that gives the user controls
 // for adding/duplicating/deleting pages in a book and temporarily unlocking/locking the book.
 class PageControls extends React.Component<{}, IPageControlsState> {
+    // set a initial state
+    public readonly state: IPageControlsState = {
+        canAddState: true,
+        canDeleteState: false,
+        canDuplicateState: false,
+        lockState: "OriginalBookMode"
+    };
+
     constructor(props) {
         super(props);
-
-        // set a default state
-        this.state = {
-            canAddState: true,
-            canDeleteState: false,
-            canDuplicateState: false,
-            lockState: "OriginalBookMode"
-        };
 
         // (Comment copied from androidPublishUI.tsx)
         // For some reason setting the callback to "this.updateStateForEvent" calls updateStateForEvent()

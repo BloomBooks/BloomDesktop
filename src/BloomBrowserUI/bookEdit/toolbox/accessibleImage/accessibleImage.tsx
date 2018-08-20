@@ -19,10 +19,10 @@ interface IState {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which  passes an instance of AccessibleImageToolAdaptor to ToolBox.registerTool();
 export class AccessibleImageControls extends React.Component<{}, IState> {
-    constructor(state: IState) {
-        super({}, state);
-        this.state = { kindOfColorBlindness: "redGreen" };
-    }
+    public readonly state: IState = {
+        kindOfColorBlindness: "redGreen"
+    };
+
     // This wants to be part of our state, passed as a prop to ApiBackedCheckbox.
     // But then we, and all the other clients of that class, have to be responsible
     // for interacting with the api to get and set that state. So, for the moment,
