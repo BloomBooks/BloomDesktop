@@ -2,10 +2,8 @@ import * as React from "react";
 import ReactTable from "react-table";
 import * as mobxReact from "mobx-react";
 import { StringListCheckbox } from "../../react_components/stringListCheckbox";
-import SubjectTreeNode from "./SubjectTreeNode";
-import { themaSubjectData } from "./SubjectTreeNode";
-import DropdownTreeSelect from "react-dropdown-tree-select";
 import "./BookMetadataTable.less";
+import SubjectChooser from "./SubjectChooser";
 interface IProps {
     // We don't know or care what the top level elements are to this. We will show a row for each
     // of the top level entries that we find.
@@ -23,7 +21,6 @@ interface IProps {
 export default class BookMetadataTable extends React.Component<IProps> {
     constructor(props) {
         super(props);
-        this.handleSubjectChange = this.handleSubjectChange.bind(this);
     }
     public componentDidMount() {}
     public render() {
@@ -32,6 +29,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
         return (
             <div>
                 <ReactTable
+                    className="bookMetadataTable"
                     loading={false}
                     NoDataComponent={() => (
                         <div className="loading">Loading...</div>
@@ -88,7 +86,13 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         );
 
                                     case "subjects":
-                                        return this.makeSubjectChooser();
+                                        return (
+                                            <SubjectChooser
+                                                subjects={
+                                                    this.props.metadata.subjects
+                                                }
+                                            />
+                                        );
                                     case "hazards":
                                         return this.makeHazardControls();
                                     case "a11yFeatures":
@@ -168,52 +172,5 @@ export default class BookMetadataTable extends React.Component<IProps> {
                     : "(none)"}
             </div>
         );
-    }
-
-    private makeSubjectChooser() {
-        SubjectTreeNode.markSelectedSubjectNodes(
-            themaSubjectData,
-            " " + this.props.metadata.subjects.value + " "
-        );
-        const chooseLabel = "Choose...";
-        // The current react-dropdown-tree-select "button" shows the label of only
-        // a parent node if checked, and none of the labels of its children even if
-        // one or more of them are checked.  It may be nontrivial to change that
-        // behavior.  The code in this class ensures that only the desired nodes in
-        // the tree are actually checked, and that the list returned to Bloom matches
-        // exactly what has been checked by the user.
-        return (
-            <div>
-                {/* REVIEW: Showing the codes is helpful for testing, but I don't know if we want to ship it.*/}
-                Thema Codes: {this.props.metadata.subjects.value}
-                <br />
-                <DropdownTreeSelect
-                    data={themaSubjectData}
-                    onChange={this.handleSubjectChange}
-                    placeholderText={chooseLabel}
-                />
-            </div>
-        );
-    }
-    // Update the list of subject codes based on the current node that has just
-    // changed, either to being checked or unchecked.  This is part of how we get
-    // around the react-dropdown-tree-select behavior of checking all subnodes in
-    // the tree when the user checks a branch node instead of a leaf node.
-    private handleSubjectChange(
-        currentNode: SubjectTreeNode,
-        selectedNodes: SubjectTreeNode[] // not useful for our purposes: branches (parents) only
-    ) {
-        let subjects = " " + this.props.metadata.subjects.value + " ";
-        if (currentNode.checked) {
-            subjects = subjects + currentNode.value;
-        } else {
-            subjects = subjects.replace(" " + currentNode.value + " ", " ");
-        }
-        subjects = subjects
-            .trim()
-            .split(" ")
-            .sort()
-            .join(" ");
-        this.props.metadata.subjects.value = subjects;
     }
 }
