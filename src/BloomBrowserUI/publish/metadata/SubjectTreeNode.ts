@@ -1,6 +1,8 @@
 // The JSON in ThemaData.json is adapted from https://www.editeur.org/files/Thema/1.3/Thema_v1.3.0_en.json
 // with the tree hierarchy made explicit and the version information omitted.
 // (Subjects from Thema are organized as a hierarchical tree but their JSON file is a flat list).
+// Qualifier subjects were removed (all those with codes starting with a number)
+// The Children related subjects were moved to the top of the list.
 export const themaSubjectData: SubjectTreeNode[] = require("./ThemaData.json");
 
 // A SubjectTreeNode represents the data from one node of the Thema based subject tree
