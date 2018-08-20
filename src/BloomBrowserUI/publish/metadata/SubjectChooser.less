@@ -1,0 +1,23 @@
+@import "../../node_modules/react-dropdown-tree-select/dist/styles.css";
+
+.react-dropdown-tree-select .dropdown {
+    .dropdown-trigger {
+        // Setting the maximum width causes the chosen subject labels to scroll
+        // instead of just passing out of sight when overflowing the button.
+        // (The width value here and below was determined empirically.)
+        max-width: 333px;
+    }
+    .dropdown-content {
+        // Setting the position to "fixed" causes the dropdown tree to appear over
+        // the top of dialog content rather than expand the dialog vertically.
+        position: fixed;
+        height: 240px;
+        width: 333px;
+        overflow-y: scroll;
+    }
+}
+
+// Ensure the + and - markers for the tree are not italic.
+.react-dropdown-tree-select .toggle {
+    font-style: normal;
+}
