@@ -25,7 +25,7 @@ export default class SubjectChooser extends React.Component<IProps> {
         // the tree are actually checked, and that the list returned to Bloom matches
         // exactly what has been checked by the user.
         return (
-            <div>
+            <div className="subjectChooser">
                 for testing only: {this.props.subjects.value}
                 <br />
                 <DropdownTreeSelect

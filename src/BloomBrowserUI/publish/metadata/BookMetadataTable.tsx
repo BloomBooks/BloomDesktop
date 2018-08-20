@@ -29,6 +29,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
         return (
             <div>
                 <ReactTable
+                    className="bookMetadataTable"
                     loading={false}
                     NoDataComponent={() => (
                         <div className="loading">Loading...</div>
