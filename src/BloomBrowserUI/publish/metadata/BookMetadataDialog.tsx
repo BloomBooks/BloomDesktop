@@ -42,7 +42,11 @@ export default class BookMetadataDialog extends React.Component<
         }
         this.setState({ isOpen: false });
     }
-
+    private openHelpTopic() {
+        BloomApi.post(
+            "help/User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
+        );
+    }
     public static show() {
         BookMetadataDialog.singleton.setState({
             isOpen: true
@@ -66,7 +70,10 @@ export default class BookMetadataDialog extends React.Component<
                     <div className="dialogContent">
                         <BookMetadataTable metadata={this.metadata} />
                         <div className={"bottomButtonRow"}>
-                            <button id="helpButton" disabled={true}>
+                            <button
+                                id="helpButton"
+                                onClick={() => this.openHelpTopic()}
+                            >
                                 Help
                             </button>
                             <button
