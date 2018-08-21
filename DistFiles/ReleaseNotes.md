@@ -1,4 +1,4 @@
-﻿﻿## 4.3
+﻿## 4.3
 
 For those of you helping us out by running and giving feedback on the Bloom beta channel, **thank you!** You are a vital part of the Bloom team. We are now moving on to building Bloom 4.4, and will release new editions of the 4.3 beta if you find any problems with it.
 
