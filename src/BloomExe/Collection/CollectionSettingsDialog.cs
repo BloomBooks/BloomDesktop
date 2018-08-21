@@ -29,7 +29,7 @@ namespace Bloom.Collection
 		private bool _loaded;
 		private List<string> _styleNames = new List<string>();
 		private Browser _enterpriseBrowser;
-		private string _brandingCode;
+		private string _subscriptionCode;
 		private string _brand;
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent)
@@ -65,11 +65,16 @@ namespace Bloom.Collection
 //		                                                  UpdateDisplay();
 //		                                              };
 
-			SettingsApi.BrandingChangeHandler = ChangeBranding;
+			CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
 
 			SetupEnterpriseBrowser();
 
 			UpdateDisplay();
+
+			if (CollectionSettingsApi.InvalidBranding != null)
+			{
+				_tab.SelectedTab = _enterpriseTab;
+			}
 		}
 
 		private void SetupEnterpriseBrowser()
@@ -225,7 +230,7 @@ namespace Bloom.Collection
 			}
 
 			_collectionSettings.BrandingProjectKey = _brand;
-			_collectionSettings.BrandingCode = _brandingCode;
+			_collectionSettings.SubscriptionCode = _subscriptionCode;
 
 			//no point in letting them have the Nat lang 2 be the same as 1
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
@@ -285,13 +290,13 @@ namespace Bloom.Collection
 			LoadBrandingCombo();
 			AdjustFontComboDropdownWidth();
 			_brand = _collectionSettings.BrandingProjectKey;
-			_brandingCode = _collectionSettings.BrandingCode;
-			SettingsApi.SetBrandingCode(_brandingCode, IsBrandingCodeKnown(), GetEnterpriseStatus());
+			_subscriptionCode = _collectionSettings.SubscriptionCode;
+			CollectionSettingsApi.SetSubscriptionCode(_subscriptionCode, IsSubscriptionCodeKnown(), GetEnterpriseStatus());
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
 		}
 
-		bool IsBrandingCodeKnown()
+		bool IsSubscriptionCodeKnown()
 		{
 			return BrandingProject.GetProjectChoices().Any(bp => bp.Key == _brand);
 		}
@@ -365,18 +370,6 @@ namespace Bloom.Collection
 
 		private void LoadBrandingCombo()
 		{
-			foreach (var brand in BrandingProject.GetProjectChoices())
-			{
-				if (brand.IsLegacyBranding)
-				{
-					_brandingCombo.Items.Add(brand);
-
-					if (brand.Key == _collectionSettings.BrandingProjectKey)
-					{
-						_brandingCombo.SelectedIndex = _brandingCombo.Items.Count - 1;
-					}
-				}
-			}
 		}
 
 		/*
@@ -522,83 +515,37 @@ namespace Bloom.Collection
 			}
 		}
 
-		private void _brandingCombo_SelectedIndexChanged(object sender, EventArgs e)
+		private CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus()
 		{
-			if (_disableBrandingSelectionChanged)
-				return;
-			if (_brandingCombo.SelectedItem == null)
-				return;
-
-			var brand = _brandingCombo.SelectedItem as BrandingProject;
-			_brand = brand.Key;
-			_brandingCode = brand.BrandingCode;
-			SettingsApi.SetBrandingCode(_brandingCode, true, GetEnterpriseStatus());
-			if (_enterpriseBrowser.WebBrowser != null)
-			{
-				// This is easier than having the SettingsApi broadcast the changes using a socket.
-				// The only time this can happen is when the browser is not visible and may not even
-				// have started loading, so sending stuff to its websocket might not work, anyway.
-				_enterpriseBrowser.WebBrowser.Reload();
-			}
-
-			if(brand?.Key != _collectionSettings.BrandingProjectKey)
-				ChangeThatRequiresRestart();
-		}
-
-		private SettingsApi.EnterpriseStatus GetEnterpriseStatus()
-		{
-			var status = SettingsApi.EnterpriseStatus.Subscription;
+			var status = CollectionSettingsApi.EnterpriseStatus.Subscription;
 			if (_brand == "Default")
-				status = SettingsApi.EnterpriseStatus.None;
+				status = CollectionSettingsApi.EnterpriseStatus.None;
 			else if (_brand == "Local Community")
-				status = SettingsApi.EnterpriseStatus.Community;
+				status = CollectionSettingsApi.EnterpriseStatus.Community;
 			return status;
 		}
-
-		private bool _disableBrandingSelectionChanged = false;
-
-		public bool ChangeBranding(string brand, string brandingCode)
+		/// <summary>
+		/// We configure the SettingsApi to use this method to notify this (as the manager of the whole dialog
+		/// including the "need to reload" message and the Ok/Cancel buttons) of changes the user makes
+		/// in the Enterprise tab.
+		/// </summary>
+		/// <param name="brand"></param>
+		/// <param name="subscriptionCode"></param>
+		/// <returns></returns>
+		public bool ChangeBranding(string brand, string subscriptionCode)
 		{
-			try
+			foreach (var item in BrandingProject.GetProjectChoices())
 			{
-				_disableBrandingSelectionChanged = true;
-				foreach (BrandingProject item in _brandingCombo.Items)
+				if (item.Key.ToUpperInvariant() == brand.ToUpperInvariant())
 				{
-					if (item.Key.ToUpperInvariant() == brand.ToUpperInvariant())
-					{
-						Invoke((Action) (() =>
-						{
-							_brandingCombo.SelectedItem = item;
-							ChangeThatRequiresRestart();
-						}));
-						_brand = item.Key;
-						_brandingCode = brandingCode;
-						return true;
-					}
+					Invoke((Action) (ChangeThatRequiresRestart));
+					_brand = item.Key;
+					_subscriptionCode = subscriptionCode;
+					return true;
 				}
-
-				// We expect to start to have options that are not in the combo.
-				foreach (var item in BrandingProject.GetProjectChoices())
-				{
-					if (item.Key.ToUpperInvariant() == brand.ToUpperInvariant())
-					{
-						Invoke((Action) (() =>
-						{
-							_brandingCombo.SelectedItem = null;
-							ChangeThatRequiresRestart();
-						}));
-						_brand = item.Key;
-						_brandingCode = item.BrandingCode;
-						return true;
-					}
-				}
-
-				return false;
 			}
-			finally
-			{
-				_disableBrandingSelectionChanged = false;
-			}
+
+			return false;
 		}
 
 		private void showTroubleShooterCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -611,11 +558,6 @@ namespace Bloom.Collection
 			{
 				TroubleShooterDialog.HideTroubleShooter();
 			}
-		}
-
-		private void _enterpriseInformationLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			SIL.Program.Process.SafeStart("http://bit.ly/2zTQHfM");
 		}
 
 		private void _numberStyleCombo_SelectedIndexChanged(object sender, EventArgs e)

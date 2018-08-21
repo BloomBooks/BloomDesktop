@@ -13,33 +13,31 @@ interface IState {
     enterpriseStatus: string;
     subscriptionCode: string;
     subscriptionExpiry: Date;
-    subscriptionFeedback: string;
+    subscriptionSummary: string;
     subscriptionUnknown: boolean;
+    invalidBranding: string;
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
 export class EnterpriseSettings extends React.Component<{}, IState> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            enterpriseStatus: "none",
-            subscriptionCode: "",
-            subscriptionExpiry: null,
-            subscriptionFeedback: "",
-            subscriptionUnknown: false
-        };
-
-        this.handleSubscriptionCodeChanged = this.handleSubscriptionCodeChanged.bind(
-            this
-        );
-    }
+    public readonly state: IState = {
+        enterpriseStatus: "none",
+        subscriptionCode: "",
+        subscriptionExpiry: null,
+        subscriptionSummary: "",
+        subscriptionUnknown: false,
+        invalidBranding: ""
+    };
 
     public componentDidMount() {
         BloomApi.get("settings/enterpriseStatus", result => {
             this.setState({ enterpriseStatus: result.data });
         });
-        BloomApi.get("settings/enterpriseCode", result => {
+        BloomApi.get("settings/subscriptionCode", result => {
             this.setSubscriptionCode(result.data);
+        });
+        BloomApi.get("settings/invalidBranding", result => {
+            this.setState({ invalidBranding: result.data });
         });
     }
     // I don't understand why this is necessary but without it the selection
@@ -58,65 +56,89 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         codeElt.selectionStart = codeElt.selectionEnd = this.oldSelectionPosition;
     }
 
+    private codesUrl =
+        "https://gateway.sil.org/display/LSDEV/Bloom+enterprise+subscription+codes";
+
     public render() {
         return (
             <div className="enterpriseSettings">
-                <div>
-                    <Label l10nKey="Settings.Enterprise.Overview">
-                        Bloom Enterprise is a paid service offered by SIL
-                        International. It adds some additional features and
-                        services that are important to publishers, governments,
-                        and international organizations. By subscribing to this
-                        service, these projects can meet some of their unique
-                        needs while also supporting the development and user
-                        support of Bloom, which helps everybody.
-                    </Label>
-                </div>
-                <div className="learnMoreLink">
-                    <Link
-                        l10nKey="Settings.Enterprise.LearnMore"
-                        href="http://bit.ly/2zTQHfM"
-                    >
-                        Learn More
-                    </Link>
-                </div>
+                <Label
+                    l10nKey="Settings.Enterprise.NeedsCode"
+                    l10nParam0={this.state.invalidBranding}
+                    className={
+                        "invalidBranding" +
+                        (this.state.invalidBranding ? "" : " hidden")
+                    }
+                >
+                    This project is configured to use %0 branding. To continue
+                    to use this you will need to enter a current subscription
+                    code. For SIL brandings, SIL members can find codes at the
+                    link below. For other brandings, contact your project
+                    administrator.
+                </Label>
+                <a
+                    className={
+                        "invalidBrandingLink" +
+                        (this.state.invalidBranding ? "" : " hidden")
+                    }
+                    href={this.codesUrl}
+                >
+                    {this.codesUrl}
+                </a>
+                <Label
+                    className="mainHeading"
+                    l10nKey="Settings.Enterprise.Overview"
+                >
+                    Bloom Enterprise is a paid service offered by SIL
+                    International. It adds some additional features and services
+                    that are important to publishers, governments, and
+                    international organizations. By subscribing to this service,
+                    these projects can meet some of their unique needs while
+                    also supporting the development and user support of Bloom,
+                    which helps everybody.
+                </Label>
+                <Link
+                    className="learnMoreLink"
+                    l10nKey="Settings.Enterprise.LearnMore"
+                    href="http://bit.ly/2zTQHfM"
+                >
+                    Learn More
+                </Link>
                 <div className="bloomEnterpriseStatus">
                     <Label l10nKey="Settings.Enterprise.Status">
                         Bloom Enterprise Status
                     </Label>
                 </div>
-                <div>
-                    <RadioGroup
-                        onChange={val => this.setStatus(val)}
-                        value={this.state.enterpriseStatus}
-                    >
-                        <Radio l10nKey="Settings.Enterprise.None" value="None">
-                            None
-                        </Radio>
-                        <div className="communityGroup">
-                            <Radio
-                                className="communityRadio"
-                                l10nKey="Settings.Enterprise.Community"
-                                value="Community"
-                            >
-                                Funded Local Community Only
-                            </Radio>
-                            <Link
-                                className="whatsThisLink"
-                                l10nKey="Settings.Enterprise.WhatsThis"
-                                href="http://bit.ly/2zTQHfM" // Todo: make a page and link to it.
-                            >
-                                What's This?
-                            </Link>
-                        </div>
+                <RadioGroup
+                    onChange={val => this.setStatus(val)}
+                    value={this.state.enterpriseStatus}
+                >
+                    <Radio l10nKey="Settings.Enterprise.None" value="None">
+                        None
+                    </Radio>
+                    <div className="communityGroup">
                         <Radio
-                            l10nKey="Settings.Enterprise.Subscription"
-                            value="Subscription"
+                            className="communityRadio"
+                            l10nKey="Settings.Enterprise.Community"
+                            value="Community"
                         >
-                            Enterprise Subscription
+                            Funded Local Community Only
                         </Radio>
-                    </RadioGroup>
-                </div>
+                        <Link
+                            className="whatsThisLink"
+                            l10nKey="Settings.Enterprise.WhatsThis"
+                            href="http://bit.ly/2zTQHfM" // Todo: make a page and link to it.
+                        >
+                            What's This?
+                        </Link>
+                    </div>
+                    <Radio
+                        l10nKey="Settings.Enterprise.Subscription"
+                        value="Subscription"
+                    >
+                        Enterprise Subscription
+                    </Radio>
+                </RadioGroup>
                 <div className="subscriptionCodeWrapper">
                     <Label
                         className="subscriptionCodeLabel"
@@ -130,47 +152,43 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                         className="subscriptionCodeInput"
                         type="text"
                         value={this.state.subscriptionCode}
-                        onChange={this.handleSubscriptionCodeChanged}
+                        onChange={e => this.handleSubscriptionCodeChanged(e)}
                     />
                     <span className="codeEvaluation">
                         {this.state.subscriptionCode &&
                         this.state.subscriptionExpiry !== null &&
                         !this.state.subscriptionUnknown
-                            ? "\u2713"
+                            ? "✓"
                             : ""}
                     </span>
                 </div>
-                <div
-                    className="error"
-                    style={{
-                        display:
-                            this.state.subscriptionCode &&
-                            !this.state.subscriptionExpiry &&
-                            !this.state.subscriptionUnknown
-                                ? "block"
-                                : "none"
-                    }}
+                <Label
+                    l10nKey="Settings.Enterprise.NotValid"
+                    className={
+                        "error" +
+                        (this.state.subscriptionCode &&
+                        !this.state.subscriptionExpiry &&
+                        !this.state.subscriptionUnknown
+                            ? ""
+                            : " hidden")
+                    }
                 >
-                    <Label l10nKey="Settings.Enterprise.NotValid">
-                        Sorry, that code appears incorrect
-                    </Label>
-                </div>
-                <div
-                    className="error"
-                    style={{
-                        display:
-                            this.state.subscriptionCode &&
-                            !this.state.subscriptionExpiry &&
-                            this.state.subscriptionUnknown
-                                ? "block"
-                                : "none"
-                    }}
+                    Sorry, that code appears incorrect
+                </Label>
+                <Label
+                    l10nKey="Settings.Enterprise.UnknownCode"
+                    className={
+                        "error" +
+                        (this.state.subscriptionCode &&
+                        !this.state.subscriptionExpiry &&
+                        this.state.subscriptionUnknown
+                            ? ""
+                            : " hidden")
+                    }
                 >
-                    <Label l10nKey="Settings.Enterprise.UnknownCode">
-                        That code looks good, but this version of Bloom does not
-                        know about that project
-                    </Label>
-                </div>
+                    That code looks good, but this version of Bloom does not
+                    know about that project
+                </Label>
                 <div
                     className="expiration"
                     style={{
@@ -202,7 +220,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 <div
                     className="summary"
                     dangerouslySetInnerHTML={{
-                        __html: this.state.subscriptionFeedback
+                        __html: this.state.subscriptionSummary
                     }}
                 />
             </div>
@@ -217,9 +235,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     }
 
     private setStatus(status: string) {
-        BloomApi.postDataWithConfig("settings/enterpriseStatus", status, {
-            headers: { "Content-Type": "application/json" }
-        });
+        BloomApi.postJson("settings/enterpriseStatus", status);
         this.setState({ enterpriseStatus: status });
     }
 
@@ -234,7 +250,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     subscriptionCode: code,
                     subscriptionExpiry: null,
                     subscriptionUnknown: true,
-                    subscriptionFeedback: ""
+                    subscriptionSummary: ""
                 });
                 return;
             }
@@ -245,29 +261,26 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 subscriptionUnknown: false
             });
             if (expiry) {
-                BloomApi.get("settings/enterpriseFeedback", result => {
-                    this.setFeedback(result.data);
+                BloomApi.get("settings/enterpriseSummary", result => {
+                    this.setSummary(result.data);
                 });
             } else {
-                this.setFeedback("");
+                this.setSummary("");
             }
         });
     }
 
-    private setFeedback(content: string) {
-        this.setState({ subscriptionFeedback: content });
+    private setSummary(content: string) {
+        this.setState({ subscriptionSummary: content });
     }
 
     private handleSubscriptionCodeChanged(event) {
-        BloomApi.postDataWithConfig(
-            "settings/enterpriseCode",
-            { enterpriseCode: event.target.value },
-            {
-                headers: { "Content-Type": "application/json" }
-            }
-        );
+        BloomApi.postJson("settings/subscriptionCode", {
+            subscriptionCode: event.target.value
+        });
         this.setSubscriptionCode(event.target.value);
         this.setStatus(event.target.value ? "Subscription" : "None");
+        this.setState({ invalidBranding: "" });
     }
 }
 
