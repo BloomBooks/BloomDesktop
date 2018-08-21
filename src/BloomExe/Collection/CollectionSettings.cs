@@ -41,6 +41,11 @@ namespace Bloom.Collection
 		private string _language3Iso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 
+		/// <summary>
+		/// The branding the user wanted, but not confirmed by current SubscriptionCode, if any.
+		/// </summary>
+		public string InvalidBranding { get; private set; }
+
 		public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
 			new Dictionary<string, string>()
 			{
@@ -125,7 +130,7 @@ namespace Bloom.Collection
 			XMatterPackName = collectionInfo.XMatterPackName;
 			PageNumberStyle = collectionInfo.PageNumberStyle;
 			BrandingProjectKey = collectionInfo.BrandingProjectKey;
-			BrandingCode = collectionInfo.BrandingCode;
+			SubscriptionCode = collectionInfo.SubscriptionCode;
 
 			Save();
 		}
@@ -455,7 +460,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("PageNumberStyle", PageNumberStyle));
 			library.Add(new XElement("BrandingProjectName", BrandingProjectKey));
-			library.Add(new XElement("BrandingCode", BrandingCode));
+			library.Add(new XElement("SubscriptionCode", SubscriptionCode));
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
@@ -540,20 +545,15 @@ namespace Bloom.Collection
 				PageNumberStyle = CssNumberStylesToCultureOrDigits.Keys.Contains(style) ? style : "Decimal";
 
 				BrandingProjectKey = GetValue(library, "BrandingProjectName", "Default");
-				BrandingCode = GetValue(library, "BrandingCode", null);
-				if (BrandingCode == null)
-				{
-					string bc;
-					BrandingProject.LegacyBrandings.TryGetValue(BrandingProjectKey, out bc);
-					BrandingCode = bc;
-				}
+				SubscriptionCode = GetValue(library, "SubscriptionCode", null);
 
 				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local Community")
 				{
 					// Validate branding, so things can't be circumvented by just typing something into settings
-					var expirationDate = SettingsApi.GetExpirationDate(BrandingCode);
+					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);
 					if (expirationDate < DateTime.Now || BrandingProject.GetProjectChoices().All(bp => bp.Key != BrandingProjectKey))
 					{
+						InvalidBranding = BrandingProjectKey;
 						BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
 					}
 				}
@@ -776,7 +776,7 @@ namespace Bloom.Collection
 
 		public string BrandingProjectKey { get; set; }
 
-		public string BrandingCode { get; set; }
+		public string SubscriptionCode { get; set; }
 
 		public int OneTimeCheckVersionNumber { get; set; }
 

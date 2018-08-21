@@ -17,7 +17,7 @@ namespace Bloom.web.controllers
 	/// <summary>
 	/// Used by the settings dialog (currently just the EnterpriseSettings tab)
 	/// </summary>
-	public class SettingsApi
+	public class CollectionSettingsApi
 	{
 		public const string kApiUrlPart = "settings/";
 
@@ -27,11 +27,21 @@ namespace Bloom.web.controllers
 			None, Community, Subscription
 		}
 
-		// These are static so they can easily be set by the collection settings dialog using SetBrandingCode()
-		private static string BrandingCode { get; set; }
+		// These are static so they can easily be set by the collection settings dialog using SetSubscriptionCode()
+		private static string SubscriptionCode { get; set; }
 		private static DateTime _enterpriseExpiry = DateTime.MinValue;
-		private static bool _knownEnterpriseCode = false;
+		// True if the part of the subscription code that identifies the branding is one this version of Bloom knows about
+		private static bool _knownBrandingInSubscriptionCode = false;
 		private static EnterpriseStatus _enterpriseStatus;
+		// This is set when we are running the collection settings dialog in a special mode  where it is
+		// brought up automatically to inform the user that a previously used branding code is invalid.
+		// (It might be a legacy branding from an earlier Bloom that did not require a validation code,
+		// or one whose code has expired.) Unlike the InvalidBranding property on CollectionSettings itself,
+		// this one is set ONLY while running the dialog in that mode. Not sure this is the best place to
+		// keep track of this fact, but I haven't found a better one that is accessible to the code
+		// in WorkspaceView that decides to run the dialog in this mode, the dialog itself, and the
+		// React control that implements the behavior.
+		public static string InvalidBranding { get; set; }
 		
 		public void RegisterWithServer(EnhancedImageServer server)
 		{	
@@ -42,7 +52,7 @@ namespace Bloom.web.controllers
 					_enterpriseStatus = status;
 					if (_enterpriseStatus == EnterpriseStatus.None)
 					{
-						_knownEnterpriseCode = true;
+						_knownBrandingInSubscriptionCode = true;
 						BrandingChangeHandler("Default", null);
 					} else if (_enterpriseStatus == EnterpriseStatus.Community)
 					{
@@ -50,28 +60,30 @@ namespace Bloom.web.controllers
 					}
 					else
 					{
-						BrandingChangeHandler(GetBrandingFromCode(BrandingCode), BrandingCode);
+						BrandingChangeHandler(GetBrandingFromCode(SubscriptionCode), SubscriptionCode);
 					}
 				}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseCode", request =>
+			server.RegisterEndpointHandler(kApiUrlPart + "invalidBranding",
+				request => { request.ReplyWithText(InvalidBranding ?? ""); }, false);
+			server.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
-					request.ReplyWithText(BrandingCode??"");
+					request.ReplyWithText(SubscriptionCode??"");
 				}
 				else // post
 				{
 					var requestData = DynamicJson.Parse(request.RequiredPostJson());
-					BrandingCode = requestData.enterpriseCode;
-					_enterpriseExpiry = GetExpirationDate(BrandingCode);
+					SubscriptionCode = requestData.subscriptionCode;
+					_enterpriseExpiry = GetExpirationDate(SubscriptionCode);
 					if (_enterpriseExpiry < DateTime.Now) // expired or invalid
 					{
 						BrandingChangeHandler("Default", null);
 					}
 					else
 					{
-						_knownEnterpriseCode = BrandingChangeHandler(GetBrandingFromCode(BrandingCode), BrandingCode);
-						if (!_knownEnterpriseCode)
+						_knownBrandingInSubscriptionCode = BrandingChangeHandler(GetBrandingFromCode(SubscriptionCode), SubscriptionCode);
+						if (!_knownBrandingInSubscriptionCode)
 						{
 							BrandingChangeHandler("Default", null); // Review: or just leave unchanged?
 						}
@@ -79,9 +91,14 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}
 			}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseFeedback", request =>
+			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseSummary", request =>
 			{
-				var summaryFile = BloomFileLocator.GetOptionalBrandingFile(GetBrandingFromCode(BrandingCode), "summary.htm");
+				string branding = "";
+				if (_enterpriseStatus == EnterpriseStatus.Community)
+					branding = "Local Community";
+				else if (_enterpriseStatus == EnterpriseStatus.Subscription)
+					branding = GetBrandingFromCode(SubscriptionCode);
+				var summaryFile = BloomFileLocator.GetOptionalBrandingFile(branding, "summary.htm");
 				if (summaryFile == null)
 					request.ReplyWithText("");
 				else
@@ -92,7 +109,7 @@ namespace Bloom.web.controllers
 				if (_enterpriseExpiry == DateTime.MinValue)
 				{
 					request.ReplyWithText("null");
-				} else if (_knownEnterpriseCode)
+				} else if (_knownBrandingInSubscriptionCode)
 				{
 					// O is ISO 8601, the only format I can find that C# ToString() can produce and JS is guaranteed to parse.
 					// See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
@@ -125,12 +142,12 @@ namespace Bloom.web.controllers
 			int datePart;
 			if (!Int32.TryParse(parts[last - 1], out datePart))
 				return DateTime.MinValue;
-			int datePlusChecksum;
-			if (!Int32.TryParse(parts[last], out datePlusChecksum))
+			int combinedChecksum;
+			if (!Int32.TryParse(parts[last], out combinedChecksum))
 				return DateTime.MinValue;
 
 			int checkSum = CheckSum(GetBrandingFromCode(input));
-			if (datePart + checkSum != datePlusChecksum)
+			if (Math.Floor(Math.Sqrt(datePart)) + checkSum != combinedChecksum)
 				return DateTime.MinValue;
 			int dateNum = datePart + 40000; // days since Dec 30 1899
 			return new DateTime(1899, 12, 30) + TimeSpan.FromDays(dateNum);
@@ -164,11 +181,11 @@ namespace Bloom.web.controllers
 
 		// Updates things when the legacy combo in another tab is used to set the enterprise project.
 		// Does not try to inform the HTML; that is done by reloading the page.
-		public static void SetBrandingCode(string code, bool knownCode, EnterpriseStatus status)
+		public static void SetSubscriptionCode(string code, bool knownCode, EnterpriseStatus status)
 		{
-			BrandingCode = code;
+			SubscriptionCode = code;
 			_enterpriseExpiry = GetExpirationDate(code);
-			_knownEnterpriseCode = knownCode;
+			_knownBrandingInSubscriptionCode = knownCode;
 			_enterpriseStatus = status;
 		}
 	}
