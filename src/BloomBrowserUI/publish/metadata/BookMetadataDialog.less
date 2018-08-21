@@ -31,13 +31,15 @@
                 padding: 0;
 
                 & > * {
-                    padding-right: 5px; // sets padding-left as well
+                    padding-right: 5px;
+                    padding-left: 5px;
                 }
                 & > :not(textarea) {
                     // We want vertical padding if it's not a textarea which either has some internal
                     // table related spacing or is more limited vertically to begin with.
                     // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6350.
-                    padding-top: 7px; // sets padding-bottom as well
+                    padding-top: 7px;
+                    padding-bottom: 7px;
                 }
                 & > textarea {
                     height: 2em;
