@@ -83,7 +83,8 @@ namespace Bloom.Api
 					if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
 					{
 						info.ContentType = "text/plain";
-						info.WriteCompleteOutput(LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishText, null, langId));
+						string langIdUsedDummy;
+						info.WriteCompleteOutput(LocalizationManager.GetString(id, englishText, null, new[] {langId}, out langIdUsedDummy));
 						return true;
 					}
 					else
@@ -162,6 +163,11 @@ namespace Bloom.Api
 				// a default and can just return the localized string; not passing a default ensures that
 				// even in English we get the true English string for this ID from the XLF.
 				translation = LocalizationManager.GetDynamicString("Bloom", key, null);
+				if (string.IsNullOrWhiteSpace(translation))
+				{
+					// try low priority
+					translation = LocalizationManager.GetDynamicString("BloomLowPriority", key, null);
+				}
 			}
 			else
 			{
@@ -177,6 +183,11 @@ namespace Bloom.Api
 				{
 					// We don't have the string in the desired localization, so will return the English.
 					translation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", key, null, null, "en");
+					if (string.IsNullOrWhiteSpace(translation))
+					{
+						// try low priority
+						translation = LocalizationManager.GetDynamicStringOrEnglish("BloomLowPriority", key, null, null, "en");
+					}
 					// If somehow we don't have even an English version of it, keep whatever was in the element
 					// to begin with.
 					if (string.IsNullOrWhiteSpace(translation))

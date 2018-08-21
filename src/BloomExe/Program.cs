@@ -998,6 +998,12 @@ namespace Bloom
 											"SIL/Bloom",
 											Resources.BloomIcon, "issues@bloomlibrary.org", "SIL");
 
+				unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
+					"BloomLowPriority", "BloomLowPriority", Application.ProductVersion,
+					installedStringFileFolder,
+					"SIL/Bloom",
+					Resources.BloomIcon, "issues@bloomlibrary.org", "Bloom");
+
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 
 				// If this is removed, change code in WorkspaceView.OnSettingsProtectionChanged

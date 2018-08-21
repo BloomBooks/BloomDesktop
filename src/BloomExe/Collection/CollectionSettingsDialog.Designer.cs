@@ -82,6 +82,7 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._enterpriseTab = new System.Windows.Forms.TabPage();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -98,6 +99,7 @@ namespace Bloom.Collection
 			this._tab.Controls.Add(this.tabPage1);
 			this._tab.Controls.Add(this.tabPage2);
 			this._tab.Controls.Add(this.tabPage3);
+			this._tab.Controls.Add(this._enterpriseTab);
 			this._tab.Controls.Add(this.tabPage4);
 			this._tab.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._tab.Location = new System.Drawing.Point(1, 2);
@@ -696,7 +698,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._showExperimentalFeatures, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands");
 			this._showExperimentalFeatures.Location = new System.Drawing.Point(50, 37);
 			this._showExperimentalFeatures.Name = "_showExperimentalFeatures";
-			this._showExperimentalFeatures.Size = new System.Drawing.Size(353, 23);
+			this._showExperimentalFeatures.Size = new System.Drawing.Size(199, 23);
 			this._showExperimentalFeatures.TabIndex = 4;
 			this._showExperimentalFeatures.Text = "Show Experimental Features";
 			this._showExperimentalFeatures.UseVisualStyleBackColor = true;
@@ -728,7 +730,7 @@ namespace Bloom.Collection
 			this._restartReminder.Location = new System.Drawing.Point(273, 463);
 			this._restartReminder.MaximumSize = new System.Drawing.Size(380, 0);
 			this._restartReminder.Name = "_restartReminder";
-			this._restartReminder.Size = new System.Drawing.Size(346, 34);
+			this._restartReminder.Size = new System.Drawing.Size(344, 38);
 			this._restartReminder.TabIndex = 19;
 			this._restartReminder.Text = "Bloom will close and re-open this project with the new settings.";
 			this._restartReminder.Visible = false;
@@ -778,6 +780,19 @@ namespace Bloom.Collection
 			this._helpButton.Text = "&Help";
 			this._helpButton.UseVisualStyleBackColor = true;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
+			// 
+			// _enterpriseTab
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseTab, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseTab, null);
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseTab, "tabPage5");
+			this._enterpriseTab.Location = new System.Drawing.Point(4, 26);
+			this._enterpriseTab.Name = "_enterpriseTab";
+			this._enterpriseTab.Padding = new System.Windows.Forms.Padding(3);
+			this._enterpriseTab.Size = new System.Drawing.Size(610, 426);
+			this._enterpriseTab.TabIndex = 4;
+			this._enterpriseTab.Text = "Bloom Enterprise";
+			this._enterpriseTab.UseVisualStyleBackColor = true;
 			// 
 			// CollectionSettingsDialog
 			// 
@@ -869,5 +884,6 @@ namespace Bloom.Collection
 		private ComboBox _brandingCombo;
 		private Label label2;
 		private LinkLabel _enterpriseInformationLink;
+		private TabPage _enterpriseTab;
 	}
 }

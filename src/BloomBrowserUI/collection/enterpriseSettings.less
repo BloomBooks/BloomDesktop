@@ -1,0 +1,84 @@
+@import "../bloomUI.less";
+
+.enterpriseSettings {
+    padding: 5px;
+    .learnMoreLink {
+        margin-top: 10px;
+    }
+    .radioLabel {
+        display: inline-block;
+        margin-left: 5px;
+    }
+    .radioInput {
+        vertical-align: top;
+        margin-top: 4px;
+    }
+    .bloomEnterpriseStatus {
+        font-weight: bold;
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+    .whatsThisLink,
+    .communityRadio,
+    .subscriptionCodeLabel,
+    .subscriptionCodeInput {
+        display: inline-block;
+    }
+    .whatsThisLink {
+        margin-left: 20px;
+    }
+    .subscriptionCodeInput {
+        width: 200px;
+        margin-left: 5px;
+    }
+    .subscriptionCodeWrapper {
+        margin-top: 3px;
+    }
+    .subscriptionCodeWrapper,
+    .expiration,
+    .summary,
+    .error {
+        margin-left: 30px;
+    }
+    .error {
+        color: red;
+    }
+    .codeEvaluation {
+        margin-left: 10px;
+        vertical-align: -3px;
+        font-size: 20pt;
+        color: lime;
+    }
+    .summary {
+        margin-top: 10px;
+        background-color: gainsboro;
+        padding: 3px;
+        height: 106px;
+        // These settings are not used directly in the tsx, they are intended to be the class
+        // of a single top-level div in each summary.htm file. In the horizontal layout,
+        // there should be one child div, with whatever should appear beside the picture.
+        .horizontal {
+            display: flex;
+            justify-content: space-around;
+            div {
+                margin-right: 20px;
+            }
+            img {
+                max-height: 100px;
+                max-width: 250px;
+            }
+        }
+        .vertical {
+            display: flex;
+            height: 100%;
+            flex-direction: column;
+            justify-content: space-around;
+            img {
+                flex: 1 1 0;
+                object-fit: contain;
+                margin-top: 3px;
+                min-height: 0;
+            }
+        }
+    }
+}

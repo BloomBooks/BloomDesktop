@@ -12,6 +12,8 @@ using SIL.WritingSystems;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Bloom.MiscUI;
+using Bloom.web.controllers;
+using Gecko;
 
 namespace Bloom.Collection
 {
@@ -26,6 +28,9 @@ namespace Bloom.Collection
 		private bool _restartRequired;
 		private bool _loaded;
 		private List<string> _styleNames = new List<string>();
+		private Browser _enterpriseBrowser;
+		private string _brandingCode;
+		private string _brand;
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent)
 		{
@@ -60,8 +65,19 @@ namespace Bloom.Collection
 //		                                                  UpdateDisplay();
 //		                                              };
 
+			SettingsApi.BrandingChangeHandler = ChangeBranding;
+
+			SetupEnterpriseBrowser();
 
 			UpdateDisplay();
+		}
+
+		private void SetupEnterpriseBrowser()
+		{
+			_enterpriseBrowser = new Browser {Dock = DockStyle.Fill};
+			_enterpriseTab.Controls.Add(_enterpriseBrowser);
+			var rootFile = BloomFileLocator.GetBrowserFile(false, "collection", "enterpriseSettings.html");
+			_enterpriseBrowser.Navigate(rootFile.ToLocalhost(), false);
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
@@ -208,11 +224,8 @@ namespace Bloom.Collection
 				_collectionSettings.PageNumberStyle = styleName;
 			}
 
-			if (_brandingCombo.SelectedItem != null)
-			{
-				var brand = _brandingCombo.SelectedItem as BrandingProject;
-				_collectionSettings.BrandingProjectKey = brand?.Key;
-			}
+			_collectionSettings.BrandingProjectKey = _brand;
+			_collectionSettings.BrandingCode = _brandingCode;
 
 			//no point in letting them have the Nat lang 2 be the same as 1
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
@@ -271,9 +284,16 @@ namespace Bloom.Collection
 			LoadPageNumberStyleCombo();
 			LoadBrandingCombo();
 			AdjustFontComboDropdownWidth();
-
+			_brand = _collectionSettings.BrandingProjectKey;
+			_brandingCode = _collectionSettings.BrandingCode;
+			SettingsApi.SetBrandingCode(_brandingCode, IsBrandingCodeKnown(), GetEnterpriseStatus());
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
+		}
+
+		bool IsBrandingCodeKnown()
+		{
+			return BrandingProject.GetProjectChoices().Any(bp => bp.Key == _brand);
 		}
 
 		/// <summary>
@@ -347,11 +367,14 @@ namespace Bloom.Collection
 		{
 			foreach (var brand in BrandingProject.GetProjectChoices())
 			{
-				_brandingCombo.Items.Add(brand);
-
-				if(brand.Key == _collectionSettings.BrandingProjectKey)
+				if (brand.IsLegacyBranding)
 				{
-					_brandingCombo.SelectedIndex = _brandingCombo.Items.Count - 1;
+					_brandingCombo.Items.Add(brand);
+
+					if (brand.Key == _collectionSettings.BrandingProjectKey)
+					{
+						_brandingCombo.SelectedIndex = _brandingCombo.Items.Count - 1;
+					}
 				}
 			}
 		}
@@ -501,13 +524,81 @@ namespace Bloom.Collection
 
 		private void _brandingCombo_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if(_brandingCombo.SelectedItem == null)
+			if (_disableBrandingSelectionChanged)
+				return;
+			if (_brandingCombo.SelectedItem == null)
 				return;
 
 			var brand = _brandingCombo.SelectedItem as BrandingProject;
+			_brand = brand.Key;
+			_brandingCode = brand.BrandingCode;
+			SettingsApi.SetBrandingCode(_brandingCode, true, GetEnterpriseStatus());
+			if (_enterpriseBrowser.WebBrowser != null)
+			{
+				// This is easier than having the SettingsApi broadcast the changes using a socket.
+				// The only time this can happen is when the browser is not visible and may not even
+				// have started loading, so sending stuff to its websocket might not work, anyway.
+				_enterpriseBrowser.WebBrowser.Reload();
+			}
 
 			if(brand?.Key != _collectionSettings.BrandingProjectKey)
 				ChangeThatRequiresRestart();
+		}
+
+		private SettingsApi.EnterpriseStatus GetEnterpriseStatus()
+		{
+			var status = SettingsApi.EnterpriseStatus.Subscription;
+			if (_brand == "Default")
+				status = SettingsApi.EnterpriseStatus.None;
+			else if (_brand == "Local Community")
+				status = SettingsApi.EnterpriseStatus.Community;
+			return status;
+		}
+
+		private bool _disableBrandingSelectionChanged = false;
+
+		public bool ChangeBranding(string brand, string brandingCode)
+		{
+			try
+			{
+				_disableBrandingSelectionChanged = true;
+				foreach (BrandingProject item in _brandingCombo.Items)
+				{
+					if (item.Key.ToUpperInvariant() == brand.ToUpperInvariant())
+					{
+						Invoke((Action) (() =>
+						{
+							_brandingCombo.SelectedItem = item;
+							ChangeThatRequiresRestart();
+						}));
+						_brand = item.Key;
+						_brandingCode = brandingCode;
+						return true;
+					}
+				}
+
+				// We expect to start to have options that are not in the combo.
+				foreach (var item in BrandingProject.GetProjectChoices())
+				{
+					if (item.Key.ToUpperInvariant() == brand.ToUpperInvariant())
+					{
+						Invoke((Action) (() =>
+						{
+							_brandingCombo.SelectedItem = null;
+							ChangeThatRequiresRestart();
+						}));
+						_brand = item.Key;
+						_brandingCode = item.BrandingCode;
+						return true;
+					}
+				}
+
+				return false;
+			}
+			finally
+			{
+				_disableBrandingSelectionChanged = false;
+			}
 		}
 
 		private void showTroubleShooterCheckBox_CheckedChanged(object sender, EventArgs e)

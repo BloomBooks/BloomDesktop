@@ -11,6 +11,7 @@ using System.Xml.Serialization;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Reporting;
@@ -124,6 +125,7 @@ namespace Bloom.Collection
 			XMatterPackName = collectionInfo.XMatterPackName;
 			PageNumberStyle = collectionInfo.PageNumberStyle;
 			BrandingProjectKey = collectionInfo.BrandingProjectKey;
+			BrandingCode = collectionInfo.BrandingCode;
 
 			Save();
 		}
@@ -453,6 +455,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("PageNumberStyle", PageNumberStyle));
 			library.Add(new XElement("BrandingProjectName", BrandingProjectKey));
+			library.Add(new XElement("BrandingCode", BrandingCode));
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
@@ -537,6 +540,23 @@ namespace Bloom.Collection
 				PageNumberStyle = CssNumberStylesToCultureOrDigits.Keys.Contains(style) ? style : "Decimal";
 
 				BrandingProjectKey = GetValue(library, "BrandingProjectName", "Default");
+				BrandingCode = GetValue(library, "BrandingCode", null);
+				if (BrandingCode == null)
+				{
+					string bc;
+					BrandingProject.LegacyBrandings.TryGetValue(BrandingProjectKey, out bc);
+					BrandingCode = bc;
+				}
+
+				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local Community")
+				{
+					// Validate branding, so things can't be circumvented by just typing something into settings
+					var expirationDate = SettingsApi.GetExpirationDate(BrandingCode);
+					if (expirationDate < DateTime.Now || BrandingProject.GetProjectChoices().All(bp => bp.Key != BrandingProjectKey))
+					{
+						BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
+					}
+				}
 
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				Language2Name = GetValue(library, "Language2Name", GetLanguage2Name_NoCache(Language2Iso639Code));
@@ -755,6 +775,8 @@ namespace Bloom.Collection
 		public string PageNumberStyle { get; set; }
 
 		public string BrandingProjectKey { get; set; }
+
+		public string BrandingCode { get; set; }
 
 		public int OneTimeCheckVersionNumber { get; set; }
 
