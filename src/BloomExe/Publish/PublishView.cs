@@ -618,6 +618,8 @@ namespace Bloom.Publish
 			else if (_epubRadio.Checked)
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.EPUB;
+				// Forget where we were.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6286.
+				Gecko.CookieManager.RemoveAll();
 			}
 			else if (_uploadRadio.Checked)
 			{
