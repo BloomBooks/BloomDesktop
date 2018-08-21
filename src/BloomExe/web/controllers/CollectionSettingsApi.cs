@@ -17,7 +17,7 @@ namespace Bloom.web.controllers
 	/// <summary>
 	/// Used by the settings dialog (currently just the EnterpriseSettings tab)
 	/// </summary>
-	public class SettingsApi
+	public class CollectionSettingsApi
 	{
 		public const string kApiUrlPart = "settings/";
 
@@ -79,7 +79,7 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}
 			}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseFeedback", request =>
+			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseSummary", request =>
 			{
 				var summaryFile = BloomFileLocator.GetOptionalBrandingFile(GetBrandingFromCode(BrandingCode), "summary.htm");
 				if (summaryFile == null)

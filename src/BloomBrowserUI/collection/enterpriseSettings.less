@@ -4,6 +4,10 @@
     padding: 5px;
     .learnMoreLink {
         margin-top: 10px;
+        display: block; // otherwise Link is really an <a> and margin-top has no effect.
+    }
+    .hidden {
+        display: none;
     }
     .radioLabel {
         display: inline-block;
@@ -40,8 +44,9 @@
     .error {
         margin-left: 30px;
     }
-    .error {
+    .error:not(.hidden) {
         color: red;
+        display: block;
     }
     .codeEvaluation {
         margin-left: 10px;

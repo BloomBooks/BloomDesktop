@@ -551,7 +551,7 @@ namespace Bloom.Collection
 				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local Community")
 				{
 					// Validate branding, so things can't be circumvented by just typing something into settings
-					var expirationDate = SettingsApi.GetExpirationDate(BrandingCode);
+					var expirationDate = CollectionSettingsApi.GetExpirationDate(BrandingCode);
 					if (expirationDate < DateTime.Now || BrandingProject.GetProjectChoices().All(bp => bp.Key != BrandingProjectKey))
 					{
 						BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.

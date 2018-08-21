@@ -13,26 +13,19 @@ interface IState {
     enterpriseStatus: string;
     subscriptionCode: string;
     subscriptionExpiry: Date;
-    subscriptionFeedback: string;
+    subscriptionSummary: string;
     subscriptionUnknown: boolean;
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
 export class EnterpriseSettings extends React.Component<{}, IState> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            enterpriseStatus: "none",
-            subscriptionCode: "",
-            subscriptionExpiry: null,
-            subscriptionFeedback: "",
-            subscriptionUnknown: false
-        };
-
-        this.handleSubscriptionCodeChanged = this.handleSubscriptionCodeChanged.bind(
-            this
-        );
-    }
+    public readonly state: IState = {
+        enterpriseStatus: "none",
+        subscriptionCode: "",
+        subscriptionExpiry: null,
+        subscriptionSummary: "",
+        subscriptionUnknown: false
+    };
 
     public componentDidMount() {
         BloomApi.get("settings/enterpriseStatus", result => {
@@ -72,51 +65,48 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                         support of Bloom, which helps everybody.
                     </Label>
                 </div>
-                <div className="learnMoreLink">
-                    <Link
-                        l10nKey="Settings.Enterprise.LearnMore"
-                        href="http://bit.ly/2zTQHfM"
-                    >
-                        Learn More
-                    </Link>
-                </div>
+                <Link
+                    className="learnMoreLink"
+                    l10nKey="Settings.Enterprise.LearnMore"
+                    href="http://bit.ly/2zTQHfM"
+                >
+                    Learn More
+                </Link>
                 <div className="bloomEnterpriseStatus">
                     <Label l10nKey="Settings.Enterprise.Status">
                         Bloom Enterprise Status
                     </Label>
                 </div>
-                <div>
-                    <RadioGroup
-                        onChange={val => this.setStatus(val)}
-                        value={this.state.enterpriseStatus}
-                    >
-                        <Radio l10nKey="Settings.Enterprise.None" value="None">
-                            None
-                        </Radio>
-                        <div className="communityGroup">
-                            <Radio
-                                className="communityRadio"
-                                l10nKey="Settings.Enterprise.Community"
-                                value="Community"
-                            >
-                                Funded Local Community Only
-                            </Radio>
-                            <Link
-                                className="whatsThisLink"
-                                l10nKey="Settings.Enterprise.WhatsThis"
-                                href="http://bit.ly/2zTQHfM" // Todo: make a page and link to it.
-                            >
-                                What's This?
-                            </Link>
-                        </div>
+                <RadioGroup
+                    onChange={val => this.setStatus(val)}
+                    value={this.state.enterpriseStatus}
+                >
+                    <Radio l10nKey="Settings.Enterprise.None" value="None">
+                        None
+                    </Radio>
+                    <div className="communityGroup">
                         <Radio
-                            l10nKey="Settings.Enterprise.Subscription"
-                            value="Subscription"
+                            className="communityRadio"
+                            l10nKey="Settings.Enterprise.Community"
+                            value="Community"
                         >
-                            Enterprise Subscription
+                            Funded Local Community Only
                         </Radio>
-                    </RadioGroup>
-                </div>
+                        <Link
+                            className="whatsThisLink"
+                            l10nKey="Settings.Enterprise.WhatsThis"
+                            href="http://bit.ly/2zTQHfM" // Todo: make a page and link to it.
+                        >
+                            What's This?
+                        </Link>
+                    </div>
+                    <Radio
+                        l10nKey="Settings.Enterprise.Subscription"
+                        value="Subscription"
+                    >
+                        Enterprise Subscription
+                    </Radio>
+                </RadioGroup>
                 <div className="subscriptionCodeWrapper">
                     <Label
                         className="subscriptionCodeLabel"
@@ -130,47 +120,43 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                         className="subscriptionCodeInput"
                         type="text"
                         value={this.state.subscriptionCode}
-                        onChange={this.handleSubscriptionCodeChanged}
+                        onChange={e => this.handleSubscriptionCodeChanged(e)}
                     />
                     <span className="codeEvaluation">
                         {this.state.subscriptionCode &&
                         this.state.subscriptionExpiry !== null &&
                         !this.state.subscriptionUnknown
-                            ? "\u2713"
+                            ? "✓"
                             : ""}
                     </span>
                 </div>
-                <div
-                    className="error"
-                    style={{
-                        display:
-                            this.state.subscriptionCode &&
-                            !this.state.subscriptionExpiry &&
-                            !this.state.subscriptionUnknown
-                                ? "block"
-                                : "none"
-                    }}
+                <Label
+                    l10nKey="Settings.Enterprise.NotValid"
+                    className={
+                        "error" +
+                        (this.state.subscriptionCode &&
+                        !this.state.subscriptionExpiry &&
+                        !this.state.subscriptionUnknown
+                            ? ""
+                            : " hidden")
+                    }
                 >
-                    <Label l10nKey="Settings.Enterprise.NotValid">
-                        Sorry, that code appears incorrect
-                    </Label>
-                </div>
-                <div
-                    className="error"
-                    style={{
-                        display:
-                            this.state.subscriptionCode &&
-                            !this.state.subscriptionExpiry &&
-                            this.state.subscriptionUnknown
-                                ? "block"
-                                : "none"
-                    }}
+                    Sorry, that code appears incorrect
+                </Label>
+                <Label
+                    l10nKey="Settings.Enterprise.UnknownCode"
+                    className={
+                        "error" +
+                        (this.state.subscriptionCode &&
+                        !this.state.subscriptionExpiry &&
+                        this.state.subscriptionUnknown
+                            ? ""
+                            : " hidden")
+                    }
                 >
-                    <Label l10nKey="Settings.Enterprise.UnknownCode">
-                        That code looks good, but this version of Bloom does not
-                        know about that project
-                    </Label>
-                </div>
+                    That code looks good, but this version of Bloom does not
+                    know about that project
+                </Label>
                 <div
                     className="expiration"
                     style={{
@@ -202,7 +188,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 <div
                     className="summary"
                     dangerouslySetInnerHTML={{
-                        __html: this.state.subscriptionFeedback
+                        __html: this.state.subscriptionSummary
                     }}
                 />
             </div>
@@ -217,9 +203,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     }
 
     private setStatus(status: string) {
-        BloomApi.postDataWithConfig("settings/enterpriseStatus", status, {
-            headers: { "Content-Type": "application/json" }
-        });
+        BloomApi.postJson("settings/enterpriseStatus", status);
         this.setState({ enterpriseStatus: status });
     }
 
@@ -234,7 +218,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     subscriptionCode: code,
                     subscriptionExpiry: null,
                     subscriptionUnknown: true,
-                    subscriptionFeedback: ""
+                    subscriptionSummary: ""
                 });
                 return;
             }
@@ -245,27 +229,23 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 subscriptionUnknown: false
             });
             if (expiry) {
-                BloomApi.get("settings/enterpriseFeedback", result => {
-                    this.setFeedback(result.data);
+                BloomApi.get("settings/enterpriseSummary", result => {
+                    this.setSummary(result.data);
                 });
             } else {
-                this.setFeedback("");
+                this.setSummary("");
             }
         });
     }
 
-    private setFeedback(content: string) {
-        this.setState({ subscriptionFeedback: content });
+    private setSummary(content: string) {
+        this.setState({ subscriptionSummary: content });
     }
 
     private handleSubscriptionCodeChanged(event) {
-        BloomApi.postDataWithConfig(
-            "settings/enterpriseCode",
-            { enterpriseCode: event.target.value },
-            {
-                headers: { "Content-Type": "application/json" }
-            }
-        );
+        BloomApi.postJson("settings/enterpriseCode", {
+            enterpriseCode: event.target.value
+        });
         this.setSubscriptionCode(event.target.value);
         this.setStatus(event.target.value ? "Subscription" : "None");
     }

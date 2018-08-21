@@ -65,7 +65,7 @@ namespace Bloom.Collection
 //		                                                  UpdateDisplay();
 //		                                              };
 
-			SettingsApi.BrandingChangeHandler = ChangeBranding;
+			CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
 
 			SetupEnterpriseBrowser();
 
@@ -286,7 +286,7 @@ namespace Bloom.Collection
 			AdjustFontComboDropdownWidth();
 			_brand = _collectionSettings.BrandingProjectKey;
 			_brandingCode = _collectionSettings.BrandingCode;
-			SettingsApi.SetBrandingCode(_brandingCode, IsBrandingCodeKnown(), GetEnterpriseStatus());
+			CollectionSettingsApi.SetBrandingCode(_brandingCode, IsBrandingCodeKnown(), GetEnterpriseStatus());
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
 		}
@@ -532,7 +532,7 @@ namespace Bloom.Collection
 			var brand = _brandingCombo.SelectedItem as BrandingProject;
 			_brand = brand.Key;
 			_brandingCode = brand.BrandingCode;
-			SettingsApi.SetBrandingCode(_brandingCode, true, GetEnterpriseStatus());
+			CollectionSettingsApi.SetBrandingCode(_brandingCode, true, GetEnterpriseStatus());
 			if (_enterpriseBrowser.WebBrowser != null)
 			{
 				// This is easier than having the SettingsApi broadcast the changes using a socket.
@@ -545,18 +545,26 @@ namespace Bloom.Collection
 				ChangeThatRequiresRestart();
 		}
 
-		private SettingsApi.EnterpriseStatus GetEnterpriseStatus()
+		private CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus()
 		{
-			var status = SettingsApi.EnterpriseStatus.Subscription;
+			var status = CollectionSettingsApi.EnterpriseStatus.Subscription;
 			if (_brand == "Default")
-				status = SettingsApi.EnterpriseStatus.None;
+				status = CollectionSettingsApi.EnterpriseStatus.None;
 			else if (_brand == "Local Community")
-				status = SettingsApi.EnterpriseStatus.Community;
+				status = CollectionSettingsApi.EnterpriseStatus.Community;
 			return status;
 		}
 
 		private bool _disableBrandingSelectionChanged = false;
 
+		/// <summary>
+		/// We configure the SettingsApi to use this method to notify this (as the manager of the whole dialog
+		/// including the "need to reload" message and the Ok/Cancel buttons) of changes the user makes
+		/// in the Enterprise tab.
+		/// </summary>
+		/// <param name="brand"></param>
+		/// <param name="brandingCode"></param>
+		/// <returns></returns>
 		public bool ChangeBranding(string brand, string brandingCode)
 		{
 			try

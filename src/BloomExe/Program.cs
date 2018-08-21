@@ -992,13 +992,13 @@ namespace Bloom
 				if (uiLanguage != desiredLanguage)
 					Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 
-				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
+				LocalizationManager.Create(uiLanguage,
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
 											"SIL/Bloom",
 											Resources.BloomIcon, "issues@bloomlibrary.org", "SIL");
 
-				unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
+				LocalizationManager.Create(uiLanguage,
 					"BloomLowPriority", "BloomLowPriority", Application.ProductVersion,
 					installedStringFileFolder,
 					"SIL/Bloom",

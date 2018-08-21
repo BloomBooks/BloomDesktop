@@ -211,6 +211,21 @@ export class BloomApi {
             );
         }
     }
+
+    public static postJson(
+        urlSuffix: string,
+        data: any,
+        successCallback?: (r: AxiosResponse) => void
+    ) {
+        BloomApi.postDataWithConfig(
+            urlSuffix,
+            data,
+            {
+                headers: { "Content-Type": "application/json" }
+            },
+            successCallback
+        );
+    }
 }
 
 window.addEventListener("beforeunload", () => BloomApi.NotifyPageClosing());
