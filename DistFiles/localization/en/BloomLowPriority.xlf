@@ -23,6 +23,11 @@
         <source xml:lang="en">None</source>
         <note>ID: Settings.Enterprise.None</note>
       </trans-unit>
+      <trans-unit id="Settings.Enterprise.NeedsCode">
+        <source xml:lang="en">This project is configured to use %0 branding. To continue to use this you will need to enter a current subscription code. For SIL brandings, SIL members can find codes at the link below. For other brandings, contact your project administrator.</source>
+        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>%0 will be replaced with the name of the branding.</note>
+      </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid">
         <source xml:lang="en">Sorry, that code appears incorrect</source>
         <note>ID: Settings.Enterprise.NotValid</note>

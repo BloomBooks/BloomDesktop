@@ -83,8 +83,14 @@ namespace Bloom.Api
 					if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
 					{
 						info.ContentType = "text/plain";
-						string langIdUsedDummy;
-						info.WriteCompleteOutput(LocalizationManager.GetString(id, englishText, null, new[] {langId}, out langIdUsedDummy));
+						// tricky. It might be in Bloom, or it might be in BloomLowPriority. Must be somewhere, because
+						// we know it's available. Can't use GetString, because it's not a literal string. So, we try in one,
+						// using null as the English, so we won't get anything if not in that one. Then try the other.
+						// Just in case something unexpected happens, we do pass the english the second time.
+						var localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, null, null, langId);
+						if (localizedString == null)
+							localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishText, null, langId);
+						info.WriteCompleteOutput(localizedString);
 						return true;
 					}
 					else

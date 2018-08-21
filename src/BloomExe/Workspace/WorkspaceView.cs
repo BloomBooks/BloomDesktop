@@ -22,6 +22,7 @@ using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
 using Bloom.Publish.Epub;
 using Bloom.ToPalaso;
+using Bloom.web.controllers;
 using Gecko.Cache;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.PlatformUtilities;
@@ -36,6 +37,7 @@ namespace Bloom.Workspace
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
+		private readonly CollectionSettings _collectionSettings;
 #if CHORUS
 			private readonly ChorusSystem _chorusSystem;
 #else
@@ -79,7 +81,8 @@ namespace Bloom.Workspace
 							LocalizationChangedEvent localizationChangedEvent,
 							ProblemReporterDialog.Factory problemReportDialogFactory,
 							//ChorusSystem chorusSystem,
-							LocalizationManager localizationManager
+							LocalizationManager localizationManager,
+							CollectionSettings collectionSettings
 
 			)
 		{
@@ -89,6 +92,7 @@ namespace Bloom.Workspace
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_localizationChangedEvent = localizationChangedEvent;
 			_problemReportDialogFactory = problemReportDialogFactory;
+			_collectionSettings = collectionSettings;
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
@@ -525,13 +529,32 @@ namespace Bloom.Workspace
 																	{
 																		using (var dlg = _settingsDialogFactory())
 																		{
-																			return dlg.ShowDialog();
+																			return dlg.ShowDialog(this);
 																		}
 																	});
 			if(result==DialogResult.Yes)
 			{
 				Invoke(ReopenCurrentProject);
 			}
+		}
+
+		public void CheckForInvalidBranding()
+		{
+			if (_collectionSettings.InvalidBranding == null)
+				return;
+			// I'm not very happy with this, but the only place I could find to detect that we're opening a new project
+			// is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can
+			// leave the main window in the wrong place. Waiting until idle gives a much better effect.
+			Application.Idle += BringUpEnterpriseSettings;
+		}
+
+		private void BringUpEnterpriseSettings(object o, EventArgs eventArgs)
+		{
+			Application.Idle -= BringUpEnterpriseSettings;
+			Program.CloseSplashScreen();
+			CollectionSettingsApi.InvalidBranding = _collectionSettings.InvalidBranding;
+			OnSettingsButton_Click(this, new EventArgs());
+			CollectionSettingsApi.InvalidBranding = null;
 		}
 
 		private void SelectPage(Control view)

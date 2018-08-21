@@ -225,7 +225,7 @@
     <Compile Include="Book\AccessibilityCheckersTests.cs" />
     <Compile Include="web\controllers\ImageApiTests.cs" />
     <Compile Include="web\controllers\PageTemplatesApiTests.cs" />
-    <Compile Include="web\controllers\SettingsApiTests.cs" />
+    <Compile Include="web\controllers\CollectionSettingsApiTests.cs" />
     <Compile Include="web\controllers\WiFiPublisher.cs" />
     <Compile Include="web\controllers\ReadersApiTests.cs" />
     <Compile Include="web\controllers\ApiTest.cs" />
