@@ -25,6 +25,7 @@ namespace Bloom.Book
 				_values.Add("editoriginalmode.css", 30);
 				_values.Add("previewmode.css", 40);
 				_values.Add("origami.css", 50);
+				_values.Add("branding.css", 60);
 
 
 				//Note that kDefaultValueForStyleSheetsThatShouldListInTheMiddle should fall in between here

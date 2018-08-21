@@ -1,0 +1,39 @@
+{
+    "presets": [
+        {
+            "data-book": "credits-page-branding-top-html",
+            "lang": "*",
+            "content":
+                "<div class='standout'>This comes from the 'test' branding. It should show at the top of the credits page.</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
+            "content":
+                "<div  class='standout'>This comes from the 'test' branding. The image below should be a caterpillar in a5landscape, but butterfly in a5portrait, because of the branding.css</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content":
+                "<div class='standout'>This comes from the 'test' branding. It should show at the bottom of the title page.</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content":
+                "<div class='standout'>This comes from the 'test' branding. It should show at the bottom of the outside back cover page.</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content":
+                "<div class='standout'>This comes from the 'test' branding. It should show at the top of the outside back cover page.</div>",
+            "condition": "always"
+        }
+    ]
+}

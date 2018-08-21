@@ -446,7 +446,9 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "languageDisplay.css" })
+			// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
+			// such time as it's clear if it matters.
+			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "languageDisplay.css","branding.css" })
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
