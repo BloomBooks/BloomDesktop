@@ -6,6 +6,7 @@ import BookMetadataTable from "./BookMetadataTable";
 import { BloomApi } from "../../utils/bloomApi";
 import * as mobx from "mobx";
 import * as mobxReact from "mobx-react";
+import BloomButton from "../../react_components/bloomButton";
 
 // tslint:disable-next-line:no-empty-interface
 interface IProps {}
@@ -42,11 +43,6 @@ export default class BookMetadataDialog extends React.Component<
         }
         this.setState({ isOpen: false });
     }
-    private openHelpTopic() {
-        BloomApi.post(
-            "help/User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
-        );
-    }
     public static show() {
         BookMetadataDialog.singleton.setState({
             isOpen: true
@@ -70,23 +66,32 @@ export default class BookMetadataDialog extends React.Component<
                     <div className="dialogContent">
                         <BookMetadataTable metadata={this.metadata} />
                         <div className={"bottomButtonRow"}>
-                            <button
+                            <BloomButton
                                 id="helpButton"
-                                onClick={() => this.openHelpTopic()}
+                                enabled={true}
+                                l10nKey="Common.Help"
+                                clickEndpoint="help/User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
+                                hasText={true}
                             >
                                 Help
-                            </button>
-                            <button
+                            </BloomButton>
+                            <BloomButton
                                 id="okButton"
+                                enabled={true}
+                                l10nKey="Common.OK"
+                                hasText={true}
                                 onClick={() => this.handleCloseModal(true)}
                             >
                                 OK
-                            </button>
-                            <button
+                            </BloomButton>
+                            <BloomButton
+                                enabled={true}
+                                l10nKey="Common.Cancel"
+                                hasText={true}
                                 onClick={() => this.handleCloseModal(false)}
                             >
                                 Cancel
-                            </button>
+                            </BloomButton>
                         </div>
                     </div>
                 </ReactModal>
