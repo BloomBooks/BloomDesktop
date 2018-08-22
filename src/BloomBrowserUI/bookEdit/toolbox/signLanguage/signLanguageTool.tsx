@@ -23,6 +23,7 @@ interface IComponentState {
     stateClass: string; // one of idle, countdown3, countdown2, countdown1, recording
     haveRecording: boolean;
     originalExists: boolean;
+    cameraAccess: boolean;
 }
 
 // incomplete typescript definitions for MediaRecorder and related types.
@@ -61,14 +62,13 @@ export class SignLanguageToolControls extends React.Component<
         enabled: false,
         stateClass: "idle",
         haveRecording: false,
-        originalExists: false
+        originalExists: false,
+        cameraAccess: true
     };
-
     private videoStream: MediaStream;
     private chunks: Blob[];
     private mediaRecorder: MediaRecorder;
     private timerId: number;
-
     public render() {
         return (
             <RequiresBloomEnterpriseWrapper>
@@ -79,9 +79,7 @@ export class SignLanguageToolControls extends React.Component<
                         (this.state.enabled ? "" : " disabled")
                     }
                 >
-                    <Label l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees">
-                        Here is what your camera sees:
-                    </Label>
+                    {this.getCameraMessage()}
                     <div id="videoMonitorWrapper">
                         <video id="videoMonitor" autoPlay={true} />
                     </div>
@@ -99,6 +97,9 @@ export class SignLanguageToolControls extends React.Component<
                                             ? " recordingNow"
                                             : "") +
                                         (this.state.enabled
+                                            ? " enabled"
+                                            : " disabled") +
+                                        (this.state.cameraAccess
                                             ? " enabled"
                                             : " disabled")
                                     }
@@ -247,6 +248,28 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
+    public getCameraMessage() {
+        if (this.state.cameraAccess) {
+            return (
+                <Label
+                    key="CameraOn"
+                    l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees"
+                >
+                    Here is what your camera sees:
+                </Label>
+            );
+        } else {
+            return (
+                <Label
+                    key="NoCamera"
+                    l10nKey="EditTab.Toolbox.SignLanguage.NoCameraFound"
+                >
+                    No camera found
+                </Label>
+            );
+        }
+    }
+
     private importRecording() {
         BloomApi.post("signLanguage/importVideo");
     }
@@ -284,10 +307,9 @@ export class SignLanguageToolControls extends React.Component<
     private errorCallback(reason) {
         // something wrong! Developers note: Bloom and Firefox cannot both use it, so be careful about
         // "open in browser".
-        alert(
-            "Could not access video camera...is something else using it? Details: " +
-                reason
-        );
+        this.setState({
+            cameraAccess: false
+        });
     }
 
     // callback from getUserMedia when it succeeds; gives us a stream we can monitor and record from.
