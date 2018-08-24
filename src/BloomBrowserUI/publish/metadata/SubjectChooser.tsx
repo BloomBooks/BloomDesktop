@@ -1,5 +1,6 @@
 import * as React from "react";
 import SubjectTreeNode from "./SubjectTreeNode";
+import { JsSubject } from "./SubjectTreeNode";
 import DropdownTreeSelect from "react-dropdown-tree-select";
 import { themaSubjectData } from "./SubjectTreeNode";
 import "./SubjectChooser.less";
@@ -16,7 +17,7 @@ export default class SubjectChooser extends React.Component<IProps> {
     public render() {
         SubjectTreeNode.markSelectedSubjectNodes(
             themaSubjectData,
-            " " + this.props.subjects.value + " "
+            this.props.subjects.value
         );
         // The current react-dropdown-tree-select "button" shows the label of only
         // a parent node if checked, and none of the labels of its children even if
@@ -26,7 +27,8 @@ export default class SubjectChooser extends React.Component<IProps> {
         // exactly what has been checked by the user.
         return (
             <div className="subjectChooser">
-                for testing only: {this.props.subjects.value}
+                for testing only:{" "}
+                {SubjectTreeNode.getCodeList(this.props.subjects.value)}
                 <br />
                 <DropdownTreeSelect
                     data={themaSubjectData}
@@ -37,7 +39,7 @@ export default class SubjectChooser extends React.Component<IProps> {
         );
     }
 
-    // Update the list of subject codes based on the current node that has just
+    // Update the array of subjects based on the current node that has just
     // changed, either to being checked or unchecked.  This is part of how we get
     // around the react-dropdown-tree-select behavior of checking all subnodes in
     // the tree when the user checks a branch node instead of a leaf node.
@@ -45,17 +47,32 @@ export default class SubjectChooser extends React.Component<IProps> {
         currentNode: SubjectTreeNode,
         selectedNodes: SubjectTreeNode[] // not useful for our purposes: branches (parents) only
     ) {
-        let subjects = " " + this.props.subjects.value + " ";
+        let currentSubject: JsSubject = {
+            code: currentNode.value,
+            description: currentNode.label
+        };
+        let metadataSubjects: JsSubject[] = this.props.subjects.value;
         if (currentNode.checked) {
-            subjects = subjects + currentNode.value;
+            metadataSubjects.push(currentSubject); // appends subject to the end of the array
         } else {
-            subjects = subjects.replace(" " + currentNode.value + " ", " ");
+            this.remove(metadataSubjects, currentSubject);
         }
-        subjects = subjects
-            .trim()
-            .split(" ")
-            .sort()
-            .join(" ");
-        this.props.subjects.value = subjects;
+        metadataSubjects.sort((a, b) => {
+            if (a.code < b.code) {
+                return -1;
+            }
+            if (a.code > b.code) {
+                return 1;
+            }
+            return 0;
+        });
+        this.props.subjects.value = metadataSubjects;
+    }
+
+    private remove(subjects: JsSubject[], subjectToRemove: JsSubject) {
+        const index = subjects.indexOf(subjectToRemove);
+        if (index !== -1) {
+            subjects.splice(index, 1);
+        }
     }
 }

@@ -887,7 +887,7 @@ namespace Bloom.Book
 
 		// tags from Thema (https://www.editeur.org/151/Thema/)
 		[JsonProperty("subjects")]
-		public string Subjects { get; set; }
+		public SubjectObject[] Subjects { get; set; }
 
 		//https://www.w3.org/wiki/WebSchemas/Accessibility#Features_for_augmentation
 		[JsonProperty("hazards")]
@@ -906,6 +906,19 @@ namespace Bloom.Book
 		// Global Digital Library: The typical range of ages the content’s intended end user.
 		[JsonProperty("typicalAgeRange")]
 		public string TypicalAgeRange { get; set; }
+	}
+
+	/// <summary>
+	/// Holds Code-Description pairs for Thema subjects.
+	/// https://www.editeur.org/files/Thema/1.3/Thema_v1.3.0_en.json
+	/// </summary>
+	public class SubjectObject
+	{
+		[JsonProperty("code")]
+		public string code { get; set; }
+
+		[JsonProperty("description")]
+		public string description { get; set; }
 	}
 
 	/// <summary>
