@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Bloom.Api;
 using Bloom.Book;
 using L10NSharp;
@@ -47,7 +46,7 @@ namespace Bloom.web.controllers
 							translatedLabel = LocalizationManager.GetString("BookMetadata.typicalAgeRange", "Typical age range") },
 						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.level", "Reading level") },
-						subjects = new { type = "subjects", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects,
+						subjects = new { type = "subjects", value = _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.subjects", "Subjects") },
 						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.hazards", "Hazards") },
@@ -75,7 +74,7 @@ namespace Bloom.web.controllers
 					_bookSelection.CurrentSelection.BookInfo.MetaData.Author = settings["author"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange = settings["typicalAgeRange"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription = settings["level"].value.Trim();
-					_bookSelection.CurrentSelection.BookInfo.MetaData.Subjects = settings["subjects"].value.Trim();
+					_bookSelection.CurrentSelection.BookInfo.MetaData.Subjects = settings["subjects"].value;
 					_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards = settings["hazards"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures = settings["a11yFeatures"].value.Trim();
 					_bookSelection.CurrentSelection.Save();

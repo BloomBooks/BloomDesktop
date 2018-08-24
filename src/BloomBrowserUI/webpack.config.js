@@ -51,7 +51,9 @@ module.exports = {
             "./bookEdit/**/*Spec.ts",
             "./bookEdit/**/*Spec.js",
             "./lib/**/*Spec.ts",
-            "./lib/**/*Spec.js"
+            "./lib/**/*Spec.js",
+            "./publish/**/*Spec.ts",
+            "./publish/**/*Spec.js"
         ])
         //             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
     },

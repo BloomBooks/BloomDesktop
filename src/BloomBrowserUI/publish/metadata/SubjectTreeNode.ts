@@ -5,10 +5,15 @@
 // The Children related subjects were moved to the top of the list.
 export const themaSubjectData: SubjectTreeNode[] = require("./ThemaData.json");
 
+export interface JsSubject {
+    code: string;
+    description: string;
+}
+
 // A SubjectTreeNode represents the data from one node of the Thema based subject tree
 // in a form usable by the react-dropdown-tree-select component.
 // We store an array of these nodes to represent the top of the tree. (tops of the forest?)
-export default class SubjectTreeNode {
+export class SubjectTreeNode {
     constructor(
         public value: string,
         public label: string,
@@ -23,7 +28,7 @@ export default class SubjectTreeNode {
     // of a leaf node.
     public static markSelectedSubjectNodes(
         list: SubjectTreeNode[],
-        currentSubjects: string // space separated list of codes, with leading and trailing spaces
+        currentSubjects: JsSubject[]
     ) {
         list.map(element => {
             if (
@@ -44,8 +49,27 @@ export default class SubjectTreeNode {
     // (This implementation uses simple string search.)
     private static matchCurrentSubject(
         codeValue: string,
-        currentSubjects: string // space separated list of codes, with leading and trailing spaces
+        currentSubjects: JsSubject[]
     ): boolean {
-        return currentSubjects.indexOf(" " + codeValue + " ") >= 0;
+        return (
+            this.getCodeList(currentSubjects).indexOf(" " + codeValue + " ") >=
+            0
+        );
+    }
+
+    // Takes an array of Subjects each containing a code and a description.
+    // Returns a space delimited string of codes with initial and trailing space.
+    public static getCodeList(currentSubjects: JsSubject[]): string {
+        return (
+            " " +
+            currentSubjects
+                .map(subject => {
+                    return subject.code;
+                })
+                .join(" ") +
+            " "
+        );
     }
 }
+
+export default SubjectTreeNode;
