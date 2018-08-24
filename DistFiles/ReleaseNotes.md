@@ -1,50 +1,56 @@
 ﻿## 4.3
 
--   Branding
+For those of you helping us out by running and giving feedback on the Bloom beta channel, **thank you!** You are a vital part of the Bloom team. We are now moving on to building Bloom 4.4, and will release new editions of the 4.3 beta if you find any problems with it.
 
-    -   Branding packs can now have "presets" that pre-fill front or back matter fields with boilerplate text.
+Here's what's new in 4.3 beta:
 
--   Settings
+### Settings
+⭐ In the "Lookup Language Code" dialog, you can now differentiate the language by declaring any of:   Script, Region, or Variant (dialect). [[Feature Request ✔](https://community.software.sil.org/t/handling-dialects/629)]
 
-    In the "Lookup Language Code" dialog, you can now differentiate the language by declaring any of:
+### Edit Tab
+⭐ You can now record talking books that are diglots or triglots. [[Feature Request ✔](https://community.software.sil.org/t/support-recording-multiple-languages-in-talking-book-tool/567)]  
+⭐ You can now add an "Instructions Page" to books. These are instructions for book creators, not book readers. They do not have a page number, do not contribute to page number advancement, and do not show up in PDFs, ePUB, or Bloom Reader publications.
 
-    -   Script
-    -   Region
-    -   Variant
+### Branding
+_Custom branding packs are part of Bloom Enterprise subscriptions_  
+⭐ Branding packs can now have "presets" that pre-fill front or back matter fields with boilerplate text.  
+⭐ It is now possible for a Branding pack to add an image at the top of the Credits page, before the Copyright. This image can contain text, but it won't be able to adjust to different page sizes.
 
--   Edit Tab
 
-    -   You can now add an "Instructions Page" to books. These are instructions for book creators, not book readers. They do not have a page number, do not contribute to page number advancement, and do not show up in PDFs, ePUB, or Bloom Reader publications.
-
----
-
+# Experimental Features
 This release is a stepping stone for a more complete set of features for making books for those with visual and hearing impairments. These features are marked as:
 
 -   _Experimental_, meaning that you will only see them if you go to Settings:Advanced:Show Experimental Features
--   _Bloom Enterprise_, meaning that you must choose a "Bloom Enterprise Project" in Settings:Project. Note that one of the choices there is "Local Community", which makes all these features free to use for projects completely funded by the local community.
+-   _Bloom Enterprise_, meaning that you must choose a "Bloom Enterprise Project" in Settings:Project. Note that one of the choices there is "Local Community", which makes all these features free to use for projects which are completely funded by the local community.
 
----
 
--   Accessible Books for people with visual impairments (Experimental, Bloom Enterprise)
+#### Accessible Books for people with visual impairments
 
-    This work is funded in part by [Book Boost](https://allchildrenreading.org/challenge/book-boost-access-challenge/). Note that this is a work in progress, and there are a couple more tools we will be building for Bloom 4.4. [This query](https://issues.bloomlibrary.org/youtrack/issues?q=project:%20Bloom%20state:%7BReady%20For%20Work%7D%20%23%7BBook%20Boost%7D%20) will show you what is coming.
+This work is funded in part by [Book Boost](https://allchildrenreading.org/challenge/book-boost-access-challenge/). Note that this is a work in progress, and there are a couple more tools we will be building for Bloom 4.4. [This query](https://issues.bloomlibrary.org/youtrack/issues?q=project:%20Bloom%20state:%7BReady%20For%20Work%7D%20%23%7BBook%20Boost%7D%20) will show you what is coming.
 
-    -   New "Image Description Tool" allows you to type in a description of images, so that Talking Books can describe them to blind people.
-    -   New "Accessibility Checker" gives you tools to check that your ePUB is accessible.
-    -   The ePUB generator has new options for making accessible books
+⭐ New _Image Description Tool_ allows you to type in a description of images, so that Talking Books can describe them to blind people.  
+⭐ New _Accessibility Checker_ gives you tools to check that your ePUB is accessible.  
+⭐ The ePUB generator has new options for making accessible books.
 
--   Sign Language (Experimental, Bloom Enterprise)
+#### Sign Language
 
-    Note that this is a work in progress, and there are many rough edges that we need to sort out. [This query](https://issues.bloomlibrary.org/youtrack/issues?q=project:%20Bloom%20state:%7BReady%20For%20Work%7D%20%23%7BSign%20Language%7D%20) will show you what we plan to do in the future, mostly in Bloom 4.5.
+Note that this is a work in progress, and there are many rough edges that we need to sort out. [This query](https://issues.bloomlibrary.org/youtrack/issues?q=project:%20Bloom%20state:%7BReady%20For%20Work%7D%20%23%7BSign%20Language%7D%20) will show you what we plan to do in the future, mostly in Bloom 4.5.
 
-    -   You can now use Bloom to make Sign Language books.
-    -   One way to use this is to make diglots which people who sign can use to read, and people who read can use to learn to sign.
-    -   You can import pre-made videos
-    -   You can easily record videos right in Bloom
-    -   (Experimental, Bloom Enterprise) you can now:
-        -   start a book with a "Sign Language Template"
-        -   add "Sign Language Template" pages to a book
-        -   add custom Video objects to pages, just like you could previously with Text and Picture
+You can now use Bloom to make Sign Language books.
+ One way to use this is to make **diglots** which people who sign can use to read, and people who read can use to learn to sign.
+
+⭐  You can import pre-made videos  
+⭐  You can easily record videos right in Bloom using the new _Sign Language Tool_  
+⭐  You can start a book with a "Sign Language Template"  
+⭐  You can add "Sign Language Template" pages to a book  
+⭐  You can add custom Video objects to pages, just like you could previously with Text and Picture
+
+At this time, video does not support sound. We know there will be requests for that, but we need to focus on finishing the sign language features.
+
+
+# Getting the Beta
+
+If you already have a beta version, Bloom will automatically ask to update itself. Otherwise, windows users can get 4.3 from the [Bloom downloads](http://bloomlibrary.org/installers) page. The linux version will follow shortly. As usual, you can have the Release & Beta versions **installed at the same time**, and open books on either.
 
 ## 4.2
 - Edit Tab

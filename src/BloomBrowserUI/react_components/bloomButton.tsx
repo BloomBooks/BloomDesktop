@@ -8,8 +8,10 @@ import {
 } from "./l10n";
 
 export interface IButtonProps extends ILocalizationProps {
+    id?: string;
     enabled: boolean;
-    clickEndpoint: string;
+    clickEndpoint?: string;
+    onClick?: () => void;
     mightNavigate?: boolean; // true if the post of clickEndpoint might navigate to a new page.
     hasText: boolean; // allows us to define buttons with only images and no text.
     // If neither enabled or disabled image file is provided, no image will show.
@@ -53,12 +55,15 @@ export default class BloomButton extends LocalizableElement<
         }
         return (
             <button
+                id={this.props.id}
                 className={
                     this.props.className + (this.props.hidden ? " hidden" : "")
                 }
                 title={tip}
                 onClick={() => {
-                    if (this.props.mightNavigate) {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    } else if (this.props.mightNavigate) {
                         BloomApi.postThatMightNavigate(
                             this.props.clickEndpoint
                         );

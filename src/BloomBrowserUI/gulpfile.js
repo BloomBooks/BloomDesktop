@@ -93,7 +93,15 @@ gulp.task("less", function() {
         .src(paths.less)
         .pipe(debug({ title: "less:" }))
         .pipe(sourcemaps.init())
-        .pipe(less())
+        .pipe(
+            less()
+                // Without this, the task will happily go on its merry way and you have to
+                // scroll up through the log messages to know if there was any problem at all.
+                .on("error", function(error) {
+                    console.error(error.message);
+                    process.exit(1);
+                })
+        )
         .pipe(sourcemaps.write(outputDir))
         .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
 });

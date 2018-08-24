@@ -27,12 +27,9 @@ interface IState {
     checkResult: CheckResult;
 }
 export class CheckItem extends React.Component<IProps, IState> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            checkResult: { resultClass: "pending", problems: [] }
-        };
-    }
+    public readonly state: IState = {
+        checkResult: { resultClass: "pending", problems: [] }
+    };
 
     public componentDidMount() {
         this.queryData();

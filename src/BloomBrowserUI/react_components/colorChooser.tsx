@@ -38,6 +38,10 @@ export class ColorChooser extends React.Component<
     IColorChooserProps,
     IColorChooserState
 > {
+    public readonly state: IColorChooserState = {
+        colorsVisible: useVisibility
+    };
+
     constructor(props: IColorChooserProps) {
         super(props);
         if (this.props.colorPalette) {
@@ -46,7 +50,7 @@ export class ColorChooser extends React.Component<
         if (this.props.colorsVisibleByDefault) {
             useVisibility = this.props.colorsVisibleByDefault;
         }
-        this.state = { colorsVisible: useVisibility };
+        this.setState({ colorsVisible: useVisibility });
     }
     public render() {
         return (

@@ -605,11 +605,24 @@ div.long-press-popup {
 body.simulateCataracts {
     .bloom-imageContainer {
         background-color: yellow;
-        img {
+        img,
+        canvas {
             filter: blur(3px) brightness(50%);
             mix-blend-mode: multiply;
             font-size: 20px;
             background-color: white;
+        }
+    }
+}
+// Hide images when we are putting a color-blindness overlay on top.
+// This makes sure we don't get any trace if the size isn't perfect.
+// More critically, when simulating BOTH color-blindness AND cataracts,
+// the Canvas gets merged with what is behind it. We want that to be just
+// the yellow background, not the image.
+body.simulateColorBlindness {
+    .bloom-imageContainer {
+        img {
+            visibility: hidden;
         }
     }
 }

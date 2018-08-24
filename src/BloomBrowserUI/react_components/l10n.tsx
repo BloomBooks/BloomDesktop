@@ -15,6 +15,7 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nComment?: string;
     l10nTipEnglishEnabled?: string;
     l10nTipEnglishDisabled?: string;
+    alreadyLocalized?: boolean; // true if translated by C#-land
 }
 
 export interface ILocalizationState {
@@ -28,20 +29,23 @@ export class LocalizableElement<
     P extends ILocalizationProps,
     S extends ILocalizationState
 > extends React.Component<P, ILocalizationState> {
+    public readonly state: ILocalizationState = {};
     private localizationRequestCancelToken: CancelTokenStatic;
     private isComponentMounted: boolean;
     private tooltipKey: string;
     private disabledTooltipKey: string;
+
+    // set the following boolean to turn all translated strings green
+    private turnTranslatedGreen: boolean = false;
 
     constructor(props: ILocalizationProps) {
         super(props as P);
         this.isComponentMounted = false; // This is an antipattern. See note on componentWillUnmount()
         this.tooltipKey = this.props.l10nKey + ".ToolTip";
         this.disabledTooltipKey = this.props.l10nKey + ".ToolTipWhenDisabled";
-        this.state = {};
     }
 
-    private getOriginalEnglishStringContent(): string {
+    private getOriginalStringContent(): string {
         // Note the following *looks* better, but React complains that there is not exactly one child
         // even though React.Children.count returns 1.
         //      this.translated = React.Children.only(this.props.children).toString();
@@ -60,7 +64,10 @@ export class LocalizableElement<
             return;
         }
         this.isComponentMounted = true;
-        var english = this.getOriginalEnglishStringContent();
+        if (this.props.alreadyLocalized) {
+            return;
+        }
+        var english = this.getOriginalStringContent();
         if (!english.startsWith("ERROR: must have exactly one child")) {
             theOneLocalizationManager
                 .asyncGetText(
@@ -111,13 +118,34 @@ export class LocalizableElement<
     }
 
     public getLocalizedContent(): JSX.Element {
+        if (this.props.alreadyLocalized) {
+            if (this.turnTranslatedGreen) {
+                // We'll use lightgreen to mean assumed translated by C#-land
+                return (
+                    <span style={{ color: "lightgreen" }}>
+                        {" "}
+                        {this.getOriginalStringContent()}{" "}
+                    </span>
+                );
+            }
+            return <span> {this.getOriginalStringContent()} </span>;
+        }
         if (this.state && this.state.translation) {
-            return <span> {this.state.translation} </span>;
+            if (this.turnTranslatedGreen) {
+                return (
+                    <span style={{ color: "green" }}>
+                        {" "}
+                        {this.state.translation}{" "}
+                    </span>
+                );
+            } else {
+                return <span> {this.state.translation} </span>;
+            }
         } else {
             return (
                 <span style={{ color: "grey" }}>
                     {" "}
-                    {this.getOriginalEnglishStringContent()}{" "}
+                    {this.getOriginalStringContent()}{" "}
                 </span>
             );
         }

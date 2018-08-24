@@ -26,3 +26,6 @@ end_of_line = lf
 [*.proj]
 indent_style = space
 indent_size = 2
+
+[ReleaseNotes.md]
+trim_trailing_whitespace=false

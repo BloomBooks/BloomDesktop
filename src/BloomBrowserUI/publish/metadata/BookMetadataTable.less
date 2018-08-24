@@ -1,0 +1,7 @@
+.bookMetadataTable {
+    // React-table will prevent a position:absolute dropdown from growing larger than the cell we give it.
+    // This is needed by the subject chooser (and any future drop-downs)
+    .rt-td {
+        overflow: visible !important; // allow Select to drop down
+    }
+}

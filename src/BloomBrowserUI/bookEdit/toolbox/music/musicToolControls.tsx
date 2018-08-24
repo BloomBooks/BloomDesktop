@@ -26,15 +26,23 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     // The names of the attributes (of the main page div) which store the background
     // audio file name (relative to the audio folder) and the volume (a fraction
     // of full volume).
+    public readonly state: IMusicState = {
+        activeRadioValue: "continueMusic",
+        volumeSliderPosition: Math.round(
+            MusicToolControls.kDefaultVolumeFraction * 100
+        ),
+        audioEnabled: false,
+        musicName: "",
+        playing: false
+    };
     private static musicAttrName = "data-backgroundaudio";
     private static musicVolumeAttrName =
         MusicToolControls.musicAttrName + "volume";
     private static kDefaultVolumeFraction = 0.5;
     private static narrationPlayer: AudioRecording;
     private addedListenerToPlayer: boolean;
-    constructor() {
-        super({});
-        this.state = this.getStateFromHtmlOfPage();
+    public componentDidMount() {
+        this.setState(this.getStateFromHtmlOfPage());
     }
 
     public pausePlayer() {
@@ -52,35 +60,28 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         if (!audioFileName) {
             audioFileName = ""; // null won't handle split
         }
-        const state = {
-            activeRadioValue: "continueMusic",
-            volumeSliderPosition: Math.round(
-                MusicToolControls.kDefaultVolumeFraction * 100
-            ),
-            audioEnabled: false,
-            musicName: "",
-            playing: false
-        }; // default state
         if (!hasMusicAttr) {
             // No data-backgroundAudio attr at all is our default state, continue from previous page
             // (including possibly no audio, if previous page had none). If audio is set on a previous
             // page, it can flow over into this one.
         } else if (audioFileName) {
             // If we have a non-empty music attr, we're setting new music right here.
-            state.activeRadioValue = "newMusic";
-            state.audioEnabled = true;
+            this.state.activeRadioValue = "newMusic";
+            this.state.audioEnabled = true;
             const volume = MusicToolControls.getPlayerVolumeFromAttributeOnPage(
                 audioFileName
             );
-            state.volumeSliderPosition = MusicToolControls.convertVolumeToSliderPosition(
+            this.state.volumeSliderPosition = MusicToolControls.convertVolumeToSliderPosition(
                 volume
             );
-            state.musicName = this.getDisplayNameOfMusicFile(audioFileName);
+            this.state.musicName = this.getDisplayNameOfMusicFile(
+                audioFileName
+            );
         } else {
             // If we have the attribute, but the value is empty, we're explicitly turning it off.
-            state.activeRadioValue = "noMusic";
+            this.state.activeRadioValue = "noMusic";
         }
-        return state;
+        return this.state;
     }
 
     // This is not very react-ive. In theory, I think, if things can be updated from outside the control,

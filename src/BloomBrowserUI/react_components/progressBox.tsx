@@ -22,10 +22,13 @@ export default class ProgressBox extends React.Component<
     IProgressBoxProps,
     IProgressState
 > {
+    public readonly state: IProgressState = {
+        progress: ""
+    };
+
     constructor(props: IProgressBoxProps) {
         super(props);
         let self = this;
-        this.state = { progress: "" };
         //get progress messages from c#
         WebSocketManager.addListener(props.clientContext, e => {
             if (e.id === "progress") {

@@ -10,6 +10,7 @@ interface IPreviewProps extends IUILanguageAwareProps {
 interface IComponentState {
     previewSrc: string;
 }
+
 // This component shows a simulated device with a live epub inside of it.
 // The preview lives in an iframe and is activated by setting the src of the iframe
 // by broadcasting a message on the web socket. The message should have id 'preview'
@@ -19,6 +20,10 @@ export default class EpubPreview extends React.Component<
     IPreviewProps,
     IComponentState
 > {
+    public readonly state: IComponentState = {
+        previewSrc: ""
+    };
+
     constructor(props) {
         super(props);
         WebSocketManager.addListener(props.websocketClientContext, e => {
@@ -26,7 +31,6 @@ export default class EpubPreview extends React.Component<
                 this.setState({ previewSrc: e.message });
             }
         });
-        this.state = { previewSrc: "" };
     }
     public render() {
         return (

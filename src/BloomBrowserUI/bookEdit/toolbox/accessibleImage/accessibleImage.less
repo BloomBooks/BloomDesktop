@@ -1,11 +1,30 @@
 @import "../../../bloomUI.less";
+@textColor: @bloom-buff; // #D2D2D2;
 
 .accessibleImageBody {
+    color: @textColor;
     padding-left: 10px;
     padding-right: 10px;
 
     .checkBox {
         margin-top: 10px;
+    }
+
+    .radioLabel {
+        display: inline-block;
+        max-width: 120px;
+    }
+
+    .radioButton {
+        margin-left: 20px;
+    }
+
+    .radioInput {
+        vertical-align: top;
+        margin-top: 1px;
+    }
+    .colorBlindCheckBox {
+        margin-bottom: 6px;
     }
 }
 

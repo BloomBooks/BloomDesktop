@@ -1,4 +1,4 @@
-﻿import { BloomApi } from "../../utils/bloomApi";
+import { BloomApi } from "../../utils/bloomApi";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
@@ -28,12 +28,12 @@ class EpubPublishUI extends React.Component<
     IPublishSettings
 > {
     private isLinux: boolean;
+    public readonly state: IPublishSettings = {
+        howToPublishImageDescriptions: "None",
+        removeFontSizes: false
+    };
     constructor(props: IUILanguageAwareProps) {
         super(props);
-        this.state = {
-            howToPublishImageDescriptions: "None",
-            removeFontSizes: false
-        };
 
         BloomApi.get("publish/epub/epubSettings", result => {
             this.setState(result.data);
@@ -176,7 +176,7 @@ class EpubPublishUI extends React.Component<
                         </Link>
                         <Link
                             id="bookMetadataDialogLink"
-                            l10nKey="Publish.BookMetadata"
+                            l10nKey="PublishTab.BookMetadata"
                             l10nComment="This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics."
                             onClick={() => BookMetadataDialog.show()}
                         >

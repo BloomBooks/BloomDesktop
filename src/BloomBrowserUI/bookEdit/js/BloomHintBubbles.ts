@@ -310,7 +310,15 @@ export default class BloomHintBubbles {
         }
         // And if targetElement is not related in any of these ways to any of the divs that have source bubbles,
         // go ahead and give it its own help/hint bubble.
-        this.MakeHelpBubble(targetElement, elementWithBubbleAttributes);
+        BloomApi.get("bubbleLanguages", result => {
+            const orderedLangsForBubble: Array<string> = (<any>result.data)
+                .langs;
+            this.MakeHelpBubble(
+                targetElement,
+                elementWithBubbleAttributes,
+                orderedLangsForBubble
+            );
+        });
     }
 
     private static getHintContent(
