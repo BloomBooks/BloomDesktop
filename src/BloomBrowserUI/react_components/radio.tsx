@@ -47,6 +47,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                         "radioLabel",
                         this.props.labelClass
                     )}
+                    onClick={() => this.props.onSelected(this.props.value)}
                 >
                     {this.getLocalizedContent()}
                 </div>

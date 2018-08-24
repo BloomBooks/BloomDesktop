@@ -85,6 +85,11 @@ namespace Bloom
 			SetWindowText(null);
 		}
 
+		public void CheckForInvalidBranding()
+		{
+			_workspaceView.CheckForInvalidBranding();
+		}
+
 		protected override void OnHandleCreated(EventArgs e)
 		{
 			base.OnHandleCreated(e);

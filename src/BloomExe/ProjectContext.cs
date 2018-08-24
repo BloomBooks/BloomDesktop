@@ -117,6 +117,7 @@ namespace Bloom
 							typeof(PublishToAndroidApi),
 							typeof(PublishEpubApi),
 							typeof(AccessibilityCheckApi),
+							typeof(CollectionSettingsApi),
 							typeof(PageControlsApi),
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
@@ -301,6 +302,7 @@ namespace Bloom
 			_scope.Resolve<PublishToAndroidApi>().RegisterWithServer(server);
 			_scope.Resolve<PublishEpubApi>().RegisterWithServer(server);
 			_scope.Resolve<AccessibilityCheckApi>().RegisterWithServer(server);
+			_scope.Resolve<CollectionSettingsApi>().RegisterWithServer(server);
 			_scope.Resolve<PageControlsApi>().RegisterWithServer(server);
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);
