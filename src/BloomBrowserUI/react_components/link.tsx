@@ -12,6 +12,7 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
     public render() {
         return (
             <a
+                className={this.props.className}
                 id={"" + this.props.id}
                 // href must be defined in order to maintain normal link UI
                 // I tried to do like the 'id' attribute above, but it caused an error.

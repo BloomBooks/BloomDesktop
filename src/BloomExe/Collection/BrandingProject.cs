@@ -19,6 +19,7 @@ namespace Bloom.Collection
 	public class BrandingProject
 	{
 		public string Key;
+
 		public static IEnumerable<BrandingProject> GetProjectChoices()
 		{
 			var brandingDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("branding");

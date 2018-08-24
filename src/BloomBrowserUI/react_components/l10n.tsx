@@ -16,6 +16,7 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nTipEnglishEnabled?: string;
     l10nTipEnglishDisabled?: string;
     alreadyLocalized?: boolean; // true if translated by C#-land
+    l10nParam0?: string;
 }
 
 export interface ILocalizationState {
@@ -34,6 +35,7 @@ export class LocalizableElement<
     private isComponentMounted: boolean;
     private tooltipKey: string;
     private disabledTooltipKey: string;
+    private localizedText: string;
 
     // set the following boolean to turn all translated strings green
     private turnTranslatedGreen: boolean = false;
@@ -53,6 +55,20 @@ export class LocalizableElement<
             return React.Children.toArray(this.props.children)[0].toString();
         } else {
             return "ERROR: must have exactly one child (a text string). Cannot yet handle any elements like spans.";
+        }
+    }
+
+    public componentDidUpdate() {
+        if (this.localizedText && this.props.l10nParam0) {
+            var newText = this.localizedText.replace(
+                "%0",
+                this.props.l10nParam0
+            );
+            if (newText != this.state.translation) {
+                this.setState({
+                    translation: newText
+                });
+            }
         }
     }
 
@@ -76,8 +92,12 @@ export class LocalizableElement<
                     this.props.l10nComment
                 )
                 .done(result => {
+                    this.localizedText = result;
                     // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
                     // after this component is no longer visible. See note on componentWillUnmount()
+                    if (this.props.l10nParam0) {
+                        result = result.replace("%0", this.props.l10nParam0);
+                    }
                     if (this.isComponentMounted) {
                         this.setState({ translation: result });
                     }

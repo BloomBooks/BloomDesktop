@@ -1,0 +1,109 @@
+@import "../bloomUI.less";
+
+.enterpriseSettings {
+    padding: 0px 4px 0px 4px;
+    font-family: @ui-fonts;
+    font-size: @ui-font-size;
+
+    // These elements resolve to spans or links, but we want each to lay out as a block.
+    .mainHeading,
+    .invalidBrandingLink,
+    .invalidBranding,
+    .learnMoreLink {
+        margin-bottom: 5px;
+        display: block;
+    }
+    .hidden {
+        display: none;
+    }
+    .radioLabel {
+        display: inline-block;
+        margin-left: 5px;
+    }
+    .radioInput {
+        vertical-align: top;
+        margin-top: 4px;
+    }
+    .bloomEnterpriseStatus {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .whatsThisLink,
+    .communityRadio,
+    .subscriptionCodeLabel,
+    .subscriptionCodeInput {
+        display: inline-block;
+    }
+    .whatsThisLink {
+        margin-left: 20px;
+    }
+    .subscriptionCodeInput {
+        width: 200px;
+        margin-left: 5px;
+    }
+    .subscriptionCodeWrapper {
+        margin-top: -5px;
+    }
+    @subscriptionIndent: 30px;
+    .subscriptionCodeWrapper,
+    .expiration,
+    .error {
+        margin-left: @subscriptionIndent;
+    }
+    @summary-padding: 3px;
+    .summary {
+        margin-left: @subscriptionIndent - @summary-padding;
+    }
+    .error:not(.hidden) {
+        color: red;
+        display: block;
+    }
+    .codeEvaluation {
+        margin-left: 10px;
+        vertical-align: -3px;
+        font-size: 20pt;
+        color: lime;
+    }
+    .summary {
+        margin-top: 7px;
+        background-color: gainsboro;
+        padding: @summary-padding;
+        height: 106px;
+        // These settings are not used directly in the tsx, they are intended to be the class
+        // of a single top-level div in each summary.htm file. In the horizontal layout,
+        // there should be one child div, with whatever should appear beside the picture.
+        .horizontal {
+            display: flex;
+            box-sizing: border-box;
+            div {
+                margin-right: 20px;
+                // allowing both to grow tends to distribute any extra white space,
+                // rather than putting the image right next to the text (default) or against
+                // the right border (as would making the parent justify-content:space-between).
+                // Unlike justify-content:space-around, this won't put any space before the
+                // div, so the text stays aligned with the other two items in the column
+                // as desired.
+                flex-grow: 1;
+            }
+            img {
+                max-height: 100px;
+                max-width: 250px;
+                flex-grow: 1;
+                object-fit: contain;
+            }
+        }
+        .vertical {
+            display: flex;
+            height: 100%;
+            box-sizing: border-box;
+            flex-direction: column;
+            justify-content: space-around;
+            img {
+                flex: 1 1 0;
+                object-fit: contain;
+                margin-top: 3px;
+                min-height: 0;
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<!--  This is loaded by c# CollectionSettings class -->
+<html class="enterpriseSettings" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <div id="enterpriseSettingsScreen"></div>
+    <script src="../commonBundle.js"></script>
+    <script src="../enterpriseSettingsBundle.js"></script>
+    <script type="text/javascript">
+        var reactRoot = document.getElementById("enterpriseSettingsScreen")
+        //If we could do jsx here: ReactDOM.render(<EnterpriseSettings/>, reactRoot);
+        //If we could access ReactDOM here: ReactDOM.render(React.createElement(EnterpriseSettings, null), reactRoot);
+        // But withtout some new webpack wizardry, this will have to do in the meantime:
+        window.connectEnterpriseSettingsScreen(reactRoot);
+    </script>
+</body>
+
+</html>
