@@ -2322,7 +2322,7 @@ namespace Bloom.Publish.Epub
 				extension = Path.GetExtension(item);
 			if (!String.IsNullOrEmpty(extension))
 				extension = extension.Substring(1);	// ignore the .
-			switch (extension)
+			switch (extension.ToLowerInvariant())
 			{
 			case "xml": // Review
 			case "xhtml":
