@@ -12,6 +12,8 @@ using SIL.WritingSystems;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Bloom.MiscUI;
+using Bloom.web.controllers;
+using Gecko;
 
 namespace Bloom.Collection
 {
@@ -26,6 +28,9 @@ namespace Bloom.Collection
 		private bool _restartRequired;
 		private bool _loaded;
 		private List<string> _styleNames = new List<string>();
+		private Browser _enterpriseBrowser;
+		private string _subscriptionCode;
+		private string _brand;
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent)
 		{
@@ -60,8 +65,24 @@ namespace Bloom.Collection
 //		                                                  UpdateDisplay();
 //		                                              };
 
+			CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
+
+			SetupEnterpriseBrowser();
 
 			UpdateDisplay();
+
+			if (CollectionSettingsApi.InvalidBranding != null)
+			{
+				_tab.SelectedTab = _enterpriseTab;
+			}
+		}
+
+		private void SetupEnterpriseBrowser()
+		{
+			_enterpriseBrowser = new Browser {Dock = DockStyle.Fill};
+			_enterpriseTab.Controls.Add(_enterpriseBrowser);
+			var rootFile = BloomFileLocator.GetBrowserFile(false, "collection", "enterpriseSettings.html");
+			_enterpriseBrowser.Navigate(rootFile.ToLocalhost(), false);
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
@@ -208,11 +229,8 @@ namespace Bloom.Collection
 				_collectionSettings.PageNumberStyle = styleName;
 			}
 
-			if (_brandingCombo.SelectedItem != null)
-			{
-				var brand = _brandingCombo.SelectedItem as BrandingProject;
-				_collectionSettings.BrandingProjectKey = brand?.Key;
-			}
+			_collectionSettings.BrandingProjectKey = _brand;
+			_collectionSettings.SubscriptionCode = _subscriptionCode;
 
 			//no point in letting them have the Nat lang 2 be the same as 1
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
@@ -271,9 +289,16 @@ namespace Bloom.Collection
 			LoadPageNumberStyleCombo();
 			LoadBrandingCombo();
 			AdjustFontComboDropdownWidth();
-
+			_brand = _collectionSettings.BrandingProjectKey;
+			_subscriptionCode = _collectionSettings.SubscriptionCode;
+			CollectionSettingsApi.SetSubscriptionCode(_subscriptionCode, IsSubscriptionCodeKnown(), GetEnterpriseStatus());
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
+		}
+
+		bool IsSubscriptionCodeKnown()
+		{
+			return BrandingProject.GetProjectChoices().Any(bp => bp.Key == _brand);
 		}
 
 		/// <summary>
@@ -345,15 +370,6 @@ namespace Bloom.Collection
 
 		private void LoadBrandingCombo()
 		{
-			foreach (var brand in BrandingProject.GetProjectChoices())
-			{
-				_brandingCombo.Items.Add(brand);
-
-				if(brand.Key == _collectionSettings.BrandingProjectKey)
-				{
-					_brandingCombo.SelectedIndex = _brandingCombo.Items.Count - 1;
-				}
-			}
 		}
 
 		/*
@@ -499,15 +515,41 @@ namespace Bloom.Collection
 			}
 		}
 
-		private void _brandingCombo_SelectedIndexChanged(object sender, EventArgs e)
+		private CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus()
 		{
-			if(_brandingCombo.SelectedItem == null)
-				return;
+			if (CollectionSettingsApi.InvalidBranding != null)
+			{
+				// We're being displayed to fix a branding code...select that option
+				return CollectionSettingsApi.EnterpriseStatus.Subscription;
+			}
+			if (_brand == "Default")
+				return CollectionSettingsApi.EnterpriseStatus.None;
+			else if (_brand == "Local Community")
+				return CollectionSettingsApi.EnterpriseStatus.Community;
+			return CollectionSettingsApi.EnterpriseStatus.Subscription; ;
+		}
+		/// <summary>
+		/// We configure the SettingsApi to use this method to notify this (as the manager of the whole dialog
+		/// including the "need to reload" message and the Ok/Cancel buttons) of changes the user makes
+		/// in the Enterprise tab.
+		/// </summary>
+		/// <param name="brand"></param>
+		/// <param name="subscriptionCode"></param>
+		/// <returns></returns>
+		public bool ChangeBranding(string brand, string subscriptionCode)
+		{
+			foreach (var item in BrandingProject.GetProjectChoices())
+			{
+				if (item.Key.ToUpperInvariant() == brand.ToUpperInvariant())
+				{
+					Invoke((Action) (ChangeThatRequiresRestart));
+					_brand = item.Key;
+					_subscriptionCode = subscriptionCode;
+					return true;
+				}
+			}
 
-			var brand = _brandingCombo.SelectedItem as BrandingProject;
-
-			if(brand?.Key != _collectionSettings.BrandingProjectKey)
-				ChangeThatRequiresRestart();
+			return false;
 		}
 
 		private void showTroubleShooterCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -520,11 +562,6 @@ namespace Bloom.Collection
 			{
 				TroubleShooterDialog.HideTroubleShooter();
 			}
-		}
-
-		private void _enterpriseInformationLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			SIL.Program.Process.SafeStart("http://bit.ly/2zTQHfM");
 		}
 
 		private void _numberStyleCombo_SelectedIndexChanged(object sender, EventArgs e)

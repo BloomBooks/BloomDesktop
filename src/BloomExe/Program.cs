@@ -593,7 +593,7 @@ namespace Bloom
 			}
 		}
 
-		private static void CloseSplashScreen()
+		public static void CloseSplashScreen()
 		{
 			_alreadyHadSplashOnce = true;
 			Application.Idle -= CareForSplashScreenAtIdleTime;
@@ -773,9 +773,9 @@ namespace Bloom
 			// Sometimes after closing the splash screen the project window
 			// looses focus, so do this.
 			_projectContext.ProjectWindow.Activate();
+
+			(_projectContext.ProjectWindow as Shell).CheckForInvalidBranding();
 		}
-
-
 
 		/// ------------------------------------------------------------------------------------
 		private static void HandleErrorOpeningProjectWindow(Exception error, string projectPath)
@@ -992,11 +992,17 @@ namespace Bloom
 				if (uiLanguage != desiredLanguage)
 					Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 
-				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
+				LocalizationManager.Create(uiLanguage,
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
 											"SIL/Bloom",
 											Resources.BloomIcon, "issues@bloomlibrary.org", "SIL");
+
+				LocalizationManager.Create(uiLanguage,
+					"BloomLowPriority", "BloomLowPriority", Application.ProductVersion,
+					installedStringFileFolder,
+					"SIL/Bloom",
+					Resources.BloomIcon, "issues@bloomlibrary.org", "Bloom");
 
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 

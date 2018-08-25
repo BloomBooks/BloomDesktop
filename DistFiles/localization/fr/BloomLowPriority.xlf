@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="fr">
+    <body>
+      <trans-unit id="Settings.Enterprise.Overview" approved="yes">
+        <source xml:lang="en">Bloom Enterprise is a paid service offered by SIL International. It adds some additional features and services that are important to publishers, governments, and international organizations. By subscribing to this service, these projects can meet some of their unique needs while also supporting the development and user support of Bloom, which helps everybody.
+        </source>
+        <note>ID: Settings.Enterprise.Overview</note>
+          <target xml:lang="fr">This is supposed to be the French localization of the Bloom enterprise introduction</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

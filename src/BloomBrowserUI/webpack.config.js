@@ -47,6 +47,7 @@ module.exports = {
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         publishUIBundle: globule.find(["./publish/**/*.tsx"]),
+        enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
             "./bookEdit/**/*Spec.js",
