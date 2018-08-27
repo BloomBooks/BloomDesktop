@@ -50,6 +50,7 @@ export class SubjectTreeNode {
         codeValue: string,
         currentSubjects: JsSubject[]
     ): boolean {
+        if (!currentSubjects) return false;
         return currentSubjects.some(subject => subject.code == codeValue);
     }
 
@@ -60,6 +61,7 @@ export class SubjectTreeNode {
     //   2) Run a test to verify this function's correct output.
     // Therefore, when we do away with (1), we can eliminate this function.
     public static getCodeList(currentSubjects: JsSubject[]): string {
+        if (currentSubjects == null) return "";
         return currentSubjects
             .map(subject => {
                 return subject.code;

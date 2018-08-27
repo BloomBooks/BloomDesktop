@@ -436,6 +436,8 @@ namespace Bloom.Publish.Epub
 		private void AddSubjects(XElement metadataElt, XNamespace dc, XNamespace opf)
 		{
 			var subjects = Book.BookInfo.MetaData.Subjects;
+			if (subjects == null)
+				return;
 			foreach (var subjectObj in subjects)
 			{
 				var code = subjectObj.code;
