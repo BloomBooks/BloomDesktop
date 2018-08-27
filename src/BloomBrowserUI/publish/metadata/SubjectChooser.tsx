@@ -52,6 +52,7 @@ export default class SubjectChooser extends React.Component<IProps> {
             description: currentNode.label
         };
         let metadataSubjects: JsSubject[] = this.props.subjects.value;
+        if (!metadataSubjects) metadataSubjects = [];
         if (currentNode.checked) {
             metadataSubjects.push(currentSubject); // appends subject to the end of the array
         } else {
