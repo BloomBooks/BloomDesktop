@@ -72,7 +72,7 @@ namespace BloomTests.Book
 //        [Test]
 //        public void CreateBookOnDiskFromTemplate_HasConfigurationPage_xxxxxxxxxxxx()
 //        {
-//            var source = FileLocator.GetDirectoryDistributedWithApplication("Sample Shells",
+//            var source = FileLocationUtilities.GetDirectoryDistributedWithApplication("Sample Shells",
 //                                                                            "Calendar");
 //
 //            var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
@@ -713,7 +713,7 @@ namespace BloomTests.Book
 		{
 			var source = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 			var goodPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
-			DirectoryUtilities.DeleteDirectoryRobust(goodPath); //remove that good one. We just did it to get an idea of what the path is
+			SIL.IO.RobustIO.DeleteDirectoryAndContents(goodPath); //remove that good one. We just did it to get an idea of what the path is
 
 			//now fail while making a book
 

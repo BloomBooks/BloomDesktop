@@ -20,14 +20,14 @@ namespace BloomTests.WebLibraryIntegration
 		private string ProxyVariableLowercase { get; set; }
 		private string ProxyVariableUppercase { get; set; }
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void FixtureSetup()
 		{
 			ProxyVariableLowercase = Environment.GetEnvironmentVariable("http_proxy");
 			ProxyVariableUppercase = Environment.GetEnvironmentVariable("HTTP_PROXY");
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void FixtureTearDown()
 		{
 			Environment.SetEnvironmentVariable("http_proxy", ProxyVariableLowercase);

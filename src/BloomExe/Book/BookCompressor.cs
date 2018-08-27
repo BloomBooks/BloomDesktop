@@ -220,7 +220,7 @@ namespace Bloom.Book
 						MakeExtraEntry(zipStream, name, sha);
 					}
 					MakeExtraEntry(zipStream, "readerStyles.css",
-						File.ReadAllText(FileLocator.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"))));
+						File.ReadAllText(FileLocationUtilities.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"))));
 				}
 				else
 				{

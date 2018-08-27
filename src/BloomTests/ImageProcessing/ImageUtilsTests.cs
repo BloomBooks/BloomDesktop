@@ -22,14 +22,14 @@ namespace BloomTests.ImageProcessing
 		[Test]
 		public void ShouldChangeFormatToJpeg_Photo_True()
 		{
-			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
+			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
 			Assert.IsTrue(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
 		}
 
 		[Test]
 		public void ShouldChangeFormatToJpeg_OneColor_False()
 		{
-			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
+			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
 			Assert.IsFalse(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
 		}
 
@@ -53,7 +53,7 @@ namespace BloomTests.ImageProcessing
 
 		private static void ProcessAndSaveImageIntoFolder_AndTestResults(string testImageName, ImageFormat expectedOutputFormat)
 		{
-			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
+			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
 			using (var image = PalasoImage.FromFileRobustly(inputPath))
 			{
 				using (var folder = new TemporaryFolder())
@@ -78,7 +78,7 @@ namespace BloomTests.ImageProcessing
 		[Platform(Exclude = "Linux", Reason = "This test throws a low-level warning which TC is currently treating as an error")]
 		public static void ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased()
 		{
-			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
+			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
 			var originalFileSize = new FileInfo(inputPath).Length;
 			using (var image = PalasoImage.FromFileRobustly(inputPath))
 			{
@@ -101,7 +101,7 @@ namespace BloomTests.ImageProcessing
 		[Test]
 		public static void ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased2()
 		{
-			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
+			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
 			var originalFileSize = new FileInfo(inputPath).Length;
 			using (var image = PalasoImage.FromFileRobustly(inputPath))
 			{

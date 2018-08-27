@@ -540,7 +540,7 @@ namespace Bloom.WebLibraryIntegration
 					// It's important that books appear as nearly complete as possible, because a file watcher will very soon add the new
 					// book to the list of downloaded books the user can make new ones from, once it appears in the target directory.
 					bool done = false;
-					if(didDelete && PathUtilities.PathsAreOnSameVolume(pathToDestinationParentDirectory, tempDirectory))
+					if(didDelete && PathHelper.AreOnSameVolume(pathToDestinationParentDirectory, tempDirectory))
 					{
 						try
 						{

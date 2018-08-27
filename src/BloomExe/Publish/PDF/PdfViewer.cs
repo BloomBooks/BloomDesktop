@@ -120,7 +120,7 @@ namespace Bloom.Publish.PDF
 				file = file.EscapeCharsForHttp().EscapeCharsForHttp();
 			var url = string.Format("{0}{1}?file=/bloom/{2}",
 				Bloom.Api.ServerBase.ServerUrlWithBloomPrefixEndingInSlash,
-				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"),
+				FileLocationUtilities.GetFileDistributedWithApplication("pdf/web/viewer.html"),
 				file);
 
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);

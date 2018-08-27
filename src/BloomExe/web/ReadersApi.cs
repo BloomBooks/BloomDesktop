@@ -280,7 +280,7 @@ namespace Bloom.Api
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
-			if (DirectoryUtilities.DirectoryIsEmpty(path, true))
+			if (DirectoryHelper.IsEmpty(path, true))
 			{
 				var bloomAppDirInfo = new DirectoryInfo(ProjectContext.GetBloomAppDataFolder());
 

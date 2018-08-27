@@ -355,7 +355,7 @@ namespace Bloom
 				{
 					try
 					{
-						SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(newInstallDirectory);
+						SIL.IO.RobustIO.DeleteDirectoryAndContents(newInstallDirectory);
 					}
 					catch(Exception error)
 					{

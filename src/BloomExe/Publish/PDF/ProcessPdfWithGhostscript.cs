@@ -101,7 +101,7 @@ namespace Bloom.Publish.PDF
 		{
 			// Look first for the barebones version distributed with Bloom 4.0 (and later presumably).
 			// Don't give up if you can't find it.
-			var basedir = FileLocator.DirectoryOfApplicationOrSolution;
+			var basedir = FileLocationUtilities.DirectoryOfApplicationOrSolution;
 			var dir = Path.Combine(basedir, "ghostscript");
 			if (!Directory.Exists(dir))
 				dir = Path.Combine(basedir, "DistFiles", "ghostscript");
@@ -177,8 +177,8 @@ namespace Bloom.Publish.PDF
 				bldr.Append(" -dPDFSETTINGS=/prepress");
 				bldr.Append(" -sColorConversionStrategy=CMYK");
 				bldr.Append(" -dOverrideICC=true");
-				var rgbProfile = FileLocator.GetFileDistributedWithApplication("ColorProfiles/RGB/AdobeRGB1998.icc");
-				var cmykProfile = FileLocator.GetFileDistributedWithApplication("ColorProfiles/CMYK/USWebCoatedSWOP.icc");
+				var rgbProfile = FileLocationUtilities.GetFileDistributedWithApplication("ColorProfiles/RGB/AdobeRGB1998.icc");
+				var cmykProfile = FileLocationUtilities.GetFileDistributedWithApplication("ColorProfiles/CMYK/USWebCoatedSWOP.icc");
 				bldr.AppendFormat(" -sDefaultRGBProfile=\"{0}\"", rgbProfile);
 				bldr.AppendFormat(" -sDefaultCMYKProfile=\"{0}\"", cmykProfile);
 				bldr.AppendFormat(" -sOutputICCProfile=\"{0}\"", cmykProfile);

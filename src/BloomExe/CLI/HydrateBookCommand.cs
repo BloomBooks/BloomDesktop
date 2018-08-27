@@ -86,7 +86,7 @@ namespace Bloom.CLI
 		private static void AddRequisiteJsFiles(string path)
 		{
 			const string bloomPlayerFileName = "bloomPlayer.js";
-			var bloomLibraryJsPath = FileLocator.GetFileDistributedWithApplication(bloomPlayerFileName);
+			var bloomLibraryJsPath = FileLocationUtilities.GetFileDistributedWithApplication(bloomPlayerFileName);
 			RobustFile.Copy(bloomLibraryJsPath, Path.Combine(path, bloomPlayerFileName), true);
 		}
 	}

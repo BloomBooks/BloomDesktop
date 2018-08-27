@@ -241,7 +241,7 @@ namespace Bloom
 				return;
 			}
 
-			var iconDir = FileLocator.GetDirectoryDistributedWithApplication(true, "icons");
+			var iconDir = FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "icons");
 			if (iconDir == null)
 			{
 				// Note: if this happens a lot we'd want to make it localizable. I think that's unlikely, so it may not be worth the
