@@ -54,7 +54,7 @@ var paths = {
         "!../../DistFiles/ReleaseNotes.md",
         "!../../DistFiles/ffmpeg/*.md"
     ],
-    less: ["./**/*.less", "!./node_modules/**/*.less"],
+    //less: ["./**/*.less", "!./node_modules/**/*.less"],
     pug: ["./**/*.pug", "!./node_modules/**/*.pug", "!./**/*mixins.pug"],
     //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*'],
 
@@ -87,24 +87,24 @@ var allXliffFiles = globule.find(paths.xliff);
 // and need to use it to execute HtmlXliff.exe
 var IsLinux = globule.find(["/opt/mono4-sil/**/mono"]).length > 0;
 
-gulp.task("less", function() {
-    var less = require("gulp-less");
-    return gulp
-        .src(paths.less)
-        .pipe(debug({ title: "less:" }))
-        .pipe(sourcemaps.init())
-        .pipe(
-            less()
-                // Without this, the task will happily go on its merry way and you have to
-                // scroll up through the log messages to know if there was any problem at all.
-                .on("error", function(error) {
-                    console.error(error.message);
-                    process.exit(1);
-                })
-        )
-        .pipe(sourcemaps.write(outputDir))
-        .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
-});
+// gulp.task("less", function() {
+//     var less = require("gulp-less");
+//     return gulp
+//         .src(paths.less)
+//         .pipe(debug({ title: "less:" }))
+//         .pipe(sourcemaps.init())
+//         .pipe(
+//             less()
+//                 // Without this, the task will happily go on its merry way and you have to
+//                 // scroll up through the log messages to know if there was any problem at all.
+//                 .on("error", function(error) {
+//                     console.error(error.message);
+//                     process.exit(1);
+//                 })
+//         )
+//         .pipe(sourcemaps.write(outputDir))
+//         .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
+// });
 
 gulp.task("pug", function() {
     var pug = require("gulp-pug");
@@ -158,18 +158,18 @@ gulp.task("copy", function() {
 });
 
 gulp.task("watchInner", function() {
-    watch(
-        paths.less,
-        batch(function(events, done) {
-            gulp.start("copy", done);
-        })
-    );
-    watch(
-        paths.less,
-        batch(function(events, done) {
-            gulp.start("less", done);
-        })
-    );
+    // watch(
+    //     paths.less,
+    //     batch(function(events, done) {
+    //         gulp.start("copy", done);
+    //     })
+    // );
+    // watch(
+    //     paths.less,
+    //     batch(function(events, done) {
+    //         gulp.start("less", done);
+    //     })
+    // );
     watch(
         paths.pug,
         batch(function(events, done) {
@@ -203,7 +203,7 @@ gulp.task("watchInner", function() {
 });
 
 gulp.task("watchlp", function() {
-    runSequence(["less", "pug", "pugLRT"], "watchInner");
+    runSequence([/*"less",*/ "pug", "pugLRT"], "watchInner");
 });
 
 gulp.task("watch", function() {
@@ -359,7 +359,7 @@ gulp.task("default", function(callback) {
         "clean",
         "copy",
         [
-            "less",
+            // "less",
             "pug",
             "pugLRT",
             "markdownHelp",
