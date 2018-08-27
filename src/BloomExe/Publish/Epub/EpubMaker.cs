@@ -440,8 +440,10 @@ namespace Bloom.Publish.Epub
 				return;
 			foreach (var subjectObj in subjects)
 			{
-				var code = subjectObj.code;
-				var description = subjectObj.description;
+				var code = subjectObj.value;
+				var description = subjectObj.label;
+				Debug.Assert(!string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(description),
+					"There has been a failure in the SubjectChooser code.");
 				metadataElt.Add(
 					new XElement(dc + "subject",
 						new XAttribute(opf + "authority", "thema"),

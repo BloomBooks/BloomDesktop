@@ -5,21 +5,17 @@
 // The Children related subjects were moved to the top of the list.
 export const themaSubjectData: SubjectTreeNode[] = require("./ThemaData.json");
 
-export interface JsSubject {
-    code: string;
-    description: string;
-}
-
 // A SubjectTreeNode represents the data from one node of the Thema based subject tree
 // in a form usable by the react-dropdown-tree-select component.
 // We store an array of these nodes to represent the top of the tree. (tops of the forest?)
 export class SubjectTreeNode {
+    // Made some parts optional to handle creating them from stored metadata
     constructor(
         public value: string,
         public label: string,
-        public notes: string,
-        public checked: boolean,
-        public children: SubjectTreeNode[]
+        public notes?: string,
+        public checked?: boolean,
+        public children?: SubjectTreeNode[]
     ) {}
 
     // Mark only the specifically selected nodes of the tree (forest?) as checked.
@@ -28,7 +24,7 @@ export class SubjectTreeNode {
     // of a leaf node.
     public static markSelectedSubjectNodes(
         list: SubjectTreeNode[],
-        currentSubjects: JsSubject[]
+        currentSubjects: SubjectTreeNode[]
     ) {
         list.map(element => {
             if (
@@ -48,10 +44,14 @@ export class SubjectTreeNode {
     // Check whether given code is in the current set of subject codes.
     private static matchCurrentSubject(
         codeValue: string,
-        currentSubjects: JsSubject[]
+        currentSubjects: SubjectTreeNode[]
     ): boolean {
-        if (!currentSubjects) return false;
-        return currentSubjects.some(subject => subject.code == codeValue);
+        if (!currentSubjects) {
+            return false;
+        }
+        return currentSubjects.some(subject => {
+            return subject.value === codeValue;
+        });
     }
 
     // Takes an array of Subjects each containing a code and a description.
@@ -60,11 +60,11 @@ export class SubjectTreeNode {
     //   1) Display codes in the dialog for testing
     //   2) Run a test to verify this function's correct output.
     // Therefore, when we do away with (1), we can eliminate this function.
-    public static getCodeList(currentSubjects: JsSubject[]): string {
+    public static getCodeList(currentSubjects: SubjectTreeNode[]): string {
         if (currentSubjects == null) return "";
         return currentSubjects
             .map(subject => {
-                return subject.code;
+                return subject.value;
             })
             .join(" ");
     }
