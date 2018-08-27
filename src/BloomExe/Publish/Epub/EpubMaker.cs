@@ -345,15 +345,28 @@ namespace Bloom.Publish.Epub
 			XNamespace dc = dcNamespace;
 			var metadataElt = new XElement(opf + "metadata",
 				new XAttribute(XNamespace.Xmlns + "dc", dcNamespace),
+				new XAttribute(XNamespace.Xmlns + "opf", opf.NamespaceName),
 				// attribute makes the namespace have a prefix, not be a default.
 				new XElement(dc + "title", Book.Title),
 				new XElement(dc + "language", Book.CollectionSettings.Language1Iso639Code),
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
 				new XElement(dc + "source", source),
+				new XElement(dc + "creator",
+					new XAttribute("id", "author"), Book.BookInfo.MetaData.Author),
+				new XElement(dc + "rights", Book.GetLicenseMetadata().License.Url));
+			AddSubjects(metadataElt, dc, opf);
+			metadataElt.Add(
 				new XElement(opf + "meta",
 					new XAttribute("property", "dcterms:modified"),
-					new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z")); // like 2012-03-20T11:37:00Z
+					// Last modified datetime like 2012-03-20T11:37:00Z
+					new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z"),
+				new XElement(opf + "meta",
+					new XAttribute("property", "schema:typicalAgeRange"), Book.BookInfo.MetaData.TypicalAgeRange),
+				new XElement(opf + "meta",
+					new XAttribute("property", "schema:numberOfPages"), Book.GetLastNumberedPageNumber().ToString()),
+				new XElement(opf + "meta",
+					new XAttribute("property", "level"), Book.BookInfo.MetaData.ReadingLevelDescription));
 			AddAccessibilityMetadata(metadataElt, opf);
 			rootElt.Add(metadataElt);
 
@@ -412,6 +425,27 @@ namespace Bloom.Publish.Epub
 			}
 
 			MakeSpine(opf, rootElt, manifestPath);
+		}
+
+		/// <summary>
+		/// Add the (possibly several) Thema subject code(s) to the metadata.
+		/// </summary>
+		/// <param name="metadataElt"></param>
+		/// <param name="dc"></param>
+		/// <param name="opf"></param>
+		private void AddSubjects(XElement metadataElt, XNamespace dc, XNamespace opf)
+		{
+			var subjects = Book.BookInfo.MetaData.Subjects;
+			foreach (var subjectObj in subjects)
+			{
+				var code = subjectObj.code;
+				var description = subjectObj.description;
+				metadataElt.Add(
+					new XElement(dc + "subject",
+						new XAttribute(opf + "authority", "thema"),
+						new XAttribute(opf + "term", code),
+						description));
+			}
 		}
 
 		/// <summary>
