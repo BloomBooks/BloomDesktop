@@ -4,7 +4,7 @@
         "module": "commonjs",
         "sourceMap": true,
         "jsx": "react",
-        "lib": ["DOM", "ES5", "ScriptHost", "es2017.object"],
+        "lib": ["dom", "es5", "scripthost", "es2017.object"],
         "experimentalDecorators": true
     },
     "exclude": ["node_modules", "typings"]
