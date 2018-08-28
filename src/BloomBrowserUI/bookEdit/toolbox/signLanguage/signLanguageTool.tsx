@@ -376,8 +376,10 @@ export class SignLanguageToolControls extends React.Component<
             // I found a couple of examples online with these rates for video/mp4 and the results
             // look reasonable. It's possible we could get useful recordings with lower rates.
             audioBitsPerSecond: 128000,
-            videoBitsPerSecond: 2500000,
-            mimeType: "video/mp4"
+            videoBitsPerSecond: 2500000
+            // Setting this after the move to Geckofx60 results in an error, but
+            // the default seems to produce the same result.
+            //mimeType: "video/mp4"
         };
         this.mediaRecorder = new MediaRecorder(this.videoStream, options);
         this.mediaRecorder.ondataavailable = e => {
