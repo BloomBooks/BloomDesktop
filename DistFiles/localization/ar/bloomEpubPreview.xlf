@@ -11,8 +11,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.describe</note>
+        <alt-trans>
+          <target xml:lang="ar">هذا إصدار  <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (كتاب إلكتروني) من كتابك. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">يحتوي الكتاب على ملف صوتي، حتى يتمكن القراء الجدد من الاستماع أثناء القراءة.</g>
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="ar">هذا إصدار  <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (كتاب إلكتروني) من كتابك. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">يحتوي الكتاب على ملف صوتي، حتى يتمكن القراء الجدد من الاستماع أثناء القراءة.</g>
       
@@ -65,8 +75,19 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.readium</note>
+        <alt-trans>
+          <target xml:lang="ar">
+         تستخدم هذه الصفحة كتاب ePUB على  <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium.</g> من المرجَّح أن الكتب ستظهر على نحو مختلف في أجهزة القراءة المختلفة.
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="ar">
          تستخدم هذه الصفحة كتاب ePUB على  <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium.</g> من المرجَّح أن الكتب ستظهر على نحو مختلف في أجهزة القراءة المختلفة.
@@ -108,8 +129,19 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talkingbookpreview</note>
+        <alt-trans>
+          <target xml:lang="ar">لا يمكن للمعاينة تشغيل الكتب الناطقة في الوقت الحالي. يمكنك الاستماع إليها باستخدام  <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html"> الإصدارات الرقمية</g> من قارئ الكتب الإلكترونية المجاني Adobe 
+        قارئ الكتب الإلكترونية
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="ar">لا يمكن للمعاينة تشغيل الكتب الناطقة في الوقت الحالي. يمكنك الاستماع إليها باستخدام  <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html"> الإصدارات الرقمية</g> من قارئ الكتب الإلكترونية المجاني Adobe 
         قارئ الكتب الإلكترونية
@@ -155,8 +187,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
+        <alt-trans>
+          <target xml:lang="ar">هناك وسيلة سهلة لوضع الكتب على هاتفك، وهي إعداد Dropbox أو خدمة شبيهة لها على جهاز الكمبيوتر والهاتف/الجهاز اللوحي. لن يلزمك سوى النقر على "حفظ ePUB" واختيار مجلد Dropbox بعد ذلك. على الهاتف، افتح تطبيق Dropbox واختر كتابك. إذا كنت تستخدم جهاز كمبيوتر محمولاً، فيمكنك أيضًا تجربة برنامج  <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">ShareIt</g> المجاني لإرسال الملفات من الكمبيوتر المحمول إلى هاتف أو جهاز لوحي.
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="ar">هناك وسيلة سهلة لوضع الكتب على هاتفك، وهي إعداد Dropbox أو خدمة شبيهة لها على جهاز الكمبيوتر والهاتف/الجهاز اللوحي. لن يلزمك سوى النقر على "حفظ ePUB" واختيار مجلد Dropbox بعد ذلك. على الهاتف، افتح تطبيق Dropbox واختر كتابك. إذا كنت تستخدم جهاز كمبيوتر محمولاً، فيمكنك أيضًا تجربة برنامج  <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">ShareIt</g> المجاني لإرسال الملفات من الكمبيوتر المحمول إلى هاتف أو جهاز لوحي.
       
@@ -198,8 +240,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.gitden.okay</note>
+        <alt-trans>
+          <target xml:lang="ar">أثبتت التجارب التي أجريناها أن  <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> خياراً جيداً على أجهزة Android وiOS (سواء iPhone أو iPad).
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="ar">أثبتت التجارب التي أجريناها أن  <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> خياراً جيداً على أجهزة Android وiOS (سواء iPhone أو iPad).
       
@@ -247,8 +299,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talking.book.tool</note>
+        <alt-trans>
+          <target xml:lang="ar">إذا كنت تريد إعداد "كتاب ناطق" يمكن للقراء الجدد القراءة معه، فيمكنك استخدام  <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">أداة الكتاب الناطق من Bloom </g> لإضافة تسجيلات صوتية.
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="ar">إذا كنت تريد إعداد "كتاب ناطق" يمكن للقراء الجدد القراءة معه، فيمكنك استخدام  <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">أداة الكتاب الناطق من Bloom </g> لإضافة تسجيلات صوتية.
       
