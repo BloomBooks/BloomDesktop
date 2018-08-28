@@ -12,7 +12,7 @@ span.ui-audioCurrent:not(.disableHighlight) {
     background: @highlightColor;
 
     &:before {
-        background-image: url(currentTextIndicator.svg);
+        background-image: url("currentTextIndicator.svg");
         background-repeat: no-repeat;
         background-size: 10px 13px;
         background-position: 2px 5px;
@@ -69,15 +69,15 @@ span.ui-audioCurrent:not(.disableHighlight) {
         }
     }
     #audio-play {
-        background-image: url(audio/play_enabled.svg);
+        background-image: url("../../../images/play_enabled.svg");
         height: 45px;
         width: 45px; // visually same width as record button
 
         &.expected {
-            background-image: url(audio/play_expected.svg);
+            background-image: url("play_expected.svg");
         }
         &.active {
-            background-image: url(audio/play_active.svg);
+            background-image: url("play_active.svg");
         }
     }
     .audio-about {
@@ -137,23 +137,23 @@ span.ui-audioCurrent:not(.disableHighlight) {
         }
     }
     #audio-next {
-        background-image: url(audio/next_enabled.svg);
+        background-image: url("next_enabled.svg");
         &.expected {
-            background-image: url(audio/next_expected.svg);
+            background-image: url("next_expected.svg");
         }
     }
     #audio-prev {
-        background-image: url(audio/prev_enabled.svg);
+        background-image: url("prev_enabled.svg");
     }
     #audio-listen {
         margin-left: 2px; // visually centered
-        background-image: url(audio/listen_enabled.svg);
+        background-image: url("listen_enabled.svg");
         &.active {
-            background-image: url(audio/listen_active.svg);
+            background-image: url("listen_active.svg");
         }
     }
     #audio-clear {
-        background-image: url(audio/clear_enabled.svg);
+        background-image: url("clear_enabled.svg");
     }
     .button-label-wrapper {
         margin-top: 10px;
