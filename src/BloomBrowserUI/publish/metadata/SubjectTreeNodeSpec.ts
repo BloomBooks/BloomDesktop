@@ -1,19 +1,28 @@
-import { SubjectTreeNode, JsSubject } from "./SubjectTreeNode";
+import { SubjectTreeNode } from "./SubjectTreeNode";
 
 describe("SubjectTreeNode tests", function() {
-    it("getCodeList produces a space-delimited string of codes from an array of JsSubject", function() {
-        let list: Array<JsSubject> = [];
-        var sub1: JsSubject = {
-            code: "MNP",
-            description: "Plastic & reconstructive surgery"
+    it("getCodeList produces a space-delimited string of codes from an array of SubjectTreeNodes", function() {
+        let list: Array<SubjectTreeNode> = [];
+        var sub1: SubjectTreeNode = {
+            value: "MNP",
+            label: "Plastic & reconstructive surgery",
+            notes: "some notes",
+            checked: false,
+            children: []
         };
-        var sub2: JsSubject = {
-            code: "THV",
-            description: "Alternative & renewable energy sources & technology"
+        var sub2: SubjectTreeNode = {
+            value: "THV",
+            label: "Alternative & renewable energy sources & technology",
+            notes: "some notes",
+            checked: false,
+            children: []
         };
-        var sub3: JsSubject = {
-            code: "Y",
-            description: "Children’s, Teenage & Educational"
+        var sub3: SubjectTreeNode = {
+            value: "Y",
+            label: "Children’s, Teenage & Educational",
+            notes: "some notes",
+            checked: false,
+            children: []
         };
         list.push(sub1);
         list.push(sub2);
@@ -24,5 +33,53 @@ describe("SubjectTreeNode tests", function() {
 
         // verify
         expect(result).toBe("MNP THV Y");
+    });
+
+    it("markSelectedSubjectNodes accomplishes its job selecting the correct nodes", function() {
+        let list: Array<SubjectTreeNode> = [];
+        var sub1: SubjectTreeNode = {
+            value: "MNP",
+            label: "Plastic & reconstructive surgery",
+            notes: "some notes",
+            checked: false,
+            children: []
+        };
+        var sub2: SubjectTreeNode = {
+            value: "THV",
+            label: "Alternative & renewable energy sources & technology",
+            notes: "some notes",
+            checked: false,
+            children: []
+        };
+        var sub3: SubjectTreeNode = {
+            value: "Y",
+            label: "Children’s, Teenage & Educational",
+            notes: "some notes",
+            checked: false,
+            children: []
+        };
+        list.push(sub1);
+        list.push(sub2);
+        list.push(sub3);
+
+        var curSub1: SubjectTreeNode = {
+            value: "THV",
+            label: "Alternative & renewable energy sources & technology"
+        };
+        var curSub2: SubjectTreeNode = {
+            value: "Y",
+            label: "Children’s, Teenage & Educational"
+        };
+        let currentNodes: Array<SubjectTreeNode> = [];
+        currentNodes.push(curSub1);
+        currentNodes.push(curSub2);
+
+        // SUT
+        SubjectTreeNode.markSelectedSubjectNodes(list, currentNodes);
+
+        // verify
+        expect(list[0].checked).toBe(false);
+        expect(list[1].checked).toBe(true);
+        expect(list[2].checked).toBe(true);
     });
 });
