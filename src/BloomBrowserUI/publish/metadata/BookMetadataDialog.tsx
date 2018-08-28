@@ -10,7 +10,6 @@ import BloomButton from "../../react_components/bloomButton";
 import { Div } from "../../react_components/l10n";
 
 // tslint:disable-next-line:no-empty-interface
-interface IProps {}
 interface IState {
     isOpen: boolean;
 }
@@ -23,39 +22,32 @@ export default class BookMetadataDialog extends React.Component<{}, IState> {
     public readonly state: IState = { isOpen: false };
 
     // We want mobx to watch this, because we will pass it to the BookMetadataTable, which can change it.
-    @mobx.observable
-    private metadata: any = {
-        test: {
-            type: "readOnlyText",
-            value: "test",
-            translatedLabel: "translation"
-        }
-    };
+    @mobx.observable private metadata: any;
 
     // We will also pass this to the BookMetadataTable, but mobx doesn't need to watch it, since it won't change.
-    private translatedControlStrings: any = {
-        key: "translatedString"
-    };
+    private translatedControlStrings: any;
 
-    constructor(props: IProps) {
+    constructor(props) {
         super(props);
         BookMetadataDialog.singleton = this;
     }
-    public componentDidMount() {
-        BloomApi.get("book/metadata", result => {
-            this.metadata = result.data.metadata;
-            this.translatedControlStrings = result.data.translatedStringPairs;
-        });
-    }
+
     private handleCloseModal(doSave: boolean) {
         if (doSave) {
             BloomApi.postData("book/metadata", this.metadata);
         }
         this.setState({ isOpen: false });
     }
+
     public static show() {
-        BookMetadataDialog.singleton.setState({
-            isOpen: true
+        BloomApi.get("book/metadata", result => {
+            BookMetadataDialog.singleton.metadata = result.data.metadata;
+            BookMetadataDialog.singleton.translatedControlStrings =
+                result.data.translatedStringPairs;
+
+            BookMetadataDialog.singleton.setState({
+                isOpen: true
+            });
         });
     }
     public render() {
