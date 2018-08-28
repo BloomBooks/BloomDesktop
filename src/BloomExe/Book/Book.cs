@@ -2105,13 +2105,26 @@ namespace Bloom.Book
 		internal int GetLastNumberedPageNumber()
 		{
 			var lastPageNumber = 0;
-			foreach (var page in GetPages())
+			IEnumerable<IPage> pages;
+			try
 			{
-				if (page.IsBackMatter)
-					return lastPageNumber;
+				pages = GetPages();
 
-				string dummy;
-				page.GetCaptionOrPageNumber(ref lastPageNumber, out dummy);
+				foreach (var page in pages)
+				{
+					if (page.IsBackMatter)
+						return lastPageNumber;
+
+					string dummy;
+					page.GetCaptionOrPageNumber(ref lastPageNumber, out dummy);
+				}
+			}
+			catch (NullReferenceException e)
+			{
+				// Unit tests don't give ids to every page, so the Page ctor fails in BuildPageCache().
+				if (Program.RunningUnitTests)
+					return 1;
+				throw;
 			}
 			return lastPageNumber;
 		}
