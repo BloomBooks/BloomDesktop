@@ -11,8 +11,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.describe</note>
+        <alt-trans>
+          <target xml:lang="bn">এটি হল আপনার বইটির <g id="genid-1" ctype="x-html-a" html:href="https://bn.wikipedia.org/wiki/ePUB">ePUB</g> (ই-বুক) সংস্করণ <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">এটিতে অডিও রয়েছে, যেন নতুন পাঠকরা পড়ার সাথে সাথে তা শুনতেও পারে।</g>
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">এটি হল আপনার বইটির <g id="genid-1" ctype="x-html-a" html:href="https://bn.wikipedia.org/wiki/ePUB">ePUB</g> (ই-বুক) সংস্করণ <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">এটিতে অডিও রয়েছে, যেন নতুন পাঠকরা পড়ার সাথে সাথে তা শুনতেও পারে।</g>
       
@@ -64,8 +74,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.readium</note>
+        <alt-trans>
+          <target xml:lang="bn">এই পৃষ্ঠাটিতে  <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB পাঠক রয়েছে। বইগুলো সম্ভবত ভিন্ন পাঠকের কাছে ভিন্নভাবে দেখাবে। 
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">এই পৃষ্ঠাটিতে  <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB পাঠক রয়েছে। বইগুলো সম্ভবত ভিন্ন পাঠকের কাছে ভিন্নভাবে দেখাবে। 
       
@@ -102,8 +122,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talkingbookpreview</note>
+        <alt-trans>
+          <target xml:lang="bn">প্রিভিউ এখানে তখনও কথা বলা বইয়ের ভূমিকা পালন করবে না। আপনি এটি Adobe ফ্রি ডিজিটাল এডিশন ব্যবহার করে শুনতে পারেন  <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> ই-বুক পাঠক। 
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">প্রিভিউ এখানে তখনও কথা বলা বইয়ের ভূমিকা পালন করবে না। আপনি এটি Adobe ফ্রি ডিজিটাল এডিশন ব্যবহার করে শুনতে পারেন  <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> ই-বুক পাঠক। 
       
@@ -145,8 +175,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
+        <alt-trans>
+          <target xml:lang="bn">হাতের নাগালে বইগুলো পেতে আপনার ফোনে পেতে ড্রপবক্স বা অনুরূপ সেবাটি আপনার কম্পিউটার এবং আপনার ফোন/ট্যাবলেট উভয়ে সেট আপ করুন। শুধু ePUB সংরক্ষণে ক্লিক করে এবং তারপর আপনার ড্রপবক্স ফোল্ডারটি নির্বাচন করুন। আপনার ফোনে, ড্রপবক্স অ্যাপ্লিকেশনটি খুলুন এবং আপনার বই নির্বাচন করুন। যদি আপনি ল্যাপটপ ব্যবহার করেন, তাহলে আপনি বিনামূল্যে প্রোগ্রামটি থেকে ফাইলগুলো  আপনার ল্যাপটপ থেকে ফোন বা ট্যাবলেটে পাঠানোর জন্য চেষ্টা করতে পারেন।  <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">ShareIt</g> 
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">হাতের নাগালে বইগুলো পেতে আপনার ফোনে পেতে ড্রপবক্স বা অনুরূপ সেবাটি আপনার কম্পিউটার এবং আপনার ফোন/ট্যাবলেট উভয়ে সেট আপ করুন। শুধু ePUB সংরক্ষণে ক্লিক করে এবং তারপর আপনার ড্রপবক্স ফোল্ডারটি নির্বাচন করুন। আপনার ফোনে, ড্রপবক্স অ্যাপ্লিকেশনটি খুলুন এবং আপনার বই নির্বাচন করুন। যদি আপনি ল্যাপটপ ব্যবহার করেন, তাহলে আপনি বিনামূল্যে প্রোগ্রামটি থেকে ফাইলগুলো  আপনার ল্যাপটপ থেকে ফোন বা ট্যাবলেটে পাঠানোর জন্য চেষ্টা করতে পারেন।  <g id="genid-5" ctype="x-html-a" html:href="http://shareit.lenovo.com/">ShareIt</g> 
       
@@ -188,8 +228,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.gitden.okay</note>
+        <alt-trans>
+          <target xml:lang="bn">আমাদের পরীক্ষায় দেখা গেছে যে  <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> অ্যান্ড্রয়েড ও IOS (আইফোন &amp; iPad) ডিভাইসগুলো বেশ ভাল। 
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">আমাদের পরীক্ষায় দেখা গেছে যে  <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> অ্যান্ড্রয়েড ও IOS (আইফোন &amp; iPad) ডিভাইসগুলো বেশ ভাল। 
       
@@ -237,8 +287,18 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talking.book.tool</note>
+        <alt-trans>
+          <target xml:lang="bn">যদি আপনি একটি “কথা বলার বই” তৈরী করতে চান, যা নতুন পাঠকরাও সাথে সাথে   পড়তে পারে, তাহলে ব্লুমের <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">ব্যবহার করুন।</g> ভয়েস রেকর্ডিং যুক্ত করার জন্য।
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">যদি আপনি একটি “কথা বলার বই” তৈরী করতে চান, যা নতুন পাঠকরাও সাথে সাথে   পড়তে পারে, তাহলে ব্লুমের <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">ব্যবহার করুন।</g> ভয়েস রেকর্ডিং যুক্ত করার জন্য।
       
