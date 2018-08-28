@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="pbu">
+    <body>
+      <trans-unit id="Settings.Enterprise.Community">
+        <source xml:lang="en">Funded by local community only</source>
+        <note>ID: Settings.Enterprise.Community</note>
+        <target xml:lang="pbu" state="needs-translation">Funded by local community only</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Expiration">
+        <source xml:lang="en">Expires:</source>
+        <note>ID: Settings.Enterprise.Expiration</note>
+        <target xml:lang="pbu" state="needs-translation">Expires:</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.LearnMore">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Settings.Enterprise.LearnMore</note>
+        <target xml:lang="pbu" state="needs-translation">Learn More</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Overview">
+        <source xml:lang="en">Bloom Enterprise is a paid service offered by SIL International. It adds some additional features and services that are important to publishers, governments, and international organizations. By subscribing to this service, these projects can meet some of their unique needs while also supporting the development and user support of Bloom, which helps everybody.
+        </source>
+        <note>ID: Settings.Enterprise.Overview</note>
+        <target xml:lang="pbu" state="needs-translation">Bloom Enterprise is a paid service offered by SIL International. It adds some additional features and services that are important to publishers, governments, and international organizations. By subscribing to this service, these projects can meet some of their unique needs while also supporting the development and user support of Bloom, which helps everybody.
+        </target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.None">
+        <source xml:lang="en">None</source>
+        <note>ID: Settings.Enterprise.None</note>
+        <target xml:lang="pbu" state="needs-translation">None</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.NeedsCode">
+        <source xml:lang="en">This project is configured to use %0 branding. To continue to use this you will need to enter a current subscription code. For SIL brandings, SIL members can find codes at the link below. For other brandings, contact your project administrator.</source>
+        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>%0 will be replaced with the name of the branding.</note>
+        <target xml:lang="pbu" state="needs-translation">This project is configured to use %0 branding. To continue to use this you will need to enter a current subscription code. For SIL brandings, SIL members can find codes at the link below. For other brandings, contact your project administrator.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.NotValid">
+        <source xml:lang="en">Sorry, that code appears incorrect</source>
+        <note>ID: Settings.Enterprise.NotValid</note>
+        <target xml:lang="pbu" state="needs-translation">Sorry, that code appears incorrect</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Status">
+        <source xml:lang="en">Bloom Enterprise Status</source>
+        <note>ID: Settings.Enterprise.Status</note>
+        <target xml:lang="pbu" state="needs-translation">Bloom Enterprise Status</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Subscription">
+        <source xml:lang="en">Enterprise Subscription</source>
+        <note>ID: Settings.Enterprise.Subscription</note>
+        <target xml:lang="pbu" state="needs-translation">Enterprise Subscription</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.SubscriptionCode">
+        <source xml:lang="en">Subscription Code:</source>
+        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <target xml:lang="pbu" state="needs-translation">Subscription Code:</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.UnknownCode">
+        <source xml:lang="en">That code looks good, but this version of Bloom does not know about that project</source>
+        <note>ID: Settings.Enterprise.UnknownCode</note>
+        <target xml:lang="pbu" state="needs-translation">That code looks good, but this version of Bloom does not know about that project</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.WhatsThis">
+        <source xml:lang="en">What's This?</source>
+        <note>ID: Settings.Enterprise.WhatsThis</note>
+        <note>A link offering more information about the Funded Local Community Only option</note>
+        <target xml:lang="pbu" state="needs-translation">What's This?</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
