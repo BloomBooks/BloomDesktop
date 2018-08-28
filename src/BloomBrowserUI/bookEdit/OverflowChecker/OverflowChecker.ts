@@ -241,7 +241,12 @@ export default class OverflowChecker {
                     $this.removeClass("overflow"); // might be a remnant from earlier overflow
                     $this.removeClass("thisOverflowingParent");
                 }
-            } else {
+            }
+            // We already have overflow marked on $box by a warning popup qtip and by turning
+            // everything red.  We don't want to add a qtip to its parent because that can
+            // make any hint/suggestion bubble attached to $box disappear.
+            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6295.
+            else if (!$(overflowingAncestor).is($box.parent())) {
                 // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
                 // go past the margins
                 // $box.addClass('overflow'); // probably typing in the focused element caused this
