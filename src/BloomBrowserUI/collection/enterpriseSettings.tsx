@@ -1,13 +1,28 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Label } from "../react_components/l10n";
+import { Label, Markdown } from "../react_components/l10n";
 import { Link } from "../react_components/link";
 import { RadioGroup, Radio } from "../react_components/radio";
 import { BloomApi } from "../utils/bloomApi";
 import "./enterpriseSettings.less";
-//import { IUILanguageAwareProps, H1 } from "../../react_components/l10n";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-//import WebSocketManager from "../../utils/WebSocketManager";
+// I think some of this is one-time initialization that should be moved to
+// a more generic place when we use font-awesome more widely.
+import {
+    faQuestion,
+    faCheck,
+    faExclamationCircle,
+    faCopy,
+    faPaste
+} from "@fortawesome/free-solid-svg-icons";
+
+library.add(faCheck);
+library.add(faQuestion);
+library.add(faExclamationCircle);
+library.add(faCopy);
+library.add(faPaste);
 
 interface IState {
     enterpriseStatus: string;
@@ -15,7 +30,10 @@ interface IState {
     subscriptionExpiry: Date;
     subscriptionSummary: string;
     subscriptionUnknown: boolean;
+    subscriptionIncomplete: boolean;
     invalidBranding: string;
+    subscriptionAnimation: string;
+    communityAnimation: string;
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
@@ -26,7 +44,10 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         subscriptionExpiry: null,
         subscriptionSummary: "",
         subscriptionUnknown: false,
-        invalidBranding: ""
+        subscriptionIncomplete: false,
+        invalidBranding: "",
+        subscriptionAnimation: "",
+        communityAnimation: ""
     };
 
     public componentDidMount() {
@@ -61,39 +82,14 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         return (
             <div className="enterpriseSettings">
                 <Label
-                    l10nKey="Settings.Enterprise.NeedsCode"
-                    l10nParam0={this.state.invalidBranding}
-                    className={
-                        "invalidBranding" +
-                        (this.state.invalidBranding ? "" : " hidden")
-                    }
-                >
-                    This project is configured to use %0 branding. To continue
-                    to use this you will need to enter a current subscription
-                    code. For SIL brandings, SIL members can find codes at the
-                    link below. For other brandings, contact your project
-                    administrator.
-                </Label>
-                <a
-                    className={
-                        "invalidBrandingLink" +
-                        (this.state.invalidBranding ? "" : " hidden")
-                    }
-                    href={this.codesUrl}
-                >
-                    {this.codesUrl}
-                </a>
-                <Label
                     className="mainHeading"
                     l10nKey="Settings.Enterprise.Overview"
                 >
-                    Bloom Enterprise is a paid service offered by SIL
-                    International. It adds some additional features and services
-                    that are important to publishers, governments, and
-                    international organizations. By subscribing to this service,
-                    these projects can meet some of their unique needs while
-                    also supporting the development and user support of Bloom,
-                    which helps everybody.
+                    Bloom Enterprise adds features and services that are
+                    important for publishers, governments, and international
+                    organizations. This paid subscription meets their unique
+                    needs while supporting the development and user support of
+                    Bloom for the community at large.
                 </Label>
                 <Link
                     className="learnMoreLink"
@@ -111,16 +107,216 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     onChange={val => this.setStatus(val, true)}
                     value={this.state.enterpriseStatus}
                 >
-                    <Radio l10nKey="Settings.Enterprise.None" value="None">
-                        None
-                    </Radio>
-                    <div className="communityGroup">
+                    <div>
+                        <Radio
+                            l10nKey="Settings.Enterprise.Subscription"
+                            value="Subscription"
+                        >
+                            Enterprise Subscription
+                        </Radio>
+                        <Markdown
+                            l10nKey="Settings.Enterprise.NeedsCode"
+                            l10nParam0={this.state.invalidBranding}
+                            l10nParam1={this.codesUrl}
+                            className={
+                                "invalidBranding" +
+                                (this.state.invalidBranding &&
+                                !this.subscriptionExpired()
+                                    ? ""
+                                    : " hidden")
+                            }
+                        >
+                            In an older version of Bloom, this project used
+                            **%0**. To continue to use this you will need to
+                            enter a current subscription code. Codes for SIL
+                            brandings can be found [here](%1). For other
+                            subscriptions, contact your project administrator.
+                        </Markdown>
+                        <div
+                            id="enterpriseMain"
+                            className={
+                                "enterpriseSubitems" +
+                                (this.state.enterpriseStatus === "Subscription"
+                                    ? ""
+                                    : " closed")
+                            }
+                            style={{
+                                animationName: this.state.subscriptionAnimation
+                            }}
+                        >
+                            <Label
+                                className="subscriptionCodeLabel"
+                                l10nKey="Settings.Enterprise.SubscriptionCode"
+                            >
+                                Subscription Code:
+                            </Label>
+
+                            <input
+                                id="subscriptionCodeInput"
+                                className="subscriptionCodeInput"
+                                type="text"
+                                value={this.state.subscriptionCode}
+                                onChange={e =>
+                                    this.handleSubscriptionCodeChanged(e)
+                                }
+                            />
+                            <span
+                                className={
+                                    "evaluationCode" +
+                                    (this.shouldShowGreenCheck()
+                                        ? ""
+                                        : " hidden")
+                                }
+                            >
+                                <FontAwesomeIcon icon="check" />
+                            </span>
+                            <span
+                                className={
+                                    "evaluationCode" +
+                                    (this.shouldShowIncomplete()
+                                        ? ""
+                                        : " hidden")
+                                }
+                            >
+                                <FontAwesomeIcon icon="question" />
+                            </span>
+                            <span
+                                className={
+                                    "evaluationCode" +
+                                    (this.shouldShowRedError() ? "" : " hidden")
+                                }
+                            >
+                                <FontAwesomeIcon icon="exclamation-circle" />
+                            </span>
+                            <div
+                                className="editButton"
+                                onClick={() => this.onCopy()}
+                            >
+                                <div className="editButtonAlign">
+                                    <FontAwesomeIcon
+                                        className="editIcon"
+                                        icon="copy"
+                                    />
+                                    <Label
+                                        className="editButtonLabel"
+                                        l10nKey="EditTab.CopyButton"
+                                    >
+                                        Copy
+                                    </Label>
+                                </div>
+                            </div>
+                            <div
+                                className="editButton pasteButton"
+                                onClick={() => this.onPaste()}
+                            >
+                                <div className="editButtonAlign">
+                                    <FontAwesomeIcon
+                                        className="editIcon"
+                                        icon="paste"
+                                    />
+                                    <Label
+                                        className="editButtonLabel"
+                                        l10nKey="EditTab.PasteButton"
+                                    >
+                                        Paste
+                                    </Label>
+                                </div>
+                            </div>
+                            <Label
+                                l10nKey="Settings.Enterprise.NotValid"
+                                className={
+                                    "error" +
+                                    (this.shouldShowIncorrect()
+                                        ? ""
+                                        : " hidden")
+                                }
+                            >
+                                That code appears to be incorrect.
+                            </Label>
+                            <Label
+                                l10nKey="Settings.Enterprise.Incomplete"
+                                className={
+                                    "incomplete" +
+                                    (this.shouldShowIncomplete()
+                                        ? ""
+                                        : " hidden")
+                                }
+                            >
+                                The code should look like SOMENAME-123456-7890
+                            </Label>
+                            <div
+                                className={
+                                    this.shouldShowUnknown() ? "" : " hidden"
+                                }
+                            >
+                                <Label
+                                    l10nKey="Settings.Enterprise.UnknownCode"
+                                    className="error"
+                                >
+                                    This version of Bloom does not have the
+                                    artwork that goes with that subscription.
+                                </Label>
+                                <Link
+                                    className="error"
+                                    l10nKey="Settings.Enterprise.CheckUpdates"
+                                    onClick={() => this.checkForUpdates()}
+                                >
+                                    Check for updates
+                                </Link>
+                            </div>
+                            <Label
+                                l10nKey="Settings.Enterprise.Expired"
+                                className={
+                                    "error" +
+                                    (this.shouldShowExpired() ? "" : " hidden")
+                                }
+                            >
+                                That code has expired.
+                            </Label>
+                            <div
+                                className={
+                                    "expiration" +
+                                    (this.shouldShowExpiration()
+                                        ? ""
+                                        : " hidden")
+                                }
+                            >
+                                <Label l10nKey="Settings.Enterprise.Expiration">
+                                    Expires:
+                                </Label>
+                                <span>
+                                    {this.state.subscriptionExpiry
+                                        ? this.state.subscriptionExpiry.toLocaleDateString(
+                                              undefined,
+                                              {
+                                                  year: "numeric",
+                                                  day: "numeric",
+                                                  month: "long"
+                                              }
+                                          )
+                                        : ""}
+                                </span>
+                            </div>
+                            <div
+                                className={
+                                    "summary" +
+                                    (this.state.subscriptionSummary
+                                        ? ""
+                                        : " hidden")
+                                }
+                                dangerouslySetInnerHTML={{
+                                    __html: this.state.subscriptionSummary
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <div className="mainButton communityGroup">
                         <Radio
                             className="communityRadio"
                             l10nKey="Settings.Enterprise.Community"
                             value="Community"
                         >
-                            Funded by local community only
+                            Funded by the local community only
                         </Radio>
                         <Link
                             className="whatsThisLink"
@@ -130,110 +326,76 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             What's This?
                         </Link>
                     </div>
+                    <div
+                        id="communityMain"
+                        className={
+                            "summary communitySummary" +
+                            (this.state.subscriptionSummary &&
+                            this.state.enterpriseStatus === "Community"
+                                ? ""
+                                : " closed")
+                        }
+                        style={{
+                            animationName: this.state.communityAnimation
+                        }}
+                        dangerouslySetInnerHTML={{
+                            __html: this.state.subscriptionSummary
+                        }}
+                    />
                     <Radio
-                        l10nKey="Settings.Enterprise.Subscription"
-                        value="Subscription"
+                        className="mainButton"
+                        l10nKey="Settings.Enterprise.None"
+                        value="None"
                     >
-                        Enterprise Subscription
+                        None. Bloom will not show Enterprise features.
                     </Radio>
                 </RadioGroup>
-                <div
-                    className={
-                        "subscriptionCodeWrapper" +
-                        (this.state.enterpriseStatus == "Subscription"
-                            ? ""
-                            : " hidden")
-                    }
-                >
-                    <Label
-                        className="subscriptionCodeLabel"
-                        l10nKey="Settings.Enterprise.SubscriptionCode"
-                    >
-                        Subscription Code:
-                    </Label>
-
-                    <input
-                        id="subscriptionCodeInput"
-                        className="subscriptionCodeInput"
-                        type="text"
-                        value={this.state.subscriptionCode}
-                        onChange={e => this.handleSubscriptionCodeChanged(e)}
-                    />
-                    <span className="codeEvaluation">
-                        {this.state.subscriptionCode &&
-                        this.state.subscriptionExpiry !== null &&
-                        !this.state.subscriptionUnknown
-                            ? "✓"
-                            : ""}
-                    </span>
-                </div>
-                <Label
-                    l10nKey="Settings.Enterprise.NotValid"
-                    className={
-                        "error" + (this.shouldShowIncorrect() ? "" : " hidden")
-                    }
-                >
-                    Sorry, that code appears incorrect
-                </Label>
-                <Label
-                    l10nKey="Settings.Enterprise.UnknownCode"
-                    className={
-                        "error" + (this.shouldShowUnknown() ? "" : " hidden")
-                    }
-                >
-                    That code looks good, but this version of Bloom does not
-                    know about that project
-                </Label>
-                <div
-                    className="expiration"
-                    style={{
-                        display: this.state.subscriptionExpiry
-                            ? "block"
-                            : "none"
-                    }}
-                >
-                    <Label l10nKey="Settings.Enterprise.Expiration">
-                        Expires:
-                    </Label>
-                    <span
-                        style={{
-                            color: this.subscriptionExpired() ? "red" : ""
-                        }}
-                    >
-                        {this.state.subscriptionExpiry
-                            ? this.state.subscriptionExpiry.toLocaleDateString(
-                                  undefined,
-                                  {
-                                      year: "numeric",
-                                      day: "numeric",
-                                      month: "long"
-                                  }
-                              )
-                            : ""}
-                    </span>
-                </div>
-                <div
-                    className={
-                        "summary" +
-                        (this.state.enterpriseStatus == "None" ? " hidden" : "")
-                    }
-                    dangerouslySetInnerHTML={{
-                        __html: this.state.subscriptionSummary
-                    }}
-                />
             </div>
         );
+    }
+
+    private shouldShowGreenCheck() {
+        if (!this.state.subscriptionCode) {
+            return false; // no code at all, don't evaluate
+        }
+        return !this.shouldShowSomeError();
+    }
+
+    private shouldShowExpiration(): boolean {
+        return this.state.subscriptionExpiry && !this.subscriptionExpired();
+    }
+
+    private shouldShowIncomplete() {
+        if (!this.shouldShowSomeError()) {
+            return false; // no problem
+        }
+        if (this.state.subscriptionIncomplete) {
+            return true; // incomplete is exactly what the ? is for
+        }
+        return false; // it's an error
+    }
+
+    private shouldShowExpired() {
+        if (!this.shouldShowSomeError()) {
+            return false; // no problem
+        }
+        return this.subscriptionExpired();
+    }
+
+    private shouldShowRedError() {
+        if (!this.shouldShowSomeError()) {
+            return false; // no problem
+        }
+        // If there's a not-valid code, we want either question or error icon
+        return !this.shouldShowIncomplete();
     }
 
     private shouldShowSomeError() {
         if (this.state.enterpriseStatus != "Subscription") {
             return false; // does not apply
         }
-        if (!this.state.subscriptionCode) {
-            return false;
-        } // nothing entered to complain about
 
-        if (this.state.subscriptionExpiry) {
+        if (this.state.subscriptionExpiry && !this.subscriptionExpired()) {
             return false; // code is good!
         }
         return true;
@@ -243,7 +405,11 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         if (!this.shouldShowSomeError()) {
             return false; // no problem
         }
-        if (this.state.subscriptionUnknown) {
+        if (
+            this.state.subscriptionUnknown ||
+            this.state.subscriptionIncomplete ||
+            this.subscriptionExpired()
+        ) {
             return false; // we'll show a different message
         }
         return true;
@@ -261,23 +427,68 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
 
     private subscriptionExpired() {
         if (!this.state.subscriptionExpiry) {
-            return true; // arbitrary, not used.
+            return false; // Don't want to use expired message for invalid date
         }
         return this.state.subscriptionExpiry < new Date();
     }
 
     private setStatus(status: string, updateSumary: boolean) {
         BloomApi.postJson("settings/enterpriseStatus", status);
-        this.setState({ enterpriseStatus: status });
+        var oldStatus = this.state.enterpriseStatus;
+        // Figure out animation names to set to make the appropriate child blocks
+        // slide up and down.
+        var subscriptionAnimation = "";
+        var communityAnimation = "";
+        if (status === "Subscription" && oldStatus != "Subscription") {
+            // We want to do something like show160 if there's going to be a summary,
+            // show60 otherwise. But we can't know whether there is going to be
+            // a summary at this point. Assume that if we have a code, it's good,
+            // so there will be. It's better to use the bigger number wrongly, which
+            // just makes the transition a bit quick, than a smaller one, which
+            // makes it grow and then jerk.
+            subscriptionAnimation = this.state.subscriptionCode
+                ? "show160"
+                : "show60";
+        }
+        if (status === "Community" && oldStatus != "Community") {
+            communityAnimation = "show100";
+        }
+        if (status !== "Subscription" && oldStatus === "Subscription") {
+            subscriptionAnimation = this.state.subscriptionSummary
+                ? "hide160"
+                : "hide60";
+        }
+        if (status !== "Community" && oldStatus === "Community") {
+            communityAnimation = "hide100";
+        }
+        this.setState({
+            enterpriseStatus: status,
+            subscriptionAnimation: subscriptionAnimation,
+            communityAnimation: communityAnimation
+        });
         if (updateSumary) {
-            if (status === "Community") {
+            if (status !== "None") {
                 BloomApi.get("settings/enterpriseSummary", result => {
                     this.setSummary(result.data);
                 });
-            } else {
-                this.setSummary("");
             }
         }
+    }
+
+    private onPaste() {
+        BloomApi.get("settings/paste", result =>
+            this.updateSubscriptionCode(result.data)
+        );
+    }
+
+    private onCopy() {
+        BloomApi.postJson("settings/copy", {
+            text: this.state.subscriptionCode
+        });
+    }
+
+    private checkForUpdates() {
+        BloomApi.post("settings/checkForUpdates");
     }
 
     // Used both with a code from entering something in the text box, and
@@ -291,6 +502,18 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     subscriptionCode: code,
                     subscriptionExpiry: null,
                     subscriptionUnknown: true,
+                    subscriptionIncomplete: false,
+                    subscriptionSummary: ""
+                });
+                return;
+            }
+            if (result.data === "incomplete") {
+                // Invalid code, but looks as if they haven't finished typing
+                this.setState({
+                    subscriptionCode: code,
+                    subscriptionExpiry: null,
+                    subscriptionUnknown: false,
+                    subscriptionIncomplete: true,
                     subscriptionSummary: ""
                 });
                 return;
@@ -299,7 +522,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             this.setState({
                 subscriptionCode: code,
                 subscriptionExpiry: expiry,
-                subscriptionUnknown: false
+                subscriptionUnknown: false,
+                subscriptionIncomplete: false
             });
             if (expiry) {
                 BloomApi.get("settings/enterpriseSummary", result => {
@@ -325,12 +549,13 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         this.oldSelectionPosition = (document.getElementById(
             "subscriptionCodeInput"
         ) as HTMLInputElement).selectionStart;
-
+        this.updateSubscriptionCode(event.target.value);
+    }
+    private updateSubscriptionCode(code: string) {
         BloomApi.postJson("settings/subscriptionCode", {
-            subscriptionCode: event.target.value
+            subscriptionCode: code
         });
-        this.setSubscriptionCode(event.target.value);
-        this.setStatus(event.target.value ? "Subscription" : "None", false);
+        this.setSubscriptionCode(code);
         this.setState({ invalidBranding: "" });
     }
 }

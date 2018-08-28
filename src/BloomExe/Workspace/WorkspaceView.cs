@@ -181,6 +181,7 @@ namespace Bloom.Workspace
 			SetupZoomControl();
 			AdjustButtonTextsForLocale();
 			_viewInitialized = false;
+			CollectionSettingsApi.WorkspaceView = this;
 		}
 
 		private void SetupZoomControl()
@@ -753,6 +754,11 @@ namespace Bloom.Workspace
 			{
 				g.Dispose();
 			}
+		}
+
+		public void CheckForUpdates()
+		{
+			Invoke((Action) (() =>_checkForNewVersionMenuItem_Click(this, new EventArgs())));
 		}
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)

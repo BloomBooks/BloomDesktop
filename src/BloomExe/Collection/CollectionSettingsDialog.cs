@@ -291,6 +291,11 @@ namespace Bloom.Collection
 			AdjustFontComboDropdownWidth();
 			_brand = _collectionSettings.BrandingProjectKey;
 			_subscriptionCode = _collectionSettings.SubscriptionCode;
+			// Set the branding as an (incomplete) code if we are running with a legacy branding
+			if (CollectionSettingsApi.InvalidBranding != null && string.IsNullOrEmpty(_subscriptionCode))
+			{
+				_subscriptionCode = CollectionSettingsApi.InvalidBranding;
+			}
 			CollectionSettingsApi.SetSubscriptionCode(_subscriptionCode, IsSubscriptionCodeKnown(), GetEnterpriseStatus());
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");

@@ -1,6 +1,7 @@
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import MarkdownIt = require("markdown-it");
 
 // This would be used by a control that doesn't have any text of its own,
 // but has children that need to be localized.
@@ -17,6 +18,7 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nTipEnglishDisabled?: string;
     alreadyLocalized?: boolean; // true if translated by C#-land
     l10nParam0?: string;
+    l10nParam1?: string;
 }
 
 export interface ILocalizationState {
@@ -64,6 +66,9 @@ export class LocalizableElement<
                 "%0",
                 this.props.l10nParam0
             );
+            if (this.props.l10nParam1) {
+                newText = newText.replace("%1", this.props.l10nParam1);
+            }
             if (newText != this.state.translation) {
                 this.setState({
                     translation: newText
@@ -92,12 +97,18 @@ export class LocalizableElement<
                     this.props.l10nComment
                 )
                 .done(result => {
-                    this.localizedText = result;
                     // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
                     // after this component is no longer visible. See note on componentWillUnmount()
                     if (this.props.l10nParam0) {
                         result = result.replace("%0", this.props.l10nParam0);
+                        if (this.props.l10nParam1) {
+                            result = result.replace(
+                                "%1",
+                                this.props.l10nParam1
+                            );
+                        }
                     }
+                    this.localizedText = result;
                     if (this.isComponentMounted) {
                         this.setState({ translation: result });
                     }
@@ -275,6 +286,31 @@ export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
             >
                 {this.getLocalizedContent()}
             </label>
+        );
+    }
+}
+
+// This component expects its content to be a single string (like all localizable elements) that
+// contains Markdown. It will convert that into HTML and show it.
+export class Markdown extends LocalizableElement<
+    ILabelProps,
+    ILocalizationState
+> {
+    public render() {
+        return (
+            <div
+                className={this.getClassName()}
+                onClick={() => {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    }
+                }}
+                dangerouslySetInnerHTML={{
+                    __html: new MarkdownIt().render(
+                        this.state.translation || ""
+                    )
+                }}
+            />
         );
     }
 }
