@@ -43,13 +43,13 @@ namespace Bloom.MiscUI
 					// optipng is provided by a package dependency, will be found as /usr/bin/optipng (no .exe)
 					continue;
 				}
-				if(FileLocator.GetFileDistributedWithApplication(true, fileName) == null)
+				if(FileLocationUtilities.GetFileDistributedWithApplication(true, fileName) == null)
 				{
 					//In a code directory, the FileLocator considers the solution the root, so it can't find files in output\debug
-					if(!RobustFile.Exists(Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable, fileName)))
+					if(!RobustFile.Exists(Path.Combine(FileLocationUtilities.DirectoryOfTheApplicationExecutable, fileName)))
 					{
 						//maybe it's an exe in distfiles?
-						if(fileName.EndsWith(".exe") && RobustFile.Exists(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "DistFiles")))
+						if(fileName.EndsWith(".exe") && RobustFile.Exists(Path.Combine(FileLocationUtilities.DirectoryOfApplicationOrSolution, "DistFiles")))
 						{
 							continue;
 						}
@@ -59,7 +59,7 @@ namespace Bloom.MiscUI
 			}
 			foreach(var directory in dirs)
 			{
-				if(FileLocator.GetDirectoryDistributedWithApplication(true, directory) == null)
+				if(FileLocationUtilities.GetDirectoryDistributedWithApplication(true, directory) == null)
 				{
 					errors.AppendFormat("<p>Missing Directory: {0}</p>{1}", directory, Environment.NewLine);
 				}
@@ -103,7 +103,7 @@ namespace Bloom.MiscUI
 								  + "The following information is for Bloom developers to see just what is and isn't missing:"
 								  + Environment.NewLine + Environment.NewLine
 								  + errors.ToString()
-								  + GetDirectoryListing(FileLocator.DirectoryOfTheApplicationExecutable)
+								  + GetDirectoryListing(FileLocationUtilities.DirectoryOfTheApplicationExecutable)
 								  + Environment.NewLine + Environment.NewLine
 								  + "Detected Antivirus Program(s): " + InstalledAntivirusPrograms();
 

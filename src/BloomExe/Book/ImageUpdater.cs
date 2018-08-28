@@ -199,7 +199,7 @@ namespace Bloom.Book
 		public static void CompressImage(string path, IProgress progress)
 		{
 			progress.WriteStatus("Compressing image: " + Path.GetFileName(path));
-			var pngoutPath = FileLocator.LocateExecutable("optipng.exe");
+			var pngoutPath = FileLocationUtilities.LocateExecutable("optipng.exe");
 			var result = CommandLineRunner.Run(pngoutPath, "\"" + path + "\"", Encoding.UTF8,
 				Path.GetDirectoryName(path), 300, progress,
 				(s) => progress.WriteMessage(s));

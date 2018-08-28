@@ -729,7 +729,7 @@ namespace Bloom.Publish
 
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
-			var printSettingsPreviewFolder = FileLocator.GetDirectoryDistributedWithApplication("printer settings images");
+			var printSettingsPreviewFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication("printer settings images");
 			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
 				_model.PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
 			string printSettingsSampleName = null;

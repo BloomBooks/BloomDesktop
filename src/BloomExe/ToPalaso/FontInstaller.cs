@@ -25,7 +25,7 @@ namespace Bloom.ToPalaso
 			if (!SIL.PlatformUtilities.Platform.IsWindows)
 				return false;
 
-			var sourcePath = FileLocator.GetDirectoryDistributedWithApplication(sourceFolder);
+			var sourcePath = FileLocationUtilities.GetDirectoryDistributedWithApplication(sourceFolder);
 			if (AllFontsExist(sourcePath))
 				return false; // already installed (Enhance: maybe one day we want to check version?)
 

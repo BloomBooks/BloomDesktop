@@ -216,7 +216,7 @@ namespace Bloom
 								path = path.Substring("bloom://".Length);
 								if (!RobustFile.Exists(path))
 								{
-									path = FileLocator.GetFileDistributedWithApplication(true, path);
+									path = FileLocationUtilities.GetFileDistributedWithApplication(true, path);
 									if (!RobustFile.Exists(path))
 										return 1;
 								}
@@ -392,7 +392,7 @@ namespace Bloom
 			{
 				if (LocalizationManager.IgnoreExistingEnglishXliffFiles && !_harvestFinalized)
 				{
-					var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication(true,"localization");
+					var installedStringFileFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication(true,"localization");
 					LocalizationManager.MergeExistingEnglishXliffFileIntoNew(installedStringFileFolder, "Bloom");
 					LocalizationManager.MergeExistingEnglishXliffFileIntoNew(installedStringFileFolder, "Palaso");
 				}
@@ -944,7 +944,7 @@ namespace Bloom
 			var applicationContainer = _applicationContainer;
 			if (applicationContainerSource != null)
 				applicationContainer = applicationContainerSource;
-			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication(true,"localization");
+			var installedStringFileFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication(true,"localization");
 			if (installedStringFileFolder == null)
 			{
 				// nb do NOT try to localize this...it's a shame, but the problem we're reporting is that the localization data is missing!
@@ -1216,7 +1216,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			}; // Dictionary<sourceFileName, destinationFullFileName>
 
 			// check each file now
-			var sourceDir = FileLocator.DirectoryOfApplicationOrSolution;
+			var sourceDir = FileLocationUtilities.DirectoryOfApplicationOrSolution;
 			foreach(var entry in filesToCheck)
 			{
 				var destFile = entry.Value;

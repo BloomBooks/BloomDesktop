@@ -821,7 +821,7 @@ namespace Bloom.WebLibraryIntegration
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
 			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
-			if (!FileUtils.IsFileLocked(uploadPdfPath))
+			if (!FileHelper.IsLocked(uploadPdfPath))
 			{
 				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
 				publishView.MakePublishPreview();

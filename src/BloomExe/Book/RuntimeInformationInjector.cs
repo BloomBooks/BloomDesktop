@@ -314,7 +314,7 @@ namespace Bloom.Book
 				d.Add("currentCollectionLanguage3", collectionSettings.Language3Iso639Code);
 			}
 
-			d.Add("browserRoot", FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot).ToLocalhost());
+			d.Add("browserRoot", FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot).ToLocalhost());
 
 
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));

@@ -22,7 +22,7 @@ namespace Bloom
 			if (!String.IsNullOrEmpty(libpath))
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
 
-			Help.ShowHelp(parent, FileLocator.GetFileDistributedWithApplication("Bloom.chm"));
+			Help.ShowHelp(parent, FileLocationUtilities.GetFileDistributedWithApplication("Bloom.chm"));
 
 			if (!String.IsNullOrEmpty(libpath))
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libpath);
@@ -40,7 +40,7 @@ namespace Bloom
 			if (!String.IsNullOrEmpty(libpath))
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
 
-			Help.ShowHelp(parent, FileLocator.GetFileDistributedWithApplication(helpFileName), topic);
+			Help.ShowHelp(parent, FileLocationUtilities.GetFileDistributedWithApplication(helpFileName), topic);
 
 			if (!String.IsNullOrEmpty(libpath))
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libpath);

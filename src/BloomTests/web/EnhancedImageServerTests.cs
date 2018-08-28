@@ -34,7 +34,7 @@ namespace BloomTests.web
 			Logger.Init();
 			_folder = new TemporaryFolder("ImageServerTests");
 			LocalizationManager.UseLanguageCodeFolders = true;
-			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
+			var localizationDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
 			LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom", null, "", new string[] { });
 
 
@@ -113,7 +113,7 @@ namespace BloomTests.web
 				server.CurrentCollectionSettings = new CollectionSettings();
 				EndpointHandler testFunc = (request) =>
 					{
-						Assert.That(request.LocalPath(), Is.StringContaining("thisWontWorkWithoutInjection"));
+						Assert.That(request.LocalPath(), Does.Contain("thisWontWorkWithoutInjection"));
 						Assert.That(request.CurrentCollectionSettings, Is.EqualTo(server.CurrentCollectionSettings));
 						request.ReplyWithText("Did It!");
 					};

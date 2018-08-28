@@ -18,7 +18,7 @@ namespace BloomTests.WebLibraryIntegration
 		private readonly string[] ExcludedFiles = {"thumbs.db", "book.userprefs", "extra.pdf", "preview.pdf", "my.bloompack"};
 		private string _storageKeyOfBookFolder;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void SetupFixture()
 		{
 			// Basic setup
@@ -54,7 +54,7 @@ namespace BloomTests.WebLibraryIntegration
 			DownloadBook();
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void TearDown()
 		{
 			_client.EmptyUnitTestBucket(_storageKeyOfBookFolder);

@@ -660,10 +660,10 @@ namespace Bloom.Workspace
 
 		private void OnAboutBoxClick(object sender, EventArgs e)
 		{
-			string path = FileLocator.GetFileDistributedWithApplication(true,"infoPages","aboutBox-"+LocalizationManager.UILanguageId+".htm");
+			string path = FileLocationUtilities.GetFileDistributedWithApplication(true,"infoPages","aboutBox-"+LocalizationManager.UILanguageId+".htm");
 			if (String.IsNullOrEmpty(path))
 			{
-				path = FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm");
+				path = FileLocationUtilities.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm");
 			}
 			using(var dlg = new SIL.Windows.Forms.Miscellaneous.SILAboutBox(path))
 			{
@@ -683,7 +683,7 @@ namespace Bloom.Workspace
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("ReleaseNotes.md");
+			var path = FileLocationUtilities.GetFileDistributedWithApplication("ReleaseNotes.md");
 			using (var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.BloomIcon, path))
 			{
 				dlg.ShowDialog();
@@ -800,7 +800,7 @@ namespace Bloom.Workspace
 
 		private static void OpenInfoFile(string fileName)
 		{
-			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", fileName));
+			Process.Start(FileLocationUtilities.GetFileDistributedWithApplication("infoPages", fileName));
 		}
 
 		private void keyBloomConceptsMenuItem_Click(object sender, EventArgs e)

@@ -429,7 +429,7 @@ namespace Bloom.Api
 			try
 			{
 				if (localPath.Contains("favicon.ico")) //need something to pacify Chrome
-					path = FileLocator.GetFileDistributedWithApplication("BloomPack.ico");
+					path = FileLocationUtilities.GetFileDistributedWithApplication("BloomPack.ico");
 
 				// Is this request the full path to an image file? For most images, we just have the filename. However, in at
 				// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when
@@ -450,7 +450,7 @@ namespace Bloom.Api
 					// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
 					// can return contents of any file that exists if the URL gives its full path...even ones that
 					// are generated temp files most certainly NOT distributed with the application.
-					path = FileLocator.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
+					path = FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
 				}
 			}
 			catch (ApplicationException e)
@@ -649,12 +649,12 @@ namespace Bloom.Api
 			if (string.IsNullOrEmpty(path))
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
-				var p = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
+				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
 				if(RobustFile.Exists(p)) path = p;
 			}
 			if (string.IsNullOrEmpty(path))
 			{
-				var p = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, incomingPath);
+				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, incomingPath);
 				if (RobustFile.Exists(p))
 					path = p;
 			}

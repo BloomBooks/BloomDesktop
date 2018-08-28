@@ -41,7 +41,7 @@ namespace Bloom.WebLibraryIntegration
 		//Factory
 		public static AccessKeys GetAccessKeys(string bucket)
 		{
-			var connectionsPath = FileLocator.GetFileDistributedWithApplication("connections.dll");
+			var connectionsPath = FileLocationUtilities.GetFileDistributedWithApplication("connections.dll");
 			var lines = RobustFile.ReadAllLines(connectionsPath);
 			switch(bucket)
 			{
