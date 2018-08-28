@@ -36,6 +36,7 @@ namespace Bloom.Book
 
 		public Page(Book book, XmlElement sourcePage,  string caption, string captionI18nId, /*Func<IPage, Image> getThumbnail,*/ Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
+			sourcePage = EnsureID(sourcePage);
 			_id = FixPageId(sourcePage.Attributes["id"].Value);
 			var lineage = sourcePage.Attributes["data-pagelineage"];
 			_pageLineage = lineage == null ? new string[] {} : lineage.Value.Split(new[] { ',' });
@@ -47,6 +48,18 @@ namespace Bloom.Book
 			CaptionI18nId = captionI18nId;
 			ReadClasses(sourcePage);
 			ReadPageTags(sourcePage);
+		}
+
+		private XmlElement EnsureID(XmlElement sourcePage)
+		{
+			if (!sourcePage.HasAttribute("id"))
+			{
+				// Probably a unit test. If not, maybe the book got mangled some other way, but we don't want to leave
+				// the page mangled, so add a new page guid.
+				var guid = Guid.NewGuid();
+				sourcePage.SetAttribute("id", guid.ToString());
+			}
+			return sourcePage;
 		}
 
 		//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
