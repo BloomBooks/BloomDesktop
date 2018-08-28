@@ -67,7 +67,7 @@ namespace BloomTests.Book
 				{
 					// These png files have to be real; just putting some text in it leads to out-of-memory failures when Bloom
 					// tries to make its background transparent.
-					File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"),
+					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"),
 						Path.Combine(folderPath, "thumbnail.png"));
 					File.WriteAllText(Path.Combine(folderPath, "previewMode.css"), @"This is wanted");
 				},
@@ -94,14 +94,14 @@ namespace BloomTests.Book
 				{
 					// The png files have to be real; just putting some text in them leads to out-of-memory failures when Bloom
 					// tries to make their background transparent.
-					File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail.png"));
+					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail.png"));
 					File.WriteAllText(Path.Combine(folderPath, "previewMode.css"), @"This is wanted");
 
 					// now some files we expect to be omitted from the .bloomd archive
 					File.WriteAllText(Path.Combine(folderPath, "book.BloomBookOrder"), @"This is unwanted");
 					File.WriteAllText(Path.Combine(folderPath, "book.pdf"), @"This is unwanted");
-					File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail-256.png"));
-					File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail-70.png"));
+					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail-256.png"));
+					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail-70.png"));
 				},
 				assertionsOnZipArchive: zip =>
 				{
@@ -490,7 +490,7 @@ namespace BloomTests.Book
 				actionsOnFolderBeforeCompressing:
 				bookFolderPath =>
 				{
-					File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"),
+					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"),
 						Path.Combine(bookFolderPath, "Listen to My Body_Cover.png"));
 				},
 
@@ -551,7 +551,7 @@ namespace BloomTests.Book
 		{
 			// bird.png:                   PNG image data, 274 x 300, 8-bit/color RGBA, non-interlaced
 
-			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
+			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
 			byte[] originalBytes = File.ReadAllBytes(path);
 			byte[] reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path,true);
 			Assert.That(reducedBytes, Is.Not.EqualTo(originalBytes)); // no easy way to check it was made transparent, but should be changed.
@@ -582,7 +582,7 @@ namespace BloomTests.Book
 		{
 			// man.jpg:                    JPEG image data, JFIF standard 1.01, ..., precision 8, 118x154, frames 3
 
-			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
+			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
 			var originalBytes = File.ReadAllBytes(path);
 			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
 			Assert.AreEqual(originalBytes, reducedBytes, "man.jpg is already small enough (118x154)");
@@ -610,7 +610,7 @@ namespace BloomTests.Book
 		{
 			// shirtWithTransparentBg.png: PNG image data, 2208 x 2400, 8-bit/color RGBA, non-interlaced
 
-			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
+			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
 			var originalBytes = File.ReadAllBytes(path);
 			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "shirt.png is reduced from 2208x2400");
@@ -638,7 +638,7 @@ namespace BloomTests.Book
 		{
 			// LakePendOreille.jpg:        JPEG image data, JFIF standard 1.01, ... precision 8, 3264x2448, frames 3
 
-			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "LakePendOreille.jpg");
+			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "LakePendOreille.jpg");
 			var originalBytes = File.ReadAllBytes(path);
 			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "LakePendOreille.jpg is reduced from 3264x2448");
@@ -666,7 +666,7 @@ namespace BloomTests.Book
 		{
 			// lady24b.png:        PNG image data, 24bit depth, 3632w x 3872h
 
-			var path = FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "lady24b.png");
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "lady24b.png");
 			var originalBytes = File.ReadAllBytes(path);
 			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
 			// Is it reduced, even tho' we switched from 24bit depth to 32bit depth?

@@ -84,16 +84,16 @@ namespace BloomTests
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
 				var text = File.ReadAllText(temp.Path);
-				Assert.That(text, Is.Not.StringContaining("<u />"));
-				Assert.That(text, Is.Not.StringContaining("<b />"));
-				Assert.That(text, Is.Not.StringContaining("<i />"));
-				Assert.That(text, Is.Not.StringContaining("<em />"));
-				Assert.That(text, Is.Not.StringContaining("<strong />"));
-				Assert.That(text, Is.Not.StringContaining("<i></i>"));
-				Assert.That(text, Is.Not.StringContaining("<b></b>"));
-				Assert.That(text, Is.Not.StringContaining("<u></u>"));
-				Assert.That(text, Is.Not.StringContaining("<em></em>"));
-				Assert.That(text, Is.Not.StringContaining("<strong></strong>"));
+				Assert.That(text, Does.Not.Contain("<u />"));
+				Assert.That(text, Does.Not.Contain("<b />"));
+				Assert.That(text, Does.Not.Contain("<i />"));
+				Assert.That(text, Does.Not.Contain("<em />"));
+				Assert.That(text, Does.Not.Contain("<strong />"));
+				Assert.That(text, Does.Not.Contain("<i></i>"));
+				Assert.That(text, Does.Not.Contain("<b></b>"));
+				Assert.That(text, Does.Not.Contain("<u></u>"));
+				Assert.That(text, Does.Not.Contain("<em></em>"));
+				Assert.That(text, Does.Not.Contain("<strong></strong>"));
 			}
 		}
 
@@ -106,24 +106,24 @@ namespace BloomTests
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
 				var text = File.ReadAllText(temp.Path);
-				Assert.That(text, Is.Not.StringContaining("<u />"));
-				Assert.That(text, Is.Not.StringContaining("<b />"));
-				Assert.That(text, Is.Not.StringContaining("<i />"));
-				Assert.That(text, Is.Not.StringContaining("<em />"));
-				Assert.That(text, Is.Not.StringContaining("<strong />"));
-				Assert.That(text, Is.Not.StringContaining("<span />"));
-				Assert.That(text, Is.Not.StringContaining("<b></b>"));
-				Assert.That(text, Is.Not.StringContaining("<u></u>"));
-				Assert.That(text, Is.Not.StringContaining("<i></i>"));
-				Assert.That(text, Is.Not.StringContaining("<em></em>"));
-				Assert.That(text, Is.Not.StringContaining("<strong></strong>"));
-				Assert.That(text, Is.Not.StringContaining("<span></span>"));
-				Assert.That(text, Is.StringContaining("<b attr=\"1\"></b>"));
-				Assert.That(text, Is.StringContaining("<u attr=\"1\"></u>"));
-				Assert.That(text, Is.StringContaining("<i attr=\"1\"></i>"));
-				Assert.That(text, Is.StringContaining("<strong attr=\"1\"></strong>"));
-				Assert.That(text, Is.StringContaining("<em attr=\"1\"></em>"));
-				Assert.That(text, Is.StringContaining("<span attr=\"1\"></span>"));
+				Assert.That(text, Does.Not.Contain("<u />"));
+				Assert.That(text, Does.Not.Contain("<b />"));
+				Assert.That(text, Does.Not.Contain("<i />"));
+				Assert.That(text, Does.Not.Contain("<em />"));
+				Assert.That(text, Does.Not.Contain("<strong />"));
+				Assert.That(text, Does.Not.Contain("<span />"));
+				Assert.That(text, Does.Not.Contain("<b></b>"));
+				Assert.That(text, Does.Not.Contain("<u></u>"));
+				Assert.That(text, Does.Not.Contain("<i></i>"));
+				Assert.That(text, Does.Not.Contain("<em></em>"));
+				Assert.That(text, Does.Not.Contain("<strong></strong>"));
+				Assert.That(text, Does.Not.Contain("<span></span>"));
+				Assert.That(text, Does.Contain("<b attr=\"1\"></b>"));
+				Assert.That(text, Does.Contain("<u attr=\"1\"></u>"));
+				Assert.That(text, Does.Contain("<i attr=\"1\"></i>"));
+				Assert.That(text, Does.Contain("<strong attr=\"1\"></strong>"));
+				Assert.That(text, Does.Contain("<em attr=\"1\"></em>"));
+				Assert.That(text, Does.Contain("<span attr=\"1\"></span>"));
 			}
 		}
 		[Test, Ignore("Will fix in BL-2558")]
@@ -136,7 +136,7 @@ namespace BloomTests
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
 				var text = File.ReadAllText(temp.Path);
-				Assert.That(text, Is.StringContaining(original));
+				Assert.That(text, Does.Contain(original));
 			}
 		}
 
@@ -150,7 +150,7 @@ namespace BloomTests
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
 				var text = File.ReadAllText(temp.Path);
-				Assert.That(text, Is.StringContaining("<span class=\"bloom-linebreak\"></span>"));
+				Assert.That(text, Does.Contain("<span class=\"bloom-linebreak\"></span>"));
 			}
 		}
 
@@ -234,7 +234,7 @@ namespace BloomTests
 			const string html = @"<!DOCTYPE html><html><head></head><body><div>one<b>two</b>three<i>four</i>five
 <b>six</b>seven <i>eight</i>nine</div></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
-			Assert.That(dom.InnerXml, Is.StringContaining(@"one<b>two</b>three<i>four</i>five <b>six</b>seven <i>eight</i>nine"));
+			Assert.That(dom.InnerXml, Does.Contain(@"one<b>two</b>three<i>four</i>five <b>six</b>seven <i>eight</i>nine"));
 		}
 
 		[Test]
@@ -242,7 +242,7 @@ namespace BloomTests
 		{
 			const string html = @"<!DOCTYPE html><html><head></head><body><div><p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p></div></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
-			Assert.That(dom.InnerXml, Is.StringContaining(@"<p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p>"));
+			Assert.That(dom.InnerXml, Does.Contain(@"<p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p>"));
 		}
 
 		[Test]

@@ -163,17 +163,17 @@ namespace BloomTests.Publish
 		{
 			var fontCssData = ExportEpubTestsBaseClass.GetZipContent(_epub, "content/"+EpubMaker.kCssFolder+"/fonts.css");
 			Assert.That(fontCssData,
-				Is.StringContaining(
+				Does.Contain(
 					"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:normal; src:url(../"+EpubMaker.kFontsFolder+"/AndikaNewBasic-R.ttf) format('opentype');}"));
 			// Currently we're not embedding bold and italic fonts (BL-4202)
 			//Assert.That(fontCssData,
-			//	Is.StringContaining(
+			//	Does.Contain(
 			//		"@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:normal; src:url(AndikaNewBasic-B.ttf) format('opentype');}"));
 			//Assert.That(fontCssData,
-			//	Is.StringContaining(
+			//	Does.Contain(
 			//		"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:italic; src:url(AndikaNewBasic-I.ttf) format('opentype');}"));
 			//Assert.That(fontCssData,
-			//	Is.StringContaining(
+			//	Does.Contain(
 			//		"@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:italic; src:url(AndikaNewBasic-BI.ttf) format('opentype');}"));
 		}
 
@@ -515,7 +515,7 @@ namespace BloomTests.Publish
 			CheckFontStylesheet();
 			// Check that the standard stylesheet, not wanted in the ePUB, is removed.
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:head/xhtml:link[@href='basePage.css']", _ns); // standard stylesheet should be removed.
-			Assert.That(_page1Data, Is.Not.StringContaining("basePage.css")); // make sure it's stripped completely
+			Assert.That(_page1Data, Does.Not.Contain("basePage.css")); // make sure it's stripped completely
 			Assert.That(_epub.GetEntry("content/basePage.ss"),Is.Null);
 		}
 
@@ -1130,7 +1130,7 @@ namespace BloomTests.Publish
 				Directory.CreateDirectory(Path.GetDirectoryName(path));
 				// Bloom is going to try to figure its duration, so put a real audio file there.
 				// Some of the paths are for mp4s, but it doesn't hurt to use an mp3.
-				var src = SIL.IO.FileLocator.GetFileDistributedWithApplication("src/BloomTests/Publish/sample_audio.mp3");
+				var src = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication("src/BloomTests/Publish/sample_audio.mp3");
 				File.Copy(src, path);
 				var wavSrc = Path.ChangeExtension(src, ".wav");
 				File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);

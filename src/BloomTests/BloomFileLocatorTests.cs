@@ -63,7 +63,7 @@ namespace BloomTests
 		public void FactoryXMatterStylesheets_AreFoundInFactoryXMatter()
 		{
 			var path = _fileLocator.LocateFile("Factory-XMatter.css");
-			Assert.That(Path.GetDirectoryName(path), Is.StringContaining("Factory-XMatter"));
+			Assert.That(Path.GetDirectoryName(path), Does.Contain("Factory-XMatter"));
 		}
 
 		/// <summary>
@@ -73,7 +73,7 @@ namespace BloomTests
 		public void BigBookXMatterStylesheets_AreFoundInBigBookXMatter()
 		{
 			var path = _fileLocator.LocateFile("BigBook-XMatter.css");
-			Assert.That(Path.GetDirectoryName(path), Is.StringContaining("BigBook-XMatter"));
+			Assert.That(Path.GetDirectoryName(path), Does.Contain("BigBook-XMatter"));
 		}
 
 		/// <summary>
@@ -86,7 +86,7 @@ namespace BloomTests
 		public void TemplateFilesAreFoundInFactoryLocation()
 		{
 			var path = _fileLocator.LocateFile("Decodable Reader.css");
-			Assert.That(Path.GetDirectoryName(path), Is.StringContaining("Decodable Reader"));
+			Assert.That(Path.GetDirectoryName(path), Does.Contain("Decodable Reader"));
 		}
 
 		/// <summary>
@@ -101,7 +101,7 @@ namespace BloomTests
 		public void BloomBrowserUIIsPrefferedOverFactorXMatter()
 		{
 			var path = _fileLocator.LocateFile("editMode.css");
-			Assert.That(Path.GetDirectoryName(path).Replace("\\", "/"), Is.StringContaining(BloomFileLocator.BrowserRoot.Replace("\\", "/")));
+			Assert.That(Path.GetDirectoryName(path).Replace("\\", "/"), Does.Contain(BloomFileLocator.BrowserRoot.Replace("\\", "/")));
 		}
 
 		/// <summary>
@@ -111,7 +111,7 @@ namespace BloomTests
 		public void CanFindFileInUserXMatter()
 		{
 			var path = _fileLocator.LocateFile("SomeRandomXYZABCStyles.css");
-			Assert.That(Path.GetDirectoryName(path), Is.StringContaining("User-XMatter"));
+			Assert.That(Path.GetDirectoryName(path), Does.Contain("User-XMatter"));
 		}
 
 		[Test]

@@ -671,7 +671,7 @@ namespace BloomTests.Book
 		// some attempt at verifying that it updated the page structure
 		private void CheckPageIsCustomizable(XmlElement newPage)
 		{
-			Assert.That(newPage.Attributes["class"].Value, Is.StringContaining("customPage"));
+			Assert.That(newPage.Attributes["class"].Value, Does.Contain("customPage"));
 		}
 
 		private void CheckPageLineage(XmlElement oldPage, XmlElement newPage, string oldGuid, string newGuid)

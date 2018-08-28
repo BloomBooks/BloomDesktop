@@ -39,10 +39,10 @@ namespace BloomTests.Edit
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{
-												//FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+												//FileLocationUtilities.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book"),
 												BloomFileLocator.GetFactoryBookTemplateDirectory("Wall Calendar"),
-												FileLocator.GetDirectoryDistributedWithApplication( BloomFileLocator.BrowserRoot),
+												FileLocationUtilities.GetDirectoryDistributedWithApplication( BloomFileLocator.BrowserRoot),
 												BloomFileLocator.GetBrowserDirectory("bookLayout"),
 												BloomFileLocator.GetBrowserDirectory("bookEdit","css"),
 												BloomFileLocator.GetInstalledXMatterDirectory()

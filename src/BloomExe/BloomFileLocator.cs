@@ -32,7 +32,7 @@ namespace Bloom
 		{
 			get
 			{
-				return Directory.Exists(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"output")) ? "output"+Path.DirectorySeparatorChar+"browser" : "browser";
+				return Directory.Exists(Path.Combine(FileLocationUtilities.DirectoryOfApplicationOrSolution,"output")) ? "output"+Path.DirectorySeparatorChar+"browser" : "browser";
 			}
 		}
 
@@ -77,7 +77,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// These are used (as of 26 aug 2016) only by LibPalaso's FileLocator.LocateFile(). Not used by GetFileDistributedWIthApplication().
+		/// These are used (as of 26 aug 2016) only by LibPalaso's FileLocationUtilities.LocateFile(). Not used by GetFileDistributedWIthApplication().
 		/// </summary>
 		/// <returns></returns>
 		protected IEnumerable<string> GetSearchPaths(string fileName = null)
@@ -180,13 +180,13 @@ namespace Bloom
 		public static string GetBrowserFile(bool optional, params string[] parts)
 		{
 			parts[0] = Path.Combine(BrowserRoot,parts[0]);
-			return FileLocator.GetFileDistributedWithApplication(optional, parts);
+			return FileLocationUtilities.GetFileDistributedWithApplication(optional, parts);
 		}
 
 		public static string GetBrowserDirectory(params string[] parts)
 		{
 			parts[0] = Path.Combine(BrowserRoot, parts[0]);
-			return FileLocator.GetDirectoryDistributedWithApplication(false, parts);
+			return FileLocationUtilities.GetDirectoryDistributedWithApplication(false, parts);
 		}
 		public static string GetInstalledXMatterDirectory()
 		{
@@ -251,7 +251,7 @@ namespace Bloom
 		{
 			// at this time, FileLocator does not have a way for the app to actually tell it where to find things distributed
 			// with the application...
-			var englishPath = FileLocator.GetFileDistributedWithApplication(true, partsOfEnglishFilePath);
+			var englishPath = FileLocationUtilities.GetFileDistributedWithApplication(true, partsOfEnglishFilePath);
 
 			// ... so if it doesn't find it, we have to keep looking
 			if (string.IsNullOrWhiteSpace(englishPath))
@@ -312,7 +312,7 @@ namespace Bloom
 		}
 
 		//-----------------------------------------------------
-		// Copied mostly unchanged from libpalaso/FileLocator. Bloom may not actually need all of these.
+		// Copied mostly unchanged from libpalaso/FileLocationUtilities. Bloom may not actually need all of these.
 		//----------------------------------------------------
 
 		public string LocateDirectory(string directoryName)

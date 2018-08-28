@@ -33,7 +33,7 @@ namespace BloomTests.WebLibraryIntegration
 			}
 		}
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void TestFixtureSetUp()
 		{
 			_thisTestId = Guid.NewGuid().ToString().Replace('-', '_');
@@ -115,10 +115,10 @@ namespace BloomTests.WebLibraryIntegration
 			var uploadMessages = progress.Text.Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
 
 			Assert.That(uploadMessages.Length, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
-			Assert.That(progress.Text, Is.StringContaining(
+			Assert.That(progress.Text, Does.Contain(
 				LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata",
 				"In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database.")));
-			Assert.That(progress.Text, Is.StringContaining(Path.GetFileName(filesToUpload.First())));
+			Assert.That(progress.Text, Does.Contain(Path.GetFileName(filesToUpload.First())));
 
 			_transfer.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
@@ -179,11 +179,11 @@ namespace BloomTests.WebLibraryIntegration
 			var jacksFirstData = File.ReadAllText(firstPair.Item2.CombineForPath("one.htm"));
 			// We use stringContaining here because upload does make some changes...for example connected with marking the
 			// book as lockedDown.
-			Assert.That(jacksFirstData, Is.StringContaining("Jack's data"));
+			Assert.That(jacksFirstData, Does.Contain("Jack's data"));
 			var jillsData = File.ReadAllText(secondPair.Item2.CombineForPath("one.htm"));
-			Assert.That(jillsData, Is.StringContaining("Jill's data"));
+			Assert.That(jillsData, Does.Contain("Jill's data"));
 			var jacksSecondData = File.ReadAllText(thirdPair.Item2.CombineForPath("one.htm"));
-			Assert.That(jacksSecondData, Is.StringContaining("Jack's other data"));
+			Assert.That(jacksSecondData, Does.Contain("Jack's other data"));
 
 			// Todo: verify that we got three distinct book records in parse.com
 		}
@@ -243,7 +243,7 @@ namespace BloomTests.WebLibraryIntegration
 			var newBookFolder = _transfer.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
 
 			var firstData = File.ReadAllText(newBookFolder.CombineForPath("one.htm"));
-			Assert.That(firstData, Is.StringContaining("something new"), "We should have overwritten the changed file");
+			Assert.That(firstData, Does.Contain("something new"), "We should have overwritten the changed file");
 			Assert.That(File.Exists(newBookFolder.CombineForPath("two.css")), Is.True, "We should have added the new file");
 			Assert.That(File.Exists(newBookFolder.CombineForPath("one.css")), Is.False, "We should have deleted the obsolete file");
 			// Verify that metadata was overwritten, new record not created.
@@ -275,7 +275,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"), "baseUrl should start with s3 prefix");
 
 			string order = record.bookOrder;
-			Assert.That(order, Is.StringContaining("My+incomplete+book.BloomBookOrder"), "order url should include correct file name");
+			Assert.That(order, Does.Contain("My+incomplete+book.BloomBookOrder"), "order url should include correct file name");
 			Assert.That(order.StartsWith(BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "="), "order url should start with Bloom URL prefix");
 
 			Assert.That(File.Exists(Path.Combine(newBookFolder, "My incomplete book.BloomBookOrder")), "Should have created, uploaded and downloaded the book order");

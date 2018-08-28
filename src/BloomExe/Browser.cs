@@ -692,7 +692,7 @@ namespace Bloom
 
 		public static string GetPathToStylizer()
 		{
-			return FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
+			return FileLocationUtilities.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
 		}
 
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
@@ -762,7 +762,7 @@ namespace Bloom
 			{
 				// Creating a temp file every time we need this seems excessive, and it turns out to
 				// be fragile as well.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5598.
-				url = FileLocator.GetFileDistributedWithApplication("BloomBlankPage.htm");
+				url = FileLocationUtilities.GetFileDistributedWithApplication("BloomBlankPage.htm");
 				cleanupFileAfterNavigating = false;
 			}
 

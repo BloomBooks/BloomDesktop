@@ -37,7 +37,7 @@ namespace BloomTests.Book
 			ErrorReport.IsOkToInteractWithUser = false;
 
 			LocalizationManager.UseLanguageCodeFolders = true;
-			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
+			var localizationDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
 			_localizationManager = LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
 				null, "");
 			_palasoLocalizationManager = LocalizationManager.Create("fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Palaso",
