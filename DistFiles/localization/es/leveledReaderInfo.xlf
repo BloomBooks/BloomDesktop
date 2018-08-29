@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="leveled.reader.vocabulary" approved="yes">
         <source xml:lang="en">Vocabulary</source>
-        <target xml:lang="es-ES">Vocabulario</target>
+        <target xml:lang="es-ES" state="translated">Vocabulario</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A medida que los niños avanzan a los niveles superiores, puede utilizar palabras con más sílabas. Y puede comenzar a utilizar palabras menos conocidas. Los niños deberían poder adivinar el significado de estas palabras por el contexto y las oraciones cercanas, y por las ilustraciones.</target>
+        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A medida que los niños avanzan a los niveles superiores, puede utilizar palabras con más sílabas. Y puede comenzar a utilizar palabras menos conocidas. Los niños deberían poder adivinar el significado de estas palabras por el contexto y las oraciones cercanas, y por las ilustraciones.</target>
         <note>ID: leveled.reader.start.simple</note>
         <alt-trans>
           <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A medida que los niños avanzan a los niveles superiores, puede utilizar palabras con más sílabas. Y puede comenzar a utilizar palabras menos conocidas. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciones cercanas, y por las ilustraciones.</target>
@@ -20,7 +20,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.formatting" approved="yes">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="es-ES">Formato</target>
+        <target xml:lang="es-ES" state="translated">Formato</target>
         <note>ID: leveled.reader.formatting</note>
         <alt-trans>
           <target xml:lang="es-ES">Formateo</target>
@@ -28,7 +28,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
-        <target xml:lang="es-ES">Los lectores incipientes se beneficiarán del uso de fuentes grandes y espacios más amplios entre las palabras. También se recomienda ubicar las palabras u oraciones en el mismo lugar en cada página. A medida que los lectores avanzan, las fuentes y espacios entre palabras pueden disminuir y las oraciones pueden ser ubicadas en distintos lugares.</target>
+        <target xml:lang="es-ES" state="translated">Los lectores incipientes se beneficiarán del uso de fuentes grandes y espacios más amplios entre las palabras. También se recomienda ubicar las palabras u oraciones en el mismo lugar en cada página. A medida que los lectores avanzan, las fuentes y espacios entre palabras pueden disminuir y las oraciones pueden ser ubicadas en distintos lugares.</target>
         <note>ID: leveled.reader.start.large</note>
         <alt-trans>
           <target xml:lang="es-ES">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o oraciónes en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las oraciónes pueden ser ubicadas en distintos lugares.</target>
@@ -36,7 +36,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
-        <target xml:lang="es-ES">Para incrementar el tamaño de la fuente, el interlineado y el espacio entre palabras, haga clic en un cuadro de texto y después en el ícono del "engranaje" gris en la esquina inferior izquierda. Si después hace un libro de plantilla, los libros hechos con esa plantilla también utilizarán esas configuraciones.</target>
+        <target xml:lang="es-ES" state="translated">Para incrementar el tamaño de la fuente, el interlineado y el espacio entre palabras, haga clic en un cuadro de texto y después en el ícono del "engranaje" gris en la esquina inferior izquierda. Si después hace un libro de plantilla, los libros hechos con esa plantilla también utilizarán esas configuraciones.</target>
         <note>ID: leveled.reader.increase.sizes</note>
         <alt-trans>
           <target xml:lang="es-ES">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras, haga clic en un cuadro de texto y despues en el icono de "engranage" gris en la esquina inferior izquierda. Si despues hace un libro de plantilla, los libros hechos con esa plantilla tambien usarán estas configuraciones.</target>
@@ -44,12 +44,13 @@
       </trans-unit>
       <trans-unit id="leveled.reader.predictability" approved="yes">
         <source xml:lang="en">Predictability</source>
-        <target xml:lang="es-ES">Previsibilidad</target>
+        <target xml:lang="es-ES" state="translated">Previsibilidad</target>
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
+          
           
           
           
@@ -93,6 +94,30 @@
           
           
           
+          
+          <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría después. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría después. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
         </alt-trans>
         <alt-trans>
@@ -141,25 +166,6 @@
         <alt-trans>
           <target xml:lang="es-ES">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría después. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
           
           
           
@@ -180,7 +186,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
-        <target xml:lang="es-ES">Repetición - repetición de partes del texto. Por ejemplo, usar la misma oración en cada página y simplemente cambiar una palabra en la oración</target>
+        <target xml:lang="es-ES" state="translated">Repetición - repetición de partes del texto. Por ejemplo, usar la misma oración en cada página y simplemente cambiar una palabra en la oración</target>
         <note>ID: leveled.reader.repetition</note>
         <alt-trans>
           <target xml:lang="es-ES">Repetición - repetición de partes del texto. Por ejemplo, usar la misma oración en cada página y simplemente cambiar una palabra en la frase</target>
@@ -191,12 +197,12 @@
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="es-ES">Secuenciación - un cuento con una secuencia conocida como los días de la semana o que utiliza números en un patrón</target>
+        <target xml:lang="es-ES" state="translated">Secuenciación - un cuento con una secuencia conocida como los días de la semana o que utiliza números en un patrón</target>
         <note>ID: leveled.reader.sequencing</note>
       </trans-unit>
       <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="es-ES">Secuencia Creciente - un cuento con un patrón que se repite y se añade a cada nueva página</target>
+        <target xml:lang="es-ES" state="translated">Secuencia Creciente - un cuento con un patrón que se repite y se añade a cada nueva página</target>
         <note>ID: leveled.reader.building.sequence</note>
         <alt-trans>
           <target xml:lang="es-ES">Secuencia creciente - un cuento con un patrón que se repite y a lo cual se agrega en cada nueva página</target>
@@ -210,7 +216,7 @@ Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
-        <target xml:lang="es-ES">Rima - un cuento con un patrón o secuencia que también incluye rima. Por ejemplo:
+        <target xml:lang="es-ES" state="translated">Rima - un cuento con un patrón o secuencia que también incluye rima. Por ejemplo:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre">El elefante lloraba
 porque no quería dormir
@@ -218,6 +224,7 @@ Duerme elefantito mío
 que la luna te va a oír</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
         </g>
+      
       
       
       
@@ -268,6 +275,37 @@ que la luna te va a oír</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Rima - un cuento con un patrón o secuencia que también incluye rima. Por ejemplo:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">El elefante lloraba
+porque no quería dormir
+Duerme elefantito mío
+que la luna te va a oír</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -337,32 +375,6 @@ que la luna te va a oír</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
         </g>
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Rima - un cuento con un patrón o secuencia que también incluye rima. Por ejemplo:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">El elefante lloraba
-porque no quería dormir
-Duerme elefantito mío
-que la luna te va a oír</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
-        </g>
       
       
       
@@ -383,7 +395,7 @@ que la luna te va a oír</g>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
-        <target xml:lang="es-ES">Apoyo para las ilustraciones</target>
+        <target xml:lang="es-ES" state="translated">Apoyo para las ilustraciones</target>
         <note>ID: leveled.reader.illustrations</note>
         <alt-trans>
           <target xml:lang="es-ES">Apoyo para ilustraciones</target>
@@ -392,7 +404,8 @@ que la luna te va a oír</g>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
-        <target xml:lang="es-ES">Las ilustraciones pueden ser material de apoyo para un cuento. Las ilustraciones se relacionan con el cuento en distintos modos en distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (ver abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.
+        <target xml:lang="es-ES" state="translated">Las ilustraciones pueden ser material de apoyo para un cuento. Las ilustraciones se relacionan con el cuento en distintos modos en distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (ver abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.
+    
     
     
     
@@ -436,6 +449,30 @@ que la luna te va a oír</g>
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Las ilustraciones pueden ser material de apoyo para un cuento. Las ilustraciones se relacionan con el cuento en distintos modos en distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (ver abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -484,25 +521,6 @@ que la luna te va a oír</g>
         <alt-trans>
           <target xml:lang="es-ES">Las ilustraciones pueden ser material de apoyo para un cuento. Las ilustraciones se relacionan con el cuento en distintos modos en distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (ver abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Las ilustraciones pueden ser material de apoyo para un cuento. Las ilustraciones se relacionan con el cuento en distintos modos en distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (ver abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.
     
     
     
@@ -524,7 +542,8 @@ que la luna te va a oír</g>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
-        <target xml:lang="es-ES">Para los <g id="genid-6" ctype="x-html-strong"> Lectores incipientes</g> las imágenes deben coincidir precisamente con la trama del cuento o historia. Al ver las imágenes, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-6" ctype="x-html-strong"> Lectores incipientes</g> las imágenes deben coincidir precisamente con la trama del cuento o historia. Al ver las imágenes, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.
+      
       
       
       
@@ -568,6 +587,30 @@ que la luna te va a oír</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para los <g id="genid-6" ctype="x-html-strong"> Lectores incipientes</g> las imágenes deben coincidir precisamente con la trama del cuento o historia. Al ver las imágenes, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -616,25 +659,6 @@ que la luna te va a oír</g>
         <alt-trans>
           <target xml:lang="es-ES">Para los <g id="genid-6" ctype="x-html-strong"> Lectores incipientes</g> las imágenes deben coincidir precisamente con la trama del cuento o historia. Al ver las imágenes, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-6" ctype="x-html-strong"> Lectores incipientes</g> las imágenes deben coincidir precisamente con la trama del cuento o historia. Al ver las imágenes, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.
       
       
       
@@ -656,7 +680,8 @@ que la luna te va a oír</g>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
-        <target xml:lang="es-ES">Para los <g id="genid-7" ctype="x-html-strong"> Lectores principiantes </g> las imágenes deben ofrecer apoyo a la trama. A medida que aumenta la cantidad de texto, el lector depende menos de las imágenes y comprende más del texto. Las ilustraciones pueden ser más complejas.
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-7" ctype="x-html-strong"> Lectores principiantes </g> las imágenes deben ofrecer apoyo a la trama. A medida que aumenta la cantidad de texto, el lector depende menos de las imágenes y comprende más del texto. Las ilustraciones pueden ser más complejas.
+      
       
       
       
@@ -700,6 +725,30 @@ que la luna te va a oír</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para los <g id="genid-7" ctype="x-html-strong"> Lectores principiantes </g> las imágenes deben ofrecer apoyo a la trama. A medida que aumenta la cantidad de texto, el lector depende menos de las imágenes y comprende más del texto. Las ilustraciones pueden ser más complejas.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -748,25 +797,6 @@ que la luna te va a oír</g>
         <alt-trans>
           <target xml:lang="es-ES">Para los <g id="genid-7" ctype="x-html-strong"> Lectores principiantes </g> las imágenes deben ofrecer apoyo a la trama. A medida que aumenta la cantidad de texto, el lector depende menos de las imágenes y comprende más del texto. Las ilustraciones pueden ser más complejas.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-7" ctype="x-html-strong"> Lectores principiantes </g> las imágenes deben ofrecer apoyo a la trama. A medida que aumenta la cantidad de texto, el lector depende menos de las imágenes y comprende más del texto. Las ilustraciones pueden ser más complejas.
       
       
       
@@ -788,7 +818,8 @@ que la luna te va a oír</g>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
-        <target xml:lang="es-ES">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las imágenes deben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las imágenes. Estas pueden ser todavía más complejas.
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las imágenes deben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las imágenes. Estas pueden ser todavía más complejas.
+      
       
       
       
@@ -832,6 +863,30 @@ que la luna te va a oír</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las imágenes deben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las imágenes. Estas pueden ser todavía más complejas.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -880,25 +935,6 @@ que la luna te va a oír</g>
         <alt-trans>
           <target xml:lang="es-ES">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las imágenes deben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las imágenes. Estas pueden ser todavía más complejas.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las imágenes deben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las imágenes. Estas pueden ser todavía más complejas.
       
       
       
@@ -919,12 +955,12 @@ que la luna te va a oír</g>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
-        <target xml:lang="es-ES">Elección del tema</target>
+        <target xml:lang="es-ES" state="translated">Elección del tema</target>
         <note>ID: leveled.reader.topic.choice</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="es-ES">Los libros pueden tratar de muchos temas. En el desarrollo de libros para los lectores incipientes, elija temas que les son familiares. Los lectores desearán leer y leerán más si leen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocida por el lector.</target>
+        <target xml:lang="es-ES" state="translated">Los libros pueden tratar de muchos temas. En el desarrollo de libros para los lectores incipientes, elija temas que les son familiares. Los lectores desearán leer y leerán más si leen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocida por el lector.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
         <alt-trans>
           <target xml:lang="es-ES">Los libros pueden tratar de muchos temas. En el desarrollo de libros para nuevos lectores, elige temas que son familiares. Los lectores desearán leer y leerán más si leyen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocido al lector.</target>
@@ -933,7 +969,8 @@ que la luna te va a oír</g>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
       </source>
-        <target xml:lang="es-ES">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.
+      
       
       
       
@@ -977,6 +1014,30 @@ que la luna te va a oír</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -1025,25 +1086,6 @@ que la luna te va a oír</g>
         <alt-trans>
           <target xml:lang="es-ES">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.
       
       
       
@@ -1065,7 +1107,8 @@ que la luna te va a oír</g>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
-        <target xml:lang="es-ES">Para los <g id="genid-10" ctype="x-html-strong"> Lectores principiantes</g>, se debe desarrollar un cuento alrededor de un concepto familiar pero con mayor profundidad.
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-10" ctype="x-html-strong"> Lectores principiantes</g>, se debe desarrollar un cuento alrededor de un concepto familiar pero con mayor profundidad.
+      
       
       
       
@@ -1109,6 +1152,30 @@ que la luna te va a oír</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para los <g id="genid-10" ctype="x-html-strong"> Lectores principiantes</g>, se debe desarrollar un cuento alrededor de un concepto familiar pero con mayor profundidad.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -1157,25 +1224,6 @@ que la luna te va a oír</g>
         <alt-trans>
           <target xml:lang="es-ES">Para los <g id="genid-10" ctype="x-html-strong"> Lectores principiantes</g>, se debe desarrollar un cuento alrededor de un concepto familiar pero con mayor profundidad.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-10" ctype="x-html-strong"> Lectores principiantes</g>, se debe desarrollar un cuento alrededor de un concepto familiar pero con mayor profundidad.
       
       
       
@@ -1197,7 +1245,8 @@ que la luna te va a oír</g>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
-        <target xml:lang="es-ES">Para los <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> los conceptos no tienen que ser familiares, pueden ser más variados y pueden ser abstractos.
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> los conceptos no tienen que ser familiares, pueden ser más variados y pueden ser abstractos.
+      
       
       
       
@@ -1241,6 +1290,30 @@ que la luna te va a oír</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para los <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> los conceptos no tienen que ser familiares, pueden ser más variados y pueden ser abstractos.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -1289,25 +1362,6 @@ que la luna te va a oír</g>
         <alt-trans>
           <target xml:lang="es-ES">Para los <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> los conceptos no tienen que ser familiares, pueden ser más variados y pueden ser abstractos.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> los conceptos no tienen que ser familiares, pueden ser más variados y pueden ser abstractos.
       
       
       

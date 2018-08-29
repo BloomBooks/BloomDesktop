@@ -135,10 +135,10 @@
         <target xml:lang="rw" state="needs-translation">&amp;Delete</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
-        <source xml:lang="en">Found {0} images with names close to {1}</source>
+        <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="rw" state="needs-translation">Found {0} images with names close to {1}</target>
+        <target xml:lang="rw" state="needs-translation">Found {0} images with names close to “{1}”</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>

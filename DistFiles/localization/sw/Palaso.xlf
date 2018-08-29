@@ -6,61 +6,61 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="sw">Imejengwa kwa {0}</target>
+        <target xml:lang="sw" state="translated">Imejengwa kwa {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="sw">Hakuna utengenezaji upya</target>
+        <target xml:lang="sw" state="translated">Hakuna utengenezaji upya</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="sw">Kuhusu {0}</target>
+        <target xml:lang="sw" state="translated">Kuhusu {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="sw">Tafuta utengenezaji upya</target>
+        <target xml:lang="sw" state="translated">Tafuta utengenezaji upya</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="sw">Muhtasari wa toleo</target>
+        <target xml:lang="sw" state="translated">Muhtasari wa toleo</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="sw">Nakala nyingine ya programu tayari inaendelea. Iwapo huwezi kuipata, fungua upya kompyuta yako.</target>
+        <target xml:lang="sw" state="translated">Nakala nyingine ya programu tayari inaendelea. Iwapo huwezi kuipata, fungua upya kompyuta yako.</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific" approved="yes">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="sw">Nakala nyingine ya {0} tayari inaendelea. Iwapo huwezi kupata nakala hiyo ya {0}, fungua upya kompyuta yako.</target>
+        <target xml:lang="sw" state="translated">Nakala nyingine ya {0} tayari inaendelea. Iwapo huwezi kupata nakala hiyo ya {0}, fungua upya kompyuta yako.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="sw">Kulikuwa na tatizo katika kuanzisha programu ambayo inaweza kukuhitaji kufungua upya kompyuta yako.</target>
+        <target xml:lang="sw" state="translated">Kulikuwa na tatizo katika kuanzisha programu ambayo inaweza kukuhitaji kufungua upya kompyuta yako.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="sw">Kulikuwa na tatizo katika kuanzisha {0} ambayo inaweza kukuhitaji kufungua upya kompyuta yako.</target>
+        <target xml:lang="sw" state="translated">Kulikuwa na tatizo katika kuanzisha {0} ambayo inaweza kukuhitaji kufungua upya kompyuta yako.</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="sw">Kungoja programu nyingine kumaliza...</target>
+        <target xml:lang="sw" state="translated">Kungoja programu nyingine kumaliza...</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="sw">Kungoja {0} nyingine kumaliza...</target>
+        <target xml:lang="sw" state="translated">Kungoja {0} nyingine kumaliza...</target>
       </trans-unit>
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
@@ -70,7 +70,7 @@
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="sw">U&amp;batilishe</target>
+        <target xml:lang="sw" state="translated">U&amp;batilishe</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
@@ -80,7 +80,7 @@
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="sw">La</target>
+        <target xml:lang="sw" state="translated">La</target>
       </trans-unit>
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
@@ -90,7 +90,7 @@
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="sw">&amp;Sawa</target>
+        <target xml:lang="sw" state="translated">&amp;Sawa</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
@@ -100,7 +100,7 @@
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="sw">Ndiyo</target>
+        <target xml:lang="sw" state="translated">Ndiyo</target>
       </trans-unit>
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
@@ -111,76 +111,76 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="sw">{0} itapelekwa kwenye pipa la takataka.</target>
+        <target xml:lang="sw" state="translated">{0} itapelekwa kwenye pipa la takataka.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="sw">{0} itapelekwa kwenye pipa la takataka.</target>
+        <target xml:lang="sw" state="translated">{0} itapelekwa kwenye pipa la takataka.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="sw">Thibitisha Kufutwa</target>
+        <target xml:lang="sw" state="translated">Thibitisha Kufutwa</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="sw">U&amp;batilishe</target>
+        <target xml:lang="sw" state="translated">U&amp;batilishe</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="sw">U&amp;fute</target>
+        <target xml:lang="sw" state="translated">U&amp;fute</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages" approved="yes">
-        <source xml:lang="en">Found {0} images with names close to {1}</source>
+        <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="sw">Zipo picha {0} zilizo na majina yanayokaribiana na</target>
+        <target xml:lang="sw" state="translated">Zipo picha {0} zilizo na majina yanayokaribiana na</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="sw">Sanaa ya Kusoma</target>
+        <target xml:lang="sw" state="translated">Sanaa ya Kusoma</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="sw">Kamera</target>
+        <target xml:lang="sw" state="translated">Kamera</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="sw">Tumia {0}</target>
+        <target xml:lang="sw" state="translated">Tumia {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="sw">Kata</target>
+        <target xml:lang="sw" state="translated">Kata</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="sw">Pakua Kifaa cha Kuweka Sanaa ya Kusoma</target>
+        <target xml:lang="sw" state="translated">Pakua Kifaa cha Kuweka Sanaa ya Kusoma</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="sw">Hakiki...</target>
+        <target xml:lang="sw" state="translated">Hakiki...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="sw">Hii ni sanaa ya 'Sanaa ya Kusoma'. Katika kisanduku kilicho hapo juu, andika unachotafuta, kisha ubonyeze INGIA. Unaweza kupiga chapa maneno kwa Kiingereza na kiindonesia.</target>
+        <target xml:lang="sw" state="translated">Hii ni sanaa ya 'Sanaa ya Kusoma'. Katika kisanduku kilicho hapo juu, andika unachotafuta, kisha ubonyeze INGIA. Unaweza kupiga chapa maneno kwa Kiingereza na kiindonesia.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="sw">Faili</target>
+        <target xml:lang="sw" state="translated">Faili</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
@@ -196,17 +196,17 @@
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="sw">Samahani, kulikuwa na hitilafu katika kupata picha.</target>
+        <target xml:lang="sw" state="translated">Samahani, kulikuwa na hitilafu katika kupata picha.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="sw">Samahani kulikuwa na hitilafu kwenye Kisanduku cha vifaa cha picha</target>
+        <target xml:lang="sw" state="translated">Samahani kulikuwa na hitilafu kwenye Kisanduku cha vifaa cha picha</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="sw">Pata picha</target>
+        <target xml:lang="sw" state="translated">Pata picha</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
@@ -216,29 +216,29 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="sw">Kisanduku cha vifaa cha picha</target>
+        <target xml:lang="sw" state="translated">Kisanduku cha vifaa cha picha</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="sw">Weka kifurushi cha Sanaa ya Kusoma (hii inaweza kutendeka polepole sana)</target>
+        <target xml:lang="sw" state="translated">Weka kifurushi cha Sanaa ya Kusoma (hii inaweza kutendeka polepole sana)</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="sw">Picha {0} zilipatikana</target>
+        <target xml:lang="sw" state="translated">Picha {0} zilipatikana</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual" approved="yes">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="sw">Je, unajua kuwa kuna toleo jipya la mkusanyiko huu inayokuruhusu kutafuta kwa Kiarabu, Kibengali, Kichina, Kiingereza, Kifaransa, Kiindonesia, Kihindi, Kireno, Kihispania, Kithai au Kiswahili? Ni bure na inapatika kupakua.</target>
+        <target xml:lang="sw" state="translated">Je, unajua kuwa kuna toleo jipya la mkusanyiko huu inayokuruhusu kutafuta kwa Kiarabu, Kibengali, Kichina, Kiingereza, Kifaransa, Kiindonesia, Kihindi, Kireno, Kihispania, Kithai au Kiswahili? Ni bure na inapatika kupakua.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="sw">Kompyuta hii inaonekana bado haijawekwa sanaa ya 'Sanaa ya Kusoma'.</target>
+        <target xml:lang="sw" state="translated">Kompyuta hii inaonekana bado haijawekwa sanaa ya 'Sanaa ya Kusoma'.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
@@ -248,59 +248,59 @@
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="sw">Hakuna picha zinazoambatana zilizopatikana</target>
+        <target xml:lang="sw" state="translated">Hakuna picha zinazoambatana zilizopatikana</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="sw">faili za picha</target>
+        <target xml:lang="sw" state="translated">faili za picha</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="sw">Tatizo katika kupata picha</target>
+        <target xml:lang="sw" state="translated">Tatizo katika kupata picha</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="sw">Samahani, kulikuwa na tatizo katika kupata picha hiyo.</target>
+        <target xml:lang="sw" state="translated">Samahani, kulikuwa na tatizo katika kupata picha hiyo.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="sw">Picha hii haijui:\n\nNi nani aliyeitengeneza?\nNi nani anayeweza kuitumia?</target>
+        <target xml:lang="sw" state="translated">Picha hii haijui:\n\nNi nani aliyeitengeneza?\nNi nani anayeweza kuitumia?</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="sw">Skana</target>
+        <target xml:lang="sw" state="translated">Skana</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading" approved="yes">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="sw">Tafuta katika Sanaa ya Sanaa ya Kusoma</target>
+        <target xml:lang="sw" state="translated">Tafuta katika Sanaa ya Sanaa ya Kusoma</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage" approved="yes">
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="sw">Kwa sasa kisanduku cha kutafuta kiko {0}</target>
+        <target xml:lang="sw" state="translated">Kwa sasa kisanduku cha kutafuta kiko {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="sw">Tayarisha Metadata...</target>
+        <target xml:lang="sw" state="translated">Tayarisha Metadata...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="sw">Majina Mengine</target>
+        <target xml:lang="sw" state="translated">Majina Mengine</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="sw">Orodha hii inapaswa kujumuisha lugha zote za ISO-639 ikijumuisha majina yote mbadala yanayojulikana kwa ethnologue.com.\n\nIkiwa itahitajika, tumia chaguo la "Lugha isiyoorodheshwa", ambalo litachaguliwa sasa.</target>
+        <target xml:lang="sw" state="translated">Orodha hii inapaswa kujumuisha lugha zote za ISO-639 ikijumuisha majina yote mbadala yanayojulikana kwa ethnologue.com.\n\nIkiwa itahitajika, tumia chaguo la "Lugha isiyoorodheshwa", ambalo litachaguliwa sasa.</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
         <source xml:lang="en">Ethnologue.com</source>
@@ -311,114 +311,114 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="sw">Kuhusu Majina Mafupi ya Lugha 639-3 na Jinsi ya Kupata Mengine Mapya</target>
+        <target xml:lang="sw" state="translated">Kuhusu Majina Mafupi ya Lugha 639-3 na Jinsi ya Kupata Mengine Mapya</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="sw">Kuhusu usajili wa Lugha wa ISO</target>
+        <target xml:lang="sw" state="translated">Kuhusu usajili wa Lugha wa ISO</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="sw">Jina la fupi</target>
+        <target xml:lang="sw" state="translated">Jina la fupi</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount" approved="yes">
         <source xml:lang="en">{0} Countries</source>
         <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
-        <target xml:lang="sw">{0} Nchi</target>
+        <target xml:lang="sw" state="translated">{0} Nchi</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="sw">Nchi</target>
+        <target xml:lang="sw" state="translated">Nchi</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="sw">Unaweza kubadilisha jinsi jina la lugha litaonekana hapa:</target>
+        <target xml:lang="sw" state="translated">Unaweza kubadilisha jinsi jina la lugha litaonekana hapa:</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="sw">Tazama Jina Fupi la Lugha...</target>
+        <target xml:lang="sw" state="translated">Tazama Jina Fupi la Lugha...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="sw">Jina</target>
+        <target xml:lang="sw" state="translated">Jina</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel" approved="yes">
         <source xml:lang="en">Show regional dialects</source>
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
-        <target xml:lang="sw">Onyesha lahaja za kieneo</target>
+        <target xml:lang="sw" state="translated">Onyesha lahaja za kieneo</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="sw">Lugha Isiyoorodheshwa</target>
+        <target xml:lang="sw" state="translated">Lugha Isiyoorodheshwa</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="sw">Hauwezi Kupata lugha yako?</target>
+        <target xml:lang="sw" state="translated">Hauwezi Kupata lugha yako?</target>
       </trans-unit>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="sw">Kwa bahati mbaya, kumbukumbu la {0} linaanza kuelekea kuisha, na hivi karibuni inaweza kusonga polepole au kupata matatizo mengine. Tunapendekeza kuwa uache au uifungue upya inapofaa.</target>
+        <target xml:lang="sw" state="translated">Kwa bahati mbaya, kumbukumbu la {0} linaanza kuelekea kuisha, na hivi karibuni inaweza kusonga polepole au kupata matatizo mengine. Tunapendekeza kuwa uache au uifungue upya inapofaa.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="sw">Aliyetengeneza: {0}</target>
+        <target xml:lang="sw" state="translated">Aliyetengeneza: {0}</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataDisplay.CreatorLabel</note>
-        <target xml:lang="sw">Aliyetengeneza</target>
+        <target xml:lang="sw" state="translated">Aliyetengeneza</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="sw">Habari kuhusu Leseni</target>
+        <target xml:lang="sw" state="translated">Habari kuhusu Leseni</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="sw">Ni lazima uweke hati umiliki na sifa kwa waandishi, wachoraji, na kadhalika.</target>
+        <target xml:lang="sw" state="translated">Ni lazima uweke hati umiliki na sifa kwa waandishi, wachoraji, na kadhalika.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="sw">Uko huru kutumia toleo hili kwa njia ya kibiashara.</target>
+        <target xml:lang="sw" state="translated">Uko huru kutumia toleo hili kwa njia ya kibiashara.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="sw">Unaruhusiwa kuibadilisha na kuongeza kwa toleo hili.</target>
+        <target xml:lang="sw" state="translated">Unaruhusiwa kuibadilisha na kuongeza kwa toleo hili.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="sw">Unaweza kuibadilisha na kuongeza kwa toleo hili, lakini lazima usambaze matokeo ya kazi hii tu chini ya leseni hiyo hiyo au leseni inayofanana na hii.</target>
+        <target xml:lang="sw" state="translated">Unaweza kuibadilisha na kuongeza kwa toleo hili, lakini lazima usambaze matokeo ya kazi hii tu chini ya leseni hiyo hiyo au leseni inayofanana na hii.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="sw">Huruhusiwi kufanya mabadiliko au kuongeza chochote zaidi kwa toleo hili bila idhini.</target>
+        <target xml:lang="sw" state="translated">Huruhusiwi kufanya mabadiliko au kuongeza chochote zaidi kwa toleo hili bila idhini.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="sw">Huruhusiwi kutumia toleo hili kwa shughuli za kibiashara.</target>
+        <target xml:lang="sw" state="translated">Huruhusiwi kutumia toleo hili kwa shughuli za kibiashara.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
@@ -430,27 +430,27 @@
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="sw">Iwapo utataka kuitumia tena, tafadhali wasiliana na aliye na haki ya kumiliki.</target>
+        <target xml:lang="sw" state="translated">Iwapo utataka kuitumia tena, tafadhali wasiliana na aliye na haki ya kumiliki.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="sw">Hakuna leseni maalum</target>
+        <target xml:lang="sw" state="translated">Hakuna leseni maalum</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="sw">Kubali kazi yako kutumika kwa shughuli za kibiashara?</target>
+        <target xml:lang="sw" state="translated">Kubali kazi yako kutumika kwa shughuli za kibiashara?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="sw">Kubali kazi yako ibadilishwe?</target>
+        <target xml:lang="sw" state="translated">Kubali kazi yako ibadilishwe?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="sw">Anayemiliki haki ya Kunakili</target>
+        <target xml:lang="sw" state="translated">Anayemiliki haki ya Kunakili</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
@@ -465,17 +465,17 @@
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="sw">Tafsiri ya kati ya kiserikali</target>
+        <target xml:lang="sw" state="translated">Tafsiri ya kati ya kiserikali</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="sw">Aliyetengeneza</target>
+        <target xml:lang="sw" state="translated">Aliyetengeneza</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="sw">Kawaida</target>
+        <target xml:lang="sw" state="translated">Kawaida</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
@@ -485,163 +485,163 @@
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="sw">Haki ya kunakili na Leseni</target>
+        <target xml:lang="sw" state="translated">Haki ya kunakili na Leseni</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="sw">Sifa, Haki ya kunakili, na Leseni</target>
+        <target xml:lang="sw" state="translated">Sifa, Haki ya kunakili, na Leseni</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="sw">Wasiliana na aliye na haki ya kunakili ili kupata idhini</target>
+        <target xml:lang="sw" state="translated">Wasiliana na aliye na haki ya kunakili ili kupata idhini</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="sw">Ndiyo, kama wengine wataishirikisha vile vile</target>
+        <target xml:lang="sw" state="translated">Ndiyo, kama wengine wataishirikisha vile vile</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="sw">Maombi zaidi</target>
+        <target xml:lang="sw" state="translated">Maombi zaidi</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="sw">habari zaidi</target>
+        <target xml:lang="sw" state="translated">habari zaidi</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="sw">Haiwezi Kutekelezwa</target>
+        <target xml:lang="sw" state="translated">Haiwezi Kutekelezwa</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="sw">Hii pia inaweza kuficha vitufe vingine ambavyo havihitajiki na mtumiaji asiye na ufasaha wa juu.</target>
+        <target xml:lang="sw" state="translated">Hii pia inaweza kuficha vitufe vingine ambavyo havihitajiki na mtumiaji asiye na ufasaha wa juu.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="sw">Kitufe kitajitokeza utakapofinya kii za Ctrl na Shift kwa pamoja.</target>
+        <target xml:lang="sw" state="translated">Kitufe kitajitokeza utakapofinya kii za Ctrl na Shift kwa pamoja.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="sw">Mipangilio...</target>
+        <target xml:lang="sw" state="translated">Mipangilio...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="sw">Ficha kitufe kinachofungua mipangilio.</target>
+        <target xml:lang="sw" state="translated">Ficha kitufe kinachofungua mipangilio.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="sw">Neno la siri la awali</target>
+        <target xml:lang="sw" state="translated">Neno la siri la awali</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="sw">Ili kuzuia mabadiliko yasiyokusudiwa, ambayo yanaweza kubadilisha kifaa hiki na kukifanya kutokutendea kazi, mipangilio hii imefungwa.</target>
+        <target xml:lang="sw" state="translated">Ili kuzuia mabadiliko yasiyokusudiwa, ambayo yanaweza kubadilisha kifaa hiki na kukifanya kutokutendea kazi, mipangilio hii imefungwa.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="sw">Neno la Siri la kulinda Mipangilio</target>
+        <target xml:lang="sw" state="translated">Neno la Siri la kulinda Mipangilio</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="sw">Onyesha Herufi</target>
+        <target xml:lang="sw" state="translated">Onyesha Herufi</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
-        <target xml:lang="sw">Neno la siri la awali la mipangilio hii ni "{0}". Iwapo utalisahau, unaweza kulitafuta kwenye google kwa "{1}" na "{2}"</target>
+        <target xml:lang="sw" state="translated">Neno la siri la awali la mipangilio hii ni "{0}". Iwapo utalisahau, unaweza kulitafuta kwenye google kwa "{1}" na "{2}"</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="sw">Hitaji neno la siri la awali ili kuingia kwenye mipangilio.</target>
+        <target xml:lang="sw" state="translated">Hitaji neno la siri la awali ili kuingia kwenye mipangilio.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="sw">Ulinzi wa mipangilio</target>
+        <target xml:lang="sw" state="translated">Ulinzi wa mipangilio</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="sw">Muhtasari wa toleo</target>
+        <target xml:lang="sw" state="translated">Muhtasari wa toleo</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="sw">&amp;Fonti:</target>
+        <target xml:lang="sw" state="translated">&amp;Fonti:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="sw">(Fonti iliyochaguliwa haipatikani kwenye mtambo huu. Tunatumia kawaida)</target>
+        <target xml:lang="sw" state="translated">(Fonti iliyochaguliwa haipatikani kwenye mtambo huu. Tunatumia kawaida)</target>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="sw">Huu ni mfumo wa kuandika wa kutoka kulia kwenda kushoto.</target>
+        <target xml:lang="sw" state="translated">Huu ni mfumo wa kuandika wa kutoka kulia kwenda kushoto.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="sw">U&amp;kubwa:</target>
+        <target xml:lang="sw" state="translated">U&amp;kubwa:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="sw">&amp;Eneo la kujaribisha:</target>
+        <target xml:lang="sw" state="translated">&amp;Eneo la kujaribisha:</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="sw">Iwapo kibodi unayohitaji haijaorodheshwa, bofya kiunganishi kinachofaa hapa chini ili kuiweka.</target>
+        <target xml:lang="sw" state="translated">Iwapo kibodi unayohitaji haijaorodheshwa, bofya kiunganishi kinachofaa hapa chini ili kuiweka.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="sw">Mipangilio ya Windosi ya kibodi</target>
+        <target xml:lang="sw" state="translated">Mipangilio ya Windosi ya kibodi</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="sw">Kibodi zinazopatikana</target>
+        <target xml:lang="sw" state="translated">Kibodi zinazopatikana</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="sw">Kibodi zilizotumika hapo awali</target>
+        <target xml:lang="sw" state="translated">Kibodi zilizotumika hapo awali</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="sw">Mipangilio ya Keyman</target>
+        <target xml:lang="sw" state="translated">Mipangilio ya Keyman</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="sw">Keyman 5.0 au ya karibu zaidi haijawekwa.</target>
+        <target xml:lang="sw" state="translated">Keyman 5.0 au ya karibu zaidi haijawekwa.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="sw">Chagua kibodi ambayo utatumia kuandika maandishi {0}</target>
+        <target xml:lang="sw" state="translated">Chagua kibodi ambayo utatumia kuandika maandishi {0}</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
@@ -651,22 +651,22 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="sw">&amp;Eneo la kujaribisha (Tumia eneo hili ili kupiga chapa kitu cha kujaribisha kibodi yako)</target>
+        <target xml:lang="sw" state="translated">&amp;Eneo la kujaribisha (Tumia eneo hili ili kupiga chapa kitu cha kujaribisha kibodi yako)</target>
       </trans-unit>
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="sw">Onyo</target>
+        <target xml:lang="sw" state="translated">Onyo</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="sw">Imeshindwa kuunganishwa na SLDR</target>
+        <target xml:lang="sw" state="translated">Imeshindwa kuunganishwa na SLDR</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="sw">Programu imeshindwa kuunganishwa na Akiba ya Data ya SIL ili kupata habari ya hivi karibuni kuhusu lugha hii. Iwapo utatengeneza mfumo huu wa kuandika, mipangilio ya awali inaweza kutokuwa sahihi au kupitwa na wakati. Una uhakika kuwa unataka kutengeneza mfumo mpya wa kuandika?</target>
+        <target xml:lang="sw" state="translated">Programu imeshindwa kuunganishwa na Akiba ya Data ya SIL ili kupata habari ya hivi karibuni kuhusu lugha hii. Iwapo utatengeneza mfumo huu wa kuandika, mipangilio ya awali inaweza kutokuwa sahihi au kupitwa na wakati. Una uhakika kuwa unataka kutengeneza mfumo mpya wa kuandika?</target>
       </trans-unit>
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>
