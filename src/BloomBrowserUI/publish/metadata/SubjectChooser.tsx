@@ -19,15 +19,17 @@ export class SubjectChooser extends React.Component<IProps> {
 
     private loadMetadata(subjects: any[]) {
         let subjectList: SubjectTreeNode[] = [];
-        subjects.forEach(subject => {
-            let newSubj = new SubjectTreeNode(
-                subject["value"],
-                subject["label"],
-                "",
-                true
-            );
-            subjectList.push(newSubj);
-        });
+        if (subjects) {
+            subjects.forEach(subject => {
+                let newSubj = new SubjectTreeNode(
+                    subject["value"],
+                    subject["label"],
+                    "",
+                    true
+                );
+                subjectList.push(newSubj);
+            });
+        }
         this.props.subjects.value = subjectList;
     }
 
