@@ -1580,6 +1580,30 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow" sil:dynamic="true">
+        <source xml:lang="en">Blue-Yellow</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.BlueYellow</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Cataracts" sil:dynamic="true">
+        <source xml:lang="en">Cataracts</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Cataracts</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness" sil:dynamic="true">
+        <source xml:lang="en">Color Blindness</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Complete" sil:dynamic="true">
+        <source xml:lang="en">Complete</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Complete</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Overview" sil:dynamic="true">
+        <source xml:lang="en">You can use these check boxes to have Bloom simulate how your images would look with various visual impairments.</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Overview</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.RedGreen" sil:dynamic="true">
+        <source xml:lang="en">Red-Green</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.RedGreen</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
