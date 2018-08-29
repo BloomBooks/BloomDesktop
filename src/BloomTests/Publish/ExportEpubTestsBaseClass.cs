@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom;
@@ -430,13 +428,14 @@ namespace BloomTests.Publish
 			}
 		}
 
-		protected void CheckAccessibilityInManifest(bool hasAudio, bool hasImages, string desiredSource, bool hasFullAudio = false)
+		protected void CheckAccessibilityInManifest(bool hasAudio, bool hasImages, bool hasVideo, string desiredSource, bool hasFullAudio = false)
 		{
 			var xdoc = new XmlDocument();
 			xdoc.LoadXml(_manifestContent);
 			var source = xdoc.SelectSingleNode("opf:package/opf:metadata/dc:source", _ns);
 			Assert.AreEqual(desiredSource, source.InnerXml);
 
+			// Check accessMode section
 			var foundTextual = false;
 			var foundAudio = false;
 			var foundVisual = false;
@@ -453,8 +452,8 @@ namespace BloomTests.Publish
 			}
 			Assert.IsFalse(foundOther, "Unrecognized accessMode in manifest");
 			Assert.IsTrue(foundTextual, "Failed to find expected 'textual' accessMode in manifest");
-			Assert.AreEqual(hasAudio, foundAudio, (hasAudio ? "Failed to find expected 'auditory' accessMode in manifest" : "Unexpected 'auditory' accessMode in manifest"));
-			Assert.AreEqual(hasImages, foundVisual, (hasImages ? "Failed to find expected 'visual' accessMode in manifest" : "Unexpected 'visual' accessMode in manifest"));
+			Assert.AreEqual(hasAudio, foundAudio, hasAudio ? "Failed to find expected 'auditory' accessMode in manifest" : "Unexpected 'auditory' accessMode in manifest");
+			Assert.AreEqual(hasImages || hasVideo, foundVisual, hasImages || hasVideo ? "Failed to find expected 'visual' accessMode in manifest" : "Unexpected 'visual' accessMode in manifest");
 
 			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessModeSufficient']", _ns))
 			{
@@ -483,24 +482,29 @@ namespace BloomTests.Publish
 					Assert.IsFalse(foundVisual, "Unexpected 'visual' in accessModeSufficient in manifest");
 			}
 
+			// Check accessibilityFeature section
 			foundOther = false;
-			bool foundSynchronizedAudio = false;
-			bool foundResizeText = false;
-			bool foundPageNumbers = false;
-			bool foundUnlocked = false;
-			bool foundReadingOrder = false;
-			bool foundTableOfContents = false;
+			var foundSynchronizedAudio = false;
+			var foundResizeText = false;
+			var foundPageNumbers = false;
+			var foundUnlocked = false;
+			var foundReadingOrder = false;
+			var foundTableOfContents = false;
+			var foundSignLanguage = false;
+			var foundAlternativeText = false;
 			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityFeature']", _ns))
 			{
 				switch (node.InnerXml)
 				{
-				case "synchronizedAudioText":				foundSynchronizedAudio = true;	break;
-				case "displayTransformability/resizeText":	foundResizeText = true;			break;
-				case "printPageNumbers":					foundPageNumbers = true;		break;
-				case "unlocked":							foundUnlocked = true;			break;
-				case "readingOrder":						foundReadingOrder = true;		break;
-				case "tableOfContents":						foundTableOfContents = true;	break;
-				default:									foundOther = true;				break;
+				case "synchronizedAudioText": foundSynchronizedAudio = true; break;
+				case "displayTransformability/resizeText": foundResizeText = true; break;
+				case "printPageNumbers": foundPageNumbers = true; break;
+				case "unlocked": foundUnlocked = true; break;
+				case "readingOrder": foundReadingOrder = true; break;
+				case "tableOfContents": foundTableOfContents = true; break;
+				case "signLanguage": foundSignLanguage = true; break;
+				case "alternativeText": foundAlternativeText = true; break;
+				default: foundOther = true; break;
 				}
 			}
 			Assert.IsFalse(foundOther, "Unrecognized accessibilityFeature value in manifest");
@@ -511,36 +515,36 @@ namespace BloomTests.Publish
 			Assert.IsTrue(foundReadingOrder, "Bloom books have simple formats that are always in reading order [manifest accessibilityFeature]");
 			Assert.IsTrue(foundTableOfContents, "Bloom books have a trivial table of contents [manifest accessibilityFeature]");
 
+			// Check accessibilityHazard section
 			foundOther = false;
-			bool foundNone = false;
-			bool foundNoMotionHazard = false;
-			bool foundNoFlashingHazard = false;
+			var foundNone = false;
+			var foundMotionHazard = false;
+			var foundFlashingHazard = false;
+			var foundSoundHazard = false;
+			var foundNoMotionHazard = false;
+			var foundNoFlashingHazard = false;
+			var foundNoSoundHazard = false;
 			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityHazard']", _ns))
 			{
 				switch (node.InnerXml)
 				{
-				case "none":						foundNone = true;				break;
-				case "noMotionSimulationHazard":	foundNoMotionHazard = true;		break;
-				case "noFlashingHazard":			foundNoFlashingHazard = true;	break;
-				default:							foundOther = true;				break;
+				case "none": foundNone = true; break;
+				case "motionSimulationHazard": foundMotionHazard = true; break;
+				case "flashingHazard": foundFlashingHazard = true; break;
+				case "soundHazard": foundSoundHazard = true; break;
+				case "noMotionSimulationHazard": foundNoMotionHazard = true; break;
+				case "noFlashingHazard": foundNoFlashingHazard = true; break;
+				case "noSoundHazard": foundNoSoundHazard = true; break;
+				default: foundOther = true; break;
 				}
 			}
 			Assert.IsFalse(foundOther, "Unrecognized accessibilityHazard value in manifest");
-			if (hasAudio)
-			{
-				Assert.IsFalse(foundNone, "If we have Audio, then accessibilityHazard is not 'none' in manifest");
-				Assert.IsTrue(foundNoMotionHazard, "If we have Audio, then accessibilityHazard includes 'noMotionHazard' in manifest");
-				Assert.IsTrue(foundNoFlashingHazard, "If we have Audio, then accessibilityHazard includes 'noFlashingHazard' in manifest");
-			}
-			else
-			{
-				Assert.IsTrue(foundNone, "If we do not have Audio, then accessibilityHazard is 'none' in manifest");
-				Assert.IsFalse(foundNoMotionHazard, "If we do not have Audio, then accessibilityHazard is 'none', not 'noMotionHazard' in manifest");
-				Assert.IsFalse(foundNoFlashingHazard, "If we do not have Audio, then accessibilityHazard is 'none', not 'noFlashingHazard' in manifest");
-			}
+			// Not much to check here, since we want the hazard manifest based entirely on user input.
+			Assert.IsFalse(foundNoSoundHazard && foundNoFlashingHazard && foundNoMotionHazard,
+				"'none' is recommended instead of listing all 3 noXXXHazard values separately");
 
-			int summaryCount = 0;
-			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilitySummary']", _ns))
+			var summaryCount = 0;
+			foreach (var unused in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilitySummary']", _ns))
 			{
 				++summaryCount;
 			}
