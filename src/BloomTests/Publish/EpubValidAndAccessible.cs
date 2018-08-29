@@ -166,7 +166,7 @@ namespace BloomTests.Publish
 		{
 			CheckBasicsInPage("DevilsSlide");
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(false, true, _defaultSourceValue, false); // no sound files, but some image files
+			CheckAccessibilityInManifest(false, true, false, _defaultSourceValue, false); // no sound files, but some image files
 		}
 
 		[Test]
