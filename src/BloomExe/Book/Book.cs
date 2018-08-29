@@ -1681,16 +1681,118 @@ namespace Bloom.Book
 			}
 		}
 
-		bool HasContentInLang(XmlElement parent, string lang)
+		private static bool HasContentInLang(XmlElement parent, string lang)
 		{
 			foreach (var divN in parent.ChildNodes)
 			{
 				var div = divN as XmlElement;
-				if (div == null || div.Attributes["lang"] == null || div.Attributes["lang"].Value != lang)
+				if (div?.Attributes["lang"] == null || div.Attributes["lang"].Value != lang)
 					continue;
 				return !string.IsNullOrWhiteSpace(div.InnerText); // this one settles it: success if non-empty
 			}
 			return false; // not found
+		}
+
+		/// <summary>
+		/// Determines if the book references an existing audio file.
+		/// </summary>
+		/// <returns></returns>
+		public bool HasAudio()
+		{
+			return
+				RawDom.SafeSelectNodes("//span[@id]")
+					.Cast<XmlElement>()
+					.Any(
+						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value));
+		}
+
+		/// <summary>
+		/// Check whether all text is covered by audio recording.
+		/// </summary>
+		/// <remarks>
+		/// Only editable text in numbered pages is checked at the moment.
+		/// </remarks>
+		public bool HasFullAudioCoverage()
+		{
+			// REVIEW: should any of the xmatter pages be checked (front cover, title, credits?)
+			foreach (var divWantPage in RawDom.SafeSelectNodes("//div[@class]").Cast<XmlElement>())
+			{
+				if (!HtmlDom.HasClass(divWantPage, "numberedPage"))
+					continue;
+				foreach (var div in divWantPage.SafeSelectNodes(".//div[@class]").Cast<XmlElement>())
+				{
+					if (!HtmlDom.HasClass(div, "bloom-editable"))
+						continue;
+					var lang = div.GetStringAttribute("lang");
+					if (lang != CollectionSettings.Language1Iso639Code)
+						continue;   // this won't go into the book -- it's a different language.
+					// TODO: Ensure handles image descriptions once those get implemented.
+					var textOfDiv = div.InnerText.Trim();
+					foreach (var span in div.SafeSelectNodes(".//span[@class]").Cast<XmlElement>())
+					{
+						if (!HtmlDom.HasClass(span, "audio-sentence"))
+							continue;
+						var id = span.GetOptionalStringAttribute("id", "");
+						if (string.IsNullOrEmpty(id) || !AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value))
+							return false;   // missing audio file
+						if (!textOfDiv.StartsWith(span.InnerText))
+							return false;   // missing audio span?
+						textOfDiv = textOfDiv.Substring(span.InnerText.Length);
+						textOfDiv = textOfDiv.TrimStart();
+					}
+					if (!string.IsNullOrEmpty(textOfDiv))
+						return false;       // non-whitespace not covered by functional audio spans
+				}
+			}
+			return true;
+		}
+
+		/// <summary>
+		/// Determines whether the book references an existing image file other than
+		/// branding, placeholder, or license images.
+		/// </summary>
+		/// <returns></returns>
+		public bool HasImages()
+		{
+			return RawDom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().Any(NonTrivialImageFileExists) ||
+			       RawDom.SafeSelectNodes("//div[@style]").Cast<XmlElement>().Any(NonTrivialImageFileExists);
+		}
+
+		private bool NonTrivialImageFileExists(XmlElement image)
+		{
+			if (image.Name == "img")
+			{
+				if (HtmlDom.HasClass(image, "branding") || HtmlDom.HasClass(image, "licenseImage"))
+					return false;
+			}
+			var imageUrl = HtmlDom.GetImageElementUrl(image);
+			var file = imageUrl.PathOnly.NotEncoded;
+			if (string.IsNullOrEmpty(file))
+				return false;
+			if (file == "placeHolder.png" && image.Attributes["data-license"] == null)
+				return false;
+			return RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
+		}
+
+		/// <summary>
+		/// Determines whether the book references any existing video files other than branding.
+		/// </summary>
+		/// <returns></returns>
+		public bool HasVideos()
+		{
+			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]/source")
+				.Cast<XmlElement>().Any(NonTrivialVideoFileExists);
+		}
+
+		private bool NonTrivialVideoFileExists(XmlElement vidSource)
+		{
+			Debug.Assert(vidSource.Name == "source");
+			// In case future books have video branding...
+			if (HtmlDom.HasClass(vidSource, "branding") || HtmlDom.HasClass(vidSource.ParentNode as XmlElement, "branding"))
+				return false;
+			var videoUrl = HtmlDom.GetVideoElementUrl(new ElementProxy(vidSource.ParentNode as XmlElement));
+			var file = videoUrl.PathOnly.NotEncoded;
+			return !string.IsNullOrEmpty(file) && RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}
 
 		public bool HasAboutBookInformationToShow

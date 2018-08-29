@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
+using BloomBook = Bloom.Book.Book;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
 using ICSharpCode.SharpZipLib.Zip;
@@ -72,7 +73,7 @@ namespace BloomTests.Publish
 			CheckFontStylesheet();
 		}
 
-		Bloom.Book.Book SetupBook(string text, string lang, params string[] images)
+		private BloomBook SetupBook(string text, string lang, params string[] images)
 		{
 			return SetupBookLong(text, lang, images: images);
 		}
@@ -201,7 +202,7 @@ namespace BloomTests.Publish
 		/// <param name="folderName"></param>
 		/// <param name="book"></param>
 		/// <returns></returns>
-		protected override ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
+		protected override ZipFile MakeEpub(string mainFileName, string folderName, BloomBook book,
 			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
 			Action<EpubMaker> extraInit = null)
 		{
@@ -336,7 +337,7 @@ namespace BloomTests.Publish
 			// But don't make a fake audio file for the second span
 			MakeEpub("output", "Missing_Audio_CreatedFromWav", book);
 			CheckBasicsInManifest("my_image");
-			CheckAccessibilityInManifest(true, true, _defaultSourceValue);	// both sound and image files
+			CheckAccessibilityInManifest(true, true, false, _defaultSourceValue);	// both sound and image files
 			CheckBasicsInPage("my_image");
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, null);
@@ -374,7 +375,7 @@ namespace BloomTests.Publish
 			MakeImageFiles(book, "myImage");
 			MakeEpub("output", "ImageSrcQuery_IsIgnored", book);
 			CheckBasicsInManifest("myImage");
-			CheckAccessibilityInManifest(false, true, _defaultSourceValue);		// no sound files, but a nontrivial image file
+			CheckAccessibilityInManifest(false, true, false, _defaultSourceValue);		// no sound files, but a nontrivial image file
 			CheckBasicsInPage("myImage");
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, null);
@@ -396,7 +397,7 @@ namespace BloomTests.Publish
 					</div>");
 			MakeEpub("output", "HandlesMultiplePages", book);
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(false, false, _defaultSourceValue);	// neither sound nor image files
+			CheckAccessibilityInManifest(false, false, false, _defaultSourceValue);	// neither sound nor image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, null);
@@ -800,7 +801,7 @@ namespace BloomTests.Publish
 
 			MakeEpub("output", "InCreditsPage_LicenseUrlAndISBN_AreRemoved", book);
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(false, false, "urn:isbn:ABCDEFG");	// no sound or nontrivial image files
+			CheckAccessibilityInManifest(false, false, false, "urn:isbn:ABCDEFG");	// no sound or nontrivial image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
 			CheckEpubTypeAttributes(_page1Data, null, "copyright-page");
@@ -1002,7 +1003,7 @@ namespace BloomTests.Publish
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
 			MakeEpub("output", "BookWithAudio_ProducesOverlay", book);
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(true, false, _defaultSourceValue);	// sound files but no image files
+			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue);	// sound files but no image files
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, null);
@@ -1290,12 +1291,12 @@ namespace BloomTests.Publish
 			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2d' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b764' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz");
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2d.mp4"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b764.mp3"));
-			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsTrue(hasFullAudio, "HasFullAudioCoverage should return true when appropriate");
 			MakeEpub("output", "HasFullAudioCoverage_ReturnsTrue", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 
 		[Test]
@@ -1303,12 +1304,12 @@ namespace BloomTests.Publish
 		{
 			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2f' class='audio-sentence'>This is some text.</span> Another sentence</p>  \r\n", "xyz");
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2f.mp3"));
-			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsFalse(hasFullAudio, "HasFullAudioCoverage should return false when not all text is covered by an audio span.");
 			MakeEpub("output", "HasFullAudioCoverage_ReturnsFalseForNoAudio", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 
 		[Test]
@@ -1316,12 +1317,12 @@ namespace BloomTests.Publish
 		{
 			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2e' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b765' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz");
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b765.mp3"));
-			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsFalse(hasFullAudio, "HasFullAudioCoverage should return false when an audio file is missing.");
 			MakeEpub("output", "HasFullAudioCoverage_ReturnsFalseForMissingAudioFile", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 
 		[Test]
@@ -1336,12 +1337,12 @@ namespace BloomTests.Publish
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2f.mp3"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a20.mp3"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b764.mp3"));
-			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsTrue(hasFullAudio, "HasFullAudioCoverage should return true, ignoring text in other languages");
 			MakeEpub("output", "HasFullAudioCoverage_IgnoresOtherLanguage", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(true, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
+			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 
 		[Test]
@@ -1361,12 +1362,12 @@ namespace BloomTests.Publish
 				"xyz");
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i92ebf7a6-0786-4480-89b2-dcefb56d7782.mp3"));
 			MakeImageFiles(book, "DSC08193");
-			var hasFullAudio = EpubMaker.HasFullAudioCoverage(book);
+			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsTrue(hasFullAudio);
 			MakeEpub("output", "BogusCkeMaterial_Removed", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(true, true, _defaultSourceValue, hasFullAudio);
+			CheckAccessibilityInManifest(true, true, false, _defaultSourceValue, hasFullAudio);
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@data-cke-hidden-sel]");
 			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//aside/p/span", 1);
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//aside/div");
@@ -1380,7 +1381,7 @@ namespace BloomTests.Publish
 		// GetPathHtmlFile() return an empty string, I think because we don't make a real book file with mocked books.
 		// So I think all the tests are currently passing null for the bookserver, which disables the
 		// device xmatter code.
-		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer, BookServer bookServer) :
+		public EpubMakerAdjusted(BloomBook book, BookThumbNailer thumbNailer, BookServer bookServer) :
 			base(thumbNailer, string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
 		{
 			this.Book = book;

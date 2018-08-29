@@ -343,6 +343,7 @@ namespace Bloom.Publish.Epub
 			var dcNamespace = "http://purl.org/dc/elements/1.1/";
 			var source = GetBookSource();
 			XNamespace dc = dcNamespace;
+			var bookMetaData = Book.BookInfo.MetaData;
 			var metadataElt = new XElement(opf + "metadata",
 				new XAttribute(XNamespace.Xmlns + "dc", dcNamespace),
 				new XAttribute(XNamespace.Xmlns + "opf", opf.NamespaceName),
@@ -353,7 +354,7 @@ namespace Bloom.Publish.Epub
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
 				new XElement(dc + "source", source),
 				new XElement(dc + "creator",
-					new XAttribute("id", "author"), Book.BookInfo.MetaData.Author),
+					new XAttribute("id", "author"), bookMetaData.Author),
 				new XElement(dc + "rights", Book.GetLicenseMetadata().License.Url));
 			AddSubjects(metadataElt, dc, opf);
 			metadataElt.Add(
@@ -362,12 +363,12 @@ namespace Bloom.Publish.Epub
 					// Last modified datetime like 2012-03-20T11:37:00Z
 					new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z"),
 				new XElement(opf + "meta",
-					new XAttribute("property", "schema:typicalAgeRange"), Book.BookInfo.MetaData.TypicalAgeRange),
+					new XAttribute("property", "schema:typicalAgeRange"), bookMetaData.TypicalAgeRange),
 				new XElement(opf + "meta",
 					new XAttribute("property", "schema:numberOfPages"), Book.GetLastNumberedPageNumber().ToString()),
 				new XElement(opf + "meta",
-					new XAttribute("property", "level"), Book.BookInfo.MetaData.ReadingLevelDescription));
-			AddAccessibilityMetadata(metadataElt, opf);
+					new XAttribute("property", "level"), bookMetaData.ReadingLevelDescription));
+			AddAccessibilityMetadata(metadataElt, opf, bookMetaData);
 			rootElt.Add(metadataElt);
 
 			var manifestElt = new XElement(opf + "manifest");
@@ -477,59 +478,6 @@ namespace Bloom.Publish.Epub
 		}
 
 		/// <summary>
-		/// Check whether the book references any audio files that actually exist.
-		/// </summary>
-		public bool GetBookHasAudio()
-		{
-			return
-				Book.RawDom.SafeSelectNodes("//span[@id]")
-					.Cast<XmlElement>()
-					.Any(
-						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value));
-		}
-
-		/// <summary>
-		/// Check whether all text is covered by audio recording.
-		/// </summary>
-		/// <remarks>
-		/// Only editable text in numbered pages is checked at the moment.
-		/// </remarks>
-		public static bool HasFullAudioCoverage(Book.Book book)
-		{
-			// REVIEW: should any of the xmatter pages be checked (front cover, title, credits?)
-			foreach (var divWantPage in book.RawDom.SafeSelectNodes("//div[@class]").Cast<XmlElement>())
-			{
-				if (!HasClass(divWantPage, "numberedPage"))
-					continue;
-				foreach (var div in divWantPage.SafeSelectNodes(".//div[@class]").Cast<XmlElement>())
-				{
-					if (!HasClass(div, "bloom-editable"))
-						continue;
-					var lang = div.GetStringAttribute("lang");
-					if (lang != book.CollectionSettings.Language1Iso639Code)
-						continue;	// this won't go into the book -- it's a different language.
-					// TODO: Ensure handles image descriptions once those get implemented.
-					var textOfDiv = div.InnerText.Trim();
-					foreach (var span in div.SafeSelectNodes(".//span[@class]").Cast<XmlElement>())
-					{
-						if (!HasClass(span, "audio-sentence"))
-							continue;
-						var id = span.GetOptionalStringAttribute("id", "");
-						if (String.IsNullOrEmpty(id) || !AudioProcessor.GetWavOrMp3Exists(book.Storage.FolderPath, span.Attributes["id"].Value))
-							return false;	// missing audio file
-						if (!textOfDiv.StartsWith(span.InnerText))
-							return false;	// missing audio span?
-						textOfDiv = textOfDiv.Substring(span.InnerText.Length);
-						textOfDiv = textOfDiv.TrimStart();
-					}
-					if (!String.IsNullOrEmpty(textOfDiv))
-						return false;		// non-whitespace not covered by functional audio spans
-				}
-			}
-			return true;
-		}
-
-		/// <summary>
 		/// Add accessibility related metadata elements.
 		/// </summary>
 		/// <remarks>
@@ -539,12 +487,12 @@ namespace Bloom.Publish.Epub
 		/// I think the final version went for multiple &lt;meta accessMode="..."&gt; elements instead of lumping the attribute
 		/// values together in one element.
 		/// </remarks>
-		private void AddAccessibilityMetadata(XElement metadataElt, XNamespace opf)
+		private void AddAccessibilityMetadata(XElement metadataElt, XNamespace opf, BookMetaData metadata)
 		{
-			// TODO: give user control over many of these values?
-			var hasImages = GetBookHasImages();
-			var hasFullAudio = HasFullAudioCoverage(Book);
-			var hasAudio = GetBookHasAudio();
+			var hasImages = Book.HasImages();
+			var hasVideo = Book.HasVideos();
+			var hasFullAudio = Book.HasFullAudioCoverage();
+			var hasAudio = Book.HasAudio(); // Check whether the book references any audio files that actually exist.
 
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessMode"), "textual"));
 			if (hasImages)
@@ -555,7 +503,7 @@ namespace Bloom.Publish.Epub
 			// Including everything like this is probably the best we can do programmatically without author input.
 			// This assumes that images are neither essential nor sufficient.
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "textual"));
-			if (hasImages)
+			if (hasImages || hasVideo)
 				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "textual,visual"));
 			if (hasAudio)
 			{
@@ -563,7 +511,7 @@ namespace Bloom.Publish.Epub
 					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "auditory"));
 				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "textual,auditory"));
 			}
-			if (hasImages && hasAudio)
+			if ((hasImages || hasVideo) && hasAudio)
 				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessModeSufficient"), "textual,visual,auditory"));
 
 			if (hasAudio)	// REVIEW: should this be hasFullAudio?
@@ -574,48 +522,39 @@ namespace Bloom.Publish.Epub
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "unlocked"));
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "readingOrder"));
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "tableOfContents"));
-			// Maybe someday we can claim "signLanguage" here as well...
 
-			if (hasAudio)
+			if (!string.IsNullOrEmpty(metadata.A11yFeatures))
 			{
-				// REVIEW: Should we check for video or motion as well as audio to make the hazard "unknown" overall? or should we ignore those?
-				// Note: omitting mention of sound should imply "unknown" for that particular hazard.
-				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "noMotionSimulationHazard"));	// video/motion?
-				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "noFlashingHazard"));			// video?
+				if(metadata.A11yFeatures.Contains("signLanguage"))
+					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "signLanguage"));
+				if (metadata.A11yFeatures.Contains("alternativeText"))
+					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "alternativeText"));
+			}
+
+			// Hazards section -- entirely 'manual' based on user entry (or lack thereof) in the dialog
+			if (!string.IsNullOrEmpty(metadata.Hazards))
+			{
+				var hazards = metadata.Hazards.Split(',');
+				if (hazards.All(haz => haz.StartsWith("no")))
+				{
+					// "none" is recommended instead of listing all 3 noXXXHazard values separately
+					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "none"));
+				}
+				else
+				{
+					foreach (var hazard in hazards)
+					{
+						metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), hazard));
+					}
+				}
 			}
 			else
 			{
-				// "none" is recommended instead of listing all 3 noXXXHazard values separately
 				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "none"));
 			}
 
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilitySummary"),
 				"How well the accessibility features work is up to the individual author."));	// What else to say?  not sure localization is possible.
-		}
-
-		/// <summary>
-		/// Check whether the book references any image files that actually exist.
-		/// </summary>
-		private bool GetBookHasImages()
-		{
-			return Book.RawDom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().Any(img => NonTrivialImageFileExists(img)) ||
-				Book.RawDom.SafeSelectNodes("//div[@style]").Cast<XmlElement>().Any(div => NonTrivialImageFileExists(div));
-		}
-
-		private bool NonTrivialImageFileExists(XmlElement image)
-		{
-			if (image.Name == "img")
-			{
-				if (HasClass(image, "branding") || HasClass(image, "licenseImage"))
-					return false;
-			}
-			var value = HtmlDom.GetImageElementUrl(image);
-			var file = value.PathOnly.NotEncoded;
-			if (String.IsNullOrEmpty(file))
-				return false;
-			if (file == "placeHolder.png" && image.Attributes["data-license"] == null)
-				return false;
-			return RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}
 
 		/// <summary>
