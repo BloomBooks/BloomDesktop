@@ -189,15 +189,14 @@ export default class OverflowChecker {
         // Type 1 Overflow
         var $box = $(box);
         if ($box.hasClass("overflow")) {
-            // The restriction is an attempt not to remove other qtips, like the bloom hint bubbles.
-            $box.qtip("destroy");
+            OverflowChecker.RemoveOverflowQtip($box);
         }
         $box.removeClass("overflow");
         $box.removeClass("thisOverflowingParent");
         $box.off("mousemove.overflow");
         $box.off("mouseleave.overflow");
         $box.parents(".childOverflowingThis").each((dummy, parent) => {
-            $(parent).qtip("destroy");
+            OverflowChecker.RemoveOverflowQtip($(parent));
         });
         $box.parents().removeClass("childOverflowingThis");
 
@@ -212,7 +211,7 @@ export default class OverflowChecker {
                 .done(overflowText => {
                     $box.qtip({
                         content:
-                            '<img height="20" width="20" style="vertical-align:middle" src="/bloom/Attention.svg">' +
+                            '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/Attention.svg">' +
                             overflowText,
                         show: { event: "mouseenter" },
                         hide: { event: "mouseleave" },
@@ -242,11 +241,21 @@ export default class OverflowChecker {
                     $this.removeClass("thisOverflowingParent");
                 }
             } else {
+                var $overflowingAncestor = $(overflowingAncestor);
+                // We may already have a qtip on this parent in the form of a hint or source
+                // bubble.  We don't want to override that qtip with an overflow warning since
+                // we have other indications of overflow available on the child.
+                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6295.
+                const oldQtip = OverflowChecker.GetQtipContent(
+                    $overflowingAncestor
+                );
+                if (oldQtip && !OverflowChecker.DoesQtipMarkOverflow(oldQtip)) {
+                    return; // don't override existing qtip (probably hint or source bubble)
+                }
                 // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
                 // go past the margins
                 // $box.addClass('overflow'); // probably typing in the focused element caused this
                 $this.addClass("thisOverflowingParent"); // but it's this one that is actually overflowing
-                var $overflowingAncestor = $(overflowingAncestor);
                 $overflowingAncestor.addClass("childOverflowingThis");
                 theOneLocalizationManager
                     .asyncGetText(
@@ -257,7 +266,7 @@ export default class OverflowChecker {
                     .done(overflowText => {
                         $overflowingAncestor.qtip({
                             content:
-                                '<img height="20" width="20" style="vertical-align:middle" src="/bloom/Attention.svg">' +
+                                '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/Attention.svg">' +
                                 overflowText,
                             show: { event: "enterBorder" }, // nonstandard events triggered by mouse move in code below
                             hide: { event: "leaveBorder" },
@@ -294,6 +303,32 @@ export default class OverflowChecker {
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
     } // end MarkOverflowInternal
+
+    // Destroy any qtip on this element that marks overflow, but leave other qtips alone.
+    // This restriction is an attempt not to remove bloom hint and source bubbles.
+    private static RemoveOverflowQtip(element: JQuery) {
+        const qtipContent = OverflowChecker.GetQtipContent(element);
+        if (OverflowChecker.DoesQtipMarkOverflow(qtipContent)) {
+            element.qtip("destroy");
+        }
+    }
+
+    // Test whether this qtip (if it exists) marks an overflow condition.
+    private static DoesQtipMarkOverflow(qtipContent: any): boolean {
+        return qtipContent && $(qtipContent).attr("data-overflow") == "true";
+    }
+
+    // Return any qtip content attached to this element, or null if none is attached.
+    private static GetQtipContent(element: JQuery): any {
+        const qtipData = element.data("qtip");
+        if (qtipData) {
+            const options = qtipData.options;
+            if (options) {
+                return options.content;
+            }
+        }
+        return null;
+    }
 
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
