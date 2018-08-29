@@ -92,6 +92,7 @@ export class DecodableReaderToolboxTool implements ITool {
                         return false;
                     }
                 }
+                return true;
             });
     }
 

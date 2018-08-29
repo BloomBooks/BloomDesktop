@@ -1,7 +1,10 @@
 {
     "rules": {
         "member-access": true,
-        "jsx-no-lambda": false // this might cost us in rendering performance, could revisit someday
+        "jsx-no-lambda": false, // this might cost us in rendering performance, could revisit someday
+        "no-var-keyword": {
+            "severity": "warning"
+        }
     },
     "extends": [
         "tslint-react",

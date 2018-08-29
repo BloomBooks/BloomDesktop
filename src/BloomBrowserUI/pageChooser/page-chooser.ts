@@ -497,7 +497,7 @@ class PageChooser {
     ) {
         if ($(pageArray).length < 1) {
             console.log("pageArray empty for " + templateBookFolderUrl);
-            return 0;
+            return;
         }
 
         // Remove default template page

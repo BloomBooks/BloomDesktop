@@ -5,7 +5,9 @@
         "sourceMap": true,
         "jsx": "react",
         "lib": ["dom", "es5", "scripthost", "es2017.object"],
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "alwaysStrict": true,
+        "noImplicitReturns": true
     },
     "exclude": ["node_modules", "typings"]
 }

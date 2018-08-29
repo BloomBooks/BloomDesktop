@@ -316,7 +316,7 @@ function beginRefreshEverything(settings: ReaderSettings): Promise<void> {
     // updating.
     clearWordCache();
 
-    var synphony = new ReadersSynphonyWrapper();
+    const synphony = new ReadersSynphonyWrapper();
     synphony.loadSettings(settings);
     getTheOneReaderToolsModel().setSynphony(synphony);
 
@@ -332,6 +332,7 @@ function beginRefreshEverything(settings: ReaderSettings): Promise<void> {
                 .then(result => beginSetTextsList(result.data))
         );
     }
+    return null;
 }
 
 export function beginSaveChangedSettings(

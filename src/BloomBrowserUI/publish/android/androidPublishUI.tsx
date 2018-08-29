@@ -100,6 +100,7 @@ class AndroidPublishUI extends React.Component<
         if (i >= 0) {
             return searchString.substr(i + "isLinux=".length, 4) === "true";
         }
+        return false;
     }
 
     private onCopy(e) {

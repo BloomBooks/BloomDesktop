@@ -631,11 +631,11 @@ export class ReaderToolsModel {
     }
 
     public getStageWordsAndSightWords(stageNumber: number): DataWord[] {
-        if (!this.readyToDoMarkup()) return;
+        if (!this.readyToDoMarkup()) return null;
 
         // first get the sight words
-        var sightWords = this.getSightWordsAsObjects(stageNumber);
-        var stageWords = this.getStageWords();
+        const sightWords = this.getSightWordsAsObjects(stageNumber);
+        const stageWords = this.getStageWords();
 
         return _.uniq(stageWords.concat(sightWords), false, function(
             w: DataWord
