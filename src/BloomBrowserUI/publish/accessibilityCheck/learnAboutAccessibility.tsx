@@ -1,4 +1,4 @@
-﻿import * as React from "react";
+import * as React from "react";
 import * as ReactDOM from "react-dom";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
@@ -19,10 +19,11 @@ export class LearnAboutAccessibility extends React.Component<
                         with impaired vision. With the{" "}
                         <a href="https://en.wikipedia.org/wiki/EPUB">
                             ePUB format
-                        </a>, it is possible to make <em>Born Accessible</em>{" "}
-                        books that work well for everyone<sup>*</sup>,
-                        regardless of vision. Bloom has the following tools to
-                        help you create these books:
+                        </a>
+                        , it is possible to make <em>Born Accessible</em> books
+                        that work well for everyone
+                        <sup>*</sup>, regardless of vision. Bloom has the
+                        following tools to help you create these books:
                     </p>
                     <ul>
                         <li>
@@ -41,7 +42,9 @@ export class LearnAboutAccessibility extends React.Component<
                                 Talking Book Tool
                             </HelpLink>
                         </li>
-                        <li>Accessible Image Tool (coming in Bloom 4.4)</li>
+                        <li>
+                            Impairment Visualizer Tool (coming in Bloom 4.4)
+                        </li>
                         <li>
                             This tool, the Accessibility Checker, has:
                             <ul>
@@ -61,21 +64,22 @@ export class LearnAboutAccessibility extends React.Component<
                         </li>
                     </ul>
                     <p style={{ backgroundColor: "#f5e2e5", padding: "10px" }}>
-                        <sup style={{ fontSize: "14pt" }}>*</sup>While the ideal
-                        is that a single book can serve everyone, the ePUB
-                        standard and ePUB readers do not actually support that.
-                        They currently only work for blind people who speak a
-                        language that is supported by "Text to Speech" (TTS)
-                        systems. At this time, TTS is only available for large
-                        or commercially interesting languages. Until the
-                        standard and accessible readers improve, it is necessary
-                        to make special versions of accessible books for
-                        minority language speakers. For blind readers to hear
-                        the image descriptions, we need to put something special
-                        on the page. In this version of Bloom, you do this by
-                        clicking the "Include image descriptions on page"
-                        checkbox in the Publish:ePUB screen. Future versions may
-                        have other options in this area.
+                        <sup style={{ fontSize: "14pt" }}>*</sup>
+                        While the ideal is that a single book can serve
+                        everyone, the ePUB standard and ePUB readers do not
+                        actually support that. They currently only work for
+                        blind people who speak a language that is supported by
+                        "Text to Speech" (TTS) systems. At this time, TTS is
+                        only available for large or commercially interesting
+                        languages. Until the standard and accessible readers
+                        improve, it is necessary to make special versions of
+                        accessible books for minority language speakers. For
+                        blind readers to hear the image descriptions, we need to
+                        put something special on the page. In this version of
+                        Bloom, you do this by clicking the "Include image
+                        descriptions on page" checkbox in the Publish:ePUB
+                        screen. Future versions may have other options in this
+                        area.
                     </p>
                     <div
                         style={{

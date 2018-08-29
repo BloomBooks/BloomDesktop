@@ -4,7 +4,7 @@ import { Div, Label } from "../../../react_components/l10n";
 import { BloomApi } from "../../../utils/bloomApi";
 import { ToolBox, ITool } from "../toolbox";
 import { ApiBackedCheckbox } from "../../../react_components/apiBackedCheckbox";
-import "./accessibleImage.less";
+import "./impairmentVisualizer.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
@@ -17,8 +17,8 @@ interface IState {
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
-// which  passes an instance of AccessibleImageToolAdaptor to ToolBox.registerTool();
-export class AccessibleImageControls extends React.Component<{}, IState> {
+// which  passes an instance of ImpairmentVisualizerAdaptor to ToolBox.registerTool();
+export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
     public readonly state: IState = {
         kindOfColorBlindness: "redGreen"
     };
@@ -34,15 +34,15 @@ export class AccessibleImageControls extends React.Component<{}, IState> {
     public render() {
         return (
             <RequiresBloomEnterpriseWrapper>
-                <div className="accessibleImageBody">
-                    <Div l10nKey="EditTab.Toolbox.AccessibleImage.Overview">
+                <div className="impairmentVisualizerBody">
+                    <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
                         You can use these check boxes to have Bloom simulate how
                         your images would look with various visual impairments.
                     </Div>
                     <ApiBackedCheckbox
                         className="checkBox"
                         apiEndpoint="accessibilityCheck/cataracts"
-                        l10nKey="EditTab.Toolbox.AccessibleImage/Cataracts"
+                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
                         onCheckChanged={simulate =>
                             this.updateCataracts(simulate)
                         }
@@ -52,7 +52,7 @@ export class AccessibleImageControls extends React.Component<{}, IState> {
                     <ApiBackedCheckbox
                         className="checkBox colorBlindCheckBox"
                         apiEndpoint="accessibilityCheck/colorBlindness"
-                        l10nKey="EditTab.Toolbox.AccessibleImage/ColorBlindness"
+                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
                         onCheckChanged={simulate =>
                             this.updateColorBlindnessCheck(simulate)
                         }
@@ -64,19 +64,19 @@ export class AccessibleImageControls extends React.Component<{}, IState> {
                         value={this.state.kindOfColorBlindness}
                     >
                         <Radio
-                            l10nKey="EditTab.Toolbox.AccessibleImage.RedGreen"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.RedGreen"
                             value="RedGreen"
                         >
                             Red-Green
                         </Radio>
                         <Radio
-                            l10nKey="EditTab.Toolbox.AccessibleImage.BlueYellow"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow"
                             value="BlueYellow"
                         >
                             Blue-Yellow
                         </Radio>
                         <Radio
-                            l10nKey="EditTab.Toolbox.AccessibleImage.Complete"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Complete"
                             value="Complete"
                         >
                             Complete
@@ -125,7 +125,7 @@ export class AccessibleImageControls extends React.Component<{}, IState> {
         } else {
             body.classList.remove("simulateCataracts");
         }
-        AccessibleImageControls.removeColorBlindnessMarkup();
+        ImpairmentVisualizerControls.removeColorBlindnessMarkup();
         if (this.simulatingColorBlindness) {
             body.classList.add("simulateColorBlindness");
             // For now limit it to these images because the positioning depends
@@ -145,8 +145,8 @@ export class AccessibleImageControls extends React.Component<{}, IState> {
         }
     }
 
-    public static removeAcessibleImageMarkup() {
-        AccessibleImageControls.removeColorBlindnessMarkup();
+    public static removeImpairmentVisualizerMarkup() {
+        ImpairmentVisualizerControls.removeColorBlindnessMarkup();
         var page = ToolboxToolReactAdaptor.getPage();
         var body = page.ownerDocument.body;
         body.classList.remove("simulateColorBlindness");
@@ -245,13 +245,13 @@ export class AccessibleImageControls extends React.Component<{}, IState> {
 }
 
 // This class implements the ITool interface through our adaptor's abstract methods by calling
-// the appropriate AccessibleImageControls methods.
-export class AccessibleImageToolAdaptor extends ToolboxToolReactAdaptor {
-    private controlsElement: AccessibleImageControls;
+// the appropriate ImpairmentVisualizerControls methods.
+export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
+    private controlsElement: ImpairmentVisualizerControls;
 
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
-            <AccessibleImageControls
+            <ImpairmentVisualizerControls
                 ref={renderedElement =>
                     (this.controlsElement = renderedElement)
                 }
@@ -260,7 +260,7 @@ export class AccessibleImageToolAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return "accessibleImage";
+        return "impairmentVisualizer";
     }
 
     public showTool() {
@@ -272,7 +272,7 @@ export class AccessibleImageToolAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        AccessibleImageControls.removeAcessibleImageMarkup();
+        ImpairmentVisualizerControls.removeImpairmentVisualizerMarkup();
     }
 
     public isExperimental(): boolean {
