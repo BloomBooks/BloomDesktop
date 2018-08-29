@@ -4,43 +4,43 @@
     <body>
       <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="bn">বড় বইগুলি সম্পর্কে/ বিষয়ক</target>
+        <target xml:lang="bn" state="translated">বড় বইগুলি সম্পর্কে/ বিষয়ক</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="bn">বড় বইগুলি এমনভাবে তৈরী যেন শিক্ষকেরা ক্লাশে সবার সামনে ধরে পড়ে শোনাতে পারেন।আরো তথ্যের জন্য, দেখুন <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">স্কলাস্টিক থেকে  PDF</g>। </target>
+        <target xml:lang="bn" state="translated">বড় বইগুলি এমনভাবে তৈরী যেন শিক্ষকেরা ক্লাশে সবার সামনে ধরে পড়ে শোনাতে পারেন।আরো তথ্যের জন্য, দেখুন <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">স্কলাস্টিক থেকে  PDF</g>। </target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="bn">মুদ্রণ একটি বড় বই</target>
+        <target xml:lang="bn" state="translated">মুদ্রণ একটি বড় বই</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="bn">জিনিসগুলোর সহজ পরিচালনার জন্য, এই টেমপ্লেটটি বড় অক্ষরের পাশাপাশি A4 ল্যান্ডস্কেপে সেট করা হয়েছে।
+        <target xml:lang="bn" state="translated">জিনিসগুলোর সহজ পরিচালনার জন্য, এই টেমপ্লেটটি বড় অক্ষরের পাশাপাশি A4 ল্যান্ডস্কেপে সেট করা হয়েছে।
 আপনি খুব সহজেই A3 (দ্বিগুণের মত বড়) আকারে বই প্রকাশ করতে পারেন।
 শুধু একটি প্রিন্টার আপনার A4 পিডিএফ নিতে এবং তাদেরকে জিজ্ঞেস A3 তে যাওয়ার জন্য এটি সম্প্রসারিত করা।</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="bn">এই সংস্করণের সীমাবদ্ধতা</target>
+        <target xml:lang="bn" state="translated">এই সংস্করণের সীমাবদ্ধতা</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="bn">আপনি যদি ছোট পর্দা ব্যবহার করেন, তাহলে মুদ্রণ সংক্রান্ত পৃষ্ঠাটি পড়া কঠিন হতে পারে। আপনি সম্পাদনা করার জন্য CTRL + মাউস হুইল ব্যবহার করে পৃষ্ঠাটি ছোট-বড় করতে পারেন।</target>
+        <target xml:lang="bn" state="translated">আপনি যদি ছোট পর্দা ব্যবহার করেন, তাহলে মুদ্রণ সংক্রান্ত পৃষ্ঠাটি পড়া কঠিন হতে পারে। আপনি সম্পাদনা করার জন্য CTRL + মাউস হুইল ব্যবহার করে পৃষ্ঠাটি ছোট-বড় করতে পারেন।</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="bn">এই সংস্করণে ইতিমধ্যে "শিক্ষকদের জন্য নির্দেশাবলী" পৃষ্ঠাটির ইংরেজি অনুবাদ অন্তর্ভুক্ত করা হয়েছে।
+        <target xml:lang="bn" state="translated">এই সংস্করণে ইতিমধ্যে "শিক্ষকদের জন্য নির্দেশাবলী" পৃষ্ঠাটির ইংরেজি অনুবাদ অন্তর্ভুক্ত করা হয়েছে।
 যদি আপনি ভিন্ন ভাষায় নির্দেশাবলী পেতে চান, তাহলে আপনি যে লেখাটি আছে তা মুছে দিয়ে নিজেই লিখতে পারেন।
 আপনি যদি আমাদের লেখাটি পাঠান তাহলে আমরা সেটিকে টেমপ্লেটের ভবিষ্যৎ সংস্করণের অন্তর্ভুক্ত করতে পারি।</target>
         <note>ID: bigbook.limits.Englishtemplate</note>

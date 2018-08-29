@@ -5,7 +5,8 @@
       <trans-unit id="epubpreview.describe" approved="yes">
         <source xml:lang="en">This is an <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) version of your book. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">It contains audio, so that new readers can listen as they read.</g>
       </source>
-        <target xml:lang="fr">Voici une version <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) de votre livre. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Elle comporte des fichiers audio, afin que les lecteurs débutants puissent lire ce livre tout en l'écoutant.</g>
+        <target xml:lang="fr" state="translated">Voici une version <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) de votre livre. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Elle comporte des fichiers audio, afin que les lecteurs débutants puissent lire ce livre tout en l'écoutant.</g>
+      
       
       
       
@@ -65,6 +66,29 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Voici une version <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) de votre livre. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Elle comporte des fichiers audio, afin que les lecteurs débutants puissent lire ce livre tout en l'écoutant.</g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -91,25 +115,6 @@
         <alt-trans>
           <target xml:lang="fr">Voici une version <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) de votre livre. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Elle comporte des fichiers audio, afin que les lecteurs débutants puissent lire ce livre tout en l'écoutant.</g>
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Voici une version <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) de votre livre. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Elle comporte des fichiers audio, afin que les lecteurs débutants puissent lire ce livre tout en l'écoutant.</g>
       
       
       
@@ -130,7 +135,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.recording.butnotalk" approved="yes">
         <source xml:lang="en">This book has some recordings, but this audio is not included in the ePUB.</source>
-        <target xml:lang="fr">Ce livre comporte des enregistrements, mais les fichiers audio correspondant ne figurent pas dans l'ePUB.</target>
+        <target xml:lang="fr" state="translated">Ce livre comporte des enregistrements, mais les fichiers audio correspondant ne figurent pas dans l'ePUB.</target>
         <note>ID: epubpreview.recording.butnotalk</note>
         <alt-trans>
           <target xml:lang="fr">Ce livre a quelques enregistrements, mais cet audio n'est pas inclus dans l'ePUB.</target>
@@ -138,12 +143,12 @@
       </trans-unit>
       <trans-unit id="epubpreview.preview" approved="yes">
         <source xml:lang="en">Preview</source>
-        <target xml:lang="fr">Aperçu</target>
+        <target xml:lang="fr" state="translated">Aperçu</target>
         <note>ID: epubpreview.preview</note>
       </trans-unit>
       <trans-unit id="epubpreview.resizing" approved="yes">
         <source xml:lang="en">You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.</source>
-        <target xml:lang="fr">Vous pouvez modifier la taille de l'aperçu en faisant glisser le coin inférieur droit de cette simulation d'appareil. Voyez ce que votre livre donnera sur des écrans de différentes tailles.</target>
+        <target xml:lang="fr" state="translated">Vous pouvez modifier la taille de l'aperçu en faisant glisser le coin inférieur droit de cette simulation d'appareil. Voyez ce que votre livre donnera sur des écrans de différentes tailles.</target>
         <note>ID: epubpreview.resizing</note>
         <alt-trans>
           <target xml:lang="fr">Vous pouvez modifier la taille de l'aperçu en faisant glisser le coin inférieur droit de cette simulation de terminal. Voyez ce que votre livre donnera sur des écrans de différentes tailles.</target>
@@ -161,7 +166,8 @@
       <trans-unit id="epubpreview.readium" approved="yes">
         <source xml:lang="en">This page uses the <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB reader. Books will likely look different on different readers.
       </source>
-        <target xml:lang="fr">Cette page utilise le lecteur d'ePUB <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g>. Sur d'autres lecteurs, l'apparence des livres sera probablement différente.
+        <target xml:lang="fr" state="translated">Cette page utilise le lecteur d'ePUB <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g>. Sur d'autres lecteurs, l'apparence des livres sera probablement différente.
+      
       
       
       
@@ -221,6 +227,29 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Cette page utilise le lecteur d'ePUB <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g>. Sur d'autres lecteurs, l'apparence des livres sera probablement différente.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -247,25 +276,6 @@
         <alt-trans>
           <target xml:lang="fr">Cette page utilise le lecteur d'ePUB <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g>. Sur d'autres lecteurs, l'apparence des livres sera probablement différente.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Cette page utilise le lecteur d'ePUB <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g>. Sur d'autres lecteurs, l'apparence des livres sera probablement différente.
       
       
       
@@ -287,7 +297,8 @@
       <trans-unit id="epubpreview.talkingbookpreview" approved="yes">
         <source xml:lang="en">The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> e-book reader.
       </source>
-        <target xml:lang="fr">Cet aperçu ne permet pas encore d'écouter d'audiolivres. Pour les écouter, vous pouvez utiliser le lecteur gratuit d'Adobe <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>.      
+        <target xml:lang="fr" state="translated">Cet aperçu ne permet pas encore d'écouter d'audiolivres. Pour les écouter, vous pouvez utiliser le lecteur gratuit d'Adobe <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>.      
+      
       
       
       
@@ -344,6 +355,28 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Cet aperçu ne permet pas encore d'écouter d'audiolivres. Pour les écouter, vous pouvez utiliser le lecteur gratuit d'Adobe <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -369,24 +402,6 @@
         <alt-trans>
           <target xml:lang="fr">Cet aperçu ne permet pas encore d'écouter d'audiolivres. Pour les écouter, vous pouvez utiliser le lecteur gratuit d'Adobe <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Cet aperçu ne permet pas encore d'écouter d'audiolivres. Pour les écouter, vous pouvez utiliser le lecteur gratuit d'Adobe <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>.      
       
       
       
@@ -406,7 +421,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.ontodevice" approved="yes">
         <source xml:lang="en">Getting this book onto your Device</source>
-        <target xml:lang="fr">Mettre ce livre sur votre appareil</target>
+        <target xml:lang="fr" state="translated">Mettre ce livre sur votre appareil</target>
         <note>ID: epubpreview.ontodevice</note>
         <alt-trans>
           <target xml:lang="fr">Mettre ce livre sur votre terminal</target>
@@ -418,7 +433,8 @@
       <trans-unit id="epubpreview.usingdropbox" approved="yes">
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
       </source>
-        <target xml:lang="fr">Pour mettre des livres sur votre téléphone, il est pratique de configurer Dropbox ou un service similaire sur votre ordinateur et sur votre téléphone ou votre tablette. Il suffit de cliquer sur Enregistrer l'ePUB, puis de choisir votre dossier Dropbox. Sur votre téléphone, vous ouvrirez ensuite l'application Dropbox et sélectionnerez votre livre. Si vous vous servez d'un ordinateur portable, vous pouvez également essayer le logiciel gratuit <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> pour envoyer des fichiers de votre ordinateur portable vers un téléphone ou une tablette.
+        <target xml:lang="fr" state="translated">Pour mettre des livres sur votre téléphone, il est pratique de configurer Dropbox ou un service similaire sur votre ordinateur et sur votre téléphone ou votre tablette. Il suffit de cliquer sur Enregistrer l'ePUB, puis de choisir votre dossier Dropbox. Sur votre téléphone, vous ouvrirez ensuite l'application Dropbox et sélectionnerez votre livre. Si vous vous servez d'un ordinateur portable, vous pouvez également essayer le logiciel gratuit <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> pour envoyer des fichiers de votre ordinateur portable vers un téléphone ou une tablette.
+      
       
       
       
@@ -478,6 +494,29 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour mettre des livres sur votre téléphone, il est pratique de configurer Dropbox ou un service similaire sur votre ordinateur et sur votre téléphone ou votre tablette. Il suffit de cliquer sur Enregistrer l'ePUB, puis de choisir votre dossier Dropbox. Sur votre téléphone, vous ouvrirez ensuite l'application Dropbox et sélectionnerez votre livre. Si vous vous servez d'un ordinateur portable, vous pouvez également essayer le logiciel gratuit <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> pour envoyer des fichiers de votre ordinateur portable vers un téléphone ou une tablette.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -504,25 +543,6 @@
         <alt-trans>
           <target xml:lang="fr">Pour mettre des livres sur votre téléphone, il est pratique de configurer Dropbox ou un service similaire sur votre ordinateur et sur votre téléphone ou votre tablette. Il suffit de cliquer sur Enregistrer l'ePUB, puis de choisir votre dossier Dropbox. Sur votre téléphone, vous ouvrirez ensuite l'application Dropbox et sélectionnerez votre livre. Si vous vous servez d'un ordinateur portable, vous pouvez également essayer le logiciel gratuit <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> pour envoyer des fichiers de votre ordinateur portable vers un téléphone ou une tablette.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour mettre des livres sur votre téléphone, il est pratique de configurer Dropbox ou un service similaire sur votre ordinateur et sur votre téléphone ou votre tablette. Il suffit de cliquer sur Enregistrer l'ePUB, puis de choisir votre dossier Dropbox. Sur votre téléphone, vous ouvrirez ensuite l'application Dropbox et sélectionnerez votre livre. Si vous vous servez d'un ordinateur portable, vous pouvez également essayer le logiciel gratuit <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> pour envoyer des fichiers de votre ordinateur portable vers un téléphone ou une tablette.
       
       
       
@@ -543,7 +563,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.recommended.reader" approved="yes">
         <source xml:lang="en">Recommended Reader</source>
-        <target xml:lang="fr">Lecteur conseillé</target>
+        <target xml:lang="fr" state="translated">Lecteur conseillé</target>
         <note>ID: epubpreview.recommended.reader</note>
         <alt-trans>
           <target xml:lang="fr">Lecteur recommandé</target>
@@ -552,7 +572,8 @@
       <trans-unit id="epubpreview.gitden.okay" approved="yes">
         <source xml:lang="en">Our testing has shown <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
       </source>
-        <target xml:lang="fr">Nos tests ont montré que le lecteur <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> est bien pour les appareils Android ou IOS (IPhone et IPad).
+        <target xml:lang="fr" state="translated">Nos tests ont montré que le lecteur <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> est bien pour les appareils Android ou IOS (IPhone et IPad).
+      
       
       
       
@@ -612,6 +633,29 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Nos tests ont montré que le lecteur <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> est bien pour les appareils Android ou IOS (IPhone et IPad).
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -638,25 +682,6 @@
         <alt-trans>
           <target xml:lang="fr">Nos tests ont montré que le lecteur <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> est bien pour les appareils Android ou IOS (IPhone et IPad).
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Nos tests ont montré que le lecteur <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> est bien pour les appareils Android ou IOS (IPhone et IPad).
       
       
       
@@ -677,7 +702,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.gitden.limits" approved="yes">
         <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Read aloud (TTS)" feature. Then it will show you the audio controls.</source>
-        <target xml:lang="fr">Pour écouter cet audiolivre avec Gitden sur un téléphone ou une tablette, vous devrez désactiver la fonctionnalité "Read aloud" (« Lecture à haute voix ») de Gitden. Ce logiciel affichera alors les fonctions audio.</target>
+        <target xml:lang="fr" state="translated">Pour écouter cet audiolivre avec Gitden sur un téléphone ou une tablette, vous devrez désactiver la fonctionnalité "Read aloud" (« Lecture à haute voix ») de Gitden. Ce logiciel affichera alors les fonctions audio.</target>
         <note>ID: epubpreview.gitden.limits</note>
         <note>OLD TEXT (Gitden's wording changed): To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</note>
         <alt-trans>
@@ -692,7 +717,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.make.it.talk" approved="yes">
         <source xml:lang="en">Make it Talk</source>
-        <target xml:lang="fr">Le faire prononcer les mots</target>
+        <target xml:lang="fr" state="translated">Le faire prononcer les mots</target>
         <note>ID: epubpreview.make.it.talk</note>
         <alt-trans>
           <target xml:lang="fr">Faites-le parler</target>
@@ -701,7 +726,8 @@
       <trans-unit id="epubpreview.talking.book.tool" approved="yes">
         <source xml:lang="en">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
       </source>
-        <target xml:lang="fr">Si vous voulez faire un audiolivre que les lecteurs débutant pourront lire tout en l'écoutant, ajoutez des enregistrements de voix au moyen de la <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Fonction audiolivre</g>.      
+        <target xml:lang="fr" state="translated">Si vous voulez faire un audiolivre que les lecteurs débutant pourront lire tout en l'écoutant, ajoutez des enregistrements de voix au moyen de la <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Fonction audiolivre</g>.      
+      
       
       
       
@@ -719,6 +745,15 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Si vous voulez faire un audiolivre que les lecteurs débutant pourront lire tout en l'écoutant, ajoutez des enregistrements de voix au moyen de la <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Fonction audiolivre</g>.      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -731,18 +766,13 @@
         <alt-trans>
           <target xml:lang="fr">Si vous voulez faire un audiolivre que les lecteurs débutant pourront lire tout en l'écoutant, ajoutez des enregistrements de voix au moyen de la <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Fonction audiolivre</g>.      
       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Si vous voulez faire un audiolivre que les lecteurs débutant pourront lire tout en l'écoutant, ajoutez des enregistrements de voix au moyen de la <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Fonction audiolivre</g>.      
       
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.write.us" approved="yes">
         <source xml:lang="en">Write to us!</source>
-        <target xml:lang="fr">Écrivez-nous!</target>
+        <target xml:lang="fr" state="translated">Écrivez-nous!</target>
         <note>ID: epubpreview.write.us</note>
         <alt-trans>
           <target xml:lang="fr">Nous écrire !</target>
@@ -750,7 +780,7 @@
       </trans-unit>
       <trans-unit id="epubpreview.use.help.report" approved="yes">
         <source xml:lang="en">Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</source>
-        <target xml:lang="fr">Vous avez envie de diffuser des livres Bloom pour téléphones et autres lecteurs de livres électroniques ? Pour que cela vous soit utile, il faudrait que nous fassions quelque chose ? Veuillez nous en informer en utilisant la fonction « Aide » : « signaler un problème ». Merci d'avance !</target>
+        <target xml:lang="fr" state="translated">Vous avez envie de diffuser des livres Bloom pour téléphones et autres lecteurs de livres électroniques ? Pour que cela vous soit utile, il faudrait que nous fassions quelque chose ? Veuillez nous en informer en utilisant la fonction « Aide » : « signaler un problème ». Merci d'avance !</target>
         <note>ID: epubpreview.use.help.report</note>
         <alt-trans>
           <target xml:lang="fr">Êtes-vous intéressé à distribuer des livres Bloom pour les téléphones et d’autres lecteurs de livres électroniques ? Y a-t-il quelque chose dont vous auriez besoin avant que cela vous soit utile ? Veuillez utiliser la commande « Aide » : « signaler un problème » pour nous envoyer vos commentaires. Merci!</target>

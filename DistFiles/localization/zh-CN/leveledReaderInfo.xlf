@@ -4,53 +4,53 @@
     <body>
       <trans-unit id="leveled.reader.vocabulary" approved="yes">
         <source xml:lang="en">Vocabulary</source>
-        <target xml:lang="zh-CN">词汇</target>
+        <target xml:lang="zh-CN" state="translated">词汇</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="zh-CN">最初的几个等级要用孩子熟悉的简单词。如果在你的语言中可行的话，尽量使用单音节单词。 随着孩子的等级逐渐升高，可以开始使用有更多音节的单词, 也可以开始使用孩子不太熟悉的单词。孩子应该已经能够从上下文语境和配图中猜到词意了。</target>
+        <target xml:lang="zh-CN" state="translated">最初的几个等级要用孩子熟悉的简单词。如果在你的语言中可行的话，尽量使用单音节单词。 随着孩子的等级逐渐升高，可以开始使用有更多音节的单词, 也可以开始使用孩子不太熟悉的单词。孩子应该已经能够从上下文语境和配图中猜到词意了。</target>
         <note>ID: leveled.reader.start.simple</note>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting" approved="yes">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="zh-CN">字体设置</target>
+        <target xml:lang="zh-CN" state="translated">字体设置</target>
         <note>ID: leveled.reader.formatting</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
-        <target xml:lang="zh-CN">对初级读者来说较大的字号和字词间距更有好处。 把词句放在每页的同样位置也很有帮助。 当读者的水平越来越高时，字号和间距会逐渐减小，句子也可以出现在页面的不同位置。</target>
+        <target xml:lang="zh-CN" state="translated">对初级读者来说较大的字号和字词间距更有好处。 把词句放在每页的同样位置也很有帮助。 当读者的水平越来越高时，字号和间距会逐渐减小，句子也可以出现在页面的不同位置。</target>
         <note>ID: leveled.reader.start.large</note>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
-        <target xml:lang="zh-CN">在Bloom中需要改变字号、行间距和字词间距时，先点击文本框然后点击文本框左下角的灰色“锯齿”图案。 通过这样设置并做成的模板书，所有使用该模板制成的书都会自动采用这些字体设置。</target>
+        <target xml:lang="zh-CN" state="translated">在Bloom中需要改变字号、行间距和字词间距时，先点击文本框然后点击文本框左下角的灰色“锯齿”图案。 通过这样设置并做成的模板书，所有使用该模板制成的书都会自动采用这些字体设置。</target>
         <note>ID: leveled.reader.increase.sizes</note>
       </trans-unit>
       <trans-unit id="leveled.reader.predictability" approved="yes">
         <source xml:lang="en">Predictability</source>
-        <target xml:lang="zh-CN">可预测性</target>
+        <target xml:lang="zh-CN" state="translated">可预测性</target>
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           文本的“可预测性”指的是读者能猜到下文会发生什么 可以通过重复来提高可预测性。下面列举了一些提高可预测性的做法：</target>
         <note>ID: leveled.reader.repeat.patterns</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
-        <target xml:lang="zh-CN">重复——重复文本中的部分内容，如每页都使用相同的句子，只改变句中的一个词。</target>
+        <target xml:lang="zh-CN" state="translated">重复——重复文本中的部分内容，如每页都使用相同的句子，只改变句中的一个词。</target>
         <note>ID: leveled.reader.repetition</note>
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="zh-CN">顺序——故事含有人们熟知的顺序，如一周的七天或有规律的数字。</target>
+        <target xml:lang="zh-CN" state="translated">顺序——故事含有人们熟知的顺序，如一周的七天或有规律的数字。</target>
         <note>ID: leveled.reader.sequencing</note>
       </trans-unit>
       <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="zh-CN">建立顺序——故事里部分内容重复出现并在每一页都加入新内容</target>
+        <target xml:lang="zh-CN" state="translated">建立顺序——故事里部分内容重复出现并在每一页都加入新内容</target>
         <note>ID: leveled.reader.building.sequence</note>
       </trans-unit>
       <trans-unit id="leveled.reader.rhyme" approved="yes">
@@ -61,7 +61,7 @@ Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
-        <target xml:lang="zh-CN">押韵——故事有规律或有顺序，而且还押韵。如：
+        <target xml:lang="zh-CN" state="translated">押韵——故事有规律或有顺序，而且还押韵。如：
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre">一二三四五，
 上山打老虎。
@@ -71,6 +71,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
 一二三四五。</g>
           <g id="genid-4" ctype="x-html-div" html:class="author"> </g>
         </g>
+      
       
       
       
@@ -95,6 +96,25 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">押韵——故事有规律或有顺序，而且还押韵。如：
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">一二三四五，
+上山打老虎。
+老虎没打着，
+打了小松鼠。
+松鼠有几只？
+一二三四五。</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author"> </g>
+        </g>
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -142,33 +162,20 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <g id="genid-4" ctype="x-html-div" html:class="author"> </g>
         </g>
       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">押韵——故事有规律或有顺序，而且还押韵。如：
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">一二三四五，
-上山打老虎。
-老虎没打着，
-打了小松鼠。
-松鼠有几只？
-一二三四五。</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author"> </g>
-        </g>
       
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
-        <target xml:lang="zh-CN">配图</target>
+        <target xml:lang="zh-CN" state="translated">配图</target>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
-        <target xml:lang="zh-CN">配图能对故事起辅助作用。不同等级、不同类型的读者（见下文）对配图的需要也不尽相同。<g id="genid-5" ctype="x-html-em"> </g>切记在没有很多出版物的文化里，人们很难理解复杂的配图。
+        <target xml:lang="zh-CN" state="translated">配图能对故事起辅助作用。不同等级、不同类型的读者（见下文）对配图的需要也不尽相同。<g id="genid-5" ctype="x-html-em"> </g>切记在没有很多出版物的文化里，人们很难理解复杂的配图。
+    
     
     
     
@@ -182,6 +189,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">配图能对故事起辅助作用。不同等级、不同类型的读者（见下文）对配图的需要也不尽相同。<g id="genid-5" ctype="x-html-em"> </g>切记在没有很多出版物的文化里，人们很难理解复杂的配图。
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -200,17 +216,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">配图能对故事起辅助作用。不同等级、不同类型的读者（见下文）对配图的需要也不尽相同。<g id="genid-5" ctype="x-html-em"> </g>切记在没有很多出版物的文化里，人们很难理解复杂的配图。
     
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">配图能对故事起辅助作用。不同等级、不同类型的读者（见下文）对配图的需要也不尽相同。<g id="genid-5" ctype="x-html-em"> </g>切记在没有很多出版物的文化里，人们很难理解复杂的配图。
     </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
-        <target xml:lang="zh-CN">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
+        <target xml:lang="zh-CN" state="translated">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
+      
       
       
       
@@ -224,6 +237,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -242,17 +264,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
-        <target xml:lang="zh-CN">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
+        <target xml:lang="zh-CN" state="translated">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
+      
       
       
       
@@ -266,6 +285,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -284,17 +312,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
-        <target xml:lang="zh-CN">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
+        <target xml:lang="zh-CN" state="translated">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
+      
       
       
       
@@ -308,6 +333,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -326,27 +360,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
-        <target xml:lang="zh-CN">话题选择</target>
+        <target xml:lang="zh-CN" state="translated">话题选择</target>
         <note>ID: leveled.reader.topic.choice</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="zh-CN">书的话题有很多。 为新读者编书时要选择他们熟悉的话题。 读者读到自己感兴趣且熟悉的内容时，会产生更大的热情和意愿去读更多的书。对于有经验的读者，可以使用他们不熟悉的话题。</target>
+        <target xml:lang="zh-CN" state="translated">书的话题有很多。 为新读者编书时要选择他们熟悉的话题。 读者读到自己感兴趣且熟悉的内容时，会产生更大的热情和意愿去读更多的书。对于有经验的读者，可以使用他们不熟悉的话题。</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
       </source>
-        <target xml:lang="zh-CN">对<g id="genid-9" ctype="x-html-strong">萌芽读者</g>来说， 内容应该具体且集中于一个话题，而且该话题必须是读者熟悉且容易理解的。
+        <target xml:lang="zh-CN" state="translated">对<g id="genid-9" ctype="x-html-strong">萌芽读者</g>来说， 内容应该具体且集中于一个话题，而且该话题必须是读者熟悉且容易理解的。
+      
       
       
       
@@ -360,6 +391,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-9" ctype="x-html-strong">萌芽读者</g>来说， 内容应该具体且集中于一个话题，而且该话题必须是读者熟悉且容易理解的。
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -378,17 +418,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-9" ctype="x-html-strong">萌芽读者</g>来说， 内容应该具体且集中于一个话题，而且该话题必须是读者熟悉且容易理解的。
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-9" ctype="x-html-strong">萌芽读者</g>来说， 内容应该具体且集中于一个话题，而且该话题必须是读者熟悉且容易理解的。
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
-        <target xml:lang="zh-CN">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
+        <target xml:lang="zh-CN" state="translated">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
+      
       
       
       
@@ -402,6 +439,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -420,17 +466,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
-        <target xml:lang="zh-CN">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
+        <target xml:lang="zh-CN" state="translated">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
+      
       
       
       
@@ -444,6 +487,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -462,10 +514,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
       </target>
         </alt-trans>
       </trans-unit>

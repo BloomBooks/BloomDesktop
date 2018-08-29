@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="prs">درباره نمونه تقویم دیواری</target>
+        <target xml:lang="prs" state="translated">درباره نمونه تقویم دیواری</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="prs">‏A5‏، 12 ماهه همراه با تصویر و نقل قول در بالای صفحه و روزها در پائین صفحه بسازید. تقویم نام های ماه ها و روزها را به زبان شما استفاده خواهد کرد.</target>
+        <target xml:lang="prs" state="translated">‏A5‏، 12 ماهه همراه با تصویر و نقل قول در بالای صفحه و روزها در پائین صفحه بسازید. تقویم نام های ماه ها و روزها را به زبان شما استفاده خواهد کرد.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="prs">محدودیت های این نسخه</target>
+        <target xml:lang="prs" state="translated">محدودیت های این نسخه</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="prs">فعلاٌ، برای استفاده از لسانهای دیگر شما ‏"shell"‏ ساخته نمیتوانید.</target>
+        <target xml:lang="prs" state="translated">فعلاٌ، برای استفاده از لسانهای دیگر شما ‏"shell"‏ ساخته نمیتوانید.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="prs">امتیازات</target>
+        <target xml:lang="prs" state="translated">امتیازات</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="prs">از بروس کاکس (SIL‏ کیمرون) بخاطر شروع کردن این نمونه تشکر.</target>
+        <target xml:lang="prs" state="translated">از بروس کاکس (SIL‏ کیمرون) بخاطر شروع کردن این نمونه تشکر.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

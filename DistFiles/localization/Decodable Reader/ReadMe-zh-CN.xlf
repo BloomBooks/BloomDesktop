@@ -4,18 +4,18 @@
     <body>
       <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-1" ctype="x-html-strong">拼读读物</g>能有效限制书中所使用的字母和单词，目的是让书适合新读者的阅读水平。 一种语言一般会有5-10个<g id="genid-2" ctype="x-html-em">拼读细分阶段</g>，帮助学习者循序渐进地进步。</target>
         <note>ID: decodable.definition</note>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="zh-CN">Bloom能帮您定义这些渐进的<g id="genid-3" ctype="x-html-em">细分阶段</g>。 您创建的每本书都将隶属于一个细分阶段，Bloom会确保您的书能被水平在该<g id="genid-4" ctype="x-html-em">细分阶段</g>的读者<g id="genid-5" ctype="x-html-em">解码</g>（即拼读出来）。</target>
+        <target xml:lang="zh-CN" state="translated">Bloom能帮您定义这些渐进的<g id="genid-3" ctype="x-html-em">细分阶段</g>。 您创建的每本书都将隶属于一个细分阶段，Bloom会确保您的书能被水平在该<g id="genid-4" ctype="x-html-em">细分阶段</g>的读者<g id="genid-5" ctype="x-html-em">解码</g>（即拼读出来）。</target>
         <note>ID: decodable.stages</note>
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="zh-CN">您还可以制作包含一系列<g id="genid-6" ctype="x-html-em">模板</g>的Bloom资料包，这样别人可以用这些由识字教育专家事先设定好的等级和细分阶段快速创建书籍。</target>
+        <target xml:lang="zh-CN" state="translated">您还可以制作包含一系列<g id="genid-6" ctype="x-html-em">模板</g>的Bloom资料包，这样别人可以用这些由识字教育专家事先设定好的等级和细分阶段快速创建书籍。</target>
         <note>ID: decodable.templates</note>
         <alt-trans>
           <target xml:lang="zh-CN">您还可以制作包含一系列<g id="genid-6" ctype="x-html-em">模板</g>的“Bloom资料包”，这样别人可以用这些由识字教育专家事先设定好的等级和细分阶段快速创建书籍。</target>
@@ -23,22 +23,22 @@
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="zh-CN">要了解在Bloom中如何使用“拼读读物”，您可以：</target>
+        <target xml:lang="zh-CN" state="translated">要了解在Bloom中如何使用“拼读读物”，您可以：</target>
         <note>ID: decodable.learn</note>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="zh-CN">观看<g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">这些教学视频</g>。</target>
+        <target xml:lang="zh-CN" state="translated">观看<g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">这些教学视频</g>。</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="zh-CN">找到“帮助”菜单，选择“帮助”，然后查看“拼读读物”下面的索引。</target>
+        <target xml:lang="zh-CN" state="translated">找到“帮助”菜单，选择“帮助”，然后查看“拼读读物”下面的索引。</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="zh-CN">找到帮助菜单，然后选择：“创建读物模板”。</target>
+        <target xml:lang="zh-CN" state="translated">找到帮助菜单，然后选择：“创建读物模板”。</target>
         <note>ID: decodable.learn.helpmenu</note>
         <alt-trans>
           <target xml:lang="zh-CN">找到"帮助"菜单，然后选择：“创建读物模板”。</target>

@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="pbu">د انځوریزو لغتونو د ټولګې د نمونه په اړه</target>
+        <target xml:lang="pbu" state="translated">د انځوریزو لغتونو د ټولګې د نمونه په اړه</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="pbu">دا نمونه د انځوریزو لغتونو د ټولګې جوړولو لپاره و کاروئ چې یوه ژبه، دوه ژبې یا درې ژبې وي.</target>
+        <target xml:lang="pbu" state="translated">دا نمونه د انځوریزو لغتونو د ټولګې جوړولو لپاره و کاروئ چې یوه ژبه، دوه ژبې یا درې ژبې وي.</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="pbu">د دې نسخې محدودیتونه</target>
+        <target xml:lang="pbu" state="translated">د دې نسخې محدودیتونه</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="pbu">دا کتاب اوس "تجربوي" په نښه شوی دی ځکه چې موږ په ترتیب کی په اسانتیا سره د ډیرو ستونزو څخه خبر یو.</target>
+        <target xml:lang="pbu" state="translated">دا کتاب اوس "تجربوي" په نښه شوی دی ځکه چې موږ په ترتیب کی په اسانتیا سره د ډیرو ستونزو څخه خبر یو.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
     </body>
