@@ -423,17 +423,17 @@ export default class StyleEditor {
         ignoreLanguage: boolean,
         forChildParas?: boolean
     ): CSSStyleRule {
-        var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
+        const styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         if (styleSheet == null) {
-            return;
+            return null;
         }
 
-        var ruleList: CSSRuleList = styleSheet.cssRules;
+        let ruleList: CSSRuleList = styleSheet.cssRules;
         if (ruleList == null) {
             ruleList = new CSSRuleList();
         }
 
-        var styleAndLang = styleName;
+        let styleAndLang = styleName;
         // if we are authoring a book, style changes should apply to all translations of it
         // if we are translating, changes should only apply to this language.
         // a downside of this is that when authoring in multiple languages, to get a different
@@ -452,14 +452,14 @@ export default class StyleEditor {
 
         let lookFor = styleAndLang.toLowerCase();
 
-        for (var i = 0; i < ruleList.length; i++) {
-            var index = ruleList[i].cssText.indexOf("{");
+        for (let i = 0; i < ruleList.length; i++) {
+            const index = ruleList[i].cssText.indexOf("{");
             if (index === -1) {
                 continue;
             }
             // The rule we want is one whose selector is the string we want.
             // The substring strips off the initial period and the rule body, leaving the selector.
-            var match = ruleList[i].cssText
+            const match = ruleList[i].cssText
                 .trim()
                 .substring(1, index)
                 .toLowerCase()
@@ -1819,13 +1819,16 @@ export default class StyleEditor {
             .trigger("change");
     }
 
-    public getStyleRule(ignoreLanguage: boolean, forChildPara?: boolean) {
-        var target = this.boxBeingEdited;
-        var styleName = StyleEditor.GetStyleNameForElement(target);
+    public getStyleRule(
+        ignoreLanguage: boolean,
+        forChildPara?: boolean
+    ): CSSStyleRule {
+        const target = this.boxBeingEdited;
+        const styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
-            return; // bizarre, since we put up the dialog
+            return null; // bizarre, since we put up the dialog
         }
-        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        const langAttrValue = StyleEditor.GetLangValueOrNull(target);
         return this.GetOrCreateRuleForStyle(
             styleName,
             langAttrValue,

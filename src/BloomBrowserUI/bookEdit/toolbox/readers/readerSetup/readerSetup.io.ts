@@ -25,6 +25,7 @@ export function toolboxWindow(): ToolboxWindow {
         return (<HTMLIFrameElement>(
             window.parent.document.getElementById("toolbox")
         )).contentWindow as ToolboxWindow;
+    return null;
 }
 
 function process_IO_Message(event: MessageEvent): void {

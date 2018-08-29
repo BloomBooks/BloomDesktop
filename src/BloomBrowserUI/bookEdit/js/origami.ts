@@ -62,8 +62,8 @@ function isEmpty(el) {
     return temp === "";
 }
 function setupLayoutMode() {
-    $(".split-pane-component-inner").each(function() {
-        var $this = $(this);
+    $(".split-pane-component-inner").each(function(): boolean {
+        const $this = $(this);
         if ($this.find(".split-pane").length) {
             // This is an unexpected situation, probably caused by using a broken version of the
             // origami-based picture-in-middle. split-pane-component-inner's are not meant to be
@@ -81,13 +81,15 @@ function setupLayoutMode() {
             $this.append(getTypeSelectors());
 
         $this.append(getButtons());
-        var contents = $this.find(
+        const contents = $this.find(
             ".bloom-translationGroup:not(.box-header-off) > .bloom-editable"
         );
         // don't put text box identifier in image container or where we just put the "Picture or Text"" selector links
         if ($this.find(".bloom-imageContainer, .selector-links").length)
             return true; // continue .each()
         $this.append(getTextBoxIdentifier());
+
+        return true; // continue .each(); though this is the end of the loop, it is needed for tsconfig's 'noImplicitReturns'
     });
     // Text should not be editable in layout mode
     $(".bloom-editable[contentEditable=true]").removeAttr("contentEditable");
