@@ -37,7 +37,7 @@ namespace Bloom.MiscUI
 				Font font = _fontCombo.Font;
 				int vertScrollBarWidth = (_fontCombo.Items.Count > _fontCombo.MaxDropDownItems) ? SystemInformation.VerticalScrollBarWidth : 0;
 
-				width = (from string s in _fontCombo.Items select (int)g.MeasureString(s, font).Width).Concat(new[] { width }).Max() + vertScrollBarWidth;
+				width = (from string s in _fontCombo.Items select TextRenderer.MeasureText(g, s, font).Width).Concat(new[] { width }).Max() + vertScrollBarWidth;
 			}
 			_fontCombo.DropDownWidth = width;
 		}
@@ -64,8 +64,8 @@ namespace Bloom.MiscUI
 			// Make the combo box just wide enough to show its content.
 			using (var g = _lineSpacingCombo.CreateGraphics())
 			{
-				var w = g.MeasureString(defaultText, Font);
-				_lineSpacingCombo.Width = (int)w.Width + 40;	// allow room for dropdown icon and text margins
+				var w = TextRenderer.MeasureText(g, defaultText, Font);
+				_lineSpacingCombo.Width = w.Width + 40;	// allow room for dropdown icon and text margins
 			}
 			_lineSpacingCombo.Enabled = false;
 		}

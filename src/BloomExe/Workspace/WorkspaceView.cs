@@ -261,7 +261,7 @@ namespace Bloom.Workspace
 		public static string ShortenStringToFit(string text, int maxWidth, int originalWidth, Font font, Graphics g)
 		{
 			const string kEllipsis = "\u2026";
-			var txtWidth = g.MeasureString(text, font).Width;
+			var txtWidth = TextRenderer.MeasureText(g, text, font).Width;
 			var padding = originalWidth - txtWidth;
 			while (txtWidth + padding > maxWidth)
 			{
@@ -269,7 +269,7 @@ namespace Bloom.Workspace
 				if (len <= 0)
 					break;	// I can't conceive this happening, but I'm also paranoid.
 				text = text.Substring(0, len) + kEllipsis;	// trim, add ellipsis
-				txtWidth = g.MeasureString(text, font).Width;
+				txtWidth = TextRenderer.MeasureText(g, text, font).Width;
 			}
 			return text;
 		}
