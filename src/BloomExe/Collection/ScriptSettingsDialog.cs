@@ -35,8 +35,8 @@ namespace Bloom.Collection
 			// size the combo box
 			using (var g = _lineSpacingCombo.CreateGraphics())
 			{
-				var w = g.MeasureString(defaultText, Font);
-				_lineSpacingCombo.Width = (int)w.Width + 20;
+				var w = TextRenderer.MeasureText(g, defaultText, Font);
+				_lineSpacingCombo.Width = w.Width + 20;
 			}
 		}
 

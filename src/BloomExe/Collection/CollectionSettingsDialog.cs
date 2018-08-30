@@ -384,7 +384,7 @@ namespace Bloom.Collection
 				Font font = _fontComboLanguage1.Font;
 				int vertScrollBarWidth = (_fontComboLanguage1.Items.Count > _fontComboLanguage1.MaxDropDownItems) ? SystemInformation.VerticalScrollBarWidth : 0;
 
-				width = (from string s in _fontComboLanguage1.Items select (int)g.MeasureString(s, font).Width + vertScrollBarWidth).Concat(new[] { width }).Max();
+				width = (from string s in _fontComboLanguage1.Items select TextRenderer.MeasureText(g, s, font).Width + vertScrollBarWidth).Concat(new[] { width }).Max();
 			}
 			_fontComboLanguage1.DropDownWidth = width;
 			_fontComboLanguage2.DropDownWidth = width;
