@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
@@ -2811,12 +2811,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
-        <note>ID: PublishTab.LessMemoryPdfMode</note>
-        <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
-        <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
-        <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
+                <note>ID: PublishTab.LessMemoryPdfMode</note>
+                <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.NoBookletsMessage">
+                <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
+                <note>ID: PublishTab.NoBookletsMessage</note>
+                <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
+                <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
+                <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio">
         <source xml:lang="en">Simple</source>
