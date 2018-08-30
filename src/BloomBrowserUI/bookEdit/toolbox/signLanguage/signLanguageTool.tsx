@@ -104,7 +104,13 @@ export class SignLanguageToolControls extends React.Component<
                                     onClick={() => this.toggleRecording()}
                                 />
                                 <Label
-                                    className="startRecording idle"
+                                    className={
+                                        "startRecording idle" +
+                                        (this.state.enabled &&
+                                        this.state.cameraAccess
+                                            ? " enabled"
+                                            : " disabled")
+                                    }
                                     l10nKey="EditTab.Toolbox.SignLanguage.StartRecording"
                                     onClick={() => this.toggleRecording()}
                                 >
