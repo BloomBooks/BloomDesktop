@@ -228,9 +228,9 @@ function SetImageTooltip(container, img) {
 }
 
 function getFileLengthString(bytes): String {
-    var units = ["Bytes", "KB", "MB"];
-    for (var i = units.length; i-- > 0; ) {
-        var unit = Math.pow(1024, i);
+    const units = ["Bytes", "KB", "MB"];
+    for (let i = units.length; i-- > 0; ) {
+        const unit = Math.pow(1024, i);
         if (bytes >= unit)
             //reviewSlog
             return (
@@ -240,6 +240,7 @@ function getFileLengthString(bytes): String {
             );
         //return parseFloat(Math.round(bytes / unit * 100) / 100).toFixed(2) + ' ' + units[i];
     }
+    return "";
 }
 
 // IsImageReal returns true if the img tag refers to a non-placeholder image
@@ -383,7 +384,7 @@ export function SetupResizableElement(element) {
         .mouseleave(function() {
             $(this).removeClass("ui-mouseOver");
         });
-    var childImgContainer = $(element).find(".bloom-imageContainer");
+    const childImgContainer = $(element).find(".bloom-imageContainer");
     // A Picture Dictionary Word-And-Image
     if ($(childImgContainer).length > 0) {
         /* The case here is that the thing with this class actually has an
@@ -398,7 +399,7 @@ export function SetupResizableElement(element) {
          event to scale the image up proportionally (and centered) inside the
          newly resized container.
          */
-        var img = $(childImgContainer).find("img");
+        const img = $(childImgContainer).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
@@ -407,11 +408,10 @@ export function SetupResizableElement(element) {
                 img.scaleImage({ scale: "fit" });
             }
         });
-        return $(element);
     }
     //An Image Container div (which must have an inner <img>
     else if ($(element).hasClass("bloom-imageContainer")) {
-        var img = $(element).find("img");
+        const img = $(element).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
