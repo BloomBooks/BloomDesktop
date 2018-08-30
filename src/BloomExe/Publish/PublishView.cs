@@ -360,6 +360,12 @@ namespace Bloom.Publish
 			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
 
+
+			// When PDF is allowed but booklets are not, allow the noBookletsMessage to grow
+			// to fit its text. Otherwise the height of 0 keeps it hidden (the "visible" property didn't work).
+			_noBookletsMessage.AutoSize = _model.AllowPdf && !_model.AllowPdfBooklet;
+			_noBookletsMessage.Height = 0;
+
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;

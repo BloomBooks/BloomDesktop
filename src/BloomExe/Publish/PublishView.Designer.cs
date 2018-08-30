@@ -69,6 +69,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
+			this._noBookletsMessage = new System.Windows.Forms.Label();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -154,19 +155,20 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
-			this.tableLayoutPanel1.Controls.Add(this._androidRadio, 0, 7);
-			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 8);
+			this.tableLayoutPanel1.Controls.Add(this._androidRadio, 0, 8);
+			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 9);
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
-			this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 2);
-			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 4);
-			this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 5);
+			this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this._simpleAllPagesRadio, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 6);
+			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 7);
+			this.tableLayoutPanel1.Controls.Add(this._noBookletsMessage, 0, 2);
 			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
 			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 9;
+			this.tableLayoutPanel1.RowCount = 10;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -176,8 +178,7 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(114, 677);
 			this.tableLayoutPanel1.TabIndex = 10;
 			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
@@ -222,7 +223,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._androidRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._androidRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._androidRadio, "PublishTab.AndroidButton");
-			this._androidRadio.Location = new System.Drawing.Point(3, 409);
+			this._androidRadio.Location = new System.Drawing.Point(3, 448);
 			this._androidRadio.Name = "_androidRadio";
 			this._androidRadio.Size = new System.Drawing.Size(105, 71);
 			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -249,7 +250,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._uploadRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			this._uploadRadio.Location = new System.Drawing.Point(3, 486);
+			this._uploadRadio.Location = new System.Drawing.Point(3, 525);
 			this._uploadRadio.Name = "_uploadRadio";
 			this._uploadRadio.Size = new System.Drawing.Size(105, 89);
 			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -310,7 +311,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bookletCoverRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._bookletCoverRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._bookletCoverRadio, "PublishTab.CoverOnlyRadio");
-			this._bookletCoverRadio.Location = new System.Drawing.Point(3, 130);
+			this._bookletCoverRadio.Location = new System.Drawing.Point(3, 169);
 			this._bookletCoverRadio.Name = "_bookletCoverRadio";
 			this._bookletCoverRadio.Size = new System.Drawing.Size(94, 88);
 			superToolTipInfo3.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -338,7 +339,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label1, "label1");
-			this.label1.Location = new System.Drawing.Point(3, 323);
+			this.label1.Location = new System.Drawing.Point(3, 362);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(108, 1);
 			this.label1.TabIndex = 17;
@@ -350,7 +351,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bookletBodyRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._bookletBodyRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._bookletBodyRadio, "PublishTab.BodyOnlyRadio");
-			this._bookletBodyRadio.Location = new System.Drawing.Point(3, 224);
+			this._bookletBodyRadio.Location = new System.Drawing.Point(3, 263);
 			this._bookletBodyRadio.Name = "_bookletBodyRadio";
 			this._bookletBodyRadio.Size = new System.Drawing.Size(94, 96);
 			superToolTipInfo4.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -406,7 +407,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._epubRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
-			this._epubRadio.Location = new System.Drawing.Point(3, 327);
+			this._epubRadio.Location = new System.Drawing.Point(3, 366);
 			this._epubRadio.Name = "_epubRadio";
 			this._epubRadio.Size = new System.Drawing.Size(105, 76);
 			superToolTipInfo6.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -448,6 +449,20 @@ namespace Bloom.Publish
 			// 
 			this._superToolTip.FadingInterval = 10;
 			// 
+			// _noBookletsMessage
+			// 
+			this._noBookletsMessage.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._noBookletsMessage, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._noBookletsMessage, "If a book has a paper size that is too big (like A4), Bloom does not know how to " +
+        "make booklets with it. So the controls for booklets get disabled and this messag" +
+        "e is shown.");
+			this._L10NSharpExtender.SetLocalizingId(this._noBookletsMessage, "PublishTab.NoBookletsMessage");
+			this._noBookletsMessage.Location = new System.Drawing.Point(3, 127);
+			this._noBookletsMessage.Name = "_noBookletsMessage";
+			this._noBookletsMessage.Size = new System.Drawing.Size(104, 39);
+			this._noBookletsMessage.TabIndex = 24;
+			this._noBookletsMessage.Text = "Bloom cannot make booklets using the current page size.";
+			// 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -466,6 +481,7 @@ namespace Bloom.Publish
 			this._topBarPanel.ResumeLayout(false);
 			this._topBarPanel.PerformLayout();
 			this.tableLayoutPanel1.ResumeLayout(false);
+			this.tableLayoutPanel1.PerformLayout();
 			this._contextMenuStrip.ResumeLayout(false);
 			this._menusToolStrip.ResumeLayout(false);
 			this._menusToolStrip.PerformLayout();
@@ -499,5 +515,6 @@ namespace Bloom.Publish
 		private System.Windows.Forms.RadioButton _androidRadio;
 		private System.Windows.Forms.RadioButton _uploadRadio;
 		private System.Windows.Forms.RadioButton _epubRadio;
+		private System.Windows.Forms.Label _noBookletsMessage;
 	}
 }
