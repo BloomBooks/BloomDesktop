@@ -1178,6 +1178,7 @@ namespace Bloom.Book
 
 					var filesToCopy = Directory
 						.EnumerateFiles(brandingFolder) //<--- .NET 4.5
+						// note this is how the branding.css gets into a book folder
 						.Where(path => ".png,.svg,.jpg,.css".Split(',').Contains(Path.GetExtension(path).ToLowerInvariant()));
 
 					foreach (var sourcePath in filesToCopy)
