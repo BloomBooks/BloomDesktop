@@ -1,18 +1,30 @@
 /* This is test of one way of changing the image based on classes.
 Another way would be to do it would be to include both in the html as an img and then turn one or the other off.*/
-.A5Portrait [data-book="credits-page-branding-bottom-html"] div::after {
-    content: url("butterfly.png");
+[data-book="credits-page-branding-bottom-html"] img {
+    display: none;
+}
+
+.A5Portrait [data-book="credits-page-branding-bottom-html"] img.portrait {
+    display: unset;
+}
+.A5Landscape [data-book="credits-page-branding-bottom-html"] img.landscape {
+    display: unset;
+}
+[data-book="credits-page-branding-bottom-html"] div::after {
     width: 100px;
     height: 100px;
     display: flex;
 }
 
-.A5Landscape [data-book="credits-page-branding-bottom-html"] div::after {
-    content: url("caterpillar.png");
-    width: 300px;
-    height: 100px;
-    display: flex;
+[data-book="outside-back-cover-branding-bottom-html"] img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
+/*[data-book="outside-back-cover-branding-bottom-html"] div::after {
+    content: url("WideSoccerBalls.png");
+    display: flex;
+}*/
 .standout {
-    color: purple;
+    color: blue;
 }
