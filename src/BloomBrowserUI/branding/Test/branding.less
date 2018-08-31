@@ -4,11 +4,14 @@ Another way would be to do it would be to include both in the html as an img and
     display: none;
 }
 
-.A5Portrait [data-book="credits-page-branding-bottom-html"] img.portrait {
-    display: unset;
-}
-.A5Landscape [data-book="credits-page-branding-bottom-html"] img.landscape {
-    display: unset;
+[data-book="credits-page-branding-bottom-html"] {
+    .A5Portrait & img.portrait {
+        display: unset; // show it
+    }
+
+    .A5Landscape & img.landscape {
+        display: unset; // show it
+    }
 }
 [data-book="credits-page-branding-bottom-html"] div::after {
     width: 100px;

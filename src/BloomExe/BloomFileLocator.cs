@@ -308,11 +308,11 @@ namespace Bloom
 			}
 			if (Path.IsPathRooted(fileName) && RobustFile.Exists(fileName)) // also just for unit tests
 				return fileName;
-			return FileLocationUtilities.GetFileDistributedWithApplication(true, "branding", brandingNameOrFolderPath, fileName);
+			return BloomFileLocator.GetBrowserFile(true, "branding", brandingNameOrFolderPath, fileName);
 		}
 		public static string GetBrandingFolder(string brandingName)
 		{
-			return FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "branding", brandingName);
+			return BloomFileLocator.GetBrowserDirectory("branding", brandingName);
 		}
 		//-----------------------------------------------------
 		// Copied mostly unchanged from libpalaso/FileLocationUtilities. Bloom may not actually need all of these.

@@ -36,7 +36,7 @@ namespace Bloom.web.controllers
 		{
 			// Handles all except placeholder images. They can show up with digits after them, so we do them differently.
 			var imageFiles = new HashSet<string> { "license.png" };
-			var brandingDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("branding");
+			var brandingDirectory = BloomFileLocator.GetBrowserDirectory("branding");
 			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
 			{
 				imageFiles.AddRange(Directory.EnumerateFiles(brandDirectory).Where(IsSvgOrPng).Select(Path.GetFileName));
