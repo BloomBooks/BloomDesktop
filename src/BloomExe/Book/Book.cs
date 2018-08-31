@@ -448,9 +448,15 @@ namespace Bloom.Book
 			pageDom.RemoveModeStyleSheets();
 			// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
 			// such time as it's clear if it matters.
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "languageDisplay.css","branding.css" })
+			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "languageDisplay.css"})
 			{
 				pageDom.AddStyleSheet(cssFileName);
+			}
+			// only add brandingCSS is there is one for the current branding
+			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");
+			if (!string.IsNullOrEmpty(brandingCssPath))
+			{
+				pageDom.AddStyleSheet("branding.css");
 			}
 			pageDom.SortStyleSheetLinks();
 

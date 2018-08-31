@@ -731,7 +731,7 @@ namespace Bloom.Api
 			// any "customBookStyles.css" from those sources and using it instead (here) and replacing that of your book (in BookStorage).
 			// Similarly, we always want the branding.css found in this book.
 			string path = "";
-			var localWins = new string[] { "custombookstyles" , "branding"};
+			var localWins = new string[] { "custombookstyles"};
 			if (RobustFile.Exists(localPath) &&
 				localWins.Any(s=>fileName.ToLowerInvariant().Contains(s)))
 			{ 
@@ -739,7 +739,17 @@ namespace Bloom.Api
 			}
 			else
 			{
-				path = _fileLocator.LocateFile(fileName);
+				// When developing brandings, it's convenient to just use the very-latest build
+				// which will be sitting in the output/browser/branding/<branding name>/ folder,
+				// rather than the one that is already in the book. 
+				if (fileName == "branding.css")
+				{
+					path = _fileLocator.GetBrandingFile(false, "branding.css");
+				}
+				else
+				{
+					path = _fileLocator.LocateFile(fileName);
+				}
 			}
 		
 
