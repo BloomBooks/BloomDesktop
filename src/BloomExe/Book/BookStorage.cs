@@ -1423,7 +1423,13 @@ namespace Bloom.Book
 			dom.AddStyleSheet("basePage.css");
 			dom.AddStyleSheet("origami.css");
 			dom.AddStyleSheet("languageDisplay.css");
-			dom.AddStyleSheet("branding.css");
+
+			// only add brandingCSS is there is one for the current branding
+			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");
+			if (!string.IsNullOrEmpty(brandingCssPath))
+			{
+				dom.AddStyleSheet("branding.css");
+			}
 			EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();

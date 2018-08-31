@@ -1,0 +1,41 @@
+[data-book*="branding"] {
+    display: flex; // makes it a lot easier to center, at least.
+    flex-direction: column; // stack items vertically
+
+    p {
+        margin-bottom: 1em;
+    }
+    img {
+        // horizontally center
+        margin-left: auto;
+        margin-right: auto;
+
+        width: auto;
+        align-self: center;
+        object-fit: contain; // in more complex size cases, ensures we keep aspect ratio and the whole thing visible
+
+        // However if the branding pack requires a big max-width logo, then it should name the logo with a "-wide" suffix, and the
+        // pug template will use that instead, along with this "branding-wide" class, triggering these rules to override the defaults.
+        // 30% makes it a pretty respectable height, but still allows for a lot of text in the translation group above.
+        // If there's room to make it bigger (without distortion, which can happen by forcing width:100%) it will grow.
+        // the flex-basis provides a minimum size independent of the original image size.
+        // In case it's aspect ratio makes it not fill the entire height that the flex algorithm
+        // allocates to it, we position the actual image at the bottom of its space.
+        // &.branding-wide {
+        //     min-height: 30%;
+        //     height: auto;
+        //     flex-grow: 1;
+        //     flex-basis: 1in;
+        //     width: 100%;
+        //     background-color: transparent;
+        //     object-position: bottom;
+        // }
+    }
+}
+
+[data-book="outside-back-cover-branding-bottom-html"] {
+    width: 100%;
+    img {
+        //width: 100%;
+    }
+}

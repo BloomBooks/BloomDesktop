@@ -314,6 +314,11 @@ namespace Bloom
 		{
 			return BloomFileLocator.GetBrowserDirectory("branding", brandingName);
 		}
+		public string GetBrandingFile(Boolean optional, string fileName)
+		{
+			return BloomFileLocator.GetBrowserFile(optional, "branding", _collectionSettings.BrandingProjectKey, fileName);
+		}
+
 		//-----------------------------------------------------
 		// Copied mostly unchanged from libpalaso/FileLocator. Bloom may not actually need all of these.
 		//----------------------------------------------------

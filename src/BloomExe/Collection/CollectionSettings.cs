@@ -124,6 +124,11 @@ namespace Bloom.Collection
 			XMatterPackName = collectionInfo.XMatterPackName;
 			PageNumberStyle = collectionInfo.PageNumberStyle;
 			BrandingProjectKey = collectionInfo.BrandingProjectKey;
+			if (BrandingProjectKey == "Local Community")
+			{
+				// migrate for 4.4
+				BrandingProjectKey = "Local-Community";
+			}
 
 			Save();
 		}
@@ -537,6 +542,11 @@ namespace Bloom.Collection
 				PageNumberStyle = CssNumberStylesToCultureOrDigits.Keys.Contains(style) ? style : "Decimal";
 
 				BrandingProjectKey = GetValue(library, "BrandingProjectName", "Default");
+				if (BrandingProjectKey == "Local Community")
+				{
+					// migrate for 4.4
+					BrandingProjectKey = "Local-Community";
+				}
 
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				Language2Name = GetValue(library, "Language2Name", GetLanguage2Name_NoCache(Language2Iso639Code));
