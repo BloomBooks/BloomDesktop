@@ -94,7 +94,11 @@ export default class TextBoxProperties {
                         $("#language-group").change(function() {
                             propDlg.changeLanguageGroup();
                         });
-                        new WebFXTabPane($("#tabRoot").get(0), false, null);
+                        new WebFXTabPane(
+                            $("#tabRoot").get(0),
+                            false,
+                            undefined
+                        );
                     }
                     // Give the browser time to get the dialog into the DOM first, before doing this stuff
                     // It just needs to delay one 'cycle'.

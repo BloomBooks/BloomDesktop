@@ -134,7 +134,9 @@ export default class OverflowChecker {
     // Actual testable determination of Type II overflow or not
     // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
     // returns nearest ancestor that this element overflows
-    public static overflowingAncestor(element: HTMLElement): HTMLElement {
+    public static overflowingAncestor(
+        element: HTMLElement
+    ): HTMLElement | null {
         // Ignore Topic divs as they are chosen from a list
         if (
             element.hasAttribute("data-book") &&
@@ -276,6 +278,7 @@ export default class OverflowChecker {
                     });
                 var showing = false;
                 $overflowingAncestor.on("mousemove.overflow", event => {
+                    if (overflowingAncestor == null) return; // prevent bad static analysis
                     var bounds = overflowingAncestor.getBoundingClientRect();
                     var scaleY =
                         bounds.height / overflowingAncestor.offsetHeight;

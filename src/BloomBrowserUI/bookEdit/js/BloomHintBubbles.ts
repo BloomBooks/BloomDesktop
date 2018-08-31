@@ -138,16 +138,17 @@ export default class BloomHintBubbles {
         var whatToSay = this.getHintContent(
             elementThatHasSourceBubble,
             elementWithBubbleAttributes,
-            null
+            undefined
         );
-        if (whatToSay.startsWith("*")) whatToSay = whatToSay.substr(1);
+        if (whatToSay != null && whatToSay.startsWith("*"))
+            whatToSay = whatToSay.substr(1);
         if (!whatToSay) return; // just forget adding a hint if there's no text.
         // Don't use the corresponding svg from artwork here. Somehow it causes about a 4 second delay (on a fast workstation)
         headers.prepend(
             "<li id='hint'><a class='sourceTextTab' href='#hint'><img src='/bloom/images/information-i.png'/></a></li>"
         );
         var nav = $(headers.parent());
-        var whatToSay =
+        whatToSay =
             whatToSay +
             this.getPossibleHyperlink(
                 elementWithBubbleAttributes,
@@ -175,7 +176,9 @@ export default class BloomHintBubbles {
                 elementWithBubbleAttributes,
                 preferredLangs
             );
-            if (whatToSay.startsWith("*")) whatToSay = whatToSay.substr(1);
+            if (whatToSay != null && whatToSay.startsWith("*"))
+                whatToSay = whatToSay.substr(1);
+            if (!whatToSay) return;
             var hyperlink = this.getPossibleHyperlink(
                 elementWithBubbleAttributes,
                 elementThatHasSourceBubble,
@@ -325,7 +328,7 @@ export default class BloomHintBubbles {
         elementToAttachBubbleTo: JQuery,
         elementWithBubbleAttributes: JQuery,
         preferredLangs?: Array<string>
-    ): string {
+    ): string | null {
         var doNotLocalize = false;
         var whatToSay = elementToAttachBubbleTo.attr("data-hint");
         if (!whatToSay)
@@ -425,7 +428,9 @@ export default class BloomHintBubbles {
                 source.hasClass("bloom-showOnlyWhenTargetHasFocus") ||
                 bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
 
-            if (whatToSay.startsWith("*")) whatToSay = whatToSay.substr(1);
+            if (whatToSay != null && whatToSay.startsWith("*"))
+                whatToSay = whatToSay.substr(1);
+            if (!whatToSay) return; // no empty bubbles
             var functionCall = source.data("functiononhintclick");
             if (functionCall) {
                 if (

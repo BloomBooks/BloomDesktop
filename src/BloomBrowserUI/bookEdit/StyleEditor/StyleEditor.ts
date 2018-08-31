@@ -33,7 +33,7 @@ declare function WebFxTabPane(
 class FormattingStyle {
     public styleId: string;
     public englishDisplayName: string;
-    public localizedName: string;
+    public localizedName: string | null;
 
     constructor(namestr: string, displayStr: string) {
         this.styleId = namestr;
@@ -82,7 +82,7 @@ export default class StyleEditor {
 
         // For awhile between v1 and v2 we used 'coverTitle' in Factory-XMatter
         // In case this is one of those books, we'll replace it with 'Title-On-Cover-style'
-        var coverTitleClass: string = StyleEditor.updateCoverStyleName(
+        var coverTitleClass: string | null = StyleEditor.updateCoverStyleName(
             target,
             "coverTitle"
         );
@@ -102,7 +102,7 @@ export default class StyleEditor {
     private static updateCoverStyleName(
         target: HTMLElement,
         oldCoverTitleClass: string
-    ): string {
+    ): string | null {
         if ($(target).hasClass(oldCoverTitleClass)) {
             var newStyleName: string = "Title-On-Cover-style";
             $(target)
@@ -125,7 +125,7 @@ export default class StyleEditor {
         $("div.bloom-editable, textarea").qtipSecondary("reposition");
     }
 
-    private static MigratePreStyleBook(target: HTMLElement): string {
+    private static MigratePreStyleBook(target: HTMLElement): string | null {
         var parentPage: HTMLDivElement = <HTMLDivElement>(
             (<any>$(target).closest(".bloom-page")[0])
         );
@@ -140,8 +140,8 @@ export default class StyleEditor {
         return null;
     }
 
-    private static GetStyleNameForElement(target: HTMLElement): string {
-        var styleName: string = this.GetStyleClassFromElement(target);
+    private static GetStyleNameForElement(target: HTMLElement): string | null {
+        var styleName: string | null = this.GetStyleClassFromElement(target);
         if (!styleName) {
             // The style name is probably on the parent translationGroup element
             var parentGroup: HTMLDivElement = <HTMLDivElement>(
@@ -169,8 +169,11 @@ export default class StyleEditor {
         return styleName;
     }
 
-    private static GetBaseStyleNameForElement(target: HTMLElement): string {
+    private static GetBaseStyleNameForElement(
+        target: HTMLElement
+    ): string | null {
         var styleName = StyleEditor.GetStyleNameForElement(target); // with '-style'
+        if (styleName == null) return null;
         var suffixIndex = styleName.indexOf("-style");
         if (suffixIndex < 0) {
             return styleName;
@@ -182,12 +185,12 @@ export default class StyleEditor {
         target: HTMLElement,
         newStyle: string
     ) {
-        var oldStyle: string = this.GetStyleClassFromElement(target);
-        $(target).removeClass(oldStyle);
+        var oldStyle: string | null = this.GetStyleClassFromElement(target);
+        if (oldStyle != null) $(target).removeClass(oldStyle);
         $(target).addClass(newStyle);
     }
 
-    private static GetLangValueOrNull(target: HTMLElement): string {
+    private static GetLangValueOrNull(target: HTMLElement): string | null {
         var langAttr = $(target).attr("lang");
         if (!langAttr) {
             return null;
@@ -203,7 +206,7 @@ export default class StyleEditor {
         }
         var fontSize = this.GetCalculatedFontSizeInPoints(target);
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(
+        var rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
             styleName,
             langAttrValue,
             this.authorMode
@@ -213,7 +216,12 @@ export default class StyleEditor {
         if (parseInt(sizeString, 10) < this.MIN_FONT_SIZE) {
             return; // too small, quietly don't do it!
         }
-        rule.style.setProperty("font-size", sizeString + units, "important");
+        if (rule != null)
+            rule.style.setProperty(
+                "font-size",
+                sizeString + units,
+                "important"
+            );
         OverflowChecker.MarkOverflowInternal(target);
 
         // alert("New size rule: " + rule.cssText);
@@ -241,14 +249,19 @@ export default class StyleEditor {
             return;
         }
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(
+        var rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
             styleName,
             langAttrValue,
             this.authorMode
         );
         var units = "pt";
         var sizeString: string = newSize.toString();
-        rule.style.setProperty("font-size", sizeString + units, "important");
+        if (rule != null)
+            rule.style.setProperty(
+                "font-size",
+                sizeString + units,
+                "important"
+            );
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
         this.AddQtipToElement($("#formatButton"), toolTip);
@@ -305,7 +318,7 @@ export default class StyleEditor {
     // we'll just use the switch.
     // Changes here should be reflected in the Bloom.xlf file too.
     public getDisplayName(ruleId: string): string {
-        var displayName: string = null;
+        var displayName: string;
         switch (ruleId) {
             case "BigWords":
                 displayName = "Big Words";
@@ -344,8 +357,8 @@ export default class StyleEditor {
 
     // Get the existing rule for the specified style.
     // Will return null if the style has no definition, OR if it already has a user-defined version
-    public getPredefinedStyle(target: string): CSSRule {
-        var result = null;
+    public getPredefinedStyle(target: string): CSSRule | null {
+        let result: CSSRule | null = null;
         for (var i = 0; i < document.styleSheets.length; i++) {
             var sheet = <StyleSheet>(<any>document.styleSheets[i]);
             var rules: CSSRuleList = (<any>sheet).cssRules;
@@ -378,7 +391,7 @@ export default class StyleEditor {
         return result;
     }
 
-    private FindExistingUserModifiedStyleSheet(): CSSStyleSheet {
+    private FindExistingUserModifiedStyleSheet(): CSSStyleSheet | null {
         for (var i = 0; i < document.styleSheets.length; i++) {
             if (
                 (<HTMLElement>document.styleSheets[i].ownerNode).title ===
@@ -394,7 +407,7 @@ export default class StyleEditor {
     }
 
     //note, this currently just makes an element in the document, not a separate file
-    public GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet {
+    public GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet | null {
         var styleSheet = this.FindExistingUserModifiedStyleSheet();
         if (styleSheet == null) {
             var newSheet = document.createElement("style");
@@ -419,10 +432,10 @@ export default class StyleEditor {
     // inside the block that has the style.
     public GetOrCreateRuleForStyle(
         styleName: string,
-        langAttrValue: string,
+        langAttrValue: string | null,
         ignoreLanguage: boolean,
         forChildParas?: boolean
-    ): CSSStyleRule {
+    ): CSSStyleRule | null {
         const styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         if (styleSheet == null) {
             return null;
@@ -484,7 +497,7 @@ export default class StyleEditor {
     }
 
     public ConvertPxToPt(pxSize: number, round = true): number {
-        var tempDiv = document.createElement("div");
+        let tempDiv: HTMLElement | null = document.createElement("div");
         tempDiv.style.width = "1000pt";
         document.body.appendChild(tempDiv);
         var ratio = 1000 / tempDiv.clientWidth;
@@ -671,14 +684,14 @@ export default class StyleEditor {
         var deferred = $.Deferred();
         var fulfilled = 0;
         var length = promises.length;
-        var results = [];
+        var results: string[] = [];
 
         if (length === 0) {
             deferred.resolve(results);
         } else {
             promises.forEach((promise: JQueryPromise<string>, i) => {
                 promise.then(value => {
-                    results[i] = value;
+                    if (value) results[i] = value;
                     fulfilled++;
                     if (fulfilled === length) {
                         deferred.resolve(results);
@@ -931,8 +944,9 @@ export default class StyleEditor {
 
                         editor.styles = editor.getFormattingStyles();
                         if (
+                            styleName != null &&
                             editor.styles.every(
-                                style => !style.hasStyleId(styleName)
+                                style => !style.hasStyleId(styleName as string)
                             )
                         ) {
                             editor.styles.push(
@@ -1098,7 +1112,7 @@ export default class StyleEditor {
                                 new WebFXTabPane(
                                     $("#tabRoot").get(0),
                                     false,
-                                    null
+                                    undefined
                                 );
                             }
                         }
@@ -1520,18 +1534,21 @@ export default class StyleEditor {
         }
         var rule = this.getStyleRule(false);
         var val = $("#bold").hasClass("selectedIcon");
-        rule.style.setProperty(
-            "font-weight",
-            val ? "bold" : "normal",
-            "important"
-        );
-        if (this.shouldSetDefaultRule()) {
-            rule = this.getStyleRule(true);
+        if (rule != null) {
             rule.style.setProperty(
                 "font-weight",
                 val ? "bold" : "normal",
                 "important"
             );
+        }
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            if (rule != null)
+                rule.style.setProperty(
+                    "font-weight",
+                    val ? "bold" : "normal",
+                    "important"
+                );
         }
         this.cleanupAfterStyleChange();
     }
@@ -1542,18 +1559,20 @@ export default class StyleEditor {
         }
         var rule = this.getStyleRule(false);
         var val = $("#italic").hasClass("selectedIcon");
-        rule.style.setProperty(
-            "font-style",
-            val ? "italic" : "normal",
-            "important"
-        );
-        if (this.shouldSetDefaultRule()) {
-            rule = this.getStyleRule(true);
+        if (rule != null)
             rule.style.setProperty(
                 "font-style",
                 val ? "italic" : "normal",
                 "important"
             );
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            if (rule != null)
+                rule.style.setProperty(
+                    "font-style",
+                    val ? "italic" : "normal",
+                    "important"
+                );
         }
         this.cleanupAfterStyleChange();
     }
@@ -1564,18 +1583,20 @@ export default class StyleEditor {
         }
         var rule = this.getStyleRule(false);
         var val = $("#underline").hasClass("selectedIcon");
-        rule.style.setProperty(
-            "text-decoration",
-            val ? "underline" : "none",
-            "important"
-        );
-        if (this.shouldSetDefaultRule()) {
-            rule = this.getStyleRule(true);
+        if (rule != null)
             rule.style.setProperty(
                 "text-decoration",
                 val ? "underline" : "none",
                 "important"
             );
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            if (rule != null)
+                rule.style.setProperty(
+                    "text-decoration",
+                    val ? "underline" : "none",
+                    "important"
+                );
         }
         this.cleanupAfterStyleChange();
     }
@@ -1585,9 +1606,11 @@ export default class StyleEditor {
             return;
         }
         var rule = this.getStyleRule(false);
-        var font = $("#font-select").val();
-        rule.style.setProperty("font-family", font, "important");
-        this.cleanupAfterStyleChange();
+        if (rule != null) {
+            var font = $("#font-select").val();
+            rule.style.setProperty("font-family", font, "important");
+            this.cleanupAfterStyleChange();
+        }
     }
 
     // Return true if font-tab changes (other than font family) for the current element should be applied
@@ -1622,14 +1645,20 @@ export default class StyleEditor {
         }
         // Always set the value in the language-specific rule
         var rule = this.getStyleRule(false);
-        rule.style.setProperty("font-size", sizeString + units, "important");
-        if (this.shouldSetDefaultRule()) {
-            rule = this.getStyleRule(true);
+        if (rule != null)
             rule.style.setProperty(
                 "font-size",
                 sizeString + units,
                 "important"
             );
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            if (rule != null)
+                rule.style.setProperty(
+                    "font-size",
+                    sizeString + units,
+                    "important"
+                );
         }
         this.cleanupAfterStyleChange();
     }
@@ -1640,10 +1669,12 @@ export default class StyleEditor {
         }
         var lineHeight = $("#line-height-select").val();
         var rule = this.getStyleRule(false);
-        rule.style.setProperty("line-height", lineHeight, "important");
+        if (rule != null)
+            rule.style.setProperty("line-height", lineHeight, "important");
         if (this.shouldSetDefaultRule()) {
             rule = this.getStyleRule(true);
-            rule.style.setProperty("line-height", lineHeight, "important");
+            if (rule != null)
+                rule.style.setProperty("line-height", lineHeight, "important");
         }
         this.cleanupAfterStyleChange();
     }
@@ -1667,10 +1698,12 @@ export default class StyleEditor {
                 wordSpace = "normal";
         }
         var rule = this.getStyleRule(false);
-        rule.style.setProperty("word-spacing", wordSpace, "important");
+        if (rule != null)
+            rule.style.setProperty("word-spacing", wordSpace, "important");
         if (this.shouldSetDefaultRule()) {
             rule = this.getStyleRule(true);
-            rule.style.setProperty("word-spacing", wordSpace, "important");
+            if (rule != null)
+                rule.style.setProperty("word-spacing", wordSpace, "important");
         }
         this.cleanupAfterStyleChange();
     }
@@ -1680,8 +1713,10 @@ export default class StyleEditor {
         }
         var paraSpacing = $("#para-spacing-select").val() + "em";
         var rule = this.getStyleRule(true, true);
-        rule.style.setProperty("margin-bottom", paraSpacing, "important");
-        this.cleanupAfterStyleChange();
+        if (rule != null) {
+            rule.style.setProperty("margin-bottom", paraSpacing, "important");
+            this.cleanupAfterStyleChange();
+        }
     }
 
     public changePosition() {
@@ -1693,9 +1728,10 @@ export default class StyleEditor {
         if ($("#position-center").hasClass("selectedIcon")) {
             position = "center";
         }
-
-        rule.style.setProperty("text-align", position, "important");
-        this.cleanupAfterStyleChange();
+        if (rule != null) {
+            rule.style.setProperty("text-align", position, "important");
+            this.cleanupAfterStyleChange();
+        }
     }
 
     public changeIndent() {
@@ -1703,6 +1739,7 @@ export default class StyleEditor {
             return;
         }
         var rule = this.getStyleRule(true, true); // rule that is language-independent for child paras
+        if (rule == null) return;
         if ($("#indent-none").hasClass("selectedIcon")) {
             // It's tempting to remove the property. However, we apply normal-style as a class to
             // parent bloom-translationGroup elements so everything inherits from it by default.
@@ -1761,15 +1798,14 @@ export default class StyleEditor {
                 // Even if we weren't in author mode, the factory definition of a style should be language-neutral,
                 // so we'd want to insert it into our book that way.
                 if (selector === "font-family") {
-                    this.getStyleRule(false).style.setProperty(
-                        selector,
-                        val,
-                        "important"
-                    );
+                    rule = this.getStyleRule(false);
+                    if (rule != null)
+                        rule.style.setProperty(selector, val, "important");
                 } else {
                     // review: may be desirable to do something if val is not one of the values
                     // we can generate, or just possibly if selector is not one of the ones we manipulate.
-                    rule.style.setProperty(selector, val, "important");
+                    if (rule != null)
+                        rule.style.setProperty(selector, val, "important");
                 }
             }
         }
@@ -1822,7 +1858,7 @@ export default class StyleEditor {
     public getStyleRule(
         ignoreLanguage: boolean,
         forChildPara?: boolean
-    ): CSSStyleRule {
+    ): CSSStyleRule | null {
         const target = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
