@@ -20,49 +20,17 @@ namespace Bloom.Api
 	/// and (b) as a safety net, in case there's some way an api/branding url still gets presented
 	/// to the image server.
 	/// </summary>
-	class BrandingApi
+	class BrandingSettings
 	{
 		public const string kBrandingImageUrlPart = "branding/image";
 		private readonly CollectionSettings _collectionSettings;
 
-		public BrandingApi(CollectionSettings collectionSettings)
+		public BrandingSettings(CollectionSettings collectionSettings)
 		{
 			_collectionSettings = collectionSettings;
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
-		{
-			server.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
-			{
-#if DEBUG
-				// The book templates are allowed to use the branding api.  All real books
-				// should not use this facility.
-				if (request.CurrentBook == null || request.CurrentBook.FolderPath == null ||
-					!Book.BookStorage.IsStaticContent(request.CurrentBook.FolderPath))
-				{
-					//Debug.Fail("Books should no longer have branding api urls");
-				}
-#endif
-				var fileName = request.RequiredFileNameOrPath("id");
-				if (request.CurrentBook == null)
-				{
-					// Not sure how this can happen, but it did in one collection.
-					request.Failed("no current book");
-					return;
-				}
-				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectKey, fileName.NotEncoded, request.CurrentBook.GetLayout());
 
-				// And this is perfectly normal, to not have a branding image at all, for a particular page:
-				if (string.IsNullOrEmpty(path))
-				{
-					request.Failed("");
-					// the HTML will need to be able to handle this invisibly... see http://stackoverflow.com/questions/22051573/how-to-hide-image-broken-icon-using-only-css-html-without-js
-					return;
-				}
-				request.ReplyWithImage(path);
-			}, false);
-
-		}
 
 		/// <summary>
 		/// Find the requested branding image file for the given branding, looking for a .png file if the .svg file does not exist.
