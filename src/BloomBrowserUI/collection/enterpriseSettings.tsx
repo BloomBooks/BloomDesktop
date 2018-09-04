@@ -1,28 +1,12 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Label, Markdown } from "../react_components/l10n";
+import { Label } from "../react_components/l10n";
+import { Markdown } from "../react_components/markdown";
 import { Link } from "../react_components/link";
 import { RadioGroup, Radio } from "../react_components/radio";
 import { BloomApi } from "../utils/bloomApi";
 import "./enterpriseSettings.less";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
-// I think some of this is one-time initialization that should be moved to
-// a more generic place when we use font-awesome more widely.
-import {
-    faQuestion,
-    faCheck,
-    faExclamationCircle,
-    faCopy,
-    faPaste
-} from "@fortawesome/free-solid-svg-icons";
-
-library.add(faCheck);
-library.add(faQuestion);
-library.add(faExclamationCircle);
-library.add(faCopy);
-library.add(faPaste);
+import { FontAwesomeIcon } from "../bloomIcons";
 
 interface IState {
     enterpriseStatus: string;
