@@ -34,6 +34,7 @@ interface IState {
     invalidBranding: string;
     subscriptionAnimation: string;
     communityAnimation: string;
+    summaryAnimation: string;
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
@@ -47,7 +48,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         subscriptionIncomplete: false,
         invalidBranding: "",
         subscriptionAnimation: "",
-        communityAnimation: ""
+        communityAnimation: "",
+        summaryAnimation: ""
     };
 
     public componentDidMount() {
@@ -104,7 +106,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     </Label>
                 </div>
                 <RadioGroup
-                    onChange={val => this.setStatus(val, true)}
+                    onChange={val => this.setStatus(val)}
                     value={this.state.enterpriseStatus}
                 >
                     <div>
@@ -302,8 +304,11 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                     "summary" +
                                     (this.state.subscriptionSummary
                                         ? ""
-                                        : " hidden")
+                                        : " closed")
                                 }
+                                style={{
+                                    animationName: this.state.summaryAnimation
+                                }}
                                 dangerouslySetInnerHTML={{
                                     __html: this.state.subscriptionSummary
                                 }}
@@ -432,7 +437,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         return this.state.subscriptionExpiry < new Date();
     }
 
-    private setStatus(status: string, updateSumary: boolean) {
+    private setStatus(status: string) {
         BloomApi.postJson("settings/enterpriseStatus", status);
         var oldStatus = this.state.enterpriseStatus;
         // Figure out animation names to set to make the appropriate child blocks
@@ -464,14 +469,13 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         this.setState({
             enterpriseStatus: status,
             subscriptionAnimation: subscriptionAnimation,
-            communityAnimation: communityAnimation
+            communityAnimation: communityAnimation,
+            summaryAnimation: ""
         });
-        if (updateSumary) {
-            if (status !== "None") {
-                BloomApi.get("settings/enterpriseSummary", result => {
-                    this.setSummary(result.data);
-                });
-            }
+        if (status !== "None") {
+            BloomApi.get("settings/enterpriseSummary", result => {
+                this.setSummary(result.data, false);
+            });
         }
     }
 
@@ -503,7 +507,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     subscriptionExpiry: null,
                     subscriptionUnknown: true,
                     subscriptionIncomplete: false,
-                    subscriptionSummary: ""
+                    subscriptionSummary: "",
+                    summaryAnimation: "hide100"
                 });
                 return;
             }
@@ -514,7 +519,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     subscriptionExpiry: null,
                     subscriptionUnknown: false,
                     subscriptionIncomplete: true,
-                    subscriptionSummary: ""
+                    subscriptionSummary: "",
+                    summaryAnimation: "hide100"
                 });
                 return;
             }
@@ -527,16 +533,23 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             });
             if (expiry) {
                 BloomApi.get("settings/enterpriseSummary", result => {
-                    this.setSummary(result.data);
+                    this.setSummary(result.data, true);
                 });
             } else {
-                this.setSummary("");
+                this.setSummary("", true);
             }
         });
     }
 
-    private setSummary(content: string) {
-        this.setState({ subscriptionSummary: content });
+    private setSummary(content: string, animate: boolean) {
+        this.setState({
+            subscriptionSummary: content
+        });
+        if (animate) {
+            this.setState({
+                summaryAnimation: content ? "show100" : "hide100"
+            });
+        }
     }
 
     private handleSubscriptionCodeChanged(event) {

@@ -190,6 +190,12 @@
     .summary {
         margin-top: 5px;
         height: 106px;
+        animation-duration: 0.6s;
+        overflow-y: hidden;
+        &.closed {
+            max-height: 0; // this way of hiding it allows animation to open and close it
+            padding: 0;
+        }
         // These settings are not used directly in the tsx, they are intended to be the class
         // of a single top-level div in each summary.htm file. In the horizontal layout,
         // there should be one child div, with whatever should appear beside the picture.
