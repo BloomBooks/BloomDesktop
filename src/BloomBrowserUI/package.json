@@ -18,6 +18,9 @@
             "build": "does a nice new clean build of the output/brower folder.",
             "watch": "compiles TS, Less, Pug, etc automatically. Doesn't handle all non-code things like 'build' does."
         },
+        "buildBrandingFiles": "cpx \"branding/**/*.{png,jpg,svg,css,json}\" ../../output/browser/branding",
+        "buildBrandingLess": "lessc-glob branding/**/*.less ../../output/browser/branding",
+        "buildBrandings": "npm-run-all --parallel buildBrandingLess buildBrandingFiles ",
         "build": "gulp",
         "watchCode": "webpack --watch",
         "watchBrandingFiles": "cpx \"branding/**/*.{png,jpg,svg,css,json}\" ../../output/browser/branding --watch",
@@ -100,6 +103,7 @@
         "less": "^3.0.1",
         "less-loader": "^4.1.0",
         "less-watch-compiler": "^1.11.3",
+        "lessc-glob": "^1.0.9",
         "markdown-it": "^8.4.1",
         "markdown-it-attrs": "^1.2.1",
         "markdown-it-container": "^2.0.0",
