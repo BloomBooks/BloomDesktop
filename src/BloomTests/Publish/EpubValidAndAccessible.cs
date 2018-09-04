@@ -138,6 +138,10 @@ namespace BloomTests.Publish
 ");
 			MakeImageFiles(book, "DevilsSlide", "SteveAtMalad");
 			MakeSampleSvgImage(book.FolderPath.CombineForPath("back-cover-outside.svg"));
+			// Add some accessibility stuff from the ePUB metadata dialog
+			var metadata = book.BookInfo.MetaData;
+			metadata.Hazards = "flashingHazard,noMotionSimulationHazard,soundHazard";
+			metadata.A11yFeatures = "signLanguage";
 			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
 			MakeEpub("output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage);
 			GetPageOneData();
@@ -166,7 +170,7 @@ namespace BloomTests.Publish
 		{
 			CheckBasicsInPage("DevilsSlide");
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(false, true, _defaultSourceValue, false); // no sound files, but some image files
+			CheckAccessibilityInManifest(false, true, false, _defaultSourceValue, false); // no sound files, but some image files
 		}
 
 		[Test]

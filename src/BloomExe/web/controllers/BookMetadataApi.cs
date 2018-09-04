@@ -12,7 +12,7 @@ namespace Bloom.web.controllers
 	{
 		private readonly BookSelection _bookSelection;
 
-		public BookMetadataApi(BookSelection bookSelection, PageRefreshEvent pageRefreshEvent)
+		public BookMetadataApi(BookSelection bookSelection)
 		{
 			_bookSelection = bookSelection;
 		}

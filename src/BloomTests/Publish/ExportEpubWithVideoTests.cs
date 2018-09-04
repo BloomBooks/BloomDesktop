@@ -239,7 +239,7 @@ namespace BloomTests.Publish
 		{
 			CheckBasicsInPage("DevilsSlide");
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(false, true, _defaultSourceValue, false); // no sound files, but some image files
+			CheckAccessibilityInManifest(false, true, false, _defaultSourceValue, false); // no sound files, but some image files
 			CheckFolderStructure();
 		}
 
@@ -255,6 +255,7 @@ namespace BloomTests.Publish
 			list = doc.SafeSelectNodes("//div[contains(@class,'bloom-trailingElement')]").Cast<XmlElement>();
 			Assert.AreEqual(1, list.Count());
 			Assert.AreEqual("This video shows me counting to five on my fingers.", list.First().InnerText.Trim());
+			CheckAccessibilityInManifest(false, true, true, _defaultSourceValue, false); // no sound files, but some image and video files
 		}
 
 		[Test]
@@ -285,6 +286,7 @@ namespace BloomTests.Publish
 			list = doc.SafeSelectNodes("//div[contains(@class,'bloom-trailingElement')]").Cast<XmlElement>();
 			Assert.AreEqual(1, list.Count());
 			Assert.AreEqual("", list.First().InnerText.Trim());
+			CheckAccessibilityInManifest(false, true, true, _defaultSourceValue, false); // no sound files, but some image and video files
 		}
 
 		[Test]
