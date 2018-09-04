@@ -7,38 +7,61 @@ import { RadioGroup, Radio } from "../react_components/radio";
 import { BloomApi } from "../utils/bloomApi";
 import "./enterpriseSettings.less";
 import { FontAwesomeIcon } from "../bloomIcons";
+import { invariant } from "mobx/lib/internal";
+
+// values of controlState:
+// None: the None button is selected.
+// Community: the Local Community button is selected
+// The remaining states all involve the EnterpriseSubscription button being selected
+// SubscriptionGood: a valid, current, known code has been entered (or remembered)
+//      We get a green check, an expiration date, and a 'summary' of the branding
+// SubscriptionUnknown: a valid code has been entered, but this version of Bloom does not recognize it
+//      We get a red ! icon and a message
+// SubscriptionExpired: a valid code has been entered, but its expiration date is past.
+//      We get a red ! icon, a red message about the expiration, and a branding summary
+// SubscriptionIncomplete: a valid subscription could be created by typing more at
+// the end of the current code. This includes the case where the code is empty.
+//      We show a ? icon and a message
+// SubscriptionIncorrect: a code has been entered which cannot be fixed by typing more
+//      We show a red ! icon and  message
+// SubscriptionInvalid: a special case where the subscription code is typically empty,
+// or just possibly otherwise incomplete, and this has been detected at startup
+//      We show a special message in an orange box and a red ! icon
 
 interface IState {
-    enterpriseStatus: string;
-    subscriptionCode: string;
-    subscriptionExpiry: Date;
-    subscriptionSummary: string;
-    subscriptionUnknown: boolean;
-    subscriptionIncomplete: boolean;
+    enterpriseStatus: string; // which radio button is active, controls the radio group
+    subscriptionCode: string; // The content of the code box
+    subscriptionExpiry: Date; // displayed if all is well
+    subscriptionSummary: string; // markdown of the summary of the branding when identified
+    controlState: string; // controls which parts of the dialog are visible (see above)
+    // Set to the branding stored in the bloomCollection, in the special case
+    // where the dialog is brought up when the collection is opened because
+    // its saved branding is not validated by a subscriptionCode. Gets inserted into
+    // the message and the code box.
     invalidBranding: string;
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
 export class EnterpriseSettings extends React.Component<{}, IState> {
     public readonly state: IState = {
-        enterpriseStatus: "none",
+        enterpriseStatus: "None",
         subscriptionCode: "",
         subscriptionExpiry: null,
         subscriptionSummary: "",
-        subscriptionUnknown: false,
-        subscriptionIncomplete: false,
+        controlState: "None",
         invalidBranding: ""
     };
 
     public componentDidMount() {
         BloomApi.get("settings/enterpriseStatus", result => {
-            this.setState({ enterpriseStatus: result.data });
-        });
-        BloomApi.get("settings/subscriptionCode", result => {
-            this.setSubscriptionCode(result.data);
-        });
-        BloomApi.get("settings/invalidBranding", result => {
-            this.setState({ invalidBranding: result.data });
+            const status = result.data;
+            BloomApi.get("settings/subscriptionCode", result => {
+                const code = result.data;
+                BloomApi.get("settings/invalidBranding", result => {
+                    this.setState({ invalidBranding: result.data });
+                    this.setControlState(status, code, result.data);
+                });
+            });
         });
     }
     // I don't understand why this is necessary but without it the selection
@@ -100,8 +123,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             l10nParam1={this.codesUrl}
                             className={
                                 "invalidBranding" +
-                                (this.state.invalidBranding &&
-                                !this.subscriptionExpired()
+                                (this.state.controlState ===
+                                "SubscriptionInvalid"
                                     ? ""
                                     : " hidden")
                             }
@@ -142,7 +165,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             <span
                                 className={
                                     "evaluationCode" +
-                                    (this.shouldShowGreenCheck()
+                                    (this.state.controlState ==
+                                    "SubscriptionGood"
                                         ? ""
                                         : " hidden")
                                 }
@@ -152,7 +176,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             <span
                                 className={
                                     "evaluationCode" +
-                                    (this.shouldShowIncomplete()
+                                    (this.state.controlState ==
+                                    "SubscriptionIncomplete"
                                         ? ""
                                         : " hidden")
                                 }
@@ -162,7 +187,9 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             <span
                                 className={
                                     "evaluationCode" +
-                                    (this.shouldShowRedError() ? "" : " hidden")
+                                    (this.shouldShowRedExclamation()
+                                        ? ""
+                                        : " hidden")
                                 }
                             >
                                 <FontAwesomeIcon icon="exclamation-circle" />
@@ -205,7 +232,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                 l10nKey="Settings.Enterprise.NotValid"
                                 className={
                                     "error" +
-                                    (this.shouldShowIncorrect()
+                                    (this.state.controlState ===
+                                    "SubscriptionIncorrect"
                                         ? ""
                                         : " hidden")
                                 }
@@ -216,7 +244,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                 l10nKey="Settings.Enterprise.Incomplete"
                                 className={
                                     "incomplete" +
-                                    (this.shouldShowIncomplete()
+                                    (this.state.controlState ===
+                                    "SubscriptionIncomplete"
                                         ? ""
                                         : " hidden")
                                 }
@@ -225,7 +254,10 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             </Label>
                             <div
                                 className={
-                                    this.shouldShowUnknown() ? "" : " hidden"
+                                    this.state.controlState ===
+                                    "SubscriptionUnknown"
+                                        ? ""
+                                        : " hidden"
                                 }
                             >
                                 <Label
@@ -247,7 +279,10 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                 l10nKey="Settings.Enterprise.Expired"
                                 className={
                                     "error" +
-                                    (this.shouldShowExpired() ? "" : " hidden")
+                                    (this.state.controlState ===
+                                    "SubscriptionExpired"
+                                        ? ""
+                                        : " hidden")
                                 }
                             >
                                 That code has expired.
@@ -255,7 +290,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             <div
                                 className={
                                     "expiration" +
-                                    (this.shouldShowExpiration()
+                                    (this.state.controlState ===
+                                    "SubscriptionGood"
                                         ? ""
                                         : " hidden")
                                 }
@@ -330,82 +366,13 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         );
     }
 
-    private shouldShowGreenCheck() {
-        if (!this.state.subscriptionCode) {
-            return false; // no code at all, don't evaluate
-        }
-        return !this.shouldShowSomeError();
-    }
-
-    private shouldShowExpiration(): boolean {
-        return this.state.subscriptionExpiry && !this.subscriptionExpired();
-    }
-
-    private shouldShowIncomplete() {
-        if (!this.shouldShowSomeError()) {
-            return false; // no problem
-        }
-        if (this.state.subscriptionIncomplete) {
-            return true; // incomplete is exactly what the ? is for
-        }
-        return false; // it's an error
-    }
-
-    private shouldShowExpired() {
-        if (!this.shouldShowSomeError()) {
-            return false; // no problem
-        }
-        return this.subscriptionExpired();
-    }
-
-    private shouldShowRedError() {
-        if (!this.shouldShowSomeError()) {
-            return false; // no problem
-        }
-        // If there's a not-valid code, we want either question or error icon
-        return !this.shouldShowIncomplete();
-    }
-
-    private shouldShowSomeError() {
-        if (this.state.enterpriseStatus != "Subscription") {
-            return false; // does not apply
-        }
-
-        if (this.state.subscriptionExpiry && !this.subscriptionExpired()) {
-            return false; // code is good!
-        }
-        return true;
-    }
-
-    private shouldShowIncorrect() {
-        if (!this.shouldShowSomeError()) {
-            return false; // no problem
-        }
-        if (
-            this.state.subscriptionUnknown ||
-            this.state.subscriptionIncomplete ||
-            this.subscriptionExpired()
-        ) {
-            return false; // we'll show a different message
-        }
-        return true;
-    }
-
-    private shouldShowUnknown() {
-        if (!this.shouldShowSomeError()) {
-            return false; // no problem
-        }
-        if (!this.state.subscriptionUnknown) {
-            return false; // we'll show a different message
-        }
-        return true;
-    }
-
-    private subscriptionExpired() {
-        if (!this.state.subscriptionExpiry) {
-            return false; // Don't want to use expired message for invalid date
-        }
-        return this.state.subscriptionExpiry < new Date();
+    private shouldShowRedExclamation() {
+        return (
+            this.state.controlState === "SubscriptionIncorrect" ||
+            this.state.controlState === "SubscriptionUnknown" ||
+            this.state.controlState === "SubscriptionExpired" ||
+            this.state.controlState === "SubscriptionInvalid"
+        );
     }
 
     private setStatus(status: string) {
@@ -413,6 +380,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         this.setState({
             enterpriseStatus: status
         });
+
         if (status !== "None") {
             BloomApi.get("settings/enterpriseSummary", result => {
                 this.setSummary(result.data);
@@ -438,27 +406,68 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
 
     // Used both with a code from entering something in the text box, and
     // initializing from an axios get. Should not post. Assume we have already
-    // set the code on the server.
-    private setSubscriptionCode(code: string) {
+    // set the code on the server. Should set one of the Subscription control states
+    // in controlState, subscriptionCode, subscriptionExpiry, enterpriseStatus, and subscriptionSummary
+    private setControlState(
+        status: string,
+        code: string,
+        invalidBranding: string
+    ) {
+        if (invalidBranding) {
+            status = "Subscription";
+        }
+        this.setState({ enterpriseStatus: status });
+        if (status === "None") {
+            this.setState({
+                controlState: "None",
+                subscriptionCode: code,
+                subscriptionExpiry: null,
+                subscriptionSummary: ""
+            });
+            return;
+        } else if (status === "Community") {
+            this.setState({
+                controlState: "Community",
+                subscriptionCode: code,
+                subscriptionExpiry: null
+            });
+            BloomApi.get("settings/enterpriseSummary", result => {
+                this.setSummary(result.data);
+            });
+            return;
+        }
         BloomApi.get("settings/enterpriseExpiry", result => {
             if (result.data === "unknown") {
                 // Valid-looking code, but not one this version knows about.
                 this.setState({
                     subscriptionCode: code,
                     subscriptionExpiry: null,
-                    subscriptionUnknown: true,
-                    subscriptionIncomplete: false,
+                    controlState: "SubscriptionUnknown",
                     subscriptionSummary: ""
                 });
                 return;
             }
             if (result.data === "incomplete") {
                 // Invalid code, but looks as if they haven't finished typing
+                if (invalidBranding) {
+                    // The most common invalidBranding case, no code at all, comes here.
+                    // Other cases, including expiration, are considered sufficiently
+                    // explained by the normal state of the dialog.
+                    this.setState({
+                        subscriptionCode: code,
+                        subscriptionExpiry: null,
+                        controlState: "SubscriptionInvalid",
+                        subscriptionSummary: ""
+                    });
+                    BloomApi.get("settings/enterpriseSummary", result => {
+                        this.setSummary(result.data);
+                    });
+                    return;
+                }
                 this.setState({
                     subscriptionCode: code,
                     subscriptionExpiry: null,
-                    subscriptionUnknown: false,
-                    subscriptionIncomplete: true,
+                    controlState: "SubscriptionIncomplete",
                     subscriptionSummary: ""
                 });
                 return;
@@ -466,11 +475,16 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             var expiry = result.data === null ? null : new Date(result.data);
             this.setState({
                 subscriptionCode: code,
-                subscriptionExpiry: expiry,
-                subscriptionUnknown: false,
-                subscriptionIncomplete: false
+                subscriptionExpiry: expiry
             });
-            if (expiry) {
+            if (!expiry) {
+                this.setState({ controlState: "SubscriptionIncorrect" });
+            } else if (expiry < new Date()) {
+                this.setState({ controlState: "SubscriptionExpired" });
+            } else {
+                this.setState({ controlState: "SubscriptionGood" });
+            }
+            if (expiry || invalidBranding) {
                 BloomApi.get("settings/enterpriseSummary", result => {
                     this.setSummary(result.data);
                 });
@@ -498,12 +512,13 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         ) as HTMLInputElement).selectionStart;
         this.updateSubscriptionCode(event.target.value);
     }
+
     private updateSubscriptionCode(code: string) {
         BloomApi.postJson("settings/subscriptionCode", {
             subscriptionCode: code
         });
-        this.setSubscriptionCode(code);
         this.setState({ invalidBranding: "" });
+        this.setControlState(this.state.enterpriseStatus, code, "");
     }
 }
 
