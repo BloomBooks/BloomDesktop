@@ -757,7 +757,7 @@ namespace Bloom.Book
 
 				// Branding images are handled in a special way in BrandingApi.cs.
 				// Without this, we get "Warning: Image /bloom/api/branding/image is missing from the folder xxx" (see BL-3975)
-				if (imageFileName.EndsWith(BrandingApi.kBrandingImageUrlPart))
+				if (imageFileName.EndsWith(BrandingSettings.kBrandingImageUrlPart))
 					continue;
 
 				//trim off the end of "license.png?123243"

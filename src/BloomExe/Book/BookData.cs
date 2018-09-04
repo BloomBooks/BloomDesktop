@@ -1290,7 +1290,7 @@ namespace Bloom.Book
 				}
 			}
 			
-			var settings = BrandingApi.GetSettings(brandingNameOrPath);
+			var settings = BrandingSettings.GetSettings(brandingNameOrPath);
 
 			if (settings != null && settings.Presets != null)
 			{

@@ -288,25 +288,29 @@
         //}
     }
 
-    // TODO: we can remove this once everything is switched over to the more specific branding-html approach
-    .branding {
+    // // TODO: we can remove this once everything is switched over to the more specific branding-html approach
+    // .branding-top {
+    //     position: initial; // turn off the absolute positioning we get from branding; top should put things downward
+    //     height: auto;
+    // }
+    [data-book="credits-page-branding-top-html"] {
+        // no styling needed
+    }
+
+    // // TODO: we can remove this once everything is switched over to the more specific branding-html approach
+    // .branding {
+    //     position: absolute;
+    //     bottom: 0;
+    //     left: 0; // allows centering even though position absolute
+    //     right: 0; // allows centering even though position absolute
+    //     height: 1in;
+    // }
+    [data-book="credits-page-branding-bottom-html"] {
         position: absolute;
         bottom: 0;
         left: 0; // allows centering even though position absolute
         right: 0; // allows centering even though position absolute
         height: 1in;
-    }
-    // TODO: we can remove this once everything is switched over to the more specific branding-html approach
-    .branding-top {
-        position: initial; // turn off the absolute positioning we get from branding; top should put things downward
-        height: auto;
-    }
-    [data-book="credits-page-branding-top-html"] {
-        // no styling needed
-    }
-    [data-book="credits-page-branding-bottom-html"] {
-        position: absolute;
-        bottom: 0;
     }
 }
 
@@ -411,8 +415,6 @@ body[bookcreationtype="translation"] {
             height: 100%;
             object-fit: contain;
         }
-        position: absolute;
-        bottom: 0;
     }
     .smallFlexGap {
         flex: 0 1 @MarginBetweenMinorItems;
@@ -445,17 +447,17 @@ body[bookcreationtype="translation"] {
             }
         }
 
-        // TODO: we can remove this once everything is switched over to the more specific branding-html approach
-        .branding {
-            margin-top: auto; // for simpler cases, puts image at bottom of containing flex box.
-        }
-
         [data-book="outside-back-cover-branding-top-html"] {
             // no styling needed
         }
+        // // TODO: we can remove this once everything is switched over to the more specific branding-html approach
+        // .branding {
+        //     margin-top: auto; // for simpler cases, puts image at bottom of containing flex box.
+        // }
         [data-book="outside-back-cover-branding-bottom-html"] {
-            position: absolute;
-            bottom: 0;
+            // position: absolute;
+            // bottom: 0;
+            margin-top: auto; // for simpler cases, puts image at bottom of containing flex box.
         }
     }
 }
