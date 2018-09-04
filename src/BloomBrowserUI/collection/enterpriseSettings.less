@@ -2,60 +2,6 @@
 @greyBackground: #ebebeb;
 @subitemIndent: 27px;
 
-@keyframes show160 {
-    from {
-        max-height: 0;
-    }
-    to {
-        max-height: 160px;
-    }
-}
-
-@keyframes hide160 {
-    from {
-        max-height: 160px;
-    }
-    to {
-        max-height: 0;
-    }
-}
-
-@keyframes show60 {
-    from {
-        max-height: 0;
-    }
-    to {
-        max-height: 60px;
-    }
-}
-
-@keyframes hide60 {
-    from {
-        max-height: 60px;
-    }
-    to {
-        max-height: 0;
-    }
-}
-
-@keyframes show100 {
-    from {
-        max-height: 0;
-    }
-    to {
-        max-height: 100px;
-    }
-}
-
-@keyframes hide100 {
-    from {
-        max-height: 100px;
-    }
-    to {
-        max-height: 0;
-    }
-}
-
 .enterpriseSettings {
     padding: 0px 4px 0px 4px;
     font-family: @ui-fonts;
@@ -63,12 +9,21 @@
 
     #enterpriseMain,
     #communityMain {
-        animation-duration: 0.6s;
+        transition: max-height 0.6s;
         overflow-y: hidden;
         &.closed {
             max-height: 0; // this way of hiding it allows animation to close it
             padding: 0;
         }
+    }
+    #enterpriseMain {
+        max-height: 60px;
+        &.hasSummary {
+            max-height: 160px;
+        }
+    }
+    #communityMain {
+        max-height: 106px;
     }
 
     // These elements resolve to spans or links, but we want each to lay out as a block.
@@ -190,12 +145,7 @@
     .summary {
         margin-top: 5px;
         height: 106px;
-        animation-duration: 0.6s;
         overflow-y: hidden;
-        &.closed {
-            max-height: 0; // this way of hiding it allows animation to open and close it
-            padding: 0;
-        }
         // These settings are not used directly in the tsx, they are intended to be the class
         // of a single top-level div in each summary.htm file. In the horizontal layout,
         // there should be one child div, with whatever should appear beside the picture.

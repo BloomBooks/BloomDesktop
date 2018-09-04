@@ -16,9 +16,6 @@ interface IState {
     subscriptionUnknown: boolean;
     subscriptionIncomplete: boolean;
     invalidBranding: string;
-    subscriptionAnimation: string;
-    communityAnimation: string;
-    summaryAnimation: string;
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
@@ -30,10 +27,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         subscriptionSummary: "",
         subscriptionUnknown: false,
         subscriptionIncomplete: false,
-        invalidBranding: "",
-        subscriptionAnimation: "",
-        communityAnimation: "",
-        summaryAnimation: ""
+        invalidBranding: ""
     };
 
     public componentDidMount() {
@@ -123,12 +117,11 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             className={
                                 "enterpriseSubitems" +
                                 (this.state.enterpriseStatus === "Subscription"
-                                    ? ""
+                                    ? this.state.subscriptionSummary
+                                        ? " hasSummary"
+                                        : ""
                                     : " closed")
                             }
-                            style={{
-                                animationName: this.state.subscriptionAnimation
-                            }}
                         >
                             <Label
                                 className="subscriptionCodeLabel"
@@ -290,9 +283,6 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                         ? ""
                                         : " closed")
                                 }
-                                style={{
-                                    animationName: this.state.summaryAnimation
-                                }}
                                 dangerouslySetInnerHTML={{
                                     __html: this.state.subscriptionSummary
                                 }}
@@ -324,9 +314,6 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                 ? ""
                                 : " closed")
                         }
-                        style={{
-                            animationName: this.state.communityAnimation
-                        }}
                         dangerouslySetInnerHTML={{
                             __html: this.state.subscriptionSummary
                         }}
@@ -423,42 +410,12 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
 
     private setStatus(status: string) {
         BloomApi.postJson("settings/enterpriseStatus", status);
-        var oldStatus = this.state.enterpriseStatus;
-        // Figure out animation names to set to make the appropriate child blocks
-        // slide up and down.
-        var subscriptionAnimation = "";
-        var communityAnimation = "";
-        if (status === "Subscription" && oldStatus != "Subscription") {
-            // We want to do something like show160 if there's going to be a summary,
-            // show60 otherwise. But we can't know whether there is going to be
-            // a summary at this point. Assume that if we have a code, it's good,
-            // so there will be. It's better to use the bigger number wrongly, which
-            // just makes the transition a bit quick, than a smaller one, which
-            // makes it grow and then jerk.
-            subscriptionAnimation = this.state.subscriptionCode
-                ? "show160"
-                : "show60";
-        }
-        if (status === "Community" && oldStatus != "Community") {
-            communityAnimation = "show100";
-        }
-        if (status !== "Subscription" && oldStatus === "Subscription") {
-            subscriptionAnimation = this.state.subscriptionSummary
-                ? "hide160"
-                : "hide60";
-        }
-        if (status !== "Community" && oldStatus === "Community") {
-            communityAnimation = "hide100";
-        }
         this.setState({
-            enterpriseStatus: status,
-            subscriptionAnimation: subscriptionAnimation,
-            communityAnimation: communityAnimation,
-            summaryAnimation: ""
+            enterpriseStatus: status
         });
         if (status !== "None") {
             BloomApi.get("settings/enterpriseSummary", result => {
-                this.setSummary(result.data, false);
+                this.setSummary(result.data);
             });
         }
     }
@@ -491,8 +448,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     subscriptionExpiry: null,
                     subscriptionUnknown: true,
                     subscriptionIncomplete: false,
-                    subscriptionSummary: "",
-                    summaryAnimation: "hide100"
+                    subscriptionSummary: ""
                 });
                 return;
             }
@@ -503,8 +459,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     subscriptionExpiry: null,
                     subscriptionUnknown: false,
                     subscriptionIncomplete: true,
-                    subscriptionSummary: "",
-                    summaryAnimation: "hide100"
+                    subscriptionSummary: ""
                 });
                 return;
             }
@@ -517,23 +472,18 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             });
             if (expiry) {
                 BloomApi.get("settings/enterpriseSummary", result => {
-                    this.setSummary(result.data, true);
+                    this.setSummary(result.data);
                 });
             } else {
-                this.setSummary("", true);
+                this.setSummary("");
             }
         });
     }
 
-    private setSummary(content: string, animate: boolean) {
+    private setSummary(content: string) {
         this.setState({
             subscriptionSummary: content
         });
-        if (animate) {
-            this.setState({
-                summaryAnimation: content ? "show100" : "hide100"
-            });
-        }
     }
 
     private handleSubscriptionCodeChanged(event) {

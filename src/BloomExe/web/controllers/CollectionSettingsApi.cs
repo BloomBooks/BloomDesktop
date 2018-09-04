@@ -128,7 +128,7 @@ namespace Bloom.web.controllers
 				if (_enterpriseStatus == EnterpriseStatus.Community)
 					branding = "Local Community";
 				else if (_enterpriseStatus == EnterpriseStatus.Subscription)
-					branding = GetBrandingFromCode(SubscriptionCode);
+					branding = _enterpriseExpiry == DateTime.MinValue ? "" : GetBrandingFromCode(SubscriptionCode);
 				var summaryFile = BloomFileLocator.GetOptionalBrandingFile(branding, "summary.htm");
 				if (summaryFile == null)
 					request.ReplyWithText("");
