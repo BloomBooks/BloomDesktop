@@ -843,7 +843,8 @@ namespace Bloom
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
-			Debug.Assert(Program.RunningOnUiThread);
+			// OTOH, Unit tests are often not run on the UI thread (and would therefore just pop up annoying asserts).
+			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests);
 			var dummy = Handle; // gets WebBrowser created, if not already done.
 			var done = false;
 			var navTimer = new Stopwatch();
