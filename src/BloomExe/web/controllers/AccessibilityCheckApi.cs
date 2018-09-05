@@ -188,7 +188,7 @@ namespace Bloom.web.controllers
 					var randomName = Guid.NewGuid().ToString();
 					var reportDirectory = Path.Combine(reportRootDirectory, randomName);
 
-					var arguments = $"ace.js  -o \"{reportDirectory}\" \"{epubPath}\"";
+					var arguments = $"ace.js --verbose -o \"{reportDirectory}\" \"{epubPath}\"";
 					const int kSecondsBeforeTimeout = 60;
 					var progress = new NullProgress();
 					_webSocketProgress.MessageWithoutLocalizing("Running Ace by Daisy");
