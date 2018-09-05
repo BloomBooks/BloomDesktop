@@ -1451,7 +1451,14 @@ namespace Bloom.Publish.Epub
 						++descCount;
 						asideNode.SetAttribute("id", figDescId);
 						var ariaAttr = img.GetAttribute("aria-describedby");
-						img.SetAttribute("aria-describedby", (string.IsNullOrWhiteSpace(ariaAttr) ? "" : ariaAttr + " ") + figDescId);
+						// ACE by Daisy cannot handle multiple ID values in the aria-describedby attribute even
+						// though the ARIA specification clearly allows this.  So for now, use only the first one.
+						// I'd prefer to use specifically the vernacular language aside if we have to choose only
+						// one, but the aside elements don't have a lang attribute (yet?).  Perhaps the aside
+						// elements are ordered such that the first one is always the vernacular.
+						// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6426.
+						if (String.IsNullOrEmpty(ariaAttr))
+							img.SetAttribute("aria-describedby", figDescId);
 					}
 				}
 			}
