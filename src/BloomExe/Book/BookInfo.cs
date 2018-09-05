@@ -914,11 +914,11 @@ namespace Bloom.Book
 	/// </summary>
 	public class SubjectObject
 	{
-		[JsonProperty("code")]
-		public string code { get; set; }
+		[JsonProperty("value")]
+		public string value { get; set; }
 
-		[JsonProperty("description")]
-		public string description { get; set; }
+		[JsonProperty("label")]
+		public string label { get; set; }
 	}
 
 	/// <summary>

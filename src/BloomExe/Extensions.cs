@@ -65,7 +65,7 @@ namespace Bloom
 
 		public static void SizeTextRectangleToText(this ToolStripItemTextRenderEventArgs args)
 		{
-			var textSize = args.Graphics.MeasureString(args.Text, args.TextFont);
+			var textSize = TextRenderer.MeasureText(args.Graphics, args.Text, args.TextFont);
 			const int padding = 2;
 
 			var rc = args.TextRectangle;
@@ -74,7 +74,7 @@ namespace Bloom
 			// adjust the rectangle to fit the calculated text size
 			if (rc.Width < textSize.Width + padding)
 			{
-				var diffX = (int)System.Math.Ceiling(textSize.Width + 2 - rc.Width);
+				var diffX = textSize.Width + 2 - rc.Width;
 				rc.X -= diffX / 2;
 				rc.Width += diffX;
 				changed = true;
@@ -82,7 +82,7 @@ namespace Bloom
 
 			if (rc.Height < textSize.Height + padding)
 			{
-				var diffY = (int)System.Math.Ceiling(textSize.Height + 2 - rc.Height);
+				var diffY = textSize.Height + 2 - rc.Height;
 				rc.Y -= diffY / 2;
 				rc.Height += diffY;
 				changed = true;

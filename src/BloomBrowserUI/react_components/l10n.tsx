@@ -17,6 +17,7 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nTipEnglishDisabled?: string;
     alreadyLocalized?: boolean; // true if translated by C#-land
     l10nParam0?: string;
+    l10nParam1?: string;
 }
 
 export interface ILocalizationState {
@@ -39,6 +40,7 @@ export class LocalizableElement<
 
     // set the following boolean to turn all translated strings green
     private turnTranslatedGreen: boolean = false;
+    private previousL10nKey: string = "";
 
     constructor(props: ILocalizationProps) {
         super(props as P);
@@ -64,17 +66,35 @@ export class LocalizableElement<
                 "%0",
                 this.props.l10nParam0
             );
+            if (this.props.l10nParam1) {
+                newText = newText.replace("%1", this.props.l10nParam1);
+            }
             if (newText != this.state.translation) {
                 this.setState({
                     translation: newText
                 });
             }
         }
+        if (this.props.l10nKey != this.previousL10nKey) {
+            this.fetchTranslation();
+        }
     }
 
-    // React Docs: "If you need to load data from a remote endpoint, this is a good place to instantiate the network request.
+    /*// React Docs: "If you need to load data from a remote endpoint, componentDidMount is a good place to instantiate the network request.
     // Setting state in this method will trigger a re-rendering."
+
+    However, doing the fetch here means that we don't re-fetch if the parent changes the string they want to show by changing
+    the props and the English string. In one day-wasting example, the parent had two different <Label> </Label> elements, and
+    switched between then, but react didn't understand that they were different (until we manually added a @key attribute). React
+    was expecting that the component would react to the props changing; but it couldn't so long as we were only looking at
+    them in componentDidMount, which is not called just because a render() of our parent changed our props.
+    So now we look at props in componentDidUpdate() instead.
     public componentDidMount() {
+        //this.fetchTranslation();
+    }*/
+
+    private fetchTranslation() {
+        this.previousL10nKey = this.props.l10nKey;
         if (!this.props.l10nKey) {
             console.log("l10n component mounted with no key.");
             return;
@@ -92,12 +112,18 @@ export class LocalizableElement<
                     this.props.l10nComment
                 )
                 .done(result => {
-                    this.localizedText = result;
                     // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
                     // after this component is no longer visible. See note on componentWillUnmount()
                     if (this.props.l10nParam0) {
                         result = result.replace("%0", this.props.l10nParam0);
+                        if (this.props.l10nParam1) {
+                            result = result.replace(
+                                "%1",
+                                this.props.l10nParam1
+                            );
+                        }
                     }
+                    this.localizedText = result;
                     if (this.isComponentMounted) {
                         this.setState({ translation: result });
                     }

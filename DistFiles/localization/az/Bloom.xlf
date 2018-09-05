@@ -7,6 +7,12 @@
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
         <target xml:lang="az" state="needs-translation">Accessibility Checker</target>
       </trans-unit>
+      <trans-unit id="AccessibilityCheck.ACEByDaisy">
+        <source xml:lang="en">ACE by Daisy Automated Checks</source>
+        <note>ID: AccessibilityCheck.ACEByDaisy</note>
+        <note>Used as the name on a tab of the Accessibility Checks screen.</note>
+        <target xml:lang="az" state="needs-translation">ACE by Daisy Automated Checks</target>
+      </trans-unit>
       <trans-unit id="AccessibilityCheck.audioForAllText">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
@@ -22,10 +28,22 @@
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
         <target xml:lang="az" state="needs-translation">Bloom can automatically check these for you:</target>
       </trans-unit>
+      <trans-unit id="AccessibilityCheck.Checklist">
+        <source xml:lang="en">Accessibility Checklist</source>
+        <note>ID: AccessibilityCheck.Checklist</note>
+        <note>Used as the name on a tab of the Accessibility Checks screen.</note>
+        <target xml:lang="az" state="needs-translation">Accessibility Checklist</target>
+      </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
         <target xml:lang="az" state="needs-translation">Descriptions for all images</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout">
+        <source xml:lang="en">Learn About Accessibility</source>
+        <note>ID: AccessibilityCheck.LearnAbout</note>
+        <note>Used as the name on a tab of the Accessibility Checks screen.</note>
+        <target xml:lang="az" state="needs-translation">Learn About Accessibility</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ManualChecksHeading">
         <source xml:lang="en">You need to check these yourself:</source>
@@ -173,6 +191,86 @@
         <note>ID: BookEditor.FormattingDisabled</note>
         <target xml:lang="az" state="translated">Təəssüflər olsun ki, Oxuyan Şablonlar dəyişdirilə bilməz.</target>
       </trans-unit>
+      <trans-unit id="BookMetadata.a11yFeatures" sil:dynamic="true">
+        <source xml:lang="en">Accessibility features</source>
+        <note>ID: BookMetadata.a11yFeatures</note>
+        <target xml:lang="az" state="needs-translation">Accessibility features</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
+        <source xml:lang="en">Alternative text</source>
+        <note>ID: BookMetadata.alternativeText</note>
+        <target xml:lang="az" state="needs-translation">Alternative text</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.author" sil:dynamic="true">
+        <source xml:lang="en">Author</source>
+        <note>ID: BookMetadata.author</note>
+        <target xml:lang="az" state="needs-translation">Author</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.flashingHazard" sil:dynamic="true">
+        <source xml:lang="en">Flashing Hazard</source>
+        <note>ID: BookMetadata.flashingHazard</note>
+        <target xml:lang="az" state="needs-translation">Flashing Hazard</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.hazards" sil:dynamic="true">
+        <source xml:lang="en">Hazards</source>
+        <note>ID: BookMetadata.hazards</note>
+        <target xml:lang="az" state="needs-translation">Hazards</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.inLanguage" sil:dynamic="true">
+        <source xml:lang="en">Language</source>
+        <note>ID: BookMetadata.inLanguage</note>
+        <target xml:lang="az" state="needs-translation">Language</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.level" sil:dynamic="true">
+        <source xml:lang="en">Reading level</source>
+        <note>ID: BookMetadata.level</note>
+        <target xml:lang="az" state="needs-translation">Reading level</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.License" sil:dynamic="true">
+        <source xml:lang="en">License</source>
+        <note>ID: BookMetadata.License</note>
+        <target xml:lang="az" state="needs-translation">License</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.metapicture" sil:dynamic="true">
+        <source xml:lang="en">Picture</source>
+        <note>ID: BookMetadata.metapicture</note>
+        <target xml:lang="az" state="needs-translation">Picture</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.motionSimulationHazard" sil:dynamic="true">
+        <source xml:lang="en">Motion Simulation Hazard</source>
+        <note>ID: BookMetadata.motionSimulationHazard</note>
+        <target xml:lang="az" state="needs-translation">Motion Simulation Hazard</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.name" sil:dynamic="true">
+        <source xml:lang="en">Name</source>
+        <note>ID: BookMetadata.name</note>
+        <target xml:lang="az" state="needs-translation">Name</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.numberOfPages" sil:dynamic="true">
+        <source xml:lang="en">Number of pages</source>
+        <note>ID: BookMetadata.numberOfPages</note>
+        <target xml:lang="az" state="needs-translation">Number of pages</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.signLanguage" sil:dynamic="true">
+        <source xml:lang="en">Sign Language</source>
+        <note>ID: BookMetadata.signLanguage</note>
+        <target xml:lang="az" state="needs-translation">Sign Language</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.soundHazard" sil:dynamic="true">
+        <source xml:lang="en">Sound Hazard</source>
+        <note>ID: BookMetadata.soundHazard</note>
+        <target xml:lang="az" state="needs-translation">Sound Hazard</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.subjects" sil:dynamic="true">
+        <source xml:lang="en">Subjects</source>
+        <note>ID: BookMetadata.subjects</note>
+        <target xml:lang="az" state="needs-translation">Subjects</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.typicalAgeRange" sil:dynamic="true">
+        <source xml:lang="en">Typical age range</source>
+        <note>ID: BookMetadata.typicalAgeRange</note>
+        <target xml:lang="az" state="needs-translation">Typical age range</target>
+      </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
@@ -192,6 +290,11 @@
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
         <target xml:lang="az" state="needs-translation">Open Page in Firefox (which must be in the PATH environment variable)</target>
+      </trans-unit>
+      <trans-unit id="Browser.ProblemSaving">
+        <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
+        <note>ID: Browser.ProblemSaving</note>
+        <target xml:lang="az" state="needs-translation">There was a problem while saving. Please return to the previous page and make sure it looks correct.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise">
         <source xml:lang="en">About the Bloom Enterprise Service</source>
@@ -240,12 +343,12 @@
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
         <note xml:lang="en">Used in 3.9 and 4.0; not used in 4.1</note>
-        <target xml:lang="az" state="needs-translation">Branding</target>
+        <target xml:lang="az" state="translated">Markalama</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="az" state="needs-translation">None</target>
+        <target xml:lang="az" state="translated">Heç biri</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
@@ -268,19 +371,19 @@
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
-        <target xml:lang="az" state="needs-translation">Paper Saver</target>
+        <target xml:lang="az" state="translated">Kağız qənaət etmək</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true">
         <source xml:lang="en">SIL-PNG</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
-        <target xml:lang="az" state="needs-translation">SIL-PNG</target>
+        <target xml:lang="az" state="translated">SIL - PNG</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
-        <target xml:lang="az" state="needs-translation">Super Paper Saver</target>
+        <target xml:lang="az" state="translated">Süper Kağız Qənaəti</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
@@ -1482,10 +1585,10 @@
         <target xml:lang="az">Müəlliflik hüququ &amp; lisenziyanı redaktə etmək üçün tıklayın</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
-        <source xml:lang="en">Name of the translator, in {lang}</source>
+        <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="az" state="needs-translation">Name of the translator, in {lang}</target>
+        <target xml:lang="az" state="needs-translation">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
@@ -1932,7 +2035,7 @@
       <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
         <source xml:lang="en">Sound files</source>
         <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
-        <target xml:lang="az" state="needs-translation">Sound files</target>
+        <target xml:lang="az" state="translated">Səs faylları</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
@@ -2404,11 +2507,6 @@
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="az" state="needs-translation">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Video.ChangeVideo" sil:dynamic="true">
-        <source xml:lang="en">Change Video</source>
-        <note>ID: EditTab.Video.ChangeVideo</note>
-        <target xml:lang="az" state="needs-translation">Change Video</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -3279,6 +3377,12 @@
         <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
         <target xml:lang="az" state="needs-translation">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</target>
       </trans-unit>
+      <trans-unit id="PublishTab.BookMetadata">
+        <source xml:lang="en">Book Metadata</source>
+        <note>ID: PublishTab.BookMetadata</note>
+        <note>This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics.</note>
+        <target xml:lang="az" state="needs-translation">Book Metadata</target>
+      </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Share on the Web</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
@@ -3301,10 +3405,11 @@
         <target xml:lang="az" state="needs-translation">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</target>
       </trans-unit>
       <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
-      <trans-unit id="PublishTab.Epub.BooksForBlind">
-        <source xml:lang="en">Books for the Blind</source>
-        <note>ID: PublishTab.Epub.BooksForBlind</note>
-        <target xml:lang="az" state="needs-translation">Books for the Blind</target>
+      <trans-unit id="PublishTab.Epub.Accessibility">
+        <source xml:lang="en">Accessibility</source>
+        <note>ID: PublishTab.Epub.Accessibility</note>
+        <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
+        <target xml:lang="az" state="needs-translation">Accessibility</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Done">
         <source xml:lang="en">Done</source>
@@ -3337,6 +3442,12 @@
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
         <target xml:lang="az" state="needs-translation">No recorded audio image descriptions</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.PageLabel.Content">
+        <source xml:lang="en">Content</source>
+        <note>ID: PublishTab.Epub.PageLabel.Content</note>
+        <note>label for the book content in the ePUB's Table of Contents</note>
+        <target xml:lang="az" state="needs-translation">Content</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PreparingDoc">
         <source xml:lang="en">Preparing document</source>
@@ -3746,7 +3857,7 @@
       <trans-unit id="PublishTab.Upload.Login.UnknownUser">
         <source xml:lang="en">Unknown user</source>
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
-        <target xml:lang="az" state="needs-translation">Unknown user</target>
+        <target xml:lang="az" state="translated">Naməlum istifadəçi</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginFailure">
         <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>

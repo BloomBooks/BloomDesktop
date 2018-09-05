@@ -21,8 +21,8 @@ namespace Bloom.CollectionTab
 			Label.AutoSize = true;
 			using (var g = CreateGraphics())
 			{
-				var size = g.MeasureString(Label.Text, Label.Font);
-				Width = (int)size.Width + 6;
+				var size = TextRenderer.MeasureText(g, Label.Text, Label.Font);
+				Width = size.Width + 6;
 			}
 		}
 

@@ -13,6 +13,7 @@ export const isLongPressEvaluating: string = "isLongPressEvaluating";
  * @type String
  */
 var checkMarkString = "&#10004;";
+var checkLeaveOffTool: string = "Visualizer";
 
 var savedSettings: string;
 
@@ -126,6 +127,25 @@ export class ToolBox {
                     handleKeyboardInput();
                 });
         }
+    }
+
+    public static addStringTool(
+        toolName: string,
+        addSpace: boolean = false
+    ): string {
+        if (toolName) {
+            if (
+                toolName.indexOf(checkLeaveOffTool) === -1 &&
+                toolName.indexOf("Tool") === -1
+            ) {
+                if (addSpace) {
+                    return toolName + " Tool";
+                } else {
+                    return toolName + "Tool";
+                }
+            }
+        }
+        return toolName;
     }
 
     public static getPageFrame(): HTMLIFrameElement {
@@ -253,7 +273,7 @@ export class ToolBox {
                                 // optimize: maybe we can overlap these?
                                 const nextToolId = toolsToLoad.pop();
                                 const checkBoxId = nextToolId + "Check";
-                                const toolId = nextToolId + "Tool";
+                                var toolId = ToolBox.addStringTool(nextToolId);
                                 beginAddTool(checkBoxId, toolId, false, () =>
                                     loadNextTool()
                                 );
@@ -520,7 +540,7 @@ function activateTool(newTool: ITool) {
 function getToolElement(tool: ITool): HTMLElement {
     var toolElement = null;
     if (tool) {
-        var toolName = tool.id() + "Tool";
+        var toolName = ToolBox.addStringTool(tool.id());
         $("#toolbox")
             .find("> h3")
             .each(function() {
@@ -533,7 +553,6 @@ function getToolElement(tool: ITool): HTMLElement {
     }
     return <HTMLElement>toolElement;
 }
-
 /**
  * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
  * of "currentTool" (the last tool displayed).
@@ -546,9 +565,7 @@ function setCurrentTool(toolID: string) {
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
 
-    if (toolID.indexOf("Tool") === -1) {
-        toolID += "Tool";
-    }
+    toolID = ToolBox.addStringTool(toolID);
     const accordionHeaders = toolbox.find("> h3");
     if (toolID) {
         let foundTool = false;
@@ -668,7 +685,7 @@ function beginAddTool(
         // new-style tool implemented in React
         var tool = getITool(toolId);
         const content = $(tool.makeRootElement());
-        const toolName = tool.id() + "Tool";
+        var toolName = ToolBox.addStringTool(tool.id());
         // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
         //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
 
@@ -679,7 +696,8 @@ function beginAddTool(
         // Not sure this will always work, but we can do something more complicated...maybe a new method
         // on ITool...if we need it. Note that this is just a way to come up with the English,
         // we don't do it to localizations. But in English, the code value beats the xlf one.
-        var toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim() + " Tool";
+        var toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
+        toolLabel = ToolBox.addStringTool(toolLabel, true);
         const header = $(
             "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
         );

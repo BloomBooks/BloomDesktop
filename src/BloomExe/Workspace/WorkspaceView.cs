@@ -181,6 +181,7 @@ namespace Bloom.Workspace
 			SetupZoomControl();
 			AdjustButtonTextsForLocale();
 			_viewInitialized = false;
+			CommonApi.WorkspaceView = this;
 		}
 
 		private void SetupZoomControl()
@@ -261,7 +262,7 @@ namespace Bloom.Workspace
 		public static string ShortenStringToFit(string text, int maxWidth, int originalWidth, Font font, Graphics g)
 		{
 			const string kEllipsis = "\u2026";
-			var txtWidth = g.MeasureString(text, font).Width;
+			var txtWidth = TextRenderer.MeasureText(g, text, font).Width;
 			var padding = originalWidth - txtWidth;
 			while (txtWidth + padding > maxWidth)
 			{
@@ -269,7 +270,7 @@ namespace Bloom.Workspace
 				if (len <= 0)
 					break;	// I can't conceive this happening, but I'm also paranoid.
 				text = text.Substring(0, len) + kEllipsis;	// trim, add ellipsis
-				txtWidth = g.MeasureString(text, font).Width;
+				txtWidth = TextRenderer.MeasureText(g, text, font).Width;
 			}
 			return text;
 		}
@@ -552,9 +553,9 @@ namespace Bloom.Workspace
 		{
 			Application.Idle -= BringUpEnterpriseSettings;
 			Program.CloseSplashScreen();
-			CollectionSettingsApi.InvalidBranding = _collectionSettings.InvalidBranding;
+			CollectionSettingsApi.PrepareForFixEnterpriseBranding(_collectionSettings.InvalidBranding, _collectionSettings.SubscriptionCode);
 			OnSettingsButton_Click(this, new EventArgs());
-			CollectionSettingsApi.InvalidBranding = null;
+			CollectionSettingsApi.EndFixEnterpriseBranding();
 		}
 
 		private void SelectPage(Control view)
@@ -753,6 +754,11 @@ namespace Bloom.Workspace
 			{
 				g.Dispose();
 			}
+		}
+
+		public void CheckForUpdates()
+		{
+			Invoke((Action) (() =>_checkForNewVersionMenuItem_Click(this, new EventArgs())));
 		}
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)

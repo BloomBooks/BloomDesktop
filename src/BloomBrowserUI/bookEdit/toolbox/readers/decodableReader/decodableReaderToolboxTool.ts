@@ -75,7 +75,7 @@ export class DecodableReaderToolboxTool implements ITool {
 
         $(container)
             .find(".bloom-editable")
-            .keydown(function(e) {
+            .keydown(function(e): boolean {
                 if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
                     // ctrl-z or ctrl-Y
                     if (
@@ -92,6 +92,7 @@ export class DecodableReaderToolboxTool implements ITool {
                         return false;
                     }
                 }
+                return true;
             });
     }
 

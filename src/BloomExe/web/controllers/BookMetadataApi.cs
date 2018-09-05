@@ -12,14 +12,15 @@ namespace Bloom.web.controllers
 	{
 		private readonly BookSelection _bookSelection;
 
-		public BookMetadataApi(BookSelection bookSelection, PageRefreshEvent pageRefreshEvent)
+		public BookMetadataApi(BookSelection bookSelection)
 		{
 			_bookSelection = bookSelection;
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false);
+			bool requiresSync = false; // Lets us open the dialog while the epub preview is being generated
+			server.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false, requiresSync);
 		}
 
 		private void HandleBookMetadata(ApiRequest request)

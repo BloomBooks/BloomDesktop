@@ -81,9 +81,9 @@ export default class BloomSourceBubbles {
         });
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
-        divForBubble.find("textarea, div").each(function() {
+        divForBubble.find("textarea, div").each(function(): boolean {
             //don't want empty items in the bubble
-            var $this = $(this);
+            const $this = $(this);
             if (BloomSourceBubbles.hasNoText(this)) {
                 $this.remove();
                 return true; // skip to next iteration of each()
@@ -97,13 +97,15 @@ export default class BloomSourceBubbles {
             $this.removeClass("thisOverflowingParent");
             $this.removeClass("childOverflowingThis");
 
-            var styleClass = StyleEditor.GetStyleClassFromElement(this);
+            const styleClass = StyleEditor.GetStyleClassFromElement(this);
             if (styleClass) $this.removeClass(styleClass);
 
             // remove any CustomPage min-height styles (they conflict with the source bubble css)
             BloomSourceBubbles.RemoveCustomPageAdditions($this);
 
             $this.addClass("source-text");
+
+            return true; // continue .each(); though this is the end of the loop, it is needed for tsconfig's 'noImplicitReturns'
         });
 
         //don't want languages we're already showing in the text to be shown in the bubble
@@ -228,16 +230,17 @@ export default class BloomSourceBubbles {
     ): JQuery {
         // if items contains a div with langCode, then try to put it at the position specified in the list
         // (unless it already occurs at an earlier position).
-        var moveFrom = 0;
-        var objToMove;
-        var itemArray = items.toArray();
-        items.each(function(idx, obj) {
-            var iso = $(this).attr("lang");
+        let moveFrom = 0;
+        let objToMove;
+        const itemArray = items.toArray();
+        items.each(function(idx, obj): boolean {
+            const iso = $(this).attr("lang");
             if (iso == langCode && position < idx) {
                 moveFrom = idx;
                 objToMove = obj;
                 return false; // break out of .each()
             }
+            return true; // continue .each(); though this is the end of the loop, it is needed for tsconfig's 'noImplicitReturns'
         });
         if (moveFrom > 0) {
             itemArray.splice(moveFrom, 1); // removes the objToMove from the array
@@ -299,26 +302,27 @@ export default class BloomSourceBubbles {
     // to contain the extra possibilities
     // This method is only public for testing
     public static CreateDropdownIfNecessary(divForBubble: JQuery): JQuery {
-        var FIRST_SELECT_OPTION = 3;
-        var tabs = divForBubble.find("nav li"); // may be li elements in the content
+        let firstSelectOption = 3;
+        const tabs = divForBubble.find("nav li"); // may be li elements in the content
         if (tabs.length && tabs.first().attr("id") == "hint") {
-            FIRST_SELECT_OPTION++; // allow hint in addition to languages.
+            firstSelectOption++; // allow hint in addition to languages.
         }
-        if (tabs.length < FIRST_SELECT_OPTION) return divForBubble; // no change
+        if (tabs.length < firstSelectOption) return divForBubble; // no change
 
-        var dropMenu =
+        const dropMenu =
             "<li class='dropdown-menu'><div>0</div><ul class='dropdown-list'></ul></li>";
         divForBubble.find("nav ul").append(dropMenu);
-        var container = divForBubble.find(".dropdown-list");
-        tabs.each(function(idx) {
-            if (idx < FIRST_SELECT_OPTION - 1) return true; // continue to next iteration of .each()
-            var $this = $(this);
-            var link = $this.find("a").clone(false); // don't want to keep easytab click event
-            var iso = link.attr("href").substring(1); // strip off hashmark
-            var listItem = "<li lang='" + iso + "'></li>";
+        const container = divForBubble.find(".dropdown-list");
+        tabs.each(function(idx): boolean {
+            if (idx < firstSelectOption - 1) return true; // continue to next iteration of .each()
+            const $this = $(this);
+            const link = $this.find("a").clone(false); // don't want to keep easytab click event
+            const iso = link.attr("href").substring(1); // strip off hashmark
+            const listItem = "<li lang='" + iso + "'></li>";
             container.append(listItem);
             container.find('li[lang="' + iso + '"]').append(link);
             $this.addClass("removeThisOne");
+            return true; // continue .each(); though this is the end of the loop, it is needed for tsconfig's 'noImplicitReturns'
         });
 
         tabs.remove(".removeThisOne");
@@ -334,7 +338,7 @@ export default class BloomSourceBubbles {
         // BL-2390 Add number of extra tabs to visible part of dropdown
         divForBubble
             .find(".dropdown-menu div")
-            .text((tabs.length - FIRST_SELECT_OPTION + 1).toString());
+            .text((tabs.length - firstSelectOption + 1).toString());
         return divForBubble;
     }
 

@@ -137,7 +137,9 @@ export default class BookMetadataTable extends React.Component<IProps> {
                             alreadyLocalized={true}
                             list={this.props.metadata.hazards.value}
                             itemName={hazardName}
-                            tristateItemOffName={"no" + hazardName}
+                            tristateItemOffName={
+                                "no" + this.capitalizeFirstChar(hazardName)
+                            }
                             onChange={list =>
                                 (this.props.metadata.hazards.value = list)
                             }
@@ -155,6 +157,10 @@ export default class BookMetadataTable extends React.Component<IProps> {
                     : "(none)"}
             </div>
         );
+    }
+    private capitalizeFirstChar(hazardName: string): string {
+        let uc = hazardName[0].toUpperCase();
+        return uc + hazardName.substr(1, hazardName.length - 1);
     }
     private makeA11yFeaturesControls() {
         return (

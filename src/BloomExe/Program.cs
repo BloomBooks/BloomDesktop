@@ -81,6 +81,8 @@ namespace Bloom
 		// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6214.
 		public static CancellationTokenSource BloomThreadCancelService;
 
+		public static SynchronizationContext MainContext { get; private set; }
+
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
 		static int Main(string[] args1)
@@ -550,6 +552,7 @@ namespace Bloom
 		private static void Startup(object sender, EventArgs e)
 		{
 			Application.Idle -= Startup;
+			MainContext = SynchronizationContext.Current;
 			CareForSplashScreenAtIdleTime(null, null);
 			Application.Idle += new EventHandler(CareForSplashScreenAtIdleTime);
 			StartUpShellBasedOnMostRecentUsedIfPossible();

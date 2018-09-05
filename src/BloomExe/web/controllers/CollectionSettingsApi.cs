@@ -3,11 +3,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Epub;
+using Bloom.Workspace;
 using SIL.CommandLineProcessing;
 using SIL.PlatformUtilities;
 using SIL.Progress;
@@ -34,14 +36,15 @@ namespace Bloom.web.controllers
 		private static bool _knownBrandingInSubscriptionCode = false;
 		private static EnterpriseStatus _enterpriseStatus;
 		// This is set when we are running the collection settings dialog in a special mode  where it is
-		// brought up automatically to inform the user that a previously used branding code is invalid.
+		// brought up automatically to inform the user that a previously used branding name is invalid.
 		// (It might be a legacy branding from an earlier Bloom that did not require a validation code,
-		// or one whose code has expired.) Unlike the InvalidBranding property on CollectionSettings itself,
-		// this one is set ONLY while running the dialog in that mode. Not sure this is the best place to
-		// keep track of this fact, but I haven't found a better one that is accessible to the code
-		// in WorkspaceView that decides to run the dialog in this mode, the dialog itself, and the
-		// React control that implements the behavior.
-		public static string InvalidBranding { get; set; }
+		// or one whose code has expired, or conceivably an invalid code, though I think that can only
+		// happen by hand-editing the .bloomCollection file.)
+		public static bool FixEnterpriseSubscriptionCodeMode;
+		// When in FixEnterpriseSubscriptionCodeMode, and we think it is a legacy branding problem
+		// (because the subscription code is missing or incomplete rather than wrong or expired or unknown),
+		// this keeps track of the branding the collection file specified but which was not validated by a current code.
+		public static string LegacyBrandingName { get; set; }
 		
 		public void RegisterWithServer(EnhancedImageServer server)
 		{	
@@ -63,8 +66,9 @@ namespace Bloom.web.controllers
 						BrandingChangeHandler(GetBrandingFromCode(SubscriptionCode), SubscriptionCode);
 					}
 				}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "invalidBranding",
-				request => { request.ReplyWithText(InvalidBranding ?? ""); }, false);
+			server.RegisterEndpointHandler(kApiUrlPart + "legacyBrandingName",
+				request => { request.ReplyWithText(LegacyBrandingName ?? ""); }, false);
+
 			server.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
@@ -97,7 +101,7 @@ namespace Bloom.web.controllers
 				if (_enterpriseStatus == EnterpriseStatus.Community)
 					branding = "Local Community";
 				else if (_enterpriseStatus == EnterpriseStatus.Subscription)
-					branding = GetBrandingFromCode(SubscriptionCode);
+					branding = _enterpriseExpiry == DateTime.MinValue ? "" : GetBrandingFromCode(SubscriptionCode);
 				var summaryFile = BloomFileLocator.GetOptionalBrandingFile(branding, "summary.htm");
 				if (summaryFile == null)
 					request.ReplyWithText("");
@@ -108,7 +112,10 @@ namespace Bloom.web.controllers
 			{
 				if (_enterpriseExpiry == DateTime.MinValue)
 				{
-					request.ReplyWithText("null");
+					if (SubscriptionCodeLooksIncomplete(SubscriptionCode))
+						request.ReplyWithText("incomplete");
+					else
+						request.ReplyWithText("null");
 				} else if (_knownBrandingInSubscriptionCode)
 				{
 					// O is ISO 8601, the only format I can find that C# ToString() can produce and JS is guaranteed to parse.
@@ -122,8 +129,44 @@ namespace Bloom.web.controllers
 			}, false);
 		}
 
+		public static void PrepareForFixEnterpriseBranding(string invalidBranding, string subscriptionCode)
+		{
+			FixEnterpriseSubscriptionCodeMode = true;
+			if (SubscriptionCodeLooksIncomplete(subscriptionCode))
+				LegacyBrandingName = invalidBranding; // otherwise we wont' show the legacy branding message, just bring up the dialog and show whatever's wrong.
+		}
+
+		public static void EndFixEnterpriseBranding()
+		{
+			FixEnterpriseSubscriptionCodeMode = false;
+			LegacyBrandingName = "";
+		}
+
 		// CollectionSettingsDialog sets this so we can call back with results from the tab.
 		public static Func<string, string, bool> BrandingChangeHandler;
+
+		public static bool SubscriptionCodeLooksIncomplete(string input)
+		{
+			if (input == null)
+				return true;
+			var parts = input.Split('-');
+			if (parts.Length < 3)
+				return true; // less than the required three components
+			int last = parts.Length - 1;
+			int dummy;
+			if (!Int32.TryParse(parts[last - 1], out dummy))
+				return true; // If they haven't started typing numbers, assume they're still in the name part, which could include a hyphen
+			// If they've typed one number, we expect another. (Might not be true...ethnos-360-guatemala is incomplete...)
+			// So, we already know the second-last part is a number, only short numbers or empty last part qualify as incomplete now.
+			// Moreover, for the whole thing to be incomplete in this case, the completed number must be the right length; otherwise,
+			// we consider it definitely wrong.
+			if (parts[last-1].Length == 6 && parts[last].Length < 4 &&
+				(parts[last].Length == 0 ||
+			    Int32.TryParse(parts[last], out dummy)))
+				return true;
+
+			return false;
+		}
 
 		// Parse a string like PNG-RISE-361769-363798 or SIL-LEAD-361769-363644,
 		// generated by a private google spreadsheet. The two last elements are numbers;
@@ -139,6 +182,8 @@ namespace Bloom.web.controllers
 			if (parts.Length < 3)
 				return DateTime.MinValue;
 			int last = parts.Length - 1;
+			if (parts[last].Length != 4 || parts[last -1].Length != 6)
+				return DateTime.MinValue;
 			int datePart;
 			if (!Int32.TryParse(parts[last - 1], out datePart))
 				return DateTime.MinValue;
@@ -147,7 +192,7 @@ namespace Bloom.web.controllers
 				return DateTime.MinValue;
 
 			int checkSum = CheckSum(GetBrandingFromCode(input));
-			if (Math.Floor(Math.Sqrt(datePart)) + checkSum != combinedChecksum)
+			if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
 				return DateTime.MinValue;
 			int dateNum = datePart + 40000; // days since Dec 30 1899
 			return new DateTime(1899, 12, 30) + TimeSpan.FromDays(dateNum);
