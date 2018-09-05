@@ -181,7 +181,7 @@ namespace Bloom.Workspace
 			SetupZoomControl();
 			AdjustButtonTextsForLocale();
 			_viewInitialized = false;
-			CollectionSettingsApi.WorkspaceView = this;
+			CommonApi.WorkspaceView = this;
 		}
 
 		private void SetupZoomControl()
@@ -553,9 +553,9 @@ namespace Bloom.Workspace
 		{
 			Application.Idle -= BringUpEnterpriseSettings;
 			Program.CloseSplashScreen();
-			CollectionSettingsApi.InvalidBranding = _collectionSettings.InvalidBranding;
+			CollectionSettingsApi.PrepareForFixEnterpriseBranding(_collectionSettings.InvalidBranding, _collectionSettings.SubscriptionCode);
 			OnSettingsButton_Click(this, new EventArgs());
-			CollectionSettingsApi.InvalidBranding = null;
+			CollectionSettingsApi.EndFixEnterpriseBranding();
 		}
 
 		private void SelectPage(Control view)

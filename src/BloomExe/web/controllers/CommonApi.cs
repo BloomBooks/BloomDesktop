@@ -28,6 +28,10 @@ namespace Bloom.web.controllers
 		public static bool AuthorMode { get; set; }
 		public EditingModel Model { get; set; }
 
+		// Needed so we can implement CheckForUpdates. Set by the WorkspaceView in its constructor, since
+		// Autofac was not able to pass us one.
+		public static WorkspaceView WorkspaceView { get; set; }
+
 		// Called by autofac, which creates the one instance and registers it with the server.
 		public CommonApi(CollectionSettings settings, BookSelection bookSelection)
 		{
@@ -45,6 +49,33 @@ namespace Bloom.web.controllers
 			server.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
 			server.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
 			server.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
+			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
+			// clipboard is passed as the 'text' property of a JSON requestData.
+			server.RegisterEndpointHandler("common/clipboardText",
+				request =>
+				{
+					if (request.HttpMethod == HttpMethods.Get)
+					{
+						string result = ""; // initial value is not used, delegate will set it.
+						Program.MainContext.Send(o => result = Clipboard.GetText(), null);
+						request.ReplyWithText(result);
+					}
+					else
+					{
+						// post
+						var requestData = DynamicJson.Parse(request.RequiredPostJson());
+						string content = requestData.text;
+						Program.MainContext.Post(o =>
+							Clipboard.SetText(content), null);
+						request.PostSucceeded();
+					}
+				}, false);
+			server.RegisterEndpointHandler("common/checkForUpdates",
+				request =>
+				{
+					WorkspaceView.CheckForUpdates();
+					request.PostSucceeded();
+				}, false);
 		}
 
 		private void RethinkPageAndReloadIt(ApiRequest request)

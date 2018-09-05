@@ -24,7 +24,7 @@ import { invariant } from "mobx/lib/internal";
 //      We show a ? icon and a message
 // SubscriptionIncorrect: a code has been entered which cannot be fixed by typing more
 //      We show a red ! icon and  message
-// SubscriptionInvalid: a special case where the subscription code is typically empty,
+// SubscriptionLegacy: a special case where the subscription code is typically empty,
 // or just possibly otherwise incomplete, and this has been detected at startup
 //      We show a special message in an orange box and a red ! icon
 
@@ -35,10 +35,10 @@ interface IState {
     subscriptionSummary: string; // markdown of the summary of the branding when identified
     controlState: string; // controls which parts of the dialog are visible (see above)
     // Set to the branding stored in the bloomCollection, in the special case
-    // where the dialog is brought up when the collection is opened because
-    // its saved branding is not validated by a subscriptionCode. Gets inserted into
+    // where the dialog is brought up (when the bloom collection is opened) because
+    // the saved branding appears to be a legacy one. Gets inserted into
     // the message and the code box.
-    invalidBranding: string;
+    legacyBrandingName: string;
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
@@ -49,7 +49,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         subscriptionExpiry: null,
         subscriptionSummary: "",
         controlState: "None",
-        invalidBranding: ""
+        legacyBrandingName: ""
     };
 
     public componentDidMount() {
@@ -57,8 +57,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             const status = result.data;
             BloomApi.get("settings/subscriptionCode", result => {
                 const code = result.data;
-                BloomApi.get("settings/invalidBranding", result => {
-                    this.setState({ invalidBranding: result.data });
+                BloomApi.get("settings/legacyBrandingName", result => {
+                    this.setState({ legacyBrandingName: result.data });
                     this.setControlState(status, code, result.data);
                 });
             });
@@ -119,12 +119,12 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                         </Radio>
                         <Markdown
                             l10nKey="Settings.Enterprise.NeedsCode"
-                            l10nParam0={this.state.invalidBranding}
+                            l10nParam0={this.state.legacyBrandingName}
                             l10nParam1={this.codesUrl}
                             className={
-                                "invalidBranding" +
+                                "legacyBrandingName" +
                                 (this.state.controlState ===
-                                "SubscriptionInvalid"
+                                "SubscriptionLegacy"
                                     ? ""
                                     : " hidden")
                             }
@@ -371,15 +371,13 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             this.state.controlState === "SubscriptionIncorrect" ||
             this.state.controlState === "SubscriptionUnknown" ||
             this.state.controlState === "SubscriptionExpired" ||
-            this.state.controlState === "SubscriptionInvalid"
+            this.state.controlState === "SubscriptionLegacy"
         );
     }
 
     private setStatus(status: string) {
         BloomApi.postJson("settings/enterpriseStatus", status);
-        this.setState({
-            enterpriseStatus: status
-        });
+        this.setControlState(status, this.state.subscriptionCode, "");
 
         if (status !== "None") {
             BloomApi.get("settings/enterpriseSummary", result => {
@@ -389,19 +387,19 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     }
 
     private onPaste() {
-        BloomApi.get("settings/paste", result =>
+        BloomApi.get("common/clipboardText", result =>
             this.updateSubscriptionCode(result.data)
         );
     }
 
     private onCopy() {
-        BloomApi.postJson("settings/copy", {
+        BloomApi.postJson("common/clipboardText", {
             text: this.state.subscriptionCode
         });
     }
 
     private checkForUpdates() {
-        BloomApi.post("settings/checkForUpdates");
+        BloomApi.post("common/checkForUpdates");
     }
 
     // Used both with a code from entering something in the text box, and
@@ -411,10 +409,20 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     private setControlState(
         status: string,
         code: string,
-        invalidBranding: string
+        legacyBrandingName: string
     ) {
-        if (invalidBranding) {
-            status = "Subscription";
+        if (legacyBrandingName) {
+            this.setState({
+                enterpriseStatus: "Subscription",
+                subscriptionCode: code,
+                subscriptionExpiry: null,
+                controlState: "SubscriptionLegacy",
+                subscriptionSummary: ""
+            });
+            BloomApi.get("settings/enterpriseSummary", result => {
+                this.setSummary(result.data);
+            });
+            return;
         }
         this.setState({ enterpriseStatus: status });
         if (status === "None") {
@@ -449,21 +457,6 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             }
             if (result.data === "incomplete") {
                 // Invalid code, but looks as if they haven't finished typing
-                if (invalidBranding) {
-                    // The most common invalidBranding case, no code at all, comes here.
-                    // Other cases, including expiration, are considered sufficiently
-                    // explained by the normal state of the dialog.
-                    this.setState({
-                        subscriptionCode: code,
-                        subscriptionExpiry: null,
-                        controlState: "SubscriptionInvalid",
-                        subscriptionSummary: ""
-                    });
-                    BloomApi.get("settings/enterpriseSummary", result => {
-                        this.setSummary(result.data);
-                    });
-                    return;
-                }
                 this.setState({
                     subscriptionCode: code,
                     subscriptionExpiry: null,
@@ -484,7 +477,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             } else {
                 this.setState({ controlState: "SubscriptionGood" });
             }
-            if (expiry || invalidBranding) {
+            if (expiry) {
                 BloomApi.get("settings/enterpriseSummary", result => {
                     this.setSummary(result.data);
                 });
@@ -517,7 +510,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         BloomApi.postJson("settings/subscriptionCode", {
             subscriptionCode: code
         });
-        this.setState({ invalidBranding: "" });
+        this.setState({ legacyBrandingName: "" });
         this.setControlState(this.state.enterpriseStatus, code, "");
     }
 }

@@ -17,7 +17,7 @@
         }
     }
     #enterpriseMain {
-        max-height: 60px;
+        max-height: 70px;
         &.hasSummary {
             max-height: 160px;
         }
@@ -29,7 +29,7 @@
     // These elements resolve to spans or links, but we want each to lay out as a block.
     .mainHeading,
     .invalidBrandingLink,
-    .invalidBranding,
+    .legacyBrandingName,
     .learnMoreLink {
         margin-bottom: 5px;
         display: block;
@@ -41,7 +41,7 @@
         position: absolute;
         right: 20px;
     }
-    .invalidBranding {
+    .legacyBrandingName {
         background-color: @bloom-yellow;
         border-radius: 12px;
         padding: 0 10px;

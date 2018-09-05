@@ -21,10 +21,6 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class CollectionSettingsApi
 	{
-		// Needed so we can implement CheckForUpdates. Set by the WorkspaceView in its constructor, since
-		// Autofac was not able to pass us one.
-		public static WorkspaceView WorkspaceView { get; set; }
-
 		public const string kApiUrlPart = "settings/";
 
 		// These options must match the strings used in accessibileImage.tsx
@@ -40,14 +36,15 @@ namespace Bloom.web.controllers
 		private static bool _knownBrandingInSubscriptionCode = false;
 		private static EnterpriseStatus _enterpriseStatus;
 		// This is set when we are running the collection settings dialog in a special mode  where it is
-		// brought up automatically to inform the user that a previously used branding code is invalid.
+		// brought up automatically to inform the user that a previously used branding name is invalid.
 		// (It might be a legacy branding from an earlier Bloom that did not require a validation code,
-		// or one whose code has expired.) Unlike the InvalidBranding property on CollectionSettings itself,
-		// this one is set ONLY while running the dialog in that mode. Not sure this is the best place to
-		// keep track of this fact, but I haven't found a better one that is accessible to the code
-		// in WorkspaceView that decides to run the dialog in this mode, the dialog itself, and the
-		// React control that implements the behavior.
-		public static string InvalidBranding { get; set; }
+		// or one whose code has expired, or conceivably an invalid code, though I think that can only
+		// happen by hand-editing the .bloomCollection file.)
+		public static bool FixEnterpriseSubscriptionCodeMode;
+		// When in FixEnterpriseSubscriptionCodeMode, and we think it is a legacy branding problem
+		// (because the subscription code is missing or incomplete rather than wrong or expired or unknown),
+		// this keeps track of the branding the collection file specified but which was not validated by a current code.
+		public static string LegacyBrandingName { get; set; }
 		
 		public void RegisterWithServer(EnhancedImageServer server)
 		{	
@@ -69,32 +66,8 @@ namespace Bloom.web.controllers
 						BrandingChangeHandler(GetBrandingFromCode(SubscriptionCode), SubscriptionCode);
 					}
 				}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "invalidBranding",
-				request => { request.ReplyWithText(InvalidBranding ?? ""); }, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "paste",
-				request =>
-				{
-					string result=""; // initial value is not used, delegate will set it.
-					Program.MainContext.Send(o => result = Clipboard.GetText(), null);
-					request.ReplyWithText(result);
-				}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "checkForUpdates",
-				request =>
-				{
-					WorkspaceView.CheckForUpdates();
-					request.PostSucceeded();
-				}, false);
-
-			server.RegisterEndpointHandler(kApiUrlPart + "copy",
-				request =>
-				{
-					var requestData = DynamicJson.Parse(request.RequiredPostJson());
-					string content = requestData.text;
-					Program.MainContext.Post(o =>
-						Clipboard.SetText(content), null);
-					request.PostSucceeded();
-				}, false);
-
+			server.RegisterEndpointHandler(kApiUrlPart + "legacyBrandingName",
+				request => { request.ReplyWithText(LegacyBrandingName ?? ""); }, false);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
 			{
@@ -154,6 +127,19 @@ namespace Bloom.web.controllers
 					request.ReplyWithText("unknown");
 				}
 			}, false);
+		}
+
+		public static void PrepareForFixEnterpriseBranding(string invalidBranding, string subscriptionCode)
+		{
+			FixEnterpriseSubscriptionCodeMode = true;
+			if (SubscriptionCodeLooksIncomplete(subscriptionCode))
+				LegacyBrandingName = invalidBranding; // otherwise we wont' show the legacy branding message, just bring up the dialog and show whatever's wrong.
+		}
+
+		public static void EndFixEnterpriseBranding()
+		{
+			FixEnterpriseSubscriptionCodeMode = false;
+			LegacyBrandingName = "";
 		}
 
 		// CollectionSettingsDialog sets this so we can call back with results from the tab.
