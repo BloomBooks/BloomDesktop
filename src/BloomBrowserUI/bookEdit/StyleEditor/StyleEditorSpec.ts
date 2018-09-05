@@ -71,6 +71,7 @@ function GetFooStyleRuleFontSize(): number {
 
 function GetFontSizeRuleByLang(lang: string): number {
     var rule = GetRuleMatchingSelector('.foo-style[lang="' + lang + '"]');
+    if (rule == null) return -1;
     return ParseRuleForFontSize(rule.cssText);
 }
 
@@ -79,12 +80,12 @@ function ParseRuleForFontSize(ruleText: string): number {
     var beginPoint = ruleText.indexOf(ruleString) + ruleString.length;
     //var endPoint = ruleText.indexOf(' !important');
     var endPoint = ruleText.indexOf(" !");
-    if (beginPoint < 1 || endPoint < beginPoint) return null;
+    if (beginPoint < 1 || endPoint < beginPoint) return -1;
     var sizeString = ruleText.substr(beginPoint, endPoint - beginPoint);
     return parseFloat(sizeString); // parseFloat() handles units fine!
 }
 
-function GetRuleForFooStyle(): CSSRule {
+function GetRuleForFooStyle(): CSSRule | null {
     var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     for (var i = 0; i < x.length; i++) {
@@ -95,7 +96,7 @@ function GetRuleForFooStyle(): CSSRule {
     return null;
 }
 
-function GetRuleForNormalStyle(): CSSRule {
+function GetRuleForNormalStyle(): CSSRule | null {
     var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
     if (!x) return null;
 
@@ -107,7 +108,7 @@ function GetRuleForNormalStyle(): CSSRule {
     return null;
 }
 
-function GetRuleForCoverTitleStyle(): CSSRule {
+function GetRuleForCoverTitleStyle(): CSSRule | null {
     var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
     if (!x) return null;
     for (var i = 0; i < x.length; i++) {
@@ -126,7 +127,7 @@ function GetCalculatedFontSize(target: string): number {
     return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
 
-function GetRuleMatchingSelector(selector: string): CSSRule {
+function GetRuleMatchingSelector(selector: string): CSSRule | null {
     var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
     var count = 0;
     for (var i = 0; i < x.length; i++) {
@@ -293,7 +294,9 @@ describe("StyleEditor", function() {
         ChangeSizeAbsolute("#testTarget", 20);
 
         expect(HasRuleMatchingThisSelector("foo-style:not([lang])")).toBe(true);
-        expect(ParseRuleForFontSize(GetRuleForFooStyle().cssText)).toBe(20);
+        let rule = GetRuleForFooStyle();
+        expect(rule).not.toBeNull();
+        if (rule != null) expect(ParseRuleForFontSize(rule.cssText)).toBe(20);
     });
 
     it("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", function() {

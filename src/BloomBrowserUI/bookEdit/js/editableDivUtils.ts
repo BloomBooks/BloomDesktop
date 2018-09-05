@@ -7,10 +7,10 @@ interface qtipInterface extends JQuery {
 
 export class EditableDivUtils {
     public static getElementSelectionIndex(element: HTMLElement): number {
-        var page: HTMLIFrameElement = <HTMLIFrameElement>(
+        var page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
             parent.window.document.getElementById("page")
         );
-        if (!page) return -1; // unit testing?
+        if (!page || !page.contentWindow) return -1; // unit testing?
 
         var selection = page.contentWindow.getSelection();
         var active = $(selection.anchorNode)
@@ -26,10 +26,11 @@ export class EditableDivUtils {
     }
 
     public static selectAtOffset(node: Node, offset: number): void {
-        var iframeWindow: Window = (<HTMLIFrameElement>(
+        var page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
             parent.window.document.getElementById("page")
-        )).contentWindow;
-
+        );
+        if (!page || !page.contentWindow) return;
+        var iframeWindow: Window = page.contentWindow;
         var range = iframeWindow.document.createRange();
         range.setStart(node, offset);
         range.setEnd(node, offset);
@@ -71,7 +72,7 @@ export class EditableDivUtils {
                     i++;
                     i < node.childNodes.length &&
                     divBrCount > 0 &&
-                    node.childNodes[i].textContent.length == 0;
+                    !node.childNodes[i].textContent;
                     i++
                 ) {
                     if (node.childNodes[i].localName === "br") divBrCount--;
@@ -155,23 +156,25 @@ export class EditableDivUtils {
         }
     }
 
-    public static getPageFrame(): HTMLIFrameElement {
-        return <HTMLIFrameElement>window.top.document.getElementById("page");
+    public static getPageFrame(): HTMLIFrameElement | null {
+        return <HTMLIFrameElement | null>(
+            window.top.document.getElementById("page")
+        );
     }
 
     // The body of the editable page, a root for searching for document content.
-    public static getPage(): JQuery {
+    public static getPage(): JQuery | null {
         var page = this.getPageFrame();
-        if (!page) return null;
+        if (!page || !page.contentWindow) return null;
         return $(page.contentWindow.document.body);
     }
 
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     public static getPageScale(): number {
-        var scale = 1.0;
-        var styleString = this.getPage()
-            .find("div#page-scaling-container")
-            .attr("style");
+        let scale = 1.0;
+        const page = this.getPage();
+        if (page == null) return scale;
+        var styleString = page.find("div#page-scaling-container").attr("style");
         var searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
         if (searchData) {
             scale = parseFloat(searchData[1]);
@@ -214,10 +217,12 @@ export class EditableDivUtils {
             // class div element, which in turn is owned by a qtip class element.  The editable
             // div element to which the qtip bubble is attached has an aria-describedby attribute
             // that refers to the div.qtip's id.
+            if (activeElement.parentElement == null) return;
             var bubble = activeElement.parentElement.parentElement;
+            if (bubble == null) return;
             var query =
                 "[aria-describedby='" + bubble.getAttribute("id") + "']";
-            var artists = null;
+            let artists: Element | null = null;
             var credits = document.querySelectorAll(query);
             if (credits.length > 0) {
                 artists = credits[0];

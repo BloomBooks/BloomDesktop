@@ -225,15 +225,15 @@ function AddEditKeyHandlers(container) {
 
     $(document).bind("keydown", "ctrl+u", function(e) {
         e.preventDefault();
-        document.execCommand("underline", null, null);
+        document.execCommand("underline");
     });
     $(document).bind("keydown", "ctrl+b", function(e) {
         e.preventDefault();
-        document.execCommand("bold", null, null);
+        document.execCommand("bold");
     });
     $(document).bind("keydown", "ctrl+i", function(e) {
         e.preventDefault();
-        document.execCommand("italic", null, null);
+        document.execCommand("italic");
     });
     //note: these have the effect of introducing a <div> inside of the div.bloom-editable we're in.
     $(document).bind("keydown", "ctrl+r", function(e) {
@@ -711,8 +711,8 @@ function SetupElements(container) {
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    var divsThatHaveSourceBubbles = [];
-    var bubbleDivs = [];
+    let divsThatHaveSourceBubbles: any[] = [];
+    let bubbleDivs: any[] = [];
     if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
         $(container)
             .find("*.bloom-translationGroup")
@@ -844,7 +844,10 @@ function ConstrainContentsOfPageLabel(container) {
         pageLabel.innerText = pageLabel.innerText.split(/[#%\r\n]/).join("");
         // update data-i18n attribute to prevent this change being forgotton on reload; BL-5855
         var localizationAttr = pageLabel.getAttribute("data-i18n");
-        if (localizationAttr.startsWith(pageLabelL18nPrefix)) {
+        if (
+            localizationAttr != null &&
+            localizationAttr.startsWith(pageLabelL18nPrefix)
+        ) {
             localizationAttr = pageLabelL18nPrefix + pageLabel.innerText;
             pageLabel.setAttribute("data-i18n", localizationAttr);
         }
@@ -858,6 +861,7 @@ function AddXMatterLabelAfterPageLabel(container) {
     );
     if (!pageLabel) return;
     var xMatterLabel = window.getComputedStyle(pageLabel, ":before").content;
+    if (xMatterLabel == null) return;
     xMatterLabel = xMatterLabel.replace(new RegExp('"', "g"), ""); //No idea why the quotes are still in there at this point.
     if (xMatterLabel === "" || xMatterLabel === "none") return;
     theOneLocalizationManager
@@ -1019,14 +1023,14 @@ function setupWheelZooming() {
     $("body").on("wheel", function(e) {
         var theEvent = e.originalEvent as WheelEvent;
         if (!theEvent.ctrlKey) return;
-        var command: string = null;
+        let command: string = "";
         // Note the direction of the zoom is opposite the direction of the scroll.
         if (theEvent.deltaY < 0) {
             command = "edit/pageControls/zoomPlus";
         } else if (theEvent.deltaY > 0) {
             command = "edit/pageControls/zoomMinus";
         }
-        if (command != null) {
+        if (command != "") {
             // Zooming re-loads the page (because of a text-over-picture issue)
             BloomApi.postThatMightNavigate(command);
         }
