@@ -184,7 +184,7 @@ function performSplit(
     newSplitPane.splitPane();
 }
 
-var origamiUndoStack = [];
+var origamiUndoStack: any[] = [];
 var origamiUndoIndex = 0; // of item that should be redone next, if any
 
 // Add a point to which the user can return using 'undo'. Call this before making any change that
