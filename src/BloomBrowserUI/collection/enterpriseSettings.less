@@ -1,17 +1,56 @@
 @import "../bloomUI.less";
+@greyBackground: #ebebeb;
+@subitemIndent: 27px;
 
 .enterpriseSettings {
     padding: 0px 4px 0px 4px;
     font-family: @ui-fonts;
     font-size: @ui-font-size;
 
+    #enterpriseMain,
+    #communityMain {
+        transition: max-height 0.6s;
+        overflow-y: hidden;
+        &.closed {
+            max-height: 0; // this way of hiding it allows animation to close it
+            padding: 0;
+        }
+    }
+    #enterpriseMain {
+        max-height: 70px;
+        &.hasSummary {
+            max-height: 160px;
+        }
+    }
+    #communityMain {
+        max-height: 106px;
+    }
+
     // These elements resolve to spans or links, but we want each to lay out as a block.
     .mainHeading,
     .invalidBrandingLink,
-    .invalidBranding,
+    .legacyBrandingName,
     .learnMoreLink {
         margin-bottom: 5px;
         display: block;
+    }
+    .mainButton {
+        margin-top: 10px;
+    }
+    .learnMoreLink {
+        position: absolute;
+        right: 20px;
+    }
+    .legacyBrandingName {
+        background-color: @bloom-yellow;
+        border-radius: 12px;
+        padding: 0 10px;
+        margin-left: @subitemIndent;
+        // I don't understand why, but putting any vertical padding on the parent results in far too much
+        p {
+            padding-top: 3px;
+            padding-bottom: 5px;
+        }
     }
     .hidden {
         display: none;
@@ -40,35 +79,73 @@
     .subscriptionCodeInput {
         width: 200px;
         margin-left: 5px;
+        padding-right: 20px; // clear of icon
     }
-    .subscriptionCodeWrapper {
-        margin-top: -5px;
-    }
-    @subscriptionIndent: 30px;
-    .subscriptionCodeWrapper,
-    .expiration,
-    .error {
-        margin-left: @subscriptionIndent;
-    }
-    @summary-padding: 3px;
-    .summary {
-        margin-left: @subscriptionIndent - @summary-padding;
-    }
+
     .error:not(.hidden) {
         color: red;
         display: block;
     }
-    .codeEvaluation {
-        margin-left: 10px;
-        vertical-align: -3px;
-        font-size: 20pt;
+    .evaluationCode {
+        position: relative;
+        left: -18px;
+    }
+    .fa-check {
         color: lime;
     }
+    .incomplete:not(.hidden) {
+        display: block;
+    }
+    .fa-question,
+    .incomplete {
+        color: @bloom-yellow;
+    }
+    .fa-exclamation-circle {
+        color: red;
+    }
+    .enterpriseSubitems {
+        background-color: @greyBackground;
+        padding: 3px 10px;
+        margin-top: 5px;
+        margin-left: @subitemIndent;
+    }
+    .communitySummary {
+        background-color: @greyBackground;
+        margin-left: @subitemIndent;
+        padding: 3px;
+    }
+    .editButton {
+        color: grey;
+        display: inline-block;
+        position: relative;
+        top: 8px;
+        span {
+            display: block;
+        }
+        .editIcon {
+            color: dimgrey;
+            font-size: 12pt;
+        }
+        &.pasteButton {
+            margin-left: 10px;
+        }
+        .editButtonAlign {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .editButtonLabel {
+            line-height: 12px;
+            font-size: 7pt;
+        }
+    }
+    .expiration {
+        margin-top: 5px;
+    }
     .summary {
-        margin-top: 7px;
-        background-color: gainsboro;
-        padding: @summary-padding;
+        margin-top: 5px;
         height: 106px;
+        overflow-y: hidden;
         // These settings are not used directly in the tsx, they are intended to be the class
         // of a single top-level div in each summary.htm file. In the horizontal layout,
         // there should be one child div, with whatever should appear beside the picture.

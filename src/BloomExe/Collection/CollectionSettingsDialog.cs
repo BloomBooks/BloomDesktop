@@ -71,7 +71,7 @@ namespace Bloom.Collection
 
 			UpdateDisplay();
 
-			if (CollectionSettingsApi.InvalidBranding != null)
+			if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
 			{
 				_tab.SelectedTab = _enterpriseTab;
 			}
@@ -291,6 +291,11 @@ namespace Bloom.Collection
 			AdjustFontComboDropdownWidth();
 			_brand = _collectionSettings.BrandingProjectKey;
 			_subscriptionCode = _collectionSettings.SubscriptionCode;
+			// Set the branding as an (incomplete) code if we are running with a legacy branding
+			if (CollectionSettingsApi.LegacyBrandingName != null && string.IsNullOrEmpty(_subscriptionCode))
+			{
+				_subscriptionCode = CollectionSettingsApi.LegacyBrandingName;
+			}
 			CollectionSettingsApi.SetSubscriptionCode(_subscriptionCode, IsSubscriptionCodeKnown(), GetEnterpriseStatus());
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
@@ -517,7 +522,7 @@ namespace Bloom.Collection
 
 		private CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus()
 		{
-			if (CollectionSettingsApi.InvalidBranding != null)
+			if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
 			{
 				// We're being displayed to fix a branding code...select that option
 				return CollectionSettingsApi.EnterpriseStatus.Subscription;
@@ -542,14 +547,25 @@ namespace Bloom.Collection
 			{
 				if (item.Key.ToUpperInvariant() == brand.ToUpperInvariant())
 				{
-					Invoke((Action) (ChangeThatRequiresRestart));
-					_brand = item.Key;
-					_subscriptionCode = subscriptionCode;
+					if (item.Key != _brand || DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
+					{
+						Invoke((Action) (ChangeThatRequiresRestart));
+						_brand = item.Key;
+						_subscriptionCode = subscriptionCode;
+					}
+
 					return true;
 				}
 			}
 
 			return false;
+		}
+
+		private bool DifferentSubscriptionCodes(string code1, string code2)
+		{
+			if (string.IsNullOrEmpty(code1) && string.IsNullOrEmpty(code2))
+				return false;
+			return code1 != code2;
 		}
 
 		private void showTroubleShooterCheckBox_CheckedChanged(object sender, EventArgs e)

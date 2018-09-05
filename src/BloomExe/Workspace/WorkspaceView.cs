@@ -181,6 +181,7 @@ namespace Bloom.Workspace
 			SetupZoomControl();
 			AdjustButtonTextsForLocale();
 			_viewInitialized = false;
+			CommonApi.WorkspaceView = this;
 		}
 
 		private void SetupZoomControl()
@@ -552,9 +553,9 @@ namespace Bloom.Workspace
 		{
 			Application.Idle -= BringUpEnterpriseSettings;
 			Program.CloseSplashScreen();
-			CollectionSettingsApi.InvalidBranding = _collectionSettings.InvalidBranding;
+			CollectionSettingsApi.PrepareForFixEnterpriseBranding(_collectionSettings.InvalidBranding, _collectionSettings.SubscriptionCode);
 			OnSettingsButton_Click(this, new EventArgs());
-			CollectionSettingsApi.InvalidBranding = null;
+			CollectionSettingsApi.EndFixEnterpriseBranding();
 		}
 
 		private void SelectPage(Control view)
@@ -753,6 +754,11 @@ namespace Bloom.Workspace
 			{
 				g.Dispose();
 			}
+		}
+
+		public void CheckForUpdates()
+		{
+			Invoke((Action) (() =>_checkForNewVersionMenuItem_Click(this, new EventArgs())));
 		}
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
