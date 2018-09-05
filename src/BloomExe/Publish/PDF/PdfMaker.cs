@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Windows.Forms;
-using Bloom.Workspace;
+﻿using Bloom.Workspace;
 using L10NSharp;
 using PdfDroplet.LayoutMethods;
 using PdfSharp;
@@ -10,6 +6,10 @@ using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using SIL.IO;
 using SIL.Progress;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
 
 namespace Bloom.Publish.PDF
 {
@@ -80,16 +80,16 @@ namespace Bloom.Publish.PDF
 					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
 					MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft);
 				}
-				else
-				{
-					 // Just check that we got a valid, readable PDF. (MakeBooklet has to read the PDF itself,
-					// so we don't need to do this check if we're calling that.)
-					// If we get a reliable fix to BL-932 we can take this 'else' out altogether.
-					CheckPdf(outputPdfPath);
-				}
 				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
 				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
 				fixPdf.ProcessPdfFile(outputPdfPath, outputPdfPath);
+				// Check that we got a valid, readable PDF.
+				// If we get a reliable fix to BL-932 we can take this out altogether.
+				// It's probably redundant, since the compression process would probably fail with this
+				// sort of corruption, and we are many generations beyond gecko29 where we observed it.
+				// However, we don't have data to reliably reproduce the BL-932, and the check doesn't take
+				// long, so leaving it in for now.
+				CheckPdf(outputPdfPath);
 			}
 			catch (KeyNotFoundException e)
 			{
