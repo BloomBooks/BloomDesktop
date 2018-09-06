@@ -142,7 +142,12 @@ namespace BloomTests.Publish
 			// since this test creates actual image files, we can test the AriaAccessibilityMarkup
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@id='bookfig1']", _ns, 1);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@alt='Vernacular image description']", _ns, 1);
-			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc1.0 figdesc1.1 figdesc1.2']", _ns, 1);
+
+			// Some day, we want this to be the commented line instead, but there is a bug in Ace's handling of aria-describedby.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6426.
+			//assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc1.0 figdesc1.1 figdesc1.2']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@aria-describedby='figdesc1.0']", _ns, 1);
+
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[1][@id='figdesc1.0']", _ns, 1);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[2][@id='figdesc1.1']", _ns, 1);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[3][@id='figdesc1.2']", _ns, 1);
