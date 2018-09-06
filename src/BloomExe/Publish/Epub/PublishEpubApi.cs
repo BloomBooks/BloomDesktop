@@ -354,7 +354,7 @@ namespace Bloom.Publish.Epub
 				lock (_epubMakerLock)
 				{
 					previewIsAlreadyCurrent = _desiredEpubSettings == newSettings && EpubMaker != null && newVersion == _bookVersion &&
-					                          !EpubMaker.AbortRequested;
+												!EpubMaker.AbortRequested && !force;
 				}
 
 				if (previewIsAlreadyCurrent)
