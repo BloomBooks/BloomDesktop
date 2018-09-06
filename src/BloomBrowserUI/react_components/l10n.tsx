@@ -38,7 +38,7 @@ export class LocalizableElement<
     private disabledTooltipKey: string;
     private localizedText: string;
 
-    // set the following boolean to turn all translated strings green
+    // set the following boolean to turn all translated strings green (and untranslated ones blue)
     private turnTranslatedGreen: boolean = false;
     private previousL10nKey: string = "";
 
@@ -188,12 +188,17 @@ export class LocalizableElement<
                 return <span> {this.state.translation} </span>;
             }
         } else {
-            return (
-                <span style={{ color: "grey" }}>
-                    {" "}
-                    {this.getOriginalStringContent()}{" "}
-                </span>
-            );
+            if (this.turnTranslatedGreen) {
+                // Use blue for untranslated: grey is confused with "disabled".
+                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6422.
+                return (
+                    <span style={{ color: "blue" }}>
+                        {" "}
+                        {this.getOriginalStringContent()}{" "}
+                    </span>
+                );
+            }
+            return <span> {this.getOriginalStringContent()} </span>;
         }
     }
 
