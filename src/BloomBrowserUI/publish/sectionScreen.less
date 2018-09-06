@@ -125,4 +125,19 @@ html.publishTabScreen {
         }
         font-size: 12pt;
     }
+
+    // The following are enabled in "development mode", ie, either a debug build
+    // or an alpha.
+    // Light green means the string is assumed to have been translated in C#.
+    span.development-translated-cs {
+        color: lightgreen;
+    }
+    // Green means the string's translation is stored in TypeScript.
+    span.development-translated-ts {
+        color: green;
+    }
+    // Red means the string has not been translated.
+    span.development-untranslated {
+        color: red;
+    }
 }

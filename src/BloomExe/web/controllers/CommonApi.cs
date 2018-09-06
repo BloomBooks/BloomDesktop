@@ -76,6 +76,25 @@ namespace Bloom.web.controllers
 					WorkspaceView.CheckForUpdates();
 					request.PostSucceeded();
 				}, false);
+			server.RegisterEndpointHandler("program/releasetype", request => {
+				// This allows TypeScript code to adjust itself for debug builds, or
+				// according to whether we're an alpha, beta, or release build.
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+#if DEBUG
+					var result = "debug";
+#else
+					var result = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
+					if (result.EndsWith("internal", StringComparison.InvariantCulture))
+						result = result.Substring(0, result.Length - 8);
+#endif
+					request.ReplyWithText(result);
+				}
+				else
+				{
+					request.Failed();
+				}
+			}, false);
 		}
 
 		private void RethinkPageAndReloadIt(ApiRequest request)
