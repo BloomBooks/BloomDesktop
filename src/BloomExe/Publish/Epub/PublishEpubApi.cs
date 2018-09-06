@@ -107,7 +107,7 @@ namespace Bloom.Publish.Epub
 			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Progress, message);
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			server.RegisterEndpointHandler(kApiUrlPart + "save", request =>
 			{

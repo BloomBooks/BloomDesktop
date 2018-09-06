@@ -35,7 +35,7 @@ namespace Bloom.web.controllers
 		}
 
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			server.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
 			server.RegisterEndpointHandler("signLanguage/editVideo", HandleEditVideoRequest, true);

@@ -15,7 +15,7 @@ namespace BloomTests.web
 	public class EndpointHandlerTests
 	{
 		public static readonly object _portMonitor = new object();
-		private EnhancedImageServer _server;
+		private FileAndApiServer _server;
 
 		[SetUp]
 		public void Setup()
@@ -23,7 +23,7 @@ namespace BloomTests.web
 			// as long as we're only using one, fixed port number, we need to prevent unit test runner
 			// from running these tests in parallel.
 			Monitor.Enter(_portMonitor);
-			_server = new EnhancedImageServer(new BookSelection());
+			_server = new FileAndApiServer(new BookSelection());
 		}
 
 		[TearDown]

@@ -36,7 +36,7 @@ namespace Bloom.web.controllers
 		private Book.Book CurrentBook { get { return _bookSelection.CurrentSelection; } }
 
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			server.RegisterEndpointHandler("music/ui/chooseFile", HandleRequest, true);
 		}

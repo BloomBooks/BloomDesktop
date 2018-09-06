@@ -60,7 +60,7 @@ namespace Bloom.Publish.Android
 			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			// This is just for storing the user preference of method
 			// If we had a couple of these, we could just have a generic preferences api

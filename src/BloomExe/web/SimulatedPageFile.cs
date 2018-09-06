@@ -8,7 +8,7 @@ namespace Bloom.Api
 	/// <summary>
 	/// A SimulatedPageFile is used in connection with simulating a current-page file that needs
 	/// to (seem to) be in the book folder so local hrefs work. We don't actually put files there
-	/// (see EnhancedImageServer.MakeSimulatedPageFileInBookFolder for more), but rather
+	/// (see FileAndApiServer.MakeSimulatedPageFileInBookFolder for more), but rather
 	/// store some data in the our file server object.
 	/// The particular purpose of the SimulatedPageFile is to manage the lifetime for which
 	/// the simulated page is kept in the server. It can be passed to the Browser which will
@@ -20,7 +20,7 @@ namespace Bloom.Api
 	{
 		public void Dispose()
 		{
-			EnhancedImageServer.RemoveSimulatedPageFile(Key);
+			FileAndApiServer.RemoveSimulatedPageFile(Key);
 		}
 
 		/// <summary>

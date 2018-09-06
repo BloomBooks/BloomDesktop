@@ -22,7 +22,7 @@ using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
 namespace BloomTests.web
 {
 	[TestFixture]
-	public class EnhancedImageServerTests
+	public class FileAndApiServerTests
 	{
 		private TemporaryFolder _folder;
 		private BloomFileLocator _fileLocator;
@@ -99,7 +99,7 @@ namespace BloomTests.web
 
 				// Verify
 				Assert.That(transaction.StatusCode, Is.EqualTo(404));
-				Assert.That(Logger.LogText, Contains.Substring("**EnhancedImageServer: File Missing: /non-existing-file.pdf"));
+				Assert.That(Logger.LogText, Contains.Substring("**FileAndApiServer: File Missing: /non-existing-file.pdf"));
 			}
 		}
 
@@ -254,11 +254,11 @@ namespace BloomTests.web
 			}
 		}
 
-		private EnhancedImageServer CreateImageServer(BookInfo info = null)
+		private FileAndApiServer CreateImageServer(BookInfo info = null)
 		{
 			var bookSelection = new BookSelection();
 			bookSelection.SelectBook(new Bloom.Book.Book(info));
-			return new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection, _fileLocator);
+			return new FileAndApiServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection, _fileLocator);
 		}
 
 		private TempFile MakeTempImage()
@@ -281,7 +281,7 @@ namespace BloomTests.web
 				var dom = new HtmlDom(html);
 				dom.BaseForRelativePaths =_folder.Path.ToLocalhost();
 				string url;
-				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom))
+				using (var fakeTempFile = FileAndApiServer.MakeSimulatedPageFileInBookFolder(dom))
 				{
 					url = fakeTempFile.Key;
 					var transaction = new PretendRequestInfo(url);
@@ -310,7 +310,7 @@ namespace BloomTests.web
 		public void CanRetrieveContentOfFakeTempFile_WhenFolderContainsAmpersand_ViaJavaScript()
 		{
 			var dom = SetupDomWithAmpersandInTitle();
-			// the 'true' parameter simulates calling EnhancedImageServer via JavaScript
+			// the 'true' parameter simulates calling FileAndApiServer via JavaScript
 			var transaction = CreateServerMakeSimPageMakeReply(dom, true);
 			// Verify
 			// Whitespace inserted by CreateHtml5StringFromXml seems to vary across versions and platforms.
@@ -349,7 +349,7 @@ namespace BloomTests.web
 			PretendRequestInfo transaction;
 			using (var server = CreateImageServer())
 			{
-				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavascript))
+				using (var fakeTempFile = FileAndApiServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavascript))
 				{
 					var url = fakeTempFile.Key;
 					transaction = new PretendRequestInfo(url, forPrinting: false, forSrcAttr: simulateCallingFromJavascript);

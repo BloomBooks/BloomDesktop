@@ -250,7 +250,7 @@ namespace Bloom.Api
 		/// Get a boolean value that was passed as application/json
 		/// </summary>
 		/// <remarks>
-		/// Used by EnhancedImageServer.RegisterBooleanEndpointHandler() and requires something like this:
+		/// Used by FileAndApiServer.RegisterBooleanEndpointHandler() and requires something like this:
 		///    axios.post("api/bloom/foo", myBool, {
 		///       headers: { "Content-Type": "application/json" }});
 		/// </remarks>
