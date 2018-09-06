@@ -1580,9 +1580,9 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizerTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
-        <note>ID: EditTab.Toolbox.ImpairmentVisualizerTool</note>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow" sil:dynamic="true">
         <source xml:lang="en">Blue-Yellow</source>
