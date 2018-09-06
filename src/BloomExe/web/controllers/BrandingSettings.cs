@@ -88,7 +88,7 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
-		/// branding folders can optionally contain a settings.json file which aligns with this Settings class
+		/// branding folders can optionally contain a branding.json file which aligns with this Settings class
 		/// </summary>
 		/// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
 		//but unit tests can instead provide a path to the folder.
@@ -97,7 +97,7 @@ namespace Bloom.Api
 		{
 			try
 			{
-				var settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingNameOrFolderPath, "settings.json");
+				var settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingNameOrFolderPath, "branding.json");
 				if(!string.IsNullOrEmpty(settingsPath))
 				{
 					var content = RobustFile.ReadAllText(settingsPath);
@@ -105,7 +105,7 @@ namespace Bloom.Api
 					if(settings == null)
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Trouble reading branding settings",
-							"settings.json of the branding " + brandingNameOrFolderPath + " may be corrupt. It had: " + content);
+							"branding.json of the branding " + brandingNameOrFolderPath + " may be corrupt. It had: " + content);
 						return null;
 					}
 					return settings;

@@ -176,7 +176,7 @@ namespace BloomTests.Book
 			 </body></html>");
 			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButIsEmpty_DoesNothing"))
 			{
-				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"), @"{}");
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"), @"{}");
 
 				var data = new BookData(bookDom, _collectionSettings, null);
 				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
@@ -195,7 +195,7 @@ namespace BloomTests.Book
 			 </body></html>");
 			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButIsEmpty_DoesNothing"))
 			{
-				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"), "");
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"), "");
 
 				var data = new BookData(bookDom, _collectionSettings, null);
 				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
@@ -214,7 +214,7 @@ namespace BloomTests.Book
 			 </body></html>");
 			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButLacksCondition_DoesNothing"))
 			{
-				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"), @"{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"), @"{
 	""presets"": [{
 		""data-book"": ""insideBackCover"",
 		""lang"": ""xyz"",
@@ -251,7 +251,7 @@ namespace BloomTests.Book
 
 			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
 			{
-				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
 					// Second tests setting of another language of same property;
 					// Third tests setting of another property;
@@ -319,7 +319,7 @@ namespace BloomTests.Book
 
 			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
 			{
-				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
 					// Second tests setting of another language of same property;
 					@"{
@@ -354,7 +354,7 @@ namespace BloomTests.Book
 			 </body></html>");
 			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
 			{
-				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
 					// Second tests setting of another language of same property;
 					@"{
@@ -390,7 +390,7 @@ namespace BloomTests.Book
 			 </body></html>");
 			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
 			{
-				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
 					// Second tests setting of another language of same property;
 					@"{
@@ -434,7 +434,7 @@ namespace BloomTests.Book
 			 </body></html>");
 			using (var tempFolder = new TemporaryFolder("MergeSettings_HasCopyrightAlready_CustomBrandingStuffIgnored"))
 			{
-				File.WriteAllText(Path.Combine(tempFolder.Path, "settings.json"),
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					@"{
 	""presets"": [{
 		""data-book"": ""licenseNotes"",

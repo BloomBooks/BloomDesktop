@@ -41,7 +41,35 @@ Rules that format the branding go in branding-base.less, or in the branding.less
 
 [data-book="outside-back-cover-branding-bottom-html"] {
     width: 100%;
-    img {
-        height: 20mm;
+    // resist the temptation to do this; by having a default, if we ever change it, we would have to go through
+    // every single existing branding to make sure it is ok. I think it's better to make each branding declare
+    // the height.   img {   height: 20mm;  }
+}
+
+/*  these rules allow different branding insertions depending on orientation */
+.portraitOnly,
+.landscapeOnly {
+    display: none;
+}
+.Device16x9Portrait,
+.QuarterLetterPortrait,
+.HalfLetterPortrait,
+.LetterPortrait,
+.A4Portrait,
+.A5Portrait,
+.B5Portrait,
+.A6Portrait {
+    .portraitOnly {
+        display: unset;
+    }
+}
+.Device16x9Landscape,
+.LetterLandscape,
+.A3Landscape,
+.A4Landscape,
+.A5Landscape,
+.A6Landscape {
+    .landscapeOnly {
+        display: unset;
     }
 }
