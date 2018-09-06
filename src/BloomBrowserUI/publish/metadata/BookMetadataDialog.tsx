@@ -22,7 +22,8 @@ export default class BookMetadataDialog extends React.Component<{}, IState> {
     public readonly state: IState = { isOpen: false };
 
     // We want mobx to watch this, because we will pass it to the BookMetadataTable, which can change it.
-    @mobx.observable private metadata: any;
+    @mobx.observable
+    private metadata: any;
 
     // We will also pass this to the BookMetadataTable, but mobx doesn't need to watch it, since it won't change.
     private translatedControlStrings: any;
@@ -35,6 +36,7 @@ export default class BookMetadataDialog extends React.Component<{}, IState> {
     private handleCloseModal(doSave: boolean) {
         if (doSave) {
             BloomApi.postData("book/metadata", this.metadata);
+            BloomApi.post("publish/epub/updatePreview");
         }
         this.setState({ isOpen: false });
     }
