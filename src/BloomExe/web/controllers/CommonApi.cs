@@ -76,6 +76,18 @@ namespace Bloom.web.controllers
 					WorkspaceView.CheckForUpdates();
 					request.PostSucceeded();
 				}, false);
+			server.RegisterEndpointHandler("common/channel", request => {
+				// This allows TypeScript code to adjust itself for debug builds, or
+				// according to whether we're an alpha, beta, or release build.
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithText(ApplicationUpdateSupport.ChannelName);
+				}
+				else
+				{
+					request.Failed();
+				}
+			}, false);
 		}
 
 		private void RethinkPageAndReloadIt(ApiRequest request)

@@ -61,6 +61,20 @@
     display: none !important;
 }
 
+// The following are enabled for "development builds" and alpha builds.
+// Light green means the string is assumed to have been translated in C#.
+span.development-translated-cs {
+    color: lightgreen;
+}
+// Green means the string's translation is stored in TypeScript.
+span.development-translated-ts {
+    color: green;
+}
+// Red means the string has not been translated.
+span.development-untranslated {
+    color: red;
+}
+
 /* all of this worked in the latest firefox, but not Bloom.
     We may want it someday, as it sure seems clearer to put
     in a ? than the black box that FF normally uses, to mean

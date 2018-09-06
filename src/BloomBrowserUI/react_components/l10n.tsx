@@ -1,6 +1,30 @@
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import { BloomApi } from "../utils/bloomApi";
+
+export enum ProgramReleaseType {
+    Developer,
+    Test, // not sure this will happen in practice
+    Alpha,
+    Beta,
+    Release
+}
+export let releaseType: ProgramReleaseType;
+BloomApi.get("/common/channel", r => {
+    const channel: string = r.data as string;
+    if (channel.startsWith("Developer/")) {
+        releaseType = ProgramReleaseType.Developer;
+    } else if (channel.startsWith("Test")) {
+        releaseType = ProgramReleaseType.Test;
+    } else if (channel.startsWith("Alpha")) {
+        releaseType = ProgramReleaseType.Alpha;
+    } else if (channel.startsWith("Beta")) {
+        releaseType = ProgramReleaseType.Beta;
+    } else {
+        releaseType = ProgramReleaseType.Release;
+    }
+});
 
 // This would be used by a control that doesn't have any text of its own,
 // but has children that need to be localized.
@@ -38,8 +62,6 @@ export class LocalizableElement<
     private disabledTooltipKey: string;
     private localizedText: string;
 
-    // set the following boolean to turn all translated strings green
-    private turnTranslatedGreen: boolean = false;
     private previousL10nKey: string = "";
 
     constructor(props: ILocalizationProps) {
@@ -164,11 +186,13 @@ export class LocalizableElement<
     }
 
     public getLocalizedContent(): JSX.Element {
+        const colorizeTranslations =
+            releaseType == ProgramReleaseType.Developer ||
+            releaseType == ProgramReleaseType.Alpha;
         if (this.props.alreadyLocalized) {
-            if (this.turnTranslatedGreen) {
-                // We'll use lightgreen to mean assumed translated by C#-land
+            if (colorizeTranslations) {
                 return (
-                    <span style={{ color: "lightgreen" }}>
+                    <span className="development-translated-cs">
                         {" "}
                         {this.getOriginalStringContent()}{" "}
                     </span>
@@ -177,24 +201,25 @@ export class LocalizableElement<
             return <span> {this.getOriginalStringContent()} </span>;
         }
         if (this.state && this.state.translation) {
-            if (this.turnTranslatedGreen) {
+            if (colorizeTranslations) {
                 return (
-                    <span style={{ color: "green" }}>
+                    <span className="development-translated-ts">
                         {" "}
                         {this.state.translation}{" "}
                     </span>
                 );
-            } else {
-                return <span> {this.state.translation} </span>;
             }
-        } else {
+            return <span> {this.state.translation} </span>;
+        }
+        if (colorizeTranslations) {
             return (
-                <span style={{ color: "grey" }}>
+                <span className="development-untranslated">
                     {" "}
                     {this.getOriginalStringContent()}{" "}
                 </span>
             );
         }
+        return <span> {this.getOriginalStringContent()} </span>;
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {
