@@ -17,7 +17,7 @@ namespace Bloom.web.controllers
 			_bookSelection = bookSelection;
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			bool requiresSync = false; // Lets us open the dialog while the epub preview is being generated
 			server.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false, requiresSync);

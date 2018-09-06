@@ -18,7 +18,7 @@ namespace Bloom.Api
 			_pageRefreshEvent = pageRefreshEvent;
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			// Not sure this needs UI thread, but it can result in saving the page, which seems
 			// safest to do that way.

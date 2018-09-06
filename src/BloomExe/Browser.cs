@@ -833,7 +833,7 @@ namespace Bloom
 			_pageEditDom = editDom ?? dom;
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source:source);
+			var fakeTempFile = FileAndApiServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source:source);
 			SetNewDependent(fakeTempFile);
 			_url = fakeTempFile.Key;
 			UpdateDisplay();

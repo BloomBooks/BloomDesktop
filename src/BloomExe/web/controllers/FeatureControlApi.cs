@@ -30,7 +30,7 @@ namespace Bloom.Api
 			request.PostSucceeded();
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			server.RegisterEndpointHandler(kShowAdvancedFeaturesUrlPart, request =>
 			{

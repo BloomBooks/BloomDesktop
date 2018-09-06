@@ -46,7 +46,7 @@ namespace Bloom
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libpath);
 		}
 
-		public static void RegisterWithServer(EnhancedImageServer server)
+		public static void RegisterWithServer(FileAndApiServer server)
 		{
 			server.RegisterEndpointHandler("help/.*", (request) =>
 			{

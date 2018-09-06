@@ -18,6 +18,7 @@ using Bloom.Workspace;
 using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.Extensions;
+using Bloom.Properties;
 
 namespace Bloom.Api
 {
@@ -27,8 +28,12 @@ namespace Bloom.Api
 	/// <remarks>geckofx makes concurrent requests of URLs which this class handles. This means
 	/// that the methods of this class get called on different threads, so it has to be
 	/// thread-safe.</remarks>
-	public class EnhancedImageServer: ImageServer
+	public class FileAndApiServer : ServerBase
 	{
+		public const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for simulated pages and PDF creation)
+		private RuntimeImageProcessor _cache;
+		private bool _useCache;
+
 		private const string SimulatedFileUrlMarker = "-memsim-";
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
@@ -49,14 +54,16 @@ namespace Bloom.Api
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
-		internal EnhancedImageServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection)
+		internal FileAndApiServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection)
 		{ }
 
-		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BookSelection bookSelection,  BloomFileLocator fileLocator = null) : base(cache)
+		public FileAndApiServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BookSelection bookSelection,  BloomFileLocator fileLocator = null)
 		{
 			_thumbNailer = thumbNailer;
 			_bookSelection = bookSelection;
 			_fileLocator = fileLocator;
+			_cache = cache;
+			_useCache = Settings.Default.ImageHandler != "off";
 		}
 
 
@@ -288,6 +295,10 @@ namespace Bloom.Api
 			//OK, no more obvious simple API requests, dive into the rat's nest of other possibilities
 			if (base.ProcessRequest(info))
 				return true;
+			
+			// Handle image file requests.
+			if (ProcessImageFileRequest(info))
+				return true;
 
 			if(localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8091/bloom/CURRENTPAGE.htm will always show the page we're on.
 			{
@@ -343,6 +354,82 @@ namespace Bloom.Api
 				localPath = localPath.Replace("output/browser/", "");
 
 			return ProcessContent(info, localPath);
+		}
+
+		private bool ProcessImageFileRequest(IRequestInfo info)
+		{
+			if (!_useCache)
+				return false;
+
+			var imageFile = GetLocalPathWithoutQuery(info);
+
+			// only process images
+			var isSvg = imageFile.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
+			if (!IsImageTypeThatCanBeDegraded(imageFile) && !isSvg)
+				return false;
+
+			imageFile = imageFile.Replace("thumbnail", "");
+
+			var processImage = !isSvg;
+
+			if (imageFile.StartsWith(OriginalImageMarker + "/"))
+			{
+				processImage = false;
+				imageFile = imageFile.Substring((OriginalImageMarker + "/").Length);
+
+				if (!RobustFile.Exists(imageFile))
+				{
+					// We didn't find the file here, and don't want to use the following else if or we could errantly
+					// find it in the browser root. For example, this outer if (imageFile.StartsWith...) was added because
+					// we were accidentally finding license.png in a template book. See BL-4290.
+					return false;
+				}
+			}
+			// This happens with the new way we are serving css files
+			else if (!RobustFile.Exists(imageFile))
+			{
+				var fileName = Path.GetFileName(imageFile);
+				var sourceDir = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
+				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
+
+				// image file not found
+				if (string.IsNullOrEmpty(imageFile)) return false;
+
+				// BL-2368: Do not process files from the BloomBrowserUI directory. These files are already in the state we
+				//          want them. Running them through _cache.GetPathToResizedImage() is not necessary, and in PNG files
+				//          it converts all white areas to transparent. This is resulting in icons which only contain white
+				//          (because they are rendered on a dark background) becoming completely invisible.
+				processImage = false;
+			}
+
+			var originalImageFile = imageFile;
+			if (processImage)
+			{
+				// thumbnail requests have the thumbnail parameter set in the query string
+				var thumb = info.GetQueryParameters()["thumbnail"] != null;
+				imageFile = _cache.GetPathToResizedImage(imageFile, thumb);
+
+				if (string.IsNullOrEmpty(imageFile)) return false;
+			}
+
+			info.ReplyWithImage(imageFile, originalImageFile);
+			return true;
+		}
+
+		protected static bool IsImageTypeThatCanBeDegraded(string path)
+		{
+			var extension = Path.GetExtension(path);
+			if(!string.IsNullOrEmpty(extension))
+				extension = extension.ToLower();
+			//note, we're omitting SVG
+			return (new[] { ".png", ".jpg", ".jpeg"}.Contains(extension));
+		}
+
+		static HashSet<string> _imageExtensions = new HashSet<string>(new[] { ".jpg", "jpeg", ".png", ".svg" });
+
+		internal static bool IsImageTypeThatCanBeReturned(string path)
+		{
+			return _imageExtensions.Contains((Path.GetExtension(path) ?? "").ToLowerInvariant());
 		}
 
 		/// <summary>
@@ -462,7 +549,9 @@ namespace Bloom.Api
 				if (e.Message.StartsWith("Could not locate the required file"))
 				{
 					// LocateFile includes userInstalledSearchPaths (e.g. a shortcut to a collection in a non-standard location)
-					path = BloomFileLocator.sTheMostRecentBloomFileLocator.LocateFile(localPath);
+					path = BloomFileLocator.sTheMostRecentBloomFileLocator?.LocateFile(localPath);
+					if (String.IsNullOrEmpty(path))
+						path = localPath;
 				}
 			}
 
@@ -519,7 +608,7 @@ namespace Bloom.Api
 				// Html/Xml encoded (using &), not Url encoded (using %).
 				path = System.Web.HttpUtility.UrlDecode(localPath);
 			}
-			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection.CurrentSelection != null)
+			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection?.CurrentSelection != null)
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
 				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
@@ -732,6 +821,11 @@ namespace Bloom.Api
 					_sampleTextsWatcher.Dispose();
 					_sampleTextsWatcher = null;
 				}
+				if (_cache != null)
+				{
+					_cache.Dispose();
+					_cache = null;
+			}
 			}
 
 			base.Dispose(fDisposing);

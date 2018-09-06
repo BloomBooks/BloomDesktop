@@ -44,7 +44,7 @@ namespace Bloom.Api
 			AllowedWordsFile
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			server.RegisterEndpointHandler("collection/defaultFont", request =>
 			{

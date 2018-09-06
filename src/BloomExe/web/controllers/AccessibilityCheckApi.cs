@@ -77,7 +77,7 @@ namespace Bloom.web.controllers
 			});
 		}
 		
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{	
 			server.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
 			{

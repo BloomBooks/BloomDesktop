@@ -81,7 +81,7 @@ namespace Bloom.Edit
 			_webSocketServer = bloomWebSocketServer;
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithServer(FileAndApiServer server)
 		{
 			// I don't know for sure that these need to be on the UI thread, but that was the old default so keeping it for safety.
 			server.RegisterEndpointHandler("audio/startRecord", HandleStartRecording, true);

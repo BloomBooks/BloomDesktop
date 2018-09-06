@@ -605,7 +605,6 @@
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
@@ -1013,7 +1012,7 @@
     <Compile Include="web\WebClientWithTimeout.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="web\EnhancedImageServer.cs" />
+    <Compile Include="web\FileAndApiServer.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -8,8 +8,11 @@ using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
 
-namespace BloomTests.RuntimeImageProcessing
+namespace BloomTests.web
 {
+	/// <summary>
+	/// Test FileOrApiServer with image serving tests
+	/// </summary>
 	[TestFixture]
 	public class ImageServerTests
 	{
@@ -86,9 +89,9 @@ namespace BloomTests.RuntimeImageProcessing
 			Assert.AreEqual("test4", fileName);
 		}
 
-		private ImageServer CreateImageServer()
+		private FileAndApiServer CreateImageServer()
 		{
-			return new ImageServer(new RuntimeImageProcessor(new BookRenamedEvent()));
+			return new FileAndApiServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, null);
 		}
 		private TempFile MakeTempImage(string fileName=null)
 		{
