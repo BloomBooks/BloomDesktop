@@ -235,7 +235,7 @@
     <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="web\WebSocketServerSpy.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
-    <Compile Include="web\FileAndApiServerTests.cs" />
+    <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="PretendRequestInfo.cs" />
     <Compile Include="Collection\ShortcutMakerTests.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManagerTests.cs" />

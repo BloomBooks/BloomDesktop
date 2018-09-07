@@ -11,7 +11,7 @@ using SIL.TestUtilities;
 namespace BloomTests.web
 {
 	/// <summary>
-	/// Test FileOrApiServer with image serving tests
+	/// Test BloomServer with image serving tests
 	/// </summary>
 	[TestFixture]
 	public class ImageServerTests
@@ -33,7 +33,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetMissingImage_ReturnsError()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			using (var file = MakeTempImage())
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "abc.png");
@@ -45,7 +45,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetSmallImage_ReturnsSameSizeImage()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			using (var file = MakeTempImage())
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
@@ -60,7 +60,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetImageWithEscapedSpaces_ReturnsImage()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			using (var file = MakeTempImage("my cat.png"))
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path.Replace(" ","%20"));
@@ -89,9 +89,9 @@ namespace BloomTests.web
 			Assert.AreEqual("test4", fileName);
 		}
 
-		private FileAndApiServer CreateImageServer()
+		private BloomServer CreateBloomServer()
 		{
-			return new FileAndApiServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, null);
+			return new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, null);
 		}
 		private TempFile MakeTempImage(string fileName=null)
 		{

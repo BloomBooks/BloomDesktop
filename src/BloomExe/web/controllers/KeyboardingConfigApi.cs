@@ -7,7 +7,7 @@ namespace Bloom.web.controllers
 {
 	class KeyboardingConfigApi
 	{
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithServer(BloomServer server)
 		{
 			server.RegisterEndpointHandler("keyboarding/useLongpress", (ApiRequest request) =>
 			{

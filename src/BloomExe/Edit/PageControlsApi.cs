@@ -31,7 +31,7 @@ namespace Bloom.Edit
 			UpdateState(); // tell React model that the C# state changed
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithServer(BloomServer server)
 		{
 			server.RegisterEndpointHandler(kApiUrlPart + "requestState", request =>
 			{

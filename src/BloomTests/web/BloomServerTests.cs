@@ -22,7 +22,7 @@ using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
 namespace BloomTests.web
 {
 	[TestFixture]
-	public class FileAndApiServerTests
+	public class BloomServerTests
 	{
 		private TemporaryFolder _folder;
 		private BloomFileLocator _fileLocator;
@@ -32,7 +32,7 @@ namespace BloomTests.web
 		public void Setup()
 		{
 			Logger.Init();
-			_folder = new TemporaryFolder("ImageServerTests");
+			_folder = new TemporaryFolder("BloomServerTests");
 			LocalizationManager.UseLanguageCodeFolders = true;
 			var localizationDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
 			LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom", null, "", new string[] { });
@@ -56,7 +56,7 @@ namespace BloomTests.web
 		public void CanGetImage()
 		{
 			// Setup
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			using (var file = MakeTempImage())
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
@@ -73,7 +73,7 @@ namespace BloomTests.web
 		public void CanGetPdf()
 		{
 			// Setup
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			using (var file = TempFile.WithExtension(".pdf"))
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
@@ -90,7 +90,7 @@ namespace BloomTests.web
 		public void ReportsMissingFile()
 		{
 			// Setup
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "/non-existing-file.pdf");
 
@@ -99,7 +99,7 @@ namespace BloomTests.web
 
 				// Verify
 				Assert.That(transaction.StatusCode, Is.EqualTo(404));
-				Assert.That(Logger.LogText, Contains.Substring("**FileAndApiServer: File Missing: /non-existing-file.pdf"));
+				Assert.That(Logger.LogText, Contains.Substring("**BloomServer: File Missing: /non-existing-file.pdf"));
 			}
 		}
 
@@ -107,7 +107,7 @@ namespace BloomTests.web
 		public void SupportsHandlerInjection()
 		{
 			// Setup
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/thisWontWorkWithoutInjectionButWillWithIt");
 				server.CurrentCollectionSettings = new CollectionSettings();
@@ -131,7 +131,7 @@ namespace BloomTests.web
 		public void RegisterBoolEndpointHandler_Works()
 		{
 			// Setup
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				// set boolean handler
 				server.RegisterBooleanEndpointHandler("allowNewBooks",
@@ -181,7 +181,7 @@ namespace BloomTests.web
 		{
 			// Setup
 			var info = new BookInfo("", true);
-			using (var server = CreateImageServer(info))
+			using (var server = CreateBloomServer(info))
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc");
 				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
@@ -242,7 +242,7 @@ namespace BloomTests.web
 
 		private Dictionary<string, string> QueryServerForJson(string query)
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				var commonApi = new CommonApi(null, null);
 				commonApi.RegisterWithServer(server);
@@ -254,11 +254,11 @@ namespace BloomTests.web
 			}
 		}
 
-		private FileAndApiServer CreateImageServer(BookInfo info = null)
+		private BloomServer CreateBloomServer(BookInfo info = null)
 		{
 			var bookSelection = new BookSelection();
 			bookSelection.SelectBook(new Bloom.Book.Book(info));
-			return new FileAndApiServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection, _fileLocator);
+			return new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection, _fileLocator);
 		}
 
 		private TempFile MakeTempImage()
@@ -275,13 +275,13 @@ namespace BloomTests.web
 		[Test]
 		public void CanRetrieveContentOfFakeTempFile_ButOnlyUntilDisposed()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				var html = @"<html ><head></head><body>here it is</body></html>";
 				var dom = new HtmlDom(html);
 				dom.BaseForRelativePaths =_folder.Path.ToLocalhost();
 				string url;
-				using (var fakeTempFile = FileAndApiServer.MakeSimulatedPageFileInBookFolder(dom))
+				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom))
 				{
 					url = fakeTempFile.Key;
 					var transaction = new PretendRequestInfo(url);
@@ -310,7 +310,7 @@ namespace BloomTests.web
 		public void CanRetrieveContentOfFakeTempFile_WhenFolderContainsAmpersand_ViaJavaScript()
 		{
 			var dom = SetupDomWithAmpersandInTitle();
-			// the 'true' parameter simulates calling FileAndApiServer via JavaScript
+			// the 'true' parameter simulates calling BloomServer via JavaScript
 			var transaction = CreateServerMakeSimPageMakeReply(dom, true);
 			// Verify
 			// Whitespace inserted by CreateHtml5StringFromXml seems to vary across versions and platforms.
@@ -347,9 +347,9 @@ namespace BloomTests.web
 		private PretendRequestInfo CreateServerMakeSimPageMakeReply(HtmlDom dom, bool simulateCallingFromJavascript = false)
 		{
 			PretendRequestInfo transaction;
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
-				using (var fakeTempFile = FileAndApiServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavascript))
+				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavascript))
 				{
 					var url = fakeTempFile.Key;
 					transaction = new PretendRequestInfo(url, forPrinting: false, forSrcAttr: simulateCallingFromJavascript);
@@ -397,7 +397,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetCorrect_SettingsCollectionStylesCss()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
@@ -416,7 +416,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetCorrect_SettingsCollectionStylesCss_WhenMakingPdf()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
@@ -435,7 +435,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetCorrect_CustomCollectionStylesCss()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
@@ -454,7 +454,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetCorrect_CustomCollectionStylesCss_WhenMakingPdf()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
@@ -472,7 +472,7 @@ namespace BloomTests.web
 		[Test]
 		public void RequestXMatter_OnlyExistsInBookAndDistFiles_ReturnsTheOneInDistFiles()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "ForUnitTest-XMatter.css");
@@ -488,7 +488,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetCorrect_XmatterStylesCss()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "Factory-XMatter.css");
@@ -505,7 +505,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetCorrect_CustomBookStylesCss()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "customBookStyles.css");
@@ -522,7 +522,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetCorrect_CustomBookStylesCss_WhenMakingPdf()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "customBookStyles.css");
@@ -539,7 +539,7 @@ namespace BloomTests.web
 		[Test]
 		public void GetCorrect_MiscStylesCss()
 		{
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				SetupCssTests();
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "miscStyles.css");
@@ -565,7 +565,7 @@ namespace BloomTests.web
 			// and the image file was not being found by the server because a second level of encoding was
 			// applied before requesting the file.  So this test arbitrarily applies a double level of Url
 			// encoding (the third time) to ensure that the server can handle it.
-			using (var server = CreateImageServer())
+			using (var server = CreateBloomServer())
 			{
 				Directory.CreateDirectory(_collectionPath);
 				var txtFile = Path.Combine(_collectionPath, "File With Spaces.txt");

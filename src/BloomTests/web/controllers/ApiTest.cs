@@ -7,7 +7,7 @@ namespace BloomTests
 	{
 		public enum ContentType  {Text, JSON}
 
-		public static string GetString(FileAndApiServer server, string endPoint, string query = "",
+		public static string GetString(BloomServer server, string endPoint, string query = "",
 			ContentType returnType = ContentType.Text, EndpointHandler handler = null, string endOfUrlForTest = null)
 		{
 			if(handler != null)
@@ -33,7 +33,7 @@ namespace BloomTests
 			}
 		}
 
-		public static string PostString(FileAndApiServer server, string endPoint, string data, ContentType returnType,
+		public static string PostString(BloomServer server, string endPoint, string data, ContentType returnType,
 			EndpointHandler handler = null)
 		{
 			if(handler != null)

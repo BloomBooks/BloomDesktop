@@ -30,7 +30,7 @@ namespace Bloom.Api
 			_collectionSettings = collectionSettings;
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithServer(BloomServer server)
 		{
 			server.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
 			{
