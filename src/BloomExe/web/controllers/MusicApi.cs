@@ -38,7 +38,7 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler("music/ui/chooseFile", HandleRequest, true);
+			server.ApiHandler.RegisterEndpointHandler("music/ui/chooseFile", HandleRequest, true);
 		}
 
 		public void HandleRequest(ApiRequest request)

@@ -117,7 +117,7 @@ namespace BloomTests.web
 						Assert.That(request.CurrentCollectionSettings, Is.EqualTo(server.CurrentCollectionSettings));
 						request.ReplyWithText("Did It!");
 					};
-				server.RegisterEndpointHandler("thisWontWorkWithoutInjection", testFunc, true);
+				server.ApiHandler.RegisterEndpointHandler("thisWontWorkWithoutInjection", testFunc, true);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -134,7 +134,7 @@ namespace BloomTests.web
 			using (var server = CreateBloomServer())
 			{
 				// set boolean handler
-				server.RegisterBooleanEndpointHandler("allowNewBooks",
+				server.ApiHandler.RegisterBooleanEndpointHandler("allowNewBooks",
 					// get action
 					request => request.CurrentCollectionSettings.AllowDeleteBooks,
 					// post action
@@ -187,7 +187,7 @@ namespace BloomTests.web
 				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
 					BookInfo.HowToPublishImageDescriptions.None;
 				// set enum handler
-				server.RegisterEnumEndpointHandler("imageDesc",
+				server.ApiHandler.RegisterEnumEndpointHandler("imageDesc",
 					// get action
 					request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
 					// post action
@@ -258,7 +258,7 @@ namespace BloomTests.web
 		{
 			var bookSelection = new BookSelection();
 			bookSelection.SelectBook(new Bloom.Book.Book(info));
-			return new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection, _fileLocator);
+			return new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), bookSelection, _fileLocator);
 		}
 
 		private TempFile MakeTempImage()

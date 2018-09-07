@@ -32,7 +32,7 @@ namespace Bloom.Api
 
 		public void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
+			server.ApiHandler.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
 			{
 #if DEBUG
 				// The book templates are allowed to use the branding api.  All real books

@@ -33,7 +33,7 @@ namespace Bloom.Edit
 
 		public void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler(kApiUrlPart + "requestState", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "requestState", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -46,26 +46,26 @@ namespace Bloom.Edit
 				}
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "addPage", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "addPage", request =>
 			{
 				AddPageButton_Click();
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "duplicatePage", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "duplicatePage", request =>
 			{
 				_editingModel.OnDuplicatePage();
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "deletePage", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "deletePage", request =>
 			{
 				if (ConfirmRemovePageDialog.Confirm())
 					_editingModel.OnDeletePage();
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "lockBook", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "lockBook", request =>
 			{
 				_editingModel.SaveNow(); // BL-5421 lock and unlock lose typing
 				_editingModel.CurrentBook.TemporarilyUnlocked = false;
@@ -74,7 +74,7 @@ namespace Bloom.Edit
 				_editingModel.RefreshDisplayOfCurrentPage();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "unlockBook", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "unlockBook", request =>
 			{
 				_editingModel.SaveNow(); // BL-5421 lock and unlock lose typing
 				_editingModel.CurrentBook.TemporarilyUnlocked = true;
@@ -83,25 +83,25 @@ namespace Bloom.Edit
 				_editingModel.RefreshDisplayOfCurrentPage();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
 			{
 				SendCleanupState();
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "zoomMinus", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "zoomMinus", request =>
 			{
 				_editingModel.AdjustPageZoom(-10);
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "zoomPlus", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "zoomPlus", request =>
 			{
 				_editingModel.AdjustPageZoom(10);
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "requestVideoPlaceHolder", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "requestVideoPlaceHolder", request =>
 			{
 				_editingModel.RequestVideoPlaceHolder();
 				request.PostSucceeded();

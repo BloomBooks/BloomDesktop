@@ -24,7 +24,7 @@ namespace Bloom.web
 		public static void RegisterWithServer(BloomServer server)
 		{
 			// Opening a page, better be in UI thread.
-			server.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest, true);
+			server.ApiHandler.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest, true);
 		}
 
 		/// <summary>

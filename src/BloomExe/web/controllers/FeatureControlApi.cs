@@ -32,7 +32,7 @@ namespace Bloom.Api
 
 		public void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler(kShowAdvancedFeaturesUrlPart, request =>
+			server.ApiHandler.RegisterEndpointHandler(kShowAdvancedFeaturesUrlPart, request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -43,7 +43,7 @@ namespace Bloom.Api
 					NoPostAllowed(request);
 				}
 			}, false);
-			server.RegisterEndpointHandler(kEnterpriseEnabledUrlPart, request =>
+			server.ApiHandler.RegisterEndpointHandler(kEnterpriseEnabledUrlPart, request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{

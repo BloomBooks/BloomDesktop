@@ -48,7 +48,7 @@ namespace Bloom.web.controllers
 		
 		public void RegisterWithServer(BloomServer server)
 		{	
-			server.RegisterEnumEndpointHandler(kApiUrlPart + "enterpriseStatus",
+			server.ApiHandler.RegisterEnumEndpointHandler(kApiUrlPart + "enterpriseStatus",
 				request => _enterpriseStatus,
 				(request, status) =>
 				{
@@ -66,10 +66,10 @@ namespace Bloom.web.controllers
 						BrandingChangeHandler(GetBrandingFromCode(SubscriptionCode), SubscriptionCode);
 					}
 				}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "legacyBrandingName",
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "legacyBrandingName",
 				request => { request.ReplyWithText(LegacyBrandingName ?? ""); }, false);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -95,7 +95,7 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}
 			}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseSummary", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseSummary", request =>
 			{
 				string branding = "";
 				if (_enterpriseStatus == EnterpriseStatus.Community)
@@ -108,7 +108,7 @@ namespace Bloom.web.controllers
 				else
 					request.ReplyWithText(File.ReadAllText(summaryFile, Encoding.UTF8));
 			}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseExpiry", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseExpiry", request =>
 			{
 				if (_enterpriseExpiry == DateTime.MinValue)
 				{

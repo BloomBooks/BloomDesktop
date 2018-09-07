@@ -65,7 +65,7 @@ namespace Bloom.Publish.Android
 			// This is just for storing the user preference of method
 			// If we had a couple of these, we could just have a generic preferences api
 			// that browser-side code could use.
-			server.RegisterEndpointHandler(kApiUrlPart + "method", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "method", request =>
 			{
 				if(request.HttpMethod == HttpMethods.Get)
 				{
@@ -89,7 +89,7 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "backColor", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "backColor", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -115,7 +115,7 @@ namespace Bloom.Publish.Android
 			}, true);
 
 
-			server.RegisterEndpointHandler(kApiUrlPart + "motionBookMode", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "motionBookMode", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -131,7 +131,7 @@ namespace Bloom.Publish.Android
 			}, true);
 			
 
-			server.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>
 			{
 				var coverImage = request.CurrentBook.GetCoverImagePath();
 				if (coverImage == null)
@@ -151,7 +151,7 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
 			{
 #if !__MonoCS__
 				SetState("UsbStarted");
@@ -160,7 +160,7 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "usb/stop", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/stop", request =>
 			{
 #if !__MonoCS__
 				_usbPublisher.Stop();
@@ -168,34 +168,34 @@ namespace Bloom.Publish.Android
 #endif
 				request.PostSucceeded();
 			}, true);
-			server.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
 				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor);
 				SetState("ServingOnWifi");
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "wifi/stop", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/stop", request =>
 			{
 				_wifiPublisher.Stop();
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
 				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
 			{
 				Stop();
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "textToClipboard", request =>
+			server.ApiHandler.RegisterEndpointHandler(kApiUrlPart + "textToClipboard", request =>
 			{
 				PortableClipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
