@@ -28,7 +28,7 @@ namespace Bloom.Api
 	/// <remarks>geckofx makes concurrent requests of URLs which this class handles. This means
 	/// that the methods of this class get called on different threads, so it has to be
 	/// thread-safe.</remarks>
-	public class FileAndApiServer : ServerBase
+	public class BloomServer : ServerBase
 	{
 		public const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for simulated pages and PDF creation)
 		private RuntimeImageProcessor _cache;
@@ -54,10 +54,10 @@ namespace Bloom.Api
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
-		internal FileAndApiServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection)
+		internal BloomServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection)
 		{ }
 
-		public FileAndApiServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BookSelection bookSelection,  BloomFileLocator fileLocator = null)
+		public BloomServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BookSelection bookSelection,  BloomFileLocator fileLocator = null)
 		{
 			_thumbNailer = thumbNailer;
 			_bookSelection = bookSelection;

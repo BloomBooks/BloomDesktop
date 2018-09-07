@@ -249,7 +249,7 @@ namespace Bloom.Book
 						// It just has to work. And we don't want to modify the book folder. It does need to go through the
 						// image server, otherwise we'll get cross-domain problems. And we need the marker that prevents
 						// creating screen-only quality images.
-						imageElt.SetAttribute("src", (FileAndApiServer.OriginalImageMarker + "/" + pathToRealImage).ToLocalhost());
+						imageElt.SetAttribute("src", (BloomServer.OriginalImageMarker + "/" + pathToRealImage).ToLocalhost());
 					}
 					else
 					{

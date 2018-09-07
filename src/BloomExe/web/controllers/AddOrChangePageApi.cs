@@ -33,7 +33,7 @@ namespace Bloom.web.controllers
 			_sourceCollectionsList = sourceCollectionsList;
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithServer(BloomServer server)
 		{
 			// Both of these display UI, expect to require UI thread.
 			server.RegisterEndpointHandler("addPage", HandleAddPage, true);

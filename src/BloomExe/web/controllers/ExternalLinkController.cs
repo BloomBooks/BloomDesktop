@@ -21,7 +21,7 @@ namespace Bloom.web
 	public class ExternalLinkController
 	{
 		const string kPrefix = "externalLink";
-		public static void RegisterWithServer(FileAndApiServer server)
+		public static void RegisterWithServer(BloomServer server)
 		{
 			// Opening a page, better be in UI thread.
 			server.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest, true);

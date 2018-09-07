@@ -1012,7 +1012,7 @@
     <Compile Include="web\WebClientWithTimeout.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="web\FileAndApiServer.cs" />
+    <Compile Include="web\BloomServer.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
   <ItemGroup>
