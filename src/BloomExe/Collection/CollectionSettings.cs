@@ -557,7 +557,7 @@ namespace Bloom.Collection
 					BrandingProjectKey = "Local-Community";
 				}
 
-				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local Community")
+				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local-Community")
 				{
 					// Validate branding, so things can't be circumvented by just typing something into settings
 					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);

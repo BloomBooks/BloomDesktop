@@ -15,8 +15,11 @@
    viewBox="0 0 111.08314 27.576252"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="summary.svg">
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   sodipodi:docname="summary.svg"
+   inkscape:export-filename="C:\dev\b44\src\BloomBrowserUI\branding\Juarez-Guatemala\summary.png"
+   inkscape:export-xdpi="68.599998"
+   inkscape:export-ydpi="68.599998">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -26,9 +29,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="104.22885"
-     inkscape:cy="39.530703"
+     inkscape:zoom="1.979899"
+     inkscape:cx="256.06522"
+     inkscape:cy="26.440913"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -38,10 +41,10 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="2560"
-     inkscape:window-height="1377"
-     inkscape:window-x="1072"
-     inkscape:window-y="185"
+     inkscape:window-width="1818"
+     inkscape:window-height="1177"
+     inkscape:window-x="3832"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1">
     <sodipodi:guide
        position="5.6423116,-19.359963"
@@ -62,7 +65,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
