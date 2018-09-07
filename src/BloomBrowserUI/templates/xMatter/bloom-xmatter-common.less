@@ -441,6 +441,7 @@ body[bookcreationtype="translation"] {
         // (and shrink the branding image) if there is more text than will fit in 30%.
         .bloom-translationGroup {
             min-height: 30%;
+            flex: 1; // but be as tall as you can
 
             .bloom-editable {
                 text-align: center;
@@ -450,14 +451,8 @@ body[bookcreationtype="translation"] {
         [data-book="outside-back-cover-branding-top-html"] {
             // no styling needed
         }
-        // // TODO: we can remove this once everything is switched over to the more specific branding-html approach
-        // .branding {
-        //     margin-top: auto; // for simpler cases, puts image at bottom of containing flex box.
-        // }
         [data-book="outside-back-cover-branding-bottom-html"] {
-            // position: absolute;
-            // bottom: 0;
-            margin-top: auto; // for simpler cases, puts image at bottom of containing flex box.
+            margin-top: 1em; // leave some space between the branding and the text box
         }
     }
 }
