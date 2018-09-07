@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -65,8 +62,11 @@ namespace Bloom.web.controllers
 						// post
 						var requestData = DynamicJson.Parse(request.RequiredPostJson());
 						string content = requestData.text;
-						Program.MainContext.Post(o =>
-							Clipboard.SetText(content), null);
+						if (!string.IsNullOrEmpty(content))
+						{
+							Program.MainContext.Post(o =>
+								Clipboard.SetText(content), null);
+						}
 						request.PostSucceeded();
 					}
 				}, false);
