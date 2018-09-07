@@ -18,7 +18,7 @@ namespace BloomTests.web.controllers
 			this._bookSelection = _bookSelection;
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithServer(BloomServer server)
 		{
 			server.RegisterEndpointHandler("toolbox/enabledTools", HandleEnabledToolsRequest, true);
 			server.RegisterEndpointHandler("toolbox/fileExists", HandleFileExistsRequest, true);

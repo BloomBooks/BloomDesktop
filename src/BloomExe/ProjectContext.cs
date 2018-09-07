@@ -252,9 +252,9 @@ namespace Bloom
 //				}
 //				else
 //				{
-					builder.Register<FileAndApiServer>(
+					builder.Register<BloomServer>(
 						c =>
-							new FileAndApiServer(new RuntimeImageProcessor(bookRenameEvent), c.Resolve<BookThumbNailer>(), c.Resolve<BookSelection>() )).SingleInstance();
+							new BloomServer(new RuntimeImageProcessor(bookRenameEvent), c.Resolve<BookThumbNailer>(), c.Resolve<BookSelection>() )).SingleInstance();
 
 					builder.Register<Func<WorkspaceView>>(c => () =>
 					{
@@ -289,7 +289,7 @@ namespace Bloom
 				Application.Exit();
 			}
 
-			var server = _scope.Resolve<FileAndApiServer>();
+			var server = _scope.Resolve<BloomServer>();
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
 

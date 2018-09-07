@@ -46,7 +46,7 @@ namespace Bloom.web.controllers
 		// this keeps track of the branding the collection file specified but which was not validated by a current code.
 		public static string LegacyBrandingName { get; set; }
 		
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithServer(BloomServer server)
 		{	
 			server.RegisterEnumEndpointHandler(kApiUrlPart + "enterpriseStatus",
 				request => _enterpriseStatus,

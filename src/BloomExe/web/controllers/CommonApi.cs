@@ -36,7 +36,7 @@ namespace Bloom.web.controllers
 			_bookSelection = bookSelection;
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithServer(BloomServer server)
 		{
 			server.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false);
 			server.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false);

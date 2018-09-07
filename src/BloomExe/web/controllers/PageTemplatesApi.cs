@@ -45,7 +45,7 @@ namespace Bloom.web.controllers
 			_storageFactory = storageFactory;
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithServer(BloomServer server)
 		{
 			// We could probably get away with using the server thread here, but the code interacts quite a bit with the
 			// current book and other state.
@@ -168,7 +168,7 @@ namespace Bloom.web.controllers
 			// until it is saved, we get all gray rectangles. So for now, we just quickly do the clone and unlock.
 			var resultPath = "";
 			Bitmap clone;
-			// Review: the coarse lock(SyncObj) in FileAndApiServer.ProcessRequest() may have removed the need for this finer grained lock.
+			// Review: the coarse lock(SyncObj) in BloomServer.ProcessRequest() may have removed the need for this finer grained lock.
 			lock (thumbnail)
 			{
 				clone = new Bitmap((Image)thumbnail.Clone());
@@ -237,7 +237,7 @@ namespace Bloom.web.controllers
 		{
 			if (!path.StartsWith("localhost/", StringComparison.InvariantCulture))
 				return path;
-			return FileAndApiServer.LocalHostPathToFilePath(path);
+			return BloomServer.LocalHostPathToFilePath(path);
 		}
 
 		/// <summary>

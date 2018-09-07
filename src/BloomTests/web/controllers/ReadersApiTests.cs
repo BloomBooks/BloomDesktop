@@ -8,13 +8,13 @@ namespace BloomTests.web
 	[TestFixture]
 	public class ReadersApiTests
 	{
-		private FileAndApiServer _server;
+		private BloomServer _server;
 		[SetUp]
 		public void Setup()
 		{
 			var bookSelection = new BookSelection();
 			bookSelection.SelectBook(new Bloom.Book.Book());
-			_server = new FileAndApiServer(bookSelection);
+			_server = new BloomServer(bookSelection);
 
 			//needed to avoid a check in the server
 			_server.CurrentCollectionSettings = new CollectionSettings();
