@@ -21,24 +21,24 @@ mixin standardTranslationGroup
 head
 body
 	// Test#0
-	+standardTestField(name="Default font bloom-editable with no styles doesn't overflow") Test text
+	+standardTestField(name="Default font bloom-editable with no styles doesn't overflow") Test texty
 
 	// Test#1
-	-var styles="font-family:'Andika New Basic', Andika;font-size:large;height:21px;";
-	+standardTestField(name="Andika bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
+	-var styles="font-family:'Andika New Basic', Andika;font-size:large;height:18px;";
+	+standardTestField(name="Andika bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test texty
 
 	// Test#2
-	-var styles="font-size:20pt;height:24px;overflow:visible";
-	+standardTestField(name="Default font bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
+	-var styles="font-size:20pt;height:21px;overflow:visible";
+	+standardTestField(name="Default font bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test texty
 
 	// Test#3
 	-var styles="font-family:'Andika New Basic', Andika;";
-	+standardTestField(name="Andika bloom-editable with no other styles should not overflow", style=styles) Test text
+	+standardTestField(name="Andika bloom-editable with no other styles should not overflow", style=styles) Test texty
 
 	// Test#4
 	-var styles="font-family:'Andika New Basic', Andika;height=50px";
-	+standardTestField(name="Andika bloom-editable with fixed height should not overflow", style=styles) Test text
+	+standardTestField(name="Andika bloom-editable with fixed height should not overflow", style=styles) Test texty
 
 	// Test#5
 	-var styles="font-family:'Andika New Basic', Andika;padding: 2px;";
-	+standardTestField(name="Andika bloom-editable with only some padding should not overflow", style=styles) Test text
+	+standardTestField(name="Andika bloom-editable with only some padding should not overflow", style=styles) Test texty
