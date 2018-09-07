@@ -410,6 +410,8 @@ namespace Bloom.Collection
 				HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_front_matter_or_back_matter_from_a_pack.htm");
 			else if (_tab.SelectedTab == tabPage3)
 				HelpLauncher.Show(this, "Tasks/Basic_tasks/Enter_project_information.htm");
+			else if (_tab.SelectedTab == _enterpriseTab)
+				HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_Bloom_Enterprise_Status.htm");
 			else
 				HelpLauncher.Show(this, "User_Interface/Dialog_boxes/Settings_dialog_box.htm");
 		}
