@@ -20,7 +20,7 @@ namespace Bloom.web.controllers
 		public void RegisterWithServer(BloomServer server)
 		{
 			bool requiresSync = false; // Lets us open the dialog while the epub preview is being generated
-			server.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false, requiresSync);
+			server.ApiHandler.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false, requiresSync);
 		}
 
 		private void HandleBookMetadata(ApiRequest request)

@@ -44,7 +44,7 @@ namespace Bloom.Edit
 	{
 		public static void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler("toolbox/settings", HandleSettings, false);
+			server.ApiHandler.RegisterEndpointHandler("toolbox/settings", HandleSettings, false);
 		}
 
 		/// <summary>

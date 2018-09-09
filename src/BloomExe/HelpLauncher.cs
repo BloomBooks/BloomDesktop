@@ -48,7 +48,7 @@ namespace Bloom
 
 		public static void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler("help/.*", (request) =>
+			server.ApiHandler.RegisterEndpointHandler("help/.*", (request) =>
 			{
 				var topic = request.LocalPath().Replace("api/help","");
 				Show(Application.OpenForms.Cast<Form>().Last(), topic);

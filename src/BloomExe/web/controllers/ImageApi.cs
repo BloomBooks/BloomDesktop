@@ -53,8 +53,8 @@ namespace Bloom.web.controllers
 		public void RegisterWithServer(BloomServer server)
 		{
 			// These are both just retrieving information about files, apart from using _bookSelection.CurrentSelection.FolderPath.
-			server.RegisterEndpointHandler("image/info", HandleImageInfo, false);
-			server.RegisterEndpointHandler("image/imageCreditsForWholeBook", HandleCopyImageCreditsForWholeBook, false);
+			server.ApiHandler.RegisterEndpointHandler("image/info", HandleImageInfo, false);
+			server.ApiHandler.RegisterEndpointHandler("image/imageCreditsForWholeBook", HandleCopyImageCreditsForWholeBook, false);
 		}
 
 		/// <summary>

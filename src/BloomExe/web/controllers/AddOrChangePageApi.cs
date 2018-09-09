@@ -36,8 +36,8 @@ namespace Bloom.web.controllers
 		public void RegisterWithServer(BloomServer server)
 		{
 			// Both of these display UI, expect to require UI thread.
-			server.RegisterEndpointHandler("addPage", HandleAddPage, true);
-			server.RegisterEndpointHandler("changeLayout", HandleChangeLayout, true);
+			server.ApiHandler.RegisterEndpointHandler("addPage", HandleAddPage, true);
+			server.ApiHandler.RegisterEndpointHandler("changeLayout", HandleChangeLayout, true);
 		}
 
 		private void HandleAddPage(ApiRequest request)

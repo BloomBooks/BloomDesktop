@@ -38,17 +38,17 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false);
-			server.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false);
-			server.RegisterEndpointHandler("authorMode", HandleAuthorMode, false);
-			server.RegisterEndpointHandler("topics", HandleTopics, false);
-			server.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
-			server.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
-			server.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
-			server.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
+			server.ApiHandler.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false);
+			server.ApiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false);
+			server.ApiHandler.RegisterEndpointHandler("authorMode", HandleAuthorMode, false);
+			server.ApiHandler.RegisterEndpointHandler("topics", HandleTopics, false);
+			server.ApiHandler.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
+			server.ApiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
+			server.ApiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
+			server.ApiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
-			server.RegisterEndpointHandler("common/clipboardText",
+			server.ApiHandler.RegisterEndpointHandler("common/clipboardText",
 				request =>
 				{
 					if (request.HttpMethod == HttpMethods.Get)
@@ -70,7 +70,7 @@ namespace Bloom.web.controllers
 						request.PostSucceeded();
 					}
 				}, false);
-			server.RegisterEndpointHandler("common/checkForUpdates",
+			server.ApiHandler.RegisterEndpointHandler("common/checkForUpdates",
 				request =>
 				{
 					WorkspaceView.CheckForUpdates();

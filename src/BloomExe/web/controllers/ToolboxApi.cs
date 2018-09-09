@@ -20,8 +20,8 @@ namespace BloomTests.web.controllers
 
 		public void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler("toolbox/enabledTools", HandleEnabledToolsRequest, true);
-			server.RegisterEndpointHandler("toolbox/fileExists", HandleFileExistsRequest, true);
+			server.ApiHandler.RegisterEndpointHandler("toolbox/enabledTools", HandleEnabledToolsRequest, true);
+			server.ApiHandler.RegisterEndpointHandler("toolbox/fileExists", HandleFileExistsRequest, true);
 		}
 
 		private Bloom.Book.Book CurrentBook => _bookSelection.CurrentSelection;

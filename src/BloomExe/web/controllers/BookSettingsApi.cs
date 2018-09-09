@@ -22,7 +22,7 @@ namespace Bloom.Api
 		{
 			// Not sure this needs UI thread, but it can result in saving the page, which seems
 			// safest to do that way.
-			server.RegisterEndpointHandler("book/settings", HandleBookSettings, true);
+			server.ApiHandler.RegisterEndpointHandler("book/settings", HandleBookSettings, true);
 		}
 
 		/// <summary>

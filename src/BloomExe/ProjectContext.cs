@@ -254,7 +254,7 @@ namespace Bloom
 //				{
 					builder.Register<BloomServer>(
 						c =>
-							new BloomServer(new RuntimeImageProcessor(bookRenameEvent), c.Resolve<BookThumbNailer>(), c.Resolve<BookSelection>() )).SingleInstance();
+							new BloomServer(new RuntimeImageProcessor(bookRenameEvent), c.Resolve<BookSelection>() )).SingleInstance();
 
 					builder.Register<Func<WorkspaceView>>(c => () =>
 					{

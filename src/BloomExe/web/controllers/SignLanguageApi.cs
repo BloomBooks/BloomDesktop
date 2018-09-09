@@ -37,11 +37,11 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
-			server.RegisterEndpointHandler("signLanguage/editVideo", HandleEditVideoRequest, true);
-			server.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
-			server.RegisterEndpointHandler("signLanguage/restoreOriginal", HandleRestoreOriginalRequest, true);
-			server.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
+			server.ApiHandler.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
+			server.ApiHandler.RegisterEndpointHandler("signLanguage/editVideo", HandleEditVideoRequest, true);
+			server.ApiHandler.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
+			server.ApiHandler.RegisterEndpointHandler("signLanguage/restoreOriginal", HandleRestoreOriginalRequest, true);
+			server.ApiHandler.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
 		}
 
 		public Book.Book CurrentBook

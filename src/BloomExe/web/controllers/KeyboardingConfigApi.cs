@@ -9,7 +9,7 @@ namespace Bloom.web.controllers
 	{
 		public void RegisterWithServer(BloomServer server)
 		{
-			server.RegisterEndpointHandler("keyboarding/useLongpress", (ApiRequest request) =>
+			server.ApiHandler.RegisterEndpointHandler("keyboarding/useLongpress", (ApiRequest request) =>
 			{
 				try
 				{
