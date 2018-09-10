@@ -127,6 +127,8 @@ namespace Bloom.Book
 			var storage = _bookStorageFactory(initialPath);
 			bool usingTemplate = storage.BookInfo.IsSuitableForMakingShells;
 			bool makingTemplate = storage.BookInfo.IsSuitableForMakingTemplates;
+			// If we're not making it from a template or making a template, we're deriving a translation from an existing book
+			var makingTranslation = !usingTemplate && !makingTemplate;
 
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
@@ -142,12 +144,24 @@ namespace Bloom.Book
 			if (usingTemplate)
 				templateLayout = Layout.FromDom(storage.Dom, Layout.A5Portrait);
 
-			//Remove from the new book any div-pages labeled as "extraPage"
-			for (var initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]");
-				initialPageDivs.Count > 0;
-				initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
+			// Remove from the new book any pages labeled as "extra".
+			// Typically pages in a template are marked "extra" to indicate that they are options to insert with "Add Page"
+			// but not pages (which a few templates have) that should be automatically inserted into every book
+			// made from the template.
+			// Originally we removed 'extra' pages in all cases, but we haven't actually used the capability
+			// of deleting 'extra' pages from translations of shell books, and on the other hand, we did briefly release
+			// a version of Bloom that incorrectly left shell book pages so marked. Something like 73 books in our library
+			// may have this problem (BL-6392). Since we don't actually need the capability for making translations
+			// of shell books, we decided to simply disable it: all pages in a shell book, even those marked
+			// 'extra', will be kept in the translation.
+			if (!makingTranslation)
 			{
-				initialPageDivs[0].ParentNode.RemoveChild(initialPageDivs[0]);
+				for (var initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]");
+					initialPageDivs.Count > 0;
+					initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
+				{
+					initialPageDivs[0].ParentNode.RemoveChild(initialPageDivs[0]);
+				}
 			}
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
@@ -185,8 +199,6 @@ namespace Bloom.Book
 
 			SetBookTitle(storage, bookData, usingTemplate);
 
-			// If we're not making it from a template or making a template, we're deriving a translation from an existing book
-			var makingTranslation = !usingTemplate && !makingTemplate;
 			TransformCreditPageData(storage.Dom, bookData, _collectionSettings, storage, makingTranslation);
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
