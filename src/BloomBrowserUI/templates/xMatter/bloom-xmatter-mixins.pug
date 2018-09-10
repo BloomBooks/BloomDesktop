@@ -55,28 +55,26 @@ mixin field-acknowledgments-originalVersion
 			| {Original Acknowledgments}
 
 
-//use Bloom's "branding" api (see BrandingApi.cs) to get an image if it exists in the current Branding folder, selected in Settings
-mixin optional-branding-image(key)
-	img(src="/bloom/api/branding/image?id="+key+".svg" type='image/svg' onerror="this.style.display='none'")&attributes(attributes)
+mixin cover-branding-bottom-left
+	div(data-book='cover-branding-left-html' lang="*")
 
-mixin field-bottom-left-branding
-	+optional-branding-image('cover-bottom-left').branding
+mixin credits-page-branding-top
+	div(data-book='credits-page-branding-top-html' lang="*")
 
-mixin field-credits-branding-top
-	+optional-branding-image('credits-page-top').branding.branding-top
+mixin credits-page-branding-bottom
+	div(data-book='credits-page-branding-bottom-html' lang="*")
 
-mixin field-credits-branding-bottom
-	div(data-book='credits-bottom-branding-html' lang="*")
-	+optional-branding-image('credits-page-bottom').branding.branding-bottom
+mixin title-page-branding-bottom
+	div(data-book='title-page-branding-bottom-html' lang="*")
 
-mixin field-title-page-branding
-	.bottomImageWrapper
-		+optional-branding-image('title-page').branding
+mixin outside-back-cover-branding-top
+	div(data-book='outside-back-cover-branding-top-html' lang="*")
 
-mixin field-back-cover-branding
-	//- only one of these should succeed. That is, the pack should only supply one or the other
-	+optional-branding-image('back-cover-outside-wide').branding.branding-wide
-	+optional-branding-image('back-cover-outside').branding
+mixin outside-back-cover-branding-bottom
+	div(data-book='outside-back-cover-branding-bottom-html' lang="*")
+		//- this can be overridden in the branding.json file of any branding
+		img(src="full-bloom-logo-grey.svg")
+
 
 //- -------------------------------------------------------------------------------
 //-	Unless every page of your xmatter pack needs to be different than the "factory"
@@ -107,7 +105,7 @@ mixin standard-cover-contents
 
 	// 2 columns: first for an optional logo, then text content
 	.bottomBlock
-		+field-bottom-left-branding.bottom-left-branding
+		+cover-branding-bottom-left.bottom-left-branding
 
 		// 2 rows
 		.bottomTextContent
@@ -159,7 +157,7 @@ mixin block-licenseAndCopyright
 
 mixin credits-contents(includeIsbn = true)
 	block creditsContent
-		+field-credits-branding-top
+		+credits-page-branding-top
 		+block-licenseAndCopyright
 		+field-acknowledgments-localizedVersion
 		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
@@ -168,7 +166,7 @@ mixin credits-contents(includeIsbn = true)
 
 		if(includeIsbn)
 			+field-ISBN
-		+field-credits-branding-bottom
+		+credits-page-branding-bottom
 
 mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
@@ -208,7 +206,7 @@ mixin title-page-contents
 	.langName('data-library'='dialect')
 	.langName(data-library='languageLocation').bloom-writeOnly
 	div.fillPageFlexGap.
-	+field-title-page-branding
+	+title-page-branding-bottom
 
 mixin standard-blankInsideFrontCover
 	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover', data-xmatter-page='insideFrontCover')#BA00DE13-734C-4036-9901-7040275B9000
@@ -224,10 +222,11 @@ mixin factoryStandard-insideBackCover
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
 	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+		+outside-back-cover-branding-top
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
-		+field-back-cover-branding
+		+outside-back-cover-branding-bottom
 
 mixin standard-ISOLanguageCode
 	.iso693Code
