@@ -1,0 +1,39 @@
+@import "../branding-base.less";
+
+/* This is test of one way of changing the image based on classes.
+Another way would be to do it would be to include both in the html as an img and then turn one or the other off.*/
+[data-book="credits-page-branding-bottom-html"] img {
+    display: none;
+}
+
+.titlePage [data-book="title-page-branding-bottom-html"] {
+    flex: 1;
+}
+
+[data-book="credits-page-branding-bottom-html"] {
+    .A5Portrait & img.portrait {
+        display: unset; // show it
+    }
+
+    .A5Landscape & img.landscape {
+        display: unset; // show it
+    }
+}
+[data-book="credits-page-branding-bottom-html"] div::after {
+    width: 100px;
+    height: 100px;
+    display: flex;
+}
+
+[data-book="outside-back-cover-branding-bottom-html"] img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+/*[data-book="outside-back-cover-branding-bottom-html"] div::after {
+    content: url("WideSoccerBalls.png");
+    display: flex;
+}*/
+.standout {
+    color: blue;
+}

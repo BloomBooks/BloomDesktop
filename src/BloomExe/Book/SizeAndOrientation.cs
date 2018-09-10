@@ -144,6 +144,8 @@ namespace Bloom.Book
 					// We're looking for a block of json that is typically found in Basic Book.css or a comparable place for
 					// a book based on some other template. Caling code is prepared for not finding this block.
 					// It seems safe to ignore a reference to some missing style sheet.
+					if (fileName.ToLowerInvariant().Contains("branding"))
+						continue; // these don't contain page size info, anyhow.
 					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not find " + fileName+" while looking for size choices");
 					continue;
 				}

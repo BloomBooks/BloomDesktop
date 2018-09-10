@@ -131,6 +131,11 @@ namespace Bloom.Collection
 			PageNumberStyle = collectionInfo.PageNumberStyle;
 			BrandingProjectKey = collectionInfo.BrandingProjectKey;
 			SubscriptionCode = collectionInfo.SubscriptionCode;
+			if (BrandingProjectKey == "Local Community")
+			{
+				// migrate for 4.4
+				BrandingProjectKey = "Local-Community";
+			}
 
 			Save();
 		}
@@ -546,8 +551,13 @@ namespace Bloom.Collection
 
 				BrandingProjectKey = GetValue(library, "BrandingProjectName", "Default");
 				SubscriptionCode = GetValue(library, "SubscriptionCode", null);
+				if (BrandingProjectKey == "Local Community")
+				{
+					// migrate for 4.4
+					BrandingProjectKey = "Local-Community";
+				}
 
-				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local Community")
+				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local-Community")
 				{
 					// Validate branding, so things can't be circumvented by just typing something into settings
 					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);

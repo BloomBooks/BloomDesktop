@@ -346,16 +346,17 @@ namespace Bloom.Book
 			}
 			//Remove from that list each image actually in use
 			var element = Dom.RawDom.DocumentElement;
-			var toRemove = GetImagePathsRelativeToBook(element);
+			var pathsToNotDelete = GetImagePathsRelativeToBook(element);
 
 			//also, remove from the doomed list anything referenced in the datadiv that looks like an image
 			//This saves us from deleting, for example, cover page images if this is called before the front-matter
 			//has been applied to the document.
-			toRemove.AddRange(from XmlElement dataDivImage in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
+			pathsToNotDelete.AddRange(from XmlElement dataDivImage in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
 							  select UrlPathString.CreateFromUrlEncodedString(dataDivImage.InnerText.Trim()).PathOnly.NotEncoded);
-			foreach (var fileName in toRemove)
+			pathsToNotDelete.AddRange(this._brandingImageNames);
+			foreach (var path in pathsToNotDelete)
 			{
-				imageFiles.Remove(GetNormalizedPathForOS(fileName));   //Remove just returns false if it's not in there, which is fine
+				imageFiles.Remove(GetNormalizedPathForOS(path));   //Remove just returns false if it's not in there, which is fine
 			}
 
 			//Delete any files still in the list
@@ -394,6 +395,7 @@ namespace Bloom.Book
 		#region Audio Files
 
 		public static string[] AudioExtensions =  new []{ ".wav", ".mp3" };  // .ogg, .wav, ...?
+		private readonly List<string> _brandingImageNames = new List<string>();
 
 		/// <summary>
 		/// Compare the audio we find in the audio folder in the book folder to those referenced
@@ -755,7 +757,7 @@ namespace Bloom.Book
 
 				// Branding images are handled in a special way in BrandingApi.cs.
 				// Without this, we get "Warning: Image /bloom/api/branding/image is missing from the folder xxx" (see BL-3975)
-				if (imageFileName.EndsWith(BrandingApi.kBrandingImageUrlPart))
+				if (imageFileName.EndsWith(BrandingSettings.kBrandingImageUrlPart))
 					continue;
 
 				//trim off the end of "license.png?123243"
@@ -992,6 +994,9 @@ namespace Bloom.Book
 					}
 				}
 
+				// delete any existing branding css so that if they change to one without one, the old one isn't sticking around
+				RobustFile.Delete(Path.Combine(FolderPath, "branding.css"));
+
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 				Dom.RawDom.PreserveWhitespace = true;
@@ -1155,6 +1160,39 @@ namespace Bloom.Book
 			catch (Exception error)
 			{
 				ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
+			}
+
+			CopyBrandingFiles();
+		}
+
+		// Brandings come with logos and such... we want them in the book folder itself so that they work
+		// apart from Bloom and in web browsing, epub, and android contexts.
+		private void CopyBrandingFiles()
+		{
+			_brandingImageNames.Clear();
+			try
+			{
+				if (!string.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
+				{
+					var brandingFolder = BloomFileLocator.GetBrandingFolder(_collectionSettings.BrandingProjectKey);
+
+					var filesToCopy = Directory
+						.EnumerateFiles(brandingFolder) //<--- .NET 4.5
+						// note this is how the branding.css gets into a book folder
+						.Where(path => ".png,.svg,.jpg,.css".Split(',').Contains(Path.GetExtension(path).ToLowerInvariant()));
+
+					foreach (var sourcePath in filesToCopy)
+					{
+						var fileName = Path.GetFileName(sourcePath);
+						RobustFile.Copy(sourcePath, Path.Combine(FolderPath, fileName), true);
+						_brandingImageNames.Add(fileName);
+					}
+				}
+			}
+			catch (Exception err)
+			{
+				ErrorReport.ReportNonFatalExceptionWithMessage(err,
+					"There was a problem applying the branding: " + _collectionSettings.BrandingProjectKey);
 			}
 		}
 
@@ -1385,6 +1423,13 @@ namespace Bloom.Book
 			dom.AddStyleSheet("basePage.css");
 			dom.AddStyleSheet("origami.css");
 			dom.AddStyleSheet("languageDisplay.css");
+
+			// only add brandingCSS is there is one for the current branding
+			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");
+			if (!string.IsNullOrEmpty(brandingCssPath))
+			{
+				dom.AddStyleSheet("branding.css");
+			}
 			EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();
