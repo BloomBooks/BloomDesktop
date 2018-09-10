@@ -61,7 +61,7 @@ namespace BloomTests.Publish
 
 		internal static BloomServer GetTestServer()
 		{
-			var server = new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, GetTestBookSelection(), GetTestFileLocator());
+			var server = new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), GetTestBookSelection(), GetTestFileLocator());
 			server.StartListening();
 			return server;
 		}

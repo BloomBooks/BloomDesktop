@@ -154,6 +154,7 @@ namespace Bloom.Edit
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
+			_server.ApiHandler.CurrentCollectionSettings = _collectionSettings;
 		}
 
 		private Form _oldActiveForm;
