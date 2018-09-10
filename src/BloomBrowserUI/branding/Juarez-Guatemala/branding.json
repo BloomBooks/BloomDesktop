@@ -1,0 +1,12 @@
+{
+    "presets": [
+        {
+            "data-book": "credits-page-branding-top-html",
+            "lang": "*",
+            // note: we want the text to adopt the same styling as the other Spanish on the credits page, so we give this the right style and @lang attribute:
+            "content":
+                "<img src='GuatemalaMOE-USAID.png'/><div class='Credits-Page-style' lang='es'><p>Este libro fue realizado gracias al apoyo del Pueblo de los Estados Unidos de América a través de la Agencia de los Estados Unidos de América para el Desarrollo Internacional (USAID, por sus siglas en inglés).</p> <p>El contenido de este material es responsabilidad exclusiva de los autores y el mismo no necesariamente refleja la perspectiva de USAID ni del Gobierno de los Estados Unidos de América.</p></div>",
+            "condition": "always"
+        }
+    ]
+}

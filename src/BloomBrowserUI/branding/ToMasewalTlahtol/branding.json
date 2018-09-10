@@ -1,0 +1,16 @@
+{
+    "presets": [
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<image src='ToMasewalTlahtol.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img src='back-cover-outside.svg'/>",
+            "condition": "always"
+        }
+    ]
+}

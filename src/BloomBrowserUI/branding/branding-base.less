@@ -1,0 +1,56 @@
+/*****
+Note the following division of labor:
+Rules that place branding on an xmatter page belong in bloom-xmatter-commons.less or the stylesheet of a particular xmatter.
+Rules that format the branding go in branding-base.less, or in the branding.less of a particular branding.
+****/
+
+// any data-book that has "branding" in its name
+// be careful, we don't want to do too much here unless you're prepared to check for its impact on every existing branding.
+[data-book*="branding"] {
+    display: flex; // makes it a lot easier to center, at least.
+    flex-direction: column; // stack items vertically
+    img {
+        // horizontally center
+        margin-left: auto;
+        margin-right: auto;
+
+        width: auto;
+        align-self: center;
+        object-fit: contain; // in more complex size cases, ensures we keep aspect ratio and the whole thing visible
+    }
+}
+
+[data-book="outside-back-cover-branding-bottom-html"] {
+    width: 100%;
+    // resist the temptation to do this; by having a default, if we ever change it, we would have to go through
+    // every single existing branding to make sure it is ok. I think it's better to make each branding declare
+    // the height.   img {   height: 20mm;  }
+}
+
+/*  these rules allow different branding insertions depending on orientation */
+.portraitOnly,
+.landscapeOnly {
+    display: none;
+}
+.Device16x9Portrait,
+.QuarterLetterPortrait,
+.HalfLetterPortrait,
+.LetterPortrait,
+.A4Portrait,
+.A5Portrait,
+.B5Portrait,
+.A6Portrait {
+    .portraitOnly {
+        display: unset;
+    }
+}
+.Device16x9Landscape,
+.LetterLandscape,
+.A3Landscape,
+.A4Landscape,
+.A5Landscape,
+.A6Landscape {
+    .landscapeOnly {
+        display: unset;
+    }
+}
