@@ -38,7 +38,7 @@ mixin afg-author-editor-illustrator
 		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
 			+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
-		+field-title-page-branding
+		+title-page-branding-bottom
 
 mixin underLogo
 	.underLogoBlock
@@ -60,7 +60,7 @@ mixin afg-outsideFrontCover
 
 		// 2 columns: first for an optional logo, then text content
 		.bottomBlock
-			+field-bottom-left-branding.bottom-left-branding
+			+cover-branding-bottom-left.bottom-left-branding
 			.bottomTextContent
 				.creditsRow(data-hint='Level information')
 					+field-prototypeDeclaredExplicity("N1")
@@ -90,7 +90,7 @@ mixin afg-titlePage
 		+field-prototypeDeclaredExplicity("N1")#titlePagePrintInfo
 			label.bubble print information
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.printInfo.Printinfo-On-Title-Page-style(data-book='printInfo')
-		+field-title-page-branding
+		+title-page-branding-bottom
 
 mixin afg-extra-image-page
 	+page-xmatter('Bismillah').bismallah.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#eb1aa708-fe1f-4b5c-8afc-2e7f5fce91bc

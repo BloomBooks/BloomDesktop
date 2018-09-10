@@ -288,16 +288,29 @@
         //}
     }
 
-    .branding {
+    // // TODO: we can remove this once everything is switched over to the more specific branding-html approach
+    // .branding-top {
+    //     position: initial; // turn off the absolute positioning we get from branding; top should put things downward
+    //     height: auto;
+    // }
+    [data-book="credits-page-branding-top-html"] {
+        // no styling needed
+    }
+
+    // // TODO: we can remove this once everything is switched over to the more specific branding-html approach
+    // .branding {
+    //     position: absolute;
+    //     bottom: 0;
+    //     left: 0; // allows centering even though position absolute
+    //     right: 0; // allows centering even though position absolute
+    //     height: 1in;
+    // }
+    [data-book="credits-page-branding-bottom-html"] {
         position: absolute;
         bottom: 0;
         left: 0; // allows centering even though position absolute
         right: 0; // allows centering even though position absolute
-        height: 1in;
-    }
-    .branding-top {
-        position: initial; // turn off the absolute positioning we get from branding; top should put things downward
-        height: auto;
+        // no, this is dangerous. Leave it to each branding to decide. height: 1in;
     }
 }
 
@@ -393,11 +406,12 @@ body[bookcreationtype="translation"] {
     // (Centering is automatic with object-fit: contain.)
     // Unfortunately, the gap between the two versions of the title is not adjustable in this way,
     // because it inside another div and not involved in the layout of the .marginBox.
-    .bottomImageWrapper {
-        width: 100%; // this allows the branding to grow horizontally and center.
+
+    [data-book="title-page-branding-bottom-html"] {
+        width: 100%; // this allows the logo to grow horizontally and center.
         flex: 0 2 1in;
         min-height: 0.25in;
-        .branding {
+        img {
             height: 100%;
             object-fit: contain;
         }
@@ -417,52 +431,6 @@ body[bookcreationtype="translation"] {
     height: 100%;
 }
 
-// we might end up with some branding that isn't supposed to be anchored at the bottom, but at the momement, this is all we have
-.branding {
-    // horizonatally center
-    margin-left: auto;
-    margin-right: auto;
-
-    // height: auto; might work in 3.8 when SVGs are possible, but in 3.7 we have to use PNGs so we need to declare a height.
-
-    // Note, we don't yet have a perfect solution for the problem of sizing.
-    // Some logos will be narrow and short ( e.g. .5 x 1 inch).
-    // For these, a fixed height and auto-width work best:  height: .5in;  width: auto;
-
-    // However other branding packs will be a big list of participating organizations,
-    // needing to be full width and a couple inches high.
-    // For these, full width and auto-height work best: height: auto; width: 100%;
-
-    // At the cost of not scaling to the full width of the particular page size/orientation,
-    // we could put the onus on the image file itself to have a fixed size, which we can center but otherwise can't
-    // scale at all. This is probably feasible on back covers, but maybe would be problem on title pages and covers of differnt sizes?
-
-    // Ideally, we might allow a little css to come with each icon.
-
-    // For now, the compromise is this: by default, we assume it's just one logo and that the height is some amount we set here:
-    height: 0.5in;
-    width: auto;
-    align-self: center;
-    object-fit: contain; // in more complex size cases, ensures we keep aspect ratio and the whole thing visible
-
-    // However if the branding pack requires a big max-width logo, then it should name the logo with a "-wide" suffix, and the
-    // pug template will use that instead, along with this "branding-wide" class, triggering these rules to override the defaults.
-    // 30% makes it a pretty respectable height, but still allows for a lot of text in the translation group above.
-    // If there's room to make it bigger (without distortion, which can happen by forcing width:100%) it will grow.
-    // the flex-basis provides a minimum size independent of the original image size.
-    // In case it's aspect ratio makes it not fill the entire height that the flex algorithm
-    // allocates to it, we position the actual image at the bottom of its space.
-    &.branding-wide {
-        min-height: 30%;
-        height: auto;
-        flex-grow: 1;
-        flex-basis: 1in;
-        width: 100%;
-        background-color: transparent;
-        object-position: bottom;
-    }
-}
-
 .outsideBackCover {
     .marginBox {
         display: flex;
@@ -473,14 +441,18 @@ body[bookcreationtype="translation"] {
         // (and shrink the branding image) if there is more text than will fit in 30%.
         .bloom-translationGroup {
             min-height: 30%;
+            flex: 1; // but be as tall as you can
 
             .bloom-editable {
                 text-align: center;
             }
         }
 
-        .branding {
-            margin-top: auto; // for simpler cases, puts image at bottom of containing flex box.
+        [data-book="outside-back-cover-branding-top-html"] {
+            // no styling needed
+        }
+        [data-book="outside-back-cover-branding-bottom-html"] {
+            margin-top: 1em; // leave some space between the branding and the text box
         }
     }
 }
