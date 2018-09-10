@@ -26,7 +26,7 @@ var runSequence = require("run-sequence");
 var gulpCopy = require("gulp-copy");
 var gulpFlatten = require("gulp-flatten");
 var globule = require("globule");
-var myProcess = require("child_process");
+var child_process = require("child_process");
 
 // Ensure the version of node we are running is the one we require
 const version = engines.node;
@@ -313,7 +313,7 @@ gulp.task("translateHtmlFiles", function() {
                     cmd = cmd + ' -x "' + xliffFiles[i] + '"';
                     cmd = cmd + ' -o "' + outfile + '"';
                     cmd = cmd + ' "' + file.path + '"';
-                    myProcess.exec(cmd, function(err, stdout, stderr) {
+                    child_process.exec(cmd, function(err, stdout, stderr) {
                         if (err) {
                             console.error("\n" + stderr);
                         }
@@ -340,7 +340,7 @@ gulp.task("createXliffFiles", function() {
                         "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract --preserve";
                 cmd = cmd + ' -o "' + xliffFile + '"';
                 cmd = cmd + ' "' + file.path + '"';
-                myProcess.exec(cmd, function(err, stdout, stderr) {
+                child_process.exec(cmd, function(err, stdout, stderr) {
                     if (err) {
                         console.error("\n" + stderr);
                     }
@@ -359,6 +359,7 @@ gulp.task("default", function(callback) {
         "clean",
         "copy",
         [
+            "brandings",
             "less",
             "pug",
             "pugLRT",
@@ -369,6 +370,11 @@ gulp.task("default", function(callback) {
         ["webpack", "translateHtmlFiles", "createXliffFiles"],
         callback
     );
+});
+
+gulp.task("brandings", function() {
+    // run("npm run buildBrandings"));
+    return child_process.execFile("npm run buildBrandings");
 });
 
 // Find which of the translated xliff files match up with the given html file.

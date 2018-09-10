@@ -22,7 +22,7 @@ namespace Bloom.Collection
 
 		public static IEnumerable<BrandingProject> GetProjectChoices()
 		{
-			var brandingDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("branding");
+			var brandingDirectory = BloomFileLocator.GetBrowserDirectory("branding");
 			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
 			{
 				var brand = new BrandingProject {Key = Path.GetFileName(brandDirectory)};

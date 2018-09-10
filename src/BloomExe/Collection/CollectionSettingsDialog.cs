@@ -542,7 +542,7 @@ namespace Bloom.Collection
 			}
 			if (_brand == "Default")
 				return CollectionSettingsApi.EnterpriseStatus.None;
-			else if (_brand == "Local Community")
+			else if (_brand == "Local-Community")
 				return CollectionSettingsApi.EnterpriseStatus.Community;
 			return CollectionSettingsApi.EnterpriseStatus.Subscription; ;
 		}

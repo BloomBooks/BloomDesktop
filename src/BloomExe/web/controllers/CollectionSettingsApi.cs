@@ -59,7 +59,7 @@ namespace Bloom.web.controllers
 						BrandingChangeHandler("Default", null);
 					} else if (_enterpriseStatus == EnterpriseStatus.Community)
 					{
-						BrandingChangeHandler("Local Community", null);
+						BrandingChangeHandler("Local-Community", null);
 					}
 					else
 					{
@@ -99,7 +99,7 @@ namespace Bloom.web.controllers
 			{
 				string branding = "";
 				if (_enterpriseStatus == EnterpriseStatus.Community)
-					branding = "Local Community";
+					branding = "Local-Community";
 				else if (_enterpriseStatus == EnterpriseStatus.Subscription)
 					branding = _enterpriseExpiry == DateTime.MinValue ? "" : GetBrandingFromCode(SubscriptionCode);
 				var summaryFile = BloomFileLocator.GetOptionalBrandingFile(branding, "summary.htm");
