@@ -30,7 +30,7 @@ export default class BloomSourceBubbles {
     public static ProduceSourceBubbles(
         group: HTMLElement,
         newIso?: string
-    ): JQuery {
+    ): JQuery | null {
         return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
     }
 
@@ -40,7 +40,7 @@ export default class BloomSourceBubbles {
         selectIso?: string
     ) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
-        var divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
+        let divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
             contentsOfBubble,
             selectIso
         );
@@ -68,7 +68,7 @@ export default class BloomSourceBubbles {
     public static MakeSourceTextDivForGroup(
         group: HTMLElement,
         newIso?: string
-    ): JQuery {
+    ): JQuery | null {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         var divForBubble = $(group).clone();
@@ -118,11 +118,11 @@ export default class BloomSourceBubbles {
         //if there are no languages to show in the bubble, bail out now
         if (divForBubble.find("textarea, div").length == 0) return null;
 
-        var vernacularLang = theOneLocalizationManager.getVernacularLang();
+        const vernacularLang = theOneLocalizationManager.getVernacularLang();
 
         // Make the li's for the source text elements in this new div, which will later move to a tabbed bubble
         // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
-        var $this = divForBubble.first();
+        const $this = divForBubble.first();
         $this.prepend('<nav><ul class="editTimeOnly bloom-ui"></ul></nav>'); // build the tabs here
 
         // First, sort the divs (and/or textareas) alphabetically by language code
@@ -256,7 +256,7 @@ export default class BloomSourceBubbles {
     private static CreateTabsFromDiv(
         divForBubble: JQuery,
         selectIso?: string
-    ): JQuery {
+    ): JQuery | null {
         //now turn that new div into a set of tabs
         var opts: any = {
             animate: false,
@@ -356,20 +356,22 @@ export default class BloomSourceBubbles {
         // Redo creating the source bubbles with the selected language first
         if (group && group.length > 0) {
             // should be
-            var divForBubble = BloomSourceBubbles.ProduceSourceBubbles(
+            const divForBubble = BloomSourceBubbles.ProduceSourceBubbles(
                 group[0],
                 newIso
             );
-            BloomHintBubbles.addHintBubbles(
-                group.get(0),
-                [group.get(0)],
-                [divForBubble.get(0)]
-            );
-            BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-                group.get(0),
-                divForBubble,
-                newIso
-            );
+            if (divForBubble) {
+                BloomHintBubbles.addHintBubbles(
+                    group.get(0),
+                    [group.get(0)],
+                    [divForBubble.get(0)]
+                );
+                BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+                    group.get(0),
+                    divForBubble,
+                    newIso
+                );
+            }
         }
     }
 
@@ -479,13 +481,15 @@ export default class BloomSourceBubbles {
                                 if (kevent.ctrlKey && kevent.which == 65) {
                                     kevent.preventDefault();
                                     kevent.stopImmediatePropagation();
-                                    var bubble = kevent.target;
-                                    var obj = $(bubble)[0].firstElementChild;
-                                    var selection = obj.ownerDocument.defaultView.getSelection();
-                                    var range = obj.ownerDocument.createRange();
-                                    range.selectNodeContents(obj);
-                                    selection.removeAllRanges();
-                                    selection.addRange(range);
+                                    const bubble = kevent.target;
+                                    const obj = $(bubble)[0].firstElementChild;
+                                    if (obj) {
+                                        let selection = obj.ownerDocument.defaultView.getSelection();
+                                        const range = obj.ownerDocument.createRange();
+                                        range.selectNodeContents(obj);
+                                        selection.removeAllRanges();
+                                        selection.addRange(range);
+                                    }
                                 }
                             });
                             // We'd like to prevent the source bubble from getting focus. Tried various things.

@@ -117,11 +117,11 @@ function loadNextThumbnail() {
     // stop processing if there are no more images
     if (!nextImg || nextImg.length === 0) return;
 
-    var img = nextImg[0];
+    const img = nextImg[0];
 
     // adding this to the query string tells the server to generate a thumbnail from the image file
-    var src = img.getAttribute("thumb-src");
-    if (src.indexOf("?") >= 0) {
+    let src = img.getAttribute("thumb-src");
+    if (src && src.indexOf("?") >= 0) {
         // already has a query (e.g., at one point we had optional=true for branding)
         src = src + "&thumbnail=1";
     } else {

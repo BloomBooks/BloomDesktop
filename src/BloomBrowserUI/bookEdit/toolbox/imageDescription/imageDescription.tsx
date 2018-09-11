@@ -50,10 +50,10 @@ export class ImageDescriptionToolControls extends React.Component<
         "General to Specific"
     ];
 
-    private activeEditable: Element;
+    private activeEditable: Element | null;
 
     private createCheckboxes() {
-        let checkBoxes = [];
+        const checkBoxes: JSX.Element[] = [];
         for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
             const index = i; // in case 'i' changing affects earlier checkboxes
             checkBoxes.push(
@@ -144,28 +144,31 @@ export class ImageDescriptionToolControls extends React.Component<
 
     private onCheckChanged(checked: boolean, index: number) {
         this.setState((prevState, props) => {
-            var newCheckedBoxes = prevState.checkBoxes.slice(0); // shallow copy so we don't modify original
+            const newCheckedBoxes = prevState.checkBoxes.slice(0); // shallow copy so we don't modify original
             newCheckedBoxes[index] = checked;
             return { checkBoxes: newCheckedBoxes };
         });
-        let checkListAttr = (
-            this.activeEditable.getAttribute("data-descriptionCheckList") || ""
-        )
-            .replace(ImageDescriptionToolControls.i18ids[index], "")
-            .replace("  ", " ")
-            .trim();
+        if (this.activeEditable) {
+            let checkListAttr = (
+                this.activeEditable.getAttribute("data-descriptionCheckList") ||
+                ""
+            )
+                .replace(ImageDescriptionToolControls.i18ids[index], "")
+                .replace("  ", " ")
+                .trim();
 
-        if (checked) {
-            checkListAttr = (
-                checkListAttr +
-                " " +
-                ImageDescriptionToolControls.i18ids[index]
-            ).trim();
+            if (checked) {
+                checkListAttr = (
+                    checkListAttr +
+                    " " +
+                    ImageDescriptionToolControls.i18ids[index]
+                ).trim();
+            }
+            this.activeEditable.setAttribute(
+                "data-descriptionCheckList",
+                checkListAttr
+            );
         }
-        this.activeEditable.setAttribute(
-            "data-descriptionCheckList",
-            checkListAttr
-        );
     }
 
     public static setup(root): ImageDescriptionToolControls {
@@ -176,7 +179,7 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 
     public selectImageDescription(description: Element): void {
-        var activeEditableList = description.getElementsByClassName(
+        const activeEditableList = description.getElementsByClassName(
             "bloom-content1"
         );
         if (activeEditableList.length === 0) {
@@ -186,10 +189,10 @@ export class ImageDescriptionToolControls extends React.Component<
             return;
         }
         this.activeEditable = activeEditableList[0];
-        var checkedList =
+        const checkedList =
             this.activeEditable.getAttribute("data-descriptionCheckList") || "";
-        var newCheckStates = [];
-        for (var i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
+        const newCheckStates: boolean[] = [];
+        for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
             newCheckStates.push(
                 checkedList.indexOf(ImageDescriptionToolControls.i18ids[i]) >= 0
             );
@@ -198,35 +201,42 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 
     public setStateForNewPage(): void {
-        var page = ToolboxToolReactAdaptor.getPage();
+        const page = ToolboxToolReactAdaptor.getPage();
+        if (!page) {
+            this.setDisabledState();
+            return;
+        }
         // If we're still on the same page, it must be one without images.
         // We might also have switched TO one without images.
-        var imageContainers = page.getElementsByClassName(
+        const imageContainers = page.getElementsByClassName(
             "bloom-imageContainer"
         );
         if (imageContainers.length === 0) {
             // This is OK whether we switched from a page without images or just stayed on one.
-            this.activeEditable = null;
-            this.setState({ enabled: false, checkBoxes: [] });
+            this.setDisabledState();
             return;
         }
         // We switched to a page that has at least one image. Make the first one active
         // (as far as the check boxes are concerned).
-        var firstContainer = imageContainers[0];
-        var imageDescriptions = firstContainer.getElementsByClassName(
+        const imageDescriptions = imageContainers[0].getElementsByClassName(
             "bloom-imageDescription"
         );
         if (imageDescriptions.length === 0) {
             // other code will add an imageDescription, and we will be called again
-            this.activeEditable = null;
+            this.setDisabledState();
             return;
         }
         this.selectImageDescription(imageDescriptions[0]);
     }
+
+    private setDisabledState() {
+        this.activeEditable = null;
+        this.setState({ enabled: false, checkBoxes: [] });
+    }
 }
 
 export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
-    private reactControls: ImageDescriptionToolControls;
+    private reactControls: ImageDescriptionToolControls | null;
     public static kToolID = "imageDescription";
 
     public makeRootElement(): HTMLDivElement {
@@ -238,7 +248,10 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
+        const page = ToolBox.getPage();
+        if (page) {
+            page.classList.remove("bloom-showImageDescriptions");
+        }
     }
 
     public isExperimental(): boolean {
@@ -255,26 +268,34 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // }
     // We use currentTarget (the thing the event was attached to) because we're looking for the
     // bloom-imageDescription (group), but the target (actually clicked) will be a bloom-editable or one of its children.
-    private descriptionGotFocus = (e: Event) =>
-        this.reactControls.selectImageDescription(e.currentTarget as Element);
+    private descriptionGotFocus = (e: Event) => {
+        if (this.reactControls) {
+            this.reactControls.selectImageDescription(
+                e.currentTarget as Element
+            );
+        }
+    };
 
     // Make sure the page has the elements used to store image descriptions,
     // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
         enterpriseFeaturesEnabled().then(enabled => {
-            if (enabled) {
+            if (enabled && this.reactControls) {
                 this.reactControls.setStateForNewPage();
-                var page = ToolBox.getPage();
+                const page = ToolBox.getPage();
+                if (!page) {
+                    return;
+                }
                 // turn on special layout to make image descriptions visible (might already be on)
                 page.classList.add("bloom-showImageDescriptions");
                 // Make sure every image container has a child bloom-translationGroup to hold the image description.
-                var imageContainers = page.getElementsByClassName(
+                const imageContainers = page.getElementsByClassName(
                     "bloom-imageContainer"
                 );
-                var addedTranslationGroup = false;
-                for (var i = 0; i < imageContainers.length; i++) {
+                let addedTranslationGroup = false;
+                for (let i = 0; i < imageContainers.length; i++) {
                     const container = imageContainers[i];
-                    var imageDescriptions = container.getElementsByClassName(
+                    const imageDescriptions = container.getElementsByClassName(
                         "bloom-imageDescription"
                     );
 
