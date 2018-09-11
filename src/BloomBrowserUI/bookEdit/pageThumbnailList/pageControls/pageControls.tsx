@@ -48,7 +48,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
 
         // Listen for changes to state from C#-land
         WebSocketManager.addListener(kPageControlsContext, e => {
-            if (e.id === "edit/pageControls/state") {
+            if (e.id === "edit/pageControls/state" && e.message) {
                 this.updateStateForEvent(e.message);
             }
         });

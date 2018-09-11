@@ -17,8 +17,8 @@ interface ICheckboxProps extends ILocalizationProps {
 
 // A checkbox that is localizable and can toggle between either a 2 or 3 states.
 export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
-    private input: HTMLInputElement;
-    private previousTriState: boolean;
+    private input: HTMLInputElement | null;
+    private previousTriState: boolean | undefined;
     public constructor(props: ICheckboxProps) {
         super(props);
         this.previousTriState = props.checked;
@@ -26,7 +26,7 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
 
     public componentDidMount() {
         // set the initial "unknown" state
-        if (this.props.tristate) {
+        if (this.props.tristate && this.input) {
             this.input.indeterminate = this.props.checked === undefined;
         }
     }
@@ -35,10 +35,12 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
         // We expect the effect of clicking the label will be to set the check to the
         // opposite state, so that's what we pass. (But whether it really changes is
         // up to the owner changing the prop value. So it won't have happened yet.)
-        if (!this.props.tristate) {
-            this.input.checked = !this.input.checked;
+        if (this.input) {
+            if (!this.props.tristate) {
+                this.input.checked = !this.input.checked;
+            }
+            this.onChange(this.input);
         }
-        this.onChange(this.input);
     }
 
     public render() {
@@ -69,25 +71,27 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
     }
 
     private onChange(target: HTMLInputElement) {
-        if (!this.props.tristate) {
-            this.props.onCheckChanged(target.checked);
-        } else {
-            // we're in on/off/unknown mode, so handle the progress ourselves
-            switch (this.previousTriState) {
-                case undefined:
-                    this.previousTriState = target.checked = true;
-                    target.indeterminate = false;
-                    break;
-                case true:
-                    this.previousTriState = target.checked = false;
-                    target.indeterminate = false;
-                    break;
-                case false:
-                    target.indeterminate = true;
-                    this.previousTriState = undefined;
-                    break;
+        if (this.props.onCheckChanged) {
+            if (!this.props.tristate) {
+                this.props.onCheckChanged(target.checked);
+            } else {
+                // we're in on/off/unknown mode, so handle the progress ourselves
+                switch (this.previousTriState) {
+                    case undefined:
+                        this.previousTriState = target.checked = true;
+                        target.indeterminate = false;
+                        break;
+                    case true:
+                        this.previousTriState = target.checked = false;
+                        target.indeterminate = false;
+                        break;
+                    case false:
+                        target.indeterminate = true;
+                        this.previousTriState = undefined;
+                        break;
+                }
+                this.props.onCheckChanged(this.previousTriState);
             }
-            this.props.onCheckChanged(this.previousTriState);
         }
     }
 }

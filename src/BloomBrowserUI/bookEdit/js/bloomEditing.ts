@@ -719,7 +719,9 @@ function SetupElements(container) {
             .not(".bloom-readOnlyInTranslationMode")
             .each(function() {
                 if ($(this).find("textarea, div").length > 1) {
-                    var bubble = BloomSourceBubbles.ProduceSourceBubbles(this);
+                    const bubble = BloomSourceBubbles.ProduceSourceBubbles(
+                        this
+                    );
                     if (bubble) {
                         divsThatHaveSourceBubbles.push(this);
                         bubbleDivs.push(bubble);

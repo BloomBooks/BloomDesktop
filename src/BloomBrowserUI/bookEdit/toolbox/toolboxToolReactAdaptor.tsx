@@ -44,27 +44,27 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
     }
 
     // The body of the editable page, a root for searching for document content.
-    public static getPage(): HTMLElement {
+    public static getPage(): HTMLElement | null {
         const page = this.getPageFrame();
-        if (!page) return null;
+        if (!page || !page.contentWindow) return null;
         return page.contentWindow.document.body;
     }
 
-    public static getBloomPage(): HTMLElement {
+    public static getBloomPage(): HTMLElement | null {
         const page = this.getPage();
         if (!page) return null;
         return page.querySelector(".bloom-page") as HTMLElement;
     }
 
-    public static getBloomPageAttr(name: string): string {
+    public static getBloomPageAttr(name: string): string | null {
         const page = this.getBloomPage();
-        if (page == null) return null;
+        if (!page) return null;
         return page.getAttribute(name);
     }
 
     public static setBloomPageAttr(name: string, val: string): void {
         const page = this.getBloomPage();
-        if (page == null) return;
+        if (!page) return;
         page.setAttribute(name, val);
     }
 }
