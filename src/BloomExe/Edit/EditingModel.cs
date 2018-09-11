@@ -682,6 +682,7 @@ namespace Bloom.Edit
 			CheckForBL2634("setup");
 			SetupPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
+			Browser.AddChannelClassToBody(_domForCurrentPage.RawDom);
 			CheckForBL2634("made tags safe");
 			if (_currentPage != null)
 				_currentPage.Dispose();

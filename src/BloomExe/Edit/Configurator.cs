@@ -91,6 +91,7 @@ namespace Bloom.Edit
 
 			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+			Browser.AddChannelClassToBody(dom);
 			XmlHtmlConverter.SaveDOMAsHtml5(dom, bookPath);
 
 			var b = new GeckoWebBrowser();

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
+using SIL.IO;
 using SIL.PlatformUtilities;
 
 namespace Bloom.Publish
@@ -21,7 +23,8 @@ namespace Bloom.Publish
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.
 			_browser.BringToFront();
-			_browser.Navigate(pathToHtmlFile.ToLocalhost() + GetUrlParams(), false);
+			var text = RobustFile.ReadAllText(pathToHtmlFile);
+			_browser.NavigateRawHtml(text, GetUrlParams());
 
 			VisibleChanged += OnVisibleChanged;
 		}
