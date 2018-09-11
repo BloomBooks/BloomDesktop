@@ -1,6 +1,26 @@
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import { BloomApi } from "../utils/bloomApi";
+
+export let channelName: string = ""; // ensure it's defined non-null
+BloomApi.get("/common/channel", r => {
+    channelName = r.data;
+    // Setting the class on the body element here to include the channel appears
+    // to work for the places that this code affects.  Should we want to expand
+    // marking untranslated strings visually in other places, then it would be
+    // necessary to make this assignment in C# code.  Which unfortunately would
+    // have to happen in at least half a dozen places.
+    let channelClass = channelName.toLowerCase();
+    if (channelClass.startsWith("developer/")) channelClass = "developer";
+    if (
+        document &&
+        document.body &&
+        !document.body.classList.contains(channelClass)
+    ) {
+        document.body.classList.add(channelClass);
+    }
+});
 
 // This would be used by a control that doesn't have any text of its own,
 // but has children that need to be localized.
@@ -189,7 +209,7 @@ export class LocalizableElement<
             }
         } else {
             return (
-                <span style={{ color: "grey" }}>
+                <span className="untranslated">
                     {" "}
                     {this.getOriginalStringContent()}{" "}
                 </span>
