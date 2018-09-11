@@ -12,7 +12,7 @@ namespace BloomTests
 		{
 			if(handler != null)
 			{
-				server.RegisterEndpointHandler(endPoint, handler, true);
+				server.ApiHandler.RegisterEndpointHandler(endPoint, handler, true);
 			}
 			server.StartListening();
 			var client = new WebClientWithTimeout
@@ -38,7 +38,7 @@ namespace BloomTests
 		{
 			if(handler != null)
 			{
-				server.RegisterEndpointHandler(endPoint, handler, true);
+				server.ApiHandler.RegisterEndpointHandler(endPoint, handler, true);
 			}
 			server.StartListening();
 			var client = new WebClientWithTimeout

@@ -45,13 +45,13 @@ namespace Bloom.web.controllers
 			_storageFactory = storageFactory;
 		}
 
-		public void RegisterWithServer(BloomServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// We could probably get away with using the server thread here, but the code interacts quite a bit with the
 			// current book and other state.
-			server.RegisterEndpointHandler("pageTemplates", HandleTemplatesRequest, true);
+			apiHandler.RegisterEndpointHandler("pageTemplates", HandleTemplatesRequest, true);
 			// Being on the UI thread causes a deadlock on Linux/Mono.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3818.
-			server.RegisterEndpointHandler("pageTemplateThumbnail", HandleThumbnailRequest, false);
+			apiHandler.RegisterEndpointHandler("pageTemplateThumbnail", HandleThumbnailRequest, false);
 		}
 
 		/// <summary>

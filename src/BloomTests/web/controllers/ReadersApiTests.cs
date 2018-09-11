@@ -16,10 +16,8 @@ namespace BloomTests.web
 			bookSelection.SelectBook(new Bloom.Book.Book());
 			_server = new BloomServer(bookSelection);
 
-			//needed to avoid a check in the server
-			_server.CurrentCollectionSettings = new CollectionSettings();
 			var controller = new ReadersApi(bookSelection);
-			controller.RegisterWithServer(_server);
+			controller.RegisterWithApiHandler(_server.ApiHandler);
 		}
 
 		[TearDown]

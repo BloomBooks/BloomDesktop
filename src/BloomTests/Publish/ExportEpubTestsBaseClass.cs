@@ -37,6 +37,7 @@ namespace BloomTests.Publish
 		protected XmlNamespaceManager _ns; // Set up with all the namespaces we use (See GetNamespaceManager())
 		protected static BloomServer s_testServer;
 		protected static BookSelection s_bookSelection;
+		protected static CollectionSettings s_collectionSettings;
 		protected BookServer _bookServer;
 		protected string _defaultSourceValue;
 
@@ -49,6 +50,7 @@ namespace BloomTests.Publish
 		[OneTimeSetUp]
 		public virtual void OneTimeSetup()
 		{
+			s_collectionSettings = new CollectionSettings();
 			s_testServer = GetTestServer();
 		}
 
@@ -61,7 +63,7 @@ namespace BloomTests.Publish
 
 		internal static BloomServer GetTestServer()
 		{
-			var server = new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, GetTestBookSelection(), GetTestFileLocator());
+			var server = new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), GetTestBookSelection(), s_collectionSettings, GetTestFileLocator());
 			server.StartListening();
 			return server;
 		}
@@ -75,7 +77,7 @@ namespace BloomTests.Publish
 
 		private static BloomFileLocator GetTestFileLocator()
 		{
-			return new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
+			return new BloomFileLocator(s_collectionSettings, new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 

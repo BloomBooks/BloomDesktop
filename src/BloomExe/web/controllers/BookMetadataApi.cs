@@ -17,10 +17,10 @@ namespace Bloom.web.controllers
 			_bookSelection = bookSelection;
 		}
 
-		public void RegisterWithServer(BloomServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			bool requiresSync = false; // Lets us open the dialog while the epub preview is being generated
-			server.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false, requiresSync);
+			apiHandler.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false, requiresSync);
 		}
 
 		private void HandleBookMetadata(ApiRequest request)

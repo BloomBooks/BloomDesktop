@@ -50,11 +50,11 @@ namespace Bloom.web.controllers
 			return Path.GetExtension(lcFilename) == ".svg" || Path.GetExtension(lcFilename) == ".png";
 		}
 
-		public void RegisterWithServer(BloomServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// These are both just retrieving information about files, apart from using _bookSelection.CurrentSelection.FolderPath.
-			server.RegisterEndpointHandler("image/info", HandleImageInfo, false);
-			server.RegisterEndpointHandler("image/imageCreditsForWholeBook", HandleCopyImageCreditsForWholeBook, false);
+			apiHandler.RegisterEndpointHandler("image/info", HandleImageInfo, false);
+			apiHandler.RegisterEndpointHandler("image/imageCreditsForWholeBook", HandleCopyImageCreditsForWholeBook, false);
 		}
 
 		/// <summary>
