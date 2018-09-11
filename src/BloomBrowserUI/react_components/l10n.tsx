@@ -189,7 +189,7 @@ export class LocalizableElement<
             }
         } else {
             return (
-                <span style={{ color: "grey" }}>
+                <span className="untranslated">
                     {" "}
                     {this.getOriginalStringContent()}{" "}
                 </span>

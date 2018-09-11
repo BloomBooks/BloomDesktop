@@ -20,6 +20,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using L10NSharp;
+using System.Text.RegularExpressions;
 
 namespace Bloom
 {
@@ -833,10 +834,39 @@ namespace Bloom
 			_pageEditDom = editDom ?? dom;
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+			AddChannelClassToBody(dom);
 			var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source:source);
 			SetNewDependent(fakeTempFile);
 			_url = fakeTempFile.Key;
 			UpdateDisplay();
+		}
+
+		public static void AddChannelClassToBody(XmlDocument dom)
+		{
+			var body = dom.DocumentElement.SelectSingleNode("/html/body") as XmlElement;
+			if (body != null)
+			{
+				var channelName = GetClassNameFromChannelName();
+				var classAttr = body.GetAttributeNode("class");
+				if (classAttr != null)
+				{
+					classAttr.Value = classAttr.Value + " " + channelName;
+				}
+				else
+				{
+					classAttr = dom.CreateAttribute("class");
+					classAttr.Value = channelName;
+					body.Attributes.Append(classAttr);
+				}
+			}
+		}
+
+		public static string GetClassNameFromChannelName()
+		{
+			var channelName = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
+			if (channelName.StartsWith("developer/", StringComparison.InvariantCulture))
+				channelName = "developer";
+			return channelName;
 		}
 
 		public void NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav")
@@ -877,19 +907,51 @@ namespace Bloom
 			}
 		}
 
-		public void NavigateRawHtml(string html)
+		public void NavigateRawHtml(string html, string urlParams=null)
 		{
 			if (InvokeRequired)
 			{
-				Invoke(new Action<string>(NavigateRawHtml), html);
+				Invoke(new Action<string,string>(NavigateRawHtml), html, urlParams);
 				return;
 			}
 
 			var tf = TempFile.WithExtension("htm"); // For some reason Gecko won't recognize a utf-8 file as html unless it has the right extension
+			html = AddChannelClassToBody(html);
 			RobustFile.WriteAllText(tf.Path,html, Encoding.UTF8);
 			SetNewDependent(tf);
-			_url = tf.Path;
+			if (String.IsNullOrEmpty(urlParams))
+				_url = tf.Path;
+			else
+				_url = tf.Path.ToLocalhost() + urlParams;
 			UpdateDisplay();
+		}
+
+		private string AddChannelClassToBody(string originalHtml)
+		{
+			var channelName = GetClassNameFromChannelName();
+			var html = originalHtml.Replace("<body>", "<body class=\"" + channelName + "\">");
+			if (html == originalHtml)
+			{
+				// more complicated situation: body element has attributes, possibly including class
+				var match = Regex.Match(html, "<body [^>]*>");
+				if (match != null)
+				{
+					var originalBodyTag = match.Value;
+					string bodyTag;
+					if (originalBodyTag.Contains(" class="))
+					{
+						bodyTag = originalBodyTag.Replace(" class=\"", " class=\"" + channelName + " ");
+						if (originalBodyTag == bodyTag)
+							bodyTag = originalBodyTag.Replace(" class='", " class='" + channelName + " ");
+					}
+					else
+					{
+						bodyTag = originalBodyTag.Replace("<body ", "<body class=\"" + channelName + "\" ");
+					}
+					html = originalHtml.Replace(originalBodyTag, bodyTag);
+				}
+			}
+			return html;
 		}
 
 		private void SetNewDependent(IDisposable dependent)
