@@ -30,7 +30,7 @@ export default class BloomSourceBubbles {
     public static ProduceSourceBubbles(
         group: HTMLElement,
         newIso?: string
-    ): JQuery {
+    ): JQuery | null {
         return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
     }
 
@@ -40,7 +40,7 @@ export default class BloomSourceBubbles {
         selectIso?: string
     ) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
-        var divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
+        let divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
             contentsOfBubble,
             selectIso
         );
@@ -68,10 +68,10 @@ export default class BloomSourceBubbles {
     public static MakeSourceTextDivForGroup(
         group: HTMLElement,
         newIso?: string
-    ): JQuery {
+    ): JQuery | null {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-        var divForBubble = $(group).clone();
+        const divForBubble = $(group).clone();
         divForBubble.removeAttr("style");
         divForBubble.removeClass(); //remove them all
         divForBubble.addClass("ui-sourceTextsForBubble");
@@ -118,20 +118,20 @@ export default class BloomSourceBubbles {
         //if there are no languages to show in the bubble, bail out now
         if (divForBubble.find("textarea, div").length == 0) return null;
 
-        var vernacularLang = theOneLocalizationManager.getVernacularLang();
+        const vernacularLang = theOneLocalizationManager.getVernacularLang();
 
         // Make the li's for the source text elements in this new div, which will later move to a tabbed bubble
         // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
-        var $this = divForBubble.first();
+        const $this = divForBubble.first();
         $this.prepend('<nav><ul class="editTimeOnly bloom-ui"></ul></nav>'); // build the tabs here
 
         // First, sort the divs (and/or textareas) alphabetically by language code
-        var items = $this.find("textarea, div");
+        let items = $this.find("textarea, div");
         items.sort(function(a, b) {
             //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
             //it's just a one-line change.
-            var keyA = $(a).attr("lang");
-            var keyB = $(b).attr("lang");
+            const keyA = $(a).attr("lang");
+            const keyB = $(b).attr("lang");
             if (keyA === vernacularLang) return -1;
             if (keyB === vernacularLang) return 1;
             if (keyA < keyB) return -1;
@@ -142,12 +142,11 @@ export default class BloomSourceBubbles {
         // BL-2357
         items = BloomSourceBubbles.SmartOrderSourceTabs(items, newIso);
 
-        var shellEditingMode = false;
-        var list = $this.find("nav ul");
+        const list = $this.find("nav ul");
         items.each(function() {
-            var iso = $(this).attr("lang");
+            const iso = $(this).attr("lang");
             if (iso) {
-                var localizedLanguageName =
+                const localizedLanguageName =
                     theOneLocalizationManager.getLanguageName(iso) || iso;
                 // This is bizarre. The href ought to be referring to the element with the specified ID,
                 // which should be the tab CONTENT that should be shown for this language. But we have modified
@@ -172,7 +171,7 @@ export default class BloomSourceBubbles {
     } // end MakeSourceTextDivForGroup()
 
     private static RemoveCustomPageAdditions(editableDiv: JQuery): void {
-        var styleAttr = editableDiv.attr("style");
+        const styleAttr = editableDiv.attr("style");
         if (!styleAttr) return;
 
         editableDiv.css("min-height", "");
@@ -183,11 +182,11 @@ export default class BloomSourceBubbles {
     // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
     private static SmartOrderSourceTabs(items, newIso?: string): JQuery {
         // BL-2357 Do some smart ordering of source language tabs
-        var settingsObject = GetSettings();
-        var defaultSrcLang = settingsObject.defaultSourceLanguage;
-        var destination = 0;
+        const settingsObject = GetSettings();
+        let defaultSrcLang = settingsObject.defaultSourceLanguage;
+        let destination = 0;
         if (newIso) defaultSrcLang = newIso;
-        var newItems = BloomSourceBubbles.DoSafeReplaceInList(
+        let newItems = BloomSourceBubbles.DoSafeReplaceInList(
             items,
             defaultSrcLang,
             destination
@@ -197,8 +196,8 @@ export default class BloomSourceBubbles {
             destination++;
             items = newItems;
         }
-        var language2 = settingsObject.currentCollectionLanguage2;
-        var language3 = settingsObject.currentCollectionLanguage3;
+        const language2 = settingsObject.currentCollectionLanguage2;
+        const language3 = settingsObject.currentCollectionLanguage3;
         if (language2 && language2 != defaultSrcLang) {
             newItems = BloomSourceBubbles.DoSafeReplaceInList(
                 items,
@@ -256,16 +255,16 @@ export default class BloomSourceBubbles {
     private static CreateTabsFromDiv(
         divForBubble: JQuery,
         selectIso?: string
-    ): JQuery {
+    ): JQuery | null {
         //now turn that new div into a set of tabs
-        var opts: any = {
+        const opts: any = {
             animate: false,
             tabs: "> nav > ul > li",
             // don't need it messing with the window url, and may help prevent previous
             // selections being copied into updated qtips.
             updateHash: false
         };
-        var tabs = divForBubble.find("nav li");
+        const tabs = divForBubble.find("nav li");
         if (tabs.length > 0) {
             divForBubble.easytabs(opts);
             // Don't start by displaying the hint if a translation is available.
@@ -343,33 +342,35 @@ export default class BloomSourceBubbles {
     }
 
     private static styledSelectChangeHandler(event) {
-        var newIso = event.target.href.split("#")[1];
+        const newIso = event.target.href.split("#")[1];
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
-        var qtip = $(event.target)
+        const qtip = $(event.target)
             .closest(".qtip")
             .attr("id");
-        var group = $(document).find(
+        const group = $(document).find(
             '.bloom-translationGroup[aria-describedby="' + qtip + '"]'
         );
 
         // Redo creating the source bubbles with the selected language first
         if (group && group.length > 0) {
             // should be
-            var divForBubble = BloomSourceBubbles.ProduceSourceBubbles(
+            const divForBubble = BloomSourceBubbles.ProduceSourceBubbles(
                 group[0],
                 newIso
             );
-            BloomHintBubbles.addHintBubbles(
-                group.get(0),
-                [group.get(0)],
-                [divForBubble.get(0)]
-            );
-            BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-                group.get(0),
-                divForBubble,
-                newIso
-            );
+            if (divForBubble) {
+                BloomHintBubbles.addHintBubbles(
+                    group.get(0),
+                    [group.get(0)],
+                    [divForBubble.get(0)]
+                );
+                BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+                    group.get(0),
+                    divForBubble,
+                    newIso
+                );
+            }
         }
     }
 
@@ -379,13 +380,13 @@ export default class BloomSourceBubbles {
         group: HTMLElement,
         divForBubble: JQuery
     ): void {
-        var showEvents = false;
-        var hideEvents = false;
-        var showEventsStr;
-        var hideEventsStr;
-        var shouldShowAlways = true;
+        let showEvents = false;
+        let hideEvents = false;
+        let showEventsStr;
+        let hideEventsStr;
+        let shouldShowAlways = true;
 
-        var $group = $(group);
+        const $group = $(group);
         // We seem to need a delay to get a reliable result from mightCauseHorizontallyOverlappingBubbles(); see comment there.
         setTimeout(() => {
             if (
@@ -400,9 +401,9 @@ export default class BloomSourceBubbles {
 
             // turn that tab thing into a bubble, and attach it to the original div ("group")
             $group.each(function() {
-                // var targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
+                // const targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
-                var $this: JQuery = $(this);
+                const $this: JQuery = $(this);
 
                 $this.qtip({
                     position: {
@@ -435,7 +436,7 @@ export default class BloomSourceBubbles {
                     events: {
                         show: function(event, api) {
                             // don't need to do this if there is only one editable area
-                            var $body: JQuery = $("body");
+                            const $body: JQuery = $("body");
                             if (
                                 $body
                                     .find("*.bloom-translationGroup")
@@ -445,11 +446,11 @@ export default class BloomSourceBubbles {
                                 return;
 
                             // BL-878: set the tool tips to not be larger than the text area so they don't overlap each other
-                            var $tip = api.elements.tooltip;
-                            var $div = $body.find(
+                            const $tip = api.elements.tooltip;
+                            const $div = $body.find(
                                 '[aria-describedby="' + $tip.attr("id") + '"]'
                             );
-                            var maxHeight = $div.height();
+                            let maxHeight = $div.height();
                             if ($tip.height() > maxHeight) {
                                 // make sure to show a minimum size
                                 if (maxHeight < 70) maxHeight = 70;
@@ -479,13 +480,15 @@ export default class BloomSourceBubbles {
                                 if (kevent.ctrlKey && kevent.which == 65) {
                                     kevent.preventDefault();
                                     kevent.stopImmediatePropagation();
-                                    var bubble = kevent.target;
-                                    var obj = $(bubble)[0].firstElementChild;
-                                    var selection = obj.ownerDocument.defaultView.getSelection();
-                                    var range = obj.ownerDocument.createRange();
-                                    range.selectNodeContents(obj);
-                                    selection.removeAllRanges();
-                                    selection.addRange(range);
+                                    const bubble = kevent.target;
+                                    const obj = $(bubble)[0].firstElementChild;
+                                    if (obj) {
+                                        const selection = obj.ownerDocument.defaultView.getSelection();
+                                        const range = obj.ownerDocument.createRange();
+                                        range.selectNodeContents(obj);
+                                        selection.removeAllRanges();
+                                        selection.addRange(range);
+                                    }
                                 }
                             });
                             // We'd like to prevent the source bubble from getting focus. Tried various things.
@@ -499,7 +502,7 @@ export default class BloomSourceBubbles {
                             api.elements.tooltip.click(ev => {
                                 // We're going to pick an element to focus. We start by getting the element our qtip
                                 // is attached to.
-                                var baseElement = $("body").find(
+                                let baseElement = $("body").find(
                                     "[aria-describedby='" +
                                         api.elements.tooltip.attr("id") +
                                         "']"
@@ -522,7 +525,7 @@ export default class BloomSourceBubbles {
                                 // Apparently you can't focus a div that lacks a tabindex, even if it is contenteditable.
                                 // We don't want to permanently modify the element, so cheat by giving it one temporarily.
                                 // -1 won't even temporarily affect any tabbing, since it means only focusable by code.
-                                var hadTabIndex = baseElement.hasAttr(
+                                const hadTabIndex = baseElement.hasAttr(
                                     "tabindex"
                                 );
                                 if (!hadTabIndex) {
@@ -547,22 +550,22 @@ export default class BloomSourceBubbles {
         editableDiv.find(".bloom-editable").each((i, elt) => {
             $(elt).focus(event => {
                 // reset tool tips that may be expanded
-                var $body = $("body");
+                const $body = $("body");
                 $body.find(".qtip").each(function(idx, obj) {
-                    var $thisTip = $(obj);
+                    const $thisTip = $(obj);
                     $thisTip.addClass("passive-bubble");
-                    var maxHeight = $thisTip.attr("data-max-height");
+                    const maxHeight = $thisTip.attr("data-max-height");
                     if (maxHeight)
                         $thisTip.css("max-height", parseInt(maxHeight));
                 });
 
                 // show the full tip, if needed
-                var tipId = (<Element>event.target.parentNode).getAttribute(
+                const tipId = (<Element>event.target.parentNode).getAttribute(
                     "aria-describedby"
                 );
-                var $tip = $body.find("#" + tipId);
+                const $tip = $body.find("#" + tipId);
                 $tip.removeClass("passive-bubble");
-                var maxHeight = $tip.attr("data-max-height");
+                const maxHeight = $tip.attr("data-max-height");
                 if (maxHeight) {
                     $tip.css("max-height", "");
                 }
@@ -571,12 +574,12 @@ export default class BloomSourceBubbles {
             // above is not enough because the field receiving focus may not be one
             // that has been configured with this event.
             $(elt).blur(ev => {
-                var tipId = (<Element>ev.target.parentNode).getAttribute(
+                const tipId = (<Element>ev.target.parentNode).getAttribute(
                     "aria-describedby"
                 );
-                var $tip = $("body").find("#" + tipId);
+                const $tip = $("body").find("#" + tipId);
                 $tip.addClass("passive-bubble");
-                var maxHeight = $tip.attr("data-max-height");
+                const maxHeight = $tip.attr("data-max-height");
                 if (maxHeight) $tip.css("max-height", parseInt(maxHeight));
             });
         });

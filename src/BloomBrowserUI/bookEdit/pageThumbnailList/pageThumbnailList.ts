@@ -20,8 +20,8 @@ import WebSocketManager from "../../utils/WebSocketManager";
 const timerName = "thumbnailInterval";
 const kWebsocketContext = "pageThumbnailList";
 
-var thumbnailTimerInterval = 200;
-var listenerFunction;
+let thumbnailTimerInterval = 200; // yes, this actually is not a constant!
+let listenerFunction;
 
 $(window).ready(function() {
     $(".gridly").gridly({
@@ -42,7 +42,7 @@ $(window).ready(function() {
     });
 
     // start the thumbnail timer
-    var timerSetting = document.body.dataset[timerName];
+    const timerSetting = document.body.dataset[timerName];
     if (timerSetting) thumbnailTimerInterval = parseInt(timerSetting, 10); //reviewslog: was timerSetting.value, but timerSetting is a string)
 
     // This timeout expires before the main page is displayed to the user, so we're using
@@ -98,7 +98,7 @@ export function stopListeningForSave() {
 }
 
 function fireCSharpEvent(eventName, eventData) {
-    var event = new MessageEvent(eventName, {
+    const event = new MessageEvent(eventName, {
         bubbles: true,
         cancelable: true,
         data: eventData
@@ -110,18 +110,18 @@ function loadNextThumbnail() {
     // The "thumb-src" attribute is added to the img tags on the server while the page is being built. The value
     // of the "src" attribute is copied into it and then the "src" attribute is set to an empty string so the
     // images can be loaded here in a controlled manner so as not to overwhelm system memory.
-    var nextImg = jQuery("body")
+    const nextImg = jQuery("body")
         .find("*[thumb-src]")
         .first();
 
     // stop processing if there are no more images
     if (!nextImg || nextImg.length === 0) return;
 
-    var img = nextImg[0];
+    const img = nextImg[0];
 
     // adding this to the query string tells the server to generate a thumbnail from the image file
-    var src = img.getAttribute("thumb-src");
-    if (src.indexOf("?") >= 0) {
+    let src = img.getAttribute("thumb-src");
+    if (src && src.indexOf("?") >= 0) {
         // already has a query (e.g., at one point we had optional=true for branding)
         src = src + "&thumbnail=1";
     } else {
@@ -140,9 +140,9 @@ function loadNextThumbnail() {
 }
 
 function reorder(elements) {
-    var ids = "";
+    let ids = "";
     elements.each(function() {
-        var id = $(this).attr("id");
+        const id = $(this).attr("id");
         if (id) ids += "," + id;
     });
     fireCSharpEvent("gridReordered", ids);

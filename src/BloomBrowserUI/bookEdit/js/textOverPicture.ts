@@ -14,11 +14,20 @@ const kWebsocketContext = "textOverPicture";
 class TextOverPictureManager {
     public initializeTextOverPictureManager(): void {
         WebSocketManager.addListener(kWebsocketContext, messageEvent => {
-            var locationArray = messageEvent.message.split(","); // mouse right-click coordinates
-            if (messageEvent.id === "addTextBox")
-                this.addFloatingTOPBox(+locationArray[0], +locationArray[1]);
-            if (messageEvent.id === "deleteTextBox")
-                this.deleteFloatingTOPBox(+locationArray[0], +locationArray[1]);
+            const msg = messageEvent.message;
+            if (msg) {
+                const locationArray = msg.split(","); // mouse right-click coordinates
+                if (messageEvent.id === "addTextBox")
+                    this.addFloatingTOPBox(
+                        +locationArray[0],
+                        +locationArray[1]
+                    );
+                if (messageEvent.id === "deleteTextBox")
+                    this.deleteFloatingTOPBox(
+                        +locationArray[0],
+                        +locationArray[1]
+                    );
+            }
         });
     }
 
@@ -29,7 +38,7 @@ class TextOverPictureManager {
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
     private addFloatingTOPBox(mouseX: number, mouseY: number) {
-        var container = this.getImageContainerFromMouse(mouseX, mouseY);
+        const container = this.getImageContainerFromMouse(mouseX, mouseY);
         if (!container || container.length === 0) {
             return; // don't add a TOP box if we can't find the containing imageContainer
         }
@@ -53,8 +62,8 @@ class TextOverPictureManager {
             transGroupHtml +
             "</div>";
         // add textbox as first child of .bloom-imageContainer
-        var firstContainerChild = container.children().first();
-        var wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
+        const firstContainerChild = container.children().first();
+        const wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
         // initial mouseX, mouseY coordinates are relative to viewport
         this.calculateAndFixInitialLocation(
             wrapperBox,
@@ -85,11 +94,11 @@ class TextOverPictureManager {
         mouseX: number,
         mouseY: number
     ) {
-        var scale = EditableDivUtils.getPageScale();
-        var containerPosition = container[0].getBoundingClientRect();
-        var xOffset = (mouseX - containerPosition.left) / scale;
-        var yOffset = (mouseY - containerPosition.top) / scale;
-        var location = "left: " + xOffset + "px; top: " + yOffset + "px;";
+        const scale = EditableDivUtils.getPageScale();
+        const containerPosition = container[0].getBoundingClientRect();
+        const xOffset = (mouseX - containerPosition.left) / scale;
+        const yOffset = (mouseY - containerPosition.top) / scale;
+        const location = "left: " + xOffset + "px; top: " + yOffset + "px;";
         wrapperBox.attr("style", location);
         this.calculatePercentagesAndFixTextboxPosition(wrapperBox); // translate px to %
     }
@@ -97,7 +106,7 @@ class TextOverPictureManager {
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
     private deleteFloatingTOPBox(mouseX: number, mouseY: number) {
-        var focusedBubble = $(
+        const focusedBubble = $(
             document.elementFromPoint(mouseX, mouseY)
         ).closest(".bloom-textOverPicture");
         if (focusedBubble && focusedBubble.length > 0) {
@@ -109,9 +118,9 @@ class TextOverPictureManager {
         thisTOPBox: JQuery,
         scale: number
     ): void {
-        var image = this.getImageContainer(thisTOPBox);
-        var imagePos = image[0].getBoundingClientRect();
-        var wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
+        const image = this.getImageContainer(thisTOPBox);
+        const imagePos = image[0].getBoundingClientRect();
+        const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
         // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
         // factor was last changed. Therefore we force reconstructing the page
         // in the EditingView.Zoom setter (in C#).
@@ -130,7 +139,10 @@ class TextOverPictureManager {
             },
             handle: ".bloom-dragHandleTOP",
             stop: (event, ui) => {
-                this.calculatePercentagesAndFixTextboxPosition($(event.target));
+                const target = event.target;
+                if (target) {
+                    this.calculatePercentagesAndFixTextboxPosition($(target));
+                }
             }
         });
 
@@ -143,19 +155,22 @@ class TextOverPictureManager {
     // Called by bloomEditing.ts.
     public makeTextOverPictureBoxDraggableClickableAndResizable() {
         // get all textOverPicture elements
-        var textOverPictureElems = $("body").find(".bloom-textOverPicture");
+        const textOverPictureElems = $("body").find(".bloom-textOverPicture");
         if (textOverPictureElems.length === 0) {
             return; // if there aren't any, quit before we hurt ourselves!
         }
-        var scale = EditableDivUtils.getPageScale();
+        const scale = EditableDivUtils.getPageScale();
 
         textOverPictureElems.resizable({
             stop: (event, ui) => {
-                // Resizing also changes size and position to pixels. Fix it.
-                this.calculatePercentagesAndFixTextboxPosition($(event.target));
-                // There was a problem where resizing a box messed up its draggable containment,
-                // so now after we resize we go back through making it draggable and clickable again.
-                this.makeTOPBoxDraggableAndClickable($(event.target), scale);
+                const target = event.target;
+                if (target) {
+                    // Resizing also changes size and position to pixels. Fix it.
+                    this.calculatePercentagesAndFixTextboxPosition($(target));
+                    // There was a problem where resizing a box messed up its draggable containment,
+                    // so now after we resize we go back through making it draggable and clickable again.
+                    this.makeTOPBoxDraggableAndClickable($(target), scale);
+                }
             }
         });
 
@@ -171,12 +186,12 @@ class TextOverPictureManager {
     }
 
     private calculatePercentagesAndFixTextboxPosition(wrapperBox: JQuery) {
-        var scale = EditableDivUtils.getPageScale();
-        var container = wrapperBox.closest(".bloom-imageContainer");
-        var pos = wrapperBox.position();
+        const scale = EditableDivUtils.getPageScale();
+        const container = wrapperBox.closest(".bloom-imageContainer");
+        const pos = wrapperBox.position();
         // the textbox is contained by the image, and it's actual positioning is now based on the imageContainer too.
         // so we will position by percentage of container size.
-        var containerSize = {
+        const containerSize = {
             height: container.height(),
             width: container.width()
         };
@@ -200,7 +215,7 @@ class TextOverPictureManager {
     }
 }
 
-export var theOneTextOverPictureManager: TextOverPictureManager;
+export let theOneTextOverPictureManager: TextOverPictureManager;
 
 export function initializeTextOverPictureManager() {
     if (theOneTextOverPictureManager) return;

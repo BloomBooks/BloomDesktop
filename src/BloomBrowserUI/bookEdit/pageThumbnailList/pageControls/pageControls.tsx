@@ -48,7 +48,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
 
         // Listen for changes to state from C#-land
         WebSocketManager.addListener(kPageControlsContext, e => {
-            if (e.id === "edit/pageControls/state") {
+            if (e.id === "edit/pageControls/state" && e.message) {
                 this.updateStateForEvent(e.message);
             }
         });
@@ -58,7 +58,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
         window.addEventListener("beforeunload", this.componentCleanup);
         // Get the initial state from C#-land, now that we're ready for it.
         BloomApi.get("edit/pageControls/requestState", result => {
-            var jsonObj = result.data; // Axios apparently recognizes the JSON and parses it automatically.
+            const jsonObj = result.data; // Axios apparently recognizes the JSON and parses it automatically.
             // something like: {"CanAddPages":true,"CanDeletePage":true,"CanDuplicatePage":true,"BookLockedState":"OriginalBookMode"}
             this.setPageControlState(jsonObj);
         });
@@ -78,7 +78,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
     }
 
     public updateStateForEvent(s: string): void {
-        var state = JSON.parse(s);
+        const state = JSON.parse(s);
         this.setPageControlState(state);
         //console.log("this.state is " + JSON.stringify(this.state));
     }
