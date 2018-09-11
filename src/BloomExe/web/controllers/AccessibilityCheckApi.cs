@@ -77,34 +77,34 @@ namespace Bloom.web.controllers
 			});
 		}
 		
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{	
-			server.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
 			{
 				request.ReplyWithText(request.CurrentBook.TitleBestForUserDisplay);
 			}, false);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>
 			{
 				AccessibilityCheckWindow.StaticShow(()=>_webSocketServer.SendEvent(kWebSocketContext, kWindowActivated));
 				request.PostSucceeded();
 			}, true);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "descriptionsForAllImages", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "descriptionsForAllImages", request =>
 			{
 				var problems = AccessibilityCheckers.CheckDescriptionsForAllImages(request.CurrentBook);
 				var resultClass = problems.Any() ? "failed" : "passed";
 				request.ReplyWithJson(new {resultClass = resultClass, problems = problems});
 			}, false);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "audioForAllImageDescriptions", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "audioForAllImageDescriptions", request =>
 			{
 				var problems = AccessibilityCheckers.CheckAudioForAllImageDescriptions(request.CurrentBook);
 				var resultClass = problems.Any() ? "failed" : "passed";
 				request.ReplyWithJson(new { resultClass = resultClass, problems = problems });
 			}, false);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "audioForAllText", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "audioForAllText", request =>
 			{
 				var problems = AccessibilityCheckers.CheckAudioForAllText(request.CurrentBook);
 				var resultClass = problems.Any() ? "failed" : "passed";
@@ -113,7 +113,7 @@ namespace Bloom.web.controllers
 
 			// Just a checkbox that the user ticks to say "yes, I checked this"
 			// At this point, we don't have a way to clear that when the book changes.
-			server.RegisterBooleanEndpointHandler(kApiUrlPart + "noEssentialInfoByColor",
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "noEssentialInfoByColor",
 				request => request.CurrentBook.BookInfo.MetaData.A11y_NoEssentialInfoByColor,
 				(request, b) => {
 					request.CurrentBook.BookInfo.MetaData.A11y_NoEssentialInfoByColor = b;
@@ -123,7 +123,7 @@ namespace Bloom.web.controllers
 
 			// Just a checkbox that the user ticks to say "yes, I checked this"
 			// At this point, we don't have a way to clear that when the book changes.
-			server.RegisterBooleanEndpointHandler(kApiUrlPart + "noTextIncludedInAnyImages",
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "noTextIncludedInAnyImages",
 				request => request.CurrentBook.BookInfo.MetaData.A11y_NoTextIncludedInAnyImages,
 				(request, b) => {
 					request.CurrentBook.BookInfo.MetaData.A11y_NoTextIncludedInAnyImages = b;
@@ -132,14 +132,14 @@ namespace Bloom.web.controllers
 				false);
 			
 			//enhance: this might have to become async to work on large books on slow computers
-			server.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
 				false, false
 				);
 
 			// A checkbox that the user ticks in the Accessible Image tool to request a preview
 			// of how things might look with cataracts.
 			// For now this doesn't seem worth persisting, except for the session so it sticks from page to page.
-			server.RegisterBooleanEndpointHandler(kApiUrlPart + "cataracts",
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "cataracts",
 				request => _simulateCataracts,
 				(request, b) => { _simulateCataracts = b; },
 				false);
@@ -147,11 +147,11 @@ namespace Bloom.web.controllers
 			// of how things might look with color-blindness, and a set of radio buttons
 			// for choosing different kinds of color-blindness.
 			// For now these doesn't seem worth persisting, except for the session so it sticks from page to page.
-			server.RegisterBooleanEndpointHandler(kApiUrlPart + "colorBlindness",
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "colorBlindness",
 				request => _simulateColorBlindness,
 				(request, b) => { _simulateColorBlindness = b; },
 				false);
-			server.RegisterEnumEndpointHandler(kApiUrlPart + "kindOfColorBlindness",
+			apiHandler.RegisterEnumEndpointHandler(kApiUrlPart + "kindOfColorBlindness",
 				request => _kindOfColorBlindness,
 				(request, kind) => _kindOfColorBlindness = kind, false);
 		}

@@ -33,11 +33,11 @@ namespace Bloom.web.controllers
 			_sourceCollectionsList = sourceCollectionsList;
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Both of these display UI, expect to require UI thread.
-			server.RegisterEndpointHandler("addPage", HandleAddPage, true);
-			server.RegisterEndpointHandler("changeLayout", HandleChangeLayout, true);
+			apiHandler.RegisterEndpointHandler("addPage", HandleAddPage, true);
+			apiHandler.RegisterEndpointHandler("changeLayout", HandleChangeLayout, true);
 		}
 
 		private void HandleAddPage(ApiRequest request)

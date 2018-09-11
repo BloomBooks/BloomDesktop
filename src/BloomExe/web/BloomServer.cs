@@ -28,25 +28,20 @@ namespace Bloom.Api
 	/// <remarks>geckofx makes concurrent requests of URLs which this class handles. This means
 	/// that the methods of this class get called on different threads, so it has to be
 	/// thread-safe.</remarks>
-	public class FileAndApiServer : ServerBase
+	public class BloomServer : ServerBase
 	{
 		public const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for simulated pages and PDF creation)
 		private RuntimeImageProcessor _cache;
 		private bool _useCache;
 
 		private const string SimulatedFileUrlMarker = "-memsim-";
-		private FileSystemWatcher _sampleTextsWatcher;
-		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
-		private readonly BookThumbNailer _thumbNailer;
 		private readonly BookSelection _bookSelection;
-		private readonly ProjectContext _projectContext;
 
-		// This dictionary ties API endpoints to functions that handle the requests.
-		private Dictionary<string, EndpointRegistration> _endpointRegistrations = new Dictionary<string, EndpointRegistration>();
+		public CollectionSettings CurrentCollectionSettings { get; private set; }
 
-		public CollectionSettings CurrentCollectionSettings { get; set; }
+		public BloomApiHandler ApiHandler;
 
 		// This is useful for debugging.
 		public static Dictionary<string, string> SimulatedPageContent => _urlToSimulatedPageContent;
@@ -54,98 +49,21 @@ namespace Bloom.Api
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
-		internal FileAndApiServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection)
+		internal BloomServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), bookSelection, new CollectionSettings())
 		{ }
 
-		public FileAndApiServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BookSelection bookSelection,  BloomFileLocator fileLocator = null)
+		public BloomServer(RuntimeImageProcessor cache, BookSelection bookSelection, CollectionSettings collectionSettings, BloomFileLocator fileLocator = null)
 		{
-			_thumbNailer = thumbNailer;
 			_bookSelection = bookSelection;
 			_fileLocator = fileLocator;
 			_cache = cache;
 			_useCache = Settings.Default.ImageHandler != "off";
+			CurrentCollectionSettings = collectionSettings;
+			ApiHandler = new BloomApiHandler(bookSelection, collectionSettings);
+
 		}
 
 
-		/// <summary>
-		/// Get called when a client (i.e. javascript) does an HTTP api call
-		/// </summary>
-		/// <param name="pattern">Simple string or regex to match APIs that this can handle. This must match what comes after the ".../api/" of the URL</param>
-		/// <param name="handler">The method to call</param>
-		/// <param name="handleOnUiThread">If true, the current thread will suspend until the UI thread can be used to call the method.
-		/// This deliberately no longer has a default. It's something that should be thought about.
-		/// Making it true can kill performance if you don't need it (BL-3452), and complicates exception handling and problem reporting (BL-4679).
-		/// There's also danger of deadlock if something in the UI thread is somehow waiting for this request to complete.
-		/// But, beware of race conditions or anything that manipulates UI controls if you make it false.</param>
-		/// <param name="requiresSync">True if the handler wants the server to ensure no other thread is doing an api
-		/// call while this one is running. This is our default behavior, ensuring that no API request can interfere with any
-		/// other in any unexpected way...essentially all Bloom's data is safe from race conditions arising from
-		/// server threads manipulating things on background threads. However, it makes it impossible for a new
-		/// api call to interrupt a previous one. For example, when one api call is creating an epub preview
-		/// and we get a new one saying we need to abort that (because one of the property buttons has changed),
-		/// the epub that is being generated is obsolete and we want the new api call to go ahead so it can set a flag 
-		/// to abort the one in progress. To avoid race conditions, api calls that set requiresSync false should be kept small
-		/// and simple and be very careful about touching objects that other API calls might interact with.</param>
-		public void RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
-		{
-			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
-			{
-				Handler = handler,
-				HandleOnUIThread = handleOnUiThread,
-				RequiresSync = requiresSync
-			};
-		}
-
-		/// <summary>
-		/// Handle simple boolean reads/writes
-		/// </summary>
-		public void RegisterBooleanEndpointHandler(string pattern, Func<ApiRequest, bool> readAction, Action<ApiRequest, bool> writeAction,
-			bool handleOnUiThread, bool requiresSync = true)
-		{
-			RegisterEndpointHandler(pattern, request =>
-			{
-				if (request.HttpMethod == HttpMethods.Get)
-				{
-					request.ReplyWithBoolean(readAction(request));
-				}
-				else // post
-				{
-					writeAction(request, request.RequiredPostBooleanAsJson());
-					request.PostSucceeded();
-				}
-			}, handleOnUiThread, requiresSync);
-		}
-
-		/// <summary>
-		/// Handle enum reads/writes
-		/// </summary>
-		public void RegisterEnumEndpointHandler<T>(string pattern, Func<ApiRequest, T> readAction, Action<ApiRequest, T> writeAction,
-			bool handleOnUiThread, bool requiresSync = true)
-		{
-			Debug.Assert(typeof(T).IsEnum, "Type passed to RegisterEnumEndpointHandler is not an Enum.");
-			RegisterEndpointHandler(pattern, request =>
-			{
-				if (request.HttpMethod == HttpMethods.Get)
-				{
-					request.ReplyWithEnum(readAction(request));
-				}
-				else // post
-				{
-					writeAction(request, request.RequiredPostEnumAsJson<T>());
-					request.PostSucceeded();
-				}
-			}, handleOnUiThread, requiresSync);
-		}
-
-		// We use two different locks to synchronize access to the methods of this class.
-		// This allows certain methods to run concurrently.
-
-		// used to synchronize access to I18N methods
-		private object I18NLock = new object();
-		// used to synchronize access to various other methods
-		private object SyncObj = new object();
-		// Special lock for making thumbnails. See discussion at the one point of usage.
-		private object ThumbnailSyncObj = new object();
 		private static string _keyToCurrentPage;
 
 		public string CurrentPageContent { get; set; }
@@ -253,49 +171,15 @@ namespace Bloom.Api
 			var localPath = GetLocalPathWithoutQuery(info);
 
 			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
-			if(localPath.IndexOf("api/branding") > 20) // this 20 is just arbitrary... the point is, if it doesn't start with api/branding, it is bogus
-			{
+			if (ApiHandler.IsInvalidApiCall(localPath))
 				return false;
-			}
 
-			if (localPath.ToLower().StartsWith("api/"))
-			{
-				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
-				foreach (var pair in _endpointRegistrations.Where(pair =>
-						Regex.Match(endpoint,
-							"^" + //must match the beginning
-							pair.Key.ToLower()
-						).Success))
-				{
-					if (pair.Value.RequiresSync)
-					{
-						// A single synchronization object won't do, because when processing a request to create a thumbnail,
-						// we have to load the HTML page the thumbnail is based on. If the page content somehow includes
-						// an api request (api/branding/image is one example), that request will deadlock if the
-						// api/pageTemplateThumbnail request already has the main lock.
-						// To the best of my knowledge, there's no shared data between the thumbnailing process and any
-						// other api requests, so it seems safe to have one lock that prevents working on multiple
-						// thumbnails at the same time, and one that prevents working on other api requests at the same time.
-						var syncOn = SyncObj;
-						if (localPath.ToLowerInvariant().StartsWith("api/pagetemplatethumbnail"))
-							syncOn = ThumbnailSyncObj;
-						lock (syncOn)
-						{
-							return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
-						}
-					}
-					else
-					{
-						// Up to api's that request no sync to do things right!
-						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
-					}
-				}
-			}
-
-			//OK, no more obvious simple API requests, dive into the rat's nest of other possibilities
 			if (base.ProcessRequest(info))
 				return true;
-			
+
+			if (ApiHandler.ProcessRequest(info, localPath))
+				return true;
+
 			// Handle image file requests.
 			if (ProcessImageFileRequest(info))
 				return true;
@@ -327,14 +211,7 @@ namespace Bloom.Api
 				return ProcessAnyFileContent(info, localPath);
 			}
 
-			if (localPath.StartsWith("i18n/", StringComparison.InvariantCulture))
-			{
-				if (ProcessI18N(localPath, info))
-					return true;
-			}
-			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
-				return ProcessDirectoryWatcher(info);
-			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
+			if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
 				var temp = LocalHostPathToFilePath(localPath);
 				if (RobustFile.Exists(temp))
@@ -455,26 +332,6 @@ namespace Bloom.Api
 				pathArray[1] = ':';
 			return new String(pathArray);
 #endif
-		}
-
-		private bool ProcessI18N(string localPath, IRequestInfo info)
-		{
-			lock (I18NLock)
-			{
-				return I18NHandler.HandleRequest(localPath, info, CurrentCollectionSettings);
-			}
-		}
-
-		private bool ProcessDirectoryWatcher(IRequestInfo info)
-		{
-			// thread synchronization is done in CheckForSampleTextChanges.
-			var dirName = info.GetPostDataWhenFormEncoded()["dir"];
-			if (dirName == "Sample Texts")
-			{
-				if (CheckForSampleTextChanges(info))
-					return true;
-			}
-			return false;
 		}
 
 
@@ -758,69 +615,10 @@ namespace Bloom.Api
 		}
 
 
-		private bool CheckForSampleTextChanges(IRequestInfo info)
-		{
-			lock (SyncObj)
-			{
-				if (_sampleTextsWatcher == null)
-				{
-					if (string.IsNullOrEmpty(CurrentCollectionSettings?.SettingsFilePath))
-					{
-						// We've had cases (BL-4744) where this is apparently called before CurrentCollectionSettings is
-						// established. I'm not sure how this can happen but if we haven't even established a current collection
-						// yet I think it's pretty safe to say its sample texts haven't changed since we last read them.
-						info.ContentType = "text/plain";
-						info.WriteCompleteOutput("no");
-						return true;
-					}
-					var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
-					if (!Directory.Exists(path))
-						Directory.CreateDirectory(path);
-
-					_sampleTextsWatcher = new FileSystemWatcher { Path = path };
-					_sampleTextsWatcher.Created += SampleTextsOnChange;
-					_sampleTextsWatcher.Changed += SampleTextsOnChange;
-					_sampleTextsWatcher.Renamed += SampleTextsOnChange;
-					_sampleTextsWatcher.Deleted += SampleTextsOnChange;
-					_sampleTextsWatcher.EnableRaisingEvents = true;
-				}
-			}
-
-			lock (_sampleTextsWatcher)
-			{
-				var hasChanged = _sampleTextsChanged;
-
-				// Reset the changed flag.
-				// NOTE: we are only resetting the flag if it was "true" when we checked in case the FileSystemWatcher detects a change
-				// after we check the flag but we reset it to false before we check again.
-				if (hasChanged)
-					_sampleTextsChanged = false;
-
-				info.ContentType = "text/plain";
-				info.WriteCompleteOutput(hasChanged ? "yes" : "no");
-
-				return true;
-			}
-		}
-
-		private void SampleTextsOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
-		{
-			lock (_sampleTextsWatcher)
-			{
-				_sampleTextsChanged = true;
-			}
-		}
-
 		protected override void Dispose(bool fDisposing)
 		{
 			if (fDisposing)
 			{
-				if (_sampleTextsWatcher != null)
-				{
-					_sampleTextsWatcher.EnableRaisingEvents = false;
-					_sampleTextsWatcher.Dispose();
-					_sampleTextsWatcher = null;
-				}
 				if (_cache != null)
 				{
 					_cache.Dispose();

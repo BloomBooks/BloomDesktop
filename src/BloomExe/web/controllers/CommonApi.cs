@@ -36,19 +36,19 @@ namespace Bloom.web.controllers
 			_bookSelection = bookSelection;
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			server.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false);
-			server.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false);
-			server.RegisterEndpointHandler("authorMode", HandleAuthorMode, false);
-			server.RegisterEndpointHandler("topics", HandleTopics, false);
-			server.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
-			server.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
-			server.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
-			server.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
+			apiHandler.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false);
+			apiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false);
+			apiHandler.RegisterEndpointHandler("authorMode", HandleAuthorMode, false);
+			apiHandler.RegisterEndpointHandler("topics", HandleTopics, false);
+			apiHandler.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
+			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
+			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
+			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
-			server.RegisterEndpointHandler("common/clipboardText",
+			apiHandler.RegisterEndpointHandler("common/clipboardText",
 				request =>
 				{
 					if (request.HttpMethod == HttpMethods.Get)
@@ -70,7 +70,7 @@ namespace Bloom.web.controllers
 						request.PostSucceeded();
 					}
 				}, false);
-			server.RegisterEndpointHandler("common/checkForUpdates",
+			apiHandler.RegisterEndpointHandler("common/checkForUpdates",
 				request =>
 				{
 					WorkspaceView.CheckForUpdates();

@@ -42,9 +42,9 @@ namespace Bloom.Edit
 	/// </summary>
 	public class ToolboxView
 	{
-		public static void RegisterWithServer(FileAndApiServer server)
+		public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			server.RegisterEndpointHandler("toolbox/settings", HandleSettings, false);
+			apiHandler.RegisterEndpointHandler("toolbox/settings", HandleSettings, false);
 		}
 
 		/// <summary>

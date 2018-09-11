@@ -44,9 +44,9 @@ namespace Bloom.Api
 			AllowedWordsFile
 		}
 
-		public void RegisterWithServer(FileAndApiServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			server.RegisterEndpointHandler("collection/defaultFont", request =>
+			apiHandler.RegisterEndpointHandler("collection/defaultFont", request =>
 			{
 				var bookFontName = request.CurrentCollectionSettings.DefaultLanguage1FontName;
 				if(String.IsNullOrEmpty(bookFontName))
@@ -54,8 +54,8 @@ namespace Bloom.Api
 				request.ReplyWithText(bookFontName);
 			}, handleOnUiThread: false);
 
-			server.RegisterEndpointHandler("readers/ui/.*", HandleRequest, true);
-			server.RegisterEndpointHandler("readers/io/.*", HandleRequest, false);
+			apiHandler.RegisterEndpointHandler("readers/ui/.*", HandleRequest, true);
+			apiHandler.RegisterEndpointHandler("readers/io/.*", HandleRequest, false);
 
 			//we could do them all like this:
 			//server.RegisterEndpointHandler("readers/loadReaderToolSettings", r=> r.ReplyWithJson(GetDefaultReaderSettings(r.CurrentCollectionSettings)));

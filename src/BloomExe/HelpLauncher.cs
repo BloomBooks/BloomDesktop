@@ -46,9 +46,9 @@ namespace Bloom
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libpath);
 		}
 
-		public static void RegisterWithServer(FileAndApiServer server)
+		public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			server.RegisterEndpointHandler("help/.*", (request) =>
+			apiHandler.RegisterEndpointHandler("help/.*", (request) =>
 			{
 				var topic = request.LocalPath().Replace("api/help","");
 				Show(Application.OpenForms.Cast<Form>().Last(), topic);
