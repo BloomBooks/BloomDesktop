@@ -3,7 +3,6 @@ import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Div, Label } from "../../../react_components/l10n";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { BloomApi } from "../../../utils/bloomApi";
-import { ToolBox, ITool } from "../toolbox";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
 import "./music.less";
@@ -39,7 +38,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     private static musicVolumeAttrName =
         MusicToolControls.musicAttrName + "volume";
     private static kDefaultVolumeFraction = 0.5;
-    private static narrationPlayer: AudioRecording;
+    private static narrationPlayer: AudioRecording | undefined;
     private addedListenerToPlayer: boolean;
     public componentDidMount() {
         this.setState(this.getStateFromHtmlOfPage());
@@ -56,7 +55,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
             MusicToolControls.musicAttrName
         );
-        let hasMusicAttr = typeof audioFileName === typeof ""; // may be false or undefined if missing
+        const hasMusicAttr = typeof audioFileName === typeof ""; // may be false or undefined if missing
         if (!audioFileName) {
             audioFileName = ""; // null won't handle split
         }
@@ -222,7 +221,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         // call-back function for changing playing state
         // automatic indentation is weird here. This is the start of the body of previewBackgroundMusic,
         // not of setPlayState, which is just a function parameter.
-        let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
+        const audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
             this.musicAttrName
         );
         if (!audioFileName) {
@@ -232,7 +231,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
             player.pause();
             if (this.narrationPlayer) {
                 this.narrationPlayer.stopListen();
-                this.narrationPlayer = null;
+                this.narrationPlayer = undefined;
             }
             setPlayState(false);
             return;
@@ -282,9 +281,10 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                 );
                 break;
             case "continueMusic":
-                ToolboxToolReactAdaptor.getBloomPage().removeAttribute(
-                    MusicToolControls.musicAttrName
-                );
+                const bloomPage = ToolboxToolReactAdaptor.getBloomPage();
+                if (bloomPage) {
+                    bloomPage.removeAttribute(MusicToolControls.musicAttrName);
+                }
                 break;
             // choosing the third button doesn't change anything, until you actually choose a file.
         }
@@ -387,7 +387,9 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
 // This class implements the ITool interface through our adaptor's abstract methods by calling
 // the appropriate MusicToolControls methods.
 export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
-    private controlsElement: MusicToolControls;
+    // Resist the temptation to change null to undefined here.
+    // This type has to match the 'ref' attribute below, which has "| null".
+    private controlsElement: MusicToolControls | null;
 
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
@@ -404,12 +406,18 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public showTool() {
-        this.controlsElement.updateBasedOnContentsOfPage();
+        if (this.controlsElement) {
+            this.controlsElement.updateBasedOnContentsOfPage();
+        }
     }
     public hideTool() {
-        this.controlsElement.pausePlayer();
+        if (this.controlsElement) {
+            this.controlsElement.pausePlayer();
+        }
     }
     public newPageReady() {
-        this.controlsElement.updateBasedOnContentsOfPage();
+        if (this.controlsElement) {
+            this.controlsElement.updateBasedOnContentsOfPage();
+        }
     }
 }

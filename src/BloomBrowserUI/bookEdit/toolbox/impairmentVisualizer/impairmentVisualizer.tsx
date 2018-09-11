@@ -118,8 +118,9 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
     }
 
     public updateSimulations() {
-        var page = ToolboxToolReactAdaptor.getPage();
-        var body = page.ownerDocument.body;
+        const page = ToolboxToolReactAdaptor.getPage();
+        if (!page) return;
+        const body = page.ownerDocument.body;
         if (this.simulatingCataracts) {
             body.classList.add("simulateCataracts");
         } else {
@@ -131,12 +132,12 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
             // For now limit it to these images because the positioning depends
             // on the img being the first thing in its parent and the parent
             // being positioned, which we can't count on for other images.
-            var containers = page.getElementsByClassName(
+            const containers = page.getElementsByClassName(
                 "bloom-imageContainer"
             );
-            for (var i = 0; i < containers.length; i++) {
-                var images = containers[i].getElementsByTagName("img");
-                for (var imgIndex = 0; imgIndex < images.length; imgIndex++) {
+            for (let i = 0; i < containers.length; i++) {
+                const images = containers[i].getElementsByTagName("img");
+                for (let imgIndex = 0; imgIndex < images.length; imgIndex++) {
                     this.makeColorBlindnessOverlay(images[imgIndex]);
                 }
             }
@@ -147,21 +148,23 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
 
     public static removeImpairmentVisualizerMarkup() {
         ImpairmentVisualizerControls.removeColorBlindnessMarkup();
-        var page = ToolboxToolReactAdaptor.getPage();
-        var body = page.ownerDocument.body;
+        const page = ToolboxToolReactAdaptor.getPage();
+        if (!page) return;
+        const body = page.ownerDocument.body;
         body.classList.remove("simulateColorBlindness");
         body.classList.remove("simulateCataracts");
     }
 
     private static removeColorBlindnessMarkup() {
-        var page = ToolboxToolReactAdaptor.getPage();
+        const page = ToolboxToolReactAdaptor.getPage();
+        if (!page) return;
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
             .map(x => x.parentElement.removeChild(x));
     }
 
     private componentToHex(c) {
-        var hex = c.toString(16);
+        const hex = c.toString(16);
         return hex.length == 1 ? "0" + hex : hex;
     }
 
@@ -178,7 +181,8 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
         if (
             !img.complete ||
             img.naturalWidth === undefined ||
-            img.naturalWidth === 0
+            img.naturalWidth === 0 ||
+            img.parentElement === null // paranoid
         ) {
             // The image isn't loaded, so we can't make a color-blind simulation of it.
             // We could add an event listener for "loaded", but then we have to worry about
@@ -186,8 +190,9 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
             window.setTimeout(() => this.makeColorBlindnessOverlay(img), 100);
             return;
         }
-        var page = ToolboxToolReactAdaptor.getPage();
-        var canvas = page.ownerDocument.createElement("canvas");
+        const page = ToolboxToolReactAdaptor.getPage();
+        if (!page) return;
+        const canvas = page.ownerDocument.createElement("canvas");
         // Make the canvas be the size the image is actually drawn.
         // Typically that means fewer pixels to calculate than doing the whole
         // image. To avoid distortion, we do have to make it the right shape.
@@ -216,23 +221,24 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
             .getComputedStyle(img)
             .getPropertyValue("object-position");
         canvas.classList.add("ui-cbOverlay"); // used to remove them
-        var context = canvas.getContext("2d");
+        const context = canvas.getContext("2d");
+        if (!context) return; // paranoid
         context.drawImage(img, 0, 0, canvas.width, canvas.height);
         // imgData is a byte array with 4 bytes for each pixel in RGBA order
-        var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-        var data = imgData.data;
-        var cbAdapter = deuteranopia;
+        const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        let cbAdapter = deuteranopia;
         if (this.state.kindOfColorBlindness == "BlueYellow") {
             cbAdapter = tritanopia;
         } else if (this.state.kindOfColorBlindness == "Complete") {
             cbAdapter = achromatopsia;
         }
-        for (var ipixel = 0; ipixel < data.length / 4; ipixel++) {
-            var r = data[ipixel * 4];
-            var g = data[ipixel * 4 + 1];
-            var b = data[ipixel * 4 + 2];
-            var colorString = this.rgbToHex(r, g, b);
-            var newRgb = cbAdapter(colorString, true);
+        for (let ipixel = 0; ipixel < data.length / 4; ipixel++) {
+            const r = data[ipixel * 4];
+            const g = data[ipixel * 4 + 1];
+            const b = data[ipixel * 4 + 2];
+            const colorString = this.rgbToHex(r, g, b);
+            const newRgb = cbAdapter(colorString, true);
             data[ipixel * 4] = newRgb.R;
             data[ipixel * 4 + 1] = newRgb.G;
             data[ipixel * 4 + 2] = newRgb.B;
@@ -247,7 +253,10 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
 // This class implements the ITool interface through our adaptor's abstract methods by calling
 // the appropriate ImpairmentVisualizerControls methods.
 export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
-    private controlsElement: ImpairmentVisualizerControls;
+    // At first glance one would assume "| undefined" to be better here,
+    // but the type of 'controlsElement' has to match the 'ref' attribute below
+    // which has "| null".
+    private controlsElement: ImpairmentVisualizerControls | null;
 
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
@@ -264,10 +273,12 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public showTool() {
+        if (!this.controlsElement) return;
         this.controlsElement.updateSimulations();
     }
 
     public newPageReady() {
+        if (!this.controlsElement) return;
         this.controlsElement.updateSimulations();
     }
 
