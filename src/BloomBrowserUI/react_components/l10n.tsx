@@ -1,6 +1,30 @@
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import { BloomApi } from "../utils/bloomApi";
+
+export enum ProgramReleaseType {
+    Developer,
+    Test, // not sure this will happen in practice
+    Alpha,
+    Beta,
+    Release
+}
+export let releaseType: ProgramReleaseType;
+BloomApi.get("/common/channel", r => {
+    const channel: string = r.data as string;
+    if (channel.startsWith("Developer/")) {
+        releaseType = ProgramReleaseType.Developer;
+    } else if (channel.startsWith("Test")) {
+        releaseType = ProgramReleaseType.Test;
+    } else if (channel.startsWith("Alpha")) {
+        releaseType = ProgramReleaseType.Alpha;
+    } else if (channel.startsWith("Beta")) {
+        releaseType = ProgramReleaseType.Beta;
+    } else {
+        releaseType = ProgramReleaseType.Release;
+    }
+});
 
 // This would be used by a control that doesn't have any text of its own,
 // but has children that need to be localized.
@@ -188,13 +212,19 @@ export class LocalizableElement<
                 return <span> {this.state.translation} </span>;
             }
         } else {
-            return (
-                <span style={{ color: "grey" }}>
-                    {" "}
-                    {this.getOriginalStringContent()}{" "}
-                </span>
-            );
+            const colorizeMissingTranslations =
+                releaseType == ProgramReleaseType.Developer ||
+                releaseType == ProgramReleaseType.Alpha;
+            if (colorizeMissingTranslations) {
+                return (
+                    <span className="development-untranslated">
+                        {" "}
+                        {this.getOriginalStringContent()}{" "}
+                    </span>
+                );
+            }
         }
+        return <span> {this.getOriginalStringContent()} </span>;
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {
