@@ -1,6 +1,12 @@
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import { BloomApi } from "../utils/bloomApi";
+
+export let channelName: string = ""; // ensure it's defined non-null
+BloomApi.get("/common/channel", r => {
+    channelName = r.data;
+});
 
 // This would be used by a control that doesn't have any text of its own,
 // but has children that need to be localized.
@@ -188,13 +194,19 @@ export class LocalizableElement<
                 return <span> {this.state.translation} </span>;
             }
         } else {
-            return (
-                <span style={{ color: "grey" }}>
-                    {" "}
-                    {this.getOriginalStringContent()}{" "}
-                </span>
-            );
+            const colorizeMissingTranslations =
+                channelName.startsWith("Developer/") ||
+                channelName.startsWith("Alpha");
+            if (colorizeMissingTranslations) {
+                return (
+                    <span className="development-untranslated">
+                        {" "}
+                        {this.getOriginalStringContent()}{" "}
+                    </span>
+                );
+            }
         }
+        return <span> {this.getOriginalStringContent()} </span>;
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {
