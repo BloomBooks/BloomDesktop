@@ -629,7 +629,7 @@ namespace Bloom.Edit
 				if(anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
 				{
 					// do not open in external browser if localhost...except for some links in the toolbox
-					if(anchor.Href.ToLowerInvariant().StartsWith(ServerBase.ServerUrlWithBloomPrefixEndingInSlash))
+					if(anchor.Href.ToLowerInvariant().StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
 					{
 						ge.Handled = false; // let gecko handle it
 						return;

@@ -293,7 +293,7 @@ namespace Bloom
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
-			_scope.Resolve<BloomWebSocketServer>().Init((ServerBase.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
+			_scope.Resolve<BloomWebSocketServer>().Init((BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
 			HelpLauncher.RegisterWithApiHandler(server.ApiHandler);
 			ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
 			ToolboxView.RegisterWithApiHandler(server.ApiHandler);

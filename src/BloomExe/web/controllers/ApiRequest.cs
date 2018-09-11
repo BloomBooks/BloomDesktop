@@ -49,7 +49,7 @@ namespace Bloom.Api
 		/// </summary>
 		public string LocalPath()
 		{
-			return ServerBase.GetLocalPathWithoutQuery(this._requestInfo);
+			return BloomServer.GetLocalPathWithoutQuery(this._requestInfo);
 		}
 
 

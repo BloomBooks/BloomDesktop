@@ -26,10 +26,10 @@ namespace Bloom.Api
 				url = url.Replace("/bloom/", "/bloom/OriginalImages/");
 
 			// In the real request, RawUrl does not include this prefix
-			RawUrl = url.Replace(ServerBase.ServerUrl, "");
+			RawUrl = url.Replace(BloomServer.ServerUrl, "");
 
 			// Reducing the /// emulates a behavior of the real HttpListener
-			var urlToDecode = url.Replace(ServerBase.ServerUrl, "").Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/").Replace("/bloom///", "/bloom/").UnescapeCharsForHttp();
+			var urlToDecode = url.Replace(BloomServer.ServerUrl, "").Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/").Replace("/bloom///", "/bloom/").UnescapeCharsForHttp();
 			// Use the same decoding logic as in the "real" RequestInfo.
 			var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+","%2B");
 			LocalPathWithoutQuery = System.Web.HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);
