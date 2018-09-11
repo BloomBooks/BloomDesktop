@@ -273,6 +273,11 @@ namespace Bloom.Api
 
 		public byte[] RawPostData => _requestInfo.GetRawPostData();
 
+		public NameValueCollection GetPostDataWhenFormEncoded()
+		{
+			return _requestInfo.GetPostDataWhenFormEncoded();
+		}
+
 		public void ReplyWithBoolean(bool value)
 		{
 			// https://tools.ietf.org/html/rfc7493#section-4.1  Note we don't have to be compatible with old parsers. so we can just return true or false

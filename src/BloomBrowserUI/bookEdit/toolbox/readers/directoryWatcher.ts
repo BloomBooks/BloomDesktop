@@ -2,7 +2,7 @@
 
 /**
  * Implements a simple directory watcher in javascript. The localhost is listening for requests that begin with this
- * pattern: "/bloom/directoryWatcher/..."
+ * pattern: "/bloom/api/directoryWatcher/..."
  */
 export class DirectoryWatcher {
     private directoryToWatch: string;
@@ -37,8 +37,8 @@ export class DirectoryWatcher {
      * Sends request to localhost
      */
     public checkNow(self): void {
-        var postData = { dir: self.directoryToWatch };
-        var url = "/bloom/directoryWatcher/";
+        const postData = { dir: self.directoryToWatch };
+        const url = "/bloom/api/directoryWatcher/";
         this.watcherAjaxPost(url, self, postData);
     }
 

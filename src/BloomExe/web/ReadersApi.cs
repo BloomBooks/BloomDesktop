@@ -26,12 +26,15 @@ namespace Bloom.Api
 	/// It reads and writes the reader tools settings file, and retrieves files and other information used by the
 	/// reader tools.
 	/// </summary>
-	class ReadersApi
+	class ReadersApi : IDisposable
 	{
 		private readonly BookSelection _bookSelection;
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
 		private static readonly IEqualityComparer<string> _equalityComparer = new InsensitiveEqualityComparer();
 		private static readonly char[] _allowedWordsDelimiters = {',', ';', ' ', '\t', '\r', '\n'};
+
+		private FileSystemWatcher _sampleTextsWatcher;
+		private bool _sampleTextsChanged = true;
 
 		public ReadersApi(BookSelection _bookSelection)
 		{
@@ -56,6 +59,7 @@ namespace Bloom.Api
 
 			apiHandler.RegisterEndpointHandler("readers/ui/.*", HandleRequest, true);
 			apiHandler.RegisterEndpointHandler("readers/io/.*", HandleRequest, false);
+			apiHandler.RegisterEndpointHandler("directoryWatcher/", ProcessDirectoryWatcher, false);
 
 			//we could do them all like this:
 			//server.RegisterEndpointHandler("readers/loadReaderToolSettings", r=> r.ReplyWithJson(GetDefaultReaderSettings(r.CurrentCollectionSettings)));
@@ -525,6 +529,86 @@ namespace Bloom.Api
 
 			// join the words back into a delimited string to be sent to the browser
 			return String.Join(",", words);
+		}
+
+
+		public void ProcessDirectoryWatcher(ApiRequest request)
+		{
+			// thread synchronization is done in the calling BloomApiHandler.
+			var dirName = request.RequiredPostValue("dir");
+			if (dirName == "Sample Texts")
+			{
+				CheckForSampleTextChanges(request);
+			}
+			else
+			{
+				request.Failed();
+			}
+		}
+
+		private void CheckForSampleTextChanges(ApiRequest request)
+		{
+			if (_sampleTextsWatcher == null)
+			{
+				if (string.IsNullOrEmpty(request.CurrentCollectionSettings?.SettingsFilePath))
+				{
+					// We've had cases (BL-4744) where this is apparently called before CurrentCollectionSettings is
+					// established. I'm not sure how this can happen but if we haven't even established a current collection
+					// yet I think it's pretty safe to say its sample texts haven't changed since we last read them.
+					request.ReplyWithText("no");
+					return;
+				}
+				var path = Path.Combine(Path.GetDirectoryName(request.CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
+				if (!Directory.Exists(path))
+					Directory.CreateDirectory(path);
+
+				_sampleTextsWatcher = new FileSystemWatcher { Path = path };
+				_sampleTextsWatcher.Created += SampleTextsOnChange;
+				_sampleTextsWatcher.Changed += SampleTextsOnChange;
+				_sampleTextsWatcher.Renamed += SampleTextsOnChange;
+				_sampleTextsWatcher.Deleted += SampleTextsOnChange;
+				_sampleTextsWatcher.EnableRaisingEvents = true;
+			}
+
+			lock (_sampleTextsWatcher)
+			{
+				var hasChanged = _sampleTextsChanged;
+
+				// Reset the changed flag.
+				// NOTE: we are only resetting the flag if it was "true" when we checked in case the FileSystemWatcher detects a change
+				// after we check the flag but we reset it to false before we check again.
+				if (hasChanged)
+					_sampleTextsChanged = false;
+
+				request.ReplyWithText(hasChanged ? "yes" : "no");
+			}
+		}
+
+		private void SampleTextsOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			lock (_sampleTextsWatcher)
+			{
+				_sampleTextsChanged = true;
+			}
+		}
+
+		protected void Dispose(bool fDisposing)
+		{
+			if (fDisposing)
+			{
+				if (_sampleTextsWatcher != null)
+				{
+					_sampleTextsWatcher.EnableRaisingEvents = false;
+					_sampleTextsWatcher.Dispose();
+					_sampleTextsWatcher = null;
+				}
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
 		/// <summary>Used when removing duplicates from word lists</summary>

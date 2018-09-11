@@ -55,7 +55,7 @@ export class LocalizationManager {
 
         var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
             type: "POST",
-            url: "/bloom/i18n/loadStrings"
+            url: "/bloom/api/i18n/loadStrings"
         };
         if (keyValuePairs) ajaxSettings["data"] = keyValuePairs;
 
@@ -133,7 +133,7 @@ export class LocalizationManager {
         if (!text) {
             var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
                 type: "POST",
-                url: "/bloom/i18n/loadStrings"
+                url: "/bloom/api/i18n/loadStrings"
             };
             var pair = {};
             pair[stringId] = englishText;
@@ -238,7 +238,7 @@ export class LocalizationManager {
         //when the async call comes back, we massage the text
         // Using axios directly because we have specific catch behavior
         axios
-            .get("/bloom/i18n/translate", {
+            .get("/bloom/api/i18n/translate", {
                 params: {
                     key: id,
                     englishText: englishText,
