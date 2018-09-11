@@ -130,6 +130,7 @@ namespace Bloom
 							typeof(CommonApi),
 							typeof(BrandingApi),
 							typeof(FeatureControlApi),
+							typeof(I18NApi),
 							typeof(SignLanguageApi)
 						}.Contains(t));
 
@@ -315,6 +316,7 @@ namespace Bloom
 			_scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FeatureControlApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
 

@@ -23,14 +23,12 @@ namespace Bloom.Api
 	///
 	/// This class also handles thread synchronization for those API requests that need it.
 	/// </summary>
-	public class BloomApiHandler : IDisposable
+	public class BloomApiHandler
 	{
 		// This dictionary ties API endpoints to functions that handle the requests.
 		private Dictionary<string, EndpointRegistration> _endpointRegistrations = new Dictionary<string, EndpointRegistration>();
 		// Special lock for making thumbnails. See discussion at the one point of usage.
 		private object ThumbnailSyncObj = new object();
-		private FileSystemWatcher _sampleTextsWatcher;
-		private bool _sampleTextsChanged = true;
 		// We use two different locks to synchronize access to API requests.
 		// This allows certain methods to run concurrently.
 		private object I18NLock = new object();		// used to synchronize access to I18N methods
@@ -148,6 +146,8 @@ namespace Bloom.Api
 						var syncOn = SyncObj;
 						if (localPath.ToLowerInvariant().StartsWith("api/pagetemplatethumbnail", StringComparison.InvariantCulture))
 							syncOn = ThumbnailSyncObj;
+						else if (localPath.ToLowerInvariant().StartsWith("api/i18n/"))
+							syncOn = I18NLock;
 						lock (syncOn)
 						{
 							return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
@@ -160,109 +160,7 @@ namespace Bloom.Api
 					}
 				}
 			}
-
-			if (localPath.StartsWith("i18n/", StringComparison.InvariantCulture))
-			{
-				if (ProcessI18N(localPath, info))
-					return true;
-			}
-			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
-			{
-				return ProcessDirectoryWatcher(info);
-			}
 			return false;
-		}
-
-		private bool ProcessI18N(string localPath, IRequestInfo info)
-		{
-			lock (I18NLock)
-			{
-				return I18NHandler.HandleRequest(localPath, info, CurrentCollectionSettings);
-			}
-		}
-
-		private bool ProcessDirectoryWatcher(IRequestInfo info)
-		{
-			// thread synchronization is done in CheckForSampleTextChanges.
-			var dirName = info.GetPostDataWhenFormEncoded()["dir"];
-			if (dirName == "Sample Texts")
-			{
-				if (CheckForSampleTextChanges(info))
-					return true;
-			}
-			return false;
-		}
-
-		private bool CheckForSampleTextChanges(IRequestInfo info)
-		{
-			lock (SyncObj)
-			{
-				if (_sampleTextsWatcher == null)
-				{
-					if (string.IsNullOrEmpty(CurrentCollectionSettings?.SettingsFilePath))
-					{
-						// We've had cases (BL-4744) where this is apparently called before CurrentCollectionSettings is
-						// established. I'm not sure how this can happen but if we haven't even established a current collection
-						// yet I think it's pretty safe to say its sample texts haven't changed since we last read them.
-						info.ContentType = "text/plain";
-						info.WriteCompleteOutput("no");
-						return true;
-					}
-					var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
-					if (!Directory.Exists(path))
-						Directory.CreateDirectory(path);
-
-					_sampleTextsWatcher = new FileSystemWatcher { Path = path };
-					_sampleTextsWatcher.Created += SampleTextsOnChange;
-					_sampleTextsWatcher.Changed += SampleTextsOnChange;
-					_sampleTextsWatcher.Renamed += SampleTextsOnChange;
-					_sampleTextsWatcher.Deleted += SampleTextsOnChange;
-					_sampleTextsWatcher.EnableRaisingEvents = true;
-				}
-			}
-
-			lock (_sampleTextsWatcher)
-			{
-				var hasChanged = _sampleTextsChanged;
-
-				// Reset the changed flag.
-				// NOTE: we are only resetting the flag if it was "true" when we checked in case the FileSystemWatcher detects a change
-				// after we check the flag but we reset it to false before we check again.
-				if (hasChanged)
-					_sampleTextsChanged = false;
-
-				info.ContentType = "text/plain";
-				info.WriteCompleteOutput(hasChanged ? "yes" : "no");
-
-				return true;
-			}
-		}
-
-		private void SampleTextsOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
-		{
-			lock (_sampleTextsWatcher)
-			{
-				_sampleTextsChanged = true;
-			}
-		}
-
-		protected void Dispose(bool fDisposing)
-		{
-			if (fDisposing)
-			{
-				if (_sampleTextsWatcher != null)
-				{
-					_sampleTextsWatcher.EnableRaisingEvents = false;
-					_sampleTextsWatcher.Dispose();
-					_sampleTextsWatcher = null;
-				}
-			}
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
 		}
 	}
 }
