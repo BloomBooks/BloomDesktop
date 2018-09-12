@@ -393,7 +393,7 @@ export function makeLetterWordList(): void {
     );
 
     // remove levels
-    if (typeof settings.levels !== null) settings.levels = null;
+    if (settings.levels.length !== 0) settings.levels = [];
 
     // get the words for each stage
     let knownGPCS: string[] = [];

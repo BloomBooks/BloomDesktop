@@ -13,23 +13,31 @@ import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
 import "../../../../lib/jquery.onSafe.js";
 import * as _ from "underscore";
 
-var previousMoreWords: string;
+let previousMoreWords: string;
 
 window.addEventListener("message", process_IO_Message, false);
 
 export interface ToolboxWindow extends Window {
     FrameExports: any;
 }
-export function toolboxWindow(): ToolboxWindow {
-    if (window.parent)
-        return (<HTMLIFrameElement>(
-            window.parent.document.getElementById("toolbox")
-        )).contentWindow as ToolboxWindow;
-    return null;
+export function toolboxWindow(): ToolboxWindow | undefined {
+    if (window.parent) {
+        const toolboxFrameElement = window.parent.document.getElementById(
+            "toolbox"
+        );
+        if (toolboxFrameElement) {
+            const window = (<HTMLIFrameElement>toolboxFrameElement)
+                .contentWindow;
+            if (window) {
+                return window as ToolboxWindow;
+            }
+        }
+    }
+    return undefined;
 }
 
 function process_IO_Message(event: MessageEvent): void {
-    var params = event.data.split("\n");
+    const params = event.data.split("\n");
 
     switch (params[0]) {
         case "OK":
@@ -38,7 +46,10 @@ function process_IO_Message(event: MessageEvent): void {
 
         case "Data":
             loadReaderSetupData(params[1]);
-            toolboxWindow().postMessage("SetupType", "*");
+            const win = toolboxWindow();
+            if (win) {
+                win.postMessage("SetupType", "*");
+            }
             return;
 
         default:
@@ -59,7 +70,7 @@ function loadReaderSetupData(jsonData: string): void {
     if (!jsonData || jsonData === '""') return;
 
     // validate data
-    var data = JSON.parse(jsonData);
+    const data = JSON.parse(jsonData);
     if (!data.letters) data.letters = "";
     if (!data.moreWords) data.moreWords = "";
     if (!data.stages) data.stages = [];
@@ -85,11 +96,11 @@ function loadReaderSetupData(jsonData: string): void {
 
     // stages tab
     displayLetters();
-    var stages = data.stages;
-    var tbody = $("#stages-table").find("tbody");
+    const stages = data.stages;
+    const tbody = $("#stages-table").find("tbody");
     tbody.html("");
 
-    for (var i = 0; i < stages.length; i++) {
+    for (let i = 0; i < stages.length; i++) {
         if (!stages[i].letters) stages[i].letters = "";
         if (!stages[i].sightWords) stages[i].sightWords = "";
         if (!stages[i].allowedWordsFile) stages[i].allowedWordsFile = "";
@@ -114,11 +125,11 @@ function loadReaderSetupData(jsonData: string): void {
     });
 
     // levels tab
-    var levels = data.levels;
-    var tbodyLevels = $("#levels-table").find("tbody");
+    const levels = data.levels;
+    const tbodyLevels = $("#levels-table").find("tbody");
     tbodyLevels.html("");
-    for (var j = 0; j < levels.length; j++) {
-        var level = levels[j];
+    for (let j = 0; j < levels.length; j++) {
+        const level = levels[j];
         tbodyLevels.append(
             '<tr class="linked"><td>' +
                 (j + 1) +
@@ -151,27 +162,36 @@ function loadReaderSetupData(jsonData: string): void {
 
 function saveClicked(): void {
     beginSaveChangedSettings(); // don't wait for full refresh
-    toolboxWindow().FrameExports.closeSetupDialog();
+    const win = toolboxWindow();
+    if (win) {
+        win.FrameExports.closeSetupDialog();
+    }
 }
 
 /**
  * Pass the settings to the server to be saved
  */
-export function beginSaveChangedSettings(): Promise<void> {
-    var settings = getChangedSettings();
-    // Be careful here! After we return this promise, this dialog (and its iframe) my close and the iframe code
+export function beginSaveChangedSettings(): JQueryPromise<void> {
+    const settings = getChangedSettings();
+    // Be careful here! After we return this promise, this dialog (and its iframe) may close and the iframe code
     // (including this method here) gets unloaded. So it's important that the block of code that saves the settings and updates things
     // is part of the main toolbox code, NOT part of this method. When it was in this method, bizarre things
     // happened, such as calling the axios post method to save the settings...but C# never received them,
     // and the 'then' clause never got invoked.
-    return toolboxWindow().FrameExports.beginSaveChangedSettings(
-        settings,
-        previousMoreWords
-    );
+    const win = toolboxWindow();
+    if (win) {
+        return win.FrameExports.beginSaveChangedSettings(
+            settings,
+            previousMoreWords
+        );
+    }
+    // paranoia section
+    const result = $.Deferred<void>();
+    return result.resolve();
 }
 
 function getChangedSettings(): ReaderSettings {
-    var settings: ReaderSettings = new ReaderSettings();
+    const settings: ReaderSettings = new ReaderSettings();
     settings.letters = cleanSpaceDelimitedList(
         (<HTMLInputElement>document.getElementById("dls_letters")).value
     );
@@ -180,7 +200,7 @@ function getChangedSettings(): ReaderSettings {
     )).value.trim();
 
     // remove duplicates from the more words list
-    var moreWords: string[] = _.uniq(
+    let moreWords: string[] = _.uniq(
         (<HTMLInputElement>(
             document.getElementById("dls_more_words")
         )).value.split("\n")
@@ -197,10 +217,10 @@ function getChangedSettings(): ReaderSettings {
     );
 
     // stages
-    var stages: JQuery = $("#stages-table").find("tbody tr");
-    for (var i: number = 0; i < stages.length; i++) {
-        var stage: ReaderStage = new ReaderStage((i + 1).toString());
-        var row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
+    const stages: JQuery = $("#stages-table").find("tbody tr");
+    for (let i: number = 0; i < stages.length; i++) {
+        const stage: ReaderStage = new ReaderStage((i + 1).toString());
+        const row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
         stage.letters = (<HTMLTableCellElement>row.cells[1]).innerHTML;
         stage.sightWords = cleanSpaceDelimitedList(
             (<HTMLTableCellElement>row.cells[2]).innerHTML
@@ -213,11 +233,11 @@ function getChangedSettings(): ReaderSettings {
     }
 
     // levels
-    var levels: JQuery = $("#levels-table").find("tbody tr");
-    for (var j: number = 0; j < levels.length; j++) {
-        var level: ReaderLevel = new ReaderLevel((j + 1).toString());
+    const levels: JQuery = $("#levels-table").find("tbody tr");
+    for (let j: number = 0; j < levels.length; j++) {
+        const level: ReaderLevel = new ReaderLevel((j + 1).toString());
         delete level.name; //I don't know why this has a name, but it's apparently just part of the UI that we don't want to save
-        var row: HTMLTableRowElement = <HTMLTableRowElement>levels[j];
+        const row: HTMLTableRowElement = <HTMLTableRowElement>levels[j];
         level.maxWordsPerSentence = getLevelValue(
             (<HTMLTableCellElement>row.cells[1]).innerHTML
         );
@@ -254,7 +274,7 @@ function getLevelValue(innerHTML: string): number {
  * @returns {string}
  */
 export function cleanSpaceDelimitedList(original: string): string {
-    var cleaned: string = original
+    let cleaned: string = original
         .replace(/,/g, " ")
         .replace(/\r/g, " ")
         .replace(/\n/g, " "); // replace commas and newlines

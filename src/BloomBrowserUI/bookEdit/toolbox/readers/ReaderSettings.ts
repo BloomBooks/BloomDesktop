@@ -4,7 +4,7 @@
  * Decodable Leveled Reader Settings
  */
 export class ReaderSettings {
-    public levels: ReaderLevel[] | null = [];
+    public levels: ReaderLevel[] = [];
     public stages: ReaderStage[] = [];
     public letters: string = "";
     public sentencePunct: string = "";
