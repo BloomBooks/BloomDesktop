@@ -31,7 +31,7 @@ export class LibSynphony {
         aDesiredGPCs: string[],
         aKnownGPCs: string[],
         restrictToKnownGPCs: boolean,
-        allowUpperCase: boolean,
+        allowUpperCase: boolean | undefined,
         aSyllableLengths: number[],
         aSelectedGroups: string[],
         aPartsOfSpeech: string[]
@@ -41,7 +41,7 @@ export class LibSynphony {
         aDesiredGPCs: string[],
         aKnownGPCs: string[],
         restrictToKnownGPCs: boolean,
-        allowUpperCase: boolean,
+        allowUpperCase: boolean | undefined,
         aSyllableLengths: number[],
         aSelectedGroups: string[],
         aPartsOfSpeech: string[]
