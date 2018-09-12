@@ -49,7 +49,7 @@ namespace Bloom.Edit
 		private bool _inProcessOfDeleting;
 		private bool _inProcessOfLoading;
 		private string _toolboxFolder;
-		private EnhancedImageServer _server;
+		private BloomServer _server;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private Dictionary<string, IPage> _templatePagesDict;
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
@@ -82,7 +82,7 @@ namespace Bloom.Edit
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
-			EnhancedImageServer server,
+			BloomServer server,
 			BloomWebSocketServer webSocketServer,
 			SourceCollectionsList sourceCollectionsList)
 		{
@@ -153,7 +153,6 @@ namespace Bloom.Edit
 				}
 			});
 			_contentLanguages = new List<ContentLanguage>();
-			_server.CurrentCollectionSettings = _collectionSettings;
 		}
 
 		private Form _oldActiveForm;
@@ -687,7 +686,7 @@ namespace Bloom.Edit
 			if (_currentPage != null)
 				_currentPage.Dispose();
 			InsertLabelAndLayoutTogglePane(_domForCurrentPage);
-			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
+			_currentPage = BloomServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 			CheckForBL2634("made simulated page");
 			CommonApi.AuthorMode = CanAddPages;
 		}
@@ -780,7 +779,7 @@ namespace Bloom.Edit
 			// {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
 			// We don't really make a file for the page, the contents are just saved in our local server.
 			// But we give it a url that makes it seem to be in the book folder so local urls work.
-			// See EnhancedImageServer.MakeSimulatedPageFileInBookFolder() for more details.
+			// See BloomServer.MakeSimulatedPageFileInBookFolder() for more details.
 			var frameText = RobustFile.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 

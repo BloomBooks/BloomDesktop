@@ -21,10 +21,10 @@ namespace Bloom.web
 	public class ExternalLinkController
 	{
 		const string kPrefix = "externalLink";
-		public static void RegisterWithServer(EnhancedImageServer server)
+		public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Opening a page, better be in UI thread.
-			server.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest, true);
+			apiHandler.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest, true);
 		}
 
 		/// <summary>

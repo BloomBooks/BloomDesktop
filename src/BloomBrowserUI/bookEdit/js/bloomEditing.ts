@@ -43,7 +43,7 @@ import { BloomApi } from "../../utils/bloomApi";
  * @param {String} eventData
  */
 export function fireCSharpEditEvent(eventName, eventData) {
-    var event = new MessageEvent(eventName, {
+    const event = new MessageEvent(eventName, {
         /*'view' : window,*/ bubbles: true,
         cancelable: true,
         data: eventData
@@ -66,7 +66,7 @@ export function makeElement(
     resizableArgs,
     draggableArgs
 ): JQuery {
-    let result = $(html);
+    const result = $(html);
     if (parent) {
         parent.prepend(result);
     }
@@ -141,7 +141,7 @@ function Cleanup() {
 function SetupDeletable(containerDiv) {
     $(containerDiv)
         .mouseenter(function() {
-            var button = $(
+            const button = $(
                 "<button class='deleteButton smallImageButton' title='Delete'></button>"
             );
             $(button).click(function() {
@@ -167,7 +167,7 @@ function AddEditKeyHandlers(container) {
     $(container)
         .find("div.bloom-editable")
         .on("keydown", null, "F6", function(e) {
-            var selection = document.getSelection();
+            const selection = document.getSelection();
             if (selection) {
                 //NB: by using exeCommand, we get undo-ability
                 document.execCommand(
@@ -225,15 +225,15 @@ function AddEditKeyHandlers(container) {
 
     $(document).bind("keydown", "ctrl+u", function(e) {
         e.preventDefault();
-        document.execCommand("underline", null, null);
+        document.execCommand("underline");
     });
     $(document).bind("keydown", "ctrl+b", function(e) {
         e.preventDefault();
-        document.execCommand("bold", null, null);
+        document.execCommand("bold");
     });
     $(document).bind("keydown", "ctrl+i", function(e) {
         e.preventDefault();
-        document.execCommand("italic", null, null);
+        document.execCommand("italic");
     });
     //note: these have the effect of introducing a <div> inside of the div.bloom-editable we're in.
     $(document).bind("keydown", "ctrl+r", function(e) {
@@ -263,7 +263,7 @@ function AddLanguageTags(container) {
     $(container)
         .find(".bloom-editable[contentEditable=true]")
         .each(function() {
-            var $this = $(this);
+            const $this = $(this);
 
             // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
             if ($this.hasAttr("data-languageTipContent")) {
@@ -278,7 +278,7 @@ function AddLanguageTags(container) {
             }
 
             // Make sure language tags appear or disappear depending on what edit mode we are in
-            var isTranslationMode = IsInTranslationMode();
+            const isTranslationMode = IsInTranslationMode();
             if (
                 isTranslationMode &&
                 $this.hasClass("bloom-readOnlyInTranslationMode")
@@ -292,7 +292,7 @@ function AddLanguageTags(container) {
                 return;
             }
 
-            var key = $this.attr("lang");
+            const key = $this.attr("lang");
             if (key !== undefined && (key === "*" || key.length < 1)) {
                 return; //seeing a "*" was confusing even to me
             }
@@ -311,7 +311,7 @@ function AddLanguageTags(container) {
                 return;
             }
 
-            var whatToSay = "";
+            let whatToSay = "";
             if (key !== undefined) {
                 whatToSay = theOneLocalizationManager.getText(key);
                 if (!whatToSay) {
@@ -325,7 +325,7 @@ function AddLanguageTags(container) {
 }
 
 function SetBookCopyrightAndLicenseButtonVisibility(container) {
-    var shouldShowButton = !$(container)
+    const shouldShowButton = !$(container)
         .find("DIV.copyright")
         .text();
     $(container)
@@ -351,7 +351,7 @@ function GetOverflowChecker() {
 }
 
 function IsInTranslationMode() {
-    var body = $("body");
+    const body = $("body");
     // This used to check for "editMode", but that has been replaced by "bookcreationtype"
     // by the time we get here.
     if (!body.hasAttr("bookcreationtype")) {
@@ -400,10 +400,10 @@ function SetupElements(container) {
             this.innerHTML = this.value;
         });
 
-    let rootFrameExports = getEditViewFrameExports();
-    let toolboxVisible = rootFrameExports.toolboxIsShowing();
+    const rootFrameExports = getEditViewFrameExports();
+    const toolboxVisible = rootFrameExports.toolboxIsShowing();
     rootFrameExports.doWhenToolboxLoaded(toolboxFrameExports => {
-        let toolbox = toolboxFrameExports.getTheOneToolbox();
+        const toolbox = toolboxFrameExports.getTheOneToolbox();
         // toolbox might be undefined in unit testing?
 
         if (toolbox) {
@@ -431,15 +431,17 @@ function SetupElements(container) {
     $(container)
         .find(".bloom-translationGroup")
         .each(function() {
-            var contentElements = $(this).find("textarea, div.bloom-editable");
+            const contentElements = $(this).find(
+                "textarea, div.bloom-editable"
+            );
             contentElements.sort(function(a, b) {
                 //using negatives so that something with none of these labels ends up with a > score and at the end
                 //reviewSlog
-                var scoreA =
+                const scoreA =
                     ($(a).hasClass("bloom-content1") ? 1 : 0) * -3 +
                     ($(a).hasClass("bloom-content2") ? 1 : 0 * -2) +
                     ($(a).hasClass("bloom-content3") ? 1 : 0 * -1);
-                var scoreB =
+                const scoreB =
                     ($(b).hasClass("bloom-content1") ? 1 : 0) * -3 +
                     ($(b).hasClass("bloom-content2") ? 1 : 0 * -2) +
                     ($(b).hasClass("bloom-content3") ? 1 : 0 * -1);
@@ -461,10 +463,10 @@ function SetupElements(container) {
     $(container)
         .find("div.bloom-editable")
         .on("paste", function(e) {
-            var theEvent = e.originalEvent as ClipboardEvent;
+            const theEvent = e.originalEvent as ClipboardEvent;
             if (!theEvent.clipboardData) return;
 
-            var s = theEvent.clipboardData.getData("text/plain");
+            const s = theEvent.clipboardData.getData("text/plain");
             if (s == null || s === "") return;
 
             if (
@@ -477,13 +479,13 @@ function SetupElements(container) {
                 //NB: odd that this doesn't work?! document.execCommand("paste", false, s);
                 return;
             }
-            var re = new RegExp("\\\\v\\s(\\d+)", "g");
-            var matches = re.exec(s);
+            const re = new RegExp("\\\\v\\s(\\d+)", "g");
+            const matches = re.exec(s);
             if (matches == null) {
                 //just let it paste
             } else {
                 e.preventDefault();
-                var x = s.replace(re, "<span class='superscript'>$1</span>");
+                const x = s.replace(re, "<span class='superscript'>$1</span>");
                 document.execCommand("insertHtml", false, x);
                 //NB: this would undo, but it doesn't work document.execCommand("paste", false, x);
             }
@@ -518,7 +520,7 @@ function SetupElements(container) {
     $(container)
         .find("*.bloom-translationGroup > label.placeholder")
         .each(function() {
-            var labelText = $(this).text();
+            const labelText = $(this).text();
 
             //put the attributes on the individual child divs
             $(this)
@@ -649,9 +651,8 @@ function SetupElements(container) {
         .find(".bloom-classSwitchingCombobox")
         .each(function() {
             //look through the classes of the parent for any that match one of our combobox values
-            var i;
-            for (i = 0; i < this.options.length; i++) {
-                var c = this.options[i].value;
+            for (let i = 0; i < this.options.length; i++) {
+                const c = this.options[i].value;
                 if (
                     $(this)
                         .parent()
@@ -667,9 +668,8 @@ function SetupElements(container) {
         .find(".bloom-classSwitchingCombobox")
         .change(function() {
             //remove any of the values that might already be set
-            var i;
-            for (i = 0; i < this.options.length; i++) {
-                var c = this.options[i].value;
+            for (let i = 0; i < this.options.length; i++) {
+                const c = this.options[i].value;
                 $(this)
                     .parent()
                     .removeClass(c);
@@ -711,15 +711,17 @@ function SetupElements(container) {
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    var divsThatHaveSourceBubbles = [];
-    var bubbleDivs = [];
+    const divsThatHaveSourceBubbles: HTMLElement[] = [];
+    const bubbleDivs: any[] = [];
     if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
         $(container)
             .find("*.bloom-translationGroup")
             .not(".bloom-readOnlyInTranslationMode")
             .each(function() {
                 if ($(this).find("textarea, div").length > 1) {
-                    var bubble = BloomSourceBubbles.ProduceSourceBubbles(this);
+                    const bubble = BloomSourceBubbles.ProduceSourceBubbles(
+                        this
+                    );
                     if (bubble) {
                         divsThatHaveSourceBubbles.push(this);
                         bubbleDivs.push(bubble);
@@ -739,7 +741,7 @@ function SetupElements(container) {
         bubbleDivs
     );
 
-    for (var i = 0; i < bubbleDivs.length; i++) {
+    for (let i = 0; i < bubbleDivs.length; i++) {
         BloomSourceBubbles.MakeSourceBubblesIntoQtips(
             divsThatHaveSourceBubbles[i],
             bubbleDivs[i]
@@ -752,12 +754,12 @@ function SetupElements(container) {
     // were prematurely overflowing before the images were set to the right size.
     GetOverflowChecker().AddOverflowHandlers(container);
 
-    var editor = GetEditor();
+    const editor = GetEditor();
 
     // Applying this to the body element allows it to work for any bloom-editable that can get
     // focus, even ones that might not be visible (or might not exist yet) at the time we run this.
     $(document.body).on("focusin", e => {
-        var editBox = $(e.target).closest(".bloom-editable");
+        const editBox = $(e.target).closest(".bloom-editable");
         if (
             editBox.length &&
             editBox.closest(".bloom-userCannotModifyStyles").length === 0
@@ -831,7 +833,7 @@ function SetupElements(container) {
 const pageLabelL18nPrefix = "TemplateBooks.PageLabel.";
 
 function ConstrainContentsOfPageLabel(container) {
-    var pageLabel = <HTMLDivElement>(
+    const pageLabel = <HTMLDivElement>(
         document.getElementsByClassName("pageLabel")[0]
     );
     if (!pageLabel) return;
@@ -843,8 +845,11 @@ function ConstrainContentsOfPageLabel(container) {
         // characters that mess something else up, found through experimentation
         pageLabel.innerText = pageLabel.innerText.split(/[#%\r\n]/).join("");
         // update data-i18n attribute to prevent this change being forgotton on reload; BL-5855
-        var localizationAttr = pageLabel.getAttribute("data-i18n");
-        if (localizationAttr.startsWith(pageLabelL18nPrefix)) {
+        let localizationAttr = pageLabel.getAttribute("data-i18n");
+        if (
+            localizationAttr != null &&
+            localizationAttr.startsWith(pageLabelL18nPrefix)
+        ) {
             localizationAttr = pageLabelL18nPrefix + pageLabel.innerText;
             pageLabel.setAttribute("data-i18n", localizationAttr);
         }
@@ -853,11 +858,12 @@ function ConstrainContentsOfPageLabel(container) {
 
 function AddXMatterLabelAfterPageLabel(container) {
     // All this rigamarole so we can localize...
-    var pageLabel = <HTMLDivElement>(
+    const pageLabel = <HTMLDivElement>(
         document.getElementsByClassName("pageLabel")[0]
     );
     if (!pageLabel) return;
-    var xMatterLabel = window.getComputedStyle(pageLabel, ":before").content;
+    let xMatterLabel = window.getComputedStyle(pageLabel, ":before").content;
+    if (xMatterLabel == null) return;
     xMatterLabel = xMatterLabel.replace(new RegExp('"', "g"), ""); //No idea why the quotes are still in there at this point.
     if (xMatterLabel === "" || xMatterLabel === "none") return;
     theOneLocalizationManager
@@ -924,8 +930,6 @@ export function bootstrap() {
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
     CKEDITOR.disableAutoInline = true;
 
-    // Map from ckeditor id strings to the div the ckeditor is wrapping.
-    var mapCkeditDiv = new Object();
     if ($(this).find(".bloom-imageContainer").length) {
         // We would *like* to wire up ckeditor, but would need to get it to stop interfering
         // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
@@ -933,10 +937,13 @@ export function bootstrap() {
         // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
         return;
     }
+    // Map from ckeditor id strings to the div the ckeditor is wrapping.
+    const mapCkeditDiv = new Object();
+
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
     // but skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
-    var complicatedFind =
+    let complicatedFind =
         ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true'],";
     complicatedFind +=
         ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']";
@@ -953,36 +960,35 @@ export function bootstrap() {
 
             if ($(this).css("cursor") === "not-allowed") return;
 
-            var ckedit = CKEDITOR.inline(this);
+            const ckedit = CKEDITOR.inline(this);
 
             // Record the div of the edit box for use later in positioning the format bar.
             mapCkeditDiv[ckedit.id] = this;
 
             // show or hide the toolbar when the text selection changes
             ckedit.on("selectionCheck", function(evt) {
-                var editor = evt["editor"];
+                const editor = evt["editor"];
                 // Length of selected text is more reliable than comparing
                 // endpoints of the first range.  Mozilla can return multiple
                 // ranges with the first one being empty.
-                var selection = editor.getSelection();
-                var textSelected = selection.getSelectedText();
-                var show = textSelected && textSelected.length > 0;
-                var bar = $("body").find("." + editor.id);
+                const textSelected = editor.getSelection().getSelectedText();
+                const show = textSelected && textSelected.length > 0;
+                const bar = $("body").find("." + editor.id);
                 localizeCkeditorTooltips(bar);
                 show ? bar.show() : bar.hide();
 
                 // Move the format bar on the screen if needed.
                 // (Note that offsets are not defined if it's not visible.)
                 if (show) {
-                    var barTop = bar.offset().top;
-                    var div = mapCkeditDiv[editor.id];
-                    var rect = div.getBoundingClientRect();
-                    var parent = bar.scrollParent();
-                    var scrollTop = parent ? parent.scrollTop() : 0;
-                    var boxTop = rect.top + scrollTop;
+                    const barTop = bar.offset().top;
+                    const div = mapCkeditDiv[editor.id];
+                    const rect = div.getBoundingClientRect();
+                    const parent = bar.scrollParent();
+                    const scrollTop = parent ? parent.scrollTop() : 0;
+                    const boxTop = rect.top + scrollTop;
                     if (boxTop - barTop < 5) {
-                        var barLeft = bar.offset().left;
-                        var barHeight = bar.height();
+                        const barLeft = bar.offset().left;
+                        const barHeight = bar.height();
                         bar.offset({ top: boxTop - barHeight, left: barLeft });
                     }
                 }
@@ -990,8 +996,8 @@ export function bootstrap() {
 
             // hide the toolbar when ckeditor starts
             ckedit.on("instanceReady", function(evt) {
-                var editor = evt["editor"];
-                var bar = $("body").find("." + editor.id);
+                const editor = evt["editor"];
+                const bar = $("body").find("." + editor.id);
                 bar.hide();
             });
 
@@ -1017,16 +1023,16 @@ export function bootstrap() {
 // to stop it crashing.)
 function setupWheelZooming() {
     $("body").on("wheel", function(e) {
-        var theEvent = e.originalEvent as WheelEvent;
+        const theEvent = e.originalEvent as WheelEvent;
         if (!theEvent.ctrlKey) return;
-        var command: string = null;
+        let command: string = "";
         // Note the direction of the zoom is opposite the direction of the scroll.
         if (theEvent.deltaY < 0) {
             command = "edit/pageControls/zoomPlus";
         } else if (theEvent.deltaY > 0) {
             command = "edit/pageControls/zoomMinus";
         }
-        if (command != null) {
+        if (command != "") {
             // Zooming re-loads the page (because of a text-over-picture issue)
             BloomApi.postThatMightNavigate(command);
         }
@@ -1038,7 +1044,7 @@ function setupWheelZooming() {
 
 function localizeCkeditorTooltips(bar: JQuery) {
     // The tooltips for the CKEditor Bold, Italic and Underline buttons need localization.
-    var toolGroup = bar.find(".cke_toolgroup");
+    const toolGroup = bar.find(".cke_toolgroup");
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Bold", "Bold", "")
         .done(function(result) {
@@ -1073,14 +1079,14 @@ function localizeCkeditorTooltips(bar: JQuery) {
 // but saveChangesAndRethinkPageEvent currently has the (very important)
 // side effect of saving the changes to the current page.
 // [GJM: But this doesn't call saveChangesAndRethinkPageEvent! I'm confused.]
-export var pageSelectionChanging = function() {
-    var marginBox = $(".marginBox");
+export const pageSelectionChanging = function() {
+    const marginBox = $(".marginBox");
     marginBox.removeClass("origami-layout-mode");
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
 };
 
 // For usage, see editViewFrame.switchContentPage()
-export var pageUnloading = function() {
+export const pageUnloading = function() {
     theOneTextOverPictureManager.cleanUp();
 };
 
@@ -1088,14 +1094,14 @@ export var pageUnloading = function() {
 // method for changing pages).  It is mainly to clean things up so that garbage collection
 // won't lose multiple megabytes of data that both the DOM (C++) and Javascript subsystems
 // think the other is still using.
-export var disconnectForGarbageCollection = function() {
+export const disconnectForGarbageCollection = function() {
     // disconnect all event handlers
     //review: was this, but TS didn't like it    $.find().off();
     $("body")
         .find("*")
         .off();
 
-    var page = $(".bloom-page");
+    const page = $(".bloom-page");
     // blow away any img elements to ensure their data disappears.
     // (the whole document is being replaced, and this happens after it's been saved to a file)
     page.find("img").each(function() {

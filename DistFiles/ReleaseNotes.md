@@ -1,4 +1,4 @@
-﻿## 4.3
+## 4.3
 
 For those of you helping us out by running and giving feedback on the Bloom beta channel, **thank you!** You are a vital part of the Bloom team. We are now moving on to building Bloom 4.4, and will release new editions of the 4.3 beta if you find any problems with it.
 
@@ -10,6 +10,9 @@ Here's what's new in 4.3 beta:
 ### Edit Tab
 ⭐ You can now record talking books that are diglots or triglots. [[Feature Request ✔](https://community.software.sil.org/t/support-recording-multiple-languages-in-talking-book-tool/567)]  
 ⭐ You can now add an "Instructions Page" to books. These are instructions for book creators, not book readers. They do not have a page number, do not contribute to page number advancement, and do not show up in PDFs, ePUB, or Bloom Reader publications.
+
+### Publish Tab
+Bloom now uses less memory when creating PDFs, and the "Use Less Memory (Slower)" option should be more effective.
 
 ### Branding
 _Custom branding packs are part of Bloom Enterprise subscriptions_  

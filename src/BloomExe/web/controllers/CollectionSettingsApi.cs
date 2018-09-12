@@ -46,9 +46,9 @@ namespace Bloom.web.controllers
 		// this keeps track of the branding the collection file specified but which was not validated by a current code.
 		public static string LegacyBrandingName { get; set; }
 		
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{	
-			server.RegisterEnumEndpointHandler(kApiUrlPart + "enterpriseStatus",
+			apiHandler.RegisterEnumEndpointHandler(kApiUrlPart + "enterpriseStatus",
 				request => _enterpriseStatus,
 				(request, status) =>
 				{
@@ -66,10 +66,10 @@ namespace Bloom.web.controllers
 						BrandingChangeHandler(GetBrandingFromCode(SubscriptionCode), SubscriptionCode);
 					}
 				}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "legacyBrandingName",
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "legacyBrandingName",
 				request => { request.ReplyWithText(LegacyBrandingName ?? ""); }, false);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -95,7 +95,7 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}
 			}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseSummary", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseSummary", request =>
 			{
 				string branding = "";
 				if (_enterpriseStatus == EnterpriseStatus.Community)
@@ -108,7 +108,7 @@ namespace Bloom.web.controllers
 				else
 					request.ReplyWithText(File.ReadAllText(summaryFile, Encoding.UTF8));
 			}, false);
-			server.RegisterEndpointHandler(kApiUrlPart + "enterpriseExpiry", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseExpiry", request =>
 			{
 				if (_enterpriseExpiry == DateTime.MinValue)
 				{

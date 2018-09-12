@@ -35,8 +35,9 @@ namespace BloomTests.Publish
 		protected string _page1Data; // contents of the file "1.xhtml" (the main content of the test book, typically)
 		protected XDocument _manifestDoc; // the contents of _manifestFile as an XDocument.
 		protected XmlNamespaceManager _ns; // Set up with all the namespaces we use (See GetNamespaceManager())
-		protected static EnhancedImageServer s_testServer;
+		protected static BloomServer s_testServer;
 		protected static BookSelection s_bookSelection;
+		protected static CollectionSettings s_collectionSettings;
 		protected BookServer _bookServer;
 		protected string _defaultSourceValue;
 
@@ -49,6 +50,7 @@ namespace BloomTests.Publish
 		[OneTimeSetUp]
 		public virtual void OneTimeSetup()
 		{
+			s_collectionSettings = new CollectionSettings();
 			s_testServer = GetTestServer();
 		}
 
@@ -59,9 +61,9 @@ namespace BloomTests.Publish
 		}
 
 
-		internal static EnhancedImageServer GetTestServer()
+		internal static BloomServer GetTestServer()
 		{
-			var server = new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, GetTestBookSelection(), GetTestFileLocator());
+			var server = new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), GetTestBookSelection(), s_collectionSettings, GetTestFileLocator());
 			server.StartListening();
 			return server;
 		}
@@ -75,7 +77,7 @@ namespace BloomTests.Publish
 
 		private static BloomFileLocator GetTestFileLocator()
 		{
-			return new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
+			return new BloomFileLocator(s_collectionSettings, new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 

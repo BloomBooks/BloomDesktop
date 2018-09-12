@@ -50,11 +50,11 @@ namespace Bloom.web.controllers
 			return Path.GetExtension(lcFilename) == ".svg" || Path.GetExtension(lcFilename) == ".png";
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// These are both just retrieving information about files, apart from using _bookSelection.CurrentSelection.FolderPath.
-			server.RegisterEndpointHandler("image/info", HandleImageInfo, false);
-			server.RegisterEndpointHandler("image/imageCreditsForWholeBook", HandleCopyImageCreditsForWholeBook, false);
+			apiHandler.RegisterEndpointHandler("image/info", HandleImageInfo, false);
+			apiHandler.RegisterEndpointHandler("image/imageCreditsForWholeBook", HandleCopyImageCreditsForWholeBook, false);
 		}
 
 		/// <summary>
@@ -299,7 +299,7 @@ namespace Bloom.web.controllers
 					// We can be fed doubly-encoded filenames.  So try to decode a second time and see if that works.
 					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3749.
 					// Effectively triple-encoded filenames have cropped up for particular books.  Such files are
-					// already handled okay by EnhancedImageServer.ProcessAnyFileContent().  This code can handle
+					// already handled okay by BloomServer.ProcessAnyFileContent().  This code can handle
 					// any depth of url-encoding.
 					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5757.
 					fileName = System.Web.HttpUtility.UrlDecode(fileName);

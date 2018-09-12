@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -79,9 +79,20 @@ namespace Bloom.Collection
 
 		private void SetupEnterpriseBrowser()
 		{
+			if (_enterpriseBrowser != null)
+				return; // Seems to help performance.
 			_enterpriseBrowser = new Browser {Dock = DockStyle.Fill};
-			_enterpriseTab.Controls.Add(_enterpriseBrowser);
+			_enterpriseBrowser.BackColor = Color.White;
+			
 			var rootFile = BloomFileLocator.GetBrowserFile(false, "collection", "enterpriseSettings.html");
+			var dummy = _enterpriseBrowser.Handle; // gets the WebBrowser created
+			_enterpriseBrowser.WebBrowser.DocumentCompleted += (sender, args) =>
+			{
+				// If the control gets added to the tab before it has navigated somewhere,
+				// it shows as solid black, despite setting the BackColor to white.
+				// So just don't show it at all until it contains what we want to see.
+				_enterpriseTab.Controls.Add(_enterpriseBrowser);
+			};
 			_enterpriseBrowser.Navigate(rootFile.ToLocalhost(), false);
 		}
 
@@ -410,6 +421,8 @@ namespace Bloom.Collection
 				HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_front_matter_or_back_matter_from_a_pack.htm");
 			else if (_tab.SelectedTab == tabPage3)
 				HelpLauncher.Show(this, "Tasks/Basic_tasks/Enter_project_information.htm");
+			else if (_tab.SelectedTab == _enterpriseTab)
+				HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_Bloom_Enterprise_Status.htm");
 			else
 				HelpLauncher.Show(this, "User_Interface/Dialog_boxes/Settings_dialog_box.htm");
 		}

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -230,12 +230,12 @@
     <Compile Include="web\controllers\ReadersApiTests.cs" />
     <Compile Include="web\controllers\ApiTest.cs" />
     <Compile Include="WebLibraryIntegration\ProblemBookUploaderTests.cs" />
-    <Compile Include="ImageProcessing\ImageServerTests.cs" />
+    <Compile Include="web\ImageServerTests.cs" />
     <Compile Include="web\controllers\EndpointHandlerTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="web\WebSocketServerSpy.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
-    <Compile Include="web\EnhancedImageServerTests.cs" />
+    <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="PretendRequestInfo.cs" />
     <Compile Include="Collection\ShortcutMakerTests.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManagerTests.cs" />

@@ -107,7 +107,7 @@ namespace Bloom.Api
 		{
 			// limit the number of worker threads to the number of processor cores
 			// (but at least 2, since we sometimes need one thread to be free to help
-			// complete the request that another one is executing...see EnhancedImageServer.FindOrGenerateImage)
+			// complete the request that another one is executing...see BloomServer.FindOrGenerateImage)
 			//_workers = new Thread[Math.Max(Environment.ProcessorCount, 2)];
 			_queue = new Queue<HttpListenerContext>();
 			_stop = new ManualResetEvent(false);

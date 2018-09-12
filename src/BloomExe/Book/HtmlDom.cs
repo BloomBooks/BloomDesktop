@@ -142,7 +142,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// This property records the folder in which the browser needs to find files referred to using
 		/// non-absolute locations.
-		/// This method is designed to be used in conjunction with EnhancedImageServer.MakeSimulatedPageFileInBookFolder().
+		/// This method is designed to be used in conjunction with BloomServer.MakeSimulatedPageFileInBookFolder().
 		/// which generates URLs that give the browser the content of this DOM, and also handles derived urls
 		/// relative to that one.
 		/// </summary>

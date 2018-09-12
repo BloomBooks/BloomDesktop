@@ -36,6 +36,7 @@ export default class BookMetadataDialog extends React.Component<{}, IState> {
     private handleCloseModal(doSave: boolean) {
         if (doSave) {
             BloomApi.postData("book/metadata", this.metadata);
+            BloomApi.post("publish/epub/updatePreview");
         }
         this.setState({ isOpen: false });
     }

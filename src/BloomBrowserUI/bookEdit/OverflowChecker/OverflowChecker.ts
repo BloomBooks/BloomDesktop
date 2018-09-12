@@ -4,6 +4,7 @@
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
+import { MeasureText } from "../../utils/measureText";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -122,8 +123,34 @@ export default class OverflowChecker {
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
         var shortBoxFudgeFactor = 4;
 
+        // Fonts like Andika New Basic have internal metric data that indicates
+        // a descent a bit larger than what letters typically have...I think
+        // intended to leave room for diacritics. Gecko calculates the space
+        // needed to render the text as including this, so it is part of the
+        // element.scrollHeight. But in the absense of such diacritics, the extra
+        // space is not needed. This is particularly annoying for auto-sized elements
+        // like the front cover title, which (due to line-height specs) may auto-size
+        // to leave room for the actually visible text, but not the extra white space
+        // the font calls for (and which we reduced the line height to hide).
+        // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
+        // for the discrepancy.
+        const text = element.textContent;
+        const realStyle = window.getComputedStyle(element, null);
+        // The FontFamily we get here includes quotes if there are spaces,
+        // but we don't want them for the getExcessDescent routine.
+        const fontFamily = realStyle
+            .getPropertyValue("font-family")
+            .replace(/"/g, "");
+        const fontSize = realStyle.getPropertyValue("font-size");
+        const fontFudgeFactor = MeasureText.getExcessDescent(
+            text,
+            fontFamily,
+            parseInt(fontSize),
+            element.clientWidth
+        );
+
         return (
-            element.scrollHeight >
+            element.scrollHeight - fontFudgeFactor >
                 element.clientHeight +
                     focusedBorderFudgeFactor +
                     shortBoxFudgeFactor ||
@@ -134,7 +161,9 @@ export default class OverflowChecker {
     // Actual testable determination of Type II overflow or not
     // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
     // returns nearest ancestor that this element overflows
-    public static overflowingAncestor(element: HTMLElement): HTMLElement {
+    public static overflowingAncestor(
+        element: HTMLElement
+    ): HTMLElement | null {
         // Ignore Topic divs as they are chosen from a list
         if (
             element.hasAttribute("data-book") &&
@@ -276,6 +305,7 @@ export default class OverflowChecker {
                     });
                 var showing = false;
                 $overflowingAncestor.on("mousemove.overflow", event => {
+                    if (overflowingAncestor == null) return; // prevent bad static analysis
                     var bounds = overflowingAncestor.getBoundingClientRect();
                     var scaleY =
                         bounds.height / overflowingAncestor.offsetHeight;

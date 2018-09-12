@@ -35,13 +35,13 @@ namespace Bloom.web.controllers
 		}
 
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			server.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
-			server.RegisterEndpointHandler("signLanguage/editVideo", HandleEditVideoRequest, true);
-			server.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
-			server.RegisterEndpointHandler("signLanguage/restoreOriginal", HandleRestoreOriginalRequest, true);
-			server.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
+			apiHandler.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
+			apiHandler.RegisterEndpointHandler("signLanguage/editVideo", HandleEditVideoRequest, true);
+			apiHandler.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
+			apiHandler.RegisterEndpointHandler("signLanguage/restoreOriginal", HandleRestoreOriginalRequest, true);
+			apiHandler.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
 		}
 
 		public Book.Book CurrentBook

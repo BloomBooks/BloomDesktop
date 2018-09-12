@@ -692,7 +692,10 @@ function beginAddTool(
         const toolIdUpper =
             tool.id()[0].toUpperCase() +
             tool.id().substring(1, tool.id().length);
-        var i18Id = "EditTab.Toolbox." + toolIdUpper + "Tool";
+        var i18Id = "EditTab.Toolbox." + toolIdUpper;
+        if (toolName.indexOf(checkLeaveOffTool) === -1) {
+            i18Id += "Tool";
+        }
         // Not sure this will always work, but we can do something more complicated...maybe a new method
         // on ITool...if we need it. Note that this is just a way to come up with the English,
         // we don't do it to localizations. But in English, the code value beats the xlf one.

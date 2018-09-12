@@ -81,16 +81,16 @@ namespace Bloom.Edit
 			_webSocketServer = bloomWebSocketServer;
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// I don't know for sure that these need to be on the UI thread, but that was the old default so keeping it for safety.
-			server.RegisterEndpointHandler("audio/startRecord", HandleStartRecording, true);
-			server.RegisterEndpointHandler("audio/endRecord", HandleEndRecord, true);
-			server.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton, true);
-			server.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, true);
-			server.RegisterEndpointHandler("audio/currentRecordingDevice", HandleCurrentRecordingDevice, true);
-			server.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, true);
-			server.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
+			apiHandler.RegisterEndpointHandler("audio/startRecord", HandleStartRecording, true);
+			apiHandler.RegisterEndpointHandler("audio/endRecord", HandleEndRecord, true);
+			apiHandler.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton, true);
+			apiHandler.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, true);
+			apiHandler.RegisterEndpointHandler("audio/currentRecordingDevice", HandleCurrentRecordingDevice, true);
+			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, true);
+			apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
 
 			Debug.Assert(ServerBase.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
 		}

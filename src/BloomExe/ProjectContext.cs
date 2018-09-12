@@ -252,9 +252,9 @@ namespace Bloom
 //				}
 //				else
 //				{
-					builder.Register<EnhancedImageServer>(
+					builder.Register<BloomServer>(
 						c =>
-							new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent), c.Resolve<BookThumbNailer>(), c.Resolve<BookSelection>() )).SingleInstance();
+						new BloomServer(new RuntimeImageProcessor(bookRenameEvent), c.Resolve<BookSelection>(), c.Resolve<CollectionSettings>() )).SingleInstance();
 
 					builder.Register<Func<WorkspaceView>>(c => () =>
 					{
@@ -289,32 +289,32 @@ namespace Bloom
 				Application.Exit();
 			}
 
-			var server = _scope.Resolve<EnhancedImageServer>();
+			var server = _scope.Resolve<BloomServer>();
 			server.StartListening();
-			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
+			_scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
 			_scope.Resolve<BloomWebSocketServer>().Init((ServerBase.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
-			HelpLauncher.RegisterWithServer(server);
-			ExternalLinkController.RegisterWithServer(server);
-			ToolboxView.RegisterWithServer(server);
-			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
-			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
-			_scope.Resolve<PublishToAndroidApi>().RegisterWithServer(server);
-			_scope.Resolve<PublishEpubApi>().RegisterWithServer(server);
-			_scope.Resolve<AccessibilityCheckApi>().RegisterWithServer(server);
-			_scope.Resolve<CollectionSettingsApi>().RegisterWithServer(server);
-			_scope.Resolve<PageControlsApi>().RegisterWithServer(server);
-			_scope.Resolve<KeyboardingConfigApi>().RegisterWithServer(server);
-			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);
-			_scope.Resolve<BookMetadataApi>().RegisterWithServer(server);
-			_scope.Resolve<ImageApi>().RegisterWithServer(server);
-			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
-			_scope.Resolve<BrandingApi>().RegisterWithServer(server);
-			_scope.Resolve<MusicApi>().RegisterWithServer(server);
-			_scope.Resolve<ToolboxApi>().RegisterWithServer(server);
-			_scope.Resolve<CommonApi>().RegisterWithServer(server);
-			_scope.Resolve<FeatureControlApi>().RegisterWithServer(server);
-			_scope.Resolve<SignLanguageApi>().RegisterWithServer(server);
+			HelpLauncher.RegisterWithApiHandler(server.ApiHandler);
+			ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
+			ToolboxView.RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PageTemplatesApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<AddOrChangePageApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PublishToAndroidApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PageControlsApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<KeyboardingConfigApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<BookMetadataApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<ReadersApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<BrandingApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<MusicApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<ToolboxApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<FeatureControlApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
 

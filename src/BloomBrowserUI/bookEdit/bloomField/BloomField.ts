@@ -316,11 +316,15 @@ export default class BloomField {
             if (node.nodeType === 3) {
                 //Node.TEXT_NODE
                 var paragraph = document.createElement("p");
-                if (node.textContent.trim() !== "") {
+                if (
+                    node.textContent != null &&
+                    node.textContent.trim() !== ""
+                ) {
                     paragraph.textContent = node.textContent;
-                    node.parentNode.insertBefore(paragraph, node);
+                    if (node.parentNode != null)
+                        node.parentNode.insertBefore(paragraph, node);
                 }
-                node.parentNode.removeChild(node);
+                if (node.parentNode != null) node.parentNode.removeChild(node);
             }
         }
     }

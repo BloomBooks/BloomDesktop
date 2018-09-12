@@ -20,6 +20,8 @@ namespace BloomTests.web.controllers
 			_selection = new BookSelection();
 			_apiObject = new ImageApi(_selection);
 			_creditsToFormat = new Dictionary<string, List<string>>();
+			// Ensure only English UI strings (the default value).
+			L10NSharp.LocalizationManager.SetUILanguage("en", false);
 		}
 
 		[TearDown]

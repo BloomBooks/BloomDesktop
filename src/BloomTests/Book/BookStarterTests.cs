@@ -345,30 +345,37 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_PagesLabeledExtraAreNotAdded()
 		{
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(makeTemplate: true), _projectFolder.Path));
 		   AssertThatXmlIn.HtmlFile(path).HasNoMatchForXpath("//div[contains(text(), '_extra_')]");
 		}
 
+		[Test]
+		public void CreateBookOnDiskFromShell_PagesLabeledExtraAreAdded()
+		{
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(makeTemplate: false), _projectFolder.Path));
+			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//div[contains(text(), '_extra_')]");
+		}
 
-//		[Test]
-//		public void CreateBookOnDiskFromTemplate_InShellMakingMode_editabilityMetaIsTranslationOnly()
-//		{
-//			//var library = new Moq.Mock<CollectionSettings>();
-//			_librarySettings.SetupGet(x => x.IsSourceCollection).Returns(true);
-//			//_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
-//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-//			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='translationOnly']");
-//		}
-//
-//		[Test]
-//		public void CreateBookOnDiskFromTemplate_NotInShellMakingMode_editabilityMetaOpen()
-//		{
-//			var library = new Moq.Mock<CollectionSettings>();
-//			library.SetupGet(x => x.IsSourceCollection).Returns(false);
-//			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
-//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-//			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='open']");
-//		}
+
+		//		[Test]
+		//		public void CreateBookOnDiskFromTemplate_InShellMakingMode_editabilityMetaIsTranslationOnly()
+		//		{
+		//			//var library = new Moq.Mock<CollectionSettings>();
+		//			_librarySettings.SetupGet(x => x.IsSourceCollection).Returns(true);
+		//			//_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
+		//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+		//			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='translationOnly']");
+		//		}
+		//
+		//		[Test]
+		//		public void CreateBookOnDiskFromTemplate_NotInShellMakingMode_editabilityMetaOpen()
+		//		{
+		//			var library = new Moq.Mock<CollectionSettings>();
+		//			library.SetupGet(x => x.IsSourceCollection).Returns(false);
+		//			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator), new LanguageSettings("xyz", new string[0]), library.Object);
+		//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
+		//			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//meta[@name='editability' and @content='open']");
+		//		}
 
 
 
@@ -751,7 +758,7 @@ namespace BloomTests.Book
 			return _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 		}
 
-		private string GetShellBookFolder()
+		private string GetShellBookFolder(bool makeTemplate = false)
 		{
 			return
 				GetShellBookFolder(
@@ -781,11 +788,13 @@ namespace BloomTests.Book
 							<textarea lang='tpi'> Taim yu planim gaden yu save wokim banis.</textarea>
 						</p>
 					</div>",
-						   null//no defaultNameForDerivedBooks
+						   null, //no defaultNameForDerivedBooks
+					makeTemplate: makeTemplate
 						   );
 		}
 
-		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks=null, string lineageName = null, bool includeJson = true, string extraHeadMaterial = "")
+		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks=null, string lineageName = null, bool includeJson = true, string extraHeadMaterial = "",
+			bool makeTemplate = false)
 		{
 			var lineageMeta = "";
 			if (lineageName != null)
@@ -821,7 +830,9 @@ namespace BloomTests.Book
 			File.WriteAllText(shellFolderPath, content);
 			if (includeJson)
 			{
-				var json = "{'bookLineage':'first,second','bookInstanceId':'thisNewGuy','title':'Test Shell'}";
+				var json = "{'bookLineage':'first,second','bookInstanceId':'thisNewGuy','title':'Test Shell', 'suitableForMakingShells':" +
+						   (makeTemplate ? "true" : "false" ) +
+				           "}";
 				File.WriteAllText(Path.Combine(folder, BookInfo.MetaDataFileName), json);
 			}
 			else

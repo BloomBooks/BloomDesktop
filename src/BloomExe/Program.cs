@@ -77,7 +77,7 @@ namespace Bloom
 		public static bool RunningOnUiThread => Thread.CurrentThread.ManagedThreadId == _uiThreadId;
 
 		// Background threads creating thumbnails need to be canceled if the project window
-		// closes down, which shuts down the EnhancedImageServer.
+		// closes down, which shuts down the BloomServer.
 		// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6214.
 		public static CancellationTokenSource BloomThreadCancelService;
 

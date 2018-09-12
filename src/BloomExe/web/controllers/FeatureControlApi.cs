@@ -30,9 +30,9 @@ namespace Bloom.Api
 			request.PostSucceeded();
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			server.RegisterEndpointHandler(kShowAdvancedFeaturesUrlPart, request =>
+			apiHandler.RegisterEndpointHandler(kShowAdvancedFeaturesUrlPart, request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -43,7 +43,7 @@ namespace Bloom.Api
 					NoPostAllowed(request);
 				}
 			}, false);
-			server.RegisterEndpointHandler(kEnterpriseEnabledUrlPart, request =>
+			apiHandler.RegisterEndpointHandler(kEnterpriseEnabledUrlPart, request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{

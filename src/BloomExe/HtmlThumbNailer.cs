@@ -424,7 +424,7 @@ namespace Bloom
 		{
 			// runs on threadpool thread
 			thumbnail = null;
-			using (var temp = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(order.Document, source:"thumb"))
+			using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document, source:"thumb"))
 			{
 				order.Done = false;
 				browser.Tag = order;

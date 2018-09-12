@@ -30,9 +30,9 @@ namespace Bloom.Api
 			_collectionSettings = collectionSettings;
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			server.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
+			apiHandler.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
 			{
 #if DEBUG
 				// The book templates are allowed to use the branding api.  All real books

@@ -18,11 +18,11 @@ namespace Bloom.Api
 			_pageRefreshEvent = pageRefreshEvent;
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Not sure this needs UI thread, but it can result in saving the page, which seems
 			// safest to do that way.
-			server.RegisterEndpointHandler("book/settings", HandleBookSettings, true);
+			apiHandler.RegisterEndpointHandler("book/settings", HandleBookSettings, true);
 		}
 
 		/// <summary>

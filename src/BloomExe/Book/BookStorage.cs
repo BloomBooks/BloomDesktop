@@ -1139,7 +1139,7 @@ namespace Bloom.Book
 					// and have those used in all the books. This works well for most stylesheets.
 					// But customBookStyles.css needs to be an exception; it's whole purpose is to let the local book override Bloom's normal
 					// behavior or anything in a bloompack.
-					// So customBookStyles.css is not overridden (EnhancedImageServer) or replaced (here)..
+					// So customBookStyles.css is not overridden (BloomServer) or replaced (here)..
 					if (!file.ToLowerInvariant().Contains("custombookstyles"))
 					{
 						Update(file);

@@ -107,9 +107,9 @@ namespace Bloom.Publish.Epub
 			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Progress, message);
 		}
 
-		public void RegisterWithServer(EnhancedImageServer server)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			server.RegisterEndpointHandler(kApiUrlPart + "save", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", request =>
 			{
 				{
 					string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
@@ -151,7 +151,7 @@ namespace Bloom.Publish.Epub
 				}
 			}, true, false);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -166,7 +166,7 @@ namespace Bloom.Publish.Epub
 
 			// At this point, this is a checkbox backed by an enum (YAGNI?) that the user ticks to say
 			// "put my image descriptions on the epub page"
-			server.RegisterEnumEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
+			apiHandler.RegisterEnumEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
 				request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
 				(request, enumSetting) => {
 					request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = enumSetting;
@@ -178,7 +178,7 @@ namespace Bloom.Publish.Epub
 				false);
 
 			// Saving a checkbox setting that the user ticks to say "Use my E-reader's font sizes"
-			server.RegisterBooleanEndpointHandler(kApiUrlPart + "removeFontSizesSetting",
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "removeFontSizesSetting",
 				request => request.CurrentBook.BookInfo.MetaData.Epub_RemoveFontSizes,
 				(request, booleanSetting) => {
 					request.CurrentBook.BookInfo.MetaData.Epub_RemoveFontSizes = booleanSetting;
@@ -189,13 +189,13 @@ namespace Bloom.Publish.Epub
 				},
 				false);
 
-			server.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
 				RefreshPreview(_desiredEpubSettings);
 				request.PostSucceeded();
 			}, false); // in fact, must NOT be on UI thread
 
-			server.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
 			{
 				lock (_epubMakerLock)
 				{
@@ -354,7 +354,7 @@ namespace Bloom.Publish.Epub
 				lock (_epubMakerLock)
 				{
 					previewIsAlreadyCurrent = _desiredEpubSettings == newSettings && EpubMaker != null && newVersion == _bookVersion &&
-					                          !EpubMaker.AbortRequested;
+												!EpubMaker.AbortRequested && !force;
 				}
 
 				if (previewIsAlreadyCurrent)
