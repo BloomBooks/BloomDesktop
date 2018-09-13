@@ -64,6 +64,7 @@ namespace Bloom
 			catch (Exception err)
 			{
 				callback(Resources.Error70x70);
+				errorCallback(err);
 				Debug.Fail(err.Message);
 			}
 		}
