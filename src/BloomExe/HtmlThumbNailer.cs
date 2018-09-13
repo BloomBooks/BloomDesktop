@@ -20,6 +20,7 @@ using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
 using BloomTemp;
+using Gecko.DOM;
 using SIL.IO;
 
 namespace Bloom
@@ -455,14 +456,11 @@ namespace Bloom
 					int bottomOfCoverImage = -1;
 					_syncControl.Invoke((Action) (() =>
 					{
-						var where = Browser.RunJavaScriptOn(browser,
-							"{var c = document.getElementsByClassName('bloom-imageContainer')[0]; if(!c) return ''; var r = c.getBoundingClientRect(); return JSON.stringify({top:r.top, bottom:r.bottom, doc:document.firstElementChild.clientHeight});}");
-						if (!string.IsNullOrEmpty(where))
-						{
-							var data = DynamicJson.Parse(where);
-							topOfCoverImage = (int) (data.top * browser.Height / data.doc);
-							bottomOfCoverImage = (int) (data.bottom * browser.Height / data.doc);
-						}
+						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
+						var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-imageContainer')]").GetNodes().FirstOrDefault() as GeckoElement;
+						var rect = div.GetBoundingClientRect();
+						topOfCoverImage = rect.Top;
+						bottomOfCoverImage = rect.Bottom;
 					}));
 
 					using (Image fullsizeImage = CreateImage(browser, coverColor, topOfCoverImage, bottomOfCoverImage))
