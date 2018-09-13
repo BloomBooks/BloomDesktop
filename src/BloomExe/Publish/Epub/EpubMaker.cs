@@ -764,13 +764,17 @@ namespace Bloom.Publish.Epub
 			// in unit tests, is backed by a simple mocked BookStorage which doesn't have the stylesheet smarts. Sigh.
 
 			pageDom.RemoveModeStyleSheets();
-			if(Unpaginated)
+			if (Unpaginated)
 			{
 				// Do not add any stylesheets that are not originally written specifically for ePUB use.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5495.
 				RemoveRegularStylesheets(pageDom);
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost());
-				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateOptionalFile(@"branding.css").ToLocalhost());
+				var brandingPath = Storage.GetFileLocator().LocateOptionalFile(@"branding.css");
+				if (!string.IsNullOrEmpty(brandingPath))
+				{
+					pageDom.AddStyleSheet(brandingPath.ToLocalhost());
+				}
 			}
 			else
 			{
