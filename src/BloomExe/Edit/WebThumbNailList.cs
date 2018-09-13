@@ -345,7 +345,7 @@ namespace Bloom.Edit
 				string captionI18nId;
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
 				if (!string.IsNullOrEmpty(captionOrPageNumber))
-					captionDiv.InnerText = I18NHandler.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
+					captionDiv.InnerText = I18NApi.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
 			}
 
 			// set interval based on physical RAM
@@ -585,7 +585,7 @@ namespace Bloom.Edit
 				var titleElt = GetFirstChildWithClass(gridElt, "gridTitle") as GeckoElement;
 				string captioni18nId;
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captioni18nId);
-				var desiredText = I18NHandler.GetTranslationDefaultMayNotBeEnglish(captioni18nId, captionOrPageNumber);
+				var desiredText = I18NApi.GetTranslationDefaultMayNotBeEnglish(captioni18nId, captionOrPageNumber);
 				if (titleElt == null || titleElt.TextContent == desiredText)
 					continue;
 				titleElt.TextContent = desiredText;
