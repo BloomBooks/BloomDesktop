@@ -1,0 +1,87 @@
+include ../standard-page-mixins.pug
+
+//- This is an 'override' from bloom-foundation-mixins.pug
+//- that allows us to use its mixins that would otherwise
+//- put in a5portrait
+mixin pageWithJustPageSize
+	.Device16x9Landscape&attributes(attributes)
+		block
+
+doctype html
+html
+	head
+		+metadata-standard
+		meta(name="SuitableForMakingShells" content="yes")
+		meta(name="pageTemplateSource" content="Sign Language")
+		title Sign Language
+		+standardStyles
+		style(type='text/css').
+			DIV.coverColor TEXTAREA {
+			background-color: #B0DEE4 !important;
+			}
+
+			DIV.bloom-page.coverColor {
+			background-color: #B0DEE4 !important;
+			}
+		meta(name="xmatter" content="TemplateStarter")
+		+stylesheet('basePage.css')
+		+stylesheet('previewMode.css')
+		+stylesheet('origami.css')
+		+stylesheet('Basic Book.css')
+		+stylesheet('TemplateStarter-XMatter.css')
+		+stylesheet('languageDisplay.css')
+		+stylesheet('../settingsCollectionStyles.css')
+		+stylesheet('../customCollectionStyles.css')
+	body
+		+dataDiv
+			+bookVariable('styleNumberSequence', '*', '0')
+			+bookVariable-title('en', 'Sign Language')
+			+bookVariable('coverImage', '*', 'sign-language.png')
+			+bookVariable('templateCreator', 'en', 'Bloom Team. Hands image CC-BY from Navin Kulkarni, India, via the Noun Project.')
+			+bookVariable('licenseUrl', '*', 'http://creativecommons.org/publicdomain/zero/1.0/')
+			+bookVariable('licenseDescription', 'en', 'You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.')
+
+		+standardPage-JustVideo
+		+page-splittable-choice-custom('Big Text Diglot')#08422e7b-9406-4d11-8c71-02005b1b8095
+			+stack
+				+upper(50)
+					+stackLeftRight
+						+left
+							+imagex
+						+right
+							+videox
+				+lower(50)
+					+fieldx
+		+page-splittable-choice-custom('Video Over Text')#299644f5-addb-476f-a4a5-e3978139b188
+			+stack
+				+upper(50)
+					+videox
+				+lower(50)
+					+fieldx
+		+page-splittable-choice-custom('Picture & Video')#24c90e90-2711-465d-8f20-980d9ffae299
+			+stackLeftRight
+				+left
+					+imagex
+				+right
+					+videox
+		+page-splittable-choice-custom('Big Video Diglot')#9a4beb1f-46c5-4729-87fc-7a9a7eee534e
+			+stackLeftRight
+				+left
+					+stack
+						+upper(50)
+							+imagex
+						+lower(50)
+							+fieldx
+				+right
+					+videox
+		+page-splittable-choice-custom('Big Picture Diglot')#16301dd0-a813-459e-b7e8-294339f7f241
+			+stackLeftRight
+				+left
+					+imagex
+				+right
+					+stack
+						+upper(50)
+							+videox
+						+lower(50)
+							+fieldx
+
