@@ -36,7 +36,7 @@ namespace BloomTests.web
 			using (var server = CreateBloomServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "abc.png");
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "abc.png");
 				server.MakeReply(transaction);
 				Assert.AreEqual(404, transaction.StatusCode);
 			}
@@ -48,7 +48,7 @@ namespace BloomTests.web
 			using (var server = CreateBloomServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
 				server.MakeReply(transaction);
 				Assert.IsTrue(transaction.ReplyImagePath.Contains(".png"));
 			}
@@ -63,7 +63,7 @@ namespace BloomTests.web
 			using (var server = CreateBloomServer())
 			using (var file = MakeTempImage("my cat.png"))
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path.Replace(" ","%20"));
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + file.Path.Replace(" ","%20"));
 				server.MakeReply(transaction);
 				Assert.IsTrue(transaction.ReplyImagePath.Contains(".png"));
 			}

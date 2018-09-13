@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2018 SIL International
+﻿// Copyright (c) 2014-2018 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System.Collections.Generic;
@@ -59,7 +59,7 @@ namespace BloomTests.web
 			using (var server = CreateBloomServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -76,7 +76,7 @@ namespace BloomTests.web
 			using (var server = CreateBloomServer())
 			using (var file = TempFile.WithExtension(".pdf"))
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -92,7 +92,7 @@ namespace BloomTests.web
 			// Setup
 			using (var server = CreateBloomServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "/non-existing-file.pdf");
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "/non-existing-file.pdf");
 
 				// Execute
 				server.MakeReply(transaction);
@@ -109,7 +109,7 @@ namespace BloomTests.web
 			// Setup
 			using (var server = CreateBloomServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/thisWontWorkWithoutInjectionButWillWithIt");
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/thisWontWorkWithoutInjectionButWillWithIt");
 				EndpointHandler testFunc = (request) =>
 					{
 						Assert.That(request.LocalPath(), Does.Contain("thisWontWorkWithoutInjection"));
@@ -141,7 +141,7 @@ namespace BloomTests.web
 					true);
 
 				// Get
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/allowNewBooks");
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/allowNewBooks");
 				server.CurrentCollectionSettings.AllowNewBooks = true;
 
 				// Execute get
@@ -156,7 +156,7 @@ namespace BloomTests.web
 				Assert.That(transaction.ReplyContents, Is.EqualTo("false"));
 
 				// Post
-				transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/allowNewBooks",
+				transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/allowNewBooks",
 					HttpMethods.Post);
 				transaction.SetPostJson("true");
 
@@ -182,7 +182,7 @@ namespace BloomTests.web
 			var info = new BookInfo("", true);
 			using (var server = CreateBloomServer(info))
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc");
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc");
 				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
 					BookInfo.HowToPublishImageDescriptions.None;
 				// set enum handler
@@ -206,7 +206,7 @@ namespace BloomTests.web
 				Assert.That(transaction.ReplyContents, Is.EqualTo("Links"));
 
 				// Post
-				transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc",
+				transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc",
 					HttpMethods.Post);
 				transaction.SetPostJson("OnPage");
 
@@ -245,7 +245,7 @@ namespace BloomTests.web
 			{
 				var commonApi = new CommonApi(null, null);
 				commonApi.RegisterWithApiHandler(server.ApiHandler);
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + query);
+				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + query);
 				server.MakeReply(transaction);
 				Debug.WriteLine(transaction.ReplyContents);
 				var jss = new System.Web.Script.Serialization.JavaScriptSerializer();

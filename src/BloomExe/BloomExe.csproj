@@ -1008,7 +1008,6 @@
     <Compile Include="XmlHtmlConverter.cs" />
     <Compile Include="web\IRequestInfo.cs" />
     <Compile Include="web\RequestInfo.cs" />
-    <Compile Include="web\ServerBase.cs" />
     <Compile Include="web\WebClientWithTimeout.cs">
       <SubType>Component</SubType>
     </Compile>
