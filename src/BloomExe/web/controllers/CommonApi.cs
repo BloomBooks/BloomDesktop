@@ -76,6 +76,11 @@ namespace Bloom.web.controllers
 					WorkspaceView.CheckForUpdates();
 					request.PostSucceeded();
 				}, false);
+			apiHandler.RegisterEndpointHandler("common/channel",
+				request =>
+				{
+					request.ReplyWithText(ApplicationUpdateSupport.ChannelName);
+				}, false);
 		}
 
 		private void RethinkPageAndReloadIt(ApiRequest request)
