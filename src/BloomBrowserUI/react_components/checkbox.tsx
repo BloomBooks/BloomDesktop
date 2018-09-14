@@ -17,7 +17,9 @@ interface ICheckboxProps extends ILocalizationProps {
 
 // A checkbox that is localizable and can toggle between either a 2 or 3 states.
 export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
-    private input: HTMLInputElement | undefined;
+    // Resist the temptation to change null to undefined here.
+    // This type has to match the 'ref' attribute below, which has "| null".
+    private input: HTMLInputElement | null;
     private previousTriState: boolean | undefined;
     public constructor(props: ICheckboxProps) {
         super(props);
