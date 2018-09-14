@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Collection;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using DesktopAnalytics;
@@ -474,7 +475,7 @@ namespace Bloom.Api
 		/// Check for files that may be missing but that we know aren't important enough to complain about.
 		/// Includes files marked "?optional=true" (not currently used, but may be useful some day) and image files in the CurrentBook folder.
 		/// </summary>
-		protected static bool ShouldReportFailedRequest(IRequestInfo info, string currentBookFolderPath = null)
+		protected bool ShouldReportFailedRequest(IRequestInfo info, string currentBookFolderPath = null)
 		{
 			// images with src derived from Branding API img elements get this marker
 			// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of
@@ -488,6 +489,16 @@ namespace Bloom.Api
 			// documented by the browser message saying the file is missing.
 			if (currentBookFolderPath != null && localPath.StartsWith(currentBookFolderPath.Replace("\\", "/")))
 				return false;
+			// If it's in a deleted book (typically we're still trying to update the thumbnail of a book we just deleted),
+			// we definitely don't want to bother the user.
+			// Todo: this will need a rewrite for master, where this class has merged into EnhancedImageServer;
+			// the CurrentCollectionSettings should be immediately accessible.
+			var collectionPath = ((EnhancedImageServer) this).CurrentCollectionSettings.FolderPath;
+			if (currentBookFolderPath == null && !Directory.Exists(Path.GetDirectoryName(localPath))
+			                                  && localPath.StartsWith(collectionPath.Replace("\\", "/")))
+			{
+				return false;
+			}
 
 			var stuffToIgnore = new[] {
 				// browser/debugger stuff
