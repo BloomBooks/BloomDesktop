@@ -3,6 +3,9 @@ import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import { BloomApi } from "../utils/bloomApi";
 
+// set the following boolean to highlight all translated strings to see if any are missing
+const highlightTranslatedStrings: boolean = false;
+
 export let channelName: string = ""; // ensure it's defined non-null
 BloomApi.get("/common/channel", r => {
     channelName = r.data;
@@ -13,12 +16,11 @@ BloomApi.get("/common/channel", r => {
     // have to happen in at least half a dozen places.
     let channelClass = channelName.toLowerCase();
     if (channelClass.startsWith("developer/")) channelClass = "developer";
-    if (
-        document &&
-        document.body &&
-        !document.body.classList.contains(channelClass)
-    ) {
+    if (document && document.body) {
         document.body.classList.add(channelClass);
+        if (highlightTranslatedStrings) {
+            document.body.classList.add("highlightTranslatedStrings");
+        }
     }
 });
 
@@ -58,8 +60,6 @@ export class LocalizableElement<
     private disabledTooltipKey: string;
     private localizedText: string;
 
-    // set the following boolean to turn all translated strings green
-    private turnTranslatedGreen: boolean = false;
     private previousL10nKey: string = "";
 
     constructor(props: ILocalizationProps) {
@@ -184,37 +184,15 @@ export class LocalizableElement<
     }
 
     public getLocalizedContent(): JSX.Element {
+        let l10nClass = "untranslated";
+        let text = this.getOriginalStringContent();
         if (this.props.alreadyLocalized) {
-            if (this.turnTranslatedGreen) {
-                // We'll use lightgreen to mean assumed translated by C#-land
-                return (
-                    <span style={{ color: "lightgreen" }}>
-                        {" "}
-                        {this.getOriginalStringContent()}{" "}
-                    </span>
-                );
-            }
-            return <span> {this.getOriginalStringContent()} </span>;
+            l10nClass = "assumedTranslated";
+        } else if (this.state && this.state.translation) {
+            l10nClass = "translated";
+            text = this.state.translation;
         }
-        if (this.state && this.state.translation) {
-            if (this.turnTranslatedGreen) {
-                return (
-                    <span style={{ color: "green" }}>
-                        {" "}
-                        {this.state.translation}{" "}
-                    </span>
-                );
-            } else {
-                return <span> {this.state.translation} </span>;
-            }
-        } else {
-            return (
-                <span className="untranslated">
-                    {" "}
-                    {this.getOriginalStringContent()}{" "}
-                </span>
-            );
-        }
+        return <span className={l10nClass}> {text} </span>;
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {

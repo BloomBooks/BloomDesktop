@@ -69,6 +69,15 @@ body.alpha .untranslated {
     background-color: yellow;
 }
 
+// In l10n.tsx, the developer can flip a const (highlightTranslatedStrings) to true to highlight all translated strings
+// (for the purpose of seeing if anything was missed)
+body.highlightTranslatedStrings.developer .translated {
+    color: green;
+}
+body.highlightTranslatedStrings.developer .assumedTranslated {
+    color: lightgreen;
+}
+
 /* all of this worked in the latest firefox, but not Bloom.
     We may want it someday, as it sure seems clearer to put
     in a ? than the black box that FF normally uses, to mean
