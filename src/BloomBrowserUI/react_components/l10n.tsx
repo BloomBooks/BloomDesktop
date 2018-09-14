@@ -100,18 +100,22 @@ export class LocalizableElement<
         }
     }
 
-    /*// React Docs: "If you need to load data from a remote endpoint, componentDidMount is a good place to instantiate the network request.
-    // Setting state in this method will trigger a re-rendering."
+    /*
+    React Docs: "If you need to load data from a remote endpoint, componentDidMount is a good place to instantiate the network request.
+    Setting state in this method will trigger a re-rendering."
 
-    However, doing the fetch here means that we don't re-fetch if the parent changes the string they want to show by changing
+    However, only doing the fetch here means that we don't re-fetch if the parent changes the string they want to show by changing
     the props and the English string. In one day-wasting example, the parent had two different <Label> </Label> elements, and
     switched between then, but react didn't understand that they were different (until we manually added a @key attribute). React
     was expecting that the component would react to the props changing; but it couldn't so long as we were only looking at
     them in componentDidMount, which is not called just because a render() of our parent changed our props.
-    So now we look at props in componentDidUpdate() instead.
+    So now we look at props in componentDidUpdate() in addition. We cannot only fetch in componentDidUpdate because
+    componentDidUpdate is not called for the initial render.
+    */
+
     public componentDidMount() {
-        //this.fetchTranslation();
-    }*/
+        this.fetchTranslation();
+    }
 
     private fetchTranslation() {
         this.previousL10nKey = this.props.l10nKey;
