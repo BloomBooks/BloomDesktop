@@ -134,19 +134,10 @@ export default class OverflowChecker {
         // the font calls for (and which we reduced the line height to hide).
         // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
         // for the discrepancy.
-        const text = element.textContent ? element.textContent : "";
-        const realStyle = window.getComputedStyle(element, null);
-        // The FontFamily we get here includes quotes if there are spaces,
-        // but we don't want them for the getExcessDescent routine.
-        const fontFamily = realStyle
-            .getPropertyValue("font-family")
-            .replace(/"/g, "");
-        const fontSize = realStyle.getPropertyValue("font-size");
-        const fontFudgeFactor = MeasureText.getExcessDescent(
-            text,
-            fontFamily,
-            parseInt(fontSize),
-            element.clientWidth
+        const measurements = MeasureText.getDescentMeasurementsOfBox(element);
+        const fontFudgeFactor = Math.max(
+            measurements.fontDescent - measurements.actualDescent,
+            0
         );
 
         return (
@@ -228,6 +219,16 @@ export default class OverflowChecker {
             OverflowChecker.RemoveOverflowQtip($(parent));
         });
         $box.parents().removeClass("childOverflowingThis");
+
+        if (box.classList.contains("bloom-padForOverflow")) {
+            box.style.paddingBottom = "0";
+            const measurements = MeasureText.getDescentMeasurementsOfBox(box);
+            const excessDescent =
+                measurements.actualDescent - measurements.layoutDescent;
+            if (excessDescent > 0) {
+                box.style.paddingBottom = "" + Math.ceil(excessDescent) + "px";
+            }
+        }
 
         if (OverflowChecker.IsOverflowingSelf(box)) {
             $box.addClass("overflow");
