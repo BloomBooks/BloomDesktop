@@ -494,7 +494,7 @@ namespace Bloom.Api
 			// Todo: this will need a rewrite for master, where this class has merged into EnhancedImageServer;
 			// the CurrentCollectionSettings should be immediately accessible.
 			// (Case for CurrentCollectionSettings null is needed for unit tests.)
-			var collectionPath = ((EnhancedImageServer) this).CurrentCollectionSettings?.FolderPath;
+			var collectionPath = (this as EnhancedImageServer)?.CurrentCollectionSettings?.FolderPath;
 			if (currentBookFolderPath == null && !Directory.Exists(Path.GetDirectoryName(localPath))
 				&& collectionPath != null
 			    && localPath.StartsWith(collectionPath.Replace("\\", "/")))
