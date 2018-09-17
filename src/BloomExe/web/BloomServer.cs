@@ -694,7 +694,7 @@ namespace Bloom.Api
 			// to override local ones. This was done so that we could send out new custom stylesheets via webpack
 			// and have those used in all the books. Fine. But that is indiscriminate; it also was grabbing
 			// any "customBookStyles.css" from those sources and using it instead (here) and replacing that of your book (in BookStorage).
-			var path = fileName.ToLowerInvariant().Contains("custombookstyles") && RobustFile.Exists(localPath) ? localPath 
+			var path = fileName.ToLowerInvariant().Contains("custombookstyles") && RobustFile.Exists(localPath) ? localPath
 				: _fileLocator.LocateFile(fileName);
 
 			// if still not found, and localPath is an actual file path, use it
@@ -1032,7 +1032,7 @@ namespace Bloom.Api
 		/// Check for files that may be missing but that we know aren't important enough to complain about.
 		/// Includes files marked "?optional=true" (not currently used, but may be useful some day) and image files in the CurrentBook folder.
 		/// </summary>
-		protected static bool ShouldReportFailedRequest(IRequestInfo info, string currentBookFolderPath = null)
+		protected bool ShouldReportFailedRequest(IRequestInfo info, string currentBookFolderPath = null)
 		{
 			// images with src derived from Branding API img elements get this marker
 			// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of
@@ -1046,6 +1046,17 @@ namespace Bloom.Api
 			// documented by the browser message saying the file is missing.
 			if (currentBookFolderPath != null && localPath.StartsWith(currentBookFolderPath.Replace("\\", "/")))
 				return false;
+
+			// If it's in a deleted book (typically we're still trying to update the thumbnail of a book we just deleted),
+			// we definitely don't want to bother the user.
+			// (Case for CurrentCollectionSettings null is needed for unit tests.)
+			var collectionPath = CurrentCollectionSettings?.FolderPath;
+			if (currentBookFolderPath == null && !Directory.Exists(Path.GetDirectoryName(localPath))
+			                                  && collectionPath != null
+			                                  && localPath.StartsWith(collectionPath.Replace("\\", "/")))
+			{
+				return false;
+			}
 
 			var stuffToIgnore = new[] {
 				// browser/debugger stuff
