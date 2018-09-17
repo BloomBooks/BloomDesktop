@@ -531,6 +531,17 @@ namespace Bloom.Publish.Epub
 					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "alternativeText"));
 			}
 
+			// See http://www.idpf.org/epub/a11y/accessibility.html#sec-conf-reporting for the next two elements.
+			if (!string.IsNullOrEmpty(metadata.A11yLevel))
+			{
+				metadataElt.Add(new XElement("link", new XAttribute("rel", "dcterms:conformsTo"),
+					new XAttribute("href", "http://www.idpf.org/epub/a11y/accessibility-20170105.html#" + metadata.A11yLevel)));
+			}
+			if (!string.IsNullOrEmpty(metadata.A11yCertifier))
+			{
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "a11y:certifiedBy"), metadata.A11yCertifier));
+			}
+
 			// Hazards section -- entirely 'manual' based on user entry (or lack thereof) in the dialog
 			if (!string.IsNullOrEmpty(metadata.Hazards))
 			{

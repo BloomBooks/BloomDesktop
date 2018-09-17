@@ -5,6 +5,8 @@ import { StringListCheckbox } from "../../react_components/stringListCheckbox";
 import { Label } from "../../react_components/l10n";
 import "./BookMetadataTable.less";
 import SubjectChooser from "./SubjectChooser";
+import A11yLevelChooser from "./A11yLevelChooser";
+
 interface IProps {
     // We don't know or care what the top level elements are to this. We will show a row for each
     // of the top level entries that we find.
@@ -36,6 +38,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                         <div className="loading">Loading...</div>
                     )}
                     showPagination={false}
+                    style={{ height: "700px" }} // allows/enforces scrolling of content
                     minRows={1} //don't add extra blank rows
                     data={Object.keys(this.props.metadata).map(key => {
                         return {
@@ -108,6 +111,19 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         );
                                     case "hazards":
                                         return this.makeHazardControls();
+                                    case "a11yLevel":
+                                        return (
+                                            <A11yLevelChooser
+                                                a11yLevel={
+                                                    this.props.metadata
+                                                        .a11yLevel
+                                                }
+                                                translatedOptions={
+                                                    this.props
+                                                        .translatedControlStrings
+                                                }
+                                            />
+                                        );
                                     case "a11yFeatures":
                                         return this.makeA11yFeaturesControls();
                                     default:
