@@ -15,9 +15,9 @@ export default class OverflowChecker {
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container: HTMLElement) {
         //NB: for some historical reason in March 2014 the calendar still uses textareas
-        var queryElementsThatCanOverflow =
+        const queryElementsThatCanOverflow =
             ".bloom-editable:visible, textarea:visible";
-        var editablePageElements = $(container).find(
+        const editablePageElements = $(container).find(
             queryElementsThatCanOverflow
         );
 
@@ -28,7 +28,7 @@ export default class OverflowChecker {
         editablePageElements.on("keyup paste", function(e) {
             // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
             // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
-            var target = $(e.target).closest(editablePageElements)[0];
+            const target = $(e.target).closest(editablePageElements)[0];
             // Give the browser time to get the pasted text into the DOM first, before testing for overflow
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
@@ -50,7 +50,7 @@ export default class OverflowChecker {
         $(container)
             .find(".split-pane-component-inner")
             .bind("_splitpaneparentresize", function() {
-                var $this = $(this);
+                const $this = $(this);
                 $this.find(queryElementsThatCanOverflow).each(function() {
                     OverflowChecker.MarkOverflowInternal(this);
                 });
@@ -82,7 +82,7 @@ export default class OverflowChecker {
         if (index >= editablePageElements.length) {
             return;
         }
-        let box = editablePageElements.get(index);
+        const box = editablePageElements.get(index);
         //first, check to see if the stylesheet is going to give us overflow even for a single character:
         OverflowChecker.CheckOnMinHeight(box);
         // Right now, test to see if any are already overflowing
@@ -116,12 +116,12 @@ export default class OverflowChecker {
         // This is because of the thin grey border on a focused input box.
         // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
         // so we'll apply the same 'fudge' factor to both comparisons.
-        var focusedBorderFudgeFactor = 2;
+        const focusedBorderFudgeFactor = 2;
 
         //In the Picture Dictionary template, all words have a scrollHeight that is 3 greater than the client height.
         //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
-        var shortBoxFudgeFactor = 4;
+        const shortBoxFudgeFactor = 4;
 
         // Fonts like Andika New Basic have internal metric data that indicates
         // a descent a bit larger than what letters typically have...I think
@@ -134,19 +134,10 @@ export default class OverflowChecker {
         // the font calls for (and which we reduced the line height to hide).
         // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
         // for the discrepancy.
-        const text = element.textContent;
-        const realStyle = window.getComputedStyle(element, null);
-        // The FontFamily we get here includes quotes if there are spaces,
-        // but we don't want them for the getExcessDescent routine.
-        const fontFamily = realStyle
-            .getPropertyValue("font-family")
-            .replace(/"/g, "");
-        const fontSize = realStyle.getPropertyValue("font-size");
-        const fontFudgeFactor = MeasureText.getExcessDescent(
-            text,
-            fontFamily,
-            parseInt(fontSize),
-            element.clientWidth
+        const measurements = MeasureText.getDescentMeasurementsOfBox(element);
+        const fontFudgeFactor = Math.max(
+            measurements.fontDescent - measurements.actualDescent,
+            0
         );
 
         return (
@@ -172,28 +163,28 @@ export default class OverflowChecker {
             return null;
         }
         // We want to prevent an inner div from expanding past the borders set by any fixed containing element.
-        var parents = $(element).parents();
+        const parents = $(element).parents();
         if (!parents) {
             return null;
         }
         // A zoom on the body affects offset but not outerHeight, which messes things up if we don't account for it.
         // It's better to correct offset so we don't need to also adjust the fudge factors.
-        var scaleY =
+        const scaleY =
             element.getBoundingClientRect().height / element.offsetHeight;
-        for (var i = 0; i < parents.length; i++) {
+        for (let i = 0; i < parents.length; i++) {
             // search ancestors starting with nearest
-            var currentAncestor = $(parents[i]);
-            var parentBottom =
+            const currentAncestor = $(parents[i]);
+            const parentBottom =
                 currentAncestor.offset().top / scaleY +
                 currentAncestor.outerHeight(true);
-            var elemTop = $(element).offset().top / scaleY;
-            var elemBottom = elemTop + $(element).outerHeight(false);
+            const elemTop = $(element).offset().top / scaleY;
+            const elemBottom = elemTop + $(element).outerHeight(false);
             // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
             // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
             // This is because of the thin grey border on a focused input box.
             // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
             // so we'll apply the same 'fudge' factor to both comparisons.
-            var focusedBorderFudgeFactor = 2;
+            const focusedBorderFudgeFactor = 2;
 
             if (elemBottom > parentBottom + focusedBorderFudgeFactor) {
                 return currentAncestor[0];
@@ -216,7 +207,7 @@ export default class OverflowChecker {
         // haven't been pushed outside the margins
 
         // Type 1 Overflow
-        var $box = $(box);
+        const $box = $(box);
         if ($box.hasClass("overflow")) {
             OverflowChecker.RemoveOverflowQtip($box);
         }
@@ -228,6 +219,16 @@ export default class OverflowChecker {
             OverflowChecker.RemoveOverflowQtip($(parent));
         });
         $box.parents().removeClass("childOverflowingThis");
+
+        if (box.classList.contains("bloom-padForOverflow")) {
+            box.style.paddingBottom = "0";
+            const measurements = MeasureText.getDescentMeasurementsOfBox(box);
+            const excessDescent =
+                measurements.actualDescent - measurements.layoutDescent;
+            if (excessDescent > 0) {
+                box.style.paddingBottom = "" + Math.ceil(excessDescent) + "px";
+            }
+        }
 
         if (OverflowChecker.IsOverflowingSelf(box)) {
             $box.addClass("overflow");
@@ -250,18 +251,18 @@ export default class OverflowChecker {
                 });
         }
 
-        var container = $box.closest(".marginBox");
+        const container = $box.closest(".marginBox");
         //NB: for some historical reason in March 2014 the calendar still uses textareas
-        var queryElementsThatCanOverflow =
+        const queryElementsThatCanOverflow =
             ".bloom-editable:visible, textarea:visible";
-        var editablePageElements = $(container).find(
+        const editablePageElements = $(container).find(
             queryElementsThatCanOverflow
         );
 
         // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor
         editablePageElements.each(function() {
-            var $this = $(this);
-            var overflowingAncestor = OverflowChecker.overflowingAncestor(
+            const $this = $(this);
+            const overflowingAncestor = OverflowChecker.overflowingAncestor(
                 $this[0]
             );
             if (overflowingAncestor == null) {
@@ -270,7 +271,7 @@ export default class OverflowChecker {
                     $this.removeClass("thisOverflowingParent");
                 }
             } else {
-                var $overflowingAncestor = $(overflowingAncestor);
+                const $overflowingAncestor = $(overflowingAncestor);
                 // We may already have a qtip on this parent in the form of a hint or source
                 // bubble.  We don't want to override that qtip with an overflow warning since
                 // we have other indications of overflow available on the child.
@@ -303,16 +304,16 @@ export default class OverflowChecker {
                             container: bloomQtipUtils.qtipZoomContainer()
                         });
                     });
-                var showing = false;
+                let showing = false;
                 $overflowingAncestor.on("mousemove.overflow", event => {
                     if (overflowingAncestor == null) return; // prevent bad static analysis
-                    var bounds = overflowingAncestor.getBoundingClientRect();
-                    var scaleY =
+                    const bounds = overflowingAncestor.getBoundingClientRect();
+                    const scaleY =
                         bounds.height / overflowingAncestor.offsetHeight;
-                    var offsetY = (event.clientY - bounds.top) / scaleY;
+                    const offsetY = (event.clientY - bounds.top) / scaleY;
                     // The cursor is likely to be a text cursor at this point, so it's hard to point exactly at the line. If the mouse is close,
                     // show the tooltip.
-                    var shouldShow =
+                    const shouldShow =
                         offsetY >= $overflowingAncestor.innerHeight() - 10 &&
                         offsetY <= $overflowingAncestor.outerHeight(false) + 10;
                     if (shouldShow && !showing) {
@@ -363,7 +364,7 @@ export default class OverflowChecker {
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
     private static UpdatePageOverflow(page) {
-        var $page = $(page);
+        const $page = $(page);
         if (
             !$page.find(".overflow").length &&
             !$page.find(".thisOverflowingParent").length
@@ -375,8 +376,8 @@ export default class OverflowChecker {
     // Checks a couple of situations where we might need to modify min-height
     // If necessary, this will do the modification
     private static CheckOnMinHeight(box) {
-        var $box = $(box);
-        var overflowy = $box.css("overflow-y");
+        const $box = $(box);
+        const overflowy = $box.css("overflow-y");
         if (overflowy == "hidden") {
             // On custom pages we hide overflow in the y direction. This sometimes shows a scroll bar.
             // It can show prematurely when there is only one line of text unless we force min-height
@@ -403,8 +404,8 @@ export default class OverflowChecker {
             // Enhance: it would be nice to redo this and overflow marking when the user changes
             // box format.
             $box.css("min-height", "");
-            var lineHeight = parseFloat($box.css("line-height"));
-            var minHeight = parseFloat($box.css("min-height"));
+            const lineHeight = parseFloat($box.css("line-height"));
+            const minHeight = parseFloat($box.css("min-height"));
             // We do this comparison so that if the template designer has set a larger min-height,
             // we don't mess with it.
             if (minHeight < lineHeight) {

@@ -9,7 +9,7 @@ export default class TalkingBookTool implements ITool {
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
-        var result = $.Deferred<void>();
+        const result = $.Deferred<void>();
         result.resolve();
         return result;
     }
@@ -45,7 +45,10 @@ export default class TalkingBookTool implements ITool {
         if (AudioRecorder.theOneAudioRecorder) {
             AudioRecorder.theOneAudioRecorder.removeRecordingSetup();
         }
-        ToolBox.getPage().classList.remove("bloom-showImageDescriptions");
+        const page = ToolBox.getPage();
+        if (page) {
+            page.classList.remove("bloom-showImageDescriptions");
+        }
     }
 
     // Called whenever the user edits text.
@@ -58,16 +61,20 @@ export default class TalkingBookTool implements ITool {
         // If we have any image descriptions we need to show them so we can record them.
         // (Also because we WILL select them, which is confusing if they are not visible.)
         const page = ToolBox.getPage();
-        var imageContainers = page.getElementsByClassName(
+        if (!page) {
+            return;
+        }
+        const imageContainers = page.getElementsByClassName(
             "bloom-imageContainer"
         );
-        for (var i = 0; i < imageContainers.length; i++) {
+        for (let i = 0; i < imageContainers.length; i++) {
             const container = imageContainers[i];
-            var imageDescriptions = container.getElementsByClassName(
+            const imageDescriptions = container.getElementsByClassName(
                 "bloom-imageDescription"
             );
-            for (var j = 0; j < imageDescriptions.length; j++) {
-                if (imageDescriptions[j].textContent.trim().length > 0) {
+            for (let j = 0; j < imageDescriptions.length; j++) {
+                const text = imageDescriptions[j].textContent;
+                if (text && text.trim().length > 0) {
                     page.classList.add("bloom-showImageDescriptions");
                     return;
                 }

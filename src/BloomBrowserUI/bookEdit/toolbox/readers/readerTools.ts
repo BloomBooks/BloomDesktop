@@ -33,9 +33,9 @@ interface textMarkup extends JQueryStatic {
 // listen for messages sent to this page
 window.addEventListener("message", processDLRMessage, false);
 
-var readerToolsInitialized: boolean = false;
+let readerToolsInitialized: boolean = false;
 
-function getSetupDialogWindow(): Window {
+function getSetupDialogWindow(): Window | null {
     return (<HTMLIFrameElement>(
         parent.window.document.getElementById("settings_frame")
     )).contentWindow;
@@ -46,19 +46,24 @@ function getSetupDialogWindow(): Window {
  * @param {Event} event
  */
 function processDLRMessage(event: MessageEvent): void {
-    var params = event.data.split("\n");
+    const params = event.data.split("\n");
+    const window = getSetupDialogWindow();
 
     switch (params[0]) {
         case "Texts": // request from setup dialog for the list of sample texts
-            if (getTheOneReaderToolsModel().texts)
-                getSetupDialogWindow().postMessage(
-                    "Files\n" + getTheOneReaderToolsModel().texts.join("\r"),
-                    "*"
-                );
+            if (getTheOneReaderToolsModel().texts) {
+                if (window) {
+                    window.postMessage(
+                        "Files\n" +
+                            getTheOneReaderToolsModel().texts.join("\r"),
+                        "*"
+                    );
+                }
+            }
             return;
 
         case "Words": // request from setup dialog for a list of words for a stage
-            var words: any;
+            let words: any;
             if (getTheOneReaderToolsModel().synphony.source.useAllowedWords) {
                 //reviewslog
                 // params[1] is the stage number
@@ -76,17 +81,18 @@ function processDLRMessage(event: MessageEvent): void {
                 );
             }
 
-            getSetupDialogWindow().postMessage(
-                "Words\n" + JSON.stringify(words),
-                "*"
-            );
+            if (window) {
+                window.postMessage("Words\n" + JSON.stringify(words), "*");
+            }
             return;
 
         case "SetupType":
-            getSetupDialogWindow().postMessage(
-                "SetupType\n" + getTheOneReaderToolsModel().setupType,
-                "*"
-            );
+            if (window) {
+                window.postMessage(
+                    "SetupType\n" + getTheOneReaderToolsModel().setupType,
+                    "*"
+                );
+            }
             return;
 
         case "SetMarkupType":
@@ -106,15 +112,15 @@ function processDLRMessage(event: MessageEvent): void {
 
 function markDecodableStatus(): void {
     // q-tips; mark sight words and non-decodable words
-    var sightWord = theOneLocalizationManager.getText(
+    const sightWord = theOneLocalizationManager.getText(
         "EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord",
         "Sight Word"
     );
-    var notDecodable = theOneLocalizationManager.getText(
+    const notDecodable = theOneLocalizationManager.getText(
         "EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable",
         "This word is not decodable in this stage."
     );
-    var editableElements = $(".bloom-content1");
+    const editableElements = $(".bloom-content1");
     editableElements
         .find("span." + (<textMarkup>$).cssSightWord())
         .each(function() {
@@ -136,11 +142,11 @@ function markDecodableStatus(): void {
 
 function markLeveledStatus(): void {
     // q-tips; mark sentences that are too long
-    var tooLong = theOneLocalizationManager.getText(
+    const tooLong = theOneLocalizationManager.getText(
         "EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong",
         "This sentence is too long for this level."
     );
-    var editableElements = $(".bloom-content1");
+    const editableElements = $(".bloom-content1");
     editableElements
         .find("span." + (<textMarkup>$).cssSentenceTooLong())
         .each(function() {
@@ -206,7 +212,7 @@ export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
 
 function beginLoadSynphonySettings(): JQueryPromise<void> {
     // make sure synphony is initialized
-    var result = $.Deferred<void>();
+    const result = $.Deferred<void>();
     if (readerToolsInitialized) {
         result.resolve();
         return result;
@@ -232,7 +238,7 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
  * @global {getTheOneReaderToolsModel()) ReaderToolsModel
  */
 function initializeSynphony(settingsFileContent: string): void {
-    var synphony = new ReadersSynphonyWrapper();
+    const synphony = new ReadersSynphonyWrapper();
     synphony.loadSettings(settingsFileContent);
     getTheOneReaderToolsModel().setSynphony(synphony);
     getTheOneReaderToolsModel().restoreState();
@@ -288,7 +294,7 @@ export function readerSampleFilesChanged(): void {
 }
 
 function refreshSettingsExceptSampleWords(newSettings) {
-    var synphony = getTheOneReaderToolsModel().synphony;
+    const synphony = getTheOneReaderToolsModel().synphony;
     synphony.loadSettings(newSettings);
     if (synphony.source.useAllowedWords) {
         getTheOneReaderToolsModel().getAllowedWordsLists();
@@ -305,7 +311,7 @@ function refreshSettingsExceptSampleWords(newSettings) {
  * a consistent state after changes to the sample words files or the panel in the settings dialog.
  * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
  */
-function beginRefreshEverything(settings: ReaderSettings): Promise<void> {
+function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
     // reset the file and word list
     ResetLanguageDataInstance();
     getTheOneReaderToolsModel().allWords = {};
@@ -332,7 +338,13 @@ function beginRefreshEverything(settings: ReaderSettings): Promise<void> {
                 .then(result => beginSetTextsList(result.data))
         );
     }
-    return null;
+    // Nothing to do, so return an already-resolved promise.
+    return getAlreadyResolvedPromise();
+}
+
+function getAlreadyResolvedPromise(): JQueryDeferred<void> {
+    const result = $.Deferred<void>();
+    return result.resolve();
 }
 
 export function beginSaveChangedSettings(
@@ -343,7 +355,7 @@ export function beginSaveChangedSettings(
     return <any>(
         axios
             .post("/bloom/api/readers/io/readerToolSettings", settings)
-            .then(result => {
+            .then(() => {
                 // reviewslog: following previous logic that we need to reload files if useAllowedWords
                 // is true. Seems we should at least need to do it ALSO if it was PREVIOUSLY true.
                 // But that is a very obscure case...we don't expect users to switch back and forth
@@ -355,7 +367,8 @@ export function beginSaveChangedSettings(
                     return beginRefreshEverything(settings); // caller will resolve when everything is refreshed
                 } else {
                     refreshSettingsExceptSampleWords(settings);
-                    return null;
+                    // Nothing to do, so return an already-resolved promise.
+                    return getAlreadyResolvedPromise();
                 }
             })
     );
@@ -375,19 +388,19 @@ export function addWordListChangedListener(
 
 export function makeLetterWordList(): void {
     // get a copy of the current settings
-    var settings: ReaderSettings = <ReaderSettings>(
+    const settings: ReaderSettings = <ReaderSettings>(
         jQuery.extend(true, {}, getTheOneReaderToolsModel().synphony.source)
     );
 
     // remove levels
-    if (typeof settings.levels !== null) settings.levels = null;
+    if (settings.levels.length !== 0) settings.levels = [];
 
     // get the words for each stage
-    var knownGPCS: string[] = [];
-    for (var i = 0; i < settings.stages.length; i++) {
-        var stageGPCS: string[] = settings.stages[i].letters.split(" ");
+    let knownGPCS: string[] = [];
+    for (let i = 0; i < settings.stages.length; i++) {
+        const stageGPCS: string[] = settings.stages[i].letters.split(" ");
         knownGPCS = _.union(knownGPCS, stageGPCS);
-        var stageWords: string[] = getTheOneReaderToolsModel().selectWordsFromSynphony(
+        const stageWords: string[] = getTheOneReaderToolsModel().selectWordsFromSynphony(
             true,
             stageGPCS,
             knownGPCS,
@@ -398,19 +411,19 @@ export function makeLetterWordList(): void {
     }
 
     // get list of all words
-    var allGroups: string[] = [];
-    for (var j = 1; j <= theOneLanguageDataInstance.VocabularyGroups; j++)
+    let allGroups: string[] = [];
+    for (let j = 1; j <= theOneLanguageDataInstance.VocabularyGroups; j++)
         allGroups.push("group" + j);
     allGroups = theOneLibSynphony.chooseVocabGroups(allGroups);
 
-    var allWords: string[] = [];
-    for (var g = 0; g < allGroups.length; g++) {
+    let allWords: string[] = [];
+    for (let g = 0; g < allGroups.length; g++) {
         allWords = allWords.concat(allGroups[g]);
     }
     allWords = _.compact(_.pluck(allWords, "Name"));
 
     // export the word list
-    var ajaxSettings = {
+    const ajaxSettings = {
         type: "POST",
         url: "/bloom/api/readers/ui/makeLetterAndWordList"
     };
@@ -427,12 +440,14 @@ export function makeLetterWordList(): void {
  * @global {number} previousHeight
  */
 export function resizeWordList(startTimeout: boolean = true): void {
-    var div: JQuery = $("body").find('div[data-toolId="decodableReaderTool"]');
+    const div: JQuery = $("body").find(
+        'div[data-toolId="decodableReaderTool"]'
+    );
     if (div.length === 0) return; // if not found, the tool was closed
 
-    var wordList: JQuery = div.find("#wordList");
-    var currentHeight: number = div.height();
-    var currentWidth: number = wordList.width();
+    const wordList: JQuery = div.find("#wordList");
+    const currentHeight: number = div.height();
+    const currentWidth: number = wordList.width();
 
     // resize the word list if the size of the pane changed
     if (
@@ -442,11 +457,11 @@ export function resizeWordList(startTimeout: boolean = true): void {
         getTheOneReaderToolsModel().previousHeight = currentHeight;
         getTheOneReaderToolsModel().previousWidth = currentWidth;
 
-        var top = wordList.parent().position().top;
+        const top = wordList.parent().position().top;
 
-        var synphony = getTheOneReaderToolsModel().synphony;
+        const synphony = getTheOneReaderToolsModel().synphony;
         if (synphony.source) {
-            var ht = currentHeight - top;
+            let ht = currentHeight - top;
             if (synphony.source.useAllowedWords === 1) {
                 ht -= div.find("#allowed-word-list-truncated").height();
             } else {

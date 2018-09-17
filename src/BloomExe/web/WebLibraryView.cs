@@ -35,7 +35,7 @@ namespace Bloom.Library
 
 		private void WebLibraryView_Load(object sender, EventArgs e)
 		{
-			b.Navigate(ServerBase.ServerUrlWithBloomPrefixEndingInSlash+"library/library.htm",false);
+			b.Navigate(BloomServer.ServerUrlWithBloomPrefixEndingInSlash+"library/library.htm",false);
 		}
 	}
 }

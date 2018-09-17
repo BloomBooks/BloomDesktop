@@ -215,7 +215,7 @@ namespace Bloom.Api
 		{
 			var pos = path.LastIndexOf('.');
 			if(pos > 0)
-				_actualContext.Response.ContentType = ServerBase.GetContentType(path.Substring(pos));
+				_actualContext.Response.ContentType = BloomServer.GetContentType(path.Substring(pos));
 
 			ReplyWithFileContent(path, originalPath);
 		}

@@ -92,7 +92,7 @@ namespace Bloom.Edit
 			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, true);
 			apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
 
-			Debug.Assert(ServerBase.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
+			Debug.Assert(BloomServer.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
 		}
 
 		// Does this page have any audio at all? Used to enable 'Listen to the whole page'.

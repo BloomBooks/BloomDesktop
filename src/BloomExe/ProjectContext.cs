@@ -130,6 +130,7 @@ namespace Bloom
 							typeof(CommonApi),
 							typeof(BrandingApi),
 							typeof(FeatureControlApi),
+							typeof(I18NApi),
 							typeof(SignLanguageApi)
 						}.Contains(t));
 
@@ -293,7 +294,7 @@ namespace Bloom
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
-			_scope.Resolve<BloomWebSocketServer>().Init((ServerBase.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
+			_scope.Resolve<BloomWebSocketServer>().Init((BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
 			HelpLauncher.RegisterWithApiHandler(server.ApiHandler);
 			ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
 			ToolboxView.RegisterWithApiHandler(server.ApiHandler);
@@ -315,6 +316,7 @@ namespace Bloom
 			_scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FeatureControlApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
 

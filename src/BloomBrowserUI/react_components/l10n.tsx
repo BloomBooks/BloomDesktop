@@ -1,6 +1,28 @@
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import { BloomApi } from "../utils/bloomApi";
+
+// set the following boolean to highlight all translated strings to see if any are missing
+const highlightTranslatedStrings: boolean = false;
+
+export let channelName: string = ""; // ensure it's defined non-null
+BloomApi.get("/common/channel", r => {
+    channelName = r.data;
+    // Setting the class on the body element here to include the channel appears
+    // to work for the places that this code affects.  Should we want to expand
+    // marking untranslated strings visually in other places, then it would be
+    // necessary to make this assignment in C# code.  Which unfortunately would
+    // have to happen in at least half a dozen places.
+    let channelClass = channelName.toLowerCase();
+    if (channelClass.startsWith("developer/")) channelClass = "developer";
+    if (document && document.body) {
+        document.body.classList.add(channelClass);
+        if (highlightTranslatedStrings) {
+            document.body.classList.add("highlightTranslatedStrings");
+        }
+    }
+});
 
 // This would be used by a control that doesn't have any text of its own,
 // but has children that need to be localized.
@@ -38,8 +60,6 @@ export class LocalizableElement<
     private disabledTooltipKey: string;
     private localizedText: string;
 
-    // set the following boolean to turn all translated strings green
-    private turnTranslatedGreen: boolean = false;
     private previousL10nKey: string = "";
 
     constructor(props: ILocalizationProps) {
@@ -80,18 +100,22 @@ export class LocalizableElement<
         }
     }
 
-    /*// React Docs: "If you need to load data from a remote endpoint, componentDidMount is a good place to instantiate the network request.
-    // Setting state in this method will trigger a re-rendering."
+    /*
+    React Docs: "If you need to load data from a remote endpoint, componentDidMount is a good place to instantiate the network request.
+    Setting state in this method will trigger a re-rendering."
 
-    However, doing the fetch here means that we don't re-fetch if the parent changes the string they want to show by changing
+    However, only doing the fetch here means that we don't re-fetch if the parent changes the string they want to show by changing
     the props and the English string. In one day-wasting example, the parent had two different <Label> </Label> elements, and
     switched between then, but react didn't understand that they were different (until we manually added a @key attribute). React
     was expecting that the component would react to the props changing; but it couldn't so long as we were only looking at
     them in componentDidMount, which is not called just because a render() of our parent changed our props.
-    So now we look at props in componentDidUpdate() instead.
+    So now we look at props in componentDidUpdate() in addition. We cannot only fetch in componentDidUpdate because
+    componentDidUpdate is not called for the initial render.
+    */
+
     public componentDidMount() {
-        //this.fetchTranslation();
-    }*/
+        this.fetchTranslation();
+    }
 
     private fetchTranslation() {
         this.previousL10nKey = this.props.l10nKey;
@@ -164,37 +188,15 @@ export class LocalizableElement<
     }
 
     public getLocalizedContent(): JSX.Element {
+        let l10nClass = "untranslated";
+        let text = this.getOriginalStringContent();
         if (this.props.alreadyLocalized) {
-            if (this.turnTranslatedGreen) {
-                // We'll use lightgreen to mean assumed translated by C#-land
-                return (
-                    <span style={{ color: "lightgreen" }}>
-                        {" "}
-                        {this.getOriginalStringContent()}{" "}
-                    </span>
-                );
-            }
-            return <span> {this.getOriginalStringContent()} </span>;
+            l10nClass = "assumedTranslated";
+        } else if (this.state && this.state.translation) {
+            l10nClass = "translated";
+            text = this.state.translation;
         }
-        if (this.state && this.state.translation) {
-            if (this.turnTranslatedGreen) {
-                return (
-                    <span style={{ color: "green" }}>
-                        {" "}
-                        {this.state.translation}{" "}
-                    </span>
-                );
-            } else {
-                return <span> {this.state.translation} </span>;
-            }
-        } else {
-            return (
-                <span style={{ color: "grey" }}>
-                    {" "}
-                    {this.getOriginalStringContent()}{" "}
-                </span>
-            );
-        }
+        return <span className={l10nClass}> {text} </span>;
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {

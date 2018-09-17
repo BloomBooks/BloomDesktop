@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -624,7 +624,7 @@
     <Compile Include="web\controllers\MusicApi.cs" />
     <Compile Include="web\controllers\ToolboxApi.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
-    <Compile Include="web\I18NHandler.cs" />
+    <Compile Include="web\I18NApi.cs" />
     <Compile Include="web\ReadersApi.cs" />
     <Compile Include="web\controllers\ExternalLinkController.cs" />
     <Compile Include="web\controllers\FeatureControlApi.cs" />
@@ -1001,7 +1001,6 @@
     <Compile Include="XmlHtmlConverter.cs" />
     <Compile Include="web\IRequestInfo.cs" />
     <Compile Include="web\RequestInfo.cs" />
-    <Compile Include="web\ServerBase.cs" />
     <Compile Include="web\WebClientWithTimeout.cs">
       <SubType>Component</SubType>
     </Compile>

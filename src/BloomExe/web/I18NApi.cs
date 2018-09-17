@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Bloom.Collection;
 using L10NSharp;
@@ -11,78 +12,60 @@ namespace Bloom.Api
 	/// <summary>
 	/// This class handles requests for internationalization. It uses the L10NSharp LocalizationManager to look up values.
 	/// </summary>
-	static class I18NHandler
+	public class I18NApi
 	{
-		private static bool _localizing = false;
-
-		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			var lastSep = localPath.IndexOf("/", System.StringComparison.Ordinal);
-			var lastSegment = (lastSep > -1) ? localPath.Substring(lastSep + 1) : localPath;
+			apiHandler.RegisterEndpointHandler("i18n/", HandleI18nRequest, false);
+		}
 
+		public void HandleI18nRequest(ApiRequest request)
+		{
+			var lastSegment = request.LocalPath().Split(new char[] { '/' }).Last();
 			switch (lastSegment)
 			{
 				case "loadStrings":
+					var d = new Dictionary<string, string>();
+					var post = request.GetPostDataWhenFormEncoded();
 
-					while (_localizing)
+					if (post != null)
 					{
-						Thread.Sleep(0);
-					}
-
-					try
-					{
-						_localizing = true;
-
-						var d = new Dictionary<string, string>();
-						var post = info.GetPostDataWhenFormEncoded();
-
-						if (post != null)
+						foreach (string key in post.Keys)
 						{
-							foreach (string key in post.Keys)
+							try
 							{
-								try
-								{
-									if (d.ContainsKey(key))
-										continue;
+								if (d.ContainsKey(key))
+									continue;
 
-									// Now that end users can create templates, it's annoying to report that their names,
-									// page labels, and page descriptions don't have localizations.
-									if (IsTemplateBookKey(key))
-										continue;
+								// Now that end users can create templates, it's annoying to report that their names,
+								// page labels, and page descriptions don't have localizations.
+								if (IsTemplateBookKey(key))
+									continue;
 
-									var translation = GetTranslationDefaultMayNotBeEnglish(key, post[key]);
-									d.Add(key, translation);
-								}
-								catch (Exception error)
-								{
-									Debug.Fail("Debug Only:" +error.Message+Environment.NewLine+"A bug reported at this location is BL-923");
-									//Until BL-923 is fixed (hard... it's a race condition, it's better to swallow this for users
-								}
+								var translation = GetTranslationDefaultMayNotBeEnglish(key, post[key]);
+								d.Add(key, translation);
+							}
+							catch (Exception error)
+							{
+								Debug.Fail("Debug Only:" + error.Message + Environment.NewLine + "A bug reported at this location is BL-923");
+								//Until BL-923 is fixed (hard... it's a race condition, it's better to swallow this for users
 							}
 						}
-
-						info.ContentType = "application/json";
-						info.WriteCompleteOutput(JsonConvert.SerializeObject(d));
-						return true;
 					}
-					finally
-					{
-						_localizing = false;
-					}
+					request.ReplyWithJson(JsonConvert.SerializeObject(d));
 					break;
 
 				case "translate":
-					var parameters = info.GetQueryParameters();
+					var parameters = request.Parameters;
 					string id = parameters["key"];
 					string englishText = parameters["englishText"];
 					string langId = parameters["langId"];
-					langId = langId.Replace("V", currentCollectionSettings.Language1Iso639Code);
-					langId = langId.Replace("N1", currentCollectionSettings.Language2Iso639Code);
-					langId = langId.Replace("N2", currentCollectionSettings.Language3Iso639Code);
+					langId = langId.Replace("V", request.CurrentCollectionSettings.Language1Iso639Code);
+					langId = langId.Replace("N1", request.CurrentCollectionSettings.Language2Iso639Code);
+					langId = langId.Replace("N2", request.CurrentCollectionSettings.Language3Iso639Code);
 					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
 					if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
 					{
-						info.ContentType = "text/plain";
 						// tricky. It might be in Bloom, or it might be in BloomLowPriority. Must be somewhere, because
 						// we know it's available. Can't use GetString, because it's not a literal string. So, we try in one,
 						// using null as the English, so we won't get anything if not in that one. Then try the other.
@@ -90,8 +73,7 @@ namespace Bloom.Api
 						var localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, null, null, langId);
 						if (localizedString == null)
 							localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishText, null, langId);
-						info.WriteCompleteOutput(localizedString);
-						return true;
+						request.ReplyWithText(localizedString);
 					}
 					else
 					{
@@ -127,21 +109,20 @@ namespace Bloom.Api
 								}
 							}
 						}
-						info.ContentType = "text/plain";
-						info.WriteCompleteOutput(englishText);
-						return true;
+						request.ReplyWithText(englishText);
 					}
 					break;
+				default:
+					request.Failed();
+					break;
 			}
-
-			return false;
 		}
 
 		private static bool IsTemplateBookKey(string key)
 		{
 			return key.StartsWith("TemplateBooks.BookName") ||
-			       key.StartsWith("TemplateBooks.PageLabel") ||
-			       key.StartsWith("TemplateBooks.PageDescription");
+					key.StartsWith("TemplateBooks.PageLabel") ||
+					key.StartsWith("TemplateBooks.PageDescription");
 		}
 
 		/// <summary>

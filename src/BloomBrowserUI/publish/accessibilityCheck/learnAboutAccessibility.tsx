@@ -1,9 +1,6 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
-import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import { H1, IUILanguageAwareProps } from "../../react_components/l10n";
+import { IUILanguageAwareProps } from "../../react_components/l10n";
 
 import "./learnAboutAccessibility.less";
 
@@ -43,7 +40,12 @@ export class LearnAboutAccessibility extends React.Component<
                             </HelpLink>
                         </li>
                         <li>
-                            Impairment Visualizer Tool (coming in Bloom 4.4)
+                            <HelpLink
+                                l10nKey="EditTab.Toolbox.ImpairmentVisualizer"
+                                helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm"
+                            >
+                                Impairment Visualizer
+                            </HelpLink>
                         </li>
                         <li>
                             This tool, the Accessibility Checker, has:

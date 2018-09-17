@@ -23,13 +23,13 @@ namespace BloomTests
 
 			if(endOfUrlForTest != null)
 			{
-				return client.DownloadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endOfUrlForTest);
+				return client.DownloadString(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endOfUrlForTest);
 			}
 			else
 			{
 				if(!string.IsNullOrEmpty(query))
 					query = "?" + query;
-				return client.DownloadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint + query);
+				return client.DownloadString(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint + query);
 			}
 		}
 
@@ -47,7 +47,7 @@ namespace BloomTests
 			};
 			client.Headers[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json";
 
-			return client.UploadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint, "POST", data);
+			return client.UploadString(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint, "POST", data);
 		}
 	}
 }

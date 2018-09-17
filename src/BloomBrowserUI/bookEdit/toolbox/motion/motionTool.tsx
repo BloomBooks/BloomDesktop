@@ -1,15 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {
-    H1,
-    Div,
-    IUILanguageAwareProps,
-    Label
-} from "../../../react_components/l10n";
+import { Div } from "../../../react_components/l10n";
 import { HelpLink } from "../../../react_components/helpLink";
-import { RadioGroup, Radio } from "../../../react_components/radio";
-import { ToolBox, ITool } from "../toolbox";
-import Slider from "rc-slider";
 // These are for Motion:
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from "../../js/bloomFrames";
@@ -26,9 +18,9 @@ import "./motion.less";
 /// The motion tool lets you define two rectangles; Bloom Reader will pan & zoom from one to the other
 export class MotionTool extends ToolboxToolReactAdaptor {
     private rootControl: MotionControl;
-    private animationStyleElement: HTMLStyleElement;
-    private animationWrapDiv: HTMLElement;
-    private animationRootDiv: HTMLElement;
+    private animationStyleElement: HTMLStyleElement | null;
+    private animationWrapDiv: HTMLElement | null;
+    private animationRootDiv: HTMLElement | null;
     private narrationPlayer: AudioRecording;
     private stopPreviewTimeout: number;
     private animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
@@ -52,7 +44,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         //Nothing to do, so return an already-resolved promise.
-        var result = $.Deferred<void>();
+        const result = $.Deferred<void>();
         result.resolve();
         return result;
     }
@@ -78,8 +70,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
 
         const page = this.getPage();
+        if (!page) return; // paranoid
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
+        if (!firstImage) return; // paranoid
         firstImage.classList.add("bloom-hideImageButtons");
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
@@ -95,8 +89,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             initAttr: string,
             color: string
         ): JQuery => {
-            var needToSaveThisRectangle: boolean;
-            var left: number, top: number, width: number, height: number;
+            let needToSaveThisRectangle: boolean;
+            let left: number, top: number, width: number, height: number;
             [
                 left,
                 top,
@@ -251,8 +245,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     public detachFromPage() {
         const page = this.getPage();
-        this.removeElt(page.getElementById("animationStart"));
-        this.removeElt(page.getElementById("animationEnd"));
+        if (page) {
+            this.removeElt(page.getElementById("animationStart"));
+            this.removeElt(page.getElementById("animationEnd"));
+        }
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
         if (!firstImage) {
@@ -269,9 +265,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private removeCurrentAudioMarkup(): void {
-        const currentAudioElts = this.getPage().getElementsByClassName(
-            "ui-audioCurrent"
-        );
+        const page = this.getPage();
+        if (!page) return;
+        const currentAudioElts = page.getElementsByClassName("ui-audioCurrent");
         if (currentAudioElts.length) {
             currentAudioElts[0].classList.remove("ui-audioCurrent");
         }
@@ -281,10 +277,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         return "motion";
     }
 
-    private getFirstImage(): HTMLElement {
-        const imgElements = this.getPage().getElementsByClassName(
-            "bloom-imageContainer"
-        );
+    private getFirstImage(): HTMLElement | null {
+        const page = this.getPage();
+        if (!page) return null;
+        const imgElements = page.getElementsByClassName("bloom-imageContainer");
         if (!imgElements.length) {
             return null;
         }
@@ -301,8 +297,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const rectLeft = htmlRect.offsetLeft;
         const rectWidth = this.getWidth(htmlRect);
         const rectHeight = this.getHeight(htmlRect);
+        const image = this.getFirstImage();
+        if (!image) return ""; // paranoid
 
-        const actualImage = this.getFirstImage().getElementsByTagName("img")[0];
+        const actualImage = image.getElementsByTagName("img")[0];
         const imageTop = actualImage.offsetTop;
         const imageLeft = actualImage.offsetLeft;
         const imageHeight = this.getHeight(actualImage);
@@ -441,7 +439,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 // see if we can restore a backup state
                 firstImage.setAttribute(
                     "data-initialrect",
-                    firstImage.getAttribute("data-disabled-initialrect")
+                    firstImage.getAttribute(
+                        "data-disabled-initialrect"
+                    ) as string
                 );
                 firstImage.removeAttribute("data-disabled-initialrect");
                 this.updateMarkup();
@@ -452,7 +452,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 // save old state, thus recording that we're in the off state, not just uninitialized.
                 firstImage.setAttribute(
                     "data-disabled-initialrect",
-                    firstImage.getAttribute("data-initialrect")
+                    firstImage.getAttribute("data-initialrect") as string
                 );
                 firstImage.removeAttribute("data-initialrect");
             }
@@ -472,7 +472,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     private resizeRectanglesDelay: number = 200;
     private resizeInProgress: boolean = false;
-    private resizeOldStyle: string;
+    private resizeOldStyle: string | null;
 
     // This is called when the size of the picture changes. We also get LOTS
     // of spurious calls, for example, while resizing the rectangles. And even
@@ -507,6 +507,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     private getImages(): Array<HTMLImageElement> {
         const firstImage = this.getFirstImage();
+        if (!firstImage) return []; // paranoid
         // not interested in images inside the resize rectangles.
         return Array.prototype.slice
             .call(firstImage.getElementsByTagName("img"))
@@ -525,7 +526,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // I'm not sure how images can be an empty list...possibly while the page is shutting down??
         // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
         if (images.length > 0) {
-            this.resizeOldStyle = images[0].getAttribute("style");
+            const style = images[0].getAttribute("style");
+            this.resizeOldStyle = style;
             // jquery's scaleImage function adjusts the position and size of the element to
             // keep it centered when the size of the image container changes.
             // margin-top and margin-left are only set using style; height and width
@@ -549,7 +551,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // images done with background-image.
         const firstImage = this.getFirstImage();
         if (firstImage) {
-            const images = this.getFirstImage().getElementsByTagName("img");
+            const images = firstImage.getElementsByTagName("img");
             // I'm not sure how images can be an empty list...possibly while the page is shutting down??
             // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
             if (images.length > 0) {
@@ -561,17 +563,17 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    // https://github.com/nefe/You-Dont-Need-jQuery says this is eqivalent to $(el).height() which
+    // https://github.com/nefe/You-Dont-Need-jQuery says this is equivalent to $(el).height() which
     // we aren't allowed to use any more.
     // I believe this is a height that does NOT need to be scaled by our zoom factor
     // (e.g., it can be used unchanged to set a css width in px that will work zoomed)
     private getHeight(el) {
         const styles = window.getComputedStyle(el);
         const height = el.offsetHeight;
-        const borderTopWidth = parseFloat(styles.borderTopWidth);
-        const borderBottomWidth = parseFloat(styles.borderBottomWidth);
-        const paddingTop = parseFloat(styles.paddingTop);
-        const paddingBottom = parseFloat(styles.paddingBottom);
+        const borderTopWidth = this.safeParseFloat(styles.borderTopWidth);
+        const borderBottomWidth = this.safeParseFloat(styles.borderBottomWidth);
+        const paddingTop = this.safeParseFloat(styles.paddingTop);
+        const paddingBottom = this.safeParseFloat(styles.paddingBottom);
         return (
             height -
             borderBottomWidth -
@@ -581,14 +583,22 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         );
     }
 
+    private safeParseFloat(stringMeasure: string | null): number {
+        let measure: string = "";
+        if (stringMeasure) {
+            measure = stringMeasure;
+        }
+        return parseFloat(measure);
+    }
+
     // Hopefully I figured out the equivalent for width
     private getWidth(el) {
         const styles = window.getComputedStyle(el);
         const width = el.offsetWidth;
-        const borderLeftWidth = parseFloat(styles.borderLeftWidth);
-        const borderRightWidth = parseFloat(styles.borderRightWidth);
-        const paddingLeft = parseFloat(styles.paddingLeft);
-        const paddingRight = parseFloat(styles.paddingRight);
+        const borderLeftWidth = this.safeParseFloat(styles.borderLeftWidth);
+        const borderRightWidth = this.safeParseFloat(styles.borderRightWidth);
+        const paddingLeft = this.safeParseFloat(styles.paddingLeft);
+        const paddingRight = this.safeParseFloat(styles.paddingRight);
         return (
             width -
             borderLeftWidth -
@@ -601,24 +611,30 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private updateDataAttributes(): void {
         //alert("updating data attributes " + new Error().stack);
         const page = this.getPage();
+        if (!page) return; // paranoid
         const startRect = page.getElementById("animationStart");
         const endRect = page.getElementById("animationEnd");
+        if (!startRect || !endRect) return;
         const image = startRect.parentElement;
-        image.setAttribute(
-            "data-initialrect",
-            this.getTransformRectAttrValue(startRect)
-        );
-        image.setAttribute(
-            "data-finalrect",
-            this.getTransformRectAttrValue(endRect)
-        );
+        if (image) {
+            image.setAttribute(
+                "data-initialrect",
+                this.getTransformRectAttrValue(startRect)
+            );
+            image.setAttribute(
+                "data-finalrect",
+                this.getTransformRectAttrValue(endRect)
+            );
+        }
     }
 
-    private removeElt(x: HTMLElement): void {
+    private removeElt(x: HTMLElement | null): void {
         if (x) {
             x.remove();
         }
     }
+
+    private animateStyleName: string = "bloom-animationPreview";
 
     // This code shares various aspects with BloomPlayer. But I don't see a good way to share them, and many aspects are very different.
     // - This code is simpler because there is only ever one motion-capable image in a document
@@ -627,9 +643,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     // want to set up the animation
     // - this code is complicated by having to deal with problems caused by parent divs using scale for zoom.
     // somewhat more care is needed here to avoid adding the animation stuff permanently to the document
+    // Review: Man this is a long method! It used to be almost 300 lines. I've refactored to bring it down
+    // some to just over 200 lines.
     private toggleMotionPreviewPlaying() {
-        const page = this.getPage();
-        const pageDoc = this.getPageFrame().contentWindow.document;
         const firstImage = this.getFirstImage();
         if (
             !firstImage ||
@@ -638,7 +654,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         ) {
             return;
         }
-        let wasPlaying: boolean = this.rootControl.state.playing;
+        const wasPlaying: boolean = this.rootControl.state.playing;
         // A 'functional' mode of using setState is recommended when the new state is a function
         // of the old state, like this:
         // this.rootControl.setState((oldState) => {
@@ -658,32 +674,23 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.cleanupAnimation();
             return;
         }
-        var duration = 0;
-        $(page)
-            .find(".bloom-editable.bloom-content1")
-            .find("span.audio-sentence")
-            .each((index, span) => {
-                var spanDuration = parseFloat($(span).attr("data-duration"));
-                if (spanDuration) {
-                    // might be NaN if missing or somehow messed up
-                    duration += spanDuration;
-                }
-            });
-        if (duration < 0.5) {
-            duration = 4;
-        }
+        const page = this.getPage();
+        if (!page) return; // paranoid
+        const contentWindow = this.getPageFrame().contentWindow;
+        if (!contentWindow) return; // paranoid
 
         const scale = EditableDivUtils.getPageScale();
-        var bloomPage = page.getElementsByClassName(
+        const bloomPage = page.getElementsByClassName(
             "bloom-page"
         )[0] as HTMLElement;
-        var pageWidth = this.getWidth(bloomPage);
+        const pageWidth = this.getWidth(bloomPage);
 
-        // Make a div with the shape of a typical phone screen in lansdscape mode which
+        const pageDoc = contentWindow.document;
+        // Make a div with the shape of a typical phone screen in landscape mode which
         // will be the root for displaying the animation.
-        var animationPageHeight =
+        const animationPageHeight =
             (pageWidth / this.animationPreviewAspectRatio) * scale;
-        var animationPageWidth = pageWidth * scale;
+        const animationPageWidth = pageWidth * scale;
         this.animationRootDiv = getPageFrameExports().makeElement(
             "<div " +
                 "style='background-color:black; " +
@@ -745,12 +752,17 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                     "px; left: 0"
             );
         }
-        const movingDiv = this.animationWrapDiv.firstElementChild;
-        var picToAnimate = firstImage.cloneNode(true) as HTMLElement;
+        const picToAnimate = firstImage.cloneNode(true) as HTMLElement;
         // don't use getElementById here; the elements we want to remove are NOT yet
         // in the document, but the ones they are clones of (which we want to keep) are.
-        picToAnimate.querySelector("#animationStart").remove();
-        picToAnimate.querySelector("#animationEnd").remove();
+        const start = picToAnimate.querySelector("#animationStart");
+        if (start) {
+            start.remove();
+        }
+        const end = picToAnimate.querySelector("#animationEnd");
+        if (end) {
+            end.remove();
+        }
         picToAnimate.setAttribute(
             "style",
             "height:" +
@@ -759,138 +771,74 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 animationPageWidth +
                 "px;"
         );
-        movingDiv.appendChild(picToAnimate);
-        this.animationRootDiv.appendChild(this.animationWrapDiv);
-        page.documentElement.appendChild(this.animationRootDiv);
-        var actualImage = picToAnimate.getElementsByTagName("img")[0];
-
-        // unfortunately the cloned image brings over attributes that position it in the current container.
-        // The new parent is not the same size and we need different values to center it and make
-        // it fill the container as much as possible.
-        // We'd like to position it using SetupImage(actualImage); (from bloomImages) but for some reason,
-        // probably because several parents are newly created, that's proving flaky.
-        // The code here is a simplification of that method.
-        // I don't know whether the doCenterImage logic is relevant here.
-        const imgAspectRatio = panZoomAspectRatio; // should stay actual image AR, even if the other changes.
-        const containerWidth = this.getWidth(picToAnimate);
-        const containerHeight = this.getHeight(picToAnimate);
-        const doCenterImage = !picToAnimate.classList.contains(
-            "bloom-alignImageTopLeft"
-        );
-        var newWidth: number,
-            newHeight: number,
-            newLeftMargin: number = 0,
-            newTopMargin: number = 0;
-        if (imgAspectRatio > containerWidth / containerHeight) {
-            // full width, center vertically.
-            newWidth = containerWidth;
-            newHeight = containerWidth / imgAspectRatio;
-            if (doCenterImage) {
-                newTopMargin = (containerHeight - newHeight) / 2;
-            }
-        } else {
-            newHeight = containerHeight;
-            newWidth = containerHeight * imgAspectRatio;
-            if (doCenterImage) {
-                newLeftMargin = (containerWidth - newWidth) / 2;
-            }
-        }
-        // not sure why we set width and height both ways...using the same approach as SetupImage.
-        actualImage.setAttribute("width", "" + newWidth);
-        actualImage.setAttribute("height", "" + newHeight);
-        actualImage.style.width = "" + newWidth + "px";
-        actualImage.style.height = "" + newHeight + "px";
-        actualImage.style.marginLeft = "0px";
-        actualImage.style.marginTop = "0px";
-        this.animationStyleElement = pageDoc.createElement("style");
-        this.animationStyleElement.setAttribute("type", "text/css");
-        this.animationStyleElement.setAttribute("id", "animationSheet");
-        this.animationStyleElement.innerText =
-            ".bloom-ui-animationWrapper {overflow: hidden; translateZ(0)} " +
-            ".bloom-animate {height: 100%; width: 100%; " +
-            "background-repeat: no-repeat; background-size: contain}";
-        pageDoc.body.appendChild(this.animationStyleElement);
-        const stylesheet = this.animationStyleElement.sheet;
+        const duration = this.calculateDuration(page);
+        const movingDiv = this.animationWrapDiv.firstElementChild;
         const initialRectStr = firstImage.getAttribute("data-initialrect");
-        const initialRect = initialRectStr.split(" ");
-        const initialScaleWidth = 1 / parseFloat(initialRect[2]);
-        const initialScaleHeight = 1 / parseFloat(initialRect[3]);
         const finalRectStr = firstImage.getAttribute("data-finalrect");
-        const finalRect = finalRectStr.split(" ");
-        const finalScaleWidth = 1 / parseFloat(finalRect[2]);
-        const finalScaleHeight = 1 / parseFloat(finalRect[3]);
-        const wrapDivWidth = this.getWidth(this.animationWrapDiv);
-        const wrapDivHeight = this.getHeight(this.animationWrapDiv);
-        const initialX = parseFloat(initialRect[0]) * wrapDivWidth;
-        const initialY = parseFloat(initialRect[1]) * wrapDivHeight;
-        const finalX = parseFloat(finalRect[0]) * wrapDivWidth;
-        const finalY = parseFloat(finalRect[1]) * wrapDivHeight;
-        const animateStyleName = "bloom-animationPreview";
-        const movePicName = "movepic";
-        // Will take the form of "scale3d(W, H,1.0) translate3d(Xpx, Ypx, 0px)"
-        // Using 3d scale and transform apparently causes GPU to be used and improves
-        // performance over scale/transform. (https://www.kirupa.com/html5/ken_burns_effect_css.htm)
-        // May also help with blurring of material originally hidden.
-        const initialTransform =
-            "scale3d(" +
-            initialScaleWidth +
-            ", " +
-            initialScaleHeight +
-            ", 1.0) translate3d(" +
-            -initialX +
-            "px, " +
-            -initialY +
-            "px, 0px)";
-        const finalTransform =
-            "scale3d(" +
-            finalScaleWidth +
-            ", " +
-            finalScaleHeight +
-            ", 1.0) translate3d(" +
-            -finalX +
-            "px, " +
-            -finalY +
-            "px, 0px)";
-        //Insert the keyframe animation rule with the dynamic begin and end set
-        (stylesheet as CSSStyleSheet).insertRule(
-            "@keyframes " +
-                movePicName +
-                " { from{ transform-origin: 0px 0px; transform: " +
-                initialTransform +
-                "; } to{ transform-origin: 0px 0px; transform: " +
-                finalTransform +
-                "; } }",
-            0
-        );
+        if (initialRectStr && finalRectStr && movingDiv) {
+            // paranoia
+            movingDiv.appendChild(picToAnimate);
+            this.animationRootDiv.appendChild(this.animationWrapDiv);
+            page.documentElement.appendChild(this.animationRootDiv);
+            const actualImage = picToAnimate.getElementsByTagName("img")[0];
 
-        //Insert the css for the imageView div that utilizes the newly created animation
-        // We make the animation longer than the narration by the transition time so
-        // the old animation continues during the fade.
-        (stylesheet as CSSStyleSheet).insertRule(
-            "." +
-                animateStyleName +
-                " { transform-origin: 0px 0px; transform: " +
-                initialTransform +
-                "; animation-name: " +
-                movePicName +
-                "; animation-duration: " +
-                duration +
-                "s; animation-fill-mode: forwards; " +
-                "animation-timing-function: linear;}",
-            1
-        );
-        movingDiv.setAttribute(
-            "class",
-            "bloom-animate bloom-pausable " + animateStyleName
-        );
+            // unfortunately the cloned image brings over attributes that position it in the current container.
+            // The new parent is not the same size and we need different values to center it and make
+            // it fill the container as much as possible.
+            // We'd like to position it using SetupImage(actualImage); (from bloomImages) but for some reason,
+            // probably because several parents are newly created, that's proving flaky.
+            // The code here is a simplification of that method.
+            const imgAspectRatio = panZoomAspectRatio; // should stay actual image AR, even if the other changes.
+            const containerWidth = this.getWidth(picToAnimate);
+            const containerHeight = this.getHeight(picToAnimate);
+            let newWidth: number, newHeight: number;
+            if (imgAspectRatio > containerWidth / containerHeight) {
+                // full width, center vertically.
+                newWidth = containerWidth;
+                newHeight = containerWidth / imgAspectRatio;
+            } else {
+                newHeight = containerHeight;
+                newWidth = containerHeight * imgAspectRatio;
+            }
+            // not sure why we set width and height both ways...using the same approach as SetupImage.
+            actualImage.setAttribute("width", "" + newWidth);
+            actualImage.setAttribute("height", "" + newHeight);
+            actualImage.style.width = "" + newWidth + "px";
+            actualImage.style.height = "" + newHeight + "px";
+            actualImage.style.marginLeft = "0px";
+            actualImage.style.marginTop = "0px";
+            this.animationStyleElement = pageDoc.createElement("style");
+            this.animationStyleElement.setAttribute("type", "text/css");
+            this.animationStyleElement.setAttribute("id", "animationSheet");
+            this.animationStyleElement.innerText =
+                ".bloom-ui-animationWrapper {overflow: hidden; translateZ(0)} " +
+                ".bloom-animate {height: 100%; width: 100%; " +
+                "background-repeat: no-repeat; background-size: contain}";
+            pageDoc.body.appendChild(this.animationStyleElement);
+            const stylesheet = this.animationStyleElement.sheet;
+            if (stylesheet) {
+                this.addCssRules(
+                    stylesheet,
+                    duration,
+                    initialRectStr,
+                    finalRectStr
+                );
+            }
+            movingDiv.setAttribute(
+                "class",
+                "bloom-animate bloom-pausable " + this.animateStyleName
+            );
+        } // end paranoia 'if'
+
         // At this point the wrapDiv becomes visible and the animation starts.
         //wrapDiv.show(); mysteriously fails
-        this.animationWrapDiv.setAttribute(
-            "style",
-            this.animationWrapDiv
-                .getAttribute("style")
-                .replace("visibility: hidden; ", "")
-        );
+        const currentStyle = this.animationWrapDiv.getAttribute("style");
+        if (currentStyle) {
+            this.animationWrapDiv.setAttribute(
+                "style",
+                currentStyle.replace("visibility: hidden; ", "")
+            );
+        }
         bloomPage.style.visibility = "hidden";
         if (this.rootControl.state.previewVoice) {
             // Play the audio during animation
@@ -912,11 +860,118 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }, (duration + 1) * 1000);
     }
 
+    // Add CSS rules for keyframes and preview animation
+    private addCssRules(
+        stylesheet: StyleSheet,
+        duration: number,
+        initialRectStr: string,
+        finalRectStr: string
+    ) {
+        const wrapDivWidth = this.getWidth(this.animationWrapDiv);
+        const wrapDivHeight = this.getHeight(this.animationWrapDiv);
+        const initialRect = initialRectStr.split(" ");
+        const finalRect = finalRectStr.split(" ");
+        // Will take the form of "scale3d(W, H,1.0) translate3d(Xpx, Ypx, 0px)"
+        // Using 3d scale and transform apparently causes GPU to be used and improves
+        // performance over scale/transform. (https://www.kirupa.com/html5/ken_burns_effect_css.htm)
+        // May also help with blurring of material originally hidden.
+        const initialTransform = this.calculateTransform(
+            initialRect,
+            wrapDivWidth,
+            wrapDivHeight
+        );
+        const finalTransform = this.calculateTransform(
+            finalRect,
+            wrapDivWidth,
+            wrapDivHeight
+        );
+
+        //Insert the keyframe animation rule with the dynamic begin and end set
+        const movePicName = "movepic";
+        (stylesheet as CSSStyleSheet).insertRule(
+            "@keyframes " +
+                movePicName +
+                " { from{ transform-origin: 0px 0px; transform: " +
+                initialTransform +
+                "; } to{ transform-origin: 0px 0px; transform: " +
+                finalTransform +
+                "; } }",
+            0
+        );
+
+        //Insert the css for the imageView div that utilizes the newly created animation
+        // We make the animation longer than the narration by the transition time so
+        // the old animation continues during the fade.
+        (stylesheet as CSSStyleSheet).insertRule(
+            "." +
+                this.animateStyleName +
+                " { transform-origin: 0px 0px; transform: " +
+                initialTransform +
+                "; animation-name: " +
+                movePicName +
+                "; animation-duration: " +
+                duration +
+                "s; animation-fill-mode: forwards; " +
+                "animation-timing-function: linear;}",
+            1
+        );
+    }
+
+    private calculateTransform(
+        rect: string[],
+        wrapDivWidth: number,
+        wrapDivHeight: number
+    ): string {
+        const scaleWidth = 1 / parseFloat(rect[2]);
+        const scaleHeight = 1 / parseFloat(rect[3]);
+        const x = parseFloat(rect[0]) * wrapDivWidth;
+        const y = parseFloat(rect[1]) * wrapDivHeight;
+        return this.generateTransformString(scaleWidth, scaleHeight, x, y);
+    }
+
+    private generateTransformString(
+        scaleWidth: number,
+        scaleHeight: number,
+        x: number,
+        y: number
+    ): string {
+        return (
+            "scale3d(" +
+            scaleWidth +
+            ", " +
+            scaleHeight +
+            ", 1.0) translate3d(" +
+            -x +
+            "px, " +
+            -y +
+            "px, 0px)"
+        );
+    }
+
+    private calculateDuration(page: HTMLDocument): number {
+        let duration = 0;
+        $(page)
+            .find(".bloom-editable.bloom-content1")
+            .find("span.audio-sentence")
+            .each((index, span) => {
+                const spanDuration = parseFloat($(span).attr("data-duration"));
+                if (spanDuration) {
+                    // might be NaN if missing or somehow messed up
+                    duration += spanDuration;
+                }
+            });
+        if (duration < 0.5) {
+            duration = 4;
+        }
+        return duration;
+    }
+
     private cleanupAnimation() {
-        (this.getPage().getElementsByClassName(
+        const page = this.getPage();
+        if (!page) return;
+        (page.getElementsByClassName(
             "bloom-page"
-        )[0] as HTMLElement).style.visibility =
-            "";
+        )[0] as HTMLElement).style.visibility = "";
         // stop the animation itself by removing the root elements it adds.
         this.removeElt(this.animationStyleElement);
         this.animationStyleElement = null;
@@ -944,32 +999,39 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     // The document object of the editable page, a root for searching for document content.
-    private getPage(): HTMLDocument {
-        var page = this.getPageFrame();
-        if (!page) return null;
+    private getPage(): HTMLDocument | null {
+        const page = this.getPageFrame();
+        if (!page || !page.contentWindow) return null;
         return page.contentWindow.document;
     }
 
     private getStateFromHtml(): IMotionHtmlState {
-        const page = this.getPage();
         const pageClass = ToolboxToolReactAdaptor.getBloomPageAttr("class");
-        const xmatter =
-            pageClass.indexOf("bloom-frontMatter") >= 0 ||
-            pageClass.indexOf("bloom-backMatter") >= 0;
+        const xmatter = !pageClass
+            ? false // paranoia
+            : pageClass.indexOf("bloom-frontMatter") >= 0 ||
+              pageClass.indexOf("bloom-backMatter") >= 0;
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
 
         // Enhance this if we need to support background-image approach.
-        var images = firstImage ? firstImage.getElementsByTagName("img") : null;
+        const images = firstImage
+            ? firstImage.getElementsByTagName("img")
+            : null;
         // I'm not quite sure how we can have no images in an image container
         // in a non-xmatter page, but I've seen JS errors caused by it, so
         // programming defensively.
+        let srcAttr: string | null = "";
+        if (images !== null && images.length > 0) {
+            srcAttr = images[0].getAttribute("src");
+        }
 
-        let doNotHaveAPicture =
+        const doNotHaveAPicture =
             images === null ||
             images === undefined ||
             images.length === 0 ||
-            images[0].getAttribute("src").indexOf("placeHolder") > -1;
+            !srcAttr ||
+            srcAttr.indexOf("placeHolder") > -1;
 
         let motionChecked = true;
         let motionPossible = !doNotHaveAPicture;

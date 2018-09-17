@@ -712,7 +712,7 @@ namespace Bloom
 			Debug.Assert(!InvokeRequired);
 			string url = e.Uri.OriginalString.ToLowerInvariant();
 
-			if ((!url.StartsWith(Bloom.Api.ServerBase.ServerUrlWithBloomPrefixEndingInSlash)) && (url.StartsWith("http")))
+			if ((!url.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash)) && (url.StartsWith("http")))
 			{
 				e.Cancel = true;
 				SIL.Program.Process.SafeStart(e.Uri.OriginalString); //open in the system browser instead

@@ -49,7 +49,7 @@ namespace Bloom.Api
 		/// </summary>
 		public string LocalPath()
 		{
-			return ServerBase.GetLocalPathWithoutQuery(this._requestInfo);
+			return BloomServer.GetLocalPathWithoutQuery(this._requestInfo);
 		}
 
 
@@ -272,6 +272,11 @@ namespace Bloom.Api
 		}
 
 		public byte[] RawPostData => _requestInfo.GetRawPostData();
+
+		public NameValueCollection GetPostDataWhenFormEncoded()
+		{
+			return _requestInfo.GetPostDataWhenFormEncoded();
+		}
 
 		public void ReplyWithBoolean(bool value)
 		{

@@ -12,14 +12,14 @@ export const isLongPressEvaluating: string = "isLongPressEvaluating";
  * The html code for a check mark character
  * @type String
  */
-var checkMarkString = "&#10004;";
-var checkLeaveOffTool: string = "Visualizer";
+const checkMarkString: string = "&#10004;";
+const checkLeaveOffTool: string = "Visualizer";
 
-var savedSettings: string;
+let savedSettings: string;
 
-var keypressTimer: any = null;
+let keypressTimer: any = null;
 
-var showExperimentalTools: boolean; // set by Toolbox.initialize()
+let showExperimentalTools: boolean; // set by Toolbox.initialize()
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
@@ -65,7 +65,7 @@ export class ToolBox {
             .get(0)).click();
     }
     public configureElementsForTools(container: HTMLElement) {
-        for (var i = 0; i < masterToolList.length; i++) {
+        for (let i = 0; i < masterToolList.length; i++) {
             masterToolList[i].configureElements(container);
             // the toolbox itself handles keypresses in order to manage the process
             // of giving each tool a chance to update things when the user stops typing
@@ -155,9 +155,9 @@ export class ToolBox {
     }
 
     // The body of the editable page, a root for searching for document content.
-    public static getPage(): HTMLElement {
+    public static getPage(): HTMLElement | null {
         const page = this.getPageFrame();
-        if (!page) return null;
+        if (!page || !page.contentWindow) return null;
         return page.contentWindow.document.body;
     }
 
@@ -167,7 +167,7 @@ export class ToolBox {
      * @param {String} eventData
      */
     public static fireCSharpToolboxEvent(eventName: string, eventData: string) {
-        var event = new MessageEvent(eventName, {
+        const event = new MessageEvent(eventName, {
             bubbles: true,
             cancelable: true,
             data: eventData
@@ -213,7 +213,7 @@ export class ToolBox {
                             showAdvancedFeatures.data.toString() === "true";
                         if (!showExperimentalTools) {
                             for (
-                                var i = masterToolList.length - 1;
+                                let i = masterToolList.length - 1;
                                 i >= 0;
                                 i--
                             ) {
@@ -224,7 +224,7 @@ export class ToolBox {
                         }
                         const toolsToLoad = enabledTools.data.split(",");
                         // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
-                        for (var i = toolsToLoad.length - 1; i >= 0; i--) {
+                        for (let i = toolsToLoad.length - 1; i >= 0; i--) {
                             if (
                                 !masterToolList.some(
                                     mod => mod.id() === toolsToLoad[i]
@@ -234,7 +234,7 @@ export class ToolBox {
                             }
                         }
                         // add any tools we always show
-                        for (var j = 0; j < masterToolList.length; j++) {
+                        for (let j = 0; j < masterToolList.length; j++) {
                             if (
                                 masterToolList[j].isAlwaysEnabled() &&
                                 !toolsToLoad.includes(masterToolList[j].id())
@@ -273,7 +273,9 @@ export class ToolBox {
                                 // optimize: maybe we can overlap these?
                                 const nextToolId = toolsToLoad.pop();
                                 const checkBoxId = nextToolId + "Check";
-                                var toolId = ToolBox.addStringTool(nextToolId);
+                                const toolId = ToolBox.addStringTool(
+                                    nextToolId
+                                );
                                 beginAddTool(checkBoxId, toolId, false, () =>
                                     loadNextTool()
                                 );
@@ -296,7 +298,7 @@ export class ToolBox {
             // not available for experimental reasons, but sometimes (e.g.
             // clicking on a video placeholder, it will help the user to
             // say why nothing is happening.
-            let msg =
+            const msg =
                 "This tool requires that you enable Settings : Advanced Program Settings : Show Experimental Features";
             alert(msg);
             return;
@@ -305,7 +307,7 @@ export class ToolBox {
         if (!this.toolboxIsShowing()) {
             this.toggleToolbox();
         }
-        let checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
+        const checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
         // if it was an actual "input" element, we would just check for "checked",
         // but it's actually a div with possibly a checkmark character inside,
         // so just check string length.
@@ -317,23 +319,23 @@ export class ToolBox {
     }
 }
 
-var toolbox = new ToolBox();
+const toolbox = new ToolBox();
 
 export function getTheOneToolbox() {
     return toolbox;
 }
 
-// Array of ITool objects, typically one for each tool. The code for each tools inserts an appropriate ITool
-// into this array in order to be interact with the overall toolbox code.
-var masterToolList: ITool[] = [];
-var currentTool: ITool;
+// Array of ITool objects, typically one for each tool. The code for each tool inserts an appropriate ITool
+// into this array in order to interact with the overall toolbox code.
+const masterToolList: ITool[] = [];
+let currentTool: ITool | undefined = undefined;
 
 /**
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
  * @param chkbox
  */
 export function showOrHideTool_click(chkbox) {
-    var tool = $(chkbox).data("tool");
+    const tool = $(chkbox).data("tool");
 
     if (chkbox.innerHTML === "") {
         chkbox.innerHTML = checkMarkString;
@@ -342,7 +344,7 @@ export function showOrHideTool_click(chkbox) {
             "active\t" + chkbox.id + "\t1"
         );
         if (tool) {
-            beginAddTool(chkbox.id, tool, true, null);
+            beginAddTool(chkbox.id, tool, true);
         }
     } else {
         chkbox.innerHTML = "";
@@ -363,10 +365,11 @@ export function showOrHideTool_click(chkbox) {
 export function restoreToolboxSettings() {
     BloomApi.get("toolbox/settings", result => {
         savedSettings = result.data;
-        var pageFrame = getPageFrame();
-        if (pageFrame.contentWindow.document.readyState === "loading") {
+        const pageFrame = getPageFrame();
+        const contentWin = pageFrame.contentWindow;
+        if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
-            $(pageFrame.contentWindow.document).ready(e =>
+            $(contentWin.document).ready(e =>
                 restoreToolboxSettingsWhenPageReady(result.data)
             );
             return;
@@ -376,16 +379,18 @@ export function restoreToolboxSettings() {
 }
 
 export function applyToolboxStateToUpdatedPage() {
-    if (currentTool != null && toolbox.toolboxIsShowing()) {
+    if (currentTool && toolbox.toolboxIsShowing()) {
         doWhenPageReady(() => {
-            currentTool.newPageReady();
-            currentTool.updateMarkup();
+            if (currentTool) {
+                currentTool.newPageReady();
+                currentTool.updateMarkup();
+            }
         });
     }
 }
 
 function doWhenPageReady(action: () => void) {
-    var page = getPage();
+    const page = getPage();
     if (!page || page.length === 0) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
@@ -401,7 +406,7 @@ function doWhenPageReady(action: () => void) {
 // I was trying to fix turned out to be caused by multiple calls to doWhenCkEditorReady...
 // but it seems a precaution worth keeping.
 function doWhenCkEditorReady(action: () => void) {
-    var removers = [];
+    const removers = [];
     doWhenCkEditorReadyCore({
         removers: removers,
         done: false,
@@ -415,7 +420,7 @@ function doWhenCkEditorReadyCore(arg: {
     action: () => void;
 }): void {
     if ((<any>getPageFrame().contentWindow).CKEDITOR) {
-        var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR
+        const editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR
             .instances;
         // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
         // This wipes out (at least) our page initialization.
@@ -423,8 +428,8 @@ function doWhenCkEditorReadyCore(arg: {
         // If any instance on the page (e.g., one per div) is not ready, wait until all are.
         // (The instances property leads to an object in which a field editorN is defined for each
         // editor, so we just loop until some value of N which doesn't yield an editor instance.)
-        for (var i = 1; ; i++) {
-            var instance = editorInstances["editor" + i];
+        for (let i = 1; ; i++) {
+            const instance = editorInstances["editor" + i];
             if (instance == null) {
                 if (i === 0) {
                     // no instance at all...if one is later created, get us invoked.
@@ -462,8 +467,8 @@ function doWhenCkEditorReadyCore(arg: {
 function restoreToolboxSettingsWhenPageReady(settings: string) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
-        var opts = settings;
-        var currentTool = opts["current"] || "";
+        const opts = settings;
+        const currentTool = opts["current"] || "";
 
         // Before we set stage/level, as it initializes them to 1.
         setCurrentTool(currentTool);
@@ -485,21 +490,21 @@ function getPageFrame(): HTMLIFrameElement {
 }
 
 // The body of the editable page, a root for searching for document content.
-function getPage(): JQuery {
-    var page = getPageFrame();
-    if (!page) return null;
+function getPage(): JQuery | null {
+    const page = getPageFrame();
+    if (!page || !page.contentWindow) return null;
     return $(page.contentWindow.document.body);
 }
 
-function switchTool(newToolName: string) {
+function switchTool(newToolName: string): void {
     // Have Bloom remember which tool is active. (Might be none)
     ToolBox.fireCSharpToolboxEvent(
         "saveToolboxSettingsEvent",
         "current\t" + newToolName
     );
-    var newTool = null;
+    let newTool: ITool | null = null;
     if (newToolName) {
-        for (var i = 0; i < masterToolList.length; i++) {
+        for (let i = 0; i < masterToolList.length; i++) {
             // the newToolName comes from meta.json and we've changed our minds a few times about
             // whether it should end in "Tool" so what's in the meta.json might have it or not.
             // For robustness we will recognize any tool name that starts with the (no -Tool)
@@ -514,33 +519,40 @@ function switchTool(newToolName: string) {
             currentTool.detachFromPage();
             currentTool.hideTool();
         }
-        activateTool(newTool);
-        currentTool = newTool;
+        if (newTool) {
+            activateTool(newTool);
+            currentTool = newTool;
+        }
     }
 }
 
 function activateTool(newTool: ITool) {
     if (newTool && toolbox.toolboxIsShowing()) {
+        const toolElt = getToolElement(newTool);
         // If we're activating this tool for the first time, restore its settings.
         if (!newTool.hasRestoredSettings) {
             newTool.hasRestoredSettings = true;
             newTool.beginRestoreSettings(savedSettings).then(() => {
-                newTool.finishToolLocalization(getToolElement(newTool));
+                if (toolElt) {
+                    newTool.finishToolLocalization(toolElt);
+                }
                 newTool.showTool();
                 newTool.newPageReady();
             });
         } else {
-            newTool.finishToolLocalization(getToolElement(newTool));
+            if (toolElt) {
+                newTool.finishToolLocalization(toolElt);
+            }
             newTool.showTool();
             newTool.newPageReady();
         }
     }
 }
 
-function getToolElement(tool: ITool): HTMLElement {
-    var toolElement = null;
+function getToolElement(tool: ITool): HTMLElement | null {
+    let toolElement: HTMLElement | null = null;
     if (tool) {
-        var toolName = ToolBox.addStringTool(tool.id());
+        const toolName = ToolBox.addStringTool(tool.id());
         $("#toolbox")
             .find("> h3")
             .each(function() {
@@ -551,7 +563,7 @@ function getToolElement(tool: ITool): HTMLElement {
                 return true; // continue the each() loop
             });
     }
-    return <HTMLElement>toolElement;
+    return toolElement;
 }
 /**
  * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
@@ -559,8 +571,8 @@ function getToolElement(tool: ITool): HTMLElement {
  */
 function setCurrentTool(toolID: string) {
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
-    var idx = 0;
-    var toolbox = $("#toolbox");
+    let idx = 0;
+    const toolbox = $("#toolbox");
 
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
@@ -597,7 +609,7 @@ function setCurrentTool(toolID: string) {
     }
 
     // turn off animation
-    var ani = toolbox.accordion("option", "animate");
+    const ani = toolbox.accordion("option", "animate");
     toolbox.accordion("option", "animate", false);
 
     // the index must be passed as an int, a string will not work.
@@ -612,7 +624,7 @@ function setCurrentTool(toolID: string) {
     // the activate event happening in the initial call. Instead, we make SURE to call it for the
     // tool we are making active.
     toolbox.onSafe("accordionactivate.toolbox", function(event, ui) {
-        var newToolName = "";
+        let newToolName = "";
         if (ui.newHeader.attr("data-toolId")) {
             newToolName = ui.newHeader.attr("data-toolId").toString();
         }
@@ -646,15 +658,15 @@ function beginAddTool(
     checkBoxId: string,
     toolId: string,
     openTool: boolean,
-    whenLoaded: () => void
+    whenLoaded?: (() => void)
 ): void {
-    var chkBox = document.getElementById(checkBoxId);
+    const chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
         // always-enabled tools don't have checkboxes.
         chkBox.innerHTML = checkMarkString;
     }
 
-    var subpath = {
+    const subpath = {
         talkingBookTool: "talkingBook/talkingBookToolboxTool.html",
         decodableReaderTool:
             "readers/decodableReader/decodableReaderToolboxTool.html",
@@ -683,23 +695,23 @@ function beginAddTool(
         );
     } else {
         // new-style tool implemented in React
-        var tool = getITool(toolId);
+        const tool = getITool(toolId);
         const content = $(tool.makeRootElement());
-        var toolName = ToolBox.addStringTool(tool.id());
-        // var parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
+        const toolName = ToolBox.addStringTool(tool.id());
+        // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
         //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
 
         const toolIdUpper =
             tool.id()[0].toUpperCase() +
             tool.id().substring(1, tool.id().length);
-        var i18Id = "EditTab.Toolbox." + toolIdUpper;
+        let i18Id = "EditTab.Toolbox." + toolIdUpper;
         if (toolName.indexOf(checkLeaveOffTool) === -1) {
             i18Id += "Tool";
         }
         // Not sure this will always work, but we can do something more complicated...maybe a new method
         // on ITool...if we need it. Note that this is just a way to come up with the English,
         // we don't do it to localizations. But in English, the code value beats the xlf one.
-        var toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
+        let toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
         toolLabel = ToolBox.addStringTool(toolLabel, true);
         const header = $(
             "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
@@ -729,14 +741,14 @@ function handleKeyboardInput(): void {
     if (keypressTimer) clearTimeout(keypressTimer);
     keypressTimer = setTimeout(function() {
         // This happens 500ms after the user stops typing.
-        var page: HTMLIFrameElement = <HTMLIFrameElement>(
+        const page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")
         );
-        if (!page) return; // unit testing?
+        if (!page || !page.contentWindow) return; // unit testing?
 
-        var selection: Selection = page.contentWindow.getSelection();
-        var current: Node = selection.anchorNode;
-        var active = <HTMLDivElement>$(selection.anchorNode)
+        const selection: Selection = page.contentWindow.getSelection();
+        const anchor: Node = selection.anchorNode;
+        const active = <HTMLDivElement>$(anchor)
             .closest("div")
             .get(0);
         if (
@@ -821,10 +833,10 @@ export function removeCommentsFromEditableHtml(editable: HTMLElement) {
     editable.innerHTML = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
 }
 
-var resizeTimer;
+let resizeTimer;
 function resizeToolbox() {
-    var windowHeight = $(window).height();
-    var root = $(".toolboxRoot");
+    const windowHeight = $(window).height();
+    const root = $(".toolboxRoot");
     // Set toolbox container height to fit in new window size
     // Then toolbox Resize() will adjust it to fit the container
     root.height(windowHeight - 25); // 25 is the top: value set for div.toolboxRoot in toolbox.less
@@ -835,9 +847,14 @@ function resizeToolbox() {
  * Adds one tool to the toolbox
  * @param {String} newContent
  * @param {String} toolId
+ * @param {Boolean} openTool
  */
-function loadToolboxToolText(newContent, toolId, openTool: boolean) {
-    var parts = $($.parseHTML(newContent, document, true));
+function loadToolboxToolText(
+    newContent: string,
+    toolId: string,
+    openTool: boolean
+) {
+    const parts = $($.parseHTML(newContent, document, true));
 
     parts.filter("*[data-i18n]").localize();
     parts.find("*[data-i18n]").localize();
@@ -846,11 +863,11 @@ function loadToolboxToolText(newContent, toolId, openTool: boolean) {
     if (parts.length < 2) return;
 
     // get the toolbox tool label
-    var header = parts.filter("h3").first();
+    const header = parts.filter("h3").first();
     if (header.length < 1) return; // bookSettings currently is empty and doesn't get added.
 
     // get the tool content div
-    var content = parts.filter("div").first();
+    const content = parts.filter("div").first();
 
     loadToolboxTool(header, content, toolId, openTool);
 }
@@ -860,8 +877,8 @@ function loadToolboxTool(
     toolId,
     openTool: boolean
 ) {
-    var toolboxElt = $("#toolbox");
-    var label = header.text();
+    const toolboxElt = $("#toolbox");
+    const label = header.text();
     if (toolId === "settingsTool" && !showExperimentalTools) {
         content.addClass("hideExperimental");
     }
@@ -873,7 +890,7 @@ function loadToolboxTool(
         toolboxElt.append(header);
         toolboxElt.append(content);
     } else {
-        var insertBefore = toolboxElt
+        let insertBefore = toolboxElt
             .children()
             .filter(function() {
                 return $(this).text() > label;
@@ -892,8 +909,8 @@ function loadToolboxTool(
     // if requested, open the tool that was just inserted
     if (openTool && toolbox.toolboxIsShowing()) {
         toolboxElt.accordion("refresh");
-        var id = header.attr("id");
-        var toolNumber = parseInt(id.substr(id.lastIndexOf("_")), 10);
+        const id = header.attr("id");
+        const toolNumber = parseInt(id.substr(id.lastIndexOf("_")), 10);
         toolboxElt.accordion("option", "active", toolNumber); // must pass as integer
     }
 }
@@ -913,7 +930,7 @@ function showToolboxChanged(wasShowing: boolean): void {
     } else {
         // starting up for the very first time in this book...no tool is current,
         // so select and properly initialize the first one.
-        var newToolName = $("#toolbox")
+        let newToolName = $("#toolbox")
             .find("> h3")
             .first()
             .attr("data-toolId");
