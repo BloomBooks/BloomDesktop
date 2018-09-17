@@ -896,6 +896,14 @@ namespace Bloom.Book
 		//https://www.w3.org/wiki/WebSchemas/Accessibility#Features_for_augmentation
 		[JsonProperty("a11yFeatures")]
 		public string A11yFeatures { get; set; }
+
+		//http://www.idpf.org/epub/a11y/accessibility.html#sec-conf-reporting
+		[JsonProperty("a11yLevel")]
+		public string A11yLevel { get; set;  }
+
+		//http://www.idpf.org/epub/a11y/accessibility.html#sec-conf-reporting
+		[JsonProperty("a11yCertifier")]
+		public string A11yCertifier { get; set; }
 		
 		// Global Digital Library: Indicates reading level
 		// NB: this is just "level" in the Global Digital Library

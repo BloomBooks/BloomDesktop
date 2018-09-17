@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
@@ -133,9 +133,34 @@
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
       </trans-unit>
+      <trans-unit id="BookMetadata.a11yCertifier" sil:dynamic="true">
+        <source xml:lang="en">Level certified by</source>
+        <note>ID: BookMetadata.a11yCertifier</note>
+      </trans-unit>
       <trans-unit id="BookMetadata.a11yFeatures" sil:dynamic="true">
         <source xml:lang="en">Accessibility features</source>
         <note>ID: BookMetadata.a11yFeatures</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevel" sil:dynamic="true">
+        <source xml:lang="en">Accessibility level</source>
+        <note>ID: BookMetadata.a11yLevel</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true">
+        <source xml:lang="en">None</source>
+        <note>ID: BookMetadata.a11yLevelNone</note>
+        <note>indicates that no level of accessibility conformance is claimed</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
+        <source xml:lang="en">Level A conformance</source>
+        <note>ID: BookMetadata.a11yLevelA</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true">
+        <source xml:lang="en">Level AA conformance</source>
+        <note>ID: BookMetadata.a11yLevelAA</note>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevelAAA" sil:dynamic="true">
+        <source xml:lang="en">Level AAA conformance</source>
+        <note>ID: BookMetadata.a11yLevelAAA</note>
       </trans-unit>
       <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
         <source xml:lang="en">Alternative text</source>
