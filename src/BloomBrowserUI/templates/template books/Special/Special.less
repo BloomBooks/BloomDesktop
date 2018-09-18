@@ -16,7 +16,10 @@
         background-color: @bloom-lightgray;
         font-size: 10pt;
         font-family: Segoe UI, Open Sans, Arial, sans-serif;
-        padding: 8px;
+        // Top and bottom padding are set to 0 so as not to clip scrolled text at the bottom.
+        // Left and right padding of 4px gives a nice appearance,
+        // but still allows room for the text on (smaller) Device layouts.
+        padding: 0 4px 0 4px;
         height: 100%;
         p + h1 {
             margin-top: 1em;
@@ -24,6 +27,7 @@
         .key {
             font-style: italic;
         }
+        overflow-y: scroll;
     }
     .bloom-translationGroup {
         height: 100%;
