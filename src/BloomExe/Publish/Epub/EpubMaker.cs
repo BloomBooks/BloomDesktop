@@ -991,14 +991,23 @@ namespace Bloom.Publish.Epub
 					{
 						// If the inner xml is only an audioSentence recording, it will still create the aside.
 						// But if there really isn't anything here, skip it.
-						if (string.IsNullOrWhiteSpace(activeDescription.InnerXml))
+						if (string.IsNullOrWhiteSpace(activeDescription?.InnerXml))
 							continue;
 						var aside = description.OwnerDocument.CreateElement("aside");
 						// We want to preserve all the inner markup, especially the audio spans.
 						aside.InnerXml = activeDescription.InnerXml;
-						// As well as potentially being used by stylesheets, this is used by the AddAriaAccessibilityMarkup
-						// to identify the aside as an image description (and tie the image to it).
-						aside.SetAttribute("class", "imageDescription");
+						// We also need the language attribute to get the style to work right.
+						var langAttr = activeDescription.Attributes["lang"];
+						if (langAttr != null)
+						{
+							aside.SetAttribute("lang", langAttr.Value);
+						}
+
+						// As well as potentially being used by stylesheets, 'imageDescription' is used by the
+						// AddAriaAccessibilityMarkup to identify the aside as an image description
+						// (and tie the image to it). 'ImageDescriptionEdit-style' works with the 'lang' attribute
+						// to style the aside in the ePUB.
+						aside.SetAttribute("class", "imageDescription ImageDescriptionEdit-style");
 						asideContainer.AppendChild(aside);
 					}
 				}
