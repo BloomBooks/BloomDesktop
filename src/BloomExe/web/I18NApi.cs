@@ -73,10 +73,11 @@ namespace Bloom.Api
 						var localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, null, null, langId);
 						if (localizedString == null)
 							localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishText, null, langId);
-						request.ReplyWithText(localizedString);
+						request.ReplyWithJson(new {text = localizedString, success = true });
 					}
 					else
 					{
+						var idFound = true;
 						// Don't report missing strings if they are numbers
 						// Enhance: We might get the Javascript to do locale specific numbers someday
 						// The C# side doesn't currently have the smarts to do DigitSubstitution
@@ -100,6 +101,7 @@ namespace Bloom.Api
 								if (!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
 								{
 									ReportL10NMissingString(id, englishText, UrlPathString.CreateFromUrlEncodedString(parameters["comment"]??"").NotEncoded);
+									idFound = false;
 								}
 								else
 								{
@@ -109,7 +111,7 @@ namespace Bloom.Api
 								}
 							}
 						}
-						request.ReplyWithText(englishText);
+						request.ReplyWithJson(new {text = englishText, success = idFound });
 					}
 					break;
 				default:
