@@ -1294,7 +1294,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
     <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
-    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx60.32.60.0.11-alpha\content\Firefox\*.* $(OutDir)Firefox" />
+    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx60.32.60.0.12-alpha\content\Firefox\*.* $(OutDir)Firefox" />
   </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
