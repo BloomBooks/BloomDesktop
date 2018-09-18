@@ -46,6 +46,7 @@ export interface ILocalizationState {
     translation?: string;
     tipEnabledTranslation?: string;
     tipDisabledTranslation?: string;
+    lookupSuccessful?: boolean;
 }
 
 // A base class for all elements that display text. It uses Bloom's localizationManager wrapper to get strings.
@@ -127,10 +128,10 @@ export class LocalizableElement<
         if (this.props.alreadyLocalized) {
             return;
         }
-        var english = this.getOriginalStringContent();
+        const english = this.getOriginalStringContent();
         if (!english.startsWith("ERROR: must have exactly one child")) {
             theOneLocalizationManager
-                .asyncGetText(
+                .asyncGetTextAndSuccessInfo(
                     this.props.l10nKey,
                     english,
                     this.props.l10nComment
@@ -138,18 +139,19 @@ export class LocalizableElement<
                 .done(result => {
                     // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
                     // after this component is no longer visible. See note on componentWillUnmount()
+                    let text = result.text;
                     if (this.props.l10nParam0) {
-                        result = result.replace("%0", this.props.l10nParam0);
+                        text = text.replace("%0", this.props.l10nParam0);
                         if (this.props.l10nParam1) {
-                            result = result.replace(
-                                "%1",
-                                this.props.l10nParam1
-                            );
+                            text = text.replace("%1", this.props.l10nParam1);
                         }
                     }
-                    this.localizedText = result;
+                    this.localizedText = text;
                     if (this.isComponentMounted) {
-                        this.setState({ translation: result });
+                        this.setState({
+                            translation: text,
+                            lookupSuccessful: result.success
+                        });
                     }
                 });
         }
@@ -192,7 +194,11 @@ export class LocalizableElement<
         let text = this.getOriginalStringContent();
         if (this.props.alreadyLocalized) {
             l10nClass = "assumedTranslated";
-        } else if (this.state && this.state.translation) {
+        } else if (
+            this.state &&
+            this.state.translation &&
+            this.state.lookupSuccessful
+        ) {
             l10nClass = "translated";
             text = this.state.translation;
         }
