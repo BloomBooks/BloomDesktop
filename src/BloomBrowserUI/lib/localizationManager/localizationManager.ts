@@ -188,6 +188,7 @@ export class LocalizationManager {
             langId,
             comment,
             false,
+            false,
             args
         );
     }
@@ -218,16 +219,34 @@ export class LocalizationManager {
             "UI",
             comment,
             true,
+            false,
+            args
+        );
+    }
+    public asyncGetTextAndSuccessInfo(
+        id: string,
+        englishText: string,
+        comment: string,
+        ...args
+    ): JQueryPromise<any> {
+        return this.asyncGetTextInLangCommon(
+            id,
+            englishText,
+            "UI",
+            comment,
+            true,
+            true,
             args
         );
     }
 
-    public asyncGetTextInLangCommon(
+    private asyncGetTextInLangCommon(
         id: string,
         englishText: string,
         langId: string,
         comment: string,
         englishDefault: boolean,
+        includeSuccessInfo: boolean,
         args
     ): JQueryPromise<any> {
         // We already get a promise from the async call, and could just return that.
@@ -247,12 +266,18 @@ export class LocalizationManager {
                 }
             })
             .then(response => {
-                var text = HtmlDecode(response.data);
+                let text = HtmlDecode(response.data.text);
                 // is this a C#-style string.format style request?
                 if (args.length > 0) {
                     text = this.simpleDotNetFormat(text, args);
                 }
-                deferred.resolve(text);
+                if (!includeSuccessInfo) deferred.resolve(text);
+                else {
+                    deferred.resolve({
+                        text: text,
+                        success: response.data.success
+                    });
+                }
             })
 
             //TODO: I (JH) could not get this to fire, in a unit test environment, when there was no response.
