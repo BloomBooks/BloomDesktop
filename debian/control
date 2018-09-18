@@ -18,7 +18,7 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
 Package: bloom-desktop-beta
 Architecture: any
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
- mono4-sil, libgdiplus4-sil, gtklp,
+ mono4-sil, libgdiplus4-sil, gtk-sharp4-sil, gtklp,
  chmsee, libtidy-sil,
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
