@@ -5,7 +5,7 @@
 // Mixin for setting .marginBox margins for Device layouts.
 .SetMarginBoxDevice(@PageWidth, @PageHeight) {
     height: @PageHeight - (@DeviceMargin*2);
-    width: @PageWidth - (@DeviceMargin*2);
+    width: calc(100% - @DeviceMargin*2) !important;
     img {
         max-width: @PageWidth - (@DeviceMargin*2);
     }
