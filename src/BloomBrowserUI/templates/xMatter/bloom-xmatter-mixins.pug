@@ -187,7 +187,7 @@ mixin title-page-contents
 	// TITLE PAGE
 	+field-prototypeDeclaredExplicity("V,N1")#titlePageTitleBlock
 		label.bubble Book title in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
 	div.largeFlexGap
 	block originalContributions
 		+field-prototypeDeclaredExplicity("N1")#originalContributions
