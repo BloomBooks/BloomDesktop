@@ -1,9 +1,9 @@
-bloom-desktop-betainternal (4.4.0) stable; urgency=medium
+bloom-desktop-alpha (4.5.0) stable; urgency=medium
 
-  * Change from alpha to betainternal in preparation for beta
+  * Up the version number on the master (alpha) branch to 4.5.
   * More bug fixes and enhancements: see the source repository log for details.
 
- -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 18 Sep 2018 10:06:02 -0600
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 18 Sep 2018 09:50:50 -0600
 
 bloom-desktop-alpha (4.4.0) stable; urgency=medium
 

@@ -168,7 +168,8 @@ export default class AudioRecording {
         page.find(".ui-audioCurrent")
             .removeClass("ui-audioCurrent")
             .removeClass("disableHighlight");
-
+    }
+    public stopListeningForLevels() {
         WebSocketManager.closeSocket(kWebsocketContext);
     }
 
