@@ -1,4 +1,4 @@
-﻿/// <reference path="../lib/localizationManager/localizationManager.ts" />
+/// <reference path="../lib/localizationManager/localizationManager.ts" />
 import * as $ from "jquery";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
@@ -45,7 +45,6 @@ class PageChooser {
             this._defaultPageToSelect =
                 initializationObject["defaultPageToSelect"];
             this._orientation = initializationObject["orientation"];
-            this._currentPageLayout = initializationObject["currentLayout"];
             this._forChooseLayout = initializationObject["forChooseLayout"];
         } else {
             alert("Expected url in PageChooser ctor!");
@@ -74,10 +73,10 @@ class PageChooser {
         // an item partly scrolled off the bottom. There's no way currently to select an item
         // that's entirely scrolled off the top, and it doesn't seem worth the complication
         // to force a partly-visible one at the top to become wholly visible.
-        let container = $(".gridItemDisplay");
-        let positionOfTopOfSelected =
+        const container = $(".gridItemDisplay");
+        const positionOfTopOfSelected =
             $(this._selectedGridItem).offset().top + container.scrollTop();
-        let positionOfBottomOfSelected =
+        const positionOfBottomOfSelected =
             $(this._selectedGridItem).height() + positionOfTopOfSelected;
         if (
             container.height() + container.scrollTop() <
@@ -271,6 +270,7 @@ class PageChooser {
                 .then(() => this.closeup());
         }
     }
+
     private closeup(): void {
         // End the disabling of other panes for the modal dialog. The final argument is because in this
         // method the current window is the dialog, and it's the parent window's document that is being
@@ -448,7 +448,7 @@ class PageChooser {
                     defaultPageToSelect,
                     previousPagesCount
                 );
-                let pagesCountSoFar = previousPagesCount + $(pages).length;
+                const pagesCountSoFar = previousPagesCount + $(pages).length;
 
                 this.loadNextPageGroup(
                     queue,
