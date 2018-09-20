@@ -904,6 +904,10 @@
         <source xml:lang="en">Continue anyway</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
       </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox" sil:dynamic="true">
+        <source xml:lang="en">Change all similar pages in this book to this layout.</source>
+        <note>ID: EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox</note>
+      </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
