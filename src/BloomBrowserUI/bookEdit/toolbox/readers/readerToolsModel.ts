@@ -737,7 +737,9 @@ export class ReaderToolsModel {
         }
 
         // if no change, return now
-        if (!newMarkupType) return false;
+        // Note that an enum value of 0 is not "truthy".
+        // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6485.
+        if (!newMarkupType && newMarkupType !== MarkupType.None) return false;
         let didMarkup = false;
 
         if (newMarkupType !== this.currentMarkupType) {
