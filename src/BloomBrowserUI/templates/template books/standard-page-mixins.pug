@@ -7,7 +7,7 @@ mixin standardStyles
     block
 
 mixin videox
-   +video.bloom-leadingElement.bloom-noVideoSelected&attributes(attributes)
+   +video.bloom-leadingElement&attributes(attributes)
 mixin imagex
    +image.bloom-leadingElement&attributes(attributes)
 mixin fieldx
@@ -58,7 +58,7 @@ mixin standardPage-JustPicture
          +image
 
 mixin standardPage-JustVideo
-   +page-choice('Just a Video').customPage#8bedcdf8-3ad6-4967-b027-6c186436572f
+   +page-choice('Just Video').customPage#8bedcdf8-3ad6-4967-b027-6c186436572f
       .split-pane-component-inner
          +videox
 
