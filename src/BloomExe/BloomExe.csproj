@@ -117,11 +117,11 @@
       <HintPath>..\..\packages\Fleck.0.14.0.59\lib\net40\Fleck.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Geckofx-Core, Version=60.0.12.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
-      <HintPath>..\..\packages\Geckofx60.32.60.0.12-alpha\lib\net45\Geckofx-Core.dll</HintPath>
+    <Reference Include="Geckofx-Core, Version=60.0.13.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+      <HintPath>..\..\packages\Geckofx60.32.60.0.13-alpha\lib\net45\Geckofx-Core.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Winforms, Version=60.0.12.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
-      <HintPath>..\..\packages\Geckofx60.32.60.0.12-alpha\lib\net45\Geckofx-Winforms.dll</HintPath>
+    <Reference Include="Geckofx-Winforms, Version=60.0.13.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+      <HintPath>..\..\packages\Geckofx60.32.60.0.13-alpha\lib\net45\Geckofx-Winforms.dll</HintPath>
     </Reference>
     <Reference Include="Glob, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Glob.0.4.0\lib\net46\Glob.dll</HintPath>
@@ -1294,7 +1294,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
     <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
-    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx60.32.60.0.12-alpha\content\Firefox\*.* $(OutDir)Firefox" />
+    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx60.32.60.0.13-alpha\content\Firefox\*.* $(OutDir)Firefox" />
   </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
@@ -1412,11 +1412,11 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
   </Target>
   <Import Project="..\..\packages\Geckofx60.32.60.0.7-alpha\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.7-alpha\build\Geckofx60.32.targets')" />
-  <Import Project="..\..\packages\Geckofx60.32.60.0.12-alpha\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.12-alpha\build\Geckofx60.32.targets')" />
+  <Import Project="..\..\packages\Geckofx60.32.60.0.13-alpha\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.13-alpha\build\Geckofx60.32.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Geckofx60.32.60.0.12-alpha\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.12-alpha\build\Geckofx60.32.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Geckofx60.32.60.0.13-alpha\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.13-alpha\build\Geckofx60.32.targets'))" />
   </Target>
 </Project>
