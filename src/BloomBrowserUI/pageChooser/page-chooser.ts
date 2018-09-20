@@ -1,6 +1,5 @@
-﻿/// <reference path="../lib/localizationManager/localizationManager.ts" />
+/// <reference path="../lib/localizationManager/localizationManager.ts" />
 import * as $ from "jquery";
-import * as jQuery from "jquery";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import axios from "axios";
@@ -10,8 +9,8 @@ import "errorHandler";
 
 $(window).ready(() => {
     BloomApi.get("pageTemplates", result => {
-        var templatesJSON = result.data;
-        var pageChooser = new PageChooser(JSON.stringify(templatesJSON));
+        const templatesJSON = result.data;
+        const pageChooser = new PageChooser(JSON.stringify(templatesJSON));
         pageChooser.loadPageGroups();
     });
 });
@@ -34,7 +33,7 @@ class PageChooser {
     private _currentPageLayout: string;
 
     constructor(initializationJsonString: string) {
-        var initializationObject;
+        let initializationObject;
         if (initializationJsonString) {
             try {
                 initializationObject = $.parseJSON(initializationJsonString);
@@ -46,7 +45,6 @@ class PageChooser {
             this._defaultPageToSelect =
                 initializationObject["defaultPageToSelect"];
             this._orientation = initializationObject["orientation"];
-            this._currentPageLayout = initializationObject["currentLayout"];
             this._forChooseLayout = initializationObject["forChooseLayout"];
         } else {
             alert("Expected url in PageChooser ctor!");
@@ -60,7 +58,7 @@ class PageChooser {
     private thumbnailClickHandler(clickedDiv, evt): void {
         // 'div' is an .invisibleThumbCover
         // Select new thumbnail
-        var newsel = this.findProperElement(clickedDiv, evt);
+        const newsel = this.findProperElement(clickedDiv, evt);
         if (newsel == null) return;
         // Mark any previously selected thumbnail as no longer selected
         if (this._selectedGridItem != undefined) {
@@ -75,10 +73,10 @@ class PageChooser {
         // an item partly scrolled off the bottom. There's no way currently to select an item
         // that's entirely scrolled off the top, and it doesn't seem worth the complication
         // to force a partly-visible one at the top to become wholly visible.
-        let container = $(".gridItemDisplay");
-        let positionOfTopOfSelected =
+        const container = $(".gridItemDisplay");
+        const positionOfTopOfSelected =
             $(this._selectedGridItem).offset().top + container.scrollTop();
-        let positionOfBottomOfSelected =
+        const positionOfBottomOfSelected =
             $(this._selectedGridItem).height() + positionOfTopOfSelected;
         if (
             container.height() + container.scrollTop() <
@@ -90,8 +88,8 @@ class PageChooser {
         }
 
         // Display large preview
-        var caption = $("#previewCaption");
-        var defaultCaptionText = $(
+        const caption = $("#previewCaption");
+        const defaultCaptionText = $(
             ".gridItemCaption",
             this._selectedGridItem
         ).text();
@@ -128,23 +126,26 @@ class PageChooser {
 
     // Return true if choosing the current layout will cause loss of data
     private willLoseData(): boolean {
-        var selected = $(this._selectedGridItem);
-        var selectedEditableDivs = parseInt(
+        const selected = $(this._selectedGridItem);
+        const selectedEditableDivs = parseInt(
             selected.attr("data-textDivCount"),
             10
         );
-        var selectedPictures = parseInt(selected.attr("data-pictureCount"), 10);
-        var selectedVideos = parseInt(selected.attr("data-videoCount"), 10);
+        const selectedPictures = parseInt(
+            selected.attr("data-pictureCount"),
+            10
+        );
+        const selectedVideos = parseInt(selected.attr("data-videoCount"), 10);
 
-        var current = $(
+        const current = $(
             (<HTMLIFrameElement>window.parent.document.getElementById("page"))
                 .contentWindow.document
         );
-        var currentEditableDivs = current.find(
+        const currentEditableDivs = current.find(
             ".bloom-translationGroup:not(.box-header-off)"
         ).length;
-        var currentPictures = current.find(".bloom-imageContainer").length;
-        var currentVideos = current.find(
+        const currentPictures = current.find(".bloom-imageContainer").length;
+        const currentVideos = current.find(
             ".bloom-videoContainer:not(.bloom-noVideoSelected)"
         ).length;
 
@@ -164,24 +165,24 @@ class PageChooser {
     // the scrollTop of the scrolling parent div.  Which makes me think the bug may be
     // below the jquery level!?
     private findProperElement(clickedDiv, evt): JQuery {
-        var gridItem = $(clickedDiv).parent();
+        const gridItem = $(clickedDiv).parent();
         if (evt) {
-            var currentScrollTop = this._scrollingDiv.scrollTop();
+            const currentScrollTop = this._scrollingDiv.scrollTop();
             if (currentScrollTop !== this._scrollTopOfTheScrollingDiv) {
                 // The scrolling position has changed, so we need to explicitly search
                 // for the proper object.
-                var y = evt["clientY"]; // retrieve the original click position
-                var x = evt["clientX"];
-                var container = $(clickedDiv)
+                const y = evt["clientY"]; // retrieve the original click position
+                const x = evt["clientX"];
+                const container = $(clickedDiv)
                     .parent()
                     .parent();
-                var childs = $(container).children();
-                for (var i = 0; i < childs.length; ++i) {
-                    var child = childs.eq(i);
-                    var top = child.offset().top;
-                    var bottom = top + child.height();
-                    var left = child.offset().left;
-                    var right = left + child.width();
+                const childs = $(container).children();
+                for (let i = 0; i < childs.length; ++i) {
+                    const child = childs.eq(i);
+                    const top = child.offset().top;
+                    const bottom = top + child.height();
+                    const left = child.offset().left;
+                    const right = left + child.width();
                     if (top <= y && y <= bottom && left <= x && x <= right) {
                         // Remember the new scroll position and return the proper object.
                         this._scrollTopOfTheScrollingDiv = currentScrollTop;
@@ -264,6 +265,7 @@ class PageChooser {
                 .then(() => this.closeup());
         }
     }
+
     private closeup(): void {
         // End the disabling of other panes for the modal dialog. The final argument is because in this
         // method the current window is the dialog, and it's the parent window's document that is being
@@ -277,7 +279,7 @@ class PageChooser {
 
     private continueCheckBoxChanged(): void {
         if (!this._forChooseLayout) return;
-        var cb = $("#convertAnywayCheckbox");
+        const cb = $("#convertAnywayCheckbox");
         $("#addPageButton").prop("disabled", !cb.is(":checked"));
     }
 
@@ -293,11 +295,11 @@ class PageChooser {
 
         // Save html sections that will get cloned later
         // there should only be one 'group' at this point; a stub with one default template page
-        var groupHtml = $(".group", document)
+        const groupHtml = $(".group", document)
             .first()
             .clone();
         // there should only be the one default 'gridItem' at this point
-        var gridItemHtml = $(".gridItem", groupHtml)
+        const gridItemHtml = $(".gridItem", groupHtml)
             .first()
             .clone();
         if ($(this._templateBookUrls).length > 0) {
@@ -365,14 +367,14 @@ class PageChooser {
         defaultPageToSelect: string,
         previousPagesCount: number
     ): void {
-        var order = queue.shift();
+        const order = queue.shift();
         if (!order) {
             return; // no more to get
         }
         axios
             .get("/bloom/" + order.templateBookPath)
             .then(result => {
-                var pageData = result.data;
+                const pageData = result.data;
 
                 // Grab all pages in this group
                 // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
@@ -383,11 +385,11 @@ class PageChooser {
                 // Add Page dialog, or for creating thumbnails, so it's safe to delete them.  See
                 // https://silbloom.myjetbrains.com/youtrack/issue/BL-3819 for details of the symptoms experienced when
                 // running Bloom without this ugly hack.
-                var pageNoImg = (<string>pageData).replace(
+                const pageNoImg = (<string>pageData).replace(
                     /<img[^>]*><\/img>/g,
                     ""
                 );
-                var pages = $(pageNoImg)
+                let pages = $(pageNoImg)
                     .filter(".bloom-page[id]")
                     .filter('[data-page="extra"]');
 
@@ -408,10 +410,13 @@ class PageChooser {
                     return; // suppress adding this group.
                 }
 
-                var dataBookArray = $("div[data-book='bookTitle']", pageNoImg);
-                var groupTitle = $(dataBookArray.first()).text();
+                const dataBookArray = $(
+                    "div[data-book='bookTitle']",
+                    pageNoImg
+                );
+                const groupTitle = $(dataBookArray.first()).text();
                 // Add title and container to dialog
-                var groupToAdd = $(groupHTML).clone();
+                const groupToAdd = $(groupHTML).clone();
                 groupToAdd.attr(
                     "data-template-book-path",
                     order.templateBookPath
@@ -438,7 +443,7 @@ class PageChooser {
                     defaultPageToSelect,
                     previousPagesCount
                 );
-                let pagesCountSoFar = previousPagesCount + $(pages).length;
+                const pagesCountSoFar = previousPagesCount + $(pages).length;
 
                 this.loadNextPageGroup(
                     queue,
@@ -451,17 +456,17 @@ class PageChooser {
             .catch(e => {
                 //we don't really want to let one bad template keep us from showing others.
                 // Insert a message into the dialog
-                var path = order.templateBookPath;
-                var index = path.lastIndexOf("/");
-                var templateName = path.substring(index + 1, path.length);
-                var templateTitle = templateName.replace(".html", "");
-                var groupToAdd = $(groupHTML).clone();
+                const path = order.templateBookPath;
+                const index = path.lastIndexOf("/");
+                const templateName = path.substring(index + 1, path.length);
+                const templateTitle = templateName.replace(".html", "");
+                const groupToAdd = $(groupHTML).clone();
                 this.setLocalizedText(
                     $(groupToAdd).find(".groupCaption"),
                     "TemplateBooks.BookName.",
                     templateTitle
                 );
-                var innerGroup = groupToAdd.find(".innerGroupContainer");
+                const innerGroup = groupToAdd.find(".innerGroupContainer");
                 innerGroup.remove();
                 groupToAdd.append("<div id='missingMsg'/>");
                 theOneLocalizationManager
@@ -502,14 +507,14 @@ class PageChooser {
 
         // Remove default template page
         $(".innerGroupContainer", currentGroup).empty();
-        var gotSelectedPage = false;
+        let gotSelectedPage = false;
         // insert a template page for each page with the correct #id on the url
         $(pageArray).each((index, div) => {
             if ($(div).attr("data-page") === "singleton") return; // skip this one
 
-            var currentGridItemHtml = $(gridItemTemplate).clone();
+            const currentGridItemHtml = $(gridItemTemplate).clone();
 
-            var currentId = $(div).attr("id");
+            const currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
             $(currentGridItemHtml).attr(
                 "data-textDivCount",
@@ -537,14 +542,14 @@ class PageChooser {
                 gotSelectedPage = true;
             }
 
-            var pageDescription = $(".pageDescription", div)
+            const pageDescription = $(".pageDescription", div)
                 .first()
                 .text();
             $(".pageDescription", currentGridItemHtml)
                 .first()
                 .text(pageDescription);
 
-            var pageLabel = $(".pageLabel", div)
+            const pageLabel = $(".pageLabel", div)
                 .first()
                 .text()
                 .trim();
@@ -552,7 +557,7 @@ class PageChooser {
                 .first()
                 .text(pageLabel);
 
-            var possibleImageUrl = this.getPossibleImageUrl(
+            const possibleImageUrl = this.getPossibleImageUrl(
                 templateBookFolderUrl,
                 pageLabel
             );
@@ -589,7 +594,7 @@ class PageChooser {
         templateBookFolderUrl: string,
         pageLabel: string
     ): string {
-        var label = pageLabel.replace("&", "+"); //ampersands confuse the url system
+        const label = pageLabel.replace("&", "+"); //ampersands confuse the url system
         // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
 
         //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
@@ -613,7 +618,7 @@ class PageChooser {
  */
 // Enhance: JT notes that this method pops up from time to time; can we consolidate?
 function fireCSharpEvent(eventName, eventData, dispatchWindow?: Window) {
-    var event = new MessageEvent(eventName, {
+    const event = new MessageEvent(eventName, {
         /*'view' : window,*/ bubbles: true,
         cancelable: true,
         data: eventData
