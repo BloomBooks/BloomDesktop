@@ -5,7 +5,7 @@
 // Mixin for setting .marginBox margins for Device layouts.
 .SetMarginBoxDevice(@PageWidth, @PageHeight) {
     height: @PageHeight - (@DeviceMargin*2);
-    width: @PageWidth - (@DeviceMargin*2);
+    .SetWidth(@PageWidth);
     img {
         max-width: @PageWidth - (@DeviceMargin*2);
     }
@@ -16,6 +16,10 @@
 // Mixin to leave space for page number at the bottom of the marginBox
 .LeaveMarginForPageNumber(@PageHeight) {
     height: @PageHeight - @DeviceBottomMargin;
+}
+
+.SetWidth(@PageWidth) {
+    width: @PageWidth - (@DeviceMargin*2);
 }
 
 .bloom-page {
@@ -98,6 +102,15 @@
     }
     .numberedPage.Device16x9Landscape & {
         .LeaveMarginForPageNumber(@Device16x9Landscape-Height);
+    }
+
+    // Unfortunate that we have to basically duplicate this from .SetMarginBoxDevice,
+    // but without this the width in basePage.less wins. This way, we win because we are more specific.
+    .screen-only.Device16x9Portrait & {
+        .SetWidth(@Device16x9Portrait-Width);
+    }
+    .screen-only.Device16x9Landscape & {
+        .SetWidth(@Device16x9Landscape-Width);
     }
 
     .PictureStoryLandscape & {
