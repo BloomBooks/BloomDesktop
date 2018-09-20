@@ -51,13 +51,16 @@ namespace Bloom.web.controllers
 						subjects = new { type = "subjects", value = _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.subjects", "Subjects") },
 						a11yLevel = new { type = "a11yLevel", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yLevel,
-							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yLevel", "Accessibility level") },
+							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yLevel", "Accessibility level"),
+							helpurl = "http://www.idpf.org/epub/a11y/accessibility.html#sec-acc-pub-wcag" },
 						a11yCertifier = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yCertifier,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yCertifier", "Level certified by") },
 						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards,
-							translatedLabel = LocalizationManager.GetString("BookMetadata.hazards", "Hazards") },
+							translatedLabel = LocalizationManager.GetString("BookMetadata.hazards", "Hazards"),
+							helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-004" },
 						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures,
-							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yFeatures", "Accessibility features") }
+							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yFeatures", "Accessibility features"),
+							helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-003" }
 					};
 					var translatedStringPairs = new
 					{

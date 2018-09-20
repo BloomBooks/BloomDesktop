@@ -222,6 +222,11 @@
         <source xml:lang="en">Typical age range</source>
         <note>ID: BookMetadata.typicalAgeRange</note>
       </trans-unit>
+      <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true">
+        <source xml:lang="en">What's this?</source>
+        <note>ID: BookMetadata.WhatsThis</note>
+        <note>minimal question indicating a link to information</note>
+      </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
