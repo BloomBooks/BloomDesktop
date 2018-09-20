@@ -333,13 +333,6 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                         >
                             Funded by the local community only
                         </Radio>
-                        <Link
-                            className="whatsThisLink"
-                            l10nKey="Settings.Enterprise.WhatsThis"
-                            href="http://bit.ly/2zTQHfM" // Todo: make a page and link to it.
-                        >
-                            What's This?
-                        </Link>
                     </div>
                     <div
                         id="communityMain"
