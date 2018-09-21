@@ -60,10 +60,25 @@ namespace Bloom.web.controllers
 			if (templatePage != null)
 			{
 				var pageToChange = _pageSelection.CurrentSelection;
-				pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
+				if (changeWholeBook)
+					ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
+				else
+					pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
 
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
 				request.PostSucceeded();
+			}
+		}
+
+		private static void ChangeSimilarPagesInEntireBook(IPage currentSelectedPage, IPage newTemplatePage)
+		{
+			var book = currentSelectedPage.Book;
+			var ancestorPageId = currentSelectedPage.IdOfFirstAncestor;
+			foreach (var page in book.GetPages())
+			{
+				if (page.IsXMatter || page.IdOfFirstAncestor != ancestorPageId)
+					continue;
+				book.UpdatePageToTemplateAndUpdateLineage(page, newTemplatePage, false);
 			}
 		}
 
