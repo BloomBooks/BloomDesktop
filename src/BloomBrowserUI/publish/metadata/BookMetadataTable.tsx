@@ -29,7 +29,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
     }
     public componentDidMount() {}
     public render() {
-        //console.log("rendering table");
         return (
             <div>
                 <ReactTable
@@ -59,7 +58,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                             className: "label",
                             Cell: (cellInfo: any) => {
                                 return (
-                                    <div>
+                                    <>
                                         <Label
                                             l10nKey={
                                                 "BookMetadata." + cellInfo.value
@@ -68,7 +67,19 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         >
                                             {cellInfo.original.translatedLabel}
                                         </Label>
-                                    </div>
+                                        {cellInfo.original.helpurl &&
+                                        cellInfo.original.helpurl.length > 0 ? (
+                                            <Link
+                                                className="whatsthis"
+                                                l10nKey="BookMetadata.WhatsThis"
+                                                href={cellInfo.original.helpurl}
+                                            >
+                                                What's this?
+                                            </Link>
+                                        ) : (
+                                            ""
+                                        )}
+                                    </>
                                 );
                             }
                         },
@@ -125,28 +136,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         return this.makeA11yFeaturesControls();
                                     default:
                                         return "??" + f.type;
-                                }
-                            }
-                        },
-                        {
-                            // there is no automatic way to compute this (https://github.com/react-tools/react-table/issues/94);
-                            // need to keep it large enough for localization
-                            width: 125,
-                            className: "link",
-                            Cell: (cellInfo: any) => {
-                                if (cellInfo.original.helpurl) {
-                                    return (
-                                        <div>
-                                            <Link
-                                                l10nKey="BookMetadata.WhatsThis"
-                                                href={cellInfo.original.helpurl}
-                                            >
-                                                What's this?
-                                            </Link>
-                                        </div>
-                                    );
-                                } else {
-                                    return <div />;
                                 }
                             }
                         }
