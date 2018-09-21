@@ -3,8 +3,11 @@ import ReactTable from "react-table";
 import * as mobxReact from "mobx-react";
 import { StringListCheckbox } from "../../react_components/stringListCheckbox";
 import { Label } from "../../react_components/l10n";
+import { Link } from "../../react_components/link";
 import "./BookMetadataTable.less";
 import SubjectChooser from "./SubjectChooser";
+import A11yLevelChooser from "./A11yLevelChooser";
+
 interface IProps {
     // We don't know or care what the top level elements are to this. We will show a row for each
     // of the top level entries that we find.
@@ -26,7 +29,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
     }
     public componentDidMount() {}
     public render() {
-        //console.log("rendering table");
         return (
             <div>
                 <ReactTable
@@ -43,7 +45,8 @@ export default class BookMetadataTable extends React.Component<IProps> {
                             value: this.props.metadata[key].value,
                             type: this.props.metadata[key].type,
                             translatedLabel: this.props.metadata[key]
-                                .translatedLabel
+                                .translatedLabel,
+                            helpurl: this.props.metadata[key].helpurl
                         };
                     })}
                     columns={[
@@ -55,7 +58,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                             className: "label",
                             Cell: (cellInfo: any) => {
                                 return (
-                                    <div>
+                                    <>
                                         <Label
                                             l10nKey={
                                                 "BookMetadata." + cellInfo.value
@@ -64,7 +67,19 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         >
                                             {cellInfo.original.translatedLabel}
                                         </Label>
-                                    </div>
+                                        {cellInfo.original.helpurl &&
+                                        cellInfo.original.helpurl.length > 0 ? (
+                                            <Link
+                                                className="whatsthis"
+                                                l10nKey="BookMetadata.WhatsThis"
+                                                href={cellInfo.original.helpurl}
+                                            >
+                                                What's this?
+                                            </Link>
+                                        ) : (
+                                            ""
+                                        )}
+                                    </>
                                 );
                             }
                         },
@@ -108,6 +123,15 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         );
                                     case "hazards":
                                         return this.makeHazardControls();
+                                    case "a11yLevel":
+                                        return (
+                                            <A11yLevelChooser
+                                                a11yLevel={
+                                                    this.props.metadata
+                                                        .a11yLevel
+                                                }
+                                            />
+                                        );
                                     case "a11yFeatures":
                                         return this.makeA11yFeaturesControls();
                                     default:
@@ -148,13 +172,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
                         </StringListCheckbox>
                     );
                 })}
-                {/* TODO: this is really helpful for testing the checkboxes, but we won't ship with it.*/}
-                for testing only:
-                <br />
-                {this.props.metadata.hazards &&
-                this.props.metadata.hazards.value
-                    ? this.props.metadata.hazards.value
-                    : "(none)"}
             </div>
         );
     }
@@ -182,13 +199,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
                         </StringListCheckbox>
                     );
                 })}
-                {/* TODO: this is really helpful for testing the checkboxes, but we won't ship with it.*/}
-                for testing only:
-                <br />
-                {this.props.metadata.a11yFeatures &&
-                this.props.metadata.a11yFeatures.value
-                    ? this.props.metadata.a11yFeatures.value
-                    : "(none)"}
             </div>
         );
     }

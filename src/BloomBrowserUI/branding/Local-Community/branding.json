@@ -1,0 +1,16 @@
+{
+    "presets": [
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img src='BloomLocal.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<p>This book was created with Bloom Enterprise features freely enabled in order to support projects funded by the local community.</p><img src='Bloom Against Light HD.png'/>",
+            "condition": "always"
+        }
+    ]
+}

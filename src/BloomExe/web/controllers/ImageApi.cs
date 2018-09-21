@@ -36,7 +36,7 @@ namespace Bloom.web.controllers
 		{
 			// Handles all except placeholder images. They can show up with digits after them, so we do them differently.
 			var imageFiles = new HashSet<string> { "license.png" };
-			var brandingDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("branding");
+			var brandingDirectory = BloomFileLocator.GetBrowserDirectory("branding");
 			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
 			{
 				imageFiles.AddRange(Directory.EnumerateFiles(brandDirectory).Where(IsSvgOrPng).Select(Path.GetFileName));
@@ -256,7 +256,9 @@ namespace Bloom.web.controllers
 			var imageNameToPages = new Dictionary<string, List<string>>();
 			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(domBody as XmlElement))
 			{
-				if (IsElementNotInAPage(img))
+				if (IsImgNotInAPage(img))
+					continue;
+				if (IsImgInsideBrandingElement(img))
 					continue;
 				var name = HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded;
 				var pageNum = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(img);
@@ -278,9 +280,14 @@ namespace Bloom.web.controllers
 			return imageNameToPages;
 		}
 
-		private static bool IsElementNotInAPage(XmlElement element)
+		private static bool IsImgNotInAPage(XmlElement imgElement)
+		{ 
+			return !(imgElement.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]") is XmlElement);
+		}
+
+		private static bool IsImgInsideBrandingElement(XmlElement imgElement)
 		{
-			return !(element.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]") is XmlElement);
+			return imgElement.SelectSingleNode("ancestor-or-self::div[contains(@data-book,'branding')]") is XmlElement;
 		}
 
 		/// <summary>

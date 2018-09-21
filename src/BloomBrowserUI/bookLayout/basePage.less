@@ -641,6 +641,14 @@ h2 {
     }
 }
 
+// if brandings (or anything else) has hyperlinks, we default to not showing ugly blue underlines in print.
+// those could be re-enabled for digital products
+a:link,
+a:visited {
+    color: unset;
+    text-decoration: unset;
+}
+
 //... to be continued. We sandwich most other sheets between this one and the languageDisplay.css, which comes last-ish
 
 // now apply any book features
