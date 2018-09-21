@@ -1,3 +1,51 @@
+@import "./bloomUI.less";
+
+// style settings for common dialog elements
+@dialog-title-padding: 10px !important;
+@dialog-title-font-size: 10pt !important;
+@dialog-title-font-weight: bold !important;
+
+.ui-dialog-titlebar {
+    padding: @dialog-title-padding;
+    font-size: @dialog-title-font-size;
+    font-weight: @dialog-title-font-weight;
+}
+.ui-dialog-titlebar-close {
+    // otherwise treated like ui-button.
+    min-width: 1px !important;
+    min-height: 1px !important;
+}
+
+@button-width: auto;
+@button-min-width: 90px;
+@button-min-height: 25px;
+@button-margin-left: 10px !important;
+@button-padding: 2px !important;
+@button-border: 1px solid gray !important;
+@button-font-weight: normal !important;
+@button-font-size: 10pt !important;
+@button-color: black !important;
+@button-background-color: white !important;
+@disabled-button-color: gray !important;
+@disabled-button-border: 1px solid lightgray !important;
+
+.ui-button {
+    width: @button-width;
+    min-width: @button-min-width;
+    margin-left: @button-margin-left;
+    border: @button-border;
+    min-height: @button-min-height;
+    padding: @button-padding;
+    font-weight: @button-font-weight;
+    font-size: @button-font-size;
+    color: @button-color;
+    background-color: @button-background-color;
+}
+.ui-button:disabled {
+    color: @disabled-button-color;
+    border: @disabled-button-border;
+}
+
 .ReactModalPortal {
     z-index: 1000;
 }
@@ -21,8 +69,9 @@
     top: 50%;
 
     .dialogTitle {
-        padding: 10px;
-        font-weight: bold;
+        padding: @dialog-title-padding;
+        font-weight: @dialog-title-font-weight;
+        font-size: @dialog-title-font-size;
     }
     .dialogContent {
         background-color: #f0f0f0;
@@ -44,19 +93,21 @@
         //flex-direction: row; // would normally use for mac & Ubuntu.. but is the rest of Bloom like windows?
 
         button {
-            width: auto;
+            width: @button-width;
             // I copied windows 10 (circa 2018) here
-            min-width: 90px;
-            margin-left: 10px;
-            border: 1px solid gray;
-            min-height: 25px;
-            padding: 2px;
+            min-width: @button-min-width;
+            margin-left: @button-margin-left;
+            border: @button-border;
+            min-height: @button-min-height;
+            padding: @button-padding;
+            font-weight: @button-font-weight;
+            font-size: @button-font-size;
+            color: @button-color;
+            background-color: @button-background-color;
         }
         button:disabled {
-            color: gray;
-            border-color: lightgray;
-            border-style: solid;
-            border-width: 1px;
+            color: @disabled-button-color;
+            border: @disabled-button-border;
         }
         #helpButton {
             //push the other buttons to the right margin
