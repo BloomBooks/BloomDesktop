@@ -1,8 +1,28 @@
+
+## 4.4
+
+For those of you helping us out by running and giving feedback on the Bloom beta channel, **thank you!** You are a vital part of the Bloom team. We are now moving on to building Bloom 4.5, and will release new editions of the 4.4 beta if you find any problems with it.
+
+Here's what's new in 4.4 beta:
+
+### Settings
+
+⭐ The Settings dialog has a new tab named "Bloom Enterprise" which allows you to enter the new subscription codes.
+
+### Edit Tab
+
+⭐ Cover pages have some improved default typography:
+Regular--->Bold, line space 1.4 --> 1.1 (national language 1.7-->1.1), min-height: (1.8em --> auto). This puts the two boxes closer to each other. _This works well for most scripts, but some will need to increase the line height._
+
+⭐ Impairment Visualizer. See an approximation of how images will look to readers with colorblindness or cataracts.
+
+### Publish Tab
+
+Previously, if you had a large paper size (like A3), the booklet buttons would be greyed out but it wasn't obvious why. Now, there is a message on screen explaining the situation.
+
+⭐ Book Metadata form. In the ePUB tool, there is now a form you can open up that adds various metadata to to the ePUB. These include accessibility features and fields needed for submission to the Global Digital Library.
+
 ## 4.3
-
-For those of you helping us out by running and giving feedback on the Bloom beta channel, **thank you!** You are a vital part of the Bloom team. We are now moving on to building Bloom 4.4, and will release new editions of the 4.3 beta if you find any problems with it.
-
-Here's what's new in 4.3 beta:
 
 ### Settings
 ⭐ In the "Lookup Language Code" dialog, you can now differentiate the language by declaring any of:   Script, Region, or Variant (dialect). [[Feature Request ✔](https://community.software.sil.org/t/handling-dialects/629)]
@@ -49,11 +69,6 @@ You can now use Bloom to make Sign Language books.
 ⭐  You can add custom Video objects to pages, just like you could previously with Text and Picture
 
 At this time, video does not support sound. We know there will be requests for that, but we need to focus on finishing the sign language features.
-
-
-# Getting the Beta
-
-If you already have a beta version, Bloom will automatically ask to update itself. Otherwise, windows users can get 4.3 from the [Bloom downloads](http://bloomlibrary.org/installers) page. The linux version will follow shortly. As usual, you can have the Release & Beta versions **installed at the same time**, and open books on either.
 
 ## 4.2
 - Edit Tab
