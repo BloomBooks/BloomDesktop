@@ -531,6 +531,17 @@ namespace Bloom.Publish.Epub
 					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "alternativeText"));
 			}
 
+			// See http://www.idpf.org/epub/a11y/accessibility.html#sec-conf-reporting for the next two elements.
+			if (!string.IsNullOrEmpty(metadata.A11yLevel))
+			{
+				metadataElt.Add(new XElement("link", new XAttribute("rel", "dcterms:conformsTo"),
+					new XAttribute("href", "http://www.idpf.org/epub/a11y/accessibility-20170105.html#" + metadata.A11yLevel)));
+			}
+			if (!string.IsNullOrEmpty(metadata.A11yCertifier))
+			{
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "a11y:certifiedBy"), metadata.A11yCertifier));
+			}
+
 			// Hazards section -- entirely 'manual' based on user entry (or lack thereof) in the dialog
 			if (!string.IsNullOrEmpty(metadata.Hazards))
 			{
@@ -764,12 +775,17 @@ namespace Bloom.Publish.Epub
 			// in unit tests, is backed by a simple mocked BookStorage which doesn't have the stylesheet smarts. Sigh.
 
 			pageDom.RemoveModeStyleSheets();
-			if(Unpaginated)
+			if (Unpaginated)
 			{
 				// Do not add any stylesheets that are not originally written specifically for ePUB use.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5495.
 				RemoveRegularStylesheets(pageDom);
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost());
+				var brandingPath = Storage.GetFileLocator().LocateOptionalFile(@"branding.css");
+				if (!string.IsNullOrEmpty(brandingPath))
+				{
+					pageDom.AddStyleSheet(brandingPath.ToLocalhost());
+				}
 			}
 			else
 			{
@@ -1233,11 +1249,6 @@ namespace Bloom.Publish.Epub
 				return null;
 			// Images are always directly in the folder
 			var srcPath = Path.Combine(Book.FolderPath, filename);
-			if (srcPath == BrandingApi.kApiBrandingImage) // don't think this will ever happen, now
-			{
-				isBrandingFile = true;
-				return FindBrandingImageIfPossible(url.NotEncoded);
-			}
 			if (RobustFile.Exists(srcPath))
 				return srcPath;
 			return String.Empty;
@@ -1247,23 +1258,23 @@ namespace Bloom.Publish.Epub
 		/// Check whether the desired branding image file exists.  If it does, return its full path.
 		/// Otherwise, return String.Empty;
 		/// </summary>
-		private string FindBrandingImageIfPossible(string urlPath)
-		{
-			var idx = urlPath.IndexOf('?');
-			if (idx > 0)
-			{
-				var query = urlPath.Substring(idx + 1);
-				var parsedQuery = HttpUtility.ParseQueryString(query);
-				var file = parsedQuery["id"];
-				if (!String.IsNullOrEmpty(file))
-				{
-					var path = Bloom.Api.BrandingApi.FindBrandingImageFileIfPossible(Book.CollectionSettings.BrandingProjectKey, file, Book.GetLayout());
-					if (!String.IsNullOrEmpty(path) && RobustFile.Exists(path))
-						return path;
-				}
-			}
-			return String.Empty;
-		}
+//		private string FindBrandingImageIfPossible(string urlPath)
+//		{
+//			var idx = urlPath.IndexOf('?');
+//			if (idx > 0)
+//			{
+//				var query = urlPath.Substring(idx + 1);
+//				var parsedQuery = HttpUtility.ParseQueryString(query);
+//				var file = parsedQuery["id"];
+//				if (!String.IsNullOrEmpty(file))
+//				{
+//					var path = Bloom.Api.BrandingApi.FindBrandingImageFileIfPossible(Book.CollectionSettings.BrandingProjectKey, file, Book.GetLayout());
+//					if (!String.IsNullOrEmpty(path) && RobustFile.Exists(path))
+//						return path;
+//				}
+//			}
+//			return String.Empty;
+//		}
 
 		private void AddEpubNamespace(HtmlDom pageDom)
 		{

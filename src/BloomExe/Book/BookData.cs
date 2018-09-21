@@ -1278,7 +1278,19 @@ namespace Bloom.Book
 		/// <param name="brandingNameOrPath"></param>
 		public void MergeBrandingSettings(string brandingNameOrPath)
 		{
-			var settings = BrandingApi.GetSettings(brandingNameOrPath);
+			// clear out any previous values, because if they've changed the branding
+			// (or moved this book to another collection), the current branding might
+			// not have something to overwrite what was there, and we don't want the
+			// old stuff hanging around.
+			foreach (var key in _dataset.TextVariables.Keys.ToArray())
+			{
+				if (key.ToLowerInvariant().Contains("branding"))
+				{
+					RemoveAllForms(key);
+				}
+			}
+			
+			var settings = BrandingSettings.GetSettings(brandingNameOrPath);
 
 			if (settings != null && settings.Presets != null)
 			{

@@ -46,9 +46,6 @@ export class SubjectChooser extends React.Component<IProps> {
         // exactly what has been checked by the user.
         return (
             <div className="subjectChooser">
-                for testing only:{" "}
-                {SubjectTreeNode.getCodeList(this.props.subjects.value)}
-                <br />
                 <DropdownTreeSelect
                     data={themaSubjectData}
                     onChange={(a, b) => this.handleSubjectChange(a, b)}

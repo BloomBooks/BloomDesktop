@@ -6,11 +6,9 @@ using System.IO;
 using System.Linq;
 using Bloom;
 using Bloom.Book;
-using Bloom.Collection;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using ICSharpCode.SharpZipLib.Zip;
-using Moq;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -119,9 +117,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CompressBookForDevice_RemovesImgElementsWithMissingSrc_AndContentEditable()
 		{
-			const string imgsToRemove = "<img class='branding branding-wide' src='back-cover-outside-wide.svg' type='image/svg' onerror='this.style.display='none''></img><img src = 'nonsence.svg'/><img src=\"rubbish\"> </img  >";
-			const string positiveCe = " contenteditable=\"true\""; // This one uses double quotes just to confirm that works.
-			const string negativeCe = " contenteditable='false'";
+			const string imgsToRemove = "<img src='nonsence.svg'/><img src=\"rubbish\"/>";
 			var htmlTemplate = @"<html>
 									<body>
 										<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
@@ -132,32 +128,35 @@ namespace BloomTests.Book
 
 											<div class='marginBox'>
 											<div class='bloom-translationGroup' data-default-languages='N1'>
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr'{1} data-book='outsideBackCover'>
+												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr' contenteditable='false' data-book='outsideBackCover'>
 													<label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
 												</div>
 
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de'{1} data-book='outsideBackCover'></div>
+												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de'contenteditable='true' data-book='outsideBackCover'></div>
 
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf'{1} data-book='outsideBackCover'></div>
-											</div{2}>{0} <img class='branding' src='back-cover-outside.svg?optional=true' type='image/svg' onerror='this.style.display='none''></img></div>
+												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf' contenteditable='true' data-book='outsideBackCover'></div>
+											</div>
+											{0}
+											</div>
 										</div>
 									</body>
 									</html>";
-			var htmlOriginal = string.Format(htmlTemplate, imgsToRemove, positiveCe, negativeCe);
+			var htmlOriginal = string.Format(htmlTemplate, imgsToRemove);
 			var testBook = CreateBookWithPhysicalFile(htmlOriginal, bringBookUpToDate: true);
 
 			TestHtmlAfterCompression(htmlOriginal,
 				actionsOnFolderBeforeCompressing:
 				bookFolderPath => // Simulate the typical situation where we have the regular but not the wide svg
-						File.WriteAllText(Path.Combine(bookFolderPath, "back-cover-outside.svg"), @"this is a fake for testing"),
+						File.WriteAllText(Path.Combine(bookFolderPath, "somelogo.svg"), @"this is a fake for testing"),
 
 				assertionsOnResultingHtmlString:
 				html =>
 				{
 					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img", 2); // only license and back-cover-outside.svg survives
-					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg']", 1); // only back-cover-outside.svg survives
 					AssertThatXmlIn.Dom(htmlDom).HasNoMatchForXpath("//div[@contenteditable]");
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='nonsence.svg']", 0);
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='rubbish']", 0);
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='license.png']", 1);
 				});
 		}
 
