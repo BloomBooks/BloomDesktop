@@ -204,7 +204,7 @@ namespace Bloom.Book
 				}
 				else if (reduceImages && (bookFile == filePath))
 				{
-					StripImagesWithMissingSrc(dom, bookFile);
+					StripImgWithFilesWeCannotFind(dom, bookFile);
 					StripContentEditable(dom);
 					InsertReaderStylesheet(dom);
 					ConvertImagesToBackground(dom);
@@ -284,7 +284,7 @@ namespace Bloom.Book
 			zipStream.CloseEntry();
 		}
 
-		private static void StripImagesWithMissingSrc(XmlDocument dom, string bookFile)
+		private static void StripImgWithFilesWeCannotFind(XmlDocument dom, string bookFile)
 		{
 			var folderPath = Path.GetDirectoryName(bookFile);
 			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())

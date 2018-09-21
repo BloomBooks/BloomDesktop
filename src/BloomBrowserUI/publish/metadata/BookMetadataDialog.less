@@ -2,26 +2,57 @@
 @import "../../bloomModalDialog.less";
 @import "../../node_modules/react-table/react-table.css";
 
+@fieldVerticalPadding: 0;
+@fontSize: 10pt;
+
 .bookMetadataDialog {
     font-family: @ui-fonts;
+    font-size: @fontSize;
+    // for some reason that one gets overruled by the browser, so:
+    textarea {
+        font-family: @ui-fonts;
+        font-size: @fontSize;
+        padding: 5px 5px;
+    }
     .dialogContent {
         .ReactTable {
-            padding: 5px 5px;
-            border: solid 1px black;
+            border: none;
+            a.whatsthis {
+                text-align: right;
+                text-decoration: none;
+                font-size: 9px;
+                &:focus {
+                    outline: 0;
+                }
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+            .rt-tr-group {
+                border-bottom: none;
+                margin-bottom: 10px;
+            }
+            .rt-td {
+                border-right: none;
+            }
             width: 500px;
             .rt-thead.-header {
                 display: none;
             }
             .rt-td.label {
-                padding-top: 0;
-                padding-bottom: 0;
+                padding-top: @fieldVerticalPadding;
+                padding-bottom: @fieldVerticalPadding;
+                text-align: right;
+                margin-right: 10px;
             }
             .rt-td.value {
                 // Enhance in the future: if this dialog actually gets used much, someone somewhere
                 // will need it to be a different font in order to show the title or the author's name.
                 // I (JH) am consciously choosing to not put the effort right now into building an API
                 // endpoint for that and then calling and setting it in the tsx file.
-                font-family: "Andika New Basic";
+                // Changed my mind on this... looks really ugly. Let's see how we do with just the system's font.
+                // font-family: "Andika New Basic";
+
                 // Some cells, we want grey (readonly), some are white (editable).
                 // Since we don't have a way of putting a class on the rt-dt that
                 // is the container of the cell, if it has padding, then both kinds
@@ -30,22 +61,13 @@
                 // that space as padding.
                 padding: 0;
 
-                & > * {
-                    padding-right: 5px;
-                    padding-left: 5px;
-                }
-                & > :not(textarea) {
-                    // We want vertical padding if it's not a textarea which either has some internal
-                    // table related spacing or is more limited vertically to begin with.
-                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6350.
-                    padding-top: 7px;
-                    padding-bottom: 7px;
-                }
                 & > textarea {
                     height: 2em;
                     width: 100%;
                     border: none;
                     resize: none;
+                    padding-top: @fieldVerticalPadding;
+                    padding-bottom: @fieldVerticalPadding;
                 }
             }
             // cover art
@@ -56,6 +78,15 @@
                 margin-left: auto;
                 margin-right: auto;
                 margin-bottom: 2em;
+            }
+
+            .a11y-level-chooser {
+                padding: 0 !important;
+                margin-top: @fieldVerticalPadding;
+                margin-bottom: @fieldVerticalPadding;
+                & > div {
+                    background-color: white;
+                }
             }
         }
     }

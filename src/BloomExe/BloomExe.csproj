@@ -617,7 +617,7 @@
     <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\controllers\KeyboardingConfigApi.cs" />
     <Compile Include="web\controllers\BookSettingsApi.cs" />
-    <Compile Include="web\controllers\BrandingApi.cs" />
+    <Compile Include="web\controllers\BrandingSettings.cs" />
     <Compile Include="web\BloomHttpListenerContext.cs" />
     <Compile Include="web\controllers\SignLanguageApi.cs" />
     <Compile Include="web\IBloomWebSocketServer.cs" />

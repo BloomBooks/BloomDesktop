@@ -128,7 +128,7 @@ namespace Bloom
 							typeof(MusicApi),
 							typeof(ToolboxApi),
 							typeof(CommonApi),
-							typeof(BrandingApi),
+							typeof(BrandingSettings),
 							typeof(FeatureControlApi),
 							typeof(I18NApi),
 							typeof(SignLanguageApi)
@@ -310,7 +310,6 @@ namespace Bloom
 			_scope.Resolve<BookMetadataApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ReadersApi>().RegisterWithApiHandler(server.ApiHandler);
-			_scope.Resolve<BrandingApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<MusicApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ToolboxApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);

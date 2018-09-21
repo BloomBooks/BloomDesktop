@@ -1,0 +1,70 @@
+include ../standard-page-mixins.pug
+
+//- This is an 'override' from bloom-foundation-mixins.pug
+//- that allows us to use its mixins that would otherwise
+//- put in a5portrait
+mixin pageWithJustPageSize
+	.Device16x9Landscape&attributes(attributes)
+		block
+
+doctype html
+html
+	head
+		+metadata-standard
+		//- This "Book" name is used for saving the file, until the user enters a title
+		meta(name='defaultNameForDerivedBooks', content='Sign Language')
+		meta(name='bloomBookId', content='1a648b00-1ec0-46a7-be11-b0dec22fa0f4')
+		//- Eventually, we'll remove Bloom's need for this.
+		meta(name='pageTemplateSource', content='Sign Language')
+		title 'Sign Language'
+		+stylesheets('Basic Book.css')
+		+standardStyles
+	body
+		+dataDiv
+			+bookVariable-title('en', 'Sign Language')
+			+bookVariable('styleNumberSequence', '*', '0')
+
+		+page-splittable-choice-custom('Big Text Diglot')#08422e7b-9406-4d11-8c71-02005b1b8095
+			+stack
+				+upper(50)
+					+stackLeftRight
+						+left
+							+imagex
+						+right
+							+videox
+				+lower(50)
+					+fieldx
+		+standardPage-JustVideo
+		+page-splittable-choice-custom('Video Over Text')#299644f5-addb-476f-a4a5-e3978139b188
+			+stack
+				+upper(50)
+					+videox
+				+lower(50)
+					+fieldx
+		+page-splittable-choice-custom('Picture & Video')#24c90e90-2711-465d-8f20-980d9ffae299
+			+stackLeftRight
+				+left
+					+imagex
+				+right
+					+videox
+		+page-splittable-choice-custom('Big Video Diglot')#9a4beb1f-46c5-4729-87fc-7a9a7eee534e
+			+stackLeftRight
+				+left
+					+stack
+						+upper(50)
+							+imagex
+						+lower(50)
+							+fieldx
+				+right
+					+videox
+		+page-splittable-choice-custom('Big Picture Diglot')#16301dd0-a813-459e-b7e8-294339f7f241
+			+stackLeftRight
+				+left
+					+imagex
+				+right
+					+stack
+						+upper(50)
+							+videox
+						+lower(50)
+							+fieldx
+

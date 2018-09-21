@@ -9,21 +9,25 @@
             //NB: THe order here is important. bloom-content1 should be last so that if a box is
             // *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections),
             // we want the bloom-content1 rule to win.
+            font-weight: bold;
+            // 1.4em is the minimum to show ทไปทั่วพื้ without clipping.
+            // Until Bloom 4.4, that was the default, but it was ugly
+            // for everyone else. 1.0 looks great for a simple latin
+            // alphabet without descenders, and 1.1 is safe with descenders. See BL-6402
+            line-height: 1.1;
+            min-height: auto; // elsewhere there is a min-height, that may or may not be a good idea, but for sure we don't want it here.
             &.bloom-contentNational1 {
                 //NB: we show the national language even if this is a monolingual book
                 font-size: 120%;
                 //I don't know why the line-height here has to be bigger than for
                 // the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test.
-                line-height: 1.7em;
+                //no: big line-heights make normal scripts ugly. See BL-6402 : line-height: 1.7em;
                 margin-bottom: @MarginBetweenMinorItems;
             }
             &.bloom-content1 {
                 //main title
                 font-size: 250%;
-                // 1.4em is the minimum to show ทไปทั่วพื้ without clipping.
-                // Which, by the way, we don't really *have* to support by default;
-                // the user could change the line-height.
-                line-height: 1.4em;
+
                 margin-bottom: @MarginBetweenMinorItems;
             }
         }

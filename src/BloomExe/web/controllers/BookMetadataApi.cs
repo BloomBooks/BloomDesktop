@@ -29,6 +29,7 @@ namespace Bloom.web.controllers
 			{
 				case HttpMethods.Get:
 					// The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
+					// See also https://www.w3.org/Submission/2017/SUBM-epub-a11y-20170125/#sec-conf-reporting.
 					var metadata = new
 					{
 						metapicture =  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath(),
@@ -49,10 +50,17 @@ namespace Bloom.web.controllers
 							translatedLabel = LocalizationManager.GetString("BookMetadata.level", "Reading level") },
 						subjects = new { type = "subjects", value = _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.subjects", "Subjects") },
+						a11yLevel = new { type = "a11yLevel", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yLevel,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yLevel", "Accessibility level"),
+							helpurl = "http://www.idpf.org/epub/a11y/accessibility.html#sec-acc-pub-wcag" },
+						a11yCertifier = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yCertifier,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yCertifier", "Level certified by") },
 						hazards = new {type = "hazards", value = ""+_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards,
-							translatedLabel = LocalizationManager.GetString("BookMetadata.hazards", "Hazards") },
+							translatedLabel = LocalizationManager.GetString("BookMetadata.hazards", "Hazards"),
+							helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-004" },
 						a11yFeatures = new { type = "a11yFeatures", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures,
-							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yFeatures", "Accessibility features") }
+							translatedLabel = LocalizationManager.GetString("BookMetadata.a11yFeatures", "Accessibility features"),
+							helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-003" }
 					};
 					var translatedStringPairs = new
 					{
@@ -76,6 +84,8 @@ namespace Bloom.web.controllers
 					_bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange = settings["typicalAgeRange"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription = settings["level"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.Subjects = settings["subjects"].value;
+					_bookSelection.CurrentSelection.BookInfo.MetaData.A11yLevel = settings["a11yLevel"].value.Trim();
+					_bookSelection.CurrentSelection.BookInfo.MetaData.A11yCertifier = settings["a11yCertifier"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.Hazards = settings["hazards"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures = settings["a11yFeatures"].value.Trim();
 					_bookSelection.CurrentSelection.Save();
