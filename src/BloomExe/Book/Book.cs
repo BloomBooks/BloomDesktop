@@ -2001,6 +2001,7 @@ namespace Bloom.Book
 
 		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
 		{
+			Guard.Against(HasFatalError, "Insert page failed: " + FatalErrorDescription);
 			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			// we need to break up the effects of changing the selected page.
@@ -2114,6 +2115,7 @@ namespace Bloom.Book
 
 		public void DuplicatePage(IPage page)
 		{
+			Guard.Against(HasFatalError, "Duplicate page failed: " + FatalErrorDescription);
 			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			var pages = GetPageElements();
@@ -2174,6 +2176,7 @@ namespace Bloom.Book
 
 		public void DeletePage(IPage page)
 		{
+			Guard.Against(HasFatalError, "Delete page failed: " + FatalErrorDescription);
 			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			if(GetPages().Count() < 2)
@@ -2329,6 +2332,7 @@ namespace Bloom.Book
 		/// </summary>
 		public bool RelocatePage(IPage page, int indexOfItemAfterRelocation)
 		{
+			Guard.Against(HasFatalError, "Move page failed: " + FatalErrorDescription);
 			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			if(!CanRelocatePageAsRequested(indexOfItemAfterRelocation))
@@ -2661,6 +2665,7 @@ namespace Bloom.Book
 
 		public void Save()
 		{
+			Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
 			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			RemoveObsoleteSoundAttributes(OurHtmlDom);
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
