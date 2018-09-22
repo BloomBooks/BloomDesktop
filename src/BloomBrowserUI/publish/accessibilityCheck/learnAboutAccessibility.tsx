@@ -83,7 +83,7 @@ export class LearnAboutAccessibility extends React.Component<
                         screen. Future versions may have other options in this
                         area.
                     </p>
-                    <div
+                    {/* <div
                         style={{
                             backgroundColor: "lightgrey",
                             padding: "10px"
@@ -96,7 +96,7 @@ export class LearnAboutAccessibility extends React.Component<
                             about accessible books is about technical things
                             that Bloom takes care of for you.
                         </p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         );
