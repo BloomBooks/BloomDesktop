@@ -23,6 +23,14 @@ div.ui-dialog div.ui-dialog-titlebar {
     border: 0;
     color: #000;
     border-bottom: 1px solid #666;
+    padding: 10px;
+    font-size: 10pt;
+    font-weight: bold;
+}
+
+div.ui-dialog-titlebar-close {
+    min-width: 1px;
+    min-height: 1px;
 }
 
 div.ui-dialog div.ui-dialog-content {
@@ -49,20 +57,27 @@ div.ui-dialog div.ui-dialog-titlebar .ui-icon-closethick {
 div.ui-dialog div.ui-dialog-buttonpane {
     margin: -1px 0 0;
 }
-div.ui-dialog div.ui-dialog-buttonset button.ui-button {
-    padding: 0;
-    margin: 4px 0 4px 6px;
-    background: #888;
-    color: #fff;
+
+div.ui-dialog div.ui-dialog-buttonset {
+    margin-left: 10px;
 }
+div.ui-dialog div.ui-dialog-buttonset button.ui-button {
+    width: auto;
+    min-width: 90px;
+    border: 1px solid gray;
+    min-height: 25px;
+    padding: 2px;
+    font-weight: normal;
+    font-size: 10pt;
+    color: black;
+    background-color: white;
+}
+
 div.ui-dialog div.ui-dialog-buttonset button.ui-state-hover,
 div.ui-dialog div.ui-dialog-buttonset button.ui-state-focus {
     background: #888;
-    border: 1px solid #666;
-}
-div.ui-dialog div.ui-dialog-buttonset button.ui-state-hover {
-    background: #999;
     color: #fff;
+    border: 1px solid #666;
 }
 
 div.ui-dialog div.ui-dialog-buttonset button.ui-button span.ui-button-text {
