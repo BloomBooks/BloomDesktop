@@ -664,7 +664,10 @@ namespace Bloom.Book
 		/// <param name="didChange"></param>
 		internal string MigrateEditableData(XmlElement page, XmlElement template, string lineage, bool allowDataLoss, out bool didChange)
 		{
-			var textXPath = ".//div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and not(contains(@class, 'box-header-off'))]";
+			// This xpath would be easier if bloom-textOverPicture divs and bloom-imageDescription divs had the same structure internally,
+			// but text over picture CONTAINS a translationGroup, whereas image description IS a translationGroup.
+			const string notImageContainerOrTopXpath = ".//div[not(contains(@class, 'bloom-imageContainer')) and not(contains(@class, 'bloom-textOverPicture'))]";
+			var textXPath = notImageContainerOrTopXpath + "/div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and not(contains(@class, 'box-header-off'))]";
 			var imageXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]";
 			var videoXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]";
 			if (!allowDataLoss)
