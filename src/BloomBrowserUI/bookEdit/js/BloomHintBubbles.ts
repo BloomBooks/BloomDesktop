@@ -443,7 +443,11 @@ export default class BloomHintBubbles {
                     functionCall = "javascript:" + functionCall + ";";
 
                 whatToSay =
-                    "<a href='" + functionCall + "'>" + whatToSay + "</a>";
+                    "<a class='ui-link' href='" +
+                    functionCall +
+                    "'>" +
+                    whatToSay +
+                    "</a>";
             }
             whatToSay =
                 whatToSay +
@@ -470,7 +474,13 @@ export default class BloomHintBubbles {
             );
             if (linkTarget.indexOf("(") > 0)
                 linkTarget = "javascript:" + linkTarget + ";";
-            return "<br><a href='" + linkTarget + "'>" + linkText + "</a>";
+            return (
+                "<br><a class='ui-link' href='" +
+                linkTarget +
+                "'>" +
+                linkText +
+                "</a>"
+            );
         }
         return "";
     }
