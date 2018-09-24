@@ -641,9 +641,10 @@ h2 {
 }
 
 // if brandings (or anything else) has hyperlinks, we default to not showing ugly blue underlines in print.
-// those could be re-enabled for digital products
-a:link,
-a:visited {
+// those could be re-enabled for digital products. The ui-link class is used to suppress this
+// for links we want in the Bloom ui, such as in hint bubbles.
+a:not(.ui-link):link,
+a:not(.ui-link):visited {
     color: unset;
     text-decoration: unset;
 }
