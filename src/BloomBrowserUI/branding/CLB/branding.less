@@ -3,6 +3,30 @@
 [data-book="outside-back-cover-branding-bottom-html"] {
     flex-direction: row; // show them side-by-side
     img {
-        height: 20mm; // arbitrary
+        max-height: 20mm; // arbitrary
+        // If the images are too wide when both are 20mm high
+        // (device16x9 is perhaps the most extreme case), we want them
+        // to get smaller until both fit, staying the same height as
+        // each other.
+        // It should be possible to achieve this with flex-grow: 1;
+        // The problem is the 'natural' height of the CLB image is much
+        // larger than 20mm, while that of the Bloom image is much smaller.
+        // With flex-grow, the CLB image is always 20mm high, and the Bloom
+        // image only grows to fill the left-over width and is not
+        // the same height. This is true even if we also set
+        // flex-shrink. We could probably do some trickery with flex-basis,
+        // but by this point it's easiest to just give each the proportion
+        // of width that they should occupy to be the same height when
+        // width is the limiting factor. Extra white space is distributed
+        // by flex-box when the 20mm limits things. And this CSS is specific
+        // to this pair of images.
+        // (In FF 63 or so, it's enough to just set the first width
+        // plus flex-grow, but FF45 needs both.)
+        &:first-child {
+            width: 22%;
+        }
+        &:not(:first-child) {
+            width: 78%;
+        }
     }
 }
