@@ -30,6 +30,9 @@ namespace Bloom.web.controllers
 				case HttpMethods.Get:
 					// The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
 					// See also https://www.w3.org/Submission/2017/SUBM-epub-a11y-20170125/#sec-conf-reporting.
+					var licenseUrl = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url;
+					if (string.IsNullOrEmpty(licenseUrl))
+						licenseUrl = null; // allows us to use ?? below.
 					var metadata = new
 					{
 						metapicture =  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath(),
@@ -40,7 +43,9 @@ namespace Bloom.web.controllers
 							translatedLabel = LocalizationManager.GetString("BookMetadata.numberOfPages", "Number of pages") },
 						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.inLanguage", "Language") },
-						License = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLicenseMetadata().License.Url,
+						// "All rights reserved" is purposely not localized, so it remains an accurate representation of
+						// the English information that will be put in the file in place of a License URL.
+						License = new { type = "readOnlyText", value = licenseUrl ?? @"All rights reserved",
 							translatedLabel = LocalizationManager.GetString("BookMetadata.License", "License") },
 						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.author", "Author") },
