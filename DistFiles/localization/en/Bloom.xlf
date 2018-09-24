@@ -133,6 +133,10 @@
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
       </trans-unit>
+      <trans-unit id="BookMetadata.AllReserved" sil:dynamic="true">
+        <source xml:lang="en">All rights reserved</source>
+        <note>ID: BookMetadata.AllReserved</note>
+      </trans-unit>
       <trans-unit id="BookMetadata.a11yCertifier" sil:dynamic="true">
         <source xml:lang="en">Level certified by</source>
         <note>ID: BookMetadata.a11yCertifier</note>
