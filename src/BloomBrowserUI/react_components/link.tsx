@@ -10,8 +10,8 @@ interface ILinkProps extends ILocalizationProps {
 // A normal html anchor element that is localizable.
 export class Link extends LocalizableElement<ILinkProps, {}> {
     public render() {
-        return (
-            <a
+        // prettier-ignore
+        return (<a
                 className={this.props.className}
                 id={"" + this.props.id}
                 // href must be defined in order to maintain normal link UI
@@ -27,10 +27,7 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
                         this.props.onClick();
                     }
                 }}
-            >
-                {this.getLocalizedContent()}
-            </a>
-        );
+            >{this.getLocalizedContent()}</a>);
     }
 }
 

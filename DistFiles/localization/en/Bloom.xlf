@@ -2,66 +2,71 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
-      <trans-unit id="AccessibilityCheck.AccessibilityChecker">
+      <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ACEByDaisy">
+      <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
         <source xml:lang="en">ACE by Daisy Automated Checks</source>
         <note>ID: AccessibilityCheck.ACEByDaisy</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllText">
+      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions">
+      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading">
+      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.Checklist">
+      <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.descriptionsForAllImages">
+      <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout">
+      <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
         <source xml:lang="en">Learn About Accessibility</source>
         <note>ID: AccessibilityCheck.LearnAbout</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition">
-        <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/EPUB">ePUB format</g>, it is possible to make <g ctype="x-html-em">Born Accessible</g> books that work well for everyone <g ctype="x-html-sup">*</g>, regardless of vision. Bloom has the following tools to help you create these books:</source>
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true">
+        <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</source>
         <note>ID: AccessibilityCheck.LearnAbout.AccessibleBookDefinition</note>
+        <note>The * and ** are footnote markers that should remain the same.</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas">
+      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true">
         <source xml:lang="en">This tool, the Accessibility Checker, has:</source>
         <note>ID: AccessibilityCheck.LearnAbout.CheckerHas</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList">
-        <source xml:lang="en"><g ctype="x-html-strong">The Accessibility Checklist</g> which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</source>
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true">
+        <source xml:lang="en">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</source>
         <note>ID: AccessibilityCheck.LearnAbout.AccessibilityCheckList</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker">
-        <source xml:lang="en"><g ctype="x-html-strong">The Ace by Daisy Checker</g> searches the actual ePUB generated by Bloom looking for any problems.</source>
+      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true">
+        <source xml:lang="en">The "Ace by Daisy Checker" searches the actual ePUB generated by Bloom looking for any problems.</source>
         <note>ID: AccessibilityCheck.LearnAbout.AceByDaisyChecker</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote">
+      <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true">
+        <source xml:lang="en">definition of the ePUB format</source>
+        <note>ID: AccessibilityCheck.LearnAbout.EpubDefinition</note>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
         <note>ID: AccessibilityCheck.LearnAbout.Footnote</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ManualChecksHeading">
+      <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
         <source xml:lang="en">You need to check these yourself:</source>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor">
+      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
       </trans-unit>
