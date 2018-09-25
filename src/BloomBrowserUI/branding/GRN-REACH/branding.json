@@ -16,8 +16,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content":
-                "<img src='BloomWithTaglineAgainstLight.svg'/><img src='grn-reach-logos.png'/>",
+            "content": "<img src='grn-reach-logos.png'/>",
             "condition": "always"
         }
     ]
