@@ -1,4 +1,21 @@
 @import "../branding-base.less";
 [data-book="credits-page-branding-bottom-html"] {
     font-size: 10pt; // to match bloom-xmatter-common .Credits-Page-style
+    h4 {
+        font-weight: bold;
+    }
+}
+
+// We run out of space in A6 Landscape. Fortunately that's a pretty rare
+// size. What we do here is shrink the text
+.A6Landscape [data-book="credits-page-branding-bottom-html"] {
+    font-size: 9pt;
+    flex-direction: row;
+    flex-wrap: wrap;
+    h4 {
+        width: 100%; // effectively a linebreak in the flexbox
+    }
+    div {
+        margin-right: 5px;
+    }
 }
