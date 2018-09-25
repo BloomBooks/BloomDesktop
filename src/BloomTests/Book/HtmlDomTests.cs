@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Bloom;
@@ -962,6 +963,88 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(textContentsXpath, 1);
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(videoXpath, 1);
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath(noVideoXpath);
+		}
+
+		[Test]
+		public void RemoveComments_WorksForCssData()
+		{
+			const string cssContent = @"
+// This is a test of font-family: inside of comments;
+body {
+    font-family: arial;
+}
+//h1 {
+//    font-family: times;
+//}
+/*h2 {
+    font-family: serif;
+}*/
+p {
+    text-before: "" /* "";
+    font-family: sans;
+    text-after: "" */ "";
+}
+";
+			var noComments = HtmlDom.RemoveCommentsFromCss(cssContent);
+			Assert.Less(noComments.Length, cssContent.Length, "Comments should be removed from the original CSS");
+			var idxFontFamily = noComments.IndexOf("font-family:");
+			Assert.Greater(idxFontFamily, 0, "The first font-family should be found.");
+			var length = noComments.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+			Assert.Greater(length, 0, "The first font-family should be terminated properly.");
+
+			idxFontFamily = noComments.IndexOf("font-family:", idxFontFamily + length);
+			Assert.Greater(idxFontFamily, 0, "The second font-family should be found.");
+			length = noComments.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+			Assert.Greater(length, 0, "The second font-family should be terminated properly.");
+
+			idxFontFamily = noComments.IndexOf("font-family:", idxFontFamily + length);
+			Assert.Less(idxFontFamily, 0, "A third font-family should not be found!");
+
+			var fonts = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss(cssContent, fonts, true);
+			Assert.AreEqual(2, fonts.Count, "Two fonts are used in the test css data");
+			Assert.IsTrue(fonts.Contains("arial"), "The css data refers to arial for one font.");
+			Assert.IsTrue(fonts.Contains("sans"), "The css data refers to sans for the other font.");
+		}
+
+		[Test]
+		public void FindFontsUsedInCss_WorksWithHtml()
+		{
+			const string htmlContent = @"<html>
+<head>
+<style type=""text/css"">
+    /*<![CDATA[*/
+    .Title-On-Cover-style[lang=""en""] { font-family: NikoshBAN ! important; }
+    .small-style[lang=""en""] { font-family: Andika New Basic ! important; font-size: 9pt ! important; font-weight: normal ! important; font-style: normal ! important; }
+    .Inside-Back-Cover-style[lang=""jmx""] { font-size: 7pt ! important; /*font-family: Times New Roman ! important;*/ }
+    .big-style[lang=""jmx""] {
+        font-size: 18pt ! important;
+        //font-family: Saysettha OT ! important;
+     }
+    /*]]>*/
+</style>
+<!--
+<style type=""text/css"">
+    .bloom-editable.lesonnumber-style[lang=""tpi""] { font-family: Andika ! important; font-size: 16pt ! important; }
+    .normal-style[lang=""en""] { font-family: Scheherazade ! important; }
+</style>
+-->
+</head>
+<body>
+<div style=""font-size:26.0pt; font-family:&quot;Charis SIL First&quot;;"">Test 1</div>
+<p style=""font-size:26.0pt; font-family:'Charis SIL Second';"">Test 2</p>
+<div style=""font-size:26.0pt; /*font-family:&quot;Charis SIL Third&quot;;*/"">Test 3</div>
+<!--div style=""font-size:26.0pt; font - family:&quot;Charis SIL Fourth&quot;;"">Test 4</div-->
+</body>
+</html>";
+
+			var fonts = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
+			Assert.AreEqual(4, fonts.Count, "Four fonts are used in the test html/css data");
+			Assert.IsTrue(fonts.Contains("NikoshBAN"), "The html/css data refers to NikoshBAN as a font.");
+			Assert.IsTrue(fonts.Contains("Andika New Basic"), "The css data refers to Andika New Basic as a font.");
+			Assert.IsTrue(fonts.Contains("Charis SIL First"), "The css data refers to Charis SIL First as a font.");
+			Assert.IsTrue(fonts.Contains("Charis SIL Second"), "The css data refers to Charis SIL Second as a font.");
 		}
 	}
 }
