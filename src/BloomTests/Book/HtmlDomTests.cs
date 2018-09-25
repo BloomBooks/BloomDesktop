@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Bloom;
@@ -962,6 +963,62 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(textContentsXpath, 1);
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(videoXpath, 1);
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath(noVideoXpath);
+		}
+
+		[Test]
+		public void FindComments_WorksForCssData()
+		{
+			var cssContent = @"
+// This is a test of font-family: inside of comments;
+body {
+    font-family: arial;
+}
+//h1 {
+//    font-family: times;
+//}
+/*h2 {
+    font-family: serif;
+}*/
+p {
+    text-before: "" /* "";
+    font-family: sans;
+    text-after: "" */ "";
+}
+";
+			var comments = HtmlDom.FindCommentsInCss(cssContent);
+			var idxFontFamily = cssContent.IndexOf("font-family:");
+			var length = cssContent.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+			Assert.Greater(length, 0);
+			Assert.IsTrue(HtmlDom.IsInsideComment(comments, idxFontFamily, length), "First occurrence of font-family: is inside a comment.");
+
+			idxFontFamily = cssContent.IndexOf("font-family:", idxFontFamily + 10);
+			length = cssContent.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+			Assert.Greater(length, 0);
+			Assert.IsFalse(HtmlDom.IsInsideComment(comments, idxFontFamily, length), "Second occurrence of font-family: is not inside a comment.");
+
+			idxFontFamily = cssContent.IndexOf("font-family:", idxFontFamily + 10);
+			length = cssContent.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+			Assert.Greater(length, 0);
+			Assert.IsTrue(HtmlDom.IsInsideComment(comments, idxFontFamily, length), "Third occurrence of font-family: is inside a comment.");
+
+			idxFontFamily = cssContent.IndexOf("font-family:", idxFontFamily + 10);
+			length = cssContent.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+			Assert.Greater(length, 0);
+			Assert.IsTrue(HtmlDom.IsInsideComment(comments, idxFontFamily, length), "Fourth occurrence of font-family: is inside a comment.");
+
+			idxFontFamily = cssContent.IndexOf("font-family:", idxFontFamily + 10);
+			length = cssContent.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+			Assert.Greater(length, 0);
+			Assert.IsFalse(HtmlDom.IsInsideComment(comments, idxFontFamily, length), "Fifth occurrence of font-family: is not inside a comment.");
+
+			idxFontFamily = cssContent.IndexOf("font-family:", idxFontFamily + 10);
+			Assert.Less(idxFontFamily, 0, "Only five occurrences of font-family: in test string.");
+
+			var fonts = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss(cssContent, fonts, true);
+			Assert.AreEqual(2, fonts.Count, "Two fonts are used in the test css data");
+			Assert.IsTrue(fonts.Contains("arial"), "The css data refers to arial for one font.");
+			Assert.IsTrue(fonts.Contains("sans"), "The css data refers to sans for the other font.");
 		}
 	}
 }

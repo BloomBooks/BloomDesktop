@@ -1379,11 +1379,14 @@ namespace Bloom.Book
 		/// <param name="includeFallbackFonts">true to include fallback fonts, false to include only the first font in each font family</param>
 		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result, bool includeFallbackFonts)
 		{
+			var comments = FindCommentsInCss(cssContent);
 			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
 			foreach(Match match in findFF.Matches(cssContent))
 			{
 				foreach(var family in match.Groups[1].Value.Split(','))
 				{
+					if (IsInsideComment(comments, match.Groups[1].Index, match.Groups[1].Length))
+						continue;
 					var name = family.Trim();
 					// Strip matched quotes
 					if(name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
@@ -1395,6 +1398,73 @@ namespace Bloom.Book
 						break;
 				}
 			}
+		}
+
+		public static bool IsInsideComment(List<Tuple<int, int>> comments, int index, int length)
+		{
+			foreach (var tuple in comments)
+			{
+				if (tuple.Item1 < index && index + length <= tuple.Item2)
+					return true;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Find the ranges of both //  and /*...*/ comments in the css data, taking into account
+		/// quoted strings along the way.  This is still a bit naive compared to a full css parser,
+		/// but good enough for what we need.
+		/// </summary>
+		public static List<Tuple<int,int>> FindCommentsInCss(string cssContent)
+		{
+			var commentList = new List<Tuple<int, int>>();
+			if (cssContent.Contains("<html>") && cssContent.Contains("</html>"))
+			{
+				int endIdx = 0;
+				for (var idx = cssContent.IndexOf("<!--"); idx >= 0; idx = cssContent.IndexOf("<!--", endIdx))
+				{
+					endIdx = cssContent.IndexOf("-->", idx + 4);
+					if (idx >= 0 && endIdx > idx)
+						commentList.Add(new Tuple<int, int>(idx, endIdx));
+					else
+						break;
+				}
+			}
+			else
+			{
+				int idxEnd = 0;
+				for (var idxStart = FindCommentStartOutsideQuotes(cssContent, 0);
+					 idxStart >= 0;
+				     idxStart = FindCommentStartOutsideQuotes(cssContent, idxEnd))
+				{
+					if (cssContent[idxStart + 1] == '*')
+						idxEnd = cssContent.IndexOf("*/", idxStart + 2);
+					else
+						idxEnd = cssContent.IndexOf("\n", idxStart + 2);
+					if (idxEnd < 0)
+						idxEnd = cssContent.Length;
+					commentList.Add(new Tuple<int, int>(idxStart, idxEnd));
+				}
+			}
+			return commentList;
+		}
+
+		private static int FindCommentStartOutsideQuotes(string content, int start)
+		{
+			var quotes = new char[] { '"', '\'' };
+			var idxComment = content.IndexOf("//", start);
+			var idxComment2 = content.IndexOf("/*", start);
+			if (idxComment2 >= 0 && (idxComment2 < idxComment || idxComment < 0))
+				idxComment = idxComment2;
+			if (idxComment < 0)
+				return idxComment;	// no comment found, inside or outside any quotes
+			var idxQuote = content.IndexOfAny(quotes, start);
+			if (idxQuote < 0 || idxQuote > idxComment)
+				return idxComment;
+			var endQuote = content.IndexOf(content[idxQuote], idxQuote + 1);
+			if (endQuote < 0)
+				return idxComment;   // ignore unterminated quote
+			return FindCommentStartOutsideQuotes(content, endQuote);
 		}
 
 		/// <summary>
