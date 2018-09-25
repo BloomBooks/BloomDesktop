@@ -669,6 +669,8 @@ namespace Bloom.Book
 			Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath, newFolderPath);
 
 			//next, rename the file
+			Guard.Against(FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal),
+				"Cannot rename template books!");
 			RobustFile.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
 
 			//next, rename the enclosing folder
@@ -995,7 +997,8 @@ namespace Bloom.Book
 				}
 
 				// delete any existing branding css so that if they change to one without one, the old one isn't sticking around
-				RobustFile.Delete(Path.Combine(FolderPath, "branding.css"));
+				if (RobustFile.Exists(Path.Combine(FolderPath, "branding.css")))
+					RobustFile.Delete(Path.Combine(FolderPath, "branding.css"));
 
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
@@ -1172,6 +1175,13 @@ namespace Bloom.Book
 			_brandingImageNames.Clear();
 			try
 			{
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6516.
+				// On Linux installations, files can never be copied to the "FactoryTemplateBookDirectory".
+				// If Bloom is installed "for all users" on Windows, it may also be impossible to copy files there.
+				// Copying files there allows Bloom to show branding for the template preview, which seems rather
+				// unimportant.
+				if (FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal))
+					return;
 				if (!string.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
 				{
 					var brandingFolder = BloomFileLocator.GetBrandingFolder(_collectionSettings.BrandingProjectKey);

@@ -3,7 +3,7 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "*",
-            "content": "<image src='ubb-gmit.png'/>",
+            "content": "<img src='ubb-gmit.png'/>",
             "condition": "always"
         }
     ]

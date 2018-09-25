@@ -344,6 +344,9 @@ namespace Bloom.Publish.Epub
 			var source = GetBookSource();
 			XNamespace dc = dcNamespace;
 			var bookMetaData = Book.BookInfo.MetaData;
+			var licenseUrl = Book.GetLicenseMetadata().License.Url;
+			if (string.IsNullOrEmpty(licenseUrl))
+				licenseUrl = null; // allows us to use ?? below.
 			var metadataElt = new XElement(opf + "metadata",
 				new XAttribute(XNamespace.Xmlns + "dc", dcNamespace),
 				new XAttribute(XNamespace.Xmlns + "opf", opf.NamespaceName),
@@ -355,7 +358,11 @@ namespace Bloom.Publish.Epub
 				new XElement(dc + "source", source),
 				new XElement(dc + "creator",
 					new XAttribute("id", "author"), bookMetaData.Author),
-				new XElement(dc + "rights", Book.GetLicenseMetadata().License.Url));
+				// Per BL-6438 and a reply from the GDL (Global Digital Library), it is better to put
+				// this in the field than to leave it blank when there is no URL available that specifies
+				// the license. Unfortunately there is nowhere to put the RightsStatement that might
+				// indicate more generous permissions (or attempt to restrict what the CC URL indicates).
+				new XElement(dc + "rights", licenseUrl ?? "All Rights Reserved"));
 			AddSubjects(metadataElt, dc, opf);
 			metadataElt.Add(
 				new XElement(opf + "meta",
