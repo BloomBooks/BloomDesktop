@@ -75,9 +75,13 @@ div.ui-dialog div.ui-dialog-buttonset button.ui-button {
 
 div.ui-dialog div.ui-dialog-buttonset button.ui-state-hover,
 div.ui-dialog div.ui-dialog-buttonset button.ui-state-focus {
-    background: #888;
-    color: #fff;
-    border: 1px solid #666;
+    background: white;
+    color: black;
+    border: 1px solid gray;
+}
+
+div.ui-dialog div.ui-dialog-buttonset button.ui-state-focus .ui-button-text {
+    border: 1px dotted gray;
 }
 
 div.ui-dialog div.ui-dialog-buttonset button.ui-button span.ui-button-text {
