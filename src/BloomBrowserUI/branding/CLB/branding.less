@@ -3,7 +3,10 @@
 [data-book="outside-back-cover-branding-bottom-html"] {
     flex-direction: row; // show them side-by-side
     img {
-        max-height: 20mm; // arbitrary
+        // arbitrary height; was 20mm; 4.7em is equivalent in FF, Gitden,
+        // but unlike 20mm it typically gives full-width images in
+        // Simply Reading.
+        max-height: 4.7em;
         // If the images are too wide when both are 20mm high
         // (device16x9 is perhaps the most extreme case), we want them
         // to get smaller until both fit, staying the same height as
