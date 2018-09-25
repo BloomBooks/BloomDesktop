@@ -11,5 +11,6 @@
     // Controls if the editor will insert spaces for tabs. Accepted values:  "auto", true, false. If set to "auto", the value will be guessed when a file is opened.
     "editor.detectIndentation": true,
     "editor.formatOnSave": true,
-    "typescript.tsdk": "./node_modules/typescript/lib"
+    "typescript.tsdk": "./node_modules/typescript/lib",
+    "prettier.disableLanguages": ["markdown"]
 }

@@ -3,7 +3,7 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "*",
-            "content": "<image src='ToMasewalTlahtol.svg'/>",
+            "content": "<img src='ToMasewalTlahtol.svg'/>",
             "condition": "always"
         },
         {
