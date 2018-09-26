@@ -207,6 +207,11 @@ namespace Bloom.Api
 				return false; // in the folder we never cache, typically the editable project folder.)
 			if (folderToCheck.StartsWith(Bloom.Publish.Epub.EpubMaker.EpubExportRootFolder.Replace('\\','/')))
 				return false;	// ePUB export files should not be cached.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6253.
+			// All the different brandings have a branding.css, but they are different.
+			// They get requested with the same path, so if we cache it, we get weird appearances
+			// when switching branding (BL-6538).
+			if (Path.GetFileName(path) == "branding.css")
+				return false;
 
 			return _cacheableExtensions.Contains(Path.GetExtension(path));
 		}
