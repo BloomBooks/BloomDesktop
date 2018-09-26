@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
 using DesktopAnalytics;
@@ -1374,11 +1375,19 @@ namespace Bloom.Book
 		/// <summary>
 		/// Finds a list of fonts used in the given css
 		/// </summary>
-		/// <param name="cssContent"></param>
-		/// <param name="result"></param>
+		/// <param name="cssContent">Content of either a CSS file or an HTML file</param>
+		/// <param name="result">set of fonts found in the CSS markup</param>
 		/// <param name="includeFallbackFonts">true to include fallback fonts, false to include only the first font in each font family</param>
 		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result, bool includeFallbackFonts)
 		{
+			// The actual content may be an HTML file instead of a CSS file.  HTML can contain embedded CSS
+			// in either style elements or style attributes.
+			if (cssContent.Contains("<html>") && cssContent.Contains("</html>"))
+			{
+				FindFontsUsedInEmbeddedCss(cssContent, result, includeFallbackFonts);
+				return;
+			}
+			cssContent = RemoveCommentsFromCss(cssContent);
 			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
 			foreach(Match match in findFF.Matches(cssContent))
 			{
@@ -1395,6 +1404,93 @@ namespace Bloom.Book
 						break;
 				}
 			}
+		}
+
+		private static void FindFontsUsedInEmbeddedCss(string htmlContent, HashSet<string> result, bool includeFallbackFonts)
+		{
+			// Remove any HTML comments from the HTML string.
+			for (var idx = htmlContent.IndexOf("<!--"); idx >= 0; idx = htmlContent.IndexOf("<!--", idx))
+			{
+				var endIdx = htmlContent.IndexOf("-->", idx + 4);
+				if (endIdx > idx)
+					htmlContent = htmlContent.Remove(idx, endIdx + 3 - idx);
+			}
+			// Capturing the content of a <style> element is too hard for Regex.  But we can capture
+			// the start tag okay, and work from there.
+			var styleElements = new Regex("<style[^>]*type=[\"']text/css[\"'][^>]*>");
+			foreach (Match match in styleElements.Matches(htmlContent))
+			{
+				var idxStart = match.Index + match.Length;
+				var idxEnd = htmlContent.IndexOf("</style>", idxStart);
+				if (idxEnd > idxStart)
+				{
+					var cssContent = htmlContent.Substring(idxStart, idxEnd - idxStart);
+					Console.WriteLine("DEBUG cssContent from HTML <style> = \"{0}\"", cssContent);
+					FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
+				}
+			}
+			var styleAttributes1 = new Regex(" style=\"([^\"]*)\"");
+			foreach (Match match in styleAttributes1.Matches(htmlContent))
+			{
+				var cssContent = HttpUtility.HtmlDecode(match.Groups[1].Value);
+				FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
+			}
+			var styleAttributes2 = new Regex(" style='([^']*)'");
+			foreach (Match match in styleAttributes2.Matches(htmlContent))
+			{
+				var cssContent = HttpUtility.HtmlDecode(match.Groups[1].Value);
+				FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
+			}
+		}
+
+		/// <summary>
+		/// Find the ranges of either //  and /*...*/ comments in the css data, taking into account
+		/// quoted strings along the way.  Then remove each comment from the string and return the
+		/// string without any comments in it.  This is still a bit naive compared to a full css parser,
+		/// but good enough for what we need.
+		/// </summary>
+		public static string RemoveCommentsFromCss(string cssContent)
+		{
+			for (var idxStart = FindCommentStartOutsideQuotes(cssContent, 0);
+				idxStart >= 0;
+				idxStart = FindCommentStartOutsideQuotes(cssContent, idxStart))
+			{
+				int idxEnd = 0;
+				if (cssContent[idxStart + 1] == '*')
+				{
+					idxEnd = cssContent.IndexOf("*/", idxStart + 2);
+					if (idxEnd < 0)
+						idxEnd = cssContent.Length;
+					else
+						idxEnd += 2;
+					}
+				else
+				{
+					idxEnd = cssContent.IndexOf("\n", idxStart + 2);
+					if (idxEnd < 0)
+						idxEnd = cssContent.Length;
+				}
+				cssContent = cssContent.Remove(idxStart, idxEnd - idxStart);
+			}
+			return cssContent;
+		}
+
+		private static int FindCommentStartOutsideQuotes(string content, int start)
+		{
+			char[] quotes = { '"', '\'' };
+			var idxComment = content.IndexOf("//", start);
+			var idxComment2 = content.IndexOf("/*", start);
+			if (idxComment2 >= 0 && (idxComment2 < idxComment || idxComment < 0))
+				idxComment = idxComment2;
+			if (idxComment < 0)
+				return idxComment;	// no comment found, inside or outside any quotes
+			var idxQuote = content.IndexOfAny(quotes, start);
+			if (idxQuote < 0 || idxQuote > idxComment)
+				return idxComment;
+			var endQuote = content.IndexOf(content[idxQuote], idxQuote + 1);
+			if (endQuote < 0)
+				return idxComment;   // ignore unterminated quote
+			return FindCommentStartOutsideQuotes(content, endQuote + 1);
 		}
 
 		/// <summary>
