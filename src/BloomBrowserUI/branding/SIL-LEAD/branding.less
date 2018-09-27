@@ -6,8 +6,10 @@
     }
 }
 
-// We run out of space in A6 Landscape. Fortunately that's a pretty rare
-// size. What we do here is shrink the text
+// We run out of space in Device16x9 and A6 Landscape. Fortunately those are
+// pretty rare sizes.  What we do here is shrink the text and collapse any
+// paragraphs.
+.Device16x9Landscape [data-book="credits-page-branding-bottom-html"],
 .A6Landscape [data-book="credits-page-branding-bottom-html"] {
     font-size: 9pt;
     flex-direction: row;
@@ -15,6 +17,7 @@
     h4 {
         width: 100%; // effectively a linebreak in the flexbox
     }
+    p,
     div {
         margin-right: 5px;
     }
