@@ -48,10 +48,7 @@ namespace Bloom.Edit
 				}
 				catch (IOException e)
 				{
-					// If we can't do it, we can't. Don't worry about it in production.
-#if DEBUG
-					Debug.Fail("Some file error copying reader settings");
-#endif
+					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(e, "Problem copying Reader Tools Settings from an installed BloomPack.");
 				}
 			}
 		}
@@ -60,20 +57,20 @@ namespace Bloom.Edit
 		{
 			if (Directory.Exists(allowedWordsSource))
 			{
+				var sourcePath = "", destPath = "";
 				try
 				{
 					Directory.CreateDirectory(allowedWordsDest);
 					foreach (var allowedWordsFile in Directory.GetFiles(allowedWordsSource))
 					{
-						RobustFile.Copy(allowedWordsFile, Path.Combine(allowedWordsDest, Path.GetFileName(allowedWordsFile)), true);
+						sourcePath = allowedWordsFile;
+						destPath = Path.Combine(allowedWordsDest, Path.GetFileName(allowedWordsFile));
+						RobustFile.Copy(allowedWordsFile, destPath, true);
 					}
 				}
 				catch (IOException e)
 				{
-					// If we can't do it, we can't. Don't worry about it in production.
-#if DEBUG
-					Debug.Fail("Some file error copying reader settings");
-#endif
+					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(e, "Cannot copy {0} to {1}.", sourcePath, destPath);
 				}
 			}
 		}
