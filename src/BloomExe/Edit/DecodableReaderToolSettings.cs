@@ -57,7 +57,8 @@ namespace Bloom.Edit
 		{
 			if (Directory.Exists(allowedWordsSource))
 			{
-				var sourcePath = "", destPath = "";
+				var sourcePath = "";
+				var destPath = "";
 				try
 				{
 					Directory.CreateDirectory(allowedWordsDest);
