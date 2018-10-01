@@ -21,9 +21,12 @@
             border: none;
             padding: 0;
 
+            // If we hide both the search box and the icon for the dropdown, then it becomes
+            // impossible to trigger the dropdown for any books that don't already have a
+            // subject selected.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6540.
             &:after {
-                display: none;
-                //margin-left: auto;
+                // display: none;
+                margin-left: auto;
             }
         }
         .tag-item {
@@ -32,6 +35,7 @@
         .tag-list {
             display: flex;
             flex-wrap: wrap;
+            margin-left: 3px;
             .tag {
                 background-color: transparent;
                 border: none;
