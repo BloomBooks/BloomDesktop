@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using NUnit.Framework;
-using RestSharp.Extensions;
 using SIL.Xml;
 
 namespace BloomTests.Book
