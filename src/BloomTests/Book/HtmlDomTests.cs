@@ -1046,5 +1046,81 @@ p {
 			Assert.IsTrue(fonts.Contains("Charis SIL First"), "The css data refers to Charis SIL First as a font.");
 			Assert.IsTrue(fonts.Contains("Charis SIL Second"), "The css data refers to Charis SIL Second as a font.");
 		}
+
+		[Test]
+		public void MigrateChildren_MigratesTextOverPicture_DoesNotLoseText()
+		{
+			var pageDom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page' id='pageGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'>First text contents</div>
+							</div>
+							<div class='bloom-imageContainer'>
+								<div class='bloom-textOverPicture'>
+									<div class='bloom-translationGroup'>
+										<div class='bloom-editable'>
+											<p>Text over picture text</p>
+										</div>
+									</div>
+								</div>
+								<img src='myImageFile.png'></img>
+								<div class='bloom-translationGroup bloom-imageDescription'>
+									<div class='bloom-editable'>
+										<p>Image description text</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class='split-pane-divider vertical-divider'></div>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'>Second text contents</div>
+							</div>
+						</div>
+					</div>
+				</body></html>");
+			var templateDom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page' id='templateGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-videoContainer bloom-noVideoSelected' />
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
+							</div>
+						</div>
+						<div class='split-pane-component-inner'>
+							<div title='placeHolder.png' class='bloom-imageContainer'>
+								<img src='placeHolder.png' alt=''></img>
+							</div>
+						</div>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
+							</div>
+						</div>
+					</div>
+				</body></html>");
+			bool didChange;
+			var lineage = "someGuid";
+			var pageElement = pageDom.SelectSingleNode("//div[@class='bloom-page']");
+			var templateElement = templateDom.SelectSingleNode("//div[@class='bloom-page']");
+
+			// SUT
+			pageDom.MigrateEditableData(pageElement, templateElement, lineage, false, out didChange);
+
+			// Verification
+			Assert.That(didChange, Is.True);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='someGuid']", 1);
+			var firstTextXpath = "//div[contains(@class,'bloom-editable') and text()='First text contents']";
+			var secondTextXpath = "//div[contains(@class,'bloom-editable') and text()='Second text contents']";
+			var topTextXpath = "//div[contains(@class,'bloom-imageContainer')]//div[contains(@class,'bloom-editable')]/p[text()='Text over picture text']";
+			var imageDescXpath = "//div[contains(@class,'bloom-imageContainer')]/div[contains(@class,'bloom-imageDescription')]//p[text()='Image description text']";
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath("//div[@id='templateGuid']");
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(firstTextXpath, 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(secondTextXpath, 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(topTextXpath, 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(imageDescXpath, 1);
+		}
 	}
 }
