@@ -3,7 +3,7 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "*",
-            "content": "<b>Please visit or contact us at:</b><p>Website: <a href='https://www.sil-lead.org'>www.sil-lead.org</a></p><p>Facebook: <a href='https://www.facebook.com/sillead/'>www.facebook.com/sillead/</a></p><p>YouTube: <a href='https://www.youtube.com/silleadinc'>www.youtube.com/silleadinc</a></p><p>Email: <a href='mailto:bloomhelp@sil-lead.org'>bloomhelp@sil-lead.org</a></p>",
+            "content": "<h4>Please visit or contact us at:</h4><p>Website: <a href='https://www.sil-lead.org'>www.sil-lead.org</a></p><p>Facebook: <a href='https://www.facebook.com/sillead/'>www.facebook.com/sillead/</a></p><p>YouTube: <a href='https://www.youtube.com/silleadinc'>www.youtube.com/silleadinc</a></p><p>Email: <a href='mailto:bloomhelp@sil-lead.org'>bloomhelp@sil-lead.org</a></p>",
             "condition": "always"
         },
         {

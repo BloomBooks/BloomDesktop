@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
 using DesktopAnalytics;
@@ -664,13 +665,13 @@ namespace Bloom.Book
 		/// <param name="didChange"></param>
 		internal string MigrateEditableData(XmlElement page, XmlElement template, string lineage, bool allowDataLoss, out bool didChange)
 		{
-			var textXPath = ".//div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and not(contains(@class, 'box-header-off'))]";
-			var imageXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]";
-			var videoXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]";
+			const string imageXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]";
+			const string videoXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]";
 			if (!allowDataLoss)
 			{
-				var oldTextCount = page.SafeSelectNodes(textXPath).Count;
-				var newTextCount = template.SafeSelectNodes(textXPath).Count;
+				// See comment on GetTranslationGroupsInternal() below.
+				var oldTextCount = GetTranslationGroupCount(page);
+				var newTextCount = GetTranslationGroupCount(template);
 				var oldImageCount = page.SafeSelectNodes(imageXpath).Count;
 				var newImageCount = template.SafeSelectNodes(imageXpath).Count;
 				var oldVideoCount = page.SafeSelectNodes(videoXpath).Count;
@@ -715,17 +716,67 @@ namespace Bloom.Book
 			// migrate text (between visible translation groups!)
 			// enhance: I wish there was a better way to detect invisible translation groups than just knowing about one class
 			// that currently hides them.
-			MigrateChildren(page, textXPath, newPage);
+			MigrateChildren(GetTranslationGroups(page), GetTranslationGroups(newPage));
 			// migrate images
-			MigrateChildren(page, imageXpath, newPage);
+			MigrateChildrenWithCommonXpath(page, imageXpath, newPage);
 			// migrate videos
-			MigrateChildren(page, videoXpath, newPage);
+			MigrateChildrenWithCommonXpath(page, videoXpath, newPage);
 			RemovePlaceholderVideoClass(newPage);
 			didChange = true;
 			return oldLineage;
 		}
 
-		private void RemovePlaceholderVideoClass(XmlElement newPage)
+		private int GetTranslationGroupCount(XmlElement pageElement)
+		{
+			var result = GetTranslationGroups(pageElement);
+
+			return result.Count;
+		}
+
+		private List<XmlElement> GetTranslationGroups(XmlElement pageElement)
+		{
+			var result = new List<XmlElement>();
+			GetTranslationGroupsInternal(pageElement, ref result);
+
+			return result;
+		}
+
+		// We want to count all the translationGroups that do not occur inside of a bloom-imageContainer div.
+		// The reason for this is that images can have textOverPicture divs and imageDescription divs inside of them
+		// and these are completely independent of the template page. We need to count regular translationGroups and
+		// also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
+		// sure to also change 'countTranslationGroupsForChangeLayout()' in page-chooser.ts.
+		// We could just do this with an xpath if bloom-textOverPicture divs and bloom-imageDescription divs had
+		// the same structure internally, but text over picture CONTAINS a translationGroup,
+		// whereas image description IS a translationGroup.
+		private void GetTranslationGroupsInternal(XmlElement currentElement, ref List<XmlElement> result)
+		{
+			if (currentElement.HasAttribute("class"))
+			{
+				var classes = currentElement.Attributes["class"].Value;
+				if (classes.Contains("bloom-imageContainer"))
+					return; // don't drill down inside of this one
+				if (classes.Contains("bloom-translationGroup"))
+				{
+					// box-header-off/on appears to be vestigial at this point,
+					// but suffice it to say "box-header-off" translationGroups are not visible.
+					if (!classes.Contains("box-header-off"))
+					{
+						result.Add(currentElement);
+					}
+					return; // don't drill down further
+				}
+			}
+
+			if (!currentElement.HasChildNodes)
+				return;
+			foreach (XmlElement childElement in currentElement.ChildNodes)
+			{
+				GetTranslationGroupsInternal(childElement, ref result);
+			}
+		}
+
+		private static void RemovePlaceholderVideoClass(XmlElement newPage)
 		{
 			const string videoPlaceholderClass = "bloom-noVideoSelected";
 			var nodesWithPlaceholder = newPage.SelectNodes("//div[contains(@class,'" + videoPlaceholderClass + "')]");
@@ -767,16 +818,22 @@ namespace Bloom.Book
 		/// <param name="page"></param>
 		/// <param name="xpath"></param>
 		/// <param name="newPage"></param>
-		private static void MigrateChildren(XmlElement page, string xpath, XmlElement newPage)
+		private static void MigrateChildrenWithCommonXpath(XmlElement page, string xpath, XmlElement newPage)
 		{
-			var oldParents = page.SafeSelectNodes(xpath);
-			var newParents = newPage.SafeSelectNodes(xpath);
+			var oldParents = new List<XmlElement>(page.SafeSelectNodes(xpath).Cast<XmlElement>());
+			var newParents = new List<XmlElement>(newPage.SafeSelectNodes(xpath).Cast<XmlElement>());
+			MigrateChildren(oldParents, newParents);
+		}
+
+		private static void MigrateChildren(IReadOnlyList<XmlElement> oldParentElements,
+			IReadOnlyList<XmlElement> templateParentElements)
+		{
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
 			// thing to copy or where the numbers are not equal. It's just a precaution.
-			for(int i = 0; i < Math.Min(newParents.Count, oldParents.Count); i++)
+			for (int i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
 			{
-				var oldParent = (XmlElement) oldParents[i];
-				var newParent = (XmlElement) newParents[i];
+				var oldParent = oldParentElements[i];
+				var newParent = templateParentElements[i];
 				string childClass = null;
 				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
@@ -786,7 +843,7 @@ namespace Bloom.Book
 				}
 				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
 				// which messes things up unless we make a copy of the collection.
-				foreach(XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
+				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
 					newParent.AppendChild(child);
 					// Bloom-editable divs should have the user-defined class specified in the template if there is one.
@@ -1374,11 +1431,19 @@ namespace Bloom.Book
 		/// <summary>
 		/// Finds a list of fonts used in the given css
 		/// </summary>
-		/// <param name="cssContent"></param>
-		/// <param name="result"></param>
+		/// <param name="cssContent">Content of either a CSS file or an HTML file</param>
+		/// <param name="result">set of fonts found in the CSS markup</param>
 		/// <param name="includeFallbackFonts">true to include fallback fonts, false to include only the first font in each font family</param>
 		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result, bool includeFallbackFonts)
 		{
+			// The actual content may be an HTML file instead of a CSS file.  HTML can contain embedded CSS
+			// in either style elements or style attributes.
+			if (cssContent.Contains("<html>") && cssContent.Contains("</html>"))
+			{
+				FindFontsUsedInEmbeddedCss(cssContent, result, includeFallbackFonts);
+				return;
+			}
+			cssContent = RemoveCommentsFromCss(cssContent);
 			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
 			foreach(Match match in findFF.Matches(cssContent))
 			{
@@ -1395,6 +1460,93 @@ namespace Bloom.Book
 						break;
 				}
 			}
+		}
+
+		private static void FindFontsUsedInEmbeddedCss(string htmlContent, HashSet<string> result, bool includeFallbackFonts)
+		{
+			// Remove any HTML comments from the HTML string.
+			for (var idx = htmlContent.IndexOf("<!--"); idx >= 0; idx = htmlContent.IndexOf("<!--", idx))
+			{
+				var endIdx = htmlContent.IndexOf("-->", idx + 4);
+				if (endIdx > idx)
+					htmlContent = htmlContent.Remove(idx, endIdx + 3 - idx);
+			}
+			// Capturing the content of a <style> element is too hard for Regex.  But we can capture
+			// the start tag okay, and work from there.
+			var styleElements = new Regex("<style[^>]*type=[\"']text/css[\"'][^>]*>");
+			foreach (Match match in styleElements.Matches(htmlContent))
+			{
+				var idxStart = match.Index + match.Length;
+				var idxEnd = htmlContent.IndexOf("</style>", idxStart);
+				if (idxEnd > idxStart)
+				{
+					var cssContent = htmlContent.Substring(idxStart, idxEnd - idxStart);
+					Console.WriteLine("DEBUG cssContent from HTML <style> = \"{0}\"", cssContent);
+					FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
+				}
+			}
+			var styleAttributes1 = new Regex(" style=\"([^\"]*)\"");
+			foreach (Match match in styleAttributes1.Matches(htmlContent))
+			{
+				var cssContent = HttpUtility.HtmlDecode(match.Groups[1].Value);
+				FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
+			}
+			var styleAttributes2 = new Regex(" style='([^']*)'");
+			foreach (Match match in styleAttributes2.Matches(htmlContent))
+			{
+				var cssContent = HttpUtility.HtmlDecode(match.Groups[1].Value);
+				FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
+			}
+		}
+
+		/// <summary>
+		/// Find the ranges of either //  and /*...*/ comments in the css data, taking into account
+		/// quoted strings along the way.  Then remove each comment from the string and return the
+		/// string without any comments in it.  This is still a bit naive compared to a full css parser,
+		/// but good enough for what we need.
+		/// </summary>
+		public static string RemoveCommentsFromCss(string cssContent)
+		{
+			for (var idxStart = FindCommentStartOutsideQuotes(cssContent, 0);
+				idxStart >= 0;
+				idxStart = FindCommentStartOutsideQuotes(cssContent, idxStart))
+			{
+				int idxEnd = 0;
+				if (cssContent[idxStart + 1] == '*')
+				{
+					idxEnd = cssContent.IndexOf("*/", idxStart + 2);
+					if (idxEnd < 0)
+						idxEnd = cssContent.Length;
+					else
+						idxEnd += 2;
+					}
+				else
+				{
+					idxEnd = cssContent.IndexOf("\n", idxStart + 2);
+					if (idxEnd < 0)
+						idxEnd = cssContent.Length;
+				}
+				cssContent = cssContent.Remove(idxStart, idxEnd - idxStart);
+			}
+			return cssContent;
+		}
+
+		private static int FindCommentStartOutsideQuotes(string content, int start)
+		{
+			char[] quotes = { '"', '\'' };
+			var idxComment = content.IndexOf("//", start);
+			var idxComment2 = content.IndexOf("/*", start);
+			if (idxComment2 >= 0 && (idxComment2 < idxComment || idxComment < 0))
+				idxComment = idxComment2;
+			if (idxComment < 0)
+				return idxComment;	// no comment found, inside or outside any quotes
+			var idxQuote = content.IndexOfAny(quotes, start);
+			if (idxQuote < 0 || idxQuote > idxComment)
+				return idxComment;
+			var endQuote = content.IndexOf(content[idxQuote], idxQuote + 1);
+			if (endQuote < 0)
+				return idxComment;   // ignore unterminated quote
+			return FindCommentStartOutsideQuotes(content, endQuote + 1);
 		}
 
 		/// <summary>
