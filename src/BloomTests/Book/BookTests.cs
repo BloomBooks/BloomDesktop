@@ -1668,6 +1668,85 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void AllLanguagesWithAudioRecorded_Finds()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page bloom-frontMatter'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
+								<span id='myId1' class='audio-sentence'>Some Thai in front matter. It is recorded.</span>
+							</div>
+						</div>
+					</div>
+					<div class='bloom-page' id='guid3'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
+								Bloom ist ein Programm zum Erstellen von Sammlungen der Bucher. Es ist eine Hilfe zur Alphabetisierung.
+							</div>
+
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								Bloom is a program for creating collections of books. It is an aid to literacy.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='fr'>
+								Whatever.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='es'>
+							</div>
+						</div>
+					</div>
+					<div class='bloom-page' id='guid3'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
+								Some German.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								Some English.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='fr'>
+								Some French.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='es'>
+								Something or other.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xkal'>
+								Something or other.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='*'>
+								This is not in any known language
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='z'>
+								We use z for some special purpose, seems to occur in every book, don't want it.
+							</div>
+						</div>
+					</div>
+					<div class='bloom-page bloom-backMatter'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
+								Some Thai in back matter. Should not count at all.
+							</div>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			var allLanguagesWithAudioRecorded = book.AllLanguagesWithAudioRecorded;
+			Assert.That(allLanguagesWithAudioRecorded, Does.Contain("en"));
+			Assert.That(allLanguagesWithAudioRecorded, Does.Contain("de"));
+			Assert.That(allLanguagesWithAudioRecorded, Does.Contain("fr"));
+			Assert.That(allLanguagesWithAudioRecorded, Does.Not.Contain("es")); // in first group this is empty
+			Assert.That(allLanguagesWithAudioRecorded, Does.Not.Contain("xkal")); // not in first group at all
+			Assert.That(allLanguagesWithAudioRecorded.Count(), Is.EqualTo(3)); // no * or z or tr
+		}
+
+		[Test]
 		public void UpdateLicenseMetdata_UpdatesJson()
 		{
 			var book = CreateBook();

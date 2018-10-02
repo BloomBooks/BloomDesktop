@@ -95,6 +95,7 @@ namespace Bloom.Publish.BloomLibrary
 			_summaryBox.Text = _model.Summary;
 
 			var allLanguages = _model.AllLanguages;
+			var recordedLanguages = _model.AllLanguagesWithAudioRecorded;
 			foreach (var lang in allLanguages.Keys)
 			{
 				var checkBox = new CheckBox();
@@ -119,7 +120,10 @@ namespace Bloom.Publish.BloomLibrary
 					}
 				};
 				_languagesFlow.Controls.Add(checkBox);
+				if (recordedLanguages.Contains(lang))
+					MakeAudioCheckBoxFromTextCheckBox(checkBox);
 			}
+
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			// Copyright info is not required if the book has been put in the public domain
 			// or if we are publishing from a source collection and we have original copyright info
@@ -148,6 +152,15 @@ namespace Bloom.Publish.BloomLibrary
 				_langsLabel.ForeColor = Color.Red;
 				_okToUpload = false;
 			}
+		}
+
+		private void MakeAudioCheckBoxFromTextCheckBox(CheckBox textCheckBox)
+		{
+			var audioCheckBox = new CheckBox();
+			audioCheckBox.Text = textCheckBox.Text;
+			audioCheckBox.Size = textCheckBox.Size;
+			audioCheckBox.Tag = textCheckBox.Tag;
+			_audioFlow.Controls.Add(audioCheckBox);
 		}
 
 		private bool LanguagesOkToUpload =>
@@ -419,7 +432,8 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var book = (Book.Book) e.Argument;
 			var languages = _languagesFlow.Controls.Cast<CheckBox>().Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToArray();
-			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages, out _parseId);
+			var audioLanguages = _audioFlow.Controls.Cast<CheckBox>().Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToArray();
+			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages, audioLanguages, out _parseId);
 			e.Result = result;
 		}
 

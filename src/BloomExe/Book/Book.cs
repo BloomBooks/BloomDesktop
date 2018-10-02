@@ -1701,6 +1701,29 @@ namespace Bloom.Book
 			return false; // not found
 		}
 
+		public ISet<string> AllLanguagesWithAudioRecorded
+		{
+			get
+			{
+				var result = new HashSet<string>();
+
+				var audioSentences = RawDom.SafeSelectNodes("//span[@id and contains(concat(' ', @class, ' '), ' audio-sentence ')]")
+					.Cast<XmlElement>();
+				foreach (var audioSentence in audioSentences)
+				{
+					var ancestorsWithLang = audioSentence.SafeSelectNodes("./ancestor::div[@lang and contains(concat(' ', @class, ' '), ' bloom-editable ')]");
+					if (ancestorsWithLang.Count < 1)
+						continue;
+
+					var ancestorWithLang = ancestorsWithLang.Item(0);
+					if (AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, audioSentence.Attributes["id"].Value))
+						result.Add(ancestorWithLang.Attributes["lang"].Value);
+				}
+
+				return result;
+			}
+		}
+
 		/// <summary>
 		/// Determines if the book references an existing audio file.
 		/// </summary>
@@ -1712,6 +1735,25 @@ namespace Bloom.Book
 					.Cast<XmlElement>()
 					.Any(
 						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value));
+		}
+
+		public bool HasAudioInLang(string lang)
+		{
+			var audioSentences = RawDom.SafeSelectNodes("//span[@id and contains(concat(' ', @class, ' '), ' audio-sentence ')]")
+				.Cast<XmlElement>();
+			foreach (var audioSentence in audioSentences)
+			{
+				var ancestorsWithLang = audioSentence.SafeSelectNodes("./ancestor::div[@lang and contains(concat(' ', @class, ' '), ' bloom-editable ')][1]");
+				if (ancestorsWithLang.Count < 1)
+					return false;
+
+				var ancestorWithLang = ancestorsWithLang.Item(0);
+				if (ancestorWithLang.Attributes["lang"].Value == lang &&
+				    AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, audioSentence.Attributes["id"].Value))
+					return true;
+			}
+
+			return false;
 		}
 
 		/// <summary>

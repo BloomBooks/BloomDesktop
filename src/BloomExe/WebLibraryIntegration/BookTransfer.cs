@@ -352,7 +352,7 @@ namespace Bloom.WebLibraryIntegration
 			return UploadBook(bookFolder, progress, out parseId);
 		}
 
-		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeAudio = true)
+		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, string[] audioLanguages = null)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -409,7 +409,7 @@ namespace Bloom.WebLibraryIntegration
 				parseId = "";
 				try
 				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, excludeAudio);
+					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioLanguages);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database."));
@@ -757,7 +757,11 @@ namespace Bloom.WebLibraryIntegration
 						var msg = "Apparently this book is already on the server. Overwriting...";
 						ReportToLogBoxAndLogger(dlg.Progress, folder, msg);
 					}
-					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, excludeAudio);
+
+					string[] audioLanguages = null;
+					if (!excludeAudio)
+						audioLanguages = book.AllLanguagesWithAudioRecorded.ToArray();
+					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, audioLanguages);
 					AppendBookToUploadLogFile(folder);
 				}
 				else
@@ -791,7 +795,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="parseId"></param>
 		/// <param name="excludeAudio"></param>
 		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, bool excludeAudio = true)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, string[] audioLanguages = null)
 		{
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
@@ -832,7 +836,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			if (progressBox.CancelRequested)
 				return "";
-			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath), excludeAudio);
+			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath), audioLanguages);
 		}
 
 		internal static string UploadPdfPath(string bookFolder)
