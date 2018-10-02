@@ -2145,6 +2145,12 @@ namespace Bloom.Book
 			// text.
 			RemoveAudioMarkup(newpageDiv);
 
+			// When we copy a page with video content, it's simplest and safest to just copy and
+			// rename the video file.  If we don't do this, then deleting a page or editing a video
+			// have to be very careful not to delete or modify a video file referenced elsewhere in
+			// the book.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6536.
+			CopyAndRenameVideoFiles(newpageDiv);
+
 			body.InsertAfter(newpageDiv, pages[currentPageIndex]);
 			_storage.Dom.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
 
@@ -2171,6 +2177,35 @@ namespace Bloom.Book
 					after = child;
 				}
 				span.ParentNode.RemoveChild(span);
+			}
+		}
+
+		private void CopyAndRenameVideoFiles(XmlElement newpageDiv)
+		{
+			foreach (var source in newpageDiv.SafeSelectNodes(".//video/source[contains(@type,'video/')]").Cast<XmlElement>().ToList())
+			{
+				var src = source.GetAttribute("src");
+				if (String.IsNullOrWhiteSpace(src))
+					continue;
+				var oldVideoPath = Path.Combine(FolderPath, src);
+				// If the video file doesn't exist, don't bother adjusting anything.
+				// If it does exist, copy it with a new name based on the current one, similarly
+				// to how we've been renaming image files that already exist in the book's folder.
+				if (RobustFile.Exists(oldVideoPath))
+				{
+					var extension = Path.GetExtension(src);
+					var oldFileName = Path.GetFileNameWithoutExtension(src);
+					int count = 0;
+					string newVideoPath;
+					do
+					{
+						++count;
+						var newFileName = oldFileName + "-" + count.ToString(CultureInfo.InvariantCulture);
+						newVideoPath = Path.Combine(FolderPath, "video", newFileName + extension);
+					} while (RobustFile.Exists(newVideoPath));
+					RobustFile.Copy(oldVideoPath, newVideoPath, false);
+					source.SetAttribute("src", "video/" + Path.GetFileName(newVideoPath));
+				}
 			}
 		}
 
