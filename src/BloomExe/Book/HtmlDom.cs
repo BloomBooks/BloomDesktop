@@ -770,8 +770,12 @@ namespace Bloom.Book
 
 			if (!currentElement.HasChildNodes)
 				return;
-			foreach (XmlElement childElement in currentElement.ChildNodes)
+			foreach (XmlNode childNode in currentElement.ChildNodes)
 			{
+				var childElement = childNode as XmlElement;
+				if (childElement == null) // if the node is not castable to XmlElement
+					continue;
+
 				GetTranslationGroupsInternal(childElement, ref result);
 			}
 		}
