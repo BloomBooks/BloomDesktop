@@ -87,6 +87,12 @@ namespace Bloom.Publish
 			return Path.Combine(bookFolderPath, "audio");
 		}
 
+		internal static bool HasAnyAudioFiles(string bookFolderPath)
+		{
+			var audioFolderPath = GetAudioFolderPath(bookFolderPath);
+			return Directory.Exists(audioFolderPath) && Directory.EnumerateFiles(audioFolderPath).Any();
+		}
+
 		/// <summary>
 		/// Make a compressed audio file for the specified .wav file.
 		/// (Or return null if it can't be done because we don't have a LAME package installed.)

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -14,7 +11,7 @@ using SIL.IO;
 namespace Bloom.web.controllers
 {
 	/// <summary>
-	/// Api used by the Background Audio (Music) toobox.
+	/// Api used by the Background Audio (Music) toolbox.
 	/// The one current function is pretty generic...ask the user to choose a file, return it.
 	/// There's a similar function in ReadersApi.
 	/// If we get a third we might want to think about how to parameterize it in some common place.
@@ -23,6 +20,7 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class MusicApi
 	{
+		public static readonly string[] MusicFileExtensions = {".mp3", ".ogg", ".wav"};
 
 		private readonly BookSelection _bookSelection;
 
@@ -89,7 +87,7 @@ namespace Bloom.web.controllers
 			{
 				Multiselect = false,
 				CheckFileExists = true,
-				Filter = String.Format("{0} (*.mp3;*.ogg;*.wav)|*.mp3;*.ogg;*.wav;*.MP3;*.OGG;*.WAV", soundFiles)
+				Filter = $"{soundFiles} {BuildFileFilter()}"
 			};
 			var result = dlg.ShowDialog();
 			if (result == DialogResult.OK)
@@ -134,6 +132,13 @@ namespace Bloom.web.controllers
 			}
 
 			return returnVal;
+		}
+
+		private string BuildFileFilter()
+		{
+			var lowerExtensionString = string.Join(";", MusicFileExtensions.Select(ext => "*" + ext));
+			var upperExtensionString = lowerExtensionString.ToUpperInvariant();
+			return $"({lowerExtensionString})|{lowerExtensionString};{upperExtensionString}";
 		}
 	}
 }

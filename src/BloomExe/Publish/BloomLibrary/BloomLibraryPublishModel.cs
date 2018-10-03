@@ -128,9 +128,9 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsThisVersionAllowedToUpload => _transferrer.IsThisVersionAllowedToUpload();
 
-		internal string UploadOneBook(BookInstance book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId)
+		internal string UploadOneBook(BookInstance book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, out string parseId)
 		{
-			return _transferrer.FullUpload(book, progressBox, publishView, languages, out parseId);
+			return _transferrer.FullUpload(book, progressBox, publishView, languages, out parseId, excludeNarrationAudio);
 		}
 
 		/// <summary>
