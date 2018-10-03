@@ -834,20 +834,43 @@ namespace Bloom.Book
 		{
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
 			// thing to copy or where the numbers are not equal. It's just a precaution.
-			for (int i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
+
+			var srcMax = oldParentElements.Count;
+			var destMax = templateParentElements.Count;
+
+			var destIndex = 0;
+			for (var srcIndex = 0; srcIndex < srcMax && destIndex < destMax; srcIndex++, destIndex++)
 			{
-				var oldParent = oldParentElements[i];
-				var newParent = templateParentElements[i];
+				var oldParent = oldParentElements[srcIndex];
+
+				// don't copy things into a destination that has a data-book attribute, because that is
+				// designating it as a special value that will get filled from the data-div of the book.
+				// This is used when converting books to compact form for inclusion with other books into
+				// a single "school reader". The title, credits, etc. may be moved to the first story book page.
+				var newParent = templateParentElements[destIndex];
+				while (destIndex < destMax && newParent.SelectNodes("./div[@data-book]").Count > 0)
+				{
+					destIndex++;
+					if (destIndex < destMax)
+					{
+						newParent = templateParentElements[destIndex];
+					}
+				}
+				Guard.Against(destIndex == destMax, "Could not find enough spots in the destination page.");
+				
+
 				string childClass = null;
 				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
+					// Review: I didn't write this, but it seems incorrect; all but the final childClass will be ignored.
 					if (childClass == null)
 						childClass = GetStyle(child);
 					newParent.RemoveChild(child);
 				}
-				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
-				// which messes things up unless we make a copy of the collection.
-				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
+				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>()
+					// we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
+					// which messes things up unless we make a copy of the collection.
+					.ToArray())
 				{
 					newParent.AppendChild(child);
 					// Bloom-editable divs should have the user-defined class specified in the template if there is one.

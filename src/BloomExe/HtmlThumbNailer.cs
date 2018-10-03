@@ -407,6 +407,7 @@ namespace Bloom
 		// Bloom makes it pretty hard to have no cover picture. It may not even be possible.
 		private static int GetLastLineOfImage(Color coverColor, int top, int bottom, Bitmap image)
 		{
+			return -1;
 			for (int i = bottom - 1; i >= top; i--)
 			{
 				for (int j = 0; j < image.Width; j++)

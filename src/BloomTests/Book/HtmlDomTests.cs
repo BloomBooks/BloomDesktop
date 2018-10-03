@@ -964,6 +964,39 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(videoXpath, 1);
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath(noVideoXpath);
 		}
+		[Test]
+		public void MigrateChildren_SkipsDestinationsWithDataBookAttribute()
+		{
+			var pageDom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page' id='pageGuid'>
+						<div class='bloom-translationGroup'>
+							<div class='bloom-editable ' contenteditable='true' lang='en'>Contents</div>
+						</div>
+						</div>
+				</body></html>");
+			var templateDom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page' id='templateGuid'>
+						<div id='shouldBeSkipped' class='bloom-translationGroup' data-book='some-special-purpose'>
+							<div class='bloom-editable ' contenteditable='true' lang='en'></div>
+						</div>
+						<div id='shouldGoHere' class='bloom-translationGroup'>
+							<div class='bloom-editable ' contenteditable='true' lang='en'></div>
+						</div>				</div>
+				</body></html>");
+			bool didChange;
+			var lineage = "someGuid";
+			var pageElement = pageDom.SelectSingleNode("//div[@class='bloom-page']");
+			var templateElement = templateDom.SelectSingleNode("//div[@class='bloom-page']");
+
+			// SUT
+			pageDom.MigrateEditableData(pageElement, templateElement, lineage, false, out didChange);
+
+			// Verification
+			Assert.That(didChange, Is.True);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='someGuid']", 1);
+			var textContentsXpath = "//div[@id='shouldGoHere']/div[@lang='en'and text()='Contents']";
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(textContentsXpath, 1);
+		}
 
 		[Test]
 		public void RemoveComments_WorksForCssData()
