@@ -202,7 +202,7 @@ export class LocalizableElement<
             l10nClass = "translated";
             text = this.state.translation;
         }
-        return <span className={l10nClass}>{text}</span>;
+        return <span className={l10nClass}> {text} </span>;
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {
