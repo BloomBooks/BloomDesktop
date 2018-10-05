@@ -2911,6 +2911,8 @@ namespace Bloom.Book
 					continue;
 				if (PageHasVisibleText(page))
 					continue;
+				if (PageHasVideo(page))
+					continue;
 				page.ParentNode.RemoveChild(page);
 			}
 			OrderOrNumberOfPagesChanged();
@@ -2938,6 +2940,17 @@ namespace Bloom.Book
 				var imgUrl = HtmlDom.GetImageElementUrl(div).NotEncoded;
 				// Actually getting a background img url is a good indication that it's one we want.
 				if (!string.IsNullOrEmpty(imgUrl) && imgUrl != "placeHolder.png")
+					return true;
+			}
+			return false;
+		}
+
+		private bool PageHasVideo(XmlElement page)
+		{
+			foreach (XmlElement videoSource in page.SafeSelectNodes(".//video/source"))
+			{
+				var src = videoSource.GetAttribute("src");
+				if (!string.IsNullOrEmpty(src))
 					return true;
 			}
 			return false;
