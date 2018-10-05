@@ -21,10 +21,6 @@ interface IMusicState {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of MusicToolAdapter to ToolBox.registerTool();
 export class MusicToolControls extends React.Component<{}, IMusicState> {
-    // duplicates information in HtmlDom.cs
-    // The names of the attributes (of the main page div) which store the background
-    // audio file name (relative to the audio folder) and the volume (a fraction
-    // of full volume).
     public readonly state: IMusicState = {
         activeRadioValue: "continueMusic",
         volumeSliderPosition: Math.round(
@@ -34,6 +30,10 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         musicName: "",
         playing: false
     };
+    // duplicates information in HtmlDom.cs
+    // The names of the attributes (of the main page div) which store the background
+    // audio file name (relative to the audio folder) and the volume (a fraction
+    // of full volume).
     private static musicAttrName = "data-backgroundaudio";
     private static musicVolumeAttrName =
         MusicToolControls.musicAttrName + "volume";
@@ -48,10 +48,16 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         const rawPlayer = document.getElementById(
             "musicPlayer"
         ) as HTMLMediaElement;
-        rawPlayer.pause();
+        if (rawPlayer) {
+            rawPlayer.pause();
+        }
     }
 
-    public getStateFromHtmlOfPage(): IMusicState {
+    // This method returns type 'any', but it must be something that can be a valid parameter
+    // for setState(). But we can't do the previous way of setting this.state and THEN using our state
+    // to setState().
+    public getStateFromHtmlOfPage(): any {
+        const newStateObj = {};
         let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttr(
             MusicToolControls.musicAttrName
         );
@@ -63,24 +69,30 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
             // No data-backgroundAudio attr at all is our default state, continue from previous page
             // (including possibly no audio, if previous page had none). If audio is set on a previous
             // page, it can flow over into this one.
+            newStateObj["activeRadioValue"] = "continueMusic";
+            newStateObj["musicName"] = "";
+            newStateObj["audioEnabled"] = false;
         } else if (audioFileName) {
             // If we have a non-empty music attr, we're setting new music right here.
-            this.state.activeRadioValue = "newMusic";
-            this.state.audioEnabled = true;
+            newStateObj["activeRadioValue"] = "newMusic";
+            newStateObj["audioEnabled"] = true;
             const volume = MusicToolControls.getPlayerVolumeFromAttributeOnPage(
                 audioFileName
             );
-            this.state.volumeSliderPosition = MusicToolControls.convertVolumeToSliderPosition(
-                volume
-            );
-            this.state.musicName = this.getDisplayNameOfMusicFile(
+            newStateObj[
+                "volumeSliderPosition"
+            ] = MusicToolControls.convertVolumeToSliderPosition(volume);
+            newStateObj["musicName"] = this.getDisplayNameOfMusicFile(
                 audioFileName
             );
         } else {
             // If we have the attribute, but the value is empty, we're explicitly turning it off.
-            this.state.activeRadioValue = "noMusic";
+            newStateObj["activeRadioValue"] = "noMusic";
+            newStateObj["musicName"] = "";
+            newStateObj["audioEnabled"] = false;
+            this.pausePlaying(); // pauses player and sets playing state to false
         }
-        return this.state;
+        return newStateObj;
     }
 
     // This is not very react-ive. In theory, I think, if things can be updated from outside the control,
@@ -257,37 +269,37 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 
     private pausePlaying() {
-        this.getPlayer().pause();
+        this.pausePlayer();
         this.setState({ playing: false });
     }
 
     private setRadio(val: string) {
-        if (val === this.state.activeRadioValue) return;
         const audioEnabled =
             val === "newMusic" && this.state.musicName.length > 0;
-        this.setState({
+        const newState: any = {
             activeRadioValue: val,
-            audioEnabled: audioEnabled,
-            musicName: ""
-        });
-        if (!audioEnabled) {
-            this.pausePlaying();
-        }
+            audioEnabled: audioEnabled
+        };
         switch (val) {
             case "noMusic":
                 ToolboxToolReactAdaptor.setBloomPageAttr(
                     MusicToolControls.musicAttrName,
                     ""
                 );
+                newState["musicName"] = "";
+                this.pausePlaying(); // pauses player and sets playing state to false
                 break;
             case "continueMusic":
                 const bloomPage = ToolboxToolReactAdaptor.getBloomPage();
                 if (bloomPage) {
                     bloomPage.removeAttribute(MusicToolControls.musicAttrName);
                 }
+                newState["musicName"] = "";
+                // In any case don't change the state of playing/not playing
                 break;
             // choosing the third button doesn't change anything, until you actually choose a file.
         }
+        this.setState(newState);
     }
 
     // Get the audio volume. The value of audioFileName is checked to determine whether data-backgroundAudioVolume
