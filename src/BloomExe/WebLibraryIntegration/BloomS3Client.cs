@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Bloom.Book;
-using Bloom.web.controllers;
+using Bloom.Publish;
 using BloomTemp;
 using L10NSharp;
 using RestSharp.Extensions.MonoHttp;
@@ -33,7 +34,10 @@ namespace Bloom.WebLibraryIntegration
 		public const string ProblemBookUploadsBucketName = "bloom-problem-books";
 		public const string BloomDesktopFiles = "bloom-desktop-files";
 
-		private static readonly Regex RegexFileNameRegex = new Regex("^(.*[\\/\\\\])*i?(.+?)\\.[^.]*$", RegexOptions.Compiled);
+		// Notice the optional "i".
+		// These file names are guids, and if the guid starts with a number, we prepend "i".
+		// But really we just want to extract the possible guid part to see if it is, in fact, a guid.
+		private static readonly Regex NarrationFileNameRegex = new Regex("^(.*[\\/\\\\])*i?(.+?)\\.[^.]*$", RegexOptions.Compiled);
 
 		public BloomS3Client(string bucketName)
 		{
@@ -191,10 +195,7 @@ namespace Bloom.WebLibraryIntegration
 		/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
 		/// except the one we want.
 		/// </summary>
-		/// <param name="storageKeyOfBookFolder"></param>
-		/// <param name="pathToBloomBookDirectory"></param>
-		/// <param name="excludeNarrationAudio">If true, audio files are not uploaded.</param>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null, bool excludeNarrationAudio = true)
+		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null, ISet<string> audioFilesToInclude = null)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
@@ -228,7 +229,7 @@ namespace Bloom.WebLibraryIntegration
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
 			CopyDirectory(pathToBloomBookDirectory, destDirName);
 
-			RemoveUnwantedAudioFiles(destDirName, excludeNarrationAudio);
+			RemoveUnwantedAudioFiles(destDirName, audioFilesToInclude);
 
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)
@@ -241,30 +242,18 @@ namespace Bloom.WebLibraryIntegration
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
 		}
 
-		private void RemoveUnwantedAudioFiles(string destDirName, bool excludeNarrationAudio)
+		private void RemoveUnwantedAudioFiles(string destDirName, ISet<string> audioFilesToInclude)
 		{
-			string audioDir = Path.Combine(destDirName, "audio");
+			string audioDir = AudioProcessor.GetAudioFolderPath(destDirName);
 			if (!Directory.Exists(audioDir))
 				return;
 
 			foreach (var audioFile in Directory.EnumerateFiles(audioDir))
 			{
-				var match = RegexFileNameRegex.Match(audioFile);
-				if (match.Success)
-				{
-					Guid dummy;
-					if (Guid.TryParse(match.Groups[2].Value, out dummy))
-					{
-						// Always remove all .wav files with guid file names. They are the original recordings.
-						if (excludeNarrationAudio || audioFile.EndsWith(".wav"))
-							RobustFile.Delete(audioFile);
-					}
-				}
+				var fileName = BookStorage.GetNormalizedPathForOS(Path.GetFileName(audioFile));
+				if (audioFilesToInclude == null || !audioFilesToInclude.Contains(fileName))
+					RobustFile.Delete(Path.Combine(audioDir, fileName));
 			}
-
-			// We always leave the music files to get uploaded.
-			// Though there is a slight chance we are not 100% accurate,
-			// we treat everything which isn't a guid as music and everything which is as narration.
 		}
 
 		private static void DeleteFileSystemInfo(FileSystemInfo fileSystemInfo)
@@ -469,12 +458,12 @@ namespace Bloom.WebLibraryIntegration
 				return true;
 
 			// We only want to download audio for "music", not narration.
-			// The way we determine the difference is that narration audio files are guids.
+			// The way we determine the difference is that narration audio files are guids. (but also see comment on the regex)
 			// This isn't 100% accurate because, in theory, someone could choose a music file which has a guid file name.
 			// But we are living with that possibility for now.
-			if (MusicApi.MusicFileExtensions.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
+			if (AudioProcessor.MusicFileExtensions.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
 			{
-				var match = RegexFileNameRegex.Match(objectKey);
+				var match = NarrationFileNameRegex.Match(objectKey);
 				if (match.Success)
 				{
 					Guid dummy;
