@@ -20,6 +20,7 @@ using Bloom.web;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
@@ -67,6 +68,8 @@ namespace Bloom.Book
 		void UpdateSupportFiles();
 		void Update(string fileName, string factoryPath = "");
 		string Duplicate();
+		IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav);
+		IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook();
 	}
 
 	public class BookStorage : IBookStorage
@@ -324,6 +327,8 @@ namespace Bloom.Book
 
 		#region Image Files
 
+		private readonly List<string> _brandingImageNames = new List<string>();
+
 		/// <summary>
 		/// Compare the images we find in the top level of the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
@@ -393,57 +398,41 @@ namespace Bloom.Book
 		#endregion Image Files
 
 		#region Audio Files
-
-		public static string[] AudioExtensions =  new []{ ".wav", ".mp3" };  // .ogg, .wav, ...?
-		private readonly List<string> _brandingImageNames = new List<string>();
-
 		/// <summary>
 		/// Compare the audio we find in the audio folder in the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
 		public void CleanupUnusedAudioFiles()
 		{
-
 			if (IsStaticContent(_folderPath))
 				return;
+
 			//Collect up all the audio files in our book's audio directory
 			var audioFolderPath = AudioProcessor.GetAudioFolderPath(_folderPath);
-			var audioFilesToDeleteIfNotUsed = new List<string>();
+			HashSet<string> audioFilesToDeleteIfNotUsed;    // Should be a HashSet or something we can delete a specific item from repeatedly
 
 			if (Directory.Exists(audioFolderPath))
 			{
-				foreach (var path in Directory.EnumerateFiles(audioFolderPath).Where(
-					s => AudioExtensions.Contains(Path.GetExtension(s).ToLowerInvariant())))
-				{
-					audioFilesToDeleteIfNotUsed.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
-				}
+				// Review: do we only want to delete files in this directory if they have certain file extensions?
+				audioFilesToDeleteIfNotUsed = new HashSet<string>(Directory.EnumerateFiles(audioFolderPath).Where(AudioProcessor.HasAudioFileExtension)
+					.Select(path => Path.GetFileName(GetNormalizedPathForOS(path))));
 			}
-
-			//Remove from that list each audio file actually in use
-			var element = Dom.RawDom.DocumentElement;
-			var usedAudioPaths = GetAudioPathsRelativeToBook(element);
-
-			//also, ensure that nothing to be removed is actually used in a datadiv as audio-sentence or backgroundaudio.
-			//This prevents us from deleting, for example, cover page audios if this is called before the front-matter
-			//has been applied to the document.
-			usedAudioPaths.AddRange(from XmlElement dataDivAudio in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'audio-sentence')"+
-							" or contains(text(),'data-backgroundaudio')]")
-							  select UrlPathString.CreateFromUrlEncodedString(dataDivAudio.InnerText.Trim()).PathOnly.NotEncoded);
-			foreach (var fileName in usedAudioPaths)
+			else
 			{
-				if (Path.GetExtension(fileName).Length > 0)
-				{
-					if (AudioExtensions.Contains(Path.GetExtension(fileName).ToLowerInvariant()))
-					{
-						audioFilesToDeleteIfNotUsed.Remove(GetNormalizedPathForOS(fileName));  //This call just returns false if not found, which is fine.
-					}
-				}
-				foreach (var ext in AudioExtensions)
-				{
-					var tempfileName = Path.ChangeExtension(fileName, ext);
-					audioFilesToDeleteIfNotUsed.Remove(GetNormalizedPathForOS(tempfileName));
-				}
+				audioFilesToDeleteIfNotUsed = new HashSet<string>();
 			}
+
+			//Look up which files could actually be used by the book
+			var usedAudioFileNames = new HashSet<string>();
+
+			var backgroundMusicFileNames = GetBackgroundMusicFileNamesReferencedInBook();
+			usedAudioFileNames.AddRange(backgroundMusicFileNames);
+
+			var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(true);
+			usedAudioFileNames.AddRange(narrationAudioFileNames);
+
+			audioFilesToDeleteIfNotUsed.ExceptWith(usedAudioFileNames);
+
 			//Delete any files still in the list
 			foreach (var fileName in audioFilesToDeleteIfNotUsed)
 			{
@@ -464,9 +453,44 @@ namespace Bloom.Book
 			}
 		}
 
-		internal static List<string> GetAudioPathsRelativeToBook(XmlElement element)
+		/// <summary>
+		/// Returns all possible file names for audio narration which are referenced in the DOM.
+		/// This should include items from the data div.
+		/// </summary>
+		/// <param name="includeWav">Optionally include/exclude .wav files</param>
+		public IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav)
 		{
-			return (from XmlElement audio in HtmlDom.SelectChildAudioAndBackgroundMusicElements(element)
+			var narrationIds = GetAudioSourceIdentifiers(HtmlDom.SelectChildNarrationAudioElements(Dom.RawDom.DocumentElement));
+
+			var extensionsToInclude = AudioProcessor.NarrationAudioExtensions.ToList();
+			if (!includeWav)
+				extensionsToInclude.Remove(".wav");
+
+			// The dom only includes the ID, so we return all possible file names
+			foreach (var narrationId in narrationIds)
+				foreach (var extension in extensionsToInclude)
+					// Should be a simple append, but previous code had ChangeExtension, so being defensive
+					yield return GetNormalizedPathForOS(Path.ChangeExtension(narrationId, extension));
+		}
+
+		/// <summary>
+		/// Returns all file names for background music which are referenced in the DOM.
+		/// This should include items from the data div.
+		/// </summary>
+		public IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook()
+		{
+			return GetAudioSourceIdentifiers(HtmlDom.SelectChildBackgroundMusicElements(Dom.RawDom.DocumentElement))
+				.Where(AudioProcessor.HasBackgroundMusicFileExtension)
+				.Select(GetNormalizedPathForOS);
+		}
+
+		/// <summary>
+		/// Could be simply an ID without an extension (as for narration)
+		/// or an actual file name (as for background music)
+		/// </summary>
+		private List<string> GetAudioSourceIdentifiers(XmlNodeList nodeList)
+		{
+			return (from XmlElement audio in nodeList
 				select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
 		}
 
@@ -571,7 +595,7 @@ namespace Bloom.Book
 
 		#endregion Video Files
 
-		private string GetNormalizedPathForOS(string path)
+		public static string GetNormalizedPathForOS(string path)
 		{
 			return Environment.OSVersion.Platform == PlatformID.Win32NT
 						? path.ToLowerInvariant()

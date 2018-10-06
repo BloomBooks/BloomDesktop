@@ -1711,7 +1711,7 @@ namespace Bloom.Book
 			}
 			srcElement.SetAttribute("src", url.UrlEncodedForHttpPath); // We need the fwd slash to come through unencoded
 			// Hides the placeholder.
-			
+
 			videoContainer.SetAttribute("class",
 				RemoveClass("bloom-noVideoSelected",
 					videoContainer.GetAttribute("class")));
@@ -1730,10 +1730,14 @@ namespace Bloom.Book
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
 		}
 
-		public static XmlNodeList SelectChildAudioAndBackgroundMusicElements(XmlElement element)
+		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element)
 		{
-			return element.SelectNodes(".//span[contains(@class,'audio-sentence')] | " +
-				".//div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]");
+			return element.SelectNodes(".//span[contains(concat(' ', @class, ' '), ' audio-sentence ')]");
+		}
+
+		public static XmlNodeList SelectChildBackgroundMusicElements(XmlElement element)
+		{
+			return element.SelectNodes(".//div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]");
 		}
 
 		public static XmlNodeList SelectChildVideoElements(XmlElement element)
@@ -1939,7 +1943,7 @@ namespace Bloom.Book
 			// https://stackoverflow.com/questions/26975736/why-is-the-length-of-this-string-longer-than-the-number-of-characters-in-it
 			var infoOnDigitsCharacters = new StringInfo(charactersForDigits);
 			Debug.Assert(infoOnDigitsCharacters.LengthInTextElements == 10);
-			
+
 			return String.Join("", postiveInteger.ToString(CultureInfo.InvariantCulture)
 				.Select(x =>
 				{
