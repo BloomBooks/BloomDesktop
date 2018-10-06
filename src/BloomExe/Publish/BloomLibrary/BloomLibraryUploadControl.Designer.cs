@@ -61,13 +61,14 @@ namespace Bloom.Publish.BloomLibrary
 			this._userId = new System.Windows.Forms.Label();
 			this._giveBackLabel = new System.Windows.Forms.Label();
 			this._helpEachOtherLabel = new System.Windows.Forms.Label();
+			this._narrationAudioCheckBox = new System.Windows.Forms.CheckBox();
+			this._backgroundMusicCheckBox = new System.Windows.Forms.CheckBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this._ccPanel = new System.Windows.Forms.Panel();
 			this.panel3 = new System.Windows.Forms.Panel();
 			this._languagesFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this._audioFlow = new System.Windows.Forms.FlowLayoutPanel();
-			this._audioCheckBox = new System.Windows.Forms.CheckBox();
 			this.panel1a = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.panel4 = new System.Windows.Forms.Panel();
@@ -521,6 +522,30 @@ namespace Bloom.Publish.BloomLibrary
 			this._helpEachOtherLabel.Text = "In the Bloom community, we help each other by sharing both new and newly translat" +
     "ed books on the Bloom Library.";
 			// 
+			// _narrationAudioCheckBox
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._narrationAudioCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._narrationAudioCheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._narrationAudioCheckBox, "PublishTab.Upload.Narration");
+			this._narrationAudioCheckBox.Location = new System.Drawing.Point(3, 3);
+			this._narrationAudioCheckBox.Name = "_narrationAudioCheckBox";
+			this._narrationAudioCheckBox.Size = new System.Drawing.Size(104, 24);
+			this._narrationAudioCheckBox.TabIndex = 0;
+			this._narrationAudioCheckBox.Text = "Narration";
+			// 
+			// _backgroundMusicCheckBox
+			// 
+			this._backgroundMusicCheckBox.Checked = true;
+			this._backgroundMusicCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._backgroundMusicCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._backgroundMusicCheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._backgroundMusicCheckBox, "PublishTab.Upload.BackgroundMusic");
+			this._backgroundMusicCheckBox.Location = new System.Drawing.Point(113, 3);
+			this._backgroundMusicCheckBox.Name = "_backgroundMusicCheckBox";
+			this._backgroundMusicCheckBox.Size = new System.Drawing.Size(157, 24);
+			this._backgroundMusicCheckBox.TabIndex = 1;
+			this._backgroundMusicCheckBox.Text = "Background Music";
+			// 
 			// tableLayoutPanel1
 			// 
 			this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -631,22 +656,12 @@ namespace Bloom.Publish.BloomLibrary
 			// _audioFlow
 			// 
 			this._audioFlow.AutoSize = true;
-			this._audioFlow.Controls.Add(this._audioCheckBox);
+			this._audioFlow.Controls.Add(this._narrationAudioCheckBox);
+			this._audioFlow.Controls.Add(this._backgroundMusicCheckBox);
 			this._audioFlow.Location = new System.Drawing.Point(3, 403);
 			this._audioFlow.Name = "_audioFlow";
-			this._audioFlow.Size = new System.Drawing.Size(110, 30);
+			this._audioFlow.Size = new System.Drawing.Size(273, 30);
 			this._audioFlow.TabIndex = 11;
-			// 
-			// _audioCheckBox
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this._audioCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._audioCheckBox, null);
-			this._L10NSharpExtender.SetLocalizingId(this._audioCheckBox, "PublishTab.Upload.BloomLibraryUploadControl.Narration");
-			this._audioCheckBox.Location = new System.Drawing.Point(3, 3);
-			this._audioCheckBox.Name = "_audioCheckBox";
-			this._audioCheckBox.Size = new System.Drawing.Size(104, 24);
-			this._audioCheckBox.TabIndex = 0;
-			this._audioCheckBox.Text = "Narration";
 			// 
 			// panel1a
 			// 
@@ -748,10 +763,11 @@ namespace Bloom.Publish.BloomLibrary
 		private System.Windows.Forms.Panel panel4;
 		private FlowLayoutPanel _languagesFlow;
 		private FlowLayoutPanel _audioFlow;
-		private CheckBox _audioCheckBox;
+		private CheckBox _narrationAudioCheckBox;
 		private Label _userId;
 		private Label _giveBackLabel;
 		private Label _helpEachOtherLabel;
 		private Label _audioLabel;
+		private CheckBox _backgroundMusicCheckBox;
 	}
 }

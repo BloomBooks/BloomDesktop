@@ -15,6 +15,12 @@ namespace Bloom.Publish
 {
 	public class AudioProcessor
 	{
+		// We record as .wav but convert to .mp3 for publication
+		public static readonly string[] NarrationAudioExtensions = { ".wav", ".mp3" };
+
+		public static readonly string[] MusicFileExtensions = { ".mp3", ".ogg", ".wav" };
+
+		public static readonly string[] AudioFileExtensions = NarrationAudioExtensions.Union(MusicFileExtensions).ToArray();
 
 		private static LameEncoder _mp3Encoder;
 
@@ -87,12 +93,6 @@ namespace Bloom.Publish
 			return Path.Combine(bookFolderPath, "audio");
 		}
 
-		internal static bool HasAnyAudioFiles(string bookFolderPath)
-		{
-			var audioFolderPath = GetAudioFolderPath(bookFolderPath);
-			return Directory.Exists(audioFolderPath) && Directory.EnumerateFiles(audioFolderPath).Any();
-		}
-
 		/// <summary>
 		/// Make a compressed audio file for the specified .wav file.
 		/// (Or return null if it can't be done because we don't have a LAME package installed.)
@@ -136,9 +136,8 @@ namespace Bloom.Publish
 		public static bool GetWavOrMp3Exists(string bookFolderPath, string recordingSegmentId)
 		{
 			var root = GetAudioFolderPath(bookFolderPath);
-			var extensions = new[] {"wav", "mp3"}; // .ogg,, .wav, ...?
 
-			foreach(var ext in extensions)
+			foreach(var ext in NarrationAudioExtensions)
 			{
 				var path = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, ext));
 				if(RobustFile.Exists(path))
@@ -172,6 +171,18 @@ namespace Bloom.Publish
 			}
 
 			return output;
+		}
+
+		public static bool HasAudioFileExtension(string fileName)
+		{
+			var extension = Path.GetExtension(fileName);
+			return !String.IsNullOrEmpty(extension) && AudioFileExtensions.Contains(extension.ToLowerInvariant());
+		}
+
+		public static bool HasBackgroundMusicFileExtension(string fileName)
+		{
+			var extension = Path.GetExtension(fileName);
+			return !String.IsNullOrEmpty(extension) && MusicFileExtensions.Contains(extension.ToLowerInvariant());
 		}
 	}
 }

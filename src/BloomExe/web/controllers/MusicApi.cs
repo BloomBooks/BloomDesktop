@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Publish;
 using L10NSharp;
 using SIL.IO;
 
@@ -20,8 +21,6 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class MusicApi
 	{
-		public static readonly string[] MusicFileExtensions = {".mp3", ".ogg", ".wav"};
-
 		private readonly BookSelection _bookSelection;
 
 		// Called by autofac, which creates the one instance and registers it with the server.
@@ -136,7 +135,7 @@ namespace Bloom.web.controllers
 
 		private string BuildFileFilter()
 		{
-			var lowerExtensionString = string.Join(";", MusicFileExtensions.Select(ext => "*" + ext));
+			var lowerExtensionString = string.Join(";", AudioProcessor.MusicFileExtensions.Select(ext => "*" + ext));
 			var upperExtensionString = lowerExtensionString.ToUpperInvariant();
 			return $"({lowerExtensionString})|{lowerExtensionString};{upperExtensionString}";
 		}

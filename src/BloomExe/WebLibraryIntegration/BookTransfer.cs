@@ -352,7 +352,7 @@ namespace Bloom.WebLibraryIntegration
 			return UploadBook(bookFolder, progress, out parseId);
 		}
 
-		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeNarrationAudio = true)
+		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, ISet<string> audioFilesToInclude = null)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -409,7 +409,7 @@ namespace Bloom.WebLibraryIntegration
 				parseId = "";
 				try
 				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, excludeNarrationAudio);
+					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database."));
@@ -629,11 +629,12 @@ namespace Bloom.WebLibraryIntegration
 			var dlg = (BulkUploadProgressDlg) args[1];
 			var appContext = (ApplicationContainer)args[2];
 			var excludeNarrationAudio = (bool)args[3];
+			var excludeMusic = false; // I (AP) made the executive decision this wasn't worth another option right now
 			var alreadyUploaded = GetUploadLogIfPresent(folder);
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
 			{
-				UploadInternal(folder, dlg, appContext, excludeNarrationAudio, alreadyUploaded, ref context);
+				UploadInternal(folder, dlg, appContext, excludeNarrationAudio, excludeMusic, alreadyUploaded, ref context);
 
 				// If we make it here, append a "finished" note to our log file
 				AppendBookToUploadLogFile("\n\nAll finished!\nIn order to repeat the uploading, this file will need to be deleted.");
@@ -692,7 +693,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="excludeNarrationAudio"></param>
 		/// <param name="alreadyUploaded"></param>
 		/// <param name="context"></param>
-		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeNarrationAudio, string[] alreadyUploaded, ref ProjectContext context)
+		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeNarrationAudio, bool excludeMusic, string[] alreadyUploaded, ref ProjectContext context)
 		{
 			var lastFolderPart = Path.GetFileName(folder);
 			if (lastFolderPart != null && lastFolderPart.StartsWith("."))
@@ -757,7 +758,7 @@ namespace Bloom.WebLibraryIntegration
 						var msg = "Apparently this book is already on the server. Overwriting...";
 						ReportToLogBoxAndLogger(dlg.Progress, folder, msg);
 					}
-					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, excludeNarrationAudio);
+					FullUpload(book, dlg.Progress, view, languagesToUpload, excludeNarrationAudio, excludeMusic, out dummy);
 					AppendBookToUploadLogFile(folder);
 				}
 				else
@@ -769,7 +770,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			foreach (var sub in Directory.GetDirectories(folder))
 			{
-				UploadInternal(sub, dlg, container, excludeNarrationAudio, alreadyUploaded, ref context);
+				UploadInternal(sub, dlg, container, excludeNarrationAudio, excludeMusic, alreadyUploaded, ref context);
 			}
 		}
 
@@ -784,14 +785,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Common routine used in normal upload and bulk upload.
 		/// </summary>
-		/// <param name="book"></param>
-		/// <param name="progressBox"></param>
-		/// <param name="publishView"></param>
-		/// <param name="languages"></param>
-		/// <param name="parseId"></param>
-		/// <param name="excludeNarrationAudio"></param>
-		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, bool excludeNarrationAudio = true)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, bool excludeMusic, out string parseId)
 		{
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
@@ -832,7 +826,22 @@ namespace Bloom.WebLibraryIntegration
 			}
 			if (progressBox.CancelRequested)
 				return "";
-			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath), excludeNarrationAudio);
+
+			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath), GetAudioFilesToInclude(book, excludeNarrationAudio, excludeMusic));
+		}
+
+		/// <summary>
+		/// Conditionally exclude .mp3 files for narration and music.
+		/// Always exclude .wav files for narration.
+		/// </summary>
+		private static ISet<string> GetAudioFilesToInclude(Book.Book book, bool excludeNarrationAudio, bool excludeMusic)
+		{
+			HashSet<string> result = new HashSet<string>();
+			if (!excludeNarrationAudio)
+				result.AddRange(book.Storage.GetNarrationAudioFileNamesReferencedInBook(false));
+			if (!excludeMusic)
+				result.AddRange(book.Storage.GetBackgroundMusicFileNamesReferencedInBook());
+			return result;
 		}
 
 		internal static string UploadPdfPath(string bookFolder)

@@ -1,12 +1,14 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.Publish.BloomLibrary
@@ -106,7 +108,7 @@ namespace Bloom.Publish.BloomLibrary
 						"(incomplete translation)",
 						"This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.");
 				}
-				checkBox.Size = new Size(TextRenderer.MeasureText(checkBox.Text, checkBox.Font).Width + 50, checkBox.Height);
+				checkBox.Size = new Size(GetWidthForCheckBox(checkBox), checkBox.Height);
 				checkBox.Tag = lang;
 				checkBox.CheckStateChanged += delegate(object sender, EventArgs args)
 				{
@@ -120,11 +122,7 @@ namespace Bloom.Publish.BloomLibrary
 				_languagesFlow.Controls.Add(checkBox);
 			}
 
-			if (!AudioProcessor.HasAnyAudioFiles(_model.Book.FolderPath))
-			{
-				_audioLabel.Hide();
-				_audioFlow.Hide();
-			}
+			UpdateAudioCheckBoxDisplay();
 
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			// Copyright info is not required if the book has been put in the public domain
@@ -153,6 +151,31 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				_langsLabel.ForeColor = Color.Red;
 				_okToUpload = false;
+			}
+		}
+
+		private int GetWidthForCheckBox(CheckBox checkBox)
+		{
+			return TextRenderer.MeasureText(checkBox.Text, checkBox.Font).Width + 50;
+		}
+
+		private void UpdateAudioCheckBoxDisplay()
+		{
+			// We could just let WinForms grow/shrink the space for the check box after localization of the label,
+			// but this will give us the most similar spacing to the check boxes for the text.
+			_narrationAudioCheckBox.Width = GetWidthForCheckBox(_narrationAudioCheckBox);
+
+			var book = _model.Book;
+			if (!book.Storage.GetNarrationAudioFileNamesReferencedInBook(false)
+				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))
+			{
+				_narrationAudioCheckBox.Enabled = false;
+			}
+			if (!book.Storage.GetBackgroundMusicFileNamesReferencedInBook()
+				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))
+			{
+				_backgroundMusicCheckBox.Enabled = false;
+				_backgroundMusicCheckBox.Checked = false;
 			}
 		}
 
@@ -425,8 +448,9 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var book = (Book.Book) e.Argument;
 			var languages = _languagesFlow.Controls.Cast<CheckBox>().Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToArray();
-			var includeAudio = _audioCheckBox.Checked;
-			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages, !includeAudio, out _parseId);
+			var includeNarrationAudio = _narrationAudioCheckBox.Checked;
+			var includeBackgroundMusic = _backgroundMusicCheckBox.Checked;
+			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages, !includeNarrationAudio, !includeBackgroundMusic, out _parseId);
 			e.Result = result;
 		}
 
