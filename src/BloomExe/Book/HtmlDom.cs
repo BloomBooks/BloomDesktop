@@ -829,30 +829,37 @@ namespace Bloom.Book
 			MigrateChildren(oldParents, newParents);
 		}
 
+		// Migrate container (translationGroup, video, image) children from an old page to their new template equivalent.
 		private static void MigrateChildren(IReadOnlyList<XmlElement> oldParentElements,
 			IReadOnlyList<XmlElement> templateParentElements)
 		{
+			// 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', or 'bloom-videoContainer'
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
 			// thing to copy or where the numbers are not equal. It's just a precaution.
-			for (int i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
+			for (var i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
 			{
 				var oldParent = oldParentElements[i];
 				var newParent = templateParentElements[i];
-				string childClass = null;
-				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
+				string childClassFromTemplate = null; // grab the first (and only) 'x-style' we find in our container's children
+				foreach (var templateContainerChild in newParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
-					if (childClass == null)
-						childClass = GetStyle(child);
-					newParent.RemoveChild(child);
+					// At this point template containers just contain at most one '.bloom-editable' element for lang='z'.
+					// Find it and see if it has a style class.
+					if (childClassFromTemplate == null)
+						childClassFromTemplate = GetStyle(templateContainerChild); // look for a 'x-style' class
+					// Whether we found a style class or not, remove the template container's children to make way for the
+					// children of the old page's matching container.
+					newParent.RemoveChild(templateContainerChild);
 				}
 				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
 				// which messes things up unless we make a copy of the collection.
-				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
+				foreach (XmlNode oldContainerChild in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
-					newParent.AppendChild(child);
-					// Bloom-editable divs should have the user-defined class specified in the template if there is one.
-					FixStyle(child, "bloom-editable", childClass);
-					AddKnownStyleIfMissing(child);
+					// add the old container's children to the new container matching the template
+					newParent.AppendChild(oldContainerChild);
+					// .bloom-editable divs should have the user-defined class specified in the template if there is one.
+					FixStyle(oldContainerChild, "bloom-editable", childClassFromTemplate);
+					AddKnownStyleIfMissing(oldContainerChild);
 				}
 			}
 		}
@@ -904,17 +911,14 @@ namespace Bloom.Book
 
 		private static string GetStyle(XmlNode elt)
 		{
-			if (elt.Attributes == null)
-				return null;
-			var classAttr = elt.Attributes["class"];
-			if (classAttr == null)
-				return null;
-			return classAttr.Value.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
+			var classAttr = elt.Attributes?["class"];
+			return classAttr?.Value.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
 		}
 
 		private static void FixStyle(XmlNode child, string requiredClass, string desiredStyle)
 		{
-			if (desiredStyle == null || child.Attributes?["class"] == null || !child.Attributes["class"].Value.Contains(requiredClass) )
+			if (desiredStyle == null || child.Attributes?["class"] == null ||
+			    !child.Attributes["class"].Value.Contains(requiredClass) )
 				return;
 			var childStyle = GetStyle(child);
 			string newclass;
