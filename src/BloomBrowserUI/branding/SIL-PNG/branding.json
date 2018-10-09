@@ -5,6 +5,12 @@
             "lang": "*",
             "content": "<img src='silpng.svg'/>",
             "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img src='back-cover-outside.svg'/>",
+            "condition": "always"
         }
     ]
 }
