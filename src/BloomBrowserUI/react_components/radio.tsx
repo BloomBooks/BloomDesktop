@@ -8,7 +8,7 @@ export interface IRadioProps extends ILocalizationProps {
     className?: string; // class for a div that wraps the input and label, in addition to default "radioButton"
     inputClass?: string; // class for the input element (the radio button itself), in addition to default "radioInput"
     labelClass?: string; // class for the label (text next to the radio button), in addition to default "radioLabel"
-    checked?: boolean; // true if button should be checked; usually controlled by containing RadioGroup
+    defaultChecked?: boolean; // true if button should be checked; usually controlled by containing RadioGroup
     onSelected?: (string) => void; // passed this button's value when it is clicked; usually used by containing RadioGroup.
 }
 
@@ -39,7 +39,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                         this.props.inputClass
                     )}
                     value={this.props.value}
-                    checked={this.props.checked}
+                    checked={this.props.defaultChecked} // use defaultChecked instead of checked to avoid warning
                     onClick={() => this.props.onSelected(this.props.value)}
                 />
                 <div
@@ -77,7 +77,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
     // This rather tricky function makes a clone of the original children
     // (re-using leaves that it doesn't need to modify)
     // replacing <Radio> elements with a clone that has the required
-    // onSelected and checked properties to function in the group.
+    // onSelected and defaultChecked properties to function in the group.
     private recursiveFixRadio(children: React.ReactNode): React.ReactNode {
         return React.Children.map(children, child => {
             let childProps: any = {};
@@ -88,7 +88,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
             if (childElt.type === Radio) {
                 return React.cloneElement(childElt, {
                     onSelected: val => this.props.onChange(val),
-                    checked: childElt.props.value === this.props.value
+                    defaultChecked: childElt.props.value === this.props.value
                 });
             }
             if (childElt.props) {
