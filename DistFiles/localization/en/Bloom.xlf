@@ -2254,6 +2254,16 @@
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
         <note>ID: InstallProblem.BloomPdfMaker</note>
       </trans-unit>
+      <trans-unit id="LameEncoder.DeleteFailedShort">
+        <source xml:lang="en">Cannot replace mp3 file</source>
+        <note>ID: LameEncoder.DeleteFailedShort</note>
+        <note>short message for a popup toast notification</note>
+      </trans-unit>
+      <trans-unit id="LameEncoder.DeleteFailedLong">
+        <source xml:lang="en">Bloom could not replace an mp3 file. If this continues, check your antivirus.</source>
+        <note>ID: LameEncoder.DeleteFailedLong</note>
+        <note>longer message for a detailed description of the problem</note>
+      </trans-unit>
       <trans-unit id="LameEncoder.Progress">
         <source xml:lang="en"> Converting to mp3</source>
         <note>ID: LameEncoder.Progress</note>
