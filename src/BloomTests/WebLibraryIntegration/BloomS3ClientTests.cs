@@ -56,5 +56,36 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			Assert.Throws<DirectoryNotFoundException>(() => _client.DownloadBook(BloomS3Client.UnitTestBucketName, "notthere", _workFolder.FolderPath));
 		}
+
+		[TestCase("bucket/my.pdf")]
+		[TestCase("bucket/my.PDF")]
+		[TestCase("bucket/thumbs.db")]
+		// We don't download narration audio (for now)
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.mp3")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.MP3")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.wav")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.WAV")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.ogg")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.OGG")]
+		// We sometimes prepend a guid which starts with a number with "i" to make epubs happy.
+		[TestCase("bucket/i1EC14CB3-CAEC-4C83-8092-74C78CA7C515.mp3")]
+		public void AvoidThisFile_ShouldAvoid(string objectKey)
+		{
+			Assert.True(BloomS3Client.AvoidThisFile(objectKey));
+		}
+
+		[TestCase("bucket/abc.def")]
+		[TestCase("bucket/abc.def.ghi")]
+		[TestCase("bucket/music.mp3")]
+		[TestCase("bucket/music.MP3")]
+		[TestCase("bucket/music.wav")]
+		[TestCase("bucket/music.WAV")]
+		[TestCase("bucket/music.ogg")]
+		[TestCase("bucket/music.OGG")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.css")]
+		public void AvoidThisFile_ShouldNotAvoid(string objectKey)
+		{
+			Assert.False(BloomS3Client.AvoidThisFile(objectKey));
+		}
 	}
 }
