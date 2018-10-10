@@ -10,7 +10,7 @@ namespace Bloom.Edit
 {
 	/// <summary>
 	/// This class, borrowed almost unchanged from HearThis, compresses .wav files to .mp3.
-	/// Requires the (currently separate) installation of LAME.
+	/// Requires the installation of LAME.
 	/// </summary>
 	public class LameEncoder
 	{
@@ -20,8 +20,18 @@ namespace Bloom.Edit
 		{
 			LocateAndRememberLAMEPath();
 
-			if (RobustFile.Exists(destPathWithoutExtension + ".mp3"))
-				RobustFile.Delete(destPathWithoutExtension + ".mp3");
+			try
+			{
+				if (RobustFile.Exists(destPathWithoutExtension + ".mp3"))
+					RobustFile.Delete(destPathWithoutExtension + ".mp3");
+			}
+			catch (Exception)
+			{
+				var shortMsg = LocalizationManager.GetString("LameEncoder.DeleteFailedShort", "Cannot replace mp3 file. Check antivirus");
+				var longMsg = LocalizationManager.GetString("LameEncoder.DeleteFailedLong", "Bloom could not replace an mp3 file. If this continues, check your antivirus.");
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg);
+				return;
+			}
 
 			progress.WriteMessage(LocalizationManager.GetString("LameEncoder.Progress", " Converting to mp3", "Appears in progress indicator"));
 
@@ -30,7 +40,6 @@ namespace Bloom.Edit
 			//ClipRepository.RunCommandLine(progress, _pathToLAME, arguments);
 			ExecutionResult result = CommandLineRunner.Run(_pathToLAME, arguments, null, 60, progress);
 			result.RaiseExceptionIfFailed("");
-
 		}
 
 		public string FormatName
