@@ -274,6 +274,7 @@ namespace Bloom.Publish.Android
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
 				BookCompressor.CompressBookForDevice(destFileName, book, bookServer, backColor, progress);
+				progress.Message("PublishTab.Epub.Done", "Done", false);	// share message string with epub publishing
 			}
 
 		}
