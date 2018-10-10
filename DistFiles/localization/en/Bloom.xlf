@@ -2588,6 +2588,10 @@
         <note>ID: PublishTab.Android.Intro</note>
         <note>This is displayed at the top of the Android screen.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.Done" sil:dynamic="true">
+        <source xml:lang="en">Done</source>
+        <note>ID: PublishTab.Android.File.Progress.Done</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
         <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
