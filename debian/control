@@ -24,7 +24,7 @@ Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  optipng, libsndfile1,
  wmctrl, lame, ghostscript,
  sox, ffmpeg
-Suggests: art-of-reading
+Suggests: art-of-reading3
 Replaces: bloom-desktop, bloom-desktop-betainternal, bloom-desktop-alpha
 Conflicts: bloom-desktop-unstable
 Description: Literacy materials development for language communities
