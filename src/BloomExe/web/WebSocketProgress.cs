@@ -14,6 +14,14 @@ namespace Bloom.web
 		private readonly string _clientContext;
 		private string _l10IdPrefix;
 
+		private string GetL10nId(string idSuffix, bool useL10nIdPrefix)
+		{
+			if (useL10nIdPrefix)
+				return _l10IdPrefix + idSuffix;
+			else
+				return idSuffix;
+		}
+
 		/// <summary>
 		/// Get a new WebSocketProgress that will prefix each localization id with the given string
 		/// </summary>
@@ -42,9 +50,9 @@ namespace Bloom.web
 		{
 			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", args);
 		}
-		public void Error(string idSuffix, string message)
+		public void Error(string idSuffix, string message, bool useL10nIdPrefix=true)
 		{
-			ErrorWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message));
+			ErrorWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message));
 		}
 
 		public void MessageWithoutLocalizing(string message, params object[] args)
@@ -60,13 +68,13 @@ namespace Bloom.web
 			_bloomWebSocketServer.SendBundle(_clientContext, "progress", messageBundle);
 		}
 
-		public void Message(string idSuffix, string comment, string message)
+		public void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix=true)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message, comment: comment));
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message, comment: comment));
 		}
-		public void Message(string idSuffix, string message)
+		public void Message(string idSuffix, string message, bool useL10nIdPrefix = true)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message));
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message));
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
@@ -94,23 +102,23 @@ namespace Bloom.web
 		public string GetMessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
 			Debug.Assert(message.Contains("{0}"));
-			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message,
+			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, true), englishText: message,
 				comment: comment);
 			var formatted = String.Format(localized, parameters);
 			return formatted;
 		}
 
-		public void MessageUsingTitle(string idSuffix, string message, string bookTitle)
+		public void MessageUsingTitle(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
 		{
-			var formatted = GetTitleMessage(idSuffix, message, bookTitle);
+			var formatted = GetTitleMessage(idSuffix, message, bookTitle, useL10nIdPrefix);
 			MessageWithoutLocalizing(formatted);
 		}
 
-		public string GetTitleMessage(string idSuffix, string message, string bookTitle)
+		public string GetTitleMessage(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
 		{
 			Debug.Assert(message.Contains("{0}"));
 			Debug.Assert(!message.Contains("{1}"));
-			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + idSuffix, englishText: message,
+			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message,
 				comment: "{0} is a book title");
 			var formatted = String.Format(localized, bookTitle);
 			return formatted;
@@ -129,7 +137,7 @@ namespace Bloom.web
 	{
 		void MessageWithoutLocalizing(string message, params object[] args);
 		void ErrorWithoutLocalizing(string message, params object[] args);
-		void Message(string idSuffix, string comment, string message);
+		void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix = true);
 		void MessageWithParams(string id, string comment, string message, params object[] parameters);
 		void ErrorWithParams(string id, string comment, string message, params object[] parameters);
 		void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters);
@@ -146,7 +154,7 @@ namespace Bloom.web
 		{
 		}
 
-		public void Message(string id, string comment, string message)
+		public void Message(string id, string comment, string message, bool useL10nIdPrefix = true)
 		{
 		}
 
