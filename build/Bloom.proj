@@ -35,7 +35,7 @@
 		<teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
     <RestartBuild Condition="!Exists('$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll') Or !Exists('$(RootDir)/packages/SIL.BuildTasks.AWS/tools/SIL.BuildTasks.AWS.dll')">true</RestartBuild>
     <RestartBuild Condition="Exists('$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll') And Exists('$(RootDir)/packages/SIL.BuildTasks.AWS/tools/SIL.BuildTasks.AWS.dll')">false</RestartBuild>
-    <SharedBuildDir>Z:\</SharedBuildDir>
+    <SharedBuildDir>Z:</SharedBuildDir>
 	</PropertyGroup>
 
   <UsingTask TaskName="StampAssemblies"
