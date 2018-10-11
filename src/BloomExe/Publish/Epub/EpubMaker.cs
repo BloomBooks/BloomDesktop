@@ -338,7 +338,8 @@ namespace Bloom.Publish.Epub
 			XNamespace opf = "http://www.idpf.org/2007/opf";
 			var rootElt = new XElement(opf + "package",
 				new XAttribute("version", "3.0"),
-				new XAttribute("unique-identifier", "I" + Book.ID));
+				new XAttribute("unique-identifier", "I" + Book.ID),
+				new XAttribute("prefix", "a11y: http://www.idpf.org/epub/vocab/package/a11y/# epub32: https://w3c.github.io/publ-epub-revision/epub32/spec/epub-packages.html# bloom: https:/bloomlibrary.org/"));
 			// add metadata
 			var dcNamespace = "http://purl.org/dc/elements/1.1/";
 			var source = GetBookSource();
@@ -355,26 +356,29 @@ namespace Bloom.Publish.Epub
 				new XElement(dc + "language", Book.CollectionSettings.Language1Iso639Code),
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
-				new XElement(dc + "source", source),
-				new XElement(dc + "creator",
-					new XAttribute("id", "author"), bookMetaData.Author),
-				// Per BL-6438 and a reply from the GDL (Global Digital Library), it is better to put
-				// this in the field than to leave it blank when there is no URL available that specifies
-				// the license. Unfortunately there is nowhere to put the RightsStatement that might
-				// indicate more generous permissions (or attempt to restrict what the CC URL indicates).
-				new XElement(dc + "rights", licenseUrl ?? "All Rights Reserved"));
+					new XElement(dc + "source", source));
+			if (!string.IsNullOrEmpty(bookMetaData.Author))
+				metadataElt.Add(new XElement(dc + "creator", new XAttribute("id", "author"), bookMetaData.Author));
+			// Per BL-6438 and a reply from the GDL (Global Digital Library), it is better to put
+			// this in the field than to leave it blank when there is no URL available that specifies
+			// the license. Unfortunately there is nowhere to put the RightsStatement that might
+			// indicate more generous permissions (or attempt to restrict what the CC URL indicates).
+			metadataElt.Add(new XElement(dc + "rights", licenseUrl ?? "All Rights Reserved"));
 			AddSubjects(metadataElt, dc, opf);
-			metadataElt.Add(
-				new XElement(opf + "meta",
-					new XAttribute("property", "dcterms:modified"),
-					// Last modified datetime like 2012-03-20T11:37:00Z
-					new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z"),
-				new XElement(opf + "meta",
-					new XAttribute("property", "schema:typicalAgeRange"), bookMetaData.TypicalAgeRange),
-				new XElement(opf + "meta",
-					new XAttribute("property", "schema:numberOfPages"), Book.GetLastNumberedPageNumber().ToString()),
-				new XElement(opf + "meta",
-					new XAttribute("property", "level"), bookMetaData.ReadingLevelDescription));
+			// Last modified datetime like 2012-03-20T11:37:00Z
+			metadataElt.Add(new XElement(opf + "meta",
+				new XAttribute("property", "dcterms:modified"), new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z"));
+			if (!string.IsNullOrEmpty(bookMetaData.TypicalAgeRange))
+				metadataElt.Add(new XElement(opf + "meta",
+					new XAttribute("property", "schema:typicalAgeRange"), bookMetaData.TypicalAgeRange));
+			metadataElt.Add(new XElement(opf + "meta",
+				new XAttribute("property", "schema:numberOfPages"), Book.GetLastNumberedPageNumber().ToString(CultureInfo.InvariantCulture)));
+			// NB: dcterms:educationLevel is the closest authorized value I've found for ReadingLevelDescription
+			// I don't think it fits, so I've invented one that will pass the epubchecker, but no epub book reader
+			// software will know what to do with it.
+			if (!string.IsNullOrEmpty(bookMetaData.ReadingLevelDescription))
+				metadataElt.Add(new XElement(opf + "meta",
+					new XAttribute("property", "bloom:readingLevel"), bookMetaData.ReadingLevelDescription));
 			AddAccessibilityMetadata(metadataElt, opf, bookMetaData);
 			rootElt.Add(metadataElt);
 
@@ -446,17 +450,20 @@ namespace Bloom.Publish.Epub
 			var subjects = Book.BookInfo.MetaData.Subjects;
 			if (subjects == null)
 				return;
+			var i = 1;
 			foreach (var subjectObj in subjects)
 			{
+				var id = string.Format("subject{0:00}", i); 
 				var code = subjectObj.value;
 				var description = subjectObj.label;
 				Debug.Assert(!string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(description),
 					"There has been a failure in the SubjectChooser code.");
 				metadataElt.Add(
-					new XElement(dc + "subject",
-						new XAttribute(opf + "authority", "thema"),
-						new XAttribute(opf + "term", code),
-						description));
+					new XElement(dc + "subject", new XAttribute("id", id), description),
+					new XElement(opf + "meta", new XAttribute("refines", "#"+id), new XAttribute("property", "epub32:authority"), "https://ns.editeur.org/thema/"),
+					new XElement(opf + "meta", new XAttribute("refines", "#"+id), new XAttribute("property", "epub32:term"), code)
+				);
+				++i;
 			}
 		}
 
@@ -541,7 +548,7 @@ namespace Bloom.Publish.Epub
 			// See http://www.idpf.org/epub/a11y/accessibility.html#sec-conf-reporting for the next two elements.
 			if (!string.IsNullOrEmpty(metadata.A11yLevel))
 			{
-				metadataElt.Add(new XElement("link", new XAttribute("rel", "dcterms:conformsTo"),
+				metadataElt.Add(new XElement(opf + "link", new XAttribute("rel", "dcterms:conformsTo"),
 					new XAttribute("href", "http://www.idpf.org/epub/a11y/accessibility-20170105.html#" + metadata.A11yLevel)));
 			}
 			if (!string.IsNullOrEmpty(metadata.A11yCertifier))
@@ -2173,6 +2180,14 @@ namespace Bloom.Publish.Epub
 			{
 				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground);
 				RobustFile.WriteAllBytes(dstPath, imageBytes);
+				return;
+			}
+			if (dstPath.Contains(kCssFolder) && dstPath.ToLowerInvariant().EndsWith(".css", StringComparison.Ordinal))
+			{
+				// The "direction:" property is not allowed in epub css files according to the epub 3.0.1 checker
+				var cssContent = RobustFile.ReadAllText(srcPath);
+				var modifiedCss = Regex.Replace(cssContent, @"([^-a-zA-Z])direction\s*:\s*[A-Za-z]+\s*;", "$1");
+				RobustFile.WriteAllText(dstPath, modifiedCss);
 				return;
 			}
 			RobustFile.Copy(srcPath, dstPath);
