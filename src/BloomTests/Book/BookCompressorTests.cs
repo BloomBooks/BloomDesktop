@@ -714,7 +714,7 @@ namespace BloomTests.Book
 				ErrorsNotLocalized.Add(message);
 			}
 
-			public void Message(string idSuffix, string comment, string message)
+			public void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix = true)
 			{
 				MessagesNotLocalized.Add(string.Format(message));
 			}

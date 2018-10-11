@@ -10,7 +10,7 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='silpng.svg'/>",
+            "content": "<img src='title-page.png'/>",
             "condition": "always"
         },
         {
