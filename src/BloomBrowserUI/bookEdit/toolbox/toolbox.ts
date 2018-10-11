@@ -891,9 +891,13 @@ function loadToolboxTool(
         toolboxElt.append(content);
     } else {
         let insertBefore = toolboxElt
-            .children()
+            .children() // children() includes both the headers and the contents of the tools
+            .filter(".ui-accordion-header") // we only want to sort this into the headers...
             .filter(function() {
-                return $(this).text() > label;
+                // Note that we aren't (as of 4.4) setting the "locale" of the browser to match the
+                // UI language. In my tests, it's stuck at "en-US" (navigator.language). But if we ever do
+                // set this, then this will do a better job of ordering. Meanwhile, no worse.
+                return label.localeCompare($(this).text()) < 0;
             })
             .first();
         if (insertBefore.length === 0) {
