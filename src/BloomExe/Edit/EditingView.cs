@@ -1538,17 +1538,97 @@ namespace Bloom.Edit
 			}
 		}
 
+		// If SetZoom (and hence _model.RethinkPageAndReloadIt) is called repeatedly too
+		// frequently, Bloom can crash, with the program closing spontaneously.  So we
+		// need to slow things down when the user is rapidly clicking on the zoom button,
+		// without losing track of the desired zoom level.
+		// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6580.
+		// These variables are used to ensure that zooming works okay regardless of
+		// how fast the user clicks the zoom buttons.  Note that calls to SetZoom can
+		// either be "successful" or "delayed".  "Delayed" calls result in SetZoom
+		// being called after the browser has been updated for the most recent
+		// "successful" call.  The "delayed" call uses the most recent requested
+		// zoom level, possibly skipping one or more requests along the way if the
+		// user is clicking fast enough.
+
+		/// <summary>
+		/// timestamp of most recent successful call to SetZoom  (currently used only
+		/// for Debug logging)
+		/// </summary>
+		private DateTime _previousZoomTime = DateTime.MinValue;
+		/// <summary>
+		/// zoom level set by the most recent successful call to SetZoom
+		/// </summary>
+		private int _previousZoomLevel = -1;
+		/// <summary>
+		/// zoom level requested by the most recent call to SetZoom, whether delayed or successful.
+		/// It may or may not be the same as _previousZoomLevel.
+		/// </summary>
+		private int _desiredZoomLevel;
+		/// <summary>
+		/// Timeout timer for HandleDelayedZoom (handler for _browser1.WebBrowser.DocumentFinished)
+		/// _zoomTimer.Enabled flags that a previous SetZoom request is still being processed, and
+		/// that the current request needs to be delayed.
+		/// </summary>
+		private Timer _zoomTimer = new Timer();
+
 		public void SetZoom(int zoom)
 		{
-			Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
-			Settings.Default.Save();
-			// The main current reason a zoom change requires us to reload the page is that
-			// Text-over-picture boxes don't otherwise adjust their size and position properly.
-			// If that gets fixed, we could consider reinstating a JS function we used to call
-			// here, SetZoom, which originally just changed the transform on the scaling container.
-			// However, when it was later changed to post a request for reloading the page,
-			// it became cleaner to just do the reload directly here.
-			_model.RethinkPageAndReloadIt();
+			// We need to synchronize between user clicks and browser DocumentCompleted events.
+			lock (_zoomTimer)
+			{
+				if (_zoomTimer.Enabled)
+				{
+					// Store the desired zoom level for use later when the previous request has
+					// finished its UI refresh.
+					_desiredZoomLevel = zoom;
+					return;
+				}
+				_previousZoomTime = DateTime.Now;
+				_previousZoomLevel = zoom;
+				_desiredZoomLevel = zoom;
+				_browser1.WebBrowser.DocumentCompleted += ZoomDocumentCompleted;
+				// Provide a timeout for the DocumentCompleted handler in case the event somehow
+				// gets lost between javascript and C#.  (I never saw this happen while testing.)
+				// Pages should redraw in less than 6 seconds.  On my 5 year old developer machine, the
+				// longest time I measured was 2.961 seconds for ZoomDocumentCompleted to fire.  The
+				// shortest time interval measured was 0.431 seconds.  The average was somewhere around
+				// 0.500-0.600 seconds.
+				_zoomTimer.Interval = 6000;
+				_zoomTimer.Tick += HandleDelayedZoom;
+				_zoomTimer.Start();
+
+				Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
+				Settings.Default.Save();
+				// The main current reason a zoom change requires us to reload the page is that
+				// Text-over-picture boxes don't otherwise adjust their size and position properly.
+				// If that gets fixed, we could consider reinstating a JS function we used to call
+				// here, SetZoom, which originally just changed the transform on the scaling container.
+				// However, when it was later changed to post a request for reloading the page,
+				// it became cleaner to just do the reload directly here.
+				_model.RethinkPageAndReloadIt();
+			}
+		}
+
+		private void HandleDelayedZoom(object sender, EventArgs e)
+		{
+			// We need to synchronize between user clicks and browser DocumentCompleted events.
+			lock (_zoomTimer)
+			{
+				_zoomTimer.Stop();
+				_zoomTimer.Tick -= HandleDelayedZoom;
+			}
+			if (_desiredZoomLevel != _previousZoomLevel)
+				SetZoom(_desiredZoomLevel);
+		}
+
+		void ZoomDocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
+		{
+			_browser1.WebBrowser.DocumentCompleted -= ZoomDocumentCompleted;
+			Debug.WriteLine("EditingView.ZoomDocumentCompleted() after SetZoom({0}): desired Zoom = {1}, time interval = {2} ms",
+				_previousZoomLevel, _desiredZoomLevel, (DateTime.Now - _previousZoomTime).TotalMilliseconds);
+			// short-circuit the timer.  The only purpose of the timer is a time-out for this event to occur.
+			HandleDelayedZoom(sender, e);
 		}
 
 		public void AdjustPageZoom(int delta)

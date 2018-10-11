@@ -35,6 +35,7 @@
 		<teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
     <BuildTasksDll>$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll</BuildTasksDll>
     <BuildTasksAwsDll>$(RootDir)/packages/SIL.BuildTasks.AWS/tools/SIL.BuildTasks.AWS.dll</BuildTasksAwsDll>
+    <SharedBuildDir>Z:\</SharedBuildDir>
     <RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
     <RestartBuild Condition="Exists('$(BuildTasksDll)') And Exists('$(BuildTasksAwsDll)')">false</RestartBuild>
 	</PropertyGroup>
@@ -97,7 +98,7 @@
 	  </CreateProperty>
 	  <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
 	  you should set your preferred release folder from the command line, usually /p:SquirrelReleaseFolder=<root>/output/installer-->
-	  <CreateProperty Value="\\bob.psonet\buildshare\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
+	  <CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
 		  <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
 	  </CreateProperty>
 	<Message Text="Version: $(Version)" Importance="high"/>
