@@ -42,7 +42,8 @@ namespace Bloom.web.controllers
 
 		private void HandleAddPage(ApiRequest request)
 		{
-			var templatePage = GetPageTemplateAndUserStyles(request);
+			bool unused;
+			var templatePage = GetPageTemplateAndUserStyles(request, out unused);
 			if (templatePage != null)
 			{
 				_templateInsertionCommand.Insert(templatePage as Page);
@@ -54,19 +55,36 @@ namespace Bloom.web.controllers
 
 		private void HandleChangeLayout(ApiRequest request)
 		{
-			var templatePage = GetPageTemplateAndUserStyles(request);
+			bool changeWholeBook;
+			var templatePage = GetPageTemplateAndUserStyles(request, out changeWholeBook);
 			if (templatePage != null)
 			{
 				var pageToChange = _pageSelection.CurrentSelection;
-				pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
+				if (changeWholeBook)
+					ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
+				else
+					pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
 
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
 				request.PostSucceeded();
 			}
 		}
 
-		private IPage GetPageTemplateAndUserStyles(ApiRequest request)
+		private static void ChangeSimilarPagesInEntireBook(IPage currentSelectedPage, IPage newTemplatePage)
 		{
+			var book = currentSelectedPage.Book;
+			var ancestorPageId = currentSelectedPage.IdOfFirstAncestor;
+			foreach (var page in book.GetPages())
+			{
+				if (page.IsXMatter || page.IdOfFirstAncestor != ancestorPageId)
+					continue;
+				book.UpdatePageToTemplateAndUpdateLineage(page, newTemplatePage, false);
+			}
+		}
+
+		private IPage GetPageTemplateAndUserStyles(ApiRequest request, out bool convertWholeBook)
+		{
+			convertWholeBook = false;
 			var requestData = DynamicJson.Parse(request.RequiredPostJson());
 			//var templateBookUrl = request.RequiredParam("templateBookUrl");
 			var templateBookPath = HttpUtility.HtmlDecode(requestData.templateBookPath);
@@ -84,6 +102,9 @@ namespace Bloom.web.controllers
 				request.Failed("Could not find the page " + requestData.pageId + " in the template book " + requestData.templateBookUrl);
 				return null;
 			}
+
+			if (requestData.convertWholeBook)
+				convertWholeBook = true;
 			return page;
 		}
 	}

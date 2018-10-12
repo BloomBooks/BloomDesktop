@@ -30,7 +30,7 @@ class PageChooser {
     private _scrollingDiv: JQuery;
     private _scrollTopOfTheScrollingDiv: number;
     private _forChooseLayout: boolean;
-    private _currentPageLayout: string;
+    private _convertWholeBook: boolean;
 
     constructor(initializationJsonString: string) {
         let initializationObject;
@@ -45,7 +45,6 @@ class PageChooser {
             this._defaultPageToSelect =
                 initializationObject["defaultPageToSelect"];
             this._orientation = initializationObject["orientation"];
-            this._currentPageLayout = initializationObject["currentLayout"];
             this._forChooseLayout = initializationObject["forChooseLayout"];
         } else {
             alert("Expected url in PageChooser ctor!");
@@ -54,6 +53,10 @@ class PageChooser {
         this._selectedGridItem = undefined;
         this._indexOfPageToSelect = 0;
         this._scrollTopOfTheScrollingDiv = 0;
+        this._convertWholeBook = false;
+        if (this._forChooseLayout) {
+            $("#mainContainer").addClass("chooseLayout"); // reveals convert whole book checkbox
+        }
     }
 
     private thumbnailClickHandler(clickedDiv, evt): void {
@@ -74,10 +77,10 @@ class PageChooser {
         // an item partly scrolled off the bottom. There's no way currently to select an item
         // that's entirely scrolled off the top, and it doesn't seem worth the complication
         // to force a partly-visible one at the top to become wholly visible.
-        let container = $(".gridItemDisplay");
-        let positionOfTopOfSelected =
+        const container = $(".gridItemDisplay");
+        const positionOfTopOfSelected =
             $(this._selectedGridItem).offset().top + container.scrollTop();
-        let positionOfBottomOfSelected =
+        const positionOfBottomOfSelected =
             $(this._selectedGridItem).height() + positionOfTopOfSelected;
         if (
             container.height() + container.scrollTop() <
@@ -117,11 +120,16 @@ class PageChooser {
             const willLoseData = this.willLoseData();
             if (willLoseData) {
                 $("#mainContainer").addClass("willLoseData");
+                $("#convertWholeBook").addClass("disabled");
             } else {
                 $("#mainContainer").removeClass("willLoseData");
+                $("#convertWholeBook").removeClass("disabled");
             }
             $("#convertAnywayCheckbox").prop("checked", !willLoseData);
             this.continueCheckBoxChanged(); // possibly redundant
+            const convertBook = $("#convertWholeBookCheckbox");
+            convertBook.prop("disabled", willLoseData);
+            convertBook.prop("checked", false);
         }
     } // thumbnailClickHandler
 
@@ -251,7 +259,8 @@ class PageChooser {
             axios
                 .post("/bloom/api/changeLayout", {
                     pageId: id,
-                    templateBookPath: templateBookPath
+                    templateBookPath: templateBookPath,
+                    convertWholeBook: this._convertWholeBook
                 })
                 .catch(error => {
                     // we seem to get unimportant errors here, possibly because the dialog gets closed before the post completes.
@@ -263,7 +272,8 @@ class PageChooser {
             axios
                 .post("/bloom/api/addPage", {
                     templateBookPath: templateBookPath,
-                    pageId: id
+                    pageId: id,
+                    convertWholeBook: false
                 })
                 .catch(error => {
                     console.log(error);
@@ -271,6 +281,7 @@ class PageChooser {
                 .then(() => this.closeup());
         }
     }
+
     private closeup(): void {
         // End the disabling of other panes for the modal dialog. The final argument is because in this
         // method the current window is the dialog, and it's the parent window's document that is being
@@ -286,6 +297,12 @@ class PageChooser {
         if (!this._forChooseLayout) return;
         const cb = $("#convertAnywayCheckbox");
         $("#addPageButton").prop("disabled", !cb.is(":checked"));
+    }
+
+    private convertBookCheckBoxChanged(): void {
+        if (!this._forChooseLayout) return;
+        const cb = $("#convertWholeBookCheckbox");
+        this._convertWholeBook = cb.is(":checked");
     }
 
     // This is the starting-point method that is invoked to initialize the dialog.
@@ -328,6 +345,11 @@ class PageChooser {
             .change(() => {
                 this.continueCheckBoxChanged();
             });
+        $("#convertWholeBookCheckbox", document)
+            .button()
+            .change(() => {
+                this.convertBookCheckBoxChanged();
+            });
         const pageButton = $("#addPageButton", document);
         let okButtonLabelId = "EditTab.AddPageDialog.AddThisPageButton";
         let okButtonLabelText = "Add This Page";
@@ -346,6 +368,12 @@ class PageChooser {
                 "EditTab.AddPageDialog.",
                 "Converting to this layout will cause some content to be lost.",
                 "ChooseLayoutWillLoseData"
+            );
+            this.setLocalizedText(
+                $("#convertWholeBookCheckbox"),
+                "EditTab.AddPageDialog.",
+                "Change all similar pages in this book to this layout.",
+                "ChooseLayoutConvertBookCheckbox"
             );
         }
         theOneLocalizationManager
@@ -448,7 +476,7 @@ class PageChooser {
                     defaultPageToSelect,
                     previousPagesCount
                 );
-                let pagesCountSoFar = previousPagesCount + $(pages).length;
+                const pagesCountSoFar = previousPagesCount + $(pages).length;
 
                 this.loadNextPageGroup(
                     queue,

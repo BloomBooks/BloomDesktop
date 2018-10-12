@@ -13,6 +13,7 @@
 // Intended to be similar to HighlightColor when over the default dialog background, but I haven't
 // tried to figure out exactly what would achieve that.
 @TransparentHiglightColor: hsla(186.9, 49.1%, 65%, 0.45);
+@CheckboxPadding: 20px; // used to get hanging indent to work on convert whole book checkbox
 
 body {
     margin: 4px;
@@ -226,24 +227,6 @@ body {
 #mainContainer .ui-dialog-buttonpane {
     display: none;
 }
-/*
-.ui-dialog-buttonset {
-
-    .normalButton {
-        font-weight: normal !important;
-    }
-
-    //.defaultButton {
-    //	.ui-icon-plusthick {
-    //		left: 0.25em !important;
-    //	}
-    //	.ui-button-text {
-    //		//text-align: right !important;
-    //		font-weight: bold;
-    //	}
-    //	border: solid 5px @HighlightColor !important;
-    //}
-}*/
 
 #addPageButton {
     //center it
@@ -261,6 +244,22 @@ body {
         color: @bloom-buff;
         border: medium solid @bloom-buff;
     }
+}
+
+#convertWholeBook {
+    visibility: hidden;
+    margin-left: @PreviewPaneLeftPadding;
+    margin-right: @PreviewPaneLeftPadding;
+    display: block;
+    padding-left: @CheckboxPadding;
+    text-indent: -@CheckboxPadding;
+    &.disabled {
+        color: @bloom-buff;
+    }
+}
+
+.chooseLayout #convertWholeBook {
+    visibility: visible;
 }
 
 #convertAnyway {
