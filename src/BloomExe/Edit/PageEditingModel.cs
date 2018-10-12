@@ -40,7 +40,7 @@ namespace Bloom.Edit
 
 			// BL-5866 To get video to work while storing it in a separate folder we must include the video folder name here.
 			var videoUrlUnencoded = BookStorage.GetVideoFolderName + videoFileName;
-			HtmlDom.SetVideoElementUrl(videoContainer, UrlPathString.CreateFromUnencodedString(videoUrlUnencoded));
+			HtmlDom.SetVideoElementUrl(videoContainer, UrlPathString.CreateFromUnencodedString(videoUrlUnencoded, true));
 			// Enhance: do we need to do something here about metadata, when we figure out how to handle that
 			// for videos?
 		}
