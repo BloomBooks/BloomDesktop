@@ -86,6 +86,7 @@ namespace BloomTests
 			Assert.IsTrue(e  == WebExceptionStatus.NameResolutionFailure || e == WebExceptionStatus.ProtocolError );
 		}
 		[Test]
+		[Platform(Exclude = "Linux", Reason = "Windows-specific, fails on Linux without special access setup")]
 		public void FileForThisChannelIsMissing_ErrorIsCorrect()
 		{
 			var t = new UpdateVersionTable { URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableSomethingBogus.txt"};
@@ -144,6 +145,7 @@ namespace BloomTests
 		}
 
 		[Test]
+		[Platform(Exclude = "Linux", Reason = "Windows-specific, fails on Linux without special access setup")]
 		public void LookupURLOfUpdate_CanReadTableForAlphaFromServer()
 		{
 			var t = new UpdateVersionTable();
@@ -156,6 +158,7 @@ namespace BloomTests
 		}
 
 		[Test]
+		[Platform(Exclude = "Linux", Reason = "Windows-specific, fails on Linux without special access setup")]
 		public void LookupURLOfUpdateInternal_NotBehindCaptivePortal_Works()
 		{
 			var t = new UpdateVersionTable();
