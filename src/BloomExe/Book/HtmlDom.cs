@@ -1599,6 +1599,17 @@ namespace Bloom.Book
 			return UrlPathString.CreateFromUnencodedString(String.Empty);
 		}
 
+		/// <summary>
+		/// Gets the url for a video, starting from a parent div which may or may not contain a video element.
+		/// </summary>
+		public static UrlPathString GetVideoElementUrl(XmlElement videoContainer)
+		{
+			return GetVideoElementUrl(new ElementProxy(videoContainer));
+		}
+
+		/// <summary>
+		/// Gets the url for a video, starting from a parent div which may or may not contain a video element.
+		/// </summary>
 		public static UrlPathString GetVideoElementUrl(GeckoHtmlElement videoContainer)
 		{
 			return GetVideoElementUrl(new ElementProxy(videoContainer));
