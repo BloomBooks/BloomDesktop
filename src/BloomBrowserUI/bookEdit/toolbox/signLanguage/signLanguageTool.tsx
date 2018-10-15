@@ -24,6 +24,12 @@ interface IComponentState {
     haveRecording: boolean;
     originalExists: boolean;
     cameraAccess: boolean;
+    // Video statistics state
+    vidDuration: string;
+    vidFileSize: string;
+    vidFrameSize: string;
+    vidFramesPerSecond: string;
+    vidFileFormat: string;
 }
 
 // incomplete typescript definitions for MediaRecorder and related types.
@@ -63,13 +69,22 @@ export class SignLanguageToolControls extends React.Component<
         stateClass: "idle",
         haveRecording: false,
         originalExists: false,
-        cameraAccess: true
+        cameraAccess: true,
+        vidDuration: "",
+        vidFileSize: "",
+        vidFrameSize: "",
+        vidFramesPerSecond: "",
+        vidFileFormat: ""
     };
     private videoStream: MediaStream;
     private chunks: Blob[];
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     public render() {
+        let videoStats = <div />;
+        if (this.state.haveRecording) {
+            videoStats = this.getVideoStats();
+        }
         return (
             <RequiresBloomEnterpriseWrapper>
                 <div
@@ -239,6 +254,7 @@ export class SignLanguageToolControls extends React.Component<
                     >
                         Press any key to stop
                     </Label>
+                    {videoStats}
                     <div className="helpLinkWrapper">
                         <HelpLink
                             l10nKey="Common.Help"
@@ -249,6 +265,18 @@ export class SignLanguageToolControls extends React.Component<
                     </div>
                 </div>
             </RequiresBloomEnterpriseWrapper>
+        );
+    }
+
+    private getVideoStats() {
+        return (
+            <div id="videoStatsWrapper">
+                <div>{this.state.vidDuration}</div>
+                <div>{this.state.vidFileSize}</div>
+                <div>{this.state.vidFrameSize}</div>
+                <div>{this.state.vidFramesPerSecond}</div>
+                <div>{this.state.vidFileFormat}</div>
+            </div>
         );
     }
 
@@ -272,6 +300,14 @@ export class SignLanguageToolControls extends React.Component<
                 </Label>
             );
         }
+    }
+
+    public getVideoStatsFromFile() {
+        console.log("Entering getVideoStatsFromFile()...");
+        BloomApi.get("signLanguage/getStats", result => {
+            console.log("getVideoStatsFromFile returned: " + result.data);
+            this.setState(result.data);
+        });
     }
 
     private importRecording() {
@@ -391,6 +427,9 @@ export class SignLanguageToolControls extends React.Component<
             default:
                 // back to 'idle'
                 SignLanguageTool.removeVideoOverlay();
+                if (this.state.haveRecording) {
+                    this.getVideoStatsFromFile();
+                }
                 break;
         }
     }
@@ -595,6 +634,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
         BloomApi.get("toolbox/fileExists?filename=" + src, result => {
             this.reactControls.setState({ haveRecording: result.data });
+            this.reactControls.getVideoStatsFromFile();
         });
         BloomApi.get(
             "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
