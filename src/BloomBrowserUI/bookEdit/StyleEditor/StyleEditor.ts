@@ -67,13 +67,13 @@ export default class StyleEditor {
     }
 
     public static GetStyleClassFromElement(target: HTMLElement): string | null {
-        var c = $(target).attr("class");
+        let c = $(target).attr("class");
         if (!c) {
             c = "";
         }
-        var classes = c.split(" ");
+        const classes = c.split(" ");
 
-        for (var i = 0; i < classes.length; i++) {
+        for (let i = 0; i < classes.length; i++) {
             if (classes[i].indexOf("-style") > 0) {
                 return classes[i];
             }
@@ -81,7 +81,7 @@ export default class StyleEditor {
 
         // For awhile between v1 and v2 we used 'coverTitle' in Factory-XMatter
         // In case this is one of those books, we'll replace it with 'Title-On-Cover-style'
-        var coverTitleClass: string | null = StyleEditor.updateCoverStyleName(
+        let coverTitleClass: string | null = StyleEditor.updateCoverStyleName(
             target,
             "coverTitle"
         );
@@ -103,7 +103,7 @@ export default class StyleEditor {
         oldCoverTitleClass: string
     ): string | null {
         if ($(target).hasClass(oldCoverTitleClass)) {
-            var newStyleName: string = "Title-On-Cover-style";
+            const newStyleName: string = "Title-On-Cover-style";
             $(target)
                 .removeClass(oldCoverTitleClass)
                 .addClass(newStyleName);
@@ -125,14 +125,14 @@ export default class StyleEditor {
     }
 
     private static MigratePreStyleBook(target: HTMLElement): string | null {
-        var parentPage: HTMLDivElement = <HTMLDivElement>(
+        const parentPage: HTMLDivElement = <HTMLDivElement>(
             (<any>$(target).closest(".bloom-page")[0])
         );
         // Books created with the original (0.9) version of "Basic Book", lacked "x-style"
         // but had all pages starting with an id of 5dcd48df (so we can detect them)
-        var pageLineage = $(parentPage).attr("data-pagelineage");
+        const pageLineage = $(parentPage).attr("data-pagelineage");
         if (pageLineage && pageLineage.substring(0, 8) === "5dcd48df") {
-            var styleName: string = "normal-style";
+            const styleName: string = "normal-style";
             $(target).addClass(styleName);
             return styleName;
         }
@@ -140,10 +140,10 @@ export default class StyleEditor {
     }
 
     private static GetStyleNameForElement(target: HTMLElement): string | null {
-        var styleName: string | null = this.GetStyleClassFromElement(target);
+        let styleName: string | null = this.GetStyleClassFromElement(target);
         if (!styleName) {
             // The style name is probably on the parent translationGroup element
-            var parentGroup: HTMLDivElement = <HTMLDivElement>(
+            const parentGroup: HTMLDivElement = <HTMLDivElement>(
                 (<any>$(target).parent(".bloom-translationGroup")[0])
             );
             if (parentGroup) {
@@ -171,9 +171,9 @@ export default class StyleEditor {
     private static GetBaseStyleNameForElement(
         target: HTMLElement
     ): string | null {
-        var styleName = StyleEditor.GetStyleNameForElement(target); // with '-style'
+        const styleName = StyleEditor.GetStyleNameForElement(target); // with '-style'
         if (styleName == null) return null;
-        var suffixIndex = styleName.indexOf("-style");
+        const suffixIndex = styleName.indexOf("-style");
         if (suffixIndex < 0) {
             return styleName;
         }
@@ -184,13 +184,13 @@ export default class StyleEditor {
         target: HTMLElement,
         newStyle: string
     ) {
-        var oldStyle: string | null = this.GetStyleClassFromElement(target);
+        const oldStyle: string | null = this.GetStyleClassFromElement(target);
         if (oldStyle != null) $(target).removeClass(oldStyle);
         $(target).addClass(newStyle);
     }
 
     private static GetLangValueOrNull(target: HTMLElement): string | null {
-        var langAttr = $(target).attr("lang");
+        const langAttr = $(target).attr("lang");
         if (!langAttr) {
             return null;
         }
@@ -199,19 +199,19 @@ export default class StyleEditor {
 
     // obsolete?
     private ChangeSize(target: HTMLElement, change: number) {
-        var styleName = StyleEditor.GetStyleNameForElement(target);
+        const styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
             return;
         }
-        var fontSize = this.GetCalculatedFontSizeInPoints(target);
-        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        var rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
+        const fontSize = this.GetCalculatedFontSizeInPoints(target);
+        const langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        const rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
             styleName,
             langAttrValue,
             this.authorMode
         );
-        var units = "pt";
-        var sizeString = (fontSize + change).toString();
+        const units = "pt";
+        const sizeString = (fontSize + change).toString();
         if (parseInt(sizeString, 10) < this.MIN_FONT_SIZE) {
             return; // too small, quietly don't do it!
         }
@@ -225,17 +225,17 @@ export default class StyleEditor {
 
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
-        var toolTip = this.GetToolTip(target, styleName);
+        const toolTip = this.GetToolTip(target, styleName);
         this.AddQtipToElement($("#formatButton"), toolTip);
     }
 
     public GetCalculatedFontSizeInPoints(target: HTMLElement): number {
-        var sizeInPx = $(target).css("font-size");
+        const sizeInPx = $(target).css("font-size");
         return this.ConvertPxToPt(parseInt(sizeInPx, 10));
     }
 
     public ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
-        var styleName = StyleEditor.GetStyleNameForElement(target); // finds 'x-style' class or null
+        const styleName = StyleEditor.GetStyleNameForElement(target); // finds 'x-style' class or null
         if (!styleName) {
             alert(
                 "ChangeSizeAbsolute called on an element with invalid style class."
@@ -247,14 +247,14 @@ export default class StyleEditor {
             alert("ChangeSizeAbsolute called with too small a point size.");
             return;
         }
-        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        var rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
+        const langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        const rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
             styleName,
             langAttrValue,
             this.authorMode
         );
-        var units = "pt";
-        var sizeString: string = newSize.toString();
+        const units = "pt";
+        const sizeString: string = newSize.toString();
         if (rule != null)
             rule.style.setProperty(
                 "font-size",
@@ -262,7 +262,7 @@ export default class StyleEditor {
                 "important"
             );
         // Now update tooltip
-        var toolTip = this.GetToolTip(target, styleName);
+        const toolTip = this.GetToolTip(target, styleName);
         this.AddQtipToElement($("#formatButton"), toolTip);
     }
 
@@ -272,27 +272,27 @@ export default class StyleEditor {
     // styles like DIV.bloom-editing.Heading1 and make their selectors specific enough to work,
     // but not impossible to override with a custom definition.
     public getFormattingStyles(): FormattingStyle[] {
-        var styles: FormattingStyle[] = [];
-        for (var i = 0; i < document.styleSheets.length; i++) {
-            var sheet = <StyleSheet>(<any>document.styleSheets[i]);
-            var rules: CSSRuleList = (<any>sheet).cssRules;
+        const styles: FormattingStyle[] = [];
+        for (let i = 0; i < document.styleSheets.length; i++) {
+            const sheet = <StyleSheet>(<any>document.styleSheets[i]);
+            const rules: CSSRuleList = (<any>sheet).cssRules;
             if (rules) {
-                for (var j = 0; j < rules.length; j++) {
-                    var index = rules[j].cssText.indexOf("{");
+                for (let j = 0; j < rules.length; j++) {
+                    const index = rules[j].cssText.indexOf("{");
                     if (index === -1) {
                         continue;
                     }
-                    var label = rules[j].cssText.substring(0, index).trim();
-                    var index2 = label.lastIndexOf("-style");
+                    const label = rules[j].cssText.substring(0, index).trim();
+                    const index2 = label.lastIndexOf("-style");
                     if (
                         index2 !== -1 &&
                         index2 === label.length - "-style".length
                     ) {
                         // ends in -style
-                        var index3 = label.lastIndexOf(".");
-                        var styleId = label.substring(index3 + 1, index2);
+                        const index3 = label.lastIndexOf(".");
+                        const styleId = label.substring(index3 + 1, index2);
                         // Get the English display name if one is defined for this style
-                        var displayName = this.getDisplayName(styleId);
+                        const displayName = this.getDisplayName(styleId);
                         if (styles.every(style => !style.hasStyleId(styleId))) {
                             styles.push(
                                 new FormattingStyle(styleId, displayName)
@@ -346,16 +346,16 @@ export default class StyleEditor {
     // Will return null if the style has no definition, OR if it already has a user-defined version
     public getPredefinedStyle(target: string): CSSRule | null {
         let result: CSSRule | null = null;
-        for (var i = 0; i < document.styleSheets.length; i++) {
-            var sheet = <StyleSheet>(<any>document.styleSheets[i]);
-            var rules: CSSRuleList = (<any>sheet).cssRules;
+        for (let i = 0; i < document.styleSheets.length; i++) {
+            const sheet = <StyleSheet>(<any>document.styleSheets[i]);
+            const rules: CSSRuleList = (<any>sheet).cssRules;
             if (rules) {
-                for (var j = 0; j < rules.length; j++) {
-                    var index = rules[j].cssText.indexOf("{");
+                for (let j = 0; j < rules.length; j++) {
+                    const index = rules[j].cssText.indexOf("{");
                     if (index === -1) {
                         continue;
                     }
-                    var label = rules[j].cssText.substring(0, index).trim();
+                    const label = rules[j].cssText.substring(0, index).trim();
                     if (label.indexOf(target) >= 0) {
                         // We have a rule for our target!
                         // Is this the user-defined stylesheet?
@@ -379,7 +379,7 @@ export default class StyleEditor {
     }
 
     private FindExistingUserModifiedStyleSheet(): CSSStyleSheet | null {
-        for (var i = 0; i < document.styleSheets.length; i++) {
+        for (let i = 0; i < document.styleSheets.length; i++) {
             if (
                 (<HTMLElement>document.styleSheets[i].ownerNode).title ===
                 "userModifiedStyles"
@@ -395,9 +395,9 @@ export default class StyleEditor {
 
     //note, this currently just makes an element in the document, not a separate file
     public GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet | null {
-        var styleSheet = this.FindExistingUserModifiedStyleSheet();
+        let styleSheet = this.FindExistingUserModifiedStyleSheet();
         if (styleSheet == null) {
-            var newSheet = document.createElement("style");
+            const newSheet = document.createElement("style");
             document.getElementsByTagName("head")[0].appendChild(newSheet);
             newSheet.title = "userModifiedStyles";
             newSheet.type = "text/css";
@@ -450,7 +450,7 @@ export default class StyleEditor {
             styleAndLang += " > p";
         }
 
-        let lookFor = styleAndLang.toLowerCase();
+        const lookFor = styleAndLang.toLowerCase();
 
         for (let i = 0; i < ruleList.length; i++) {
             const index = ruleList[i].cssText.indexOf("{");
@@ -484,10 +484,10 @@ export default class StyleEditor {
     }
 
     public ConvertPxToPt(pxSize: number, round = true): number {
-        var tempDiv = document.createElement("div");
+        const tempDiv = document.createElement("div");
         tempDiv.style.width = "1000pt";
         document.body.appendChild(tempDiv);
-        var ratio = 1000 / tempDiv.clientWidth;
+        const ratio = 1000 / tempDiv.clientWidth;
         document.body.removeChild(tempDiv);
         if (round) {
             return Math.round(pxSize * ratio);
@@ -506,14 +506,14 @@ export default class StyleEditor {
         //Review: Gordon (JH) I'm not clear if this is still used or why, since it seems to be duplicated in AttachToBox
         styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
         styleName = styleName.replace(/-/g, " "); //show users a space instead of dashes
-        var box = $(targetBox);
-        var sizeString = box.css("font-size"); // always returns computed size in pixels
-        var pxSize = parseInt(sizeString, 10); // strip off units and parse
-        var ptSize = this.ConvertPxToPt(pxSize);
-        var lang = box.attr("lang");
+        const box = $(targetBox);
+        const sizeString = box.css("font-size"); // always returns computed size in pixels
+        const pxSize = parseInt(sizeString, 10); // strip off units and parse
+        const ptSize = this.ConvertPxToPt(pxSize);
+        const lang = box.attr("lang");
 
         // localize
-        var tipText =
+        const tipText =
             "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
         return theOneLocalizationManager.getText(
             "EditTab.FormatDialog.FontSizeTip",
@@ -545,7 +545,7 @@ export default class StyleEditor {
         // I can't get it to work, and surmise that we're using an older version of select2
         // that doesn't have it. This version is probably very implementation-dependent
         // and may need rework if we ever update select2.)
-        var select2target = element
+        const select2target = element
             .next()
             .find("span.select2-selection__rendered");
         if (select2target.length) {
@@ -564,9 +564,9 @@ export default class StyleEditor {
         listOfOptions: Array<string>,
         valueToMatch: number
     ) {
-        var lineHeight;
-        for (var i = 0; i < listOfOptions.length; i++) {
-            var optionNumber = parseFloat(listOfOptions[i]);
+        let lineHeight;
+        for (let i = 0; i < listOfOptions.length; i++) {
+            const optionNumber = parseFloat(listOfOptions[i]);
             if (valueToMatch === optionNumber) {
                 lineHeight = listOfOptions[i];
                 break;
@@ -575,9 +575,9 @@ export default class StyleEditor {
                 lineHeight = listOfOptions[i];
                 // possibly it is closer to the option before
                 if (i > 0) {
-                    var prevOptionNumber = parseFloat(listOfOptions[i - 1]);
-                    var deltaCurrent = optionNumber - valueToMatch;
-                    var deltaPrevious = valueToMatch - prevOptionNumber;
+                    const prevOptionNumber = parseFloat(listOfOptions[i - 1]);
+                    const deltaCurrent = optionNumber - valueToMatch;
+                    const deltaPrevious = valueToMatch - prevOptionNumber;
                     if (deltaPrevious < deltaCurrent) {
                         lineHeight = listOfOptions[i - 1];
                     }
@@ -667,10 +667,10 @@ export default class StyleEditor {
     // We need to get localized versions of all the default styles and not return until we get them all.
     // "all" function from http://hermanradtke.com/2011/05/12/managing-multiple-jquery-promises.html
     public all(promises: JQueryPromise<string>[]): JQueryPromise<any> {
-        var deferred = $.Deferred();
-        var fulfilled = 0;
-        var length = promises.length;
-        var results: string[] = new Array(length);
+        const deferred = $.Deferred();
+        let fulfilled = 0;
+        const length = promises.length;
+        const results: string[] = new Array(length);
 
         if (length === 0) {
             deferred.resolve(results);
@@ -692,11 +692,11 @@ export default class StyleEditor {
     public getStylePromises(
         styles: FormattingStyle[]
     ): JQueryPromise<string>[] {
-        var results: string[] = [];
-        var promises: JQueryPromise<string>[] = [];
+        const results: string[] = [];
+        const promises: JQueryPromise<string>[] = [];
 
         styles.forEach(formattingStyle => {
-            var completeStyleName =
+            const completeStyleName =
                 "EditTab.FormatDialog.DefaultStyles." +
                 formattingStyle.styleId +
                 "-style";
@@ -715,66 +715,67 @@ export default class StyleEditor {
 
     // Returns an object giving the current selection for each format control.
     public getFormatValues() {
-        var box = $(this.boxBeingEdited);
-        var sizeString = box.css("font-size");
-        var pxSize = parseInt(sizeString, 10);
-        var ptSize = this.ConvertPxToPt(pxSize, false);
-        var sizes = this.getPointSizes();
+        const box = $(this.boxBeingEdited);
+        const sizeString = box.css("font-size");
+        const pxSize = parseInt(sizeString, 10);
+        let ptSize = this.ConvertPxToPt(pxSize, false);
+        const sizes = this.getPointSizes();
 
         ptSize = Math.round(ptSize);
-        var fontName = box.css("font-family");
+        let fontName = box.css("font-family");
         if (fontName[0] === "'" || fontName[0] === '"') {
             fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
         }
 
-        var lineHeightString = box.css("line-height");
-        var lineHeightPx = parseInt(lineHeightString, 10);
-        var lineHeightNumber = Math.round((lineHeightPx / pxSize) * 10) / 10.0;
-        var lineSpaceOptions = this.getLineSpaceOptions();
-        var lineHeight = StyleEditor.GetClosestValueInList(
+        const lineHeightString = box.css("line-height");
+        const lineHeightPx = parseInt(lineHeightString, 10);
+        const lineHeightNumber =
+            Math.round((lineHeightPx / pxSize) * 10) / 10.0;
+        const lineSpaceOptions = this.getLineSpaceOptions();
+        const lineHeight = StyleEditor.GetClosestValueInList(
             lineSpaceOptions,
             lineHeightNumber
         );
 
-        var wordSpaceOptions = this.getWordSpaceOptions();
+        const wordSpaceOptions = this.getWordSpaceOptions();
 
-        var wordSpaceString = box.css("word-spacing");
-        var wordSpacing = wordSpaceOptions[0];
+        const wordSpaceString = box.css("word-spacing");
+        let wordSpacing = wordSpaceOptions[0];
         if (wordSpaceString !== "0px") {
-            var pxSpace = parseInt(wordSpaceString, 10);
-            var ptSpace = this.ConvertPxToPt(pxSpace);
+            const pxSpace = parseInt(wordSpaceString, 10);
+            const ptSpace = this.ConvertPxToPt(pxSpace);
             if (ptSpace > 7.5) {
                 wordSpacing = wordSpaceOptions[2];
             } else {
                 wordSpacing = wordSpaceOptions[1];
             }
         }
-        var weight = box.css("font-weight");
-        var bold = parseInt(weight, 10) > 600;
+        const weight = box.css("font-weight");
+        const bold = parseInt(weight, 10) > 600;
 
-        var italic = box.css("font-style") === "italic";
-        var underline = box.css("text-decoration") === "underline";
-        var center = box.css("text-align") === "center";
+        const italic = box.css("font-style") === "italic";
+        const underline = box.css("text-decoration") === "underline";
+        const center = box.css("text-align") === "center";
 
         // If we're going to base the initial values on current actual values, we have to get the
         // margin-below and text-indent values from one of the paragraphs they actually affect.
         // I don't recall why we wanted to get the values from the box rather than from the
         // existing style rule. Trying to do so will be a problem if there are no paragraph
         // boxes in the div from which to read the value. I don't think this should happen.
-        var paraBox = box.find("p");
+        const paraBox = box.find("p");
 
-        var marginBelowString = paraBox.css("margin-bottom");
-        var paraSpacePx = parseInt(marginBelowString, 10);
-        var paraSpaceEm = paraSpacePx / pxSize;
-        var paraSpaceOptions = this.getParagraphSpaceOptions();
-        var paraSpacing = StyleEditor.GetClosestValueInList(
+        const marginBelowString = paraBox.css("margin-bottom");
+        const paraSpacePx = parseInt(marginBelowString, 10);
+        const paraSpaceEm = paraSpacePx / pxSize;
+        const paraSpaceOptions = this.getParagraphSpaceOptions();
+        const paraSpacing = StyleEditor.GetClosestValueInList(
             paraSpaceOptions,
             paraSpaceEm
         );
 
-        var indentString = paraBox.css("text-indent");
-        var indentNumber = parseInt(indentString, 10);
-        var paraIndent = "none";
+        const indentString = paraBox.css("text-indent");
+        const indentNumber = parseInt(indentString, 10);
+        let paraIndent = "none";
         if (indentNumber > 1) {
             paraIndent = "indented";
         } else if (indentNumber < 0) {
@@ -816,9 +817,9 @@ export default class StyleEditor {
         // its nefarious work. The following block achieves this.
         // Enhance: this logic is roughly duplicated in toolbox.ts restoreToolboxSettingsWhenCkEditorReady.
         // There may be some way to refactor it into a common place, but I don't know where.
-        var editorInstances = (<any>window).CKEDITOR.instances;
-        for (var i = 1; ; i++) {
-            var instance = editorInstances["editor" + i];
+        const editorInstances = (<any>window).CKEDITOR.instances;
+        for (let i = 1; ; i++) {
+            const instance = editorInstances["editor" + i];
             if (instance == null) {
                 if (i === 0) {
                     // no instance at all...if one is later created, get us invoked.
@@ -835,11 +836,11 @@ export default class StyleEditor {
             }
         }
 
-        var styleName = StyleEditor.GetStyleNameForElement(targetBox);
+        let styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName) {
             return;
         }
-        var editor = this;
+        const editor = this;
         // I'm assuming here that since we're dealing with a local server, we'll get a result long before
         // the user could actually modify a style and thus need the information.
         // More dangerous is using it in getCharTabDescription. But as that is launched by a later
@@ -875,15 +876,15 @@ export default class StyleEditor {
         // And in case we are starting out on a centerVertically page we might need to adjust it now
         this.AdjustFormatButton(targetBox);
 
-        var formatButton = $("#formatButton");
+        const formatButton = $("#formatButton");
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
-        var txt = theOneLocalizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
+        const txt = theOneLocalizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
         */
 
         // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
-        var suppress = $(document).find('meta[name="lockFormatting"]');
-        var noFormatChange =
+        const suppress = $(document).find('meta[name="lockFormatting"]');
+        const noFormatChange =
             suppress.length > 0 &&
             suppress.attr("content").toLowerCase() === "true";
         //The following commented out code works fine on Windows, but causes the program to crash
@@ -916,14 +917,14 @@ export default class StyleEditor {
                         )
                     ])
                     .then(results => {
-                        var fonts = results[0].data["fonts"];
-                        var html = results[1].data;
+                        const fonts = results[0].data["fonts"];
+                        const html = results[1].data;
 
                         editor.boxBeingEdited = targetBox;
                         styleName = StyleEditor.GetBaseStyleNameForElement(
                             targetBox
                         );
-                        var current = editor.getFormatValues();
+                        const current = editor.getFormatValues();
 
                         //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                         // Enhance: lineHeight may well be something like 35px; what should we select initially?
@@ -960,7 +961,7 @@ export default class StyleEditor {
                                 $("#style-page").remove();
                             }
 
-                            var visibleTabs = $(".tab-page:visible");
+                            const visibleTabs = $(".tab-page:visible");
                             if (visibleTabs.length === 1) {
                                 // When there is only one tab, we want to hide the tab itself.
                                 $(visibleTabs[0])
@@ -984,7 +985,7 @@ export default class StyleEditor {
                             minimumResultsForSearch: -1 // result is that no search box is shown
                         });
 
-                        var toolbar = $("#format-toolbar");
+                        const toolbar = $("#format-toolbar");
                         toolbar.find("*[data-i18n]").localize();
                         toolbar.draggable({
                             distance: 10,
@@ -1079,13 +1080,13 @@ export default class StyleEditor {
                                         editor.createStyle();
                                     });
                                 }
-                                var buttonIds = editor.getButtonIds();
+                                const buttonIds = editor.getButtonIds();
                                 for (
-                                    var idIndex = 0;
+                                    let idIndex = 0;
                                     idIndex < buttonIds.length;
                                     idIndex++
                                 ) {
-                                    var button = $("#" + buttonIds[idIndex]);
+                                    const button = $("#" + buttonIds[idIndex]);
                                     button.click(function() {
                                         editor.buttonClick(this);
                                     });
@@ -1098,7 +1099,7 @@ export default class StyleEditor {
                                 new WebFXTabPane($("#tabRoot").get(0), false);
                             }
                         }
-                        var orientOnButton = $("#formatButton");
+                        const orientOnButton = $("#formatButton");
                         EditableDivUtils.positionDialogAndSetDraggable(
                             toolbar,
                             orientOnButton
@@ -1199,9 +1200,9 @@ export default class StyleEditor {
 
     // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
     public stateChange(id: string, newState: string) {
-        var stateToAdd = "state-" + newState;
-        var stateElement = $("#" + id);
-        var existingClasses = stateElement.attr("class").split(/\s+/);
+        const stateToAdd = "state-" + newState;
+        const stateElement = $("#" + id);
+        const existingClasses = stateElement.attr("class").split(/\s+/);
         $.each(existingClasses, function(index, elem) {
             if (elem.startsWith("state-")) {
                 stateElement.removeClass(elem);
@@ -1221,7 +1222,7 @@ export default class StyleEditor {
     }
 
     public styleInputChanged() {
-        var typedStyle = $("#style-select-input").val();
+        const typedStyle = $("#style-select-input").val();
         // change state based on input
         if (typedStyle) {
             if (this.inputStyleExists()) {
@@ -1239,14 +1240,14 @@ export default class StyleEditor {
     }
 
     public buttonClick(buttonDiv) {
-        var button = $(buttonDiv);
-        var id = button.attr("id");
-        var index = id.indexOf("-");
+        const button = $(buttonDiv);
+        const id = button.attr("id");
+        const index = id.indexOf("-");
         if (index >= 0) {
             button.addClass("selectedIcon");
-            var group = id.substring(0, index);
+            const group = id.substring(0, index);
             $(".propButton").each(function() {
-                var item = $(this);
+                const item = $(this);
                 if (
                     this !== button.get(0) &&
                     item.attr("id").startsWith(group)
@@ -1284,13 +1285,13 @@ export default class StyleEditor {
 
     // The Char tab description is language-dependent when localizing, not when authoring.
     public getCharTabDescription() {
-        var styleName = StyleEditor.GetBaseStyleNameForElement(
+        const styleName = StyleEditor.GetBaseStyleNameForElement(
             this.boxBeingEdited
         );
         // BL-2386 This one should NOT be language-dependent; only style dependent
         // BL-5616 This also applies if the textbox's default language is '*',
         // like it is for an Arithmetic Equation.
-        var iso = $(this.boxBeingEdited).attr("lang");
+        const iso = $(this.boxBeingEdited).attr("lang");
         if (this.shouldSetDefaultRule() || iso === "*") {
             theOneLocalizationManager
                 .asyncGetText(
@@ -1305,7 +1306,7 @@ export default class StyleEditor {
             return;
         }
         //BL-982 Use language name that appears on text windows
-        var lang = theOneLocalizationManager.getLanguageName(iso);
+        let lang = theOneLocalizationManager.getLanguageName(iso);
         if (!lang) {
             lang = iso;
         }
@@ -1324,7 +1325,7 @@ export default class StyleEditor {
 
     // The More tab settings are never language-dependent
     public getParagraphTabDescription() {
-        var styleName = StyleEditor.GetBaseStyleNameForElement(
+        const styleName = StyleEditor.GetBaseStyleNameForElement(
             this.boxBeingEdited
         );
         // BL-2386 This one should NOT be language-dependent; only style dependent
@@ -1342,13 +1343,13 @@ export default class StyleEditor {
 
     // did the user type the name of an existing style?
     public inputStyleExists(): boolean {
-        var typedStyle = $("#style-select-input").val();
+        const typedStyle = $("#style-select-input").val();
         return this.styles.some(style => style.hasStyleId(typedStyle));
     }
 
     // Make a new style. Initialize to all current values. Caller should ensure it is a valid new style.
     public createStyle() {
-        var typedStyle = $("#style-select-input").val();
+        const typedStyle = $("#style-select-input").val();
         StyleEditor.SetStyleNameForElement(
             this.boxBeingEdited,
             typedStyle + "-style"
@@ -1357,7 +1358,7 @@ export default class StyleEditor {
 
         // Recommended way to insert an item into a select2 control and select it (one of the trues makes it selected)
         // See http://codepen.io/alexweissman/pen/zremOV
-        var newState = new Option(typedStyle, typedStyle, true, true);
+        const newState = new Option(typedStyle, typedStyle, true, true);
         $("#styleSelect")
             .append(newState)
             .trigger("change");
@@ -1403,13 +1404,13 @@ export default class StyleEditor {
         // of the promises return.
         $.when(this.all(localizedNamePromises)).then(
             (allPromiseResults: string[]) => {
-                var options = "";
+                let options = "";
                 allPromiseResults.forEach((result, i) => {
                     styles[i].localizedName = result;
                 });
-                var sortedStyles = this.sortByLocalizedName(styles);
-                for (var i = 0; i < sortedStyles.length; i++) {
-                    var selected: string = "";
+                const sortedStyles = this.sortByLocalizedName(styles);
+                for (let i = 0; i < sortedStyles.length; i++) {
+                    let selected: string = "";
                     if (current === sortedStyles[i].styleId) {
                         selected = " selected";
                     }
@@ -1467,12 +1468,12 @@ export default class StyleEditor {
             return;
         }
 
-        var options = "";
+        let options = "";
         if (current && items.indexOf(current.toString()) === -1) {
             //we have a custom point size, so make that an option in addition to the standard ones
             items.push(current.toString());
         }
-        var sortedItems: string[];
+        let sortedItems: string[];
         if (doSort) {
             if (useNumericSort) {
                 sortedItems = items.sort((a: string, b: string) => {
@@ -1488,13 +1489,13 @@ export default class StyleEditor {
             current = items[0];
         }
 
-        for (var i = 0; i < sortedItems.length; i++) {
-            var selected: string = "";
+        for (let i = 0; i < sortedItems.length; i++) {
+            let selected: string = "";
             if (current.toString() === sortedItems[i]) {
                 // toString() is necessary to match point size string
                 selected = " selected";
             }
-            var text = sortedItems[i];
+            let text = sortedItems[i];
             if (maxlength && text.length > maxlength) {
                 text = text.substring(0, maxlength) + "...";
             }
@@ -1514,8 +1515,8 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var rule = this.getStyleRule(false);
-        var val = $("#bold").hasClass("selectedIcon");
+        let rule = this.getStyleRule(false);
+        const val = $("#bold").hasClass("selectedIcon");
         if (rule != null) {
             rule.style.setProperty(
                 "font-weight",
@@ -1539,8 +1540,8 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var rule = this.getStyleRule(false);
-        var val = $("#italic").hasClass("selectedIcon");
+        let rule = this.getStyleRule(false);
+        const val = $("#italic").hasClass("selectedIcon");
         if (rule != null)
             rule.style.setProperty(
                 "font-style",
@@ -1563,8 +1564,8 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var rule = this.getStyleRule(false);
-        var val = $("#underline").hasClass("selectedIcon");
+        let rule = this.getStyleRule(false);
+        const val = $("#underline").hasClass("selectedIcon");
         if (rule != null)
             rule.style.setProperty(
                 "text-decoration",
@@ -1587,9 +1588,9 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var rule = this.getStyleRule(false);
+        const rule = this.getStyleRule(false);
         if (rule != null) {
-            var font = $("#font-select").val();
+            const font = $("#font-select").val();
             rule.style.setProperty("font-family", font, "important");
             this.cleanupAfterStyleChange();
         }
@@ -1602,9 +1603,9 @@ export default class StyleEditor {
     // (If that concept diverges from 'the language whose style settings are the default' we may need to
     // inject a distinct value.)
     public shouldSetDefaultRule() {
-        var target = this.boxBeingEdited;
+        const target = this.boxBeingEdited;
         // GetSettings is injected into the page by C#.
-        var defLang = (<any>GetSettings()).languageForNewTextBoxes;
+        const defLang = (<any>GetSettings()).languageForNewTextBoxes;
         if ($(target).attr("lang") !== defLang) {
             return false;
         }
@@ -1619,14 +1620,14 @@ export default class StyleEditor {
             return;
         }
 
-        var fontSize = $("#size-select").val();
-        var units = "pt";
-        var sizeString = fontSize.toString();
+        const fontSize = $("#size-select").val();
+        const units = "pt";
+        const sizeString = fontSize.toString();
         if (parseInt(sizeString, 10) < this.MIN_FONT_SIZE) {
             return; // should not be possible?
         }
         // Always set the value in the language-specific rule
-        var rule = this.getStyleRule(false);
+        let rule = this.getStyleRule(false);
         if (rule != null)
             rule.style.setProperty(
                 "font-size",
@@ -1649,8 +1650,8 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var lineHeight = $("#line-height-select").val();
-        var rule = this.getStyleRule(false);
+        const lineHeight = $("#line-height-select").val();
+        let rule = this.getStyleRule(false);
         if (rule != null)
             rule.style.setProperty("line-height", lineHeight, "important");
         if (this.shouldSetDefaultRule()) {
@@ -1667,8 +1668,8 @@ export default class StyleEditor {
             return;
         }
 
-        var chosenIndex = $("#word-space-select option:selected").index();
-        var wordSpace;
+        const chosenIndex = $("#word-space-select option:selected").index();
+        let wordSpace;
         switch (chosenIndex) {
             case 1:
                 wordSpace = "5pt";
@@ -1679,7 +1680,7 @@ export default class StyleEditor {
             default:
                 wordSpace = "normal";
         }
-        var rule = this.getStyleRule(false);
+        let rule = this.getStyleRule(false);
         if (rule != null)
             rule.style.setProperty("word-spacing", wordSpace, "important");
         if (this.shouldSetDefaultRule()) {
@@ -1693,8 +1694,8 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var paraSpacing = $("#para-spacing-select").val() + "em";
-        var rule = this.getStyleRule(true, true);
+        const paraSpacing = $("#para-spacing-select").val() + "em";
+        const rule = this.getStyleRule(true, true);
         if (rule != null) {
             rule.style.setProperty("margin-bottom", paraSpacing, "important");
             this.cleanupAfterStyleChange();
@@ -1705,8 +1706,8 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var rule = this.getStyleRule(true);
-        var position = "initial";
+        const rule = this.getStyleRule(true);
+        let position = "initial";
         if ($("#position-center").hasClass("selectedIcon")) {
             position = "center";
         }
@@ -1720,7 +1721,7 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var rule = this.getStyleRule(true, true); // rule that is language-independent for child paras
+        const rule = this.getStyleRule(true, true); // rule that is language-independent for child paras
         if (rule == null) return;
         if ($("#indent-none").hasClass("selectedIcon")) {
             // It's tempting to remove the property. However, we apply normal-style as a class to
@@ -1741,8 +1742,8 @@ export default class StyleEditor {
     }
 
     public getSettings(ruleInput: string): string[] {
-        var index1 = ruleInput.indexOf("{");
-        var rule = ruleInput;
+        const index1 = ruleInput.indexOf("{");
+        let rule = ruleInput;
         if (index1 >= 0) {
             rule = rule.substring(index1 + 1, rule.length);
             rule = rule.replace("}", "").trim();
@@ -1751,27 +1752,27 @@ export default class StyleEditor {
     }
 
     public selectStyle() {
-        var style = $("#styleSelect").val();
+        const style = $("#styleSelect").val();
         $("#style-select-input").val(""); // we've chosen a style from the list, so we aren't creating a new one.
         StyleEditor.SetStyleNameForElement(
             this.boxBeingEdited,
             style + "-style"
         );
-        var predefined = this.getPredefinedStyle(style + "-style");
+        const predefined = this.getPredefinedStyle(style + "-style");
         if (predefined) {
             // doesn't exist in user-defined yet; need to copy it there
             // (so it works even if from a stylesheet not part of the book)
             // and make defined settings !important so they win over anything else.
-            var rule = this.getStyleRule(true);
-            var settings = this.getSettings(predefined.cssText);
-            for (var j = 0; j < settings.length; j++) {
-                var parts = settings[j].split(":");
+            const rule = this.getStyleRule(true);
+            const settings = this.getSettings(predefined.cssText);
+            for (let j = 0; j < settings.length; j++) {
+                const parts = settings[j].split(":");
                 if (parts.length !== 2) {
                     continue; // often a blank item after last semi-colon
                 }
-                var selector = parts[0].trim();
-                var val = parts[1].trim();
-                var index2 = val.indexOf("!");
+                const selector = parts[0].trim();
+                let val = parts[1].trim();
+                const index2 = val.indexOf("!");
                 if (index2 >= 0) {
                     val = val.substring(0, index2);
                 }
@@ -1780,7 +1781,7 @@ export default class StyleEditor {
                 // Even if we weren't in author mode, the factory definition of a style should be language-neutral,
                 // so we'd want to insert it into our book that way.
                 if (selector === "font-family") {
-                    var languageSpecificRule = this.getStyleRule(false);
+                    const languageSpecificRule = this.getStyleRule(false);
                     if (languageSpecificRule != null)
                         languageSpecificRule.style.setProperty(
                             selector,
@@ -1800,7 +1801,7 @@ export default class StyleEditor {
     }
 
     public UpdateControlsToReflectAppliedStyle() {
-        var current = this.getFormatValues();
+        const current = this.getFormatValues();
         this.ignoreControlChanges = true;
 
         this.setValueAndUpdateSelect2Control("font-select", current.fontName);
@@ -1820,8 +1821,8 @@ export default class StyleEditor {
             "para-spacing-select",
             current.paraSpacing
         );
-        var buttonIds = this.getButtonIds();
-        for (var i = 0; i < buttonIds.length; i++) {
+        const buttonIds = this.getButtonIds();
+        for (let i = 0; i < buttonIds.length; i++) {
             $("#" + buttonIds[i]).removeClass("selectedIcon");
         }
         this.selectButtons(current);
@@ -1860,8 +1861,8 @@ export default class StyleEditor {
     }
 
     public cleanupAfterStyleChange() {
-        var target = this.boxBeingEdited;
-        var styleName = StyleEditor.GetStyleNameForElement(target);
+        const target = this.boxBeingEdited;
+        const styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName) {
             return; // bizarre, since we put up the dialog
         }
