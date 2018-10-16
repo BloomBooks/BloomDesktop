@@ -24,6 +24,13 @@ interface IComponentState {
     haveRecording: boolean;
     originalExists: boolean;
     cameraAccess: boolean;
+    videoStatistics: {
+        duration: string;
+        fileSize: string;
+        frameSize: string;
+        framesPerSecond: string;
+        fileFormat: string;
+    };
 }
 
 // incomplete typescript definitions for MediaRecorder and related types.
@@ -63,13 +70,24 @@ export class SignLanguageToolControls extends React.Component<
         stateClass: "idle",
         haveRecording: false,
         originalExists: false,
-        cameraAccess: true
+        cameraAccess: true,
+        videoStatistics: {
+            duration: "",
+            fileSize: "",
+            frameSize: "",
+            framesPerSecond: "",
+            fileFormat: ""
+        }
     };
     private videoStream: MediaStream;
     private chunks: Blob[];
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     public render() {
+        let videoStats = <div />;
+        if (this.state.haveRecording) {
+            videoStats = this.getVideoStats();
+        }
         return (
             <RequiresBloomEnterpriseWrapper>
                 <div
@@ -239,6 +257,7 @@ export class SignLanguageToolControls extends React.Component<
                     >
                         Press any key to stop
                     </Label>
+                    {videoStats}
                     <div className="helpLinkWrapper">
                         <HelpLink
                             l10nKey="Common.Help"
@@ -249,6 +268,18 @@ export class SignLanguageToolControls extends React.Component<
                     </div>
                 </div>
             </RequiresBloomEnterpriseWrapper>
+        );
+    }
+
+    private getVideoStats() {
+        return (
+            <div id="videoStatsWrapper">
+                <div>{this.state.videoStatistics.duration}</div>
+                <div>{this.state.videoStatistics.fileSize}</div>
+                <div>{this.state.videoStatistics.frameSize}</div>
+                <div>{this.state.videoStatistics.framesPerSecond}</div>
+                <div>{this.state.videoStatistics.fileFormat}</div>
+            </div>
         );
     }
 
@@ -272,6 +303,24 @@ export class SignLanguageToolControls extends React.Component<
                 </Label>
             );
         }
+    }
+
+    public getVideoStatsFromFile() {
+        BloomApi.get("signLanguage/getStats", result => {
+            if (result.statusText != "OK") {
+                this.setState({
+                    videoStatistics: {
+                        duration: "",
+                        fileSize: "",
+                        frameSize: "",
+                        framesPerSecond: "",
+                        fileFormat: ""
+                    }
+                });
+            } else {
+                this.setState({ videoStatistics: result.data });
+            }
+        });
     }
 
     private importRecording() {
@@ -339,8 +388,8 @@ export class SignLanguageToolControls extends React.Component<
         if (!this.videoStream) {
             return;
         }
-        var oldState = this.state.stateClass;
-        var wasRecording = this.state.recording;
+        const oldState = this.state.stateClass;
+        const wasRecording = this.state.recording;
         if (wasRecording) {
             document.removeEventListener("keydown", this.onKeyPress);
             this.setState({ recording: false, stateClass: "idle" });
@@ -391,6 +440,9 @@ export class SignLanguageToolControls extends React.Component<
             default:
                 // back to 'idle'
                 SignLanguageTool.removeVideoOverlay();
+                if (this.state.haveRecording) {
+                    this.getVideoStatsFromFile();
+                }
                 break;
         }
     }
@@ -398,7 +450,7 @@ export class SignLanguageToolControls extends React.Component<
     private startRecording() {
         // OK, we want to start recording.
         this.chunks = [];
-        var options = {
+        const options = {
             // I found a couple of examples online with these rates for video/mp4 and the results
             // look reasonable. It's possible we could get useful recordings with lower rates.
             audioBitsPerSecond: 128000,
@@ -413,7 +465,7 @@ export class SignLanguageToolControls extends React.Component<
         };
         this.mediaRecorder.onstop = () => {
             // raised when the user clicks stop and we call this.mediaRecorder.stop() above.
-            var blob = new Blob(this.chunks, { type: "video/webm" });
+            const blob = new Blob(this.chunks, { type: "video/webm" });
             this.chunks = []; // enable garbage collection?
             BloomApi.postDataWithConfig("signLanguage/recordedVideo", blob, {
                 headers: {
@@ -475,7 +527,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // when we come back to the page. This is especially important when refreshing the
         // page after selecting or recording a video.
         const containers = SignLanguageTool.getVideoContainers(false);
-        for (var i = 0; i < containers.length; i++) {
+        for (let i = 0; i < containers.length; i++) {
             containers[i].removeEventListener(
                 "click",
                 this.containerClickListener
@@ -493,10 +545,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private containerClickListener: EventListener = (event: MouseEvent) => {
         // The reason for the listener: to select the current element
         const currentContainers = SignLanguageTool.getVideoContainers(false);
-        for (var i = 0; i < currentContainers.length; i++) {
+        for (let i = 0; i < currentContainers.length; i++) {
             currentContainers[i].classList.remove("bloom-selected");
         }
-        var container = event.currentTarget as HTMLElement;
+        const container = event.currentTarget as HTMLElement;
         container.classList.add("bloom-selected");
         this.updateStateForSelected(container);
         // And now in most locations we want to prevent the default behavior where click starts playback.
@@ -510,9 +562,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // It's also fairly fragile...future versions of Gecko may not have the exact same
         // controls in the same places. But it's the best I've been able to figure out.
         const buttonRadius = 28;
-        var clientRect = container.getBoundingClientRect();
-        var x = event.clientX - clientRect.left;
-        var y = event.clientY - clientRect.top;
+        const clientRect = container.getBoundingClientRect();
+        const x = event.clientX - clientRect.left;
+        const y = event.clientY - clientRect.top;
         if (
             y < container.offsetHeight - 40 && // above the control bar across the bottom
             (y < container.offsetHeight / 2 - buttonRadius || // above the play button
@@ -543,7 +595,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             } else {
                 this.updateStateForSelected(selectedVideos[0]);
             }
-            for (var i = 0; i < containers.length; i++) {
+            for (let i = 0; i < containers.length; i++) {
                 const container = containers[i];
                 // UpdateMarkup is called fairlyfrequently. Not sure what effect having
                 // the same listener attached multiple times might have, so play safe by
@@ -567,7 +619,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     private updateStateForSelected(container: Element) {
-        var videos = container.getElementsByTagName("video");
+        const videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
             this.reactControls.setState({
                 haveRecording: false,
@@ -575,7 +627,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             });
             return;
         }
-        var sources = videos[0].getElementsByTagName("source");
+        const sources = videos[0].getElementsByTagName("source");
 
         if (sources.length === 0) {
             this.reactControls.setState({
@@ -585,7 +637,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             return;
         }
 
-        var src = sources[0].getAttribute("src");
+        const src = sources[0].getAttribute("src");
         if (!src) {
             this.reactControls.setState({
                 haveRecording: false,
@@ -595,6 +647,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
         BloomApi.get("toolbox/fileExists?filename=" + src, result => {
             this.reactControls.setState({ haveRecording: result.data });
+            this.reactControls.getVideoStatsFromFile();
         });
         BloomApi.get(
             "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
@@ -639,7 +692,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     // Remove the overlay hiding the video, now that we're done recording
     public static removeVideoOverlay(): void {
         const container = SignLanguageTool.getVideoContainers(true)[0];
-        var overlayElement = container.previousElementSibling;
+        const overlayElement = container.previousElementSibling;
         if (
             overlayElement &&
             overlayElement.classList.contains(SignLanguageTool.overlayClass)
@@ -649,7 +702,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     private static createNode(doc: Document, html: string): Node {
-        var template = doc.createElement("template");
+        const template = doc.createElement("template");
         template.innerHTML = html.trim();
         return template.content.firstChild;
     }
