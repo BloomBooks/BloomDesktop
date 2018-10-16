@@ -952,12 +952,8 @@ export default class StyleEditor {
                         } else {
                             // The tab library doesn't allow us to put other class names on the tab-page,
                             // so we are doing it this way rather than the approach of using css to hide
-                            // based on class names.
-                            if (!editor.authorMode) {
-                                $("#style-page").remove();
-                                $("#paragraph-page").remove();
-                            }
-                            if (editor.xmatterMode) {
+                            // tabs based on class names.
+                            if (!editor.authorMode || editor.xmatterMode) {
                                 $("#style-page").remove();
                             }
 
@@ -1042,62 +1038,54 @@ export default class StyleEditor {
                                 ),
                                 1500
                             );
-                            if (editor.authorMode) {
-                                if (!editor.xmatterMode) {
-                                    $("#styleSelect").change(function() {
-                                        editor.selectStyle();
-                                    });
-                                    (<alphanumInterface>(
-                                        $("#style-select-input")
-                                    )).alphanum({
-                                        allowSpace: false,
-                                        preventLeadingNumeric: true
-                                    });
-                                    // don't use .change() here, as it only fires on loss of focus
-                                    $("#style-select-input").on(
-                                        "input",
-                                        function() {
-                                            editor.styleInputChanged();
-                                        }
-                                    );
-                                    // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
-                                    // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
-                                    (<any>(
-                                        $("#style-select-input").get(0)
-                                    )).trimNotification = function() {
-                                        editor.styleStateChange(
-                                            "invalid-characters"
-                                        );
-                                    };
-                                    $("#show-createStyle").click(function(
-                                        event
-                                    ) {
-                                        event.preventDefault();
-                                        editor.showCreateStyle();
-                                        return false;
-                                    });
-                                    $("#create-button").click(function() {
-                                        editor.createStyle();
-                                    });
-                                }
-                                const buttonIds = editor.getButtonIds();
-                                for (
-                                    let idIndex = 0;
-                                    idIndex < buttonIds.length;
-                                    idIndex++
-                                ) {
-                                    const button = $("#" + buttonIds[idIndex]);
-                                    button.click(function() {
-                                        editor.buttonClick(this);
-                                    });
-                                    button.addClass("propButton");
-                                }
-                                $("#para-spacing-select").change(function() {
-                                    editor.changeParaSpacing();
+                            if (editor.authorMode && !editor.xmatterMode) {
+                                $("#styleSelect").change(function() {
+                                    editor.selectStyle();
                                 });
-                                editor.selectButtons(current);
-                                new WebFXTabPane($("#tabRoot").get(0), false);
+                                (<alphanumInterface>(
+                                    $("#style-select-input")
+                                )).alphanum({
+                                    allowSpace: false,
+                                    preventLeadingNumeric: true
+                                });
+                                // don't use .change() here, as it only fires on loss of focus
+                                $("#style-select-input").on(
+                                    "input",
+                                    function() {
+                                        editor.styleInputChanged();
+                                    }
+                                );
+                                // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
+                                // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
+                                (<any>(
+                                    $("#style-select-input").get(0)
+                                )).trimNotification = function() {
+                                    editor.styleStateChange(
+                                        "invalid-characters"
+                                    );
+                                };
+                                $("#show-createStyle").click(function(event) {
+                                    event.preventDefault();
+                                    editor.showCreateStyle();
+                                    return false;
+                                });
+                                $("#create-button").click(function() {
+                                    editor.createStyle();
+                                });
                             }
+                            const buttonIds = editor.getButtonIds();
+                            for (let i = 0; i < buttonIds.length; i++) {
+                                const button = $("#" + buttonIds[i]);
+                                button.click(function() {
+                                    editor.buttonClick(this);
+                                });
+                                button.addClass("propButton");
+                            }
+                            $("#para-spacing-select").change(function() {
+                                editor.changeParaSpacing();
+                            });
+                            editor.selectButtons(current);
+                            new WebFXTabPane($("#tabRoot").get(0), false);
                         }
                         const orientOnButton = $("#formatButton");
                         EditableDivUtils.positionDialogAndSetDraggable(
