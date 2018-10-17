@@ -46,6 +46,7 @@
 import * as JQuery from "jquery";
 import * as $ from "jquery";
 import { theOneLibSynphony } from "../readers/libSynphony/synphony_lib";
+import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { TextFragment } from "../readers/libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
 import { BloomApi } from "../../../utils/bloomApi";
@@ -59,8 +60,24 @@ enum Status {
     Active // Button now active (Play while playing; Record while held down)
 }
 
-const kWebsocketContext = "audio-recording";
+export enum AudioRecordingMode {
+    Unknown = "Unknown",
+    Sentence = "Sentence",
+    TextBox = "TextBox",
+    Custom = "Custom"
+}
 
+const kWebsocketContext = "audio-recording";
+const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
+const kAudioSentenceClassSelector = "." + kAudioSentence;
+const kBloomEditableTextBoxSelector = "div.bloom-editable";
+const kRecordingModeControl: string = "audio-recordingModeControl";
+const kRecordingModeClickHandler: string =
+    "audio-recordingModeControl-clickHandler";
+
+// TODO: We would actually like this to have (conceptually) different state for each text box, not a single one per page.
+// This would allow us to set a separate audio-recording mode for each state.
+// However, currently this code has a lot of reliance on GetPage(), which just shows that the structure is not conceptually set up to handle per-text-box. So we will leave this for later.
 export default class AudioRecording {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
@@ -70,10 +87,25 @@ export default class AudioRecording {
     private playingAll: boolean; // true during listen.
     private idOfCurrentSentence: string;
     private awaitingNewRecording: boolean;
+    private audioRecordingMode: AudioRecordingMode;
+    private recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
 
     private listenerFunction: (MessageEvent) => void;
 
+    constructor() {
+        // Initialize to Unknown (as opposed to setting to the default Sentnece) so we can identify when we need to fetch from Collection Settings vs. when it's already set.
+        this.audioRecordingMode = AudioRecordingMode.Unknown;
+        this.recordingModeInput = <HTMLInputElement>(
+            document.getElementById(kRecordingModeControl)
+        );
+        if (this.recordingModeInput != null) {
+            // Only expected to be null in the unit tests.
+            this.recordingModeInput.disabled = true; // Initial state should be disabled so that enableRecordingMode will recognize it needs to initialize things on startup
+        }
+    }
+
     // Class method called by exported function of the same name.
+    // Only called the first time the Toolbox is opened for this book during this Editing session.
     public initializeTalkingBookTool() {
         // I've sometimes observed events like click being handled repeatedly for a single click.
         // Adding thse .off calls seems to help...it's as if something causes this show event to happen
@@ -81,10 +113,10 @@ export default class AudioRecording {
         // that actually happening. However, the off() calls seem to prevent it.
         $("#audio-next")
             .off()
-            .click(e => this.moveToNextSpan());
+            .click(e => this.moveToNextAudioElement());
         $("#audio-prev")
             .off()
-            .click(e => this.moveToPrevSpan());
+            .click(e => this.moveToPrevAudioElement());
         $("#audio-record")
             .off()
             .mousedown(e => this.startRecordCurrent())
@@ -98,6 +130,7 @@ export default class AudioRecording {
         $("#audio-clear")
             .off()
             .click(e => this.clearRecording());
+
         $("#player").off();
         $("#player").attr("preload", "auto"); // speeds playback, ensures we get the durationchange event
         $("#player").bind("error", e => {
@@ -125,6 +158,60 @@ export default class AudioRecording {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
     }
+
+    // Async. Sets up member variables (e.g. audioRecordingMode) that updateMarkup...() depends on.
+    //    May execute some code asynchronously if it needs to retrieve some values from the collection settings.
+    //
+    // Precondition: You may assume that all initialization will be fully completed before callback() is called.
+    //
+    // callback: A function to call after initialization completes (especially if the initialization happens asynchrnously). Set to null if not needed.
+    //           e.g., this should include anything that has a dependency on this.audioRecordingMode
+    public initializeForMarkup(callback: () => void = null) {
+        const doWhenRecordingModeIsKnown = (audioRecordingModeStr: string) => {
+            if (audioRecordingModeStr in AudioRecordingMode) {
+                this.audioRecordingMode = <AudioRecordingMode>(
+                    audioRecordingModeStr
+                );
+            } else {
+                this.audioRecordingMode = AudioRecordingMode.Unknown;
+            }
+
+            if (this.audioRecordingMode == AudioRecordingMode.Unknown) {
+                this.audioRecordingMode = AudioRecordingMode.Sentence;
+            }
+
+            // Make the checkbox reflect the state
+            if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
+                this.recordingModeInput.checked = true;
+            } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+                this.recordingModeInput.checked = false;
+            }
+
+            // Execute anything that depends on the initialization
+            if (callback) {
+                callback();
+            }
+        };
+
+        if (this.getPage().find("[data-audioRecordingMode]").length > 0) {
+            // We are able to identify and load the mode directly from the HTML
+            const audioRecordingModeStr: string = this.getPage()
+                .find("[data-audioRecordingMode]")
+                .first()
+                .attr("data-audioRecordingMode");
+            doWhenRecordingModeIsKnown(audioRecordingModeStr);
+        } else {
+            // We are not sure what it should be.
+            // So, check what the collection default has to say
+
+            BloomApi.get("talkingBook/defaultAudioRecordingMode", result => {
+                doWhenRecordingModeIsKnown(result.data);
+            });
+
+            // Note: Any code after here will not necessarily (in fact, probably not) run sequentially after the code in your Get() callback
+        }
+    }
+
     public setupForListen() {
         $("#player").bind("ended", e => this.playEnded());
         $("#player").bind("error", e => {
@@ -133,9 +220,10 @@ export default class AudioRecording {
         });
     }
 
-    // Called by TalkingBookModel.showTool() when a different tool is added/chosen.
+    // Called by TalkingBookModel.showTool() when a different tool is added/chosen or when the toolbox is re-opened, but not when a new page is added
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
+
         this.hiddenSourceBubbles = this.getPage().find(
             ".uibloomSourceTextsBubble"
         );
@@ -180,7 +268,7 @@ export default class AudioRecording {
     private getRecordableDivs(): JQuery {
         var $this = this;
         var divs = this.getPage().find(
-            ":not(.bloom-noAudio) > div.bloom-editable"
+            ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
         );
         return divs.filter(":visible").filter(function(idx, elt) {
             return theOneLibSynphony
@@ -192,27 +280,29 @@ export default class AudioRecording {
     }
 
     private getAudioElements(): JQuery {
-        return this.getRecordableDivs().find(".audio-sentence");
+        return this.getRecordableDivs()
+            .find(kAudioSentenceClassSelector)
+            .addBack(kAudioSentenceClassSelector);
     }
 
-    private moveToNextSpan(): void {
+    private moveToNextAudioElement(): void {
         toastr.clear();
 
-        var next = this.getNextSpan();
+        var next = this.getNextAudioElement();
         if (!next) return;
         var current: JQuery = this.getPage().find(".ui-audioCurrent");
-        this.setCurrentSpan(current, $(next));
+        this.setCurrentAudioElement(current, $(next));
         this.changeStateAndSetExpected("record");
     }
 
-    private getNextSpan(): HTMLElement {
+    private getNextAudioElement(): HTMLElement {
         var current: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         return next.length === 0 ? null : next[0];
     }
 
-    private getPreviousSpan(): HTMLElement {
+    private getPreviousAudioElement(): HTMLElement {
         var current: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
@@ -225,7 +315,7 @@ export default class AudioRecording {
     // listening to the whole page, especially in a Motion preview, we
     // prefer not to highlight the current span unless it actually has audio.
     // This is achieved by passing checking true.
-    private setCurrentSpan(
+    private setCurrentAudioElement(
         current: JQuery,
         changeTo: JQuery,
         checking?: boolean
@@ -271,15 +361,15 @@ export default class AudioRecording {
         return bookFolderUrl + "audio/";
     }
 
-    private moveToPrevSpan(): void {
+    private moveToPrevAudioElement(): void {
         toastr.clear();
         var current: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
-        var prev = this.getPreviousSpan();
+        var prev = this.getPreviousAudioElement();
         if (prev == null) return;
-        this.setCurrentSpan(current, $(prev));
+        this.setCurrentAudioElement(current, $(prev));
     }
 
     // Gecko has no way of knowing that we've created or modified the audio file,
@@ -338,7 +428,7 @@ export default class AudioRecording {
                 //So we delay looking for it.
                 window.setTimeout(() => {
                     this.changeStateAndSetExpected("play");
-                }, 1000);
+                }, 1000); // TODO: Maybe it makes sense to disable any buttons that make notable changes to the state (especially the Recording Mode Control) until this returns.
             })
             .catch(error => {
                 this.changeStateAndSetExpected("record"); //record failed, so we expect them to try again
@@ -380,7 +470,7 @@ export default class AudioRecording {
         var original: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var first = audioElts.eq(0);
-        this.setCurrentSpan(original, first, true);
+        this.setCurrentAudioElement(original, first, true);
         this.playingAll = true;
         this.setStatus("listen", Status.Active);
         this.playCurrentInternal();
@@ -399,7 +489,7 @@ export default class AudioRecording {
             var audioElts = this.getAudioElements();
             var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
-                this.setCurrentSpan(current, next, true);
+                this.setCurrentAudioElement(current, next, true);
                 this.setStatus("listen", Status.Active); // gets returned to enabled by setCurrentSpan
                 this.playCurrentInternal();
                 return;
@@ -545,7 +635,7 @@ export default class AudioRecording {
                 // being called asynchronously with stale data and sometimes restoring
                 // the deleted attribute.
                 var current = this.getPage().find(
-                    "span#" + this.idOfCurrentSentence
+                    "#" + this.idOfCurrentSentence
                 );
                 if (current.length !== 0) {
                     current.first().removeAttr("data-duration");
@@ -557,6 +647,84 @@ export default class AudioRecording {
         this.updatePlayerStatus();
         this.changeStateAndSetExpected("record");
     }
+
+    // For now, we know this is a checkbox, so we just need to toggle the value.
+    // In the future, there may be more than two values and we will need to pass in a parameter to let us know which mode to switch to
+    private updateRecordingMode() {
+        // Check if there are any audio recordings present.
+        //   If so, these would become invalidated (and deleted down the road when the book's unnecessary files gets cleaned up)
+        //   Warn the user if this deletion could happen
+        //   We detect this state by relying on the same logic that turns on the Listen button when an audio recording is present
+        if (this.isEnabledOrExpected("listen")) {
+            this.notifyRecordingModeControlDisabled();
+            return;
+        }
+
+        const checkbox: HTMLInputElement = this.recordingModeInput;
+        if (
+            this.audioRecordingMode == AudioRecordingMode.Sentence ||
+            this.audioRecordingMode == undefined
+        ) {
+            this.audioRecordingMode = AudioRecordingMode.TextBox;
+            checkbox.checked = false;
+        } else {
+            this.audioRecordingMode = AudioRecordingMode.Sentence;
+            checkbox.checked = true;
+        }
+
+        // Update the collection's default recording span mode to the new value
+        BloomApi.postJson(
+            "talkingBook/defaultAudioRecordingMode",
+            this.audioRecordingMode
+        );
+
+        // Update the UI
+        this.updateMarkupAndControlsToCurrentText();
+    }
+
+    private enableRecordingModeControl() {
+        if (this.recordingModeInput.disabled) {
+            this.recordingModeInput.disabled = false;
+
+            // The click handler (an invisible div over the checkbox) is used to handle events on the checkbox even while the checkbox is disabled (which would suppress events on the checkbox itself)
+            // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
+            $("#" + kRecordingModeClickHandler)
+                .off()
+                .click(e => this.updateRecordingMode());
+        }
+    }
+
+    private disableRecordingModeControl() {
+        // Note: Possibly could be neat to check if all the audio is re-usable before disabling.
+        //       (But then what happens if they modify the text box?  Well, it's kinda awkward, but it's already awkward if they modify the text in by-sentence mode)
+        if (!this.recordingModeInput.disabled) {
+            this.recordingModeInput.disabled = true;
+            // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
+            $("#" + kRecordingModeClickHandler)
+                .off()
+                .click(e => this.notifyRecordingModeControlDisabled());
+
+            // Review: It could be worthwhile to make the label ("Record by sentences") more visually distinct upon disable as well,
+            //         because if the checkbox is unchecked, there is no discernable visual difference between enabled and disabled state.
+        }
+    }
+
+    private notifyRecordingModeControlDisabled() {
+        // TODO: The string needs to be updated if we develop a concept of per-text-box (ideal) Talking Book toolbox instead of per-page (current)
+        // Change "on this page" to "in this text box"
+        if (this.recordingModeInput.disabled) {
+            theOneLocalizationManager
+                .asyncGetText(
+                    "EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings",
+                    "Please clear all existing recordings on this page before changing modes.",
+                    ""
+                )
+                .done(localizedNotification => {
+                    toastr.warning(localizedNotification);
+                });
+        }
+    }
+
     public getPageFrame(): HTMLIFrameElement {
         return <HTMLIFrameElement>parent.window.document.getElementById("page");
     }
@@ -568,7 +736,12 @@ export default class AudioRecording {
         return $(page.contentWindow.document.body);
     }
 
-    // Called on initial setup and on toolbox updateMarkup()
+    public newPageReady() {
+        // FYI, it is possible for newPageReady to be called without updateMarkup() being called. (e.g. when opening the toolbox with an empty text box)
+        this.initializeForMarkup();
+    }
+
+    // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
     public updateMarkupAndControlsToCurrentText() {
         var editable = this.getRecordableDivs();
         if (editable.length === 0) {
@@ -576,20 +749,33 @@ export default class AudioRecording {
             this.changeStateAndSetExpected("");
             return;
         }
-        this.makeSentenceSpans(editable);
+
+        const isFullyInitialized: boolean =
+            this.audioRecordingMode != AudioRecordingMode.Unknown;
+        if (!isFullyInitialized) {
+            this.initializeForMarkup(() => {
+                this.updateMarkupAndControlsToCurrentText();
+            });
+            return;
+        }
+
+        this.makeAudioSentenceElements(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
-        editable = editable.has("span.audio-sentence");
+        editable = editable.has(kAudioSentenceClassSelector);
         var thisClass = this;
 
         //thisClass.setStatus('record', Status.Expected);
         thisClass.levelCanvas = $("#audio-meter").get()[0];
-        var firstSentence = editable.find("span.audio-sentence").first();
+
+        const firstSentence = this.getPage()
+            .find(kAudioSentenceClassSelector)
+            .first();
         if (firstSentence.length === 0) {
             // no recordable sentence found.
             return;
         }
-        thisClass.setCurrentSpan(
+        thisClass.setCurrentAudioElement(
             this.getPage().find(".ui-audioCurrent"),
             firstSentence
         ); // typically first arg matches nothing.
@@ -896,29 +1082,86 @@ export default class AudioRecording {
         return hex;
     }
 
-    // We want to make out of each sentence in root a span which has a unique ID.
+    // AudioRecordingMode=Sentence: We want to make out of each sentence in root a span which has a unique ID.
+    // AudioRecordingMode=TextBox: We want to turn the bloom-editable text box into the unit which will be recorded. (It needs a unique ID too). No spans will be created though
     // If the text is already so marked up, we want to keep the existing ids
     // AND the recordingID checksum attribute (if any) that indicates what
     // version of the text was last recorded.
-    // makeSentenceLeaf does this for roots which don't have children (except a few
+    // makeAudioSentenceElementsLeaf does this for roots which don't have children (except a few
     // special cases); this root method scans down and does it for each such child
     // in a root (possibly the root itself, if it has no children).
-    public makeSentenceSpans(root: JQuery): void {
-        root.each((index: number, e: Element) => {
-            var children = $(e).children();
-            var processedChild: boolean = false; // Did we find a significant child?
-            for (var i = 0; i < children.length; i++) {
-                var child: HTMLElement = children[i];
-                if (
-                    $(child).is("span.audio-sentence") &&
-                    $(child).find("span.audio-sentence").length > 0
+    public makeAudioSentenceElements(rootElementList: JQuery): void {
+        // Preconditions:
+        //   bloom-editable ids are not currently used / will be robustly handled in the future / are agnostic to the specific value and format
+        //   The first node(s) underneath a bloom-editable should always be <p> elements
+
+        rootElementList.each((index: number, root: Element) => {
+            if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
+                if (this.isTextBox(root)) {
+                    // Save which setting was used, so we can load it properly later
+                    root.setAttribute("data-audioRecordingMode", "Sentence");
+
+                    // Cleanup markup from AudioRecordingMode=TextBox
+                    if (root.classList.contains(kAudioSentence)) {
+                        root.classList.remove(kAudioSentence);
+                    }
+                }
+            } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+                if (this.isTextBox(root)) {
+                    // Save which setting was used, so we can load it properly later
+                    root.setAttribute("data-audioRecordingMode", "TextBox");
+
+                    // Cleanup markup from AudioRecordingMode=Sentence
+                    $(root)
+                        .find(kAudioSentenceClassSelector)
+                        .each((index, element) => {
+                            if (!element.classList.contains("bloom-editable")) {
+                                this.deleteElementAndPushChildNodesIntoParent(
+                                    element
+                                );
+                            }
+                        });
+
+                    // Add the markup for AudioRecordingMode = TextBox
+                    root.classList.add(kAudioSentence);
+                    if (
+                        root.id == undefined ||
+                        root.id == null ||
+                        root.id == ""
+                    ) {
+                        root.id = this.createValidXhtmlUniqueId();
+                    }
+
+                    // All done, no need to process any of the remaining children
+                    return;
+                } else if (
+                    $(root).find(kBloomEditableTextBoxSelector).length <= 0
                 ) {
-                    // child is spurious; an extra layer of wrapper around other audio spans.
-                    $(child).replaceWith($(child).html()); // clean up.
-                    this.makeSentenceSpans(root); // start over.
+                    // Trust that it got setup correctly, which if so means there is nothing to do for anything else
                     return;
                 }
-                var name = child.nodeName.toLowerCase();
+                // Else: Need to continue recursively making our way down the tree until we find that textbox that we can see is somewhere down there
+            }
+
+            const children = $(root).children();
+            let processedChild: boolean = false; // Did we find a significant child?
+
+            for (let i = 0; i < children.length; i++) {
+                const child: HTMLElement = children[i];
+
+                // child is spurious; an extra layer of wrapper around other audio spans.
+                if (
+                    $(child).is(kAudioSentenceClassSelector) &&
+                    $(child).find(kAudioSentenceClassSelector).length > 0
+                ) {
+                    // This child can be safely removed, and its children pushed up the tree.
+                    $(child).replaceWith($(child).html()); // clean up.
+                    this.makeAudioSentenceElements(rootElementList); // start over.
+                    return;
+                }
+
+                // Recursively process non-leaf nodes
+                const name = child.nodeName.toLowerCase();
                 // Review: is there a better way to pick out the elements that can occur within content elements?
                 if (
                     name != "span" &&
@@ -931,12 +1174,14 @@ export default class AudioRecording {
                     $(child).attr("id") !== "formatButton"
                 ) {
                     processedChild = true;
-                    this.makeSentenceSpans($(child));
+                    this.makeAudioSentenceElements($(child));
                 }
             }
-            if (!processedChild)
+
+            if (!processedChild) {
                 // root is a leaf; process its actual content
-                this.makeSentenceSpansLeaf($(e));
+                this.makeAudioSentenceElementsLeaf($(root));
+            }
         });
         // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
     }
@@ -945,7 +1190,7 @@ export default class AudioRecording {
     // current sentence, we want to preserve the association between that content and ID (and possibly recording).
     // Where there aren't exact matches, but there are existing audio-sentence spans, we keep the ids as far as possible,
     // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
-    private makeSentenceSpansLeaf(elt: JQuery): void {
+    private makeAudioSentenceElementsLeaf(elt: JQuery): void {
         // When all text is deleted, we get in a temporary state with no paragraph elements, so the root editable div
         // may be processed...and if this happens during editing the format button may be present. The body of this function
         // will do weird things with it (wrap it in a sentence span, for example) so the easiest thing is to remove
@@ -954,7 +1199,7 @@ export default class AudioRecording {
         var formatButton = elt.find("#formatButton");
         formatButton.remove(); // nothing happens if not found
 
-        var markedSentences = elt.find("span.audio-sentence");
+        var markedSentences = elt.find(kAudioSentenceClassSelector);
         var reuse = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
         markedSentences.each(function(index) {
             reuse.push({
@@ -964,11 +1209,15 @@ export default class AudioRecording {
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(
-            elt.html()
-        );
+        let fragments: TextFragment[];
+        if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+            fragments = [];
+            fragments.push(new TextFragment(elt.html(), false));
+        } else {
+            fragments = theOneLibSynphony.stringToSentences(elt.html());
+        }
 
-        // If any new sentence has an md5 that matches a saved one, attatch that id/md5 pair to that fragment.
+        // If any new sentence has an md5 that matches a saved one, attach that id/md5 pair to that fragment.
         for (var i = 0; i < fragments.length; i++) {
             var fragment = fragments[i];
             if (this.isRecordable(fragment)) {
@@ -1007,13 +1256,14 @@ export default class AudioRecording {
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
                 if (!newId) {
-                    newId = this.createUuid();
-                    if (/^\d/.test(newId)) newId = "i" + newId; // valid ID in XHTML can't start with digit
+                    newId = this.createValidXhtmlUniqueId();
                 }
                 newHtml +=
                     '<span id= "' +
                     newId +
-                    '" class="audio-sentence"' +
+                    '" class="' +
+                    kAudioSentence +
+                    '"' +
                     newMd5 +
                     ">" +
                     fragment.text +
@@ -1024,6 +1274,31 @@ export default class AudioRecording {
         // set the html
         elt.html(newHtml);
         elt.append(formatButton);
+    }
+
+    private createValidXhtmlUniqueId(): string {
+        let newId = this.createUuid();
+        if (/^\d/.test(newId)) newId = "i" + newId; // valid ID in XHTML can't start with digit
+
+        return newId;
+    }
+
+    private deleteElementAndPushChildNodesIntoParent(element) {
+        const parent = element.parentElement; // Save this because the link will be removed later.
+
+        const childNodesCopy = Array.prototype.slice.call(element.childNodes); // Create a copy because e.childNodes is getting modified as we go
+        for (let i = 0; i < childNodesCopy.length; ++i) {
+            parent.insertBefore(childNodesCopy[i], element);
+        }
+        element.remove();
+    }
+
+    private isTextBox(element: Element): boolean {
+        if (element == null) {
+            return false;
+        }
+
+        return $(element).is(kBloomEditableTextBoxSelector);
     }
 
     private isRecordable(fragment: TextFragment): boolean {
@@ -1081,6 +1356,8 @@ export default class AudioRecording {
         this.setStatus("clear", Status.Disabled);
         this.setStatus("listen", Status.Disabled);
 
+        this.enableRecordingModeControl();
+
         if (this.getPage().find(".ui-audioCurrent").length === 0) return;
 
         this.setEnabledOrExpecting("record", expectedVerb);
@@ -1104,10 +1381,10 @@ export default class AudioRecording {
                 //server couldn't find it, so just leave these buttons disabled
             });
 
-        if (this.getNextSpan()) {
+        if (this.getNextAudioElement()) {
             this.setEnabledOrExpecting("next", expectedVerb);
         }
-        if (this.getPreviousSpan()) {
+        if (this.getPreviousAudioElement()) {
             this.setStatus("prev", Status.Enabled);
         }
 
@@ -1121,6 +1398,7 @@ export default class AudioRecording {
             .then(response => {
                 if (response.statusText == "OK") {
                     this.setStatus("listen", Status.Enabled);
+                    this.disableRecordingModeControl();
                 }
             })
             .catch(response => {

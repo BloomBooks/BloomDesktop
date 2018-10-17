@@ -78,7 +78,7 @@ namespace Bloom.Publish
 		private static bool GetTrueForAllAudioSpans(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)
 		{
 			var audioFolderPath = GetAudioFolderPath(bookFolderPath);
-			return dom.SafeSelectNodes("//span[@id]") //REVIEW (much later, just reading code) Shouldn't this narrow to contains(@class,'audio-sentence')?
+			return Bloom.Book.HtmlDom.SelectAudioSentenceElements(dom.DocumentElement)
 				.Cast<XmlElement>()
 				.All(span =>
 				{

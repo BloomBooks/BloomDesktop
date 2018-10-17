@@ -102,6 +102,7 @@ namespace Bloom.Collection
 			Language2Iso639Code = "en";
 			AllowNewBooks = true;
 			CollectionName = "dummy collection";
+			AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
 		}
 
 		public static void CreateNewCollection(NewCollectionSettings collectionInfo)
@@ -136,6 +137,8 @@ namespace Bloom.Collection
 				// migrate for 4.4
 				BrandingProjectKey = "Local-Community";
 			}
+
+			AudioRecordingMode = collectionInfo.AudioRecordingMode;
 
 			Save();
 		}
@@ -470,6 +473,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
 			library.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
+			library.Add(new XElement("RecordingSpanMode", AudioRecordingMode.ToString()));
 			SIL.IO.RobustIO.SaveXElement(library, SettingsFilePath);
 
 			SaveSettingsCollectionStylesCss();
@@ -791,6 +795,8 @@ namespace Bloom.Collection
 		public int OneTimeCheckVersionNumber { get; set; }
 
 		public bool AllowNewBooks { get; set; }
+
+		public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
 
 		public bool AllowDeleteBooks
 		{

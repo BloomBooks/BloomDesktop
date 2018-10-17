@@ -2053,19 +2053,27 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
-        <source xml:lang="en">2) Look at the highlighted sentence</source>
+        <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
+        <source xml:lang="en">Record by sentences</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
+        <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
-        <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
+        <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual">

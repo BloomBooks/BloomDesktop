@@ -2053,18 +2053,19 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and @data-page-number='2']", 1);
 		}
 
-		[Test]
-		public void SetAnimationDurationsFromAudioDurations_SetsExpectedDuration()
+		[TestCase("span")]
+		[TestCase("div")]
+		public void SetAnimationDurationsFromAudioDurations_SetsExpectedDuration(string elementName)
 		{
 			// page 2 is left with no image to test that it doesn't choke on that.
 			// page 4 has an image with no animation; a data-duration should not be set.
-			_bookDom = new HtmlDom(@"
+			_bookDom = new HtmlDom($@"
 				<html><head></head><body>
 					<div class='bloom-page numberedPage' id='guid1' data-page-number='1'>
 						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
-						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><span class='audio-sentence' data-duration='1.200'>some real text!</span> <span class='audio-sentence' data-duration='0.400'>another sentence!</span></div>
-						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><span class='audio-sentence' data-duration='1.500'>some more text!</span></div>
-						<div class='bloom-editable bloom-visibility-code-on' contenteditable='true'><span class='audio-sentence' data-duration='1.800'>text not in content1, duration does not count</span></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><{elementName} class='audio-sentence' data-duration='1.200'>some real text!</{elementName}> <{elementName} class='audio-sentence' data-duration='0.400'>another sentence!</{elementName}></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><{elementName} class='audio-sentence' data-duration='1.500'>some more text!</{elementName}></div>
+						<div class='bloom-editable bloom-visibility-code-on' contenteditable='true'><{elementName} class='audio-sentence' data-duration='1.800'>text not in content1, duration does not count</{elementName}></div>
 					</div>
 					<div class='bloom-page numberedPage' id='guid2' data-page-number='2'>
 					</div>
@@ -2129,6 +2130,167 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(@"//div[contains(@class, 'bloom-page')]", 3);
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[contains(@class,'bloom-noreader')]");
 		}
+
+		[Test]
+		public void HasAudio_OnlyNonAudioSpans_ReturnsFalse()
+		{
+			// Test setup
+			string id = "guid1";
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='guid1' data-page-number='1'>
+						<p><span id='{id}' class='video-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, id, ".mp4");
+
+
+			// System under test //
+			bool result = book.HasAudio();
+
+
+			// Verification
+			Assert.AreEqual(false, result);
+		}
+
+		[Test]
+		public void HasAudio_ContainsAudioSpans_ReturnsTrue()
+		{
+			// Test setup
+			string id = "guid1";
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='guid1' data-page-number='1'>
+						<p><span id='{id}' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, id, ".wav", ".mp3");
+
+
+			// System under test //
+			bool result = book.HasAudio();
+
+
+			// Verification // 
+			Assert.AreEqual(true, result);
+		}
+
+		[Test]
+		public void HasAudio_ContainsAudioDivs_ReturnsTrue()
+		{
+			// Test setup
+			string id = "guid1";
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div id='guid1' class='audio-sentence'>
+							<p>Page 1 Paragraph 1 Sentence 1</p>
+							<p>Page 1 Paragraph 2 Sentence 1</p>
+						</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, id, ".wav", ".mp3");
+
+
+			// System under test //
+			bool result = book.HasAudio();
+
+
+			// Verification // 
+			Assert.AreEqual(true, result);
+		}
+
+
+		[TestCase("span")]
+		[TestCase("div")]
+		public void HasFullAudioCoverage_ContainsMissingAudioElements_ReturnsFalse(string elementName)
+		{
+			// Test setup
+			string lang = CreateDefaultCollectionsSettings().Language1Iso639Code;
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage' id='guid1'>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='{lang}'>
+							<p><{elementName} id='id1' class='audio-sentence'>Sentence 1.</{elementName}>
+							   <{elementName} id='id2' class='audio-sentence'>Sentence 2.</{elementName}></p>
+						</div>
+					</div>
+				  </body></html>");
+			var book = CreateBook();
+
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, "id1", ".wav", ".mp3");
+
+
+			// System under test //
+			bool result = book.HasFullAudioCoverage();
+
+
+			// Verification // 
+			Assert.AreEqual(false, result, $"ElementName: {elementName}");
+		}
+
+		[TestCase("span")]
+		[TestCase("div")]
+		public void HasFullAudioCoverage_ContainsAllAudioElements_ReturnsTrue(string elementName)
+		{
+			// Test setup
+			string lang = CreateDefaultCollectionsSettings().Language1Iso639Code;
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage' id='guid1'>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='{lang}'>
+							<p><{elementName} id='id1' class='audio-sentence'>Sentence 1.</{elementName}>
+							   <{elementName} id='id2' class='audio-sentence'>Sentence 2.</{elementName}></p>
+						</div>
+					</div>
+				  </body></html>");
+			var book = CreateBook();
+
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, "id1", ".wav", ".mp3");
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, "id2", ".wav", ".mp3");
+
+
+			// System under test //
+			bool result = book.HasFullAudioCoverage();
+
+
+			// Verification // 
+			Assert.AreEqual(true, result, $"ElementName: {elementName}");
+		}
+
+		[TestCase("span")]
+		[TestCase("div")]
+		public void RemoveAudioMarkup_ContainsAudioElements_AllElementsRemoved(string elementName)
+		{
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<p><{elementName} id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</{elementName}></p>
+						<p><{elementName} id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</{elementName}></p>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+
+			// System under test
+			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(global::Bloom.Book.Book));
+			runner.InvokeStatic("RemoveAudioMarkup", book.RawDom.DocumentElement);
+
+			// Test verification
+			Assert.AreEqual(0, HtmlDom.SelectAudioSentenceElements(book.RawDom.DocumentElement)?.Count ?? 0, "Count did not match expectation");
+
+			string expectedInnerHtml = "<p>Page 1 Paragraph 1 Sentence 1</p><p>Page 1 Paragraph 2 Sentence 1</p>";
+			string expectedOuterHtml = $"<div class=\"bloom-page numberedPage bloom-nonprinting\" id=\"page1\" data-page-number=\"1\">{expectedInnerHtml}</div>";
+			var page1Div = book.RawDom.SelectSingleNode("//div[@id='page1']") as XmlElement;
+			Assert.AreEqual(expectedInnerHtml, page1Div.InnerXml, $"Case: {elementName}, Inner HTML");
+			Assert.AreEqual(expectedOuterHtml, page1Div.OuterXml, $"Case: {elementName}, Outer HTML");
+		}
+
 
 #if UserControlledTemplate
 		[Test]

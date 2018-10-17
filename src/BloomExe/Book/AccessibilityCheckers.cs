@@ -136,7 +136,7 @@ namespace Bloom.web.controllers
 						break;
 					case XmlNodeType.Element:
 						
-						if (childElement.Name == "span" && childElement.GetAttribute("class").Contains("audio-sentence"))
+						if (HtmlDom.IsAudioSentenceEnabledElement(childElement.Name) && childElement.GetAttribute("class").Contains("audio-sentence"))
 						{
 							var id = childElement.GetAttribute("id");
 							//Whatever the audio extension, here we assume other parts of Bloom are taking care of that,

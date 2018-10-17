@@ -952,7 +952,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         let duration = 0;
         $(page)
             .find(".bloom-editable.bloom-content1")
-            .find("span.audio-sentence")
+            .find(".audio-sentence")
             .each((index, span) => {
                 const spanDuration = parseFloat($(span).attr("data-duration"));
                 if (spanDuration) {

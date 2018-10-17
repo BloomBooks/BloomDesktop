@@ -63,7 +63,7 @@ export function DataWord(optionalWord) {
  * @param {Boolean} isSpace <code>TRUE</code> if this fragment is inter-sentence space, otherwise <code>FALSE</code>.
  * @returns {TextFragment}
  */
-function TextFragment(str, isSpace) {
+export function TextFragment(str, isSpace) {
     // constructor code
     this.text = str;
     this.isSentence = !isSpace;
