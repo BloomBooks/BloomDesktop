@@ -3133,7 +3133,7 @@
       <trans-unit id="PublishTab.Upload.Languages">
         <source xml:lang="en">Upload Text</source>
         <note>ID: PublishTab.Upload.Languages</note>
-        <note>Prior to 4.4, this was "Languages"
+        <note>Prior to 4.4, this was "Languages"</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.License">
         <source xml:lang="en">Usage/License</source>
