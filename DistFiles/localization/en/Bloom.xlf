@@ -3076,6 +3076,10 @@
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.BackgroundMusic">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: PublishTab.Upload.BackgroundMusic</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Cancelled">
         <source xml:lang="en">Upload was cancelled</source>
         <note>ID: PublishTab.Upload.Cancelled</note>
@@ -3131,8 +3135,9 @@
         <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Languages">
-        <source xml:lang="en">Languages</source>
+        <source xml:lang="en">Upload Text</source>
         <note>ID: PublishTab.Upload.Languages</note>
+        <note>Prior to 4.4, this was "Languages"</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.License">
         <source xml:lang="en">Usage/License</source>
@@ -3227,6 +3232,10 @@
         <source xml:lang="en">Making thumbnail image...</source>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.Narration">
+        <source xml:lang="en">Narration</source>
+        <note>ID: PublishTab.Upload.Narration</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.NoLangsFound">
         <source xml:lang="en">(None found)</source>
         <note>ID: PublishTab.Upload.NoLangsFound</note>
@@ -3286,6 +3295,10 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.Title">
         <source xml:lang="en">Title</source>
         <note>ID: PublishTab.Upload.Title</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadAudio">
+        <source xml:lang="en">Upload Audio</source>
+        <note>ID: PublishTab.Upload.UploadAudio</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton">
         <source xml:lang="en">Upload Book</source>
