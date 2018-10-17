@@ -30,6 +30,9 @@ namespace Bloom.Publish.BloomLibrary
 		private string _originalUploadText;
 		private readonly BloomLibraryPublishModel _model;
 
+		// We would love to be able to access this in the designer, but we can't...
+		private readonly Padding _checkBoxMargin = new Padding(3, 3, 40, 3);
+
 		private readonly string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
 		public BloomLibraryUploadControl(PublishView parentView, BloomLibraryPublishModel model, LoginDialog dialog)
@@ -95,6 +98,8 @@ namespace Bloom.Publish.BloomLibrary
 			_creditsLabel.Text = _model.Credits;
 			_summaryBox.Text = _model.Summary;
 
+			UpdateFeaturesCheckBoxesDisplay();
+
 			var allLanguages = _model.AllLanguages;
 			foreach (var lang in allLanguages.Keys)
 			{
@@ -108,7 +113,8 @@ namespace Bloom.Publish.BloomLibrary
 						"(incomplete translation)",
 						"This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.");
 				}
-				checkBox.Size = new Size(GetWidthForCheckBox(checkBox), checkBox.Height);
+				checkBox.Margin = _checkBoxMargin;
+				checkBox.AutoSize = true;
 				checkBox.Tag = lang;
 				checkBox.CheckStateChanged += delegate(object sender, EventArgs args)
 				{
@@ -154,17 +160,16 @@ namespace Bloom.Publish.BloomLibrary
 			}
 		}
 
-		private int GetWidthForCheckBox(CheckBox checkBox)
+		private void UpdateFeaturesCheckBoxesDisplay()
 		{
-			return TextRenderer.MeasureText(checkBox.Text, checkBox.Font).Width + 50;
+			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
+			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
+			_visuallyImpairedCheckBox.Checked = bookInfoMetaData.Feature_VisuallyImpaired;
+			_signLanguageCheckBox.Checked = bookInfoMetaData.Feature_SignLanguage;
 		}
 
 		private void UpdateAudioCheckBoxDisplay()
 		{
-			// We could just let WinForms grow/shrink the space for the check box after localization of the label,
-			// but this will give us the most similar spacing to the check boxes for the text.
-			_narrationAudioCheckBox.Width = GetWidthForCheckBox(_narrationAudioCheckBox);
-
 			var book = _model.Book;
 			if (!book.Storage.GetNarrationAudioFileNamesReferencedInBook(false)
 				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))
@@ -472,6 +477,21 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				// Report a problem or just ignore it?
 			}
+		}
+
+		private void _blindCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			_model.Book.BookInfo.MetaData.Feature_Blind = _blindCheckBox.Checked;
+		}
+
+		private void _visuallyImpairedCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			_model.Book.BookInfo.MetaData.Feature_VisuallyImpaired = _visuallyImpairedCheckBox.Checked;
+		}
+
+		private void _signLanguageCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			_model.Book.BookInfo.MetaData.Feature_SignLanguage = _signLanguageCheckBox.Checked;
 		}
 	}
 }
