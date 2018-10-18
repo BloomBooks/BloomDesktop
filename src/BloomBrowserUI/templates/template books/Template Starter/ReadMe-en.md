@@ -36,7 +36,7 @@ For local colleagues, an easy way to distribute your template is via a Bloom Pac
 
 ## Notes {i18n="template.starter.notes"}
 
-<a id="note1">1</a>: These books could later be combined using the forthcoming Folio feature. Note that Bloom 3.9 does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog. {i18n="template.starter.nothingautomatic"}
+<a id="note1">1</a>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog. {i18n="template.starter.nothingautomatic"}
 
 <a id="note2">2</a>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt. {i18n="template.starter.nametonotaddpage"}
 
