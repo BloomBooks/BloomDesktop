@@ -85,10 +85,10 @@ There are two ways people can use your template. The first way is to start new b
         <note>ID: template.starter.notes</note>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic">
-        <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom 3.9 does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
+        <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="te" state="needs-translation">
           
-          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom 3.9 does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</target>
+          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</target>
         <note>ID: template.starter.nothingautomatic</note>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage">
