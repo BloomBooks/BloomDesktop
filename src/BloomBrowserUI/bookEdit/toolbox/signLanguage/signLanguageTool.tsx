@@ -513,7 +513,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     // Specify 'true' to get only containers marked as selected
-    private static getVideoContainers(selected?: boolean): NodeListOf<Element> {
+    private static getVideoContainers(
+        selected?: boolean
+    ): HTMLCollectionOf<Element> {
         let classes = "bloom-videoContainer";
         if (selected) {
             classes += " bloom-selected";

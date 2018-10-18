@@ -75,7 +75,8 @@ export class EditableDivUtils {
                     !node.childNodes[i].textContent;
                     i++
                 ) {
-                    if (node.childNodes[i].localName === "br") divBrCount--;
+                    if ((node.childNodes[i] as Element).localName === "br")
+                        divBrCount--;
                 }
                 // We want the selection in node itself, before childNode[i].
                 EditableDivUtils.selectAtOffset(node, i);
