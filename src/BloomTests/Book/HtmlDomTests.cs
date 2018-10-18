@@ -1122,5 +1122,80 @@ p {
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(topTextXpath, 1);
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(imageDescXpath, 1);
 		}
+
+		[Test]
+		public void MigrateChildren_MigratesStylesCorrectly()
+		{
+			var pageDom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page' id='pageGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable normal-style' contenteditable='true' lang='en'>First text contents</div>
+							</div>
+							<div class='bloom-imageContainer'>
+								<img src='myImageFile.png'></img>
+							</div>
+						</div>
+						<div class='split-pane-divider vertical-divider'></div>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable' contenteditable='true' lang='en'>Second english contents</div>
+								<div class='bloom-editable' contenteditable='true' lang='fr'>Second french contents</div>
+							</div>
+						</div>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable' contenteditable='true' lang='en'>Third text contents</div>
+							</div>
+						</div>
+					</div>
+				</body></html>");
+			var templateDom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page' id='templateGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-videoContainer bloom-noVideoSelected' />
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable bigger-style' contenteditable='true' lang='z'></div>
+							</div>
+						</div>
+						<div class='split-pane-component-inner'>
+							<div title='placeHolder.png' class='bloom-imageContainer'>
+								<img src='placeHolder.png' alt=''></img>
+							</div>
+						</div>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable strangeNew-style' contenteditable='true' lang='z'></div>
+								<div class='bloom-editable strangeSecondary-style' contenteditable='true' lang='en'></div>
+							</div>
+						</div>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup groupLevel-style'>
+								<div class='bloom-editable' contenteditable='true' lang='z'></div>
+							</div>
+						</div>
+					</div>
+				</body></html>");
+			bool didChange;
+			var lineage = "someGuid";
+			var pageElement = pageDom.SelectSingleNode("//div[@class='bloom-page']");
+			var templateElement = templateDom.SelectSingleNode("//div[@class='bloom-page']");
+
+			// SUT
+			pageDom.MigrateEditableData(pageElement, templateElement, lineage, false, out didChange);
+
+			// Verification
+			Assert.That(didChange, Is.True);
+			var firstTextXpath = "//div[contains(@class,'bloom-editable') and contains(@class, 'bigger-style')]";
+			var secondTextXpath = "//div[contains(@class,'bloom-editable') and contains(@class, 'strangeNew-style') and @lang='fr']";
+			var thirdTextXpath = "//div[contains(@class,'bloom-editable') and contains(@class, 'strangeSecondary-style') and @lang='en']";
+			var fourthTextXpath = "//div[contains(@class,'bloom-translationGroup') and contains(@class, 'groupLevel-style')]";
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath("//div[@id='templateGuid']");
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(firstTextXpath, 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(secondTextXpath, 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(thirdTextXpath, 1);
+			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(fourthTextXpath, 1);
+		}
 	}
 }

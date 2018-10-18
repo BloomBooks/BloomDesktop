@@ -1176,9 +1176,9 @@ namespace Bloom.Publish.Epub
 				if (!String.IsNullOrEmpty(path) && Path.GetFileName(path) != "placeHolder.png")	// consider blank if only placeholder image
 					return false;
 			}
-			foreach (XmlElement vid in HtmlDom.SelectChildVideoSourceElements(pageElement).Cast<XmlElement>())
+			foreach (XmlElement vid in HtmlDom.SelectChildVideoElements(pageElement).Cast<XmlElement>())
 			{
-				var src = vid.GetOptionalStringAttribute("src", null);
+				var src = FindVideoFileIfPossible(vid);
 				if (!String.IsNullOrEmpty(src))
 				{
 					var srcPath = Path.Combine(Book.FolderPath, src);
@@ -1214,9 +1214,9 @@ namespace Bloom.Publish.Epub
 
 		private void CopyVideos(HtmlDom pageDom)
 		{
-			foreach (XmlElement vid in HtmlDom.SelectChildVideoSourceElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>())
+			foreach (XmlElement vid in HtmlDom.SelectChildVideoElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>())
 			{
-				var src = vid.GetOptionalStringAttribute("src", null);
+				var src = FindVideoFileIfPossible(vid);
 				if (String.IsNullOrEmpty(src))
 					continue;
 				var srcPath = Path.Combine(Book.FolderPath, src);
@@ -1224,7 +1224,7 @@ namespace Bloom.Publish.Epub
 					continue;
 				var dstPath = CopyFileToEpub(srcPath, subfolder:kVideoFolder);
 				var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
-				vid.SetAttribute("src", newSrc);
+				HtmlDom.SetVideoElementUrl(new ElementProxy(vid), UrlPathString.CreateFromUnencodedString(newSrc, true));
 			}
 		}
 
@@ -1264,6 +1264,14 @@ namespace Bloom.Publish.Epub
 			if (RobustFile.Exists(srcPath))
 				return srcPath;
 			return String.Empty;
+		}
+
+		private string FindVideoFileIfPossible(XmlElement vid)
+		{
+			var url = HtmlDom.GetVideoElementUrl(vid);
+			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
+				return null;
+			return url.PathOnly.NotEncoded;
 		}
 
 		/// <summary>

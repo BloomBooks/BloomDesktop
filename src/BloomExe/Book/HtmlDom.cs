@@ -829,30 +829,53 @@ namespace Bloom.Book
 			MigrateChildren(oldParents, newParents);
 		}
 
+		private const string defaultLangKey = "z";
+
+		// Migrate container (translationGroup, video, image) children from an old page to their new template equivalent.
 		private static void MigrateChildren(IReadOnlyList<XmlElement> oldParentElements,
 			IReadOnlyList<XmlElement> templateParentElements)
 		{
+			// 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', or 'bloom-videoContainer'
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
 			// thing to copy or where the numbers are not equal. It's just a precaution.
-			for (int i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
+			for (var i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
 			{
 				var oldParent = oldParentElements[i];
 				var newParent = templateParentElements[i];
-				string childClass = null;
-				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
+				// Our template page may have style classes on bloom-editables (or possibly other elements
+				// inside of the container element). We want to preserve them when we copy the child nodes into the new page,
+				// so we collect them by lang attribute value.
+				// It is possible (using Template Starter or the ChangeLayout toggle) to create a situation where different
+				// lang attribute bloom-editables have different style classes ('x-style').
+				var childClassesFromTemplateByLang = new Dictionary<string, string>();
+				foreach (var templateContainerChild in newParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
-					if (childClass == null)
-						childClass = GetStyle(child);
-					newParent.RemoveChild(child);
+					// Look for an 'x-style' class in the child and squirrel it away in our dictionary, keyed on language.
+					var langAttr = GetLangAttr(templateContainerChild);
+					var	childClassFromTemplate = GetStyle(templateContainerChild);
+					// langAttr check probably only possible to fail if the child is NOT a div
+					if (langAttr != null && childClassFromTemplate != null)
+					{
+						string dummy;
+						if (langAttr == "*" || langAttr == "z")
+							langAttr = defaultLangKey;
+						if (childClassesFromTemplateByLang.TryGetValue(langAttr, out dummy)) // paranoia
+							continue;
+						childClassesFromTemplateByLang.Add(langAttr, childClassFromTemplate);
+					}
+					// Whether we found a style class or not, remove the template container's children to make way for the
+					// children of the old page's matching container.
+					newParent.RemoveChild(templateContainerChild);
 				}
 				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
 				// which messes things up unless we make a copy of the collection.
-				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
+				foreach (XmlNode oldContainerChild in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
-					newParent.AppendChild(child);
-					// Bloom-editable divs should have the user-defined class specified in the template if there is one.
-					FixStyle(child, "bloom-editable", childClass);
-					AddKnownStyleIfMissing(child);
+					// add the old container's children to the new container matching the template
+					newParent.AppendChild(oldContainerChild);
+					// .bloom-editable divs should have the user-defined class specified in the template if there is one.
+					FixStyle(oldContainerChild, "bloom-editable", childClassesFromTemplateByLang);
+					AddKnownStyleIfMissing(oldContainerChild);
 				}
 			}
 		}
@@ -904,24 +927,35 @@ namespace Bloom.Book
 
 		private static string GetStyle(XmlNode elt)
 		{
-			if (elt.Attributes == null)
-				return null;
-			var classAttr = elt.Attributes["class"];
-			if (classAttr == null)
-				return null;
-			return classAttr.Value.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
+			var classAttr = elt.Attributes?["class"];
+			return classAttr?.Value.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
 		}
 
-		private static void FixStyle(XmlNode child, string requiredClass, string desiredStyle)
+		private static string GetLangAttr(XmlNode elt)
 		{
-			if (desiredStyle == null || child.Attributes?["class"] == null || !child.Attributes["class"].Value.Contains(requiredClass) )
+			var langAttr = elt.Attributes?["lang"];
+			return langAttr?.Value;
+		}
+
+		private static void FixStyle(XmlNode child, string requiredClass, Dictionary<string, string> desiredStyleByLang)
+		{
+			if (desiredStyleByLang.Count == 0 || child.Attributes?["class"] == null ||
+			    !child.Attributes["class"].Value.Contains(requiredClass))
 				return;
 			var childStyle = GetStyle(child);
+			var langAttr = GetLangAttr(child);
+			if (langAttr == null || langAttr == "*" || langAttr == "z")
+				langAttr = defaultLangKey;
+			string defaultStyle;
+			desiredStyleByLang.TryGetValue(defaultLangKey, out defaultStyle); // if unsuccessful, 'defaultStyle' will be ""
+			string newStyle;
+			if (!desiredStyleByLang.TryGetValue(langAttr, out newStyle))
+				newStyle = defaultStyle;
 			string newclass;
 			if (childStyle != null)
-				newclass= child.Attributes["class"].Value.Replace(childStyle, desiredStyle);
+				newclass = child.Attributes["class"].Value.Replace(childStyle, newStyle);
 			else
-				newclass = child.Attributes["class"].Value + " " + desiredStyle;
+				newclass = child.Attributes["class"].Value + " " + newStyle;
 			((XmlElement) child).SetAttribute("class", newclass);
 		}
 
@@ -1599,6 +1633,17 @@ namespace Bloom.Book
 			return UrlPathString.CreateFromUnencodedString(String.Empty);
 		}
 
+		/// <summary>
+		/// Gets the url for a video, starting from a parent div which may or may not contain a video element.
+		/// </summary>
+		public static UrlPathString GetVideoElementUrl(XmlElement videoContainer)
+		{
+			return GetVideoElementUrl(new ElementProxy(videoContainer));
+		}
+
+		/// <summary>
+		/// Gets the url for a video, starting from a parent div which may or may not contain a video element.
+		/// </summary>
 		public static UrlPathString GetVideoElementUrl(GeckoHtmlElement videoContainer)
 		{
 			return GetVideoElementUrl(new ElementProxy(videoContainer));

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -42,6 +45,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/restoreOriginal", HandleRestoreOriginalRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
+			apiHandler.RegisterEndpointHandler("signLanguage/getStats", HandleVideoStatisticsRequest, true);
 		}
 
 		public Book.Book CurrentBook
@@ -110,10 +114,8 @@ namespace Bloom.web.controllers
 		/// </remarks>
 		private static void SaveVideoFile(string path, byte [] bytes)
 		{
-			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
-			if (RobustFile.Exists(ffmpeg))
+			var ffmpeg = FindFfmpegProgram();
+			if (ffmpeg != string.Empty)
 			{
 				var rawVideo = TempFile.CreateAndGetPathButDontMakeTheFile();
 				RobustFile.WriteAllBytes(rawVideo.Path, bytes);
@@ -122,8 +124,9 @@ namespace Bloom.web.controllers
 				// -v 16 = verbosity level reports only errors, including ones that can be recovered from
 				// -i <path> = specify input file
 				// -force_key_frames "expr:gte(t,n_forced*0.5)" = insert keyframe every 0.5 seconds in the output file
-				var result = CommandLineRunner.Run(ffmpeg, $"-hide_banner -y -v 16 -i \"{rawVideo.Path}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"", "", 60, new NullProgress());
-				var msg = String.Empty;
+				var parameters = $"-hide_banner -y -v 16 -i \"{rawVideo.Path}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"";
+				var result = CommandLineRunner.Run(ffmpeg, parameters, "", 60, new NullProgress());
+				var msg = string.Empty;
 				if (result.DidTimeOut)
 				{
 					msg = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.Timeout",
@@ -132,16 +135,16 @@ namespace Bloom.web.controllers
 				else
 				{
 					var output = result.StandardError;
-					if (!String.IsNullOrWhiteSpace(output))
+					if (!string.IsNullOrWhiteSpace(output))
 					{
 						// Even though it may be possible to recover from the error, we'll just notify the user and use the raw vp8 output.
 						var format = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.VideoProcessingError",
 							"Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.",
 							"{0} is the path to the video file, {1} is the error message from the ffmpeg program, and {2} is a newline character");
-						msg = String.Format(format, path, output, Environment.NewLine);
+						msg = string.Format(format, path, output, Environment.NewLine);
 					}
 				}
-				if (!String.IsNullOrEmpty(msg))
+				if (!string.IsNullOrEmpty(msg))
 				{
 					Logger.WriteEvent(msg);
 					ErrorReport.NotifyUserOfProblem(msg);
@@ -154,6 +157,13 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		private static string FindFfmpegProgram()
+		{
+			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
+			return RobustFile.Exists(ffmpeg) ? ffmpeg : string.Empty;
+		}
 
 		// Request from sign language tool to restore the original video.
 		private void HandleRestoreOriginalRequest(ApiRequest request)
@@ -316,6 +326,134 @@ namespace Bloom.web.controllers
 				}));
 				request.PostSucceeded();
 			}
+		}
+
+		private void HandleVideoStatisticsRequest(ApiRequest request)
+		{
+			if (request.HttpMethod != HttpMethods.Get)
+				throw new ApplicationException(request.LocalPath() + " only implements 'get'");
+			lock (request)
+			{
+				string fileName;
+				var gotFileName = GetFileNameFromVideoContainer(request, GetSelectedVideoContainer(), out fileName);
+				if (!gotFileName)
+				{
+					return; // request.Failed was called inside the above method
+				}
+				var videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
+				if (!RobustFile.Exists(videoFilePath))
+				{
+					request.Failed("Cannot find video file");
+					return;
+				}
+
+				var ffmpeg = FindFfmpegProgram();
+				if (ffmpeg == string.Empty)
+				{
+					request.Failed("Cannot find FFMpeg program");
+					return;
+				}
+
+				var fileInfo = new FileInfo(videoFilePath);
+				var sizeInBytes = fileInfo.Length;
+
+				// Run FFMpeg on the file to get statistics.
+				// -hide_banner = don't write all the version and build information to the console
+				// -i <path> = specify input file
+				var parameters = $"-hide_banner -i \"{videoFilePath}\"";
+				var result = CommandLineRunner.Run(ffmpeg, parameters, "", 60, new NullProgress());
+				if (result.DidTimeOut)
+				{
+					request.Failed("FFMpeg timed out getting video statistics");
+					return;
+				}
+
+				var output = result.StandardError;
+				if (string.IsNullOrWhiteSpace(output))
+				{
+					request.Failed("FFMpeg failed to get video statistics");
+					return;
+				}
+
+				var statistics = ParseFfmpegStatistics(output, sizeInBytes);
+				request.ReplyWithJson(statistics);
+			}
+		}
+
+		private static Dictionary<string, object> ParseFfmpegStatistics(string output, long sizeInBytes)
+		{
+			// The RegExes in the individual ParseX methods are mostly from:
+			// https://jasonjano.wordpress.com/2010/02/09/a-simple-c-wrapper-for-ffmpeg/
+
+			var statistics = new Dictionary<string, object>();
+
+			ParseDuration(output, statistics);
+			ParseFileSize(sizeInBytes, statistics);
+			ParseFrameSize(output, statistics);
+			ParseFramesPerSecond(output, statistics);
+			ParseFileFormat(output, statistics);
+
+			return statistics;
+		}
+
+		private static void ParseDuration(string output, IDictionary<string, object> statistics)
+		{
+			var re = new Regex("[D|d]uration:.((\\d|:|\\.)*)");
+			var match = re.Match(output);
+			if (!match.Success)
+				return;
+			var duration = match.Groups[1].Value;
+			// put out MM:SS or (if it's really long) HH:MM:SS
+			statistics.Add("duration",
+				duration.Substring(0, 3) == "00:" ? duration.Substring(3, 5) : duration.Substring(0, 8));
+		}
+
+		private static void ParseFileSize(long sizeInBytes, IDictionary<string, object> statistics)
+		{
+			var sizeInMb = ConvertBytesToMegabyteString(sizeInBytes);
+			if (sizeInMb != string.Empty)
+			{
+				statistics.Add("fileSize", sizeInMb + " MB");
+			}
+		}
+
+		private static string ConvertBytesToMegabyteString(long sizeInBytes)
+		{
+			const decimal mbConversion = 1048576M; // 1024 x 1024
+			var sizeInMb = sizeInBytes / mbConversion;
+			return sizeInMb.ToString("F1", CultureInfo.CurrentUICulture);
+		}
+
+		private static void ParseFrameSize(string output, IDictionary<string, object> statistics)
+		{
+			var re = new Regex("(\\d{2,3})x(\\d{2,3})");
+			var match = re.Match(output);
+			if (!match.Success)
+				return;
+			int width, height;
+			int.TryParse(match.Groups[1].Value, out width);
+			int.TryParse(match.Groups[2].Value, out height);
+			// put out www x hhh
+			statistics.Add("frameSize", $"{width} x {height}");
+		}
+
+		private static void ParseFramesPerSecond(string output, IDictionary<string, object> statistics)
+		{
+			var re = new Regex(", (\\d{2,3})(\\.\\d{2,3}){0,1} fps");
+			var match = re.Match(output);
+			if (!match.Success)
+				return;
+			var fps = match.Value;
+			statistics.Add("framesPerSecond", fps.Substring(2).ToUpper(CultureInfo.CurrentUICulture));
+		}
+
+		private static void ParseFileFormat(string output, IDictionary<string, object> statistics)
+		{
+			var re = new Regex("[V|v]ideo: [A-Za-z0-9]* ");
+			var match = re.Match(output);
+			if (!match.Success)
+				return;
+			statistics.Add("fileFormat", match.Value.Substring(7).ToUpper(CultureInfo.CurrentUICulture));
 		}
 
 		internal void OnChangeVideo(DomEventArgs ge)
