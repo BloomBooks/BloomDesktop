@@ -51,6 +51,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._summaryBox = new System.Windows.Forms.TextBox();
 			this._signUpLink = new System.Windows.Forms.LinkLabel();
 			this._optional2 = new System.Windows.Forms.Label();
+			this._labelFeaturesOptional = new System.Windows.Forms.Label();
 			this._licenseSuggestion = new System.Windows.Forms.Label();
 			this._creativeCommonsLink = new System.Windows.Forms.LinkLabel();
 			this._licenseNotesLabel = new System.Windows.Forms.Label();
@@ -63,6 +64,12 @@ namespace Bloom.Publish.BloomLibrary
 			this._helpEachOtherLabel = new System.Windows.Forms.Label();
 			this._narrationAudioCheckBox = new System.Windows.Forms.CheckBox();
 			this._backgroundMusicCheckBox = new System.Windows.Forms.CheckBox();
+			this._labelFeatures = new System.Windows.Forms.Label();
+			this._blindCheckBox = new System.Windows.Forms.CheckBox();
+			this._visuallyImpairedCheckBox = new System.Windows.Forms.CheckBox();
+			this._signLanguageCheckBox = new System.Windows.Forms.CheckBox();
+			this.label2 = new System.Windows.Forms.Label();
+			this.label4 = new System.Windows.Forms.Label();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this._ccPanel = new System.Windows.Forms.Panel();
@@ -72,6 +79,9 @@ namespace Bloom.Publish.BloomLibrary
 			this.panel1a = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.panel4 = new System.Windows.Forms.Panel();
+			this.panel5 = new System.Windows.Forms.Panel();
+			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+			this.panel6 = new System.Windows.Forms.Panel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.panel1.SuspendLayout();
@@ -81,6 +91,9 @@ namespace Bloom.Publish.BloomLibrary
 			this.panel1a.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.panel4.SuspendLayout();
+			this.panel5.SuspendLayout();
+			this.flowLayoutPanel1.SuspendLayout();
+			this.panel6.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// _uploadButton
@@ -104,7 +117,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label1, "PublishTab.Upload.UploadProgress");
-			this.label1.Location = new System.Drawing.Point(3, 529);
+			this.label1.Location = new System.Drawing.Point(3, 588);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(300, 15);
 			this.label1.TabIndex = 19;
@@ -256,7 +269,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._langsLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._langsLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._langsLabel, "PublishTab.Upload.Languages");
-			this._langsLabel.Location = new System.Drawing.Point(3, 366);
+			this._langsLabel.Location = new System.Drawing.Point(3, 425);
 			this._langsLabel.Name = "_langsLabel";
 			this._langsLabel.Size = new System.Drawing.Size(300, 15);
 			this._langsLabel.TabIndex = 10;
@@ -264,14 +277,14 @@ namespace Bloom.Publish.BloomLibrary
 			// 
 			// _audioLabel
 			// 
-			this._audioLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this._audioLabel.AutoSize = true;
+			this._audioLabel.Dock = System.Windows.Forms.DockStyle.Left;
 			this._audioLabel.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._audioLabel.ForeColor = System.Drawing.SystemColors.ControlText;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._audioLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._audioLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._audioLabel, "PublishTab.Upload.UploadAudio");
-			this._audioLabel.Location = new System.Drawing.Point(3, 387);
+			this._audioLabel.Location = new System.Drawing.Point(0, 0);
 			this._audioLabel.Name = "_audioLabel";
 			this._audioLabel.Size = new System.Drawing.Size(80, 13);
 			this._audioLabel.TabIndex = 12;
@@ -364,6 +377,19 @@ namespace Bloom.Publish.BloomLibrary
 			this._optional2.Size = new System.Drawing.Size(44, 13);
 			this._optional2.TabIndex = 23;
 			this._optional2.Text = "optional";
+			// 
+			// _labelFeaturesOptional
+			// 
+			this._labelFeaturesOptional.AutoSize = true;
+			this._labelFeaturesOptional.Dock = System.Windows.Forms.DockStyle.Right;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._labelFeaturesOptional, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._labelFeaturesOptional, null);
+			this._L10NSharpExtender.SetLocalizingId(this._labelFeaturesOptional, "Common.Optional");
+			this._labelFeaturesOptional.Location = new System.Drawing.Point(560, 0);
+			this._labelFeaturesOptional.Name = "_labelFeaturesOptional";
+			this._labelFeaturesOptional.Size = new System.Drawing.Size(44, 13);
+			this._labelFeaturesOptional.TabIndex = 23;
+			this._labelFeaturesOptional.Text = "optional";
 			// 
 			// _licenseSuggestion
 			// 
@@ -470,7 +496,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizationComment(this._progressBox, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._progressBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._progressBox, "PublishTab.Upload.BloomLibraryUploadControl._progressBox");
-			this._progressBox.Location = new System.Drawing.Point(3, 547);
+			this._progressBox.Location = new System.Drawing.Point(3, 606);
 			this._progressBox.Name = "_progressBox";
 			this._progressBox.ProgressIndicator = null;
 			this._progressBox.ShowCopyToClipboardMenuItem = false;
@@ -524,27 +550,113 @@ namespace Bloom.Publish.BloomLibrary
 			// 
 			// _narrationAudioCheckBox
 			// 
+			this._narrationAudioCheckBox.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._narrationAudioCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._narrationAudioCheckBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._narrationAudioCheckBox, "PublishTab.Upload.Narration");
 			this._narrationAudioCheckBox.Location = new System.Drawing.Point(3, 3);
+			this._narrationAudioCheckBox.Margin = new System.Windows.Forms.Padding(3, 3, 35, 3);
 			this._narrationAudioCheckBox.Name = "_narrationAudioCheckBox";
-			this._narrationAudioCheckBox.Size = new System.Drawing.Size(104, 24);
+			this._narrationAudioCheckBox.Size = new System.Drawing.Size(69, 17);
 			this._narrationAudioCheckBox.TabIndex = 0;
 			this._narrationAudioCheckBox.Text = "Narration";
 			// 
 			// _backgroundMusicCheckBox
 			// 
+			this._backgroundMusicCheckBox.AutoSize = true;
 			this._backgroundMusicCheckBox.Checked = true;
 			this._backgroundMusicCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._backgroundMusicCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._backgroundMusicCheckBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._backgroundMusicCheckBox, "PublishTab.Upload.BackgroundMusic");
-			this._backgroundMusicCheckBox.Location = new System.Drawing.Point(113, 3);
+			this._backgroundMusicCheckBox.Location = new System.Drawing.Point(110, 3);
+			this._backgroundMusicCheckBox.Margin = new System.Windows.Forms.Padding(3, 3, 35, 3);
 			this._backgroundMusicCheckBox.Name = "_backgroundMusicCheckBox";
-			this._backgroundMusicCheckBox.Size = new System.Drawing.Size(157, 24);
+			this._backgroundMusicCheckBox.Size = new System.Drawing.Size(115, 17);
 			this._backgroundMusicCheckBox.TabIndex = 1;
 			this._backgroundMusicCheckBox.Text = "Background Music";
+			// 
+			// _labelFeatures
+			// 
+			this._labelFeatures.AutoSize = true;
+			this._labelFeatures.Dock = System.Windows.Forms.DockStyle.Left;
+			this._labelFeatures.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._labelFeatures, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._labelFeatures, null);
+			this._L10NSharpExtender.SetLocalizingId(this._labelFeatures, "PublishTab.Upload.Features");
+			this._labelFeatures.Location = new System.Drawing.Point(0, 0);
+			this._labelFeatures.Name = "_labelFeatures";
+			this._labelFeatures.Size = new System.Drawing.Size(51, 13);
+			this._labelFeatures.TabIndex = 33;
+			this._labelFeatures.Text = "Features";
+			// 
+			// _blindCheckBox
+			// 
+			this._blindCheckBox.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._blindCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._blindCheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._blindCheckBox, "PublishTab.Upload.AccessibleToBlind");
+			this._blindCheckBox.Location = new System.Drawing.Point(3, 3);
+			this._blindCheckBox.Margin = new System.Windows.Forms.Padding(3, 3, 35, 3);
+			this._blindCheckBox.Name = "_blindCheckBox";
+			this._blindCheckBox.Size = new System.Drawing.Size(133, 17);
+			this._blindCheckBox.TabIndex = 1;
+			this._blindCheckBox.Text = "Accessible to the Blind";
+			this._blindCheckBox.CheckedChanged += new System.EventHandler(this._blindCheckBox_CheckedChanged);
+			// 
+			// _visuallyImpairedCheckBox
+			// 
+			this._visuallyImpairedCheckBox.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._visuallyImpairedCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._visuallyImpairedCheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._visuallyImpairedCheckBox, "PublishTab.Upload.AccesibleToVisuallyImpaired");
+			this._visuallyImpairedCheckBox.Location = new System.Drawing.Point(174, 3);
+			this._visuallyImpairedCheckBox.Margin = new System.Windows.Forms.Padding(3, 3, 35, 3);
+			this._visuallyImpairedCheckBox.Name = "_visuallyImpairedCheckBox";
+			this._visuallyImpairedCheckBox.Size = new System.Drawing.Size(188, 17);
+			this._visuallyImpairedCheckBox.TabIndex = 2;
+			this._visuallyImpairedCheckBox.Text = "Accessible to the Visually Impaired";
+			this._visuallyImpairedCheckBox.CheckedChanged += new System.EventHandler(this._visuallyImpairedCheckBox_CheckedChanged);
+			// 
+			// _signLanguageCheckBox
+			// 
+			this._signLanguageCheckBox.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._signLanguageCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._signLanguageCheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._signLanguageCheckBox, "PublishTab.Upload.SignLanguage");
+			this._signLanguageCheckBox.Location = new System.Drawing.Point(400, 3);
+			this._signLanguageCheckBox.Margin = new System.Windows.Forms.Padding(3, 3, 35, 3);
+			this._signLanguageCheckBox.Name = "_signLanguageCheckBox";
+			this._signLanguageCheckBox.Size = new System.Drawing.Size(98, 17);
+			this._signLanguageCheckBox.TabIndex = 3;
+			this._signLanguageCheckBox.Text = "Sign Language";
+			this._signLanguageCheckBox.CheckedChanged += new System.EventHandler(this._signLanguageCheckBox_CheckedChanged);
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Dock = System.Windows.Forms.DockStyle.Right;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
+			this._L10NSharpExtender.SetLocalizingId(this.label2, "Common.Optional");
+			this.label2.Location = new System.Drawing.Point(563, 34);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(44, 10);
+			this.label2.TabIndex = 36;
+			this.label2.Text = "optional";
+			// 
+			// label4
+			// 
+			this.label4.AutoSize = true;
+			this.label4.Dock = System.Windows.Forms.DockStyle.Right;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.label4, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.label4, null);
+			this._L10NSharpExtender.SetLocalizingId(this.label4, "Common.Optional");
+			this.label4.Location = new System.Drawing.Point(560, 0);
+			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(44, 13);
+			this.label4.TabIndex = 24;
+			this.label4.Text = "optional";
 			// 
 			// tableLayoutPanel1
 			// 
@@ -553,6 +665,7 @@ namespace Bloom.Publish.BloomLibrary
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel1.Controls.Add(this.label2, 0, 2);
 			this.tableLayoutPanel1.Controls.Add(this._giveBackLabel, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._helpEachOtherLabel, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this.label7, 0, 3);
@@ -568,18 +681,20 @@ namespace Bloom.Publish.BloomLibrary
 			this.tableLayoutPanel1.Controls.Add(this._licenseSuggestion, 0, 17);
 			this.tableLayoutPanel1.Controls.Add(this.panel3, 0, 19);
 			this.tableLayoutPanel1.Controls.Add(this._creditsLabel, 0, 20);
-			this.tableLayoutPanel1.Controls.Add(this._langsLabel, 0, 22);
-			this.tableLayoutPanel1.Controls.Add(this._languagesFlow, 0, 23);
-			this.tableLayoutPanel1.Controls.Add(this._audioLabel, 0, 24);
-			this.tableLayoutPanel1.Controls.Add(this._audioFlow, 0, 25);
-			this.tableLayoutPanel1.Controls.Add(this.panel1a, 0, 27);
-			this.tableLayoutPanel1.Controls.Add(this.panel2, 0, 28);
-			this.tableLayoutPanel1.Controls.Add(this.panel4, 0, 29);
-			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 30);
-			this.tableLayoutPanel1.Controls.Add(this._progressBox, 0, 31);
+			this.tableLayoutPanel1.Controls.Add(this._langsLabel, 0, 25);
+			this.tableLayoutPanel1.Controls.Add(this._languagesFlow, 0, 26);
+			this.tableLayoutPanel1.Controls.Add(this._audioFlow, 0, 28);
+			this.tableLayoutPanel1.Controls.Add(this.panel1a, 0, 30);
+			this.tableLayoutPanel1.Controls.Add(this.panel2, 0, 31);
+			this.tableLayoutPanel1.Controls.Add(this.panel4, 0, 32);
+			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 33);
+			this.tableLayoutPanel1.Controls.Add(this._progressBox, 0, 34);
+			this.tableLayoutPanel1.Controls.Add(this.panel5, 0, 22);
+			this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel1, 0, 23);
+			this.tableLayoutPanel1.Controls.Add(this.panel6, 0, 27);
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(43, 18);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 31;
+			this.tableLayoutPanel1.RowCount = 34;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
@@ -604,7 +719,10 @@ namespace Bloom.Publish.BloomLibrary
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -648,7 +766,7 @@ namespace Bloom.Publish.BloomLibrary
 			// _languagesFlow
 			// 
 			this._languagesFlow.AutoSize = true;
-			this._languagesFlow.Location = new System.Drawing.Point(3, 384);
+			this._languagesFlow.Location = new System.Drawing.Point(3, 443);
 			this._languagesFlow.Name = "_languagesFlow";
 			this._languagesFlow.Size = new System.Drawing.Size(0, 0);
 			this._languagesFlow.TabIndex = 11;
@@ -658,9 +776,10 @@ namespace Bloom.Publish.BloomLibrary
 			this._audioFlow.AutoSize = true;
 			this._audioFlow.Controls.Add(this._narrationAudioCheckBox);
 			this._audioFlow.Controls.Add(this._backgroundMusicCheckBox);
-			this._audioFlow.Location = new System.Drawing.Point(3, 403);
+			this._audioFlow.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._audioFlow.Location = new System.Drawing.Point(3, 469);
 			this._audioFlow.Name = "_audioFlow";
-			this._audioFlow.Size = new System.Drawing.Size(273, 30);
+			this._audioFlow.Size = new System.Drawing.Size(604, 23);
 			this._audioFlow.TabIndex = 11;
 			// 
 			// panel1a
@@ -669,7 +788,7 @@ namespace Bloom.Publish.BloomLibrary
 			this.panel1a.Controls.Add(this.label8);
 			this.panel1a.Controls.Add(this._signUpLink);
 			this.panel1a.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.panel1a.Location = new System.Drawing.Point(3, 449);
+			this.panel1a.Location = new System.Drawing.Point(3, 508);
 			this.panel1a.Name = "panel1a";
 			this.panel1a.Size = new System.Drawing.Size(604, 22);
 			this.panel1a.TabIndex = 28;
@@ -679,7 +798,7 @@ namespace Bloom.Publish.BloomLibrary
 			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel2.Controls.Add(this._uploadButton);
 			this.panel2.Controls.Add(this._loginLink);
-			this.panel2.Location = new System.Drawing.Point(3, 477);
+			this.panel2.Location = new System.Drawing.Point(3, 536);
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(604, 25);
 			this.panel2.TabIndex = 28;
@@ -689,10 +808,42 @@ namespace Bloom.Publish.BloomLibrary
 			this.panel4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel4.Controls.Add(this.label11);
 			this.panel4.Controls.Add(this._termsLink);
-			this.panel4.Location = new System.Drawing.Point(3, 508);
+			this.panel4.Location = new System.Drawing.Point(3, 567);
 			this.panel4.Name = "panel4";
 			this.panel4.Size = new System.Drawing.Size(604, 18);
 			this.panel4.TabIndex = 29;
+			// 
+			// panel5
+			// 
+			this.panel5.Controls.Add(this._labelFeatures);
+			this.panel5.Controls.Add(this._labelFeaturesOptional);
+			this.panel5.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.panel5.Location = new System.Drawing.Point(3, 369);
+			this.panel5.Name = "panel5";
+			this.panel5.Size = new System.Drawing.Size(604, 14);
+			this.panel5.TabIndex = 34;
+			// 
+			// flowLayoutPanel1
+			// 
+			this.flowLayoutPanel1.AutoSize = true;
+			this.flowLayoutPanel1.Controls.Add(this._blindCheckBox);
+			this.flowLayoutPanel1.Controls.Add(this._visuallyImpairedCheckBox);
+			this.flowLayoutPanel1.Controls.Add(this._signLanguageCheckBox);
+			this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 389);
+			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(604, 23);
+			this.flowLayoutPanel1.TabIndex = 35;
+			// 
+			// panel6
+			// 
+			this.panel6.Controls.Add(this.label4);
+			this.panel6.Controls.Add(this._audioLabel);
+			this.panel6.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.panel6.Location = new System.Drawing.Point(3, 449);
+			this.panel6.Name = "panel6";
+			this.panel6.Size = new System.Drawing.Size(604, 14);
+			this.panel6.TabIndex = 37;
 			// 
 			// BloomLibraryUploadControl
 			// 
@@ -716,12 +867,19 @@ namespace Bloom.Publish.BloomLibrary
 			this.panel3.ResumeLayout(false);
 			this.panel3.PerformLayout();
 			this._audioFlow.ResumeLayout(false);
+			this._audioFlow.PerformLayout();
 			this.panel1a.ResumeLayout(false);
 			this.panel1a.PerformLayout();
 			this.panel2.ResumeLayout(false);
 			this.panel2.PerformLayout();
 			this.panel4.ResumeLayout(false);
 			this.panel4.PerformLayout();
+			this.panel5.ResumeLayout(false);
+			this.panel5.PerformLayout();
+			this.flowLayoutPanel1.ResumeLayout(false);
+			this.flowLayoutPanel1.PerformLayout();
+			this.panel6.ResumeLayout(false);
+			this.panel6.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -745,6 +903,7 @@ namespace Bloom.Publish.BloomLibrary
 		private System.Windows.Forms.TextBox _summaryBox;
 		private System.Windows.Forms.LinkLabel _signUpLink;
 		private System.Windows.Forms.Label _optional2;
+		private System.Windows.Forms.Label _labelFeaturesOptional;
 		private System.Windows.Forms.Label _ccLabel;
 		private System.Windows.Forms.Label _licenseSuggestion;
 		private System.Windows.Forms.LinkLabel _creativeCommonsLink;
@@ -769,5 +928,14 @@ namespace Bloom.Publish.BloomLibrary
 		private Label _helpEachOtherLabel;
 		private Label _audioLabel;
 		private CheckBox _backgroundMusicCheckBox;
+		private Label _labelFeatures;
+		private Panel panel5;
+		private FlowLayoutPanel flowLayoutPanel1;
+		private CheckBox _blindCheckBox;
+		private CheckBox _visuallyImpairedCheckBox;
+		private CheckBox _signLanguageCheckBox;
+		private Label label2;
+		private Panel panel6;
+		private Label label4;
 	}
 }
