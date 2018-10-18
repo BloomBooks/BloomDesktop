@@ -163,7 +163,7 @@ export class MeasureText {
         fontSize: number
     ): void {
         let context = canvas.getContext("2d");
-        context.textAlign = "top";
+        context.textAlign = "start"; // was "top", which is not a valid choice
         context.textBaseline = "alphabetic";
         context.font = `${fontSize}px '${fontFamily}'`;
         context.fillStyle = "white";

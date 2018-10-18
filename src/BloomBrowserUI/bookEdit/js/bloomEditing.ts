@@ -220,7 +220,7 @@ function AddEditKeyHandlers(container) {
 
     $(document).bind("keydown", "ctrl+space", function(e) {
         e.preventDefault();
-        document.execCommand("removeFormat", false, false); //will remove bold, italics, etc. but not things that use elements, like h1
+        document.execCommand("removeFormat"); //will remove bold, italics, etc. but not things that use elements, like h1
     });
 
     $(document).bind("keydown", "ctrl+u", function(e) {
