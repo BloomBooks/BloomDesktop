@@ -144,17 +144,29 @@ namespace Bloom.Book
 			var files = Directory.GetFiles(directoryToCompress);
 			var bookFile = BookStorage.FindBookHtmlInFolder(directoryToCompress);
 			XmlDocument dom = null;
-			List<string> coverImageFiles = null;
+			List<string> imagesToGiveTransparentBackgrounds = null;
 			// Tests can result in bookFile being null.
 			if (!String.IsNullOrEmpty(bookFile))
 			{
 				var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
 				dom = XmlHtmlConverter.GetXmlDomFromHtml(originalContent);
-				coverImageFiles = FindCoverImages(dom);
+				var fullScreenAttr = dom.GetElementsByTagName("body").Cast<XmlElement>().First().Attributes["data-bffullscreenpicture"]?.Value;
+				if (fullScreenAttr != null && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0)
+				{
+					// This feature (currently used for motion books in landscape mode) triggers an all-black background,
+					// due to a rule in bookFeatures.less.
+					// Making white pixels transparent on an all-black background makes line-art disappear,
+					// which is bad (BL-6564), so just make an empty list in this case.
+					imagesToGiveTransparentBackgrounds = new List<string>();
+				}
+				else
+				{
+					imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
+				}
 			}
 			else
 			{
-				coverImageFiles = new List<string>();
+				imagesToGiveTransparentBackgrounds = new List<string>();
 			}
 			foreach (var filePath in files)
 			{
@@ -198,8 +210,8 @@ namespace Bloom.Book
 				else if (reduceImages && ImageFileExtensions.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 				{
 					// Cover images should be transparent if possible.  Others don't need to be.
-					var isCoverImage = coverImageFiles.Contains(Path.GetFileName(filePath));
-					modifiedContent = GetImageBytesForElectronicPub(filePath, isCoverImage);
+					var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(Path.GetFileName(filePath));
+					modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent);
 					newEntry.Size = modifiedContent.Length;
 				}
 				else if (reduceImages && (bookFile == filePath))
