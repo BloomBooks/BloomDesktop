@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import { Label } from "../../../react_components/l10n";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
+import Slider from "rc-slider";
 import "./signLanguage.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
@@ -30,6 +31,8 @@ interface IComponentState {
         frameSize: string;
         framesPerSecond: string;
         fileFormat: string;
+        startSeconds: string;
+        endSeconds: string;
     };
 }
 
@@ -76,7 +79,9 @@ export class SignLanguageToolControls extends React.Component<
             fileSize: "",
             frameSize: "",
             framesPerSecond: "",
-            fileFormat: ""
+            fileFormat: "",
+            startSeconds: "0.0",
+            endSeconds: "-1.0"
         }
     };
     private videoStream: MediaStream;
@@ -272,15 +277,48 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private getVideoStats() {
+        const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
+            this.state.videoStatistics.duration
+        );
+        const start = parseFloat(this.state.videoStatistics.startSeconds);
+        const activeStyle: React.CSSProperties = { backgroundColor: "#59b4d4" };
+        const trimmedStyle: React.CSSProperties = {
+            backgroundColor: "#d2d2d2"
+        };
         return (
             <div id="videoStatsWrapper">
-                <div>{this.state.videoStatistics.duration}</div>
+                <Slider
+                    className="videoTrimSlider"
+                    value={start}
+                    onChange={v => this.setStart(v, maxDuration)}
+                    step={0.1}
+                    min={0.0}
+                    max={maxDuration}
+                    railStyle={activeStyle}
+                    trackStyle={trimmedStyle}
+                    handleStyle={activeStyle}
+                />
+                <div>
+                    {/* duration is stored with tenths of seconds, but only displayed with seconds*/
+                    this.state.videoStatistics.duration.substr(
+                        0,
+                        this.state.videoStatistics.duration.length - 2
+                    )}
+                </div>
                 <div>{this.state.videoStatistics.fileSize}</div>
                 <div>{this.state.videoStatistics.frameSize}</div>
                 <div>{this.state.videoStatistics.framesPerSecond}</div>
                 <div>{this.state.videoStatistics.fileFormat}</div>
             </div>
         );
+    }
+
+    private setStart(sliderStartValue: number, sliderStopValue: number) {
+        SignLanguageTool.setStart(sliderStartValue, sliderStopValue);
+        const stats = this.state.videoStatistics;
+        stats.startSeconds = sliderStartValue.toFixed(1);
+        stats.endSeconds = sliderStopValue.toFixed(1);
+        this.setState({ videoStatistics: stats });
     }
 
     public getCameraMessageLabel() {
@@ -314,7 +352,9 @@ export class SignLanguageToolControls extends React.Component<
                         fileSize: "",
                         frameSize: "",
                         framesPerSecond: "",
-                        fileFormat: ""
+                        fileFormat: "",
+                        startSeconds: "0.0",
+                        endSeconds: "-1.0"
                     }
                 });
             } else {
@@ -647,9 +687,30 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             });
             return;
         }
+        const matches = SignLanguageTool.parseVideoSrcAttribute(src);
+        if (matches && matches.length > 2) {
+            const start = matches[2];
+            let end = "0";
+            if (matches.length === 4) {
+                end = matches[3];
+            }
+            const stats = this.reactControls.state.videoStatistics;
+            stats.startSeconds = start;
+            stats.endSeconds = end;
+            this.reactControls.setState({ videoStatistics: stats });
+        }
         BloomApi.get("toolbox/fileExists?filename=" + src, result => {
-            this.reactControls.setState({ haveRecording: result.data });
-            this.reactControls.getVideoStatsFromFile();
+            const fileExists: boolean = result.data;
+            this.reactControls.setState({ haveRecording: fileExists });
+            if (fileExists) {
+                this.reactControls.getVideoStatsFromFile();
+                SignLanguageTool.seekToVideoStart(
+                    SignLanguageTool.getPageVideoElement(),
+                    parseFloat(
+                        this.reactControls.state.videoStatistics.startSeconds
+                    )
+                );
+            }
         });
         BloomApi.get(
             "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
@@ -712,5 +773,60 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private static getRecordingLabel(doc: Document): string {
         const labelElement = doc.getElementsByClassName("recordingLabel")[0]; // should only be one
         return labelElement !== null ? labelElement.textContent.trim() : null;
+    }
+
+    public static setStart(start: number, maxDuration: number) {
+        const video = this.getPageVideoElement();
+        const source = video.getElementsByTagName(
+            "source"
+        )[0] as HTMLSourceElement;
+        let src = source.getAttribute("src");
+        const m = SignLanguageTool.parseVideoSrcAttribute(src);
+        if (m && m.length > 2) {
+            src = m[1];
+        }
+        source.setAttribute(
+            "src",
+            src + "#t=" + start.toFixed(1) + "," + maxDuration.toFixed(1)
+        );
+        this.seekToVideoStart(video, start);
+    }
+
+    private static getPageVideoElement(): HTMLVideoElement {
+        const page = ToolBox.getPage();
+        return page.getElementsByTagName("video")[0] as HTMLVideoElement;
+    }
+
+    public static seekToVideoStart(videoElt: HTMLMediaElement, start: number) {
+        if (start === 0.0) {
+            return;
+        }
+        videoElt.currentTime = start;
+    }
+
+    // Returns an array after executing a regexp on the src attribute of the source element.
+    // Index 0: the entire attribute
+    // Index 1: the url without timings
+    // Index 2: the (optional) start time in seconds
+    // Index 3: the (optional) end time in seconds
+    // Check the length of the returned array before using 2 or 3.
+    public static parseVideoSrcAttribute(srcAttr: string): RegExpExecArray {
+        const re = /(.*)#t=([0-9]*[.][0-9]+)[,]([0-9]*[.][0-9]+)+/;
+        return re.exec(srcAttr);
+    }
+
+    public static convertTimeStringToSecondsNumber(duration: string): number {
+        if (duration === "" || duration === "-1.0") {
+            return 0;
+        }
+        // from https://stackoverflow.com/questions/9640266/convert-hhmmss-string-to-seconds-only-in-javascript/9640417
+        // though not the 'accepted' answer.
+        return duration
+            .split(":")
+            .reverse()
+            .reduce(
+                (prev, curr, i) => prev + parseFloat(curr) * Math.pow(60, i),
+                0
+            );
     }
 }
