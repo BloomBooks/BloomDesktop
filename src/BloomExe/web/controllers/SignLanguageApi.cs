@@ -28,6 +28,9 @@ namespace Bloom.web.controllers
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
+		private decimal _currentVideoStartSeconds;
+		private decimal _currentVideoEndSeconds;
+
 		public EditingView View { get; set; }
 		public EditingModel Model { get; set; }
 
@@ -36,7 +39,6 @@ namespace Bloom.web.controllers
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
 		}
-
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -74,8 +76,20 @@ namespace Bloom.web.controllers
 				// Technically this could fail and we might want to report that the post failed.
 				// But currently nothing is using the success/fail status, and we don't expect this to fail.
 				SaveChangedVideo(videoContainer, path, "Bloom had a problem including that video");
+				SetInitialVideoTimings(videoContainer, fileName);
 				request.PostSucceeded();
 			}
+		}
+
+		private void SetInitialVideoTimings(GeckoHtmlElement videoContainer, string fileName)
+		{
+			var path = Path.Combine("video", fileName);
+			_currentVideoStartSeconds = 0.0m;
+			_currentVideoEndSeconds = -1.0m; // temporary stand-in for maximum duration
+			var srcAttrWithTimings = path + "#t=" + _currentVideoStartSeconds.ToString("F1") + "," +
+			                         _currentVideoEndSeconds.ToString("F1");
+			var srcAttrUrl = UrlPathString.CreateFromUnencodedString(srcAttrWithTimings, true);
+			HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainer), srcAttrUrl);
 		}
 
 		private GeckoHtmlElement GetSelectedEditableVideoContainer(ApiRequest request, string path)
@@ -86,7 +100,7 @@ namespace Bloom.web.controllers
 				// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
 				// video recording and importing if there is no container on the page.
 				var msg = "There's nowhere to put a video on this page." +
-					(String.IsNullOrEmpty(path) ? "" : (" " + String.Format("You can find it later at {0}", path)));
+					(string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
 				MessageBox.Show(msg);
 				request.Failed("nowhere to put video");
 				return null;
@@ -171,15 +185,19 @@ namespace Bloom.web.controllers
 			lock (request)
 			{
 				var videoContainer = GetSelectedVideoContainer();
-				string videoPath;
-				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
-					return; // request.Failed was called inside the above method
+				string fileName;
+				decimal[] timings;
+				if (!ParseVideoContainerSourceAttribute(request, videoContainer, out fileName, out timings))
+					return; // method reports failure
+				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				if (!RobustFile.Exists(originalPath))
 				{
 					request.Failed("no original");
 					return;
 				}
+				_currentVideoStartSeconds = timings[0];
+				_currentVideoEndSeconds = timings[1];
 				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
 				RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
@@ -197,9 +215,12 @@ namespace Bloom.web.controllers
 			lock (request)
 			{
 				var videoContainer = GetSelectedVideoContainer();
-				string videoPath;
-				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
-					return; // request.Failed was called inside the above method
+				string fileName;
+				decimal[] timings;
+				if (!ParseVideoContainerSourceAttribute(request, videoContainer, out fileName, out timings)) return;
+				_currentVideoStartSeconds = timings[0];
+				_currentVideoEndSeconds = timings[1];
+				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				if (!RobustFile.Exists(videoPath))
 				{
@@ -282,6 +303,7 @@ namespace Bloom.web.controllers
 				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				RobustFile.Copy(path, newVideoPath);
 				SaveChangedVideo(videoContainer, newVideoPath, "Bloom had a problem including that video");
+				SetInitialVideoTimings(videoContainer, Path.GetFileName(newVideoPath));
 			}
 			// If the user canceled, we didn't exactly succeed, but having the user cancel is such a normal
 			// event that posting a failure, which is a nuisance to ignore, is not warranted.
@@ -294,9 +316,14 @@ namespace Bloom.web.controllers
 			lock (request)
 			{
 				var videoContainer = GetSelectedVideoContainer();
-				string videoPath;
-				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
-					return; // request.Failed was called inside the above method
+				string fileName;
+				decimal[] dummy;
+				if (!ParseVideoContainerSourceAttribute(request, videoContainer, out fileName, out dummy))
+				{
+					request.Failed("no file found");
+					return;
+				}
+				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				var label = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.SelectedVideo", "The selected video", "Appears in the contest \"X will be moved to the recycle bin\"");
 				var didDelete = ConfirmRecycleDialog.ConfirmThenRecycle(label, videoPath);
@@ -306,8 +333,10 @@ namespace Bloom.web.controllers
 					// event that posting a failure, which is a nuisance to ignore, is not warranted.
 					request.PostSucceeded();
 					return;
-
 				}
+
+				_currentVideoStartSeconds = 0.0m;
+				_currentVideoEndSeconds = -1.0m;
 				ConfirmRecycleDialog.Recycle(originalPath);
 				View.Invoke((Action)(() => {
 					var video = videoContainer.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
@@ -328,9 +357,17 @@ namespace Bloom.web.controllers
 				throw new ApplicationException(request.LocalPath() + " only implements 'get'");
 			lock (request)
 			{
-				string videoFilePath;
-				if (!GetFilePathFromVideoContainer(request, GetSelectedVideoContainer(), out videoFilePath))
+				string fileName;
+				decimal[] timings;
+				var gotFileName = ParseVideoContainerSourceAttribute(request, GetSelectedVideoContainer(), out fileName, out timings);
+				if (!gotFileName)
+				{
 					return; // request.Failed was called inside the above method
+				}
+
+				_currentVideoStartSeconds = timings[0];
+				_currentVideoEndSeconds = timings[1];
+				var videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
 				if (!RobustFile.Exists(videoFilePath))
 				{
 					request.Failed("Cannot find video file ("+videoFilePath+")");
@@ -366,6 +403,8 @@ namespace Bloom.web.controllers
 				}
 
 				var statistics = ParseFfmpegStatistics(output, sizeInBytes);
+				statistics.Add("startSeconds", _currentVideoStartSeconds.ToString("F1"));
+				statistics.Add("endSeconds", _currentVideoEndSeconds.ToString("F1"));
 				request.ReplyWithJson(statistics);
 			}
 		}
@@ -393,9 +432,9 @@ namespace Bloom.web.controllers
 			if (!match.Success)
 				return;
 			var duration = match.Groups[1].Value;
-			// put out MM:SS or (if it's really long) HH:MM:SS
+			// put out MM:SS.T or (if it's really long) HH:MM:SS.T
 			statistics.Add("duration",
-				duration.Substring(0, 3) == "00:" ? duration.Substring(3, 5) : duration.Substring(0, 8));
+				duration.Substring(0, 3) == "00:" ? duration.Substring(3, 7) : duration.Substring(0, 10));
 		}
 
 		private static void ParseFileSize(long sizeInBytes, IDictionary<string, object> statistics)
@@ -498,9 +537,11 @@ namespace Bloom.web.controllers
 			return false;
 		}
 
-		private bool GetFilePathFromVideoContainer(ApiRequest request, GeckoHtmlElement videoContainer, out string videoFilePath)
+		private bool ParseVideoContainerSourceAttribute(ApiRequest request, GeckoHtmlElement videoContainer,
+			out string fileName, out decimal[] timings)
 		{
-			videoFilePath = null;
+			fileName = null;
+			timings = new[] { 0.0m, -1.0m }; // default timings, -1.0 is a temporary stand-in for maximum duration
 			if (videoContainer == null)
 			{
 				// Enhance: if we end up needing this it should be localizable. But the current plan is that the button should be
@@ -529,15 +570,27 @@ namespace Bloom.web.controllers
 				return false;
 			}
 
-			var fileName = sources[0].GetAttribute("src");
-			videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
-			// Some callers need this file to exist, others don't, but decoding is required for all.
-			if (!RobustFile.Exists(videoFilePath) && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]"))
+			var fileNameWithTimings = sources[0].GetAttribute("src");
+			string rawTimings;
+			fileName = StripTimingFromVideoUrl(fileNameWithTimings, out rawTimings);
+			if (!string.IsNullOrEmpty(rawTimings))
 			{
-				videoFilePath = Path.Combine(CurrentBook.FolderPath,
-					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);
+				var timingArray = rawTimings.Split(',');
+				timings[0] = Convert.ToDecimal(timingArray[0]);
+				if (timingArray.Length > 1)
+				{
+					timings[1] = Convert.ToDecimal(timingArray[1]);
+				}
 			}
 			return true;
+		}
+
+		public static string StripTimingFromVideoUrl(string videoUrl, out string timings)
+		{
+			// strip off any timing elements
+			var parts = videoUrl.Split('#');
+			timings = parts.Length == 1 ? string.Empty : parts[1].Substring(2);
+			return parts[0];
 		}
 
 		private GeckoHtmlElement GetSelectedVideoContainer()

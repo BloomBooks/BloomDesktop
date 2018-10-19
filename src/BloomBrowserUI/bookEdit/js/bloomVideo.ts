@@ -8,7 +8,10 @@ import { BloomApi } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { getToolboxFrameExports } from "./bloomFrames";
-import { SignLanguageToolControls } from "../toolbox/signLanguage/signLanguageTool";
+import {
+    SignLanguageToolControls,
+    SignLanguageTool
+} from "../toolbox/signLanguage/signLanguageTool";
 
 const mouseOverFunction = e => {
     const target = e.target as HTMLElement;
@@ -56,12 +59,16 @@ function SetupVideoContainer(
 ) {
     const videoElts = containerDiv.getElementsByTagName("video");
     for (let i = 0; i < videoElts.length; i++) {
+        const video = videoElts[i] as HTMLVideoElement;
         // Early sign language code included this; now we do it only on hover.
-        videoElts[i].removeAttribute("controls");
+        video.removeAttribute("controls");
+        const start: number = getVideoStartSeconds(video);
+        SignLanguageTool.seekToVideoStart(video, start);
 
-        videoElts[i].addEventListener("ended", e => {
-            const video = e.target as HTMLMediaElement;
-            video.load(); // reset to the beginning
+        video.addEventListener("ended", e => {
+            const video = e.target as HTMLVideoElement;
+            const start: number = getVideoStartSeconds(video);
+            SignLanguageTool.seekToVideoStart(video, start);
         });
     }
 
@@ -122,6 +129,15 @@ function SetupVideoContainer(
                     });
             });
     }
+}
+
+function getVideoStartSeconds(videoElt: HTMLVideoElement): number {
+    const source = videoElt.getElementsByTagName(
+        "source"
+    )[0] as HTMLSourceElement;
+    const src = source.getAttribute("src");
+    const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
+    return parseFloat(urlTimingObj.start);
 }
 
 function SetupClickToShowSignLanguageTool(containerDiv: Element) {
