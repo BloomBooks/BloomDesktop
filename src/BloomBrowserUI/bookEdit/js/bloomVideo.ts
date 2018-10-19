@@ -11,7 +11,7 @@ import { getToolboxFrameExports } from "./bloomFrames";
 import { SignLanguageToolControls } from "../toolbox/signLanguage/signLanguageTool";
 
 const mouseOverFunction = e => {
-    var target = e.target as HTMLElement;
+    const target = e.target as HTMLElement;
     if (!target) {
         return; // can this happen?
     }
@@ -21,7 +21,7 @@ const mouseOverFunction = e => {
 };
 
 const mouseOutFunction = e => {
-    var target = e.target as HTMLElement;
+    const target = e.target as HTMLElement;
     if (!target) {
         return; // can this happen?
     }
@@ -54,13 +54,13 @@ function SetupVideoContainer(
     containerDiv: Element,
     isEnterpriseEnabled: boolean
 ) {
-    var videoElts = containerDiv.getElementsByTagName("video");
-    for (var i = 0; i < videoElts.length; i++) {
+    const videoElts = containerDiv.getElementsByTagName("video");
+    for (let i = 0; i < videoElts.length; i++) {
         // Early sign language code included this; now we do it only on hover.
         videoElts[i].removeAttribute("controls");
 
         videoElts[i].addEventListener("ended", e => {
-            var video = e.target as HTMLVideoElement;
+            const video = e.target as HTMLMediaElement;
             video.load(); // reset to the beginning
         });
     }
@@ -79,9 +79,9 @@ function SetupVideoContainer(
             .done(function(changeVideoText) {
                 $(containerDiv)
                     .mouseenter(function() {
-                        var $this = $(this);
+                        const $this = $(this);
 
-                        var buttonModifier = GetButtonModifier($this);
+                        const buttonModifier = GetButtonModifier($this);
 
                         // The code that executes when this button is clicked is currently C#.
                         // See EditingView._browser1_OnBrowserClick for the start of the chain.
@@ -112,7 +112,7 @@ function SetupVideoContainer(
                         $this.addClass("hoverUp");
                     })
                     .mouseleave(function() {
-                        var $this = $(this);
+                        const $this = $(this);
                         $this.removeClass("hoverUp");
                         $this
                             .find(".importVideoButtonOverlay")
