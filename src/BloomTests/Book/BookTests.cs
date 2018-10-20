@@ -7,6 +7,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Publish;
+using Bloom.web.controllers;
 using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
@@ -2080,10 +2081,49 @@ namespace BloomTests.Book
 				</body></html>");
 			var book = CreateBook();
 			book.SetAnimationDurationsFromAudioDurations();
+
+			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0.001, "Duration 1");
+			Assert.AreEqual(4, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0, "Duration 3");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[@id='guid4']/div[contains(@class,'bloom-imageContainer') and @data-duration]");
+		}
+
+		[Test]
+		public void SetAnimationDurationsFromAudioDurations_AudioSentenceDiv_SetsExpectedDuration()
+		{
+			// page 2 is left with no image to test that it doesn't choke on that.
+			// page 4 has an image with no animation; a data-duration should not be set.
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage' id='guid1' data-page-number='1'>
+						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on audio-sentence' contenteditable='true' id='1' data-duration='1.600'>some real text! another sentence!</div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on audio-sentence' contenteditable='true' id='2' data-duration='1.500'>some more text!</div>
+						<div class='bloom-editable bloom-visibility-code-on audio-sentence' contenteditable='true' data-duration='1.800'>text not in content1, duration does not count</div>
+					</div>
+					<div class='bloom-page numberedPage' id='guid2' data-page-number='2'>
+					</div>
+					<div class='bloom-page numberedPage' id='guid3' data-page-number='3'>
+						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
+					</div>
+					<div class='bloom-page numberedPage' id='guid4' data-page-number='4'>
+						<div class='bloom-imageContainer some other classes'></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
+					</div>
+					<div class='bloom-page numberedPage' id='guid5' data-page-number='1'>
+						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><span class='audio-sentence' data-duration='1.200'>some real text!</span> <span class='audio-sentence' data-duration='0.400'>another sentence!</span></div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on audio-sentence' contenteditable='true' id='2' data-duration='1.500'>some more text!</div>
+						<div class='bloom-editable bloom-visibility-code-on audio-sentence' contenteditable='true' data-duration='1.800'>text not in content1, duration does not count</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+			book.SetAnimationDurationsFromAudioDurations();
 			// Note: these tests are rather too picky about the formatting of the output floats. We'd be quite happy if the result
 			// was 3.10000 and 4.0. If this proves problematic we can make the test smarter.
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(@"//div[@id='guid1']/div[contains(@class,'bloom-imageContainer') and @data-duration='3.1']", 1);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(@"//div[@id='guid3']/div[contains(@class,'bloom-imageContainer') and @data-duration='4']",1);
+			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0.001, "Duration 1");
+			Assert.AreEqual(4, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0, "Duration 3");
+			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid5']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0.001, "Duration 1");
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[@id='guid4']/div[contains(@class,'bloom-imageContainer') and @data-duration]");
 		}
 
@@ -2264,17 +2304,32 @@ namespace BloomTests.Book
 			Assert.AreEqual(true, result, $"ElementName: {elementName}");
 		}
 
-		[TestCase("span")]
-		[TestCase("div")]
-		public void RemoveAudioMarkup_ContainsAudioElements_AllElementsRemoved(string elementName)
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void RemoveAudioMarkup_ContainsAudioElements_AllElementsRemoved(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			_bookDom = new HtmlDom($@"
-				<html><head></head><body>
+			string html = @"<html><head></head><body>
 					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
-						<p><{elementName} id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</{elementName}></p>
-						<p><{elementName} id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</{elementName}></p>
+						<div class='bloom-editable'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+						</div>
 					</div>
-				</body></html>");
+				</body></html>";
+
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div id='id1' class='bloom-editable audio-sentence'>
+							<p>Page 1 Paragraph 1 Sentence 1</p>
+							<p>Page 1 Paragraph 2 Sentence 1</p>
+						</div>
+					</div>
+				</body></html>";
+			}
+
+			_bookDom = new HtmlDom(html);
 			var book = CreateBook();
 
 			// System under test
@@ -2284,11 +2339,11 @@ namespace BloomTests.Book
 			// Test verification
 			Assert.AreEqual(0, HtmlDom.SelectAudioSentenceElements(book.RawDom.DocumentElement)?.Count ?? 0, "Count did not match expectation");
 
-			string expectedInnerHtml = "<p>Page 1 Paragraph 1 Sentence 1</p><p>Page 1 Paragraph 2 Sentence 1</p>";
+			string expectedInnerHtml = "<div class=\"bloom-editable\"><p>Page 1 Paragraph 1 Sentence 1</p><p>Page 1 Paragraph 2 Sentence 1</p></div>";
 			string expectedOuterHtml = $"<div class=\"bloom-page numberedPage bloom-nonprinting\" id=\"page1\" data-page-number=\"1\">{expectedInnerHtml}</div>";
 			var page1Div = book.RawDom.SelectSingleNode("//div[@id='page1']") as XmlElement;
-			Assert.AreEqual(expectedInnerHtml, page1Div.InnerXml, $"Case: {elementName}, Inner HTML");
-			Assert.AreEqual(expectedOuterHtml, page1Div.OuterXml, $"Case: {elementName}, Outer HTML");
+			Assert.AreEqual(expectedInnerHtml, page1Div.InnerXml.Replace(" id=\"id1\"", ""), $"Inner HTML");
+			Assert.AreEqual(expectedOuterHtml, page1Div.OuterXml.Replace(" id=\"id1\"", ""), $"Outer HTML");
 		}
 
 

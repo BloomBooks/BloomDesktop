@@ -250,7 +250,7 @@ describe("audio recording tests", function() {
         ).toBe("audio-sentence");
     });
 
-    it("converts from unmarked to text-box (combines adjacent audio-sentences even if not all children are audio-sentences)", function() {
+    it("converts from unmarked to text-box (bloom-editable includes format button)", function() {
         // This tests real input from Bloom that has not been marked up. (e.g. if the Talking Book dialog is opened up for the first time on an existing page while the Collection default is by-sentence)
 
         const formatButtonHtml =
@@ -299,8 +299,8 @@ describe("audio recording tests", function() {
             "textbox's id"
         ); // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
 
-        expect($(divs[1]).attr("class")).not.toBe(
-            "audio-sentence",
+        expect($(divs[1]).is(".audio-sentence")).toBe(
+            false,
             "formatButton's class"
         );
         expect($(divs[1]).attr("id")).toBe("formatButton", "formatButton's id");
@@ -381,11 +381,11 @@ describe("audio recording tests", function() {
             "textbox's id length"
         );
 
-        expect($(divs[1]).attr("class")).not.toBe(
-            "audio-sentence",
+        expect($(divs[1]).is(".audio-sentence")).toBe(
+            false,
             "formatButton's class"
         );
-        expect($(divs[1]).attr("id")).toBe("formatButton", "formatButton's id");
+        expect(divs[1].id).toBe("formatButton", "formatButton's id");
         expect(divs[1].outerHTML).toBe(
             formatButtonHtml,
             "formatButton's outerHTML"
@@ -449,14 +449,14 @@ describe("audio recording tests", function() {
             32,
             "textbox's id length"
         );
-        // TODO: It would be great if it preserve the original one
+        // Enhance: It would be great if it preserve the original one
         //expect(divs[0].id).toBe("ef142986-373a-4353-808f-a05d9478c0ed", "textbox's id");
 
-        expect($(divs[1]).attr("class")).not.toBe(
-            "audio-sentence",
+        expect($(divs[1]).is(".audio-sentence")).toBe(
+            false,
             "formatButton's class"
         );
-        expect($(divs[1]).attr("id")).toBe("formatButton", "formatButton's id");
+        expect(divs[1].id).toBe("formatButton", "formatButton's id");
         expect(divs[1].outerHTML).toBe(
             formatButtonHtml,
             "formatButton's outerHTML"
@@ -500,7 +500,7 @@ describe("audio recording tests", function() {
         );
     });
 
-    it("converts from by-sentence to text-box (not all children are audio-sentences)", function() {
+    it("converts from by-sentence to text-box (bloom-editable includes format button)", function() {
         // This tests real input from Bloom that has already been marked up in by-sentence mode. (i.e., this is executed upon un-clicking the checkbox from by-sentence to not-by-sentence)
         const textBoxDivHtml =
             '<div class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
@@ -579,7 +579,7 @@ describe("audio recording tests", function() {
         );
     });
 
-    it("converts by-text-box into by-sentence (multiple paragraphs, multiple adjacent but not all)", function() {
+    it("converts by-text-box into by-sentence (bloom-editable includes format button)", function() {
         // This tests real input from Bloom that has been marked up in by-text-box mode (e.g., clicking the checkbox from not-by-sentence into by-sentence)
         let textBoxDivHtml =
             '<div id="ee41e518-7855-472a-b8ce-a0c6caa68341" aria-label="false" role="textbox" spellcheck="true" tabindex="0" style="min-height: 24px;" class="bloom-editable cke_editable cke_editable_inline cke_contents_ltr bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style audio-sentence" data-languagetipcontent="English" data-audiorecordingmode="TextBox" lang="en" contenteditable="true">';
@@ -600,7 +600,7 @@ describe("audio recording tests", function() {
         // TODO: Ideally we would be able to call updateaudioRecordingMode() or UpdateMarkupAndCurrentText() instead of makeAudioSentenceElements().
         // That would enable us to verify that ui-audioCurrent gets set properly.
         // But this relies on calling GetPageFrame(). How do you set up the parent / window from a test case so that GetPageFrame() doesn't return null?
-        // recording.updateaudioRecordingMode();
+        // recording.updateAudioRecordingMode();
         // expect(div.find("ui-audioCurrent").text()).toBe("Sentence 1.", "Current Sentence text");
 
         expect(div.text()).toBe(
@@ -701,7 +701,7 @@ describe("audio recording tests", function() {
         );
     });
 
-    it("hypothetically converts from unmarked to text-box (all children are audio-sentences)", function() {
+    it("converts from unmarked to text-box (no format button)", function() {
         // The input is hypothetical to exercise corner cases in the code, but these inputs are not actually expected to show up in normal usage.
         const textBoxInnerHtml =
             "<p>Paragraph 1A. Paragraph 1B.<br></p><p>Paragraph 2A. Paragraph 2B.<br></p>";

@@ -63,8 +63,7 @@ enum Status {
 export enum AudioRecordingMode {
     Unknown = "Unknown",
     Sentence = "Sentence",
-    TextBox = "TextBox",
-    Custom = "Custom"
+    TextBox = "TextBox"
 }
 
 const kWebsocketContext = "audio-recording";
@@ -281,8 +280,8 @@ export default class AudioRecording {
 
     private getAudioElements(): JQuery {
         return this.getRecordableDivs()
-            .find(kAudioSentenceClassSelector)
-            .addBack(kAudioSentenceClassSelector);
+            .find(kAudioSentenceClassSelector) // Looks only in the descendants, but won't check any of the elements themselves in getRecordableDivs()
+            .addBack(kAudioSentenceClassSelector); // Also applies the selector to the result of getRecordableDivs()
     }
 
     private moveToNextAudioElement(): void {
@@ -428,7 +427,7 @@ export default class AudioRecording {
                 //So we delay looking for it.
                 window.setTimeout(() => {
                     this.changeStateAndSetExpected("play");
-                }, 1000); // TODO: Maybe it makes sense to disable any buttons that make notable changes to the state (especially the Recording Mode Control) until this returns.
+                }, 1000); // Enhance: Maybe it makes sense to disable any buttons that make notable changes to the state (especially the Recording Mode Control) until this returns.
             })
             .catch(error => {
                 this.changeStateAndSetExpected("record"); //record failed, so we expect them to try again
@@ -703,14 +702,11 @@ export default class AudioRecording {
             $("#" + kRecordingModeClickHandler)
                 .off()
                 .click(e => this.notifyRecordingModeControlDisabled());
-
-            // Review: It could be worthwhile to make the label ("Record by sentences") more visually distinct upon disable as well,
-            //         because if the checkbox is unchecked, there is no discernable visual difference between enabled and disabled state.
         }
     }
 
     private notifyRecordingModeControlDisabled() {
-        // TODO: The string needs to be updated if we develop a concept of per-text-box (ideal) Talking Book toolbox instead of per-page (current)
+        // Enhance: The string needs to be updated if we develop a concept of per-text-box (ideal) Talking Book toolbox instead of per-page (current)
         // Change "on this page" to "in this text box"
         if (this.recordingModeInput.disabled) {
             theOneLocalizationManager
@@ -1097,7 +1093,7 @@ export default class AudioRecording {
 
         rootElementList.each((index: number, root: Element) => {
             if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
-                if (this.isTextBox(root)) {
+                if (this.isRootRecordableDiv(root)) {
                     // Save which setting was used, so we can load it properly later
                     root.setAttribute("data-audioRecordingMode", "Sentence");
 
@@ -1107,7 +1103,7 @@ export default class AudioRecording {
                     }
                 }
             } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-                if (this.isTextBox(root)) {
+                if (this.isRootRecordableDiv(root)) {
                     // Save which setting was used, so we can load it properly later
                     root.setAttribute("data-audioRecordingMode", "TextBox");
 
@@ -1209,13 +1205,9 @@ export default class AudioRecording {
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        let fragments: TextFragment[];
-        if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-            fragments = [];
-            fragments.push(new TextFragment(elt.html(), false));
-        } else {
-            fragments = theOneLibSynphony.stringToSentences(elt.html());
-        }
+        const fragments: TextFragment[] = theOneLibSynphony.stringToSentences(
+            elt.html()
+        );
 
         // If any new sentence has an md5 that matches a saved one, attach that id/md5 pair to that fragment.
         for (var i = 0; i < fragments.length; i++) {
@@ -1293,7 +1285,7 @@ export default class AudioRecording {
         element.remove();
     }
 
-    private isTextBox(element: Element): boolean {
+    private isRootRecordableDiv(element: Element): boolean {
         if (element == null) {
             return false;
         }
@@ -1356,7 +1348,7 @@ export default class AudioRecording {
         this.setStatus("clear", Status.Disabled);
         this.setStatus("listen", Status.Disabled);
 
-        this.enableRecordingModeControl();
+        this.enableRecordingModeControl(); // as with the disabling above, we will set the state we really want below
 
         if (this.getPage().find(".ui-audioCurrent").length === 0) return;
 

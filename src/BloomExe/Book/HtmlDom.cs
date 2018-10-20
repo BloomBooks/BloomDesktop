@@ -28,6 +28,7 @@ namespace Bloom.Book
 	public class HtmlDom
 	{
 		public const string RelativePathAttrName = "data-base";
+		public static readonly char[] kHtmlClassDelimiters = new char[] { ' ' };
 		private static readonly Regex s_regexBangImportant = new Regex("\\s*!\\s*important\\s*", RegexOptions.Compiled);
 		private XmlDocument _dom;
 
@@ -1687,7 +1688,6 @@ namespace Bloom.Book
 		/// </summary>
 		public static UrlPathString GetAudioElementUrl(ElementProxy audioOrDivWithBackgroundMusic)
 		{
-			string elementName = audioOrDivWithBackgroundMusic.Name.ToLowerInvariant();
 			var classStr = audioOrDivWithBackgroundMusic.GetAttribute("class");
 			if (classStr.Contains("audio-sentence"))
 			{
@@ -1771,6 +1771,20 @@ namespace Bloom.Book
 			return new Regex("(^" + className + " | " + className +"\\b|^" + className + "$)").Replace(input, "");
 		}
 
+		public static void RemoveClass(XmlElement element, string classNameToRemove)
+		{
+			string classAttributeValue = element?.Attributes["class"]?.Value;
+			if (classAttributeValue == null)
+			{
+				return;
+			}
+
+			var classes = classAttributeValue.Split(HtmlDom.kHtmlClassDelimiters, StringSplitOptions.RemoveEmptyEntries).ToList();
+			classes.Remove(classNameToRemove);
+			string newClassAttributeValue = String.Join(" ", classes);
+			element.SetAttribute("class", newClassAttributeValue);
+		}
+
 		public static XmlNodeList SelectChildImgAndBackgroundImageElements(XmlElement element)
 		{
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
@@ -1778,7 +1792,7 @@ namespace Bloom.Book
 
 		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element)
 		{
-			return element.SelectNodes(".//*[contains(concat(' ', @class, ' '), ' audio-sentence ')]");
+			return element.SelectNodes("descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]");
 		}
 
 		public static XmlNodeList SelectChildBackgroundMusicElements(XmlElement element)
@@ -1798,12 +1812,17 @@ namespace Bloom.Book
 
 		public static XmlNodeList SelectAudioSentenceElements(XmlElement element)
 		{
-			return element.SafeSelectNodes(".//*[contains(@class,'audio-sentence')]");
+			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence')]");
 		}
 
 		public static XmlNodeList SelectAudioSentenceElementsWithDataDuration(XmlElement element)
 		{
-			return element.SafeSelectNodes(".//*[contains(@class,'audio-sentence') and @data-duration]");
+			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and @data-duration]");
+		}
+
+		public static XmlNodeList SelectAudioSentenceElementsWithRecordingMd5(XmlElement element)
+		{
+			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and @recordingmd5]");
 		}
 
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)

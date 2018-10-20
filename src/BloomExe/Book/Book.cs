@@ -1711,7 +1711,7 @@ namespace Bloom.Book
 				HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement)
 					.Cast<XmlElement>()
 					.Any(
-						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value));
+						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"]?.Value));
 		}
 
 		/// <summary>
@@ -2173,12 +2173,29 @@ namespace Bloom.Book
 			foreach (var audioElement in HtmlDom.SelectAudioSentenceElements(newpageDiv).Cast<XmlElement>().ToList())
 			{
 				XmlNode after = audioElement;
-				foreach (XmlNode child in audioElement.ChildNodes)
+
+				string audioElementClassesValue = audioElement.GetStringAttribute("class");
+				List<string> audioElementClassList = null;
+				if (!String.IsNullOrEmpty(audioElementClassesValue))
 				{
-					audioElement.ParentNode.InsertAfter(child, after);
-					after = child;
+					audioElementClassList = audioElementClassesValue.Split(HtmlDom.kHtmlClassDelimiters, StringSplitOptions.RemoveEmptyEntries).ToList();
 				}
-				audioElement.ParentNode.RemoveChild(audioElement);
+
+				if (audioElementClassList != null && audioElementClassList.Contains("bloom-editable"))
+				{
+					// This should definitely not be deleted. Just remove the markup as best you can.
+					HtmlDom.RemoveClass(audioElement, "audio-sentence");
+				}
+				else
+				{
+					// Looks safe to remove the audio markup wrapper
+					foreach (XmlNode child in audioElement.ChildNodes)
+					{
+						audioElement.ParentNode.InsertAfter(child, after);
+						after = child;
+					}
+					audioElement.ParentNode.RemoveChild(audioElement);
+				}
 			}
 		}
 

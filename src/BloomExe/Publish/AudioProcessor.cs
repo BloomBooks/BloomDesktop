@@ -38,7 +38,7 @@ namespace Bloom.Publish
 			if (!LameEncoder.IsAvailable())
 				return true;
 
-			return !GetTrueForAllAudioSpans(bookFolderPath, dom,
+			return !GetTrueForAllAudioElements(bookFolderPath, dom,
 				(wavpath, mp3path) => !Mp3IsNeeded(wavpath, mp3path));
 		}
 
@@ -49,7 +49,7 @@ namespace Bloom.Publish
 		public static bool TryCompressingAudioAsNeeded(string bookFolderPath, XmlDocument dom)
 		{
 			var watch = Stopwatch.StartNew();
-			bool result = GetTrueForAllAudioSpans(bookFolderPath, dom,
+			bool result = GetTrueForAllAudioElements(bookFolderPath, dom,
 				(wavpath, mp3path) =>
 				{
 					if (Mp3IsNeeded(wavpath, mp3path))
@@ -75,14 +75,14 @@ namespace Bloom.Publish
 			       (!RobustFile.Exists(mp3path) || (new FileInfo(wavpath).LastWriteTimeUtc) > new FileInfo(mp3path).LastWriteTimeUtc);
 		}
 
-		private static bool GetTrueForAllAudioSpans(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)
+		private static bool GetTrueForAllAudioElements(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)
 		{
 			var audioFolderPath = GetAudioFolderPath(bookFolderPath);
 			return Bloom.Book.HtmlDom.SelectAudioSentenceElements(dom.DocumentElement)
 				.Cast<XmlElement>()
 				.All(span =>
 				{
-					var wavpath = Path.Combine(audioFolderPath, Path.ChangeExtension(span.Attributes["id"].Value, "wav"));
+					var wavpath = Path.Combine(audioFolderPath, Path.ChangeExtension(span.Attributes["id"]?.Value, "wav"));
 					var mp3path = Path.ChangeExtension(wavpath, "mp3");
 					return predicate(wavpath, mp3path);
 				});
@@ -118,6 +118,11 @@ namespace Bloom.Publish
 
 		public static string GetOrCreateCompressedAudioIfWavExists(string bookFolderPath, string recordingSegmentId)
 		{
+			if (String.IsNullOrEmpty(recordingSegmentId))
+			{
+				return null;
+			}
+
 			var root = GetAudioFolderPath(bookFolderPath);
 			var wavPath = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, "wav"));
 			if (!RobustFile.Exists(wavPath))
@@ -135,6 +140,11 @@ namespace Bloom.Publish
 
 		public static bool GetWavOrMp3Exists(string bookFolderPath, string recordingSegmentId)
 		{
+			if (recordingSegmentId == null)
+			{
+				return false;
+			}
+
 			var root = GetAudioFolderPath(bookFolderPath);
 
 			foreach(var ext in NarrationAudioExtensions)

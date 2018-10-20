@@ -8,6 +8,7 @@ using Bloom.Collection;
 
 namespace Bloom.web.controllers
 {
+	// API Handler to handle updates to the collection settings from the Talking Book Tool
 	public class TalkingBookApi
 	{
 		public const string kApiUrlPart = "talkingBook/";
@@ -17,14 +18,14 @@ namespace Bloom.web.controllers
 		{
 			Unknown,
 			Sentence,
-			TextBox,
-			Custom
+			TextBox
 		}
 
 		private readonly CollectionSettings _collectionSettings;
 
 		public TalkingBookApi(CollectionSettings collectionSettings)
 		{
+			// Assumes collectionSettings.Load() has already been called.
 			_collectionSettings = collectionSettings;
 		}
 
@@ -39,14 +40,13 @@ namespace Bloom.web.controllers
 
 		public AudioRecordingMode HandleGet()
 		{
-			//_collectionSettings.Load();
 			return _collectionSettings.AudioRecordingMode;
 		}
 
 		public void HandlePost(AudioRecordingMode newDefaultAudioRecordingMode)
 		{
 			_collectionSettings.AudioRecordingMode = newDefaultAudioRecordingMode;
-			//_collectionSettings.Save();
+			_collectionSettings.Save();
 		}
 	}
 }
