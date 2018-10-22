@@ -32,7 +32,7 @@ namespace BloomTests.Publish
 
 			Func<string, string, bool> failOnInvalidInputPredicate = ReturnTrueOnlyIfAudioSentence;
 			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(AudioProcessor));
-			bool result = (bool)runner.InvokeStatic("GetTrueForAllAudioElements","bookFolderPath", dom.RawDom, failOnInvalidInputPredicate);
+			bool result = (bool)runner.InvokeStatic("GetTrueForAllAudioSentenceElements", "bookFolderPath", dom.RawDom, failOnInvalidInputPredicate);
 
 			Assert.IsTrue(result, "An invalid input was passed to the predicate. Make sure the unit under test removes all invalid inputs.");
 		}
@@ -65,7 +65,7 @@ namespace BloomTests.Publish
 
 			Func<string, string, bool> failIfSearchTargetFound = ReturnFalseIfTargetFound;
 			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(AudioProcessor));
-			bool result = (bool)runner.InvokeStatic("GetTrueForAllAudioElements", "bookFolderPath", dom.RawDom, failIfSearchTargetFound);
+			bool result = (bool)runner.InvokeStatic("GetTrueForAllAudioSentenceElements", "bookFolderPath", dom.RawDom, failIfSearchTargetFound);
 
 			Assert.IsFalse(result, "The method should've processed specialAudioRecordingGuid but it actually didn't");
 		}
