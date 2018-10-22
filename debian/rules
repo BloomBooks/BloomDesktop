@@ -95,7 +95,11 @@ override_dh_shlibdeps:
 	dh_shlibdeps -l$(MONO_PREFIX)/lib --exclude=Firefox
 
 # Include mono4-sil in cli dirs searched
+# Trying to process connections.dll now crashes on jenkins instead of merely complaining.
+# The -X (--exclude) option doesn't seem to work for dh_clideps to skip connections.dll.
 override_dh_clideps:
+	mv DistFiles/connections.dll DistFiles/connections.delel && \
+	mv $(DESTDIR)/$(LIB)/DistFiles/connections.dll $(DESTDIR)/$(LIB)/DistFiles/connections.delel && \
 	mkdir -p debian/tmp/usr && ln -s $(MONO_PREFIX)/* debian/tmp/usr/ && \
 	PATH=$(MONO_PREFIX)/bin:$(PATH) \
 	dh_clideps internal-mono -l$(MONO_PREFIX)/lib \
@@ -109,7 +113,9 @@ override_dh_clideps:
 		--exclude-moduleref=libdl.so \
 		--exclude-moduleref=MAPI32.DLL --exclude-moduleref=__Internal \
 		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll && \
-	rm -rf debian/tmp/usr
+	rm -rf debian/tmp/usr && \
+	mv DistFiles/connections.delel DistFiles/connections.dll && \
+	mv $(DESTDIR)/$(LIB)/DistFiles/connections.delel $(DESTDIR)/$(LIB)/DistFiles/connections.dll
 
 # Don't strip debug symbols -- we want them for informative crash stack traces
 override_dh_strip:
