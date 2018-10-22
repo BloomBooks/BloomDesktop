@@ -17,7 +17,7 @@ namespace BloomTests.Publish
 		{
 			// Test Setup //
 			// Note: This HTML is purely hypothetical for exercising the unit under test and not derived from any real use case.
-			// In particular, this tests ensures that the code is not just looking for spans with an ID as the necessary and sufficient condition to be an audio-snetnece.
+			// In particular, this tests ensures that the code is not just looking for spans with an ID as the necessary and sufficient condition to be an audio-sentence.
 			var dom = new HtmlDom(
 				@"<html>
 						<head></head>
@@ -32,7 +32,7 @@ namespace BloomTests.Publish
 
 			Func<string, string, bool> failOnInvalidInputPredicate = ReturnTrueOnlyIfAudioSentence;
 			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(AudioProcessor));
-			bool result = (bool)runner.InvokeStatic("GetTrueForAllAudioSentenceElements", "bookFolderPath", dom.RawDom, failOnInvalidInputPredicate);
+			bool result = (bool)runner.InvokeStatic("IsTrueForAllAudioSentenceElements", "bookFolderPath", dom.RawDom, failOnInvalidInputPredicate);
 
 			Assert.IsTrue(result, "An invalid input was passed to the predicate. Make sure the unit under test removes all invalid inputs.");
 		}
@@ -65,7 +65,7 @@ namespace BloomTests.Publish
 
 			Func<string, string, bool> failIfSearchTargetFound = ReturnFalseIfTargetFound;
 			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(AudioProcessor));
-			bool result = (bool)runner.InvokeStatic("GetTrueForAllAudioSentenceElements", "bookFolderPath", dom.RawDom, failIfSearchTargetFound);
+			bool result = (bool)runner.InvokeStatic("IsTrueForAllAudioSentenceElements", "bookFolderPath", dom.RawDom, failIfSearchTargetFound);
 
 			Assert.IsFalse(result, "The method should've processed specialAudioRecordingGuid but it actually didn't");
 		}
