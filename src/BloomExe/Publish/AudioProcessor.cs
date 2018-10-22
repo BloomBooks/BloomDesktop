@@ -38,7 +38,7 @@ namespace Bloom.Publish
 			if (!LameEncoder.IsAvailable())
 				return true;
 
-			return !GetTrueForAllAudioElements(bookFolderPath, dom,
+			return !GetTrueForAllAudioSentenceElements(bookFolderPath, dom,
 				(wavpath, mp3path) => !Mp3IsNeeded(wavpath, mp3path));
 		}
 
@@ -49,7 +49,7 @@ namespace Bloom.Publish
 		public static bool TryCompressingAudioAsNeeded(string bookFolderPath, XmlDocument dom)
 		{
 			var watch = Stopwatch.StartNew();
-			bool result = GetTrueForAllAudioElements(bookFolderPath, dom,
+			bool result = GetTrueForAllAudioSentenceElements(bookFolderPath, dom,
 				(wavpath, mp3path) =>
 				{
 					if (Mp3IsNeeded(wavpath, mp3path))
@@ -75,7 +75,7 @@ namespace Bloom.Publish
 			       (!RobustFile.Exists(mp3path) || (new FileInfo(wavpath).LastWriteTimeUtc) > new FileInfo(mp3path).LastWriteTimeUtc);
 		}
 
-		private static bool GetTrueForAllAudioElements(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)
+		private static bool GetTrueForAllAudioSentenceElements(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)
 		{
 			var audioFolderPath = GetAudioFolderPath(bookFolderPath);
 			return Bloom.Book.HtmlDom.SelectAudioSentenceElements(dom.DocumentElement)

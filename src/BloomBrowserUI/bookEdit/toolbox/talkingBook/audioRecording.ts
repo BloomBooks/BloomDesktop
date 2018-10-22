@@ -60,6 +60,7 @@ enum Status {
     Active // Button now active (Play while playing; Record while held down)
 }
 
+// Should correspond to the version in "\src\BloomExe\web\controllers\TalkingBookApi.cs"
 export enum AudioRecordingMode {
     Unknown = "Unknown",
     Sentence = "Sentence",
@@ -92,7 +93,7 @@ export default class AudioRecording {
     private listenerFunction: (MessageEvent) => void;
 
     constructor() {
-        // Initialize to Unknown (as opposed to setting to the default Sentnece) so we can identify when we need to fetch from Collection Settings vs. when it's already set.
+        // Initialize to Unknown (as opposed to setting to the default Sentence) so we can identify when we need to fetch from Collection Settings vs. when it's already set.
         this.audioRecordingMode = AudioRecordingMode.Unknown;
         this.recordingModeInput = <HTMLInputElement>(
             document.getElementById(kRecordingModeControl)
@@ -163,7 +164,7 @@ export default class AudioRecording {
     //
     // Precondition: You may assume that all initialization will be fully completed before callback() is called.
     //
-    // callback: A function to call after initialization completes (especially if the initialization happens asynchrnously). Set to null if not needed.
+    // callback: A function to call after initialization completes (especially if the initialization happens asynchronously). Set to null if not needed.
     //           e.g., this should include anything that has a dependency on this.audioRecordingMode
     public initializeForMarkup(callback: () => void = null) {
         const doWhenRecordingModeIsKnown = (audioRecordingModeStr: string) => {
@@ -1145,12 +1146,11 @@ export default class AudioRecording {
             for (let i = 0; i < children.length; i++) {
                 const child: HTMLElement = children[i];
 
-                // child is spurious; an extra layer of wrapper around other audio spans.
                 if (
                     $(child).is(kAudioSentenceClassSelector) &&
                     $(child).find(kAudioSentenceClassSelector).length > 0
                 ) {
-                    // This child can be safely removed, and its children pushed up the tree.
+                    // child is spurious; an extra layer of wrapper around other audio spans.
                     $(child).replaceWith($(child).html()); // clean up.
                     this.makeAudioSentenceElements(rootElementList); // start over.
                     return;
@@ -1276,7 +1276,11 @@ export default class AudioRecording {
     }
 
     private deleteElementAndPushChildNodesIntoParent(element) {
-        const parent = element.parentElement; // Save this because the link will be removed later.
+        if (element == null) {
+            return;
+        }
+
+        const parent = element.parentElement;
 
         const childNodesCopy = Array.prototype.slice.call(element.childNodes); // Create a copy because e.childNodes is getting modified as we go
         for (let i = 0; i < childNodesCopy.length; ++i) {

@@ -133,8 +133,8 @@ namespace BloomTests.Book
 		{
 			const string usedAudioGuid = "i3afb14d9-6362-40bf-9dca-de1b24d793f3";   //The files to keep.
 			const string unusedAudioGuid = "d3afb14d9-6362-40bf-9dca-de1b24d793f3"; //The files to drop.
-			const string usedFrontMatterAudioGuid = "usedFrontMatterAudioGuid"; // This file should be kept (even though it's not referenced in the normal section) because it's referend in the bloomDataDiv instead
-			const string usedFrontMatterBackgroundAudio = "usedFrontMatterBackgroundAudio"; // This file should be kept (even though it's not referenced in the normal section) because it's referend in the bloomDataDiv instead
+			const string usedFrontMatterAudioGuid = "usedFrontMatterAudioGuid"; // This file should be kept (even though it's not referenced in the normal section) because it's referenced in the bloomDataDiv instead
+			const string usedFrontMatterBackgroundAudio = "usedFrontMatterBackgroundAudio"; // This file should be kept (even though it's not referenced in the normal section) because it's referenced in the bloomDataDiv instead
 			const string usedBackgroundAudio = "Fur-elise-music-box";         //Background file to keep.
 			const string unusedBackgroundAudio = "Eine-kleine-Nachtmusik";
 
