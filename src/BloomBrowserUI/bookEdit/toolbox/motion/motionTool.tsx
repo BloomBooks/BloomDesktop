@@ -952,7 +952,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         let duration = 0;
         $(page)
             .find(".bloom-editable.bloom-content1")
-            .find("span.audio-sentence")
+            .find(".audio-sentence")
             .each((index, span) => {
                 const spanDuration = parseFloat($(span).attr("data-duration"));
                 if (spanDuration) {
@@ -971,8 +971,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (!page) return;
         (page.getElementsByClassName(
             "bloom-page"
-        )[0] as HTMLElement).style.visibility =
-            "";
+        )[0] as HTMLElement).style.visibility = "";
         // stop the animation itself by removing the root elements it adds.
         this.removeElt(this.animationStyleElement);
         this.animationStyleElement = null;

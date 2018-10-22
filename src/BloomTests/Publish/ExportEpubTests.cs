@@ -10,6 +10,7 @@ using Bloom.Book;
 using BloomBook = Bloom.Book.Book;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
+using Bloom.web.controllers;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
@@ -101,9 +102,50 @@ namespace BloomTests.Publish
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@class='branding' and @alt='' and @role='presentation']", _ns, 1);
 		}
 
-		[Test]
-		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
+			string extraContentOutsideTranslationGroup =
+					@"<div title='image1.png' class='bloom-imageContainer'>
+					<img src='image1.png' />
+					<div class='bloom-translationGroup bloom-imageDescription'>
+						<div class='bloom-editable bloom-contentNational2 bloom-visibility-code-on' lang='fr'>
+							<p><span id='frdescguid' class='audio-sentence'>French image description</span></p>
+						</div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='xyz'>
+							<p><span id='xyzdescguid' class='audio-sentence'>Vernacular image description</span></p>
+						</div>
+						<div class='bloom-editable bloom-contentNational3' lang='xunk'>
+							<p><span id='nondescguid' class='audio-sentence'>Non-selected image description</span></p>
+						</div>
+						<div class='bloom-editable bloom-contentNational1 bloom-visibility-code-on' lang='en'>
+							<p><span id='engdescguid' class='audio-sentence'>English image description</span></p>
+						</div>
+					</div>
+				</div>";
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				extraContentOutsideTranslationGroup =
+				@"<div title='image1.png' class='bloom-imageContainer'>
+					<img src='image1.png' />
+					<div class='bloom-translationGroup bloom-imageDescription'>
+						<div class='bloom-editable bloom-contentNational2 bloom-visibility-code-on audio-sentence' id='frdescguid'  lang='fr'>
+							<p>French image description</p>
+						</div>
+						<div class='bloom-editable bloom-content1 bloom-visibility-code-on audio-sentence' id='xyzdescguid' lang='xyz'>
+							<p>Vernacular image description</p>
+						</div>
+						<div class='bloom-editable bloom-contentNational3 audio-sentence' id='nondescguid' lang='xunk'>
+							<p>Non-selected image description</p>
+						</div>
+						<div class='bloom-editable bloom-contentNational1 bloom-visibility-code-on audio-sentence' id='engdescguid' lang='en'>
+							<p>English image description</p>
+						</div>
+					</div>
+				</div>";
+			}
+
 			var book = SetupBookLong("This is a more complicated page page", "xyz",
 				optionalDataDiv: // activate all 3 lgs
 					@"<div id='bloomDataDiv'>
@@ -111,26 +153,10 @@ namespace BloomTests.Publish
 						<div data-book='contentLanguage2' lang='*'>en</div>
 						<div data-book='contentLanguage3' lang='*'>fr</div>
 					</div>",
-				extraContentOutsideTranslationGroup:
-					@"<div title='image1.png' class='bloom-imageContainer'>
-						<img src='image1.png' />
-						<div class='bloom-translationGroup bloom-imageDescription'>
-							<div class='bloom-editable bloom-contentNational2 bloom-visibility-code-on' lang='fr'>
-								<p><span id='frdescguid' class='audio-sentence'>French image description</span></p>
-							</div>
-							<div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='xyz'>
-								<p><span id='xyzdescguid' class='audio-sentence'>Vernacular image description</span></p>
-							</div>
-							<div class='bloom-editable bloom-contentNational3' lang='xunk'>
-								<p><span id='nondescguid' class='audio-sentence'>Non-selected image description</span></p>
-							</div>
-							<div class='bloom-editable bloom-contentNational1 bloom-visibility-code-on' lang='en'>
-								<p><span id='engdescguid' class='audio-sentence'>English image description</span></p>
-							</div>
-						</div>
-					</div>");
+				extraContentOutsideTranslationGroup: extraContentOutsideTranslationGroup
+			);
 			MakeImageFiles(book, "image1"); // otherwise the img tag gets stripped out
-			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered", book, BookInfo.HowToPublishImageDescriptions.OnPage);
+			MakeEpub("output", $"ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered_{audioRecordingMode}", book, BookInfo.HowToPublishImageDescriptions.OnPage);
 			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside", _ns, 3);
@@ -216,16 +242,37 @@ namespace BloomTests.Publish
 			return result;
 		}
 
-		[Test]
-		public void Missing_Audio_Ignored()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void Missing_Audio_Ignored(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			// Similar input as the basic SaveAudio, (also verifies that IDs are really adjusted), but this time we don't create one of the expected audio files.
-			var book = SetupBook("<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>",
-				"xyz", "1my$Image", "my%20image");
+			string[] images = new string[] { "1my$Image", "my%20image" };
+			BloomBook book;
+			switch (audioRecordingMode)
+			{
+				case TalkingBookApi.AudioRecordingMode.Sentence:
+					// Similar input as the basic SaveAudio, (also verifies that IDs are really adjusted), but this time we don't create one of the expected audio files.
+					book = SetupBook("<p><span class='audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span class='audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>",
+						"xyz", images);
+					break;
+				case TalkingBookApi.AudioRecordingMode.TextBox:
+					book = SetupBookLong(
+						text: "<p>This is some text.</p>",
+						lang: "xyz",
+						images: images,
+						extraEditDivClasses: "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2c",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+						extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b763'><p>Another sentence</p></div></div>"
+					);
+					break;
+				default:
+					book = null;
+					Assert.Fail("Invalid test input");
+					break;
+			}
 			MakeImageFiles(book, "my image");
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4"));
 			// But don't make a fake audio file for the second span
-			MakeEpub("output", "Missing_Audio_Ignored", book);
+			MakeEpub("output", $"Missing_Audio_Ignored_{audioRecordingMode}", book);	// Note: need to ensure they that multiple test cases do not use the same file
 			CheckBasicsInManifest("my_image");
 			CheckBasicsInPage("my_image");
 			CheckPageBreakMarker(_page1Data);
@@ -331,16 +378,37 @@ namespace BloomTests.Publish
 				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[contains(@href, '6.xhtml')]", _ns);
 		}
 
-		[Test]
-		public void Missing_Audio_CreatedFromWav()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void Missing_Audio_CreatedFromWav(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
+			var images = new string[] { "1my$Image", "my%20image" };
+
+			BloomBook book;
+			switch (audioRecordingMode)
+			{
+				case TalkingBookApi.AudioRecordingMode.Sentence:
+					book = SetupBook("<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c' class='audio-sentence'>This is some text.</span><span id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>",
+						"xyz", images);
+					break;
+				case TalkingBookApi.AudioRecordingMode.TextBox:
+					var extraEditDivClassesAndAttributes = "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2c";  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+					var extraContentOutsideTranslationGroup = "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b763'><p>Text for editable 2</p></div></div>";
+					book = SetupBookLong("<p>This is some text.Another sentence</p>",
+						"xyz",
+						images: images,
+						extraEditDivClasses: extraEditDivClassesAndAttributes,
+						extraContentOutsideTranslationGroup: extraContentOutsideTranslationGroup);
+					break;
+				default:
+					return;
+					break;
+			}
 			// Similar input as the basic Missing_Audio_Ignored, (also verifies that IDs are really adjusted), but this time we don't create one of the expected audio files.
-			var book = SetupBook("<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>",
-				"xyz", "1my$Image", "my%20image");
 			MakeImageFiles(book, "my image");
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3"));
 			// But don't make a fake audio file for the second span
-			MakeEpub("output", "Missing_Audio_CreatedFromWav", book);
+			MakeEpub("output", $"Missing_Audio_CreatedFromWav_{audioRecordingMode}", book);
 			CheckBasicsInManifest("my_image");
 			CheckAccessibilityInManifest(true, true, false, _defaultSourceValue);	// both sound and image files
 			CheckBasicsInPage("my_image");
@@ -368,7 +436,7 @@ namespace BloomTests.Publish
 			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
 			VerifyEpubItemDoesNotExist("content/"+EpubMaker.kAudioFolder+"/i0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
 		}
-
+		
 		/// <summary>
 		/// Motivated by "El Nino" from bloom library, which (to defeat caching?) has such a query param in one of its src attrs.
 		/// </summary>
@@ -1000,15 +1068,43 @@ namespace BloomTests.Publish
 				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", _ns);
 		}
 
-		[Test]
-		public void BookWithAudio_ProducesOverlay_OmitsInvalidAttrs()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void BookWithAudio_ProducesOverlay_OmitsInvalidAttrs(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			var book = SetupBook("<span id='a123' recordingmd5='undefined'>This is some text.</span><span id='a23'>Another sentence</span>", "xyz");
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
+			BloomBook book;
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+			{
+				book = SetupBook("<p><span id='a123' class='audio-sentence' recordingmd5='undefined'>This is some text.</span><span class='audio-sentence' id='a23'>Another sentence</span></p>", "xyz");
+			}
+			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				book = SetupBookLong(
+					text: "<p>This is some text.</p>",
+					lang: "xyz",
+					extraEditDivClasses: "audio-sentence' id='a123' recordingmd5='undefined",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+					extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='a23'><p>Another sentence</p></div></div>"
+				);
+			}
+			else
+			{
+				book = null;
+				Assert.Fail("Not implemented");
+			}
+
+			// Note: in an earlier version, this test used an mp4 extension for a123. We no longer know why.
+			// It seems quite unrelated to removing any attributes. This led to confusion because MakeFakeAudio
+			// makes a .wav file as well as the extension it is asked to make, and (possibly some other change)
+			// caused HasFullAudio to detect the wav file and decide the book had complete audio coverage,
+			// which at that point the test was not expecting.
+			// We decided to change it so the book is expected to have full audio coverage.
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp3"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
-			MakeEpub("output", "BookWithAudio_ProducesOverlay", book);
+			MakeEpub("output", $"BookWithAudio_ProducesOverlay_{audioRecordingMode}", book);
 			CheckBasicsInManifest();
-			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue);	// sound files but no image files
+
+			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio: true);
+
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, null);
@@ -1019,8 +1115,8 @@ namespace BloomTests.Publish
 			var assertThatManifest = AssertThatXmlIn.String(FixContentForXPathValueSlash(_manifestContent));
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a23' and @href='"+kAudioSlash+"a23.mp3' and @media-type='audio^slash^mpeg']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a123' and @href='"+kAudioSlash+"a123.mp4' and @media-type='audio^slash^mp4']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a23' and @href='" + kAudioSlash + "a23.mp3' and @media-type='audio^slash^mpeg']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a123' and @href='" + kAudioSlash + "a123.mp3' and @media-type='audio^slash^mpeg']");
 
 			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var assertThatSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
@@ -1030,28 +1126,55 @@ namespace BloomTests.Publish
 			if (Platform.IsLinux)
 			{
 				// Approximate audio time calculations on Linux don't work very well, but are at least consistent.
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"a123.mp4' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
 			}
 			else
 			{
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"a123.mp4' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
 			}
 
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+			{
+				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
+			}
+			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='a123' and not(@recordingmd5)]");
+			}
 
-			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/a123.mp4");
-			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/a23.mp3");
+			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/a123.mp3");
+			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/a23.mp3");
 		}
 
-		[Test]
-		public void BookWithAudio_OneAudioPerPage_ProducesOneMp3()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void BookWithAudio_OneAudioPerPage_ProducesOneMp3(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			var book = SetupBook("<span id='a123' recordingmd5='undefined'>This is some text.</span><span id='a23'>Another sentence</span>", "xyz");
+			BloomBook book;
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+			{
+				book = SetupBook("<span class='audio-sentence' id='a123' recordingmd5='undefined'>This is some text.</span><span class='audio-sentence' id='a23'>Another sentence</span>", "xyz");
+			}
+			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				book = SetupBookLong(
+					text: "<p>This is some text.</p>",
+					lang: "xyz",
+					extraEditDivClasses: "audio-sentence' id='a123",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+					extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='a23'><p>Another sentence</p></div></div>"
+				);
+			}
+			else
+			{
+				book = null;
+				Assert.Fail("Invalid test input");
+			}
+
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
-			MakeEpub("output", "BookWithAudio_MergeAudio_ProducesOneMp3", book,
+			MakeEpub("output", $"BookWithAudio_MergeAudio_ProducesOneMp3_{audioRecordingMode}", book,
 				extraInit: maker => maker.OneAudioPerPage = true);
 
 			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
@@ -1076,7 +1199,11 @@ namespace BloomTests.Publish
 				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
 				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:01.700' and @clipEnd='0:00:03.400']", _ns);
 			}
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
+
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
+			else if(audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='a123' and not(@recordingmd5)]");
 
 			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/page1.mp3");
 		}
@@ -1085,13 +1212,35 @@ namespace BloomTests.Publish
 		/// There's some special-case code for Ids that start with digits that we test here.
 		/// This test has been extended to verify that we get media:duration metadata
 		/// </summary>
-		[Test]
-		public void AudioWithParagraphsAndRealGuids_ProducesOverlay()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void AudioWithParagraphsAndRealGuids_ProducesOverlay(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			var book = SetupBook("<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>", "xyz");
+			BloomBook book;
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+			{
+				book = SetupBook("<p><span class='audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span class='audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>", "xyz");
+			}
+			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				var extraEditDivClassesAndAttributes = "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2c";  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+				var extraContentOutsideTranslationGroup = "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b763'><p>Text for editable 2</p></div></div>";
+				book = SetupBookLong(
+					text: "<p>This is some text.</p>",
+					lang: "xyz",
+					extraEditDivClasses: extraEditDivClassesAndAttributes,
+					extraContentOutsideTranslationGroup: extraContentOutsideTranslationGroup
+				);
+			}
+			else
+			{
+				book = null;
+				Assert.Fail("Invalid test input");
+			}
+			
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b763.mp3"));
-			MakeEpub("output", "AudioWithParagraphsAndRealGuids_ProducesOverlay", book);
+			MakeEpub("output", $"AudioWithParagraphsAndRealGuids_ProducesOverlay_{audioRecordingMode}", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
@@ -1290,75 +1439,155 @@ namespace BloomTests.Publish
 			StringAssert.Contains("bloom-content3", class2.Value);
 		}
 
-		[Test]
-		public void HasFullAudioCoverage_ReturnsTrue()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void HasFullAudioCoverage_ReturnsTrue(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2d' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b764' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz");
+			BloomBook book;
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+			{
+				book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2d' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b764' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz");
+			}
+			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				book = SetupBookLong(
+					text: "<p>This is some text.</p>",
+					lang: "xyz",
+					extraEditDivClasses: "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2d",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+					extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b764'><p>Another sentence</p></div></div>"
+				);
+			}
+			else
+			{
+				book = null;
+				Assert.Fail("Invalid test input");
+			}
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2d.mp4"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b764.mp3"));
 			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsTrue(hasFullAudio, "HasFullAudioCoverage should return true when appropriate");
-			MakeEpub("output", "HasFullAudioCoverage_ReturnsTrue", book);
+			MakeEpub("output", $"HasFullAudioCoverage_ReturnsTrue_{audioRecordingMode}", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 
-		[Test]
-		public void HasFullAudioCoverage_ReturnsFalseForNoAudio()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void HasFullAudioCoverage_ReturnsFalseForNoAudio(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2f' class='audio-sentence'>This is some text.</span> Another sentence</p>  \r\n", "xyz");
+			BloomBook book;
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+			{
+				book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2f' class='audio-sentence'>This is some text.</span> Another sentence</p>  \r\n", "xyz");
+			}
+			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				book = SetupBookLong(
+					text: "<p>This is some text.</p>",
+					lang: "xyz",
+					extraEditDivClasses: "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2f",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+					extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable'><p>Another sentence</p></div></div>"
+				);
+			}
+			else
+			{
+				book = null;
+				Assert.Fail("Invalid test input");
+			}
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2f.mp3"));
 			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsFalse(hasFullAudio, "HasFullAudioCoverage should return false when not all text is covered by an audio span.");
-			MakeEpub("output", "HasFullAudioCoverage_ReturnsFalseForNoAudio", book);
+			MakeEpub("output", $"HasFullAudioCoverage_ReturnsFalseForNoAudio_{audioRecordingMode}", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 
-		[Test]
-		public void HasFullAudioCoverage_ReturnsFalseForMissingAudioFile()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void HasFullAudioCoverage_ReturnsFalseForMissingAudioFile(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			var book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2e' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b765' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz");
+			BloomBook book;
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+			{
+				book = SetupBook("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2e' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b765' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz");
+			}
+			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				book = SetupBookLong(
+					text: "<p>This is some text.</p>",
+					lang: "xyz",
+					extraEditDivClasses: "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2e",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+					extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b765'><p>Another sentence</p></div></div>"
+				);
+			}
+			else
+			{
+				book = null;
+				Assert.Fail("Invalid test input");
+			}
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b765.mp3"));
 			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsFalse(hasFullAudio, "HasFullAudioCoverage should return false when an audio file is missing.");
-			MakeEpub("output", "HasFullAudioCoverage_ReturnsFalseForMissingAudioFile", book);
+			MakeEpub("output", $"HasFullAudioCoverage_ReturnsFalseForMissingAudioFile_{audioRecordingMode}", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 
-		[Test]
-		public void HasFullAudioCoverage_IgnoresOtherLanguage()
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
+		public void HasFullAudioCoverage_IgnoresOtherLanguage(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			var book = SetupBookLong("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2f' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b764' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz",
-							extraContent: @"
+			string extraContent = @"
 					<div class='bloom-editable' lang='xyz' contenteditable='true'>
 						<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a20' class='audio-sentence'>More text with audio</span></p>
 					</div>
-					<div class='bloom-editable' lang='de' contenteditable='true'>German should never display in this collection, and audio shouldn't be required either!</div>");
+					<div class='bloom-editable' lang='de' contenteditable='true'>German should never display in this collection, and audio shouldn't be required either!</div>";
+
+			BloomBook book;
+			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
+			{
+				book = SetupBookLong("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2f' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b764' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz",
+								extraContent: extraContent);
+			}
+			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
+			{
+				book = SetupBookLong(
+					text: "<p>This is some text.</p>",
+					lang: "xyz",
+					extraContent: extraContent,
+					extraEditDivClasses: "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2f",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+					extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b764'><p>Another sentence</p></div></div>"
+				);
+			}
+			else
+			{
+				book = null;
+				Assert.Fail("Invalid test input");
+			}
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2f.mp3"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a20.mp3"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b764.mp3"));
 			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsTrue(hasFullAudio, "HasFullAudioCoverage should return true, ignoring text in other languages");
-			MakeEpub("output", "HasFullAudioCoverage_IgnoresOtherLanguage", book);
+			MakeEpub("output", $"HasFullAudioCoverage_IgnoresOtherLanguage_{audioRecordingMode}", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio);	// sound files, but no image files
 		}
 
-		[Test]
-		public void BogusCkeMaterial_Removed()
+		[TestCase("span")]
+		[TestCase("div")]
+		public void BogusCkeMaterial_Removed(string elementName)
 		{
-			var book = SetupBookLong(@"<div class='split-pane-component-inner'>
+			var book = SetupBookLong($@"<div class='split-pane-component-inner'>
   <div data-initialrect='0.0449438202247191 0.1414790996784566 0.6825842696629213 0.6816720257234726' style='' data-finalrect='0.3455056179775281 0.21221864951768488 0.49719101123595505 0.4983922829581994' class='bloom-imageContainer bloom-leadingElement'>
   <img data-license='cc-by-nc-nd' data-creator='Sue Newland' data-copyright='Copyright © 2018, Sue Newland' src='DSC08193.png' alt='An eagle taking off.' height='238' width='357' id='bookfig1' aria-describedby='figdesc1' />
   </div>
   <aside class='imageDescription' id='figdesc1'>
-    <p><span data-duration='3.900227' id='i92ebf7a6-0786-4480-89b2-dcefb56d7782' class='audio-sentence'>An eagle taking off.</span></p>
+    <p><{elementName} data-duration='3.900227' id='i92ebf7a6-0786-4480-89b2-dcefb56d7782' class='audio-sentence'>An eagle taking off.</{elementName}></p>
     <div data-cke-hidden-sel='1' data-cke-temp='1' style='position:fixed;top:0;left:-1000px'>
       <br />
     </div>
@@ -1369,12 +1598,12 @@ namespace BloomTests.Publish
 			MakeImageFiles(book, "DSC08193");
 			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsTrue(hasFullAudio);
-			MakeEpub("output", "BogusCkeMaterial_Removed", book);
+			MakeEpub("output", $"BogusCkeMaterial_Removed_{elementName}", book);
 			CheckFolderStructure();
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(true, true, false, _defaultSourceValue, hasFullAudio);
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@data-cke-hidden-sel]");
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//aside/p/span", 1);
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath($"//aside/p/{elementName}", 1);
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//aside/div");
 		}
 	}

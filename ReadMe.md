@@ -22,6 +22,8 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 ## Building Web Source Code ##
 
+Install yarn (https://yarnpkg.com/lang/en/docs/install/#windows-stable)
+
 You'll need [nodejs](https://nodejs.org/en/) installed.  As time goes on, the required version of nodejs changes.  Bloom 4.1 (and several earlier versions of Bloom) builds with nodejs 6.10.1.  Bloom 4.2 (and later versions of Bloom) builds with nodejs 8.10.0.  To make this feasible, we use [nvm-windows](https://github.com/coreybutler/nvm-windows) on Windows and [nvm](https://github.com/creationix/nvm) on Linux to install and manage which version of nodejs is active for the build process.  To install nvm on Windows, go to  [nvm-windows releases](https://github.com/coreybutler/nvm-windows/releases) and download the latest nvm-setup.zip file.  Unzip the downloaded file and run the nvm-setup.exe program to install nvm.  Once nvm has been installed for windows, run these commands in a command window to install the needed versions of nodejs.  This needs to be done only once.
 
     nvm install 6.10.1

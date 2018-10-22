@@ -32,7 +32,8 @@ export default class TalkingBookTool implements ITool {
 
     // Called when a new page is loaded.
     public newPageReady() {
-        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
+        // if this class eventually extends our React Adaptor, this can be removed.
+        AudioRecorder.theOneAudioRecorder.newPageReady();
     }
 
     public hideTool() {

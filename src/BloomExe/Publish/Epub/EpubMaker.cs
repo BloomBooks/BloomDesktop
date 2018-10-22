@@ -592,11 +592,14 @@ namespace Bloom.Publish.Epub
 		/// <param name="pageDocName"></param>
 		private void AddAudioOverlay(HtmlDom pageDom, string pageDocName)
 		{
-			var spansWithIds = pageDom.RawDom.SafeSelectNodes(".//span[@id]").Cast<XmlElement>();
-			var spansWithAudio =
-				spansWithIds.Where(
+			// These elements are marked as audio-sentence but we're not sure yet if the user actually recorded them yet
+			var audioSentenceElements = HtmlDom.SelectAudioSentenceElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>();
+
+			// Now check if the audio recordings actually exist for them
+			var audioSentenceElementsWithRecordedAudio =
+				audioSentenceElements.Where(
 					x => AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, x.Attributes["id"].Value) != null);
-			if(!spansWithAudio.Any())
+			if(!audioSentenceElementsWithRecordedAudio.Any())
 				return;
 			var overlayName = GetOverlayName(pageDocName);
 			_manifestItems.Add(overlayName);
@@ -617,13 +620,13 @@ namespace Bloom.Publish.Epub
 			int index = 1;
 			TimeSpan pageDuration = new TimeSpan();
 			string mergedAudioPath = null;
-			if (OneAudioPerPage && spansWithAudio.Count() > 1)
-				mergedAudioPath = MergeAudioSpans(spansWithAudio);
-			foreach(var span in spansWithAudio)
+			if (OneAudioPerPage && audioSentenceElementsWithRecordedAudio.Count() > 1)
+				mergedAudioPath = MergeAudioElements(audioSentenceElementsWithRecordedAudio);
+			foreach(var audioSentenceElement in audioSentenceElementsWithRecordedAudio)
 			{
-				var spanId = span.Attributes["id"].Value;
-				var path = AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, spanId);
-				var dataDurationAttr = span.Attributes["data-duration"];
+				var audioId = audioSentenceElement.Attributes["id"].Value;
+				var path = AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, audioId);
+				var dataDurationAttr = audioSentenceElement.Attributes["data-duration"];
 				TimeSpan clipTimeSpan;
 				if(dataDurationAttr != null)
 				{
@@ -669,7 +672,7 @@ namespace Bloom.Publish.Epub
 				seq.Add(new XElement(smil + "par",
 					new XAttribute("id", "s" + index++),
 					new XElement(smil + "text",
-						new XAttribute("src", pageDocName + "#" + spanId)),
+						new XAttribute("src", pageDocName + "#" + audioId)),
 					new XElement(smil + "audio",
 						new XAttribute("src", newSrc),
 						new XAttribute("clipBegin", mergedAudioPath != null ? clipStart.ToString(@"h\:mm\:ss\.fff") : "0:00:00.000"),
@@ -683,18 +686,19 @@ namespace Bloom.Publish.Epub
 		}
 
 		/// <summary>
-		/// Merge the audio files corresponding to the specified spans. Returns the path to the merged MP3 if all is well, null if
+		/// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
 		/// we somehow failed to merge.
 		/// </summary>
-		/// <param name="spansWithAudio"></param>
+		/// <param name="elementsWithAudio"></param>
 		/// <returns></returns>
-		private string MergeAudioSpans(IEnumerable<XmlElement> spansWithAudio)
+		private string MergeAudioElements(IEnumerable<XmlElement> elementsWithAudio)
 		{
 			string mergedAudioPath = null;
 			var mergeFiles =
-				spansWithAudio.Select(
+				elementsWithAudio.Select(
 					s => Path.ChangeExtension(
-						AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, s.Attributes["id"].Value), "wav"));
+						AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, s.Attributes["id"]?.Value), "wav"))
+				.Where(s => !String.IsNullOrEmpty(s));
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kAudioFolder));
 			var combinedAudioPath = Path.Combine(_contentFolder, kAudioFolder, "page" + _pageIndex + ".wav");
 			var errorMessage = AudioProcessor.MergeAudioFiles(mergeFiles, combinedAudioPath);
@@ -1928,7 +1932,8 @@ namespace Bloom.Publish.Epub
 					elt.ParentNode.RemoveChild (elt);
 			}
 			// Our recordingmd5 attribute is not allowed
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes ("//span[@recordingmd5]")) {
+			foreach (XmlElement elt in HtmlDom.SelectAudioSentenceElementsWithRecordingMd5(pageDom.RawDom.DocumentElement))
+			{
 				elt.RemoveAttribute ("recordingmd5");
 			}
 			// Users should not be able to edit content of published books
