@@ -42,7 +42,7 @@ namespace Bloom.Registration
 			_licenseBrowser.Size = new Size(_acceptButton.Right - 12, _acceptButton.Top - 24);
 			Controls.Add(_licenseBrowser);
 			var locale = CultureInfo.CurrentUICulture.Name;
-			string licenseFilePath = FileLocationUtilities.GetFileDistributedWithApplication(licenseHtmlFile);
+			string licenseFilePath = BloomFileLocator.GetBrowserFile(false, licenseHtmlFile);
 			var localizedLicenseFilePath = licenseFilePath.Substring(0, licenseFilePath.Length - 3) + "-" + locale + ".htm";
 			if (RobustFile.Exists(localizedLicenseFilePath))
 				licenseFilePath = localizedLicenseFilePath;

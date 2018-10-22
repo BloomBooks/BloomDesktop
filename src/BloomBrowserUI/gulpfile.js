@@ -52,7 +52,8 @@ var paths = {
     distInfo: [
         "../../DistFiles/**/*.md",
         "!../../DistFiles/ReleaseNotes.md",
-        "!../../DistFiles/ffmpeg/*.md"
+        "!../../DistFiles/ffmpeg/*.md",
+        "!../../DistFiles/localization/*.md"
     ],
     less: ["./**/*.less", "!./node_modules/**/*.less"],
     pug: ["./**/*.pug", "!./node_modules/**/*.pug", "!./**/*mixins.pug"],
@@ -129,7 +130,7 @@ gulp.task("pugLRT", function() {
                 pretty: true
             })
         )
-        .pipe(gulp.dest(leveledRTInfoPath)); // these html's stay in place.
+        .pipe(gulp.dest(outputDir + "/leveledRTInfo"));
 });
 
 gulp.task("webpack", function() {
@@ -300,7 +301,8 @@ gulp.task("markdownDistInfo", function() {
                 return;
             })
         )
-        .pipe(gulp.dest("../../DistFiles"))
+        .pipe(gulpFlatten({ includeParents: -1 })) // number of trailing parent folders to include (-1 is correct)
+        .pipe(gulp.dest(outputDir))
         .pipe(debug({ title: " md --> " }));
 });
 
