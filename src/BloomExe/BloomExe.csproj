@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -628,6 +628,7 @@
     <Compile Include="web\controllers\BrandingSettings.cs" />
     <Compile Include="web\BloomHttpListenerContext.cs" />
     <Compile Include="web\controllers\SignLanguageApi.cs" />
+    <Compile Include="web\controllers\TalkingBookApi.cs" />
     <Compile Include="web\IBloomWebSocketServer.cs" />
     <Compile Include="web\controllers\MusicApi.cs" />
     <Compile Include="web\controllers\ToolboxApi.cs" />

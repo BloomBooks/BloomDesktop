@@ -32,7 +32,7 @@ export declare class TextFragment {
     isSpace: boolean;
     words: string[];
 
-    constructor(str, isSpace);
+    constructor(str: string, isSpace: boolean);
 
     wordCount(): number;
 }

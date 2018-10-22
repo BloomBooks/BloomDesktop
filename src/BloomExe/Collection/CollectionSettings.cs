@@ -102,6 +102,7 @@ namespace Bloom.Collection
 			Language2Iso639Code = "en";
 			AllowNewBooks = true;
 			CollectionName = "dummy collection";
+			AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
 		}
 
 		public static void CreateNewCollection(NewCollectionSettings collectionInfo)
@@ -136,6 +137,8 @@ namespace Bloom.Collection
 				// migrate for 4.4
 				BrandingProjectKey = "Local-Community";
 			}
+
+			AudioRecordingMode = collectionInfo.AudioRecordingMode;
 
 			Save();
 		}
@@ -470,6 +473,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
 			library.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
+			library.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
 			SIL.IO.RobustIO.SaveXElement(library, SettingsFilePath);
 
 			SaveSettingsCollectionStylesCss();
@@ -590,6 +594,14 @@ namespace Bloom.Collection
 				District = GetValue(library, "District", "");
 				AllowNewBooks = GetBoolValue(library, "AllowNewBooks", true);
 				IsSourceCollection = GetBoolValue(library, "IsSourceCollection", GetBoolValue(library, "IsShellLibrary" /*the old name*/, GetBoolValue(library, "IsShellMakingProject" /*an even older name*/, false)));
+
+				string audioRecordingModeStr = GetValue(library, "AudioRecordingMode", "Unknown");
+				TalkingBookApi.AudioRecordingMode parsedAudioRecordingMode;
+				if (!Enum.TryParse(audioRecordingModeStr, out parsedAudioRecordingMode))
+				{
+					parsedAudioRecordingMode = TalkingBookApi.AudioRecordingMode.Unknown;
+				}
+				AudioRecordingMode = parsedAudioRecordingMode;
 			}
 			catch (Exception e)
 			{
@@ -791,6 +803,8 @@ namespace Bloom.Collection
 		public int OneTimeCheckVersionNumber { get; set; }
 
 		public bool AllowNewBooks { get; set; }
+
+		public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
 
 		public bool AllowDeleteBooks
 		{

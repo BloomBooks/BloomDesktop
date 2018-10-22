@@ -28,6 +28,7 @@ namespace Bloom.Book
 	public class HtmlDom
 	{
 		public const string RelativePathAttrName = "data-base";
+		public static readonly char[] kHtmlClassDelimiters = new char[] { ' ' };
 		private static readonly Regex s_regexBangImportant = new Regex("\\s*!\\s*important\\s*", RegexOptions.Compiled);
 		private XmlDocument _dom;
 
@@ -305,6 +306,13 @@ namespace Bloom.Book
 		{
 			foreach(XmlElement element in dom.SafeSelectNodes("//" + elementTag + "[@id]"))
 			{
+				// TODO: Maybe it should ignore empty strings?
+				// This can throw an error which prevents saving the book, but the error is arguably a false positive.
+				// Documentation says: "If the id value is not the empty string, it must be unique in a document."
+				// https://developer.mozilla.org/en-US/docs/Web/API/Element/id
+				//
+				// On the other hand, the W3 validator reports "An ID must not be the empty string", so alternatively we can return an error for any empty string, not just the 2nd one.
+
 				var id = element.GetAttribute("id");
 				if(ids.Contains(id))
 					builder.AppendLine("The id of this " + elementTag + " must be unique, but is not: " + element.OuterXml);
@@ -1680,23 +1688,19 @@ namespace Bloom.Book
 		/// </summary>
 		public static UrlPathString GetAudioElementUrl(ElementProxy audioOrDivWithBackgroundMusic)
 		{
-			if (audioOrDivWithBackgroundMusic.Name.ToLower() == "span")
+			var classStr = audioOrDivWithBackgroundMusic.GetAttribute("class");
+			if (classStr.Contains("audio-sentence"))
 			{
-				var classStr = audioOrDivWithBackgroundMusic.GetAttribute("class");
-				if (classStr.Contains("audio-sentence"))
-				{
-					var id = audioOrDivWithBackgroundMusic.GetAttribute("id");
-					return UrlPathString.CreateFromUrlEncodedString(id);
-				}
+				var id = audioOrDivWithBackgroundMusic.GetAttribute("id");
+				return UrlPathString.CreateFromUrlEncodedString(id);
 			}
-			else
+
+			var backgroundAudioFileName = audioOrDivWithBackgroundMusic.GetAttribute("data-backgroundaudio") ?? String.Empty;
+			if (backgroundAudioFileName != String.Empty)
 			{
-				var backgroundAudioFileName = audioOrDivWithBackgroundMusic.GetAttribute("data-backgroundaudio") ?? String.Empty;
-				if (backgroundAudioFileName != String.Empty)
-				{
-					return UrlPathString.CreateFromUrlEncodedString(backgroundAudioFileName);
-				}
+				return UrlPathString.CreateFromUrlEncodedString(backgroundAudioFileName);
 			}
+
 			//we choose to return this instead of null to reduce errors created by things like
 			// HtmlDom.GetAudioElementUrl(element).UrlEncoded. If we just returned null, that has to be written
 			// as something that checks for null, like:
@@ -1704,6 +1708,14 @@ namespace Bloom.Book
 			return UrlPathString.CreateFromUnencodedString(String.Empty);
 		}
 
+		/// <summary>
+		/// Returns true if the element name could potentially contain a valid attribute called "audio-sentence" (used by Talking Books). 
+		/// </summary>
+		/// <param name="elementName">HTML element name such as "span"</param>
+		public static bool DoesElementAllowAudioSentence(string elementName)
+		{
+			return elementName == "span" || elementName == "div";
+		}
 		/// <summary>
 		/// Sets the url attribute either of an img (the src attribute)
 		/// or a div with an inline style with an background-image rule
@@ -1759,6 +1771,20 @@ namespace Bloom.Book
 			return new Regex("(^" + className + " | " + className +"\\b|^" + className + "$)").Replace(input, "");
 		}
 
+		public static void RemoveClass(XmlElement element, string classNameToRemove)
+		{
+			string classAttributeValue = element?.Attributes["class"]?.Value;
+			if (classAttributeValue == null)
+			{
+				return;
+			}
+
+			var classes = classAttributeValue.Split(HtmlDom.kHtmlClassDelimiters, StringSplitOptions.RemoveEmptyEntries).ToList();
+			classes.Remove(classNameToRemove);
+			string newClassAttributeValue = String.Join(" ", classes);
+			element.SetAttribute("class", newClassAttributeValue);
+		}
+
 		public static XmlNodeList SelectChildImgAndBackgroundImageElements(XmlElement element)
 		{
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
@@ -1766,7 +1792,7 @@ namespace Bloom.Book
 
 		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element)
 		{
-			return element.SelectNodes(".//span[contains(concat(' ', @class, ' '), ' audio-sentence ')]");
+			return element.SelectNodes("descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]");
 		}
 
 		public static XmlNodeList SelectChildBackgroundMusicElements(XmlElement element)
@@ -1782,6 +1808,21 @@ namespace Bloom.Book
 		public static XmlNodeList SelectChildVideoSourceElements(XmlElement element)
 		{
 			return element.SafeSelectNodes(".//div[contains(@class,'bloom-videoContainer')]/video/source");
+		}
+
+		public static XmlNodeList SelectAudioSentenceElements(XmlElement element)
+		{
+			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence')]");
+		}
+
+		public static XmlNodeList SelectAudioSentenceElementsWithDataDuration(XmlElement element)
+		{
+			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and @data-duration]");
+		}
+
+		public static XmlNodeList SelectAudioSentenceElementsWithRecordingMd5(XmlElement element)
+		{
+			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and @recordingmd5]");
 		}
 
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)

@@ -318,6 +318,16 @@ namespace Bloom.Book
 				newElementInThisLanguage = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
 				//if there is an id, get rid of it, because we don't want 2 elements with the same id
 				newElementInThisLanguage.RemoveAttribute("id");
+
+				// No need to copy over the audio-sentence markup
+				// Various code expects elements with class audio-sentence to have an ID.
+				// Both will be added when and if  we do audio recording (in whole-text-box mode) on the new div.
+				// Until then it makes things more consistent if we make sure elements without ids
+				// don't have this class.
+				// Also, if audio recording markup is done using one audio-sentence span per sentence, we won't copy it.  (Because we strip all out the text underneath this node)
+				// So, it's more consistent to treat all scenarios the same way (don't copy the audio-sentence markup)
+				HtmlDom.RemoveClass(newElementInThisLanguage, "audio-sentence");
+
 				//OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
 				StripOutText(newElementInThisLanguage);
 			}
