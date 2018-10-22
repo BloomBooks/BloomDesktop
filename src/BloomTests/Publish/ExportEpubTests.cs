@@ -1091,20 +1091,19 @@ namespace BloomTests.Publish
 				book = null;
 				Assert.Fail("Not implemented");
 			}
-			
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
+
+			// Note: in an earlier version, this test used an mp4 extension for a123. We no longer know why.
+			// It seems quite unrelated to removing any attributes. This led to confusion because MakeFakeAudio
+			// makes a .wav file as well as the extension it is asked to make, and (possibly some other change)
+			// caused HasFullAudio to detect the wav file and decide the book had complete audio coverage,
+			// which at that point the test was not expecting.
+			// We decided to change it so the book is expected to have full audio coverage.
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp3"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
 			MakeEpub("output", $"BookWithAudio_ProducesOverlay_{audioRecordingMode}", book);
 			CheckBasicsInManifest();
 
-			// TODO: Fix this assertion
-			// Somehow, when both the spans are audio-sentences, it no longer recognizes that there is any textual in certain iterations.
-			// And it requires that if it has full audio, it should also have textual
-			// Message:   Failed to find expected 'textual' in accessModeSufficient in manifest
-			//   Expected: True
-			//   But was:  False
-			// I am 1) stumped, 2) don't quite have the time for it, and 3) the main part of the test is testing recordingmd5 being removed
-			//CheckAccessibilityInManifest(true, false, false, _defaultSourceValue);  // sound files but no image files
+			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio: true);
 
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
@@ -1117,7 +1116,7 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a23' and @href='" + kAudioSlash + "a23.mp3' and @media-type='audio^slash^mpeg']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a123' and @href='" + kAudioSlash + "a123.mp4' and @media-type='audio^slash^mp4']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a123' and @href='" + kAudioSlash + "a123.mp3' and @media-type='audio^slash^mpeg']");
 
 			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var assertThatSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
@@ -1127,12 +1126,12 @@ namespace BloomTests.Publish
 			if (Platform.IsLinux)
 			{
 				// Approximate audio time calculations on Linux don't work very well, but are at least consistent.
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp4' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
 				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
 			}
 			else
 			{
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp4' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
 				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
 			}
 
@@ -1145,7 +1144,7 @@ namespace BloomTests.Publish
 				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='a123' and not(@recordingmd5)]");
 			}
 
-			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/a123.mp4");
+			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/a123.mp3");
 			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/a23.mp3");
 		}
 
