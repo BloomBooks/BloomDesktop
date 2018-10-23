@@ -171,10 +171,9 @@ namespace Bloom.web.controllers
 			lock (request)
 			{
 				var videoContainer = GetSelectedVideoContainer();
-				string fileName;
-				if (!GetFileNameFromVideoContainer(request, videoContainer, out fileName))
-					return; // method reports failure
-				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
+				string videoPath;
+				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
+					return; // request.Failed was called inside the above method
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				if (!RobustFile.Exists(originalPath))
 				{
@@ -198,9 +197,9 @@ namespace Bloom.web.controllers
 			lock (request)
 			{
 				var videoContainer = GetSelectedVideoContainer();
-				string fileName;
-				if (!GetFileNameFromVideoContainer(request, videoContainer, out fileName)) return;
-				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
+				string videoPath;
+				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
+					return; // request.Failed was called inside the above method
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				if (!RobustFile.Exists(videoPath))
 				{
@@ -295,14 +294,9 @@ namespace Bloom.web.controllers
 			lock (request)
 			{
 				var videoContainer = GetSelectedVideoContainer();
-				string fileName;
-				if (!GetFileNameFromVideoContainer(request, videoContainer, out fileName))
-				{
-					request.Failed("no file found");
-					return;
-				}
-
-				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
+				string videoPath;
+				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
+					return; // request.Failed was called inside the above method
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				var label = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.SelectedVideo", "The selected video", "Appears in the contest \"X will be moved to the recycle bin\"");
 				var didDelete = ConfirmRecycleDialog.ConfirmThenRecycle(label, videoPath);
@@ -334,16 +328,12 @@ namespace Bloom.web.controllers
 				throw new ApplicationException(request.LocalPath() + " only implements 'get'");
 			lock (request)
 			{
-				string fileName;
-				var gotFileName = GetFileNameFromVideoContainer(request, GetSelectedVideoContainer(), out fileName);
-				if (!gotFileName)
-				{
+				string videoFilePath;
+				if (!GetFilePathFromVideoContainer(request, GetSelectedVideoContainer(), out videoFilePath))
 					return; // request.Failed was called inside the above method
-				}
-				var videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
 				if (!RobustFile.Exists(videoFilePath))
 				{
-					request.Failed("Cannot find video file");
+					request.Failed("Cannot find video file ("+videoFilePath+")");
 					return;
 				}
 
@@ -508,9 +498,9 @@ namespace Bloom.web.controllers
 			return false;
 		}
 
-		private bool GetFileNameFromVideoContainer(ApiRequest request, GeckoHtmlElement videoContainer, out string fileName)
+		private bool GetFilePathFromVideoContainer(ApiRequest request, GeckoHtmlElement videoContainer, out string videoFilePath)
 		{
-			fileName = null;
+			videoFilePath = null;
 			if (videoContainer == null)
 			{
 				// Enhance: if we end up needing this it should be localizable. But the current plan is that the button should be
@@ -539,7 +529,14 @@ namespace Bloom.web.controllers
 				return false;
 			}
 
-			fileName = sources[0].GetAttribute("src");
+			var fileName = sources[0].GetAttribute("src");
+			videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
+			// Some callers need this file to exist, others don't, but decoding is required for all.
+			if (!RobustFile.Exists(videoFilePath) && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]"))
+			{
+				videoFilePath = Path.Combine(CurrentBook.FolderPath,
+					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);
+			}
 			return true;
 		}
 
