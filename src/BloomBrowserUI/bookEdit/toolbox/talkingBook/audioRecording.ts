@@ -200,6 +200,10 @@ export default class AudioRecording {
                 .first()
                 .attr("data-audioRecordingMode");
             doWhenRecordingModeIsKnown(audioRecordingModeStr);
+        } else if (this.getPage().find("span.audio-sentence")) {
+            // This may happen when loading books from 4.3 or earlier that already have text recorded,
+            // and is especially important if the collection default is set to anything other than Sentence.
+            doWhenRecordingModeIsKnown(AudioRecordingMode.Sentence);
         } else {
             // We are not sure what it should be.
             // So, check what the collection default has to say
