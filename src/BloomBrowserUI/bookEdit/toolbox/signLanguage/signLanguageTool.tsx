@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 import { Label } from "../../../react_components/l10n";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import Slider from "rc-slider";
+import { Range } from "rc-slider";
 import "./signLanguage.less";
 import {
     RequiresBloomEnterpriseWrapper,
@@ -96,7 +96,12 @@ export class SignLanguageToolControls extends React.Component<
     private timerId: number;
     public render() {
         let videoStats = <div />;
-        if (this.state.haveRecording) {
+        if (
+            // Protects against showing slider and stats when
+            // the video info hasn't yet been loaded from the file.
+            this.state.haveRecording &&
+            this.state.videoStatistics.duration != ""
+        ) {
             videoStats = this.getVideoStats();
         }
         return (
@@ -288,6 +293,11 @@ export class SignLanguageToolControls extends React.Component<
             this.state.videoStatistics.duration
         );
         const start = parseFloat(this.state.videoStatistics.startSeconds);
+        let end = parseFloat(this.state.videoStatistics.endSeconds);
+        if (end === -1.0) {
+            end = maxDuration;
+        }
+        const valueArray: number[] = [start, end];
         // Enhance: Currently we have a not-fun choice between putting color codes in here to use the rc-slider
         // style props (railStyle, trackStyle, handleStyle) OR putting the color settings in the .less file where
         // we could use the CSS variables (e.g. @buttonColor), but then we have to access the innards of rc-slider
@@ -300,15 +310,22 @@ export class SignLanguageToolControls extends React.Component<
         };
         return (
             <div id="videoStatsWrapper">
-                <Slider
+                <Range
                     className="videoTrimSlider"
-                    value={start}
-                    onChange={v => this.setStart(v, maxDuration)}
+                    count={1}
+                    value={valueArray}
+                    onChange={v => this.setTrimPoints(v)}
+                    onAfterChange={
+                        // set video back to start point in case we were viewing the end point
+                        v => SignLanguageTool.setVideoToX(v[0])
+                    }
                     step={0.1}
                     min={0.0}
+                    allowCross={false}
+                    pushable={false}
                     max={maxDuration}
                     railStyle={activeStyle}
-                    trackStyle={trimmedStyle}
+                    trackStyle={[trimmedStyle, trimmedStyle]}
                     handleStyle={activeStyle}
                 />
                 <div>
@@ -326,11 +343,19 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private setStart(sliderStartValue: number, sliderStopValue: number) {
-        SignLanguageTool.setStart(sliderStartValue, sliderStopValue);
+    private setTrimPoints(newSliderValues: number[]) {
+        SignLanguageTool.setVideoTimingsInSrcAttr(newSliderValues);
         const stats = this.state.videoStatistics;
-        stats.startSeconds = sliderStartValue.toFixed(1);
-        stats.endSeconds = sliderStopValue.toFixed(1);
+        const oldEnd = stats.endSeconds;
+        const oldStart = stats.startSeconds;
+        stats.startSeconds = newSliderValues[0].toFixed(1);
+        stats.endSeconds = newSliderValues[1].toFixed(1);
+        if (oldStart !== stats.startSeconds) {
+            SignLanguageTool.setVideoToX(newSliderValues[0]); // we're changing the start point, so show it.
+        }
+        if (oldEnd !== stats.endSeconds) {
+            SignLanguageTool.setVideoToX(newSliderValues[1]); // we're changing the end point, so show it.
+        }
         this.setState({ videoStatistics: stats });
     }
 
@@ -732,16 +757,16 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         this.reactControls.setState({ videoStatistics: stats });
         BloomApi.get("toolbox/fileExists?filename=" + src, result => {
             const fileExists: boolean = result.data;
-            this.reactControls.setState({ haveRecording: fileExists });
             if (fileExists) {
                 this.reactControls.getVideoStatsFromFile();
-                SignLanguageTool.seekToVideoStart(
+                SignLanguageTool.setCurrentVideoPoint(
                     SignLanguageTool.getSelectedVideoElement(),
                     parseFloat(
                         this.reactControls.state.videoStatistics.startSeconds
                     )
                 );
             }
+            this.reactControls.setState({ haveRecording: fileExists });
         });
         BloomApi.get(
             "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
@@ -806,7 +831,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return labelElement !== null ? labelElement.textContent.trim() : null;
     }
 
-    public static setStart(start: number, maxDuration: number) {
+    public static setVideoTimingsInSrcAttr(newTrimValues: number[]) {
         const video = this.getSelectedVideoElement();
         const source = video.getElementsByTagName(
             "source"
@@ -816,9 +841,12 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         src = urlTimingObj.url;
         source.setAttribute(
             "src",
-            src + "#t=" + start.toFixed(1) + "," + maxDuration.toFixed(1)
+            src +
+                "#t=" +
+                newTrimValues[0].toFixed(1) +
+                "," +
+                newTrimValues[1].toFixed(1)
         );
-        this.seekToVideoStart(video, start);
     }
 
     private static getSelectedVideoElement(): HTMLVideoElement {
@@ -828,8 +856,16 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         )[0] as HTMLVideoElement;
     }
 
-    public static seekToVideoStart(videoElt: HTMLVideoElement, start: number) {
-        videoElt.currentTime = start;
+    public static setCurrentVideoPoint(
+        videoElement: HTMLVideoElement,
+        timeInSeconds: number
+    ) {
+        videoElement.currentTime = timeInSeconds;
+    }
+
+    public static setVideoToX(timeInSeconds: number): void {
+        const element = SignLanguageTool.getSelectedVideoElement();
+        SignLanguageTool.setCurrentVideoPoint(element, timeInSeconds);
     }
 
     // Returns an Object containing the results of executing a regexp on the src attribute of the source element.
