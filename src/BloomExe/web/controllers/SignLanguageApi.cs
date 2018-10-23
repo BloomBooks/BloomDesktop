@@ -341,6 +341,11 @@ namespace Bloom.web.controllers
 					return; // request.Failed was called inside the above method
 				}
 				var videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
+				if (!RobustFile.Exists(videoFilePath) && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]"))
+				{
+					videoFilePath = Path.Combine(CurrentBook.FolderPath,
+						UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);
+				}
 				if (!RobustFile.Exists(videoFilePath))
 				{
 					request.Failed("Cannot find video file");

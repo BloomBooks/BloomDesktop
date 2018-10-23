@@ -1750,9 +1750,7 @@ namespace Bloom.Book
 		/// Includes creating the video and source elements if they don't already exist.
 		/// Does not yet handle setting to an empty url and restoring the bloom-noVideoSelected state.
 		/// </summary>
-		/// <param name="videoContainer"></param>
-		/// <param name="url"></param>
-		public static void SetVideoElementUrl(ElementProxy videoContainer, UrlPathString url)
+		public static void SetVideoElementUrl(ElementProxy videoContainer, UrlPathString url, bool urlEncode = true)
 		{
 			var videoElt = videoContainer.GetChildWithName("video");
 			if (videoElt == null)
@@ -1766,7 +1764,8 @@ namespace Bloom.Book
 				srcElement = videoElt.AppendChild("source");
 				srcElement.SetAttribute("type", "video/mp4");
 			}
-			srcElement.SetAttribute("src", url.UrlEncodedForHttpPath); // We need the fwd slash to come through unencoded
+			// Encoding this can break links within epubs.
+			srcElement.SetAttribute("src", urlEncode ? url.UrlEncodedForHttpPath : url.NotEncoded); // We need the fwd slash to come through unencoded
 			// Hides the placeholder.
 
 			videoContainer.SetAttribute("class",

@@ -1228,7 +1228,7 @@ namespace Bloom.Publish.Epub
 					continue;
 				var dstPath = CopyFileToEpub(srcPath, subfolder:kVideoFolder);
 				var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
-				HtmlDom.SetVideoElementUrl(new ElementProxy(vid), UrlPathString.CreateFromUnencodedString(newSrc, true));
+				HtmlDom.SetVideoElementUrl(new ElementProxy(vid), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
 			}
 		}
 
@@ -2135,20 +2135,17 @@ namespace Bloom.Publish.Epub
 			// right but if we substitute them we can be sure things are fine.
 			// I'm deliberately not using UrlPathString here because it doesn't correctly encode a lot of Ascii characters like =$&<>
 			// which are technically not valid in hrefs
-			var encoded =
-				HttpUtility.UrlEncode (
-					originalFileName.Replace ("+", "_").Replace (" ", "_").Replace ("&", "_").Replace ("<", "_").Replace (">", "_"));
+			var filename1 = Regex.Replace(originalFileName, "[ +%&<>]", "_");
+			var encoded = HttpUtility.UrlEncode(filename1);
 			encoded = encoded.Replace("%2f","/");	// we don't want to encode directory separators!
-			var fileName = encoded.Replace ("%", "_");
+			var fileName = encoded.Replace ("%", "_");	// if something is encoded, epub readers don't decode it very well...
 			// If the fileName starts with a folder inside the Bloom book that maps onto
 			// a folder in the epub, remove that folder from the fileName since the proper
 			// (quite possibly the same) folder name will be added below as needed.  This
 			// simplifies the processing for files being moved into a subfolder for the
 			// first time, or into a folder of a different name.
-			if (fileName.StartsWith("audio/"))
-				fileName = originalFileName.Substring(6);
-			else if (fileName.StartsWith("video/"))
-				fileName = originalFileName.Substring(6);
+			if (fileName.StartsWith("audio/") || fileName.StartsWith("video/"))
+				fileName = fileName.Substring(6);
 			string dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
