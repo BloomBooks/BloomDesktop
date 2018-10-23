@@ -348,11 +348,15 @@ namespace Bloom.web.controllers
 				_currentVideoStartSeconds = 0.0m;
 				_currentVideoEndSeconds = -1.0m;
 				ConfirmRecycleDialog.Recycle(originalPath);
-				View.Invoke((Action)(() => {
-					var video = videoContainer.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
+				View.Invoke((Action)(() =>
+				{
+					// Other "HandleX" methods have comments here about COM problems re-using the videoContainer variable
+					// above. Hopefully this will make deletion more reliable too.
+					var container = GetSelectedVideoContainer();
+					var video = container.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
 					video.ParentNode.RemoveChild(video);
 					// BL-6136 add back in the class that shows the placeholder
-					videoContainer.ClassName += " bloom-noVideoSelected";
+					container.ClassName += " bloom-noVideoSelected";
 					Model.SaveNow();
 					View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 					View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
@@ -614,9 +618,8 @@ namespace Bloom.web.controllers
 			var root = View.Browser.WebBrowser.Document;
 			var page = root.GetElementById("page") as GeckoIFrameElement;
 			var pageDoc = page.ContentWindow.Document;
-			var videoContainer =
+			return
 				pageDoc.GetElementsByClassName("bloom-videoContainer bloom-selected").FirstOrDefault() as GeckoHtmlElement;
-			return videoContainer;
 		}
 
 		DateTime GetRealLastModifiedTime(FileInfo info)
