@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import { Label } from "../../../react_components/l10n";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
+import Slider from "rc-slider";
 import "./signLanguage.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
@@ -30,6 +31,8 @@ interface IComponentState {
         frameSize: string;
         framesPerSecond: string;
         fileFormat: string;
+        startSeconds: string;
+        endSeconds: string;
     };
 }
 
@@ -52,6 +55,9 @@ declare var MediaRecorder: {
     prototype: MediaRecorder;
     new (s: MediaStream, options: any): MediaRecorder;
 };
+
+const MAX_DURATION: string = "-1.0"; // temporary placeholder for maximum duration
+const DEFAULT_START: string = "0.0";
 
 // This react class implements the UI for the sign language (video) toolbox.
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
@@ -76,7 +82,9 @@ export class SignLanguageToolControls extends React.Component<
             fileSize: "",
             frameSize: "",
             framesPerSecond: "",
-            fileFormat: ""
+            fileFormat: "",
+            startSeconds: DEFAULT_START,
+            endSeconds: MAX_DURATION
         }
     };
     private videoStream: MediaStream;
@@ -272,15 +280,54 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private getVideoStats() {
+        const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
+            this.state.videoStatistics.duration
+        );
+        const start = parseFloat(this.state.videoStatistics.startSeconds);
+        // Enhance: Currently we have a not-fun choice between putting color codes in here to use the rc-slider
+        // style props (railStyle, trackStyle, handleStyle) OR putting the color settings in the .less file where
+        // we could use the CSS variables (e.g. @buttonColor), but then we have to access the innards of rc-slider
+        // (e.g. rc-slider-handle class). Ideally we could use the CSS variables here (the .less file is already
+        // imported above), or even better, be able to assign classes to the parts of the slider similar to the
+        // whole slider className prop.
+        const activeStyle: React.CSSProperties = { backgroundColor: "#59b4d4" }; // buttonColor from signLanguage.less
+        const trimmedStyle: React.CSSProperties = {
+            backgroundColor: "#d2d2d2" // bloom-toolboxWhite from bloomUI.less
+        };
         return (
             <div id="videoStatsWrapper">
-                <div>{this.state.videoStatistics.duration}</div>
+                <Slider
+                    className="videoTrimSlider"
+                    value={start}
+                    onChange={v => this.setStart(v, maxDuration)}
+                    step={0.1}
+                    min={0.0}
+                    max={maxDuration}
+                    railStyle={activeStyle}
+                    trackStyle={trimmedStyle}
+                    handleStyle={activeStyle}
+                />
+                <div>
+                    {/* duration is stored with tenths of seconds, but only displayed with seconds*/
+                    this.state.videoStatistics.duration.substr(
+                        0,
+                        this.state.videoStatistics.duration.length - 2
+                    )}
+                </div>
                 <div>{this.state.videoStatistics.fileSize}</div>
                 <div>{this.state.videoStatistics.frameSize}</div>
                 <div>{this.state.videoStatistics.framesPerSecond}</div>
                 <div>{this.state.videoStatistics.fileFormat}</div>
             </div>
         );
+    }
+
+    private setStart(sliderStartValue: number, sliderStopValue: number) {
+        SignLanguageTool.setStart(sliderStartValue, sliderStopValue);
+        const stats = this.state.videoStatistics;
+        stats.startSeconds = sliderStartValue.toFixed(1);
+        stats.endSeconds = sliderStopValue.toFixed(1);
+        this.setState({ videoStatistics: stats });
     }
 
     public getCameraMessageLabel() {
@@ -314,7 +361,9 @@ export class SignLanguageToolControls extends React.Component<
                         fileSize: "",
                         frameSize: "",
                         framesPerSecond: "",
-                        fileFormat: ""
+                        fileFormat: "",
+                        startSeconds: DEFAULT_START,
+                        endSeconds: MAX_DURATION
                     }
                 });
             } else {
@@ -647,9 +696,25 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             });
             return;
         }
+        const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
+        const start = urlTimingObj.start;
+        const end = urlTimingObj.end; // could be -1.0
+        const stats = this.reactControls.state.videoStatistics;
+        stats.startSeconds = start;
+        stats.endSeconds = end;
+        this.reactControls.setState({ videoStatistics: stats });
         BloomApi.get("toolbox/fileExists?filename=" + src, result => {
-            this.reactControls.setState({ haveRecording: result.data });
-            this.reactControls.getVideoStatsFromFile();
+            const fileExists: boolean = result.data;
+            this.reactControls.setState({ haveRecording: fileExists });
+            if (fileExists) {
+                this.reactControls.getVideoStatsFromFile();
+                SignLanguageTool.seekToVideoStart(
+                    SignLanguageTool.getSelectedVideoElement(),
+                    parseFloat(
+                        this.reactControls.state.videoStatistics.startSeconds
+                    )
+                );
+            }
         });
         BloomApi.get(
             "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
@@ -712,5 +777,81 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private static getRecordingLabel(doc: Document): string {
         const labelElement = doc.getElementsByClassName("recordingLabel")[0]; // should only be one
         return labelElement !== null ? labelElement.textContent.trim() : null;
+    }
+
+    public static setStart(start: number, maxDuration: number) {
+        const video = this.getSelectedVideoElement();
+        const source = video.getElementsByTagName(
+            "source"
+        )[0] as HTMLSourceElement;
+        let src = source.getAttribute("src");
+        const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
+        src = urlTimingObj.url;
+        source.setAttribute(
+            "src",
+            src + "#t=" + start.toFixed(1) + "," + maxDuration.toFixed(1)
+        );
+        this.seekToVideoStart(video, start);
+    }
+
+    private static getSelectedVideoElement(): HTMLVideoElement {
+        const selectedContainers = SignLanguageTool.getVideoContainers(true); // s/b only one selected container
+        return selectedContainers[0].getElementsByTagName(
+            "video"
+        )[0] as HTMLVideoElement;
+    }
+
+    public static seekToVideoStart(videoElt: HTMLVideoElement, start: number) {
+        videoElt.currentTime = start;
+    }
+
+    // Returns an Object containing the results of executing a regexp on the src attribute of the source element.
+    // url: the url without timings
+    // start: the start time in seconds, or default of 0.0
+    // end: the end time in seconds, or default of -1.0 (temporary placeholder for maxDuration)
+    public static parseVideoSrcAttribute(srcAttr: string): UrlTimingObject {
+        const re = /(.*)#t=([0-9]*[.][0-9]+)[,]([0-9]*[.][0-9]+)+/;
+        const matches = re.exec(srcAttr);
+        // The matches object returned above is a RegExpExecArray. We create a specialized object to return.
+        const result: UrlTimingObject = new UrlTimingObject();
+        if (matches) {
+            result.url = matches[1];
+            if (matches.length > 2) {
+                result.start = matches[2];
+            }
+            if (matches.length > 3) {
+                result.end = matches[3];
+            }
+        } else {
+            result.url = srcAttr;
+        }
+        return result;
+    }
+
+    public static convertTimeStringToSecondsNumber(duration: string): number {
+        if (duration === "" || duration === MAX_DURATION) {
+            return 0;
+        }
+        // from https://stackoverflow.com/questions/9640266/convert-hhmmss-string-to-seconds-only-in-javascript/9640417
+        // though not the 'accepted' answer.
+        return duration
+            .split(":")
+            .reverse()
+            .reduce(
+                (prev, curr, i) => prev + parseFloat(curr) * Math.pow(60, i),
+                0
+            );
+    }
+}
+
+class UrlTimingObject {
+    public url: string;
+    public start: string;
+    public end: string;
+
+    constructor() {
+        this.url = "";
+        this.start = DEFAULT_START;
+        this.end = MAX_DURATION;
     }
 }
