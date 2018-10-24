@@ -1228,7 +1228,7 @@ namespace Bloom.Publish.Epub
 					continue;
 				var dstPath = CopyFileToEpub(srcPath, subfolder:kVideoFolder);
 				var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
-				HtmlDom.SetVideoElementUrl(new ElementProxy(vid), UrlPathString.CreateFromUnencodedString(newSrc, true));
+				HtmlDom.SetVideoElementUrl(new ElementProxy(vid), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
 			}
 		}
 
@@ -2124,31 +2124,14 @@ namespace Bloom.Publish.Epub
 			string existingFile;
 			if (_mapSrcPathToDestFileName.TryGetValue (srcPath, out existingFile))
 				return existingFile; // File already present, must be used more than once.
-			string originalFileName;
-			if (srcPath.StartsWith (Storage.FolderPath))
-				originalFileName = srcPath.Substring (Storage.FolderPath.Length + 1).Replace ("\\", "/");
-			// allows keeping folder structure
-			else
-				originalFileName = Path.GetFileName (srcPath); // probably can't happen, but in case, put at root.
-			// Validator warns against spaces in filenames. + and % and &<> are problematic because to get the real
-			// file name it is necessary to use just the right decoding process. Some clients may do this
-			// right but if we substitute them we can be sure things are fine.
-			// I'm deliberately not using UrlPathString here because it doesn't correctly encode a lot of Ascii characters like =$&<>
-			// which are technically not valid in hrefs
-			var encoded =
-				HttpUtility.UrlEncode (
-					originalFileName.Replace ("+", "_").Replace (" ", "_").Replace ("&", "_").Replace ("<", "_").Replace (">", "_"));
-			encoded = encoded.Replace("%2f","/");	// we don't want to encode directory separators!
-			var fileName = encoded.Replace ("%", "_");
+			var fileName = GetAdjustedFilename(srcPath, Storage.FolderPath);
 			// If the fileName starts with a folder inside the Bloom book that maps onto
 			// a folder in the epub, remove that folder from the fileName since the proper
 			// (quite possibly the same) folder name will be added below as needed.  This
 			// simplifies the processing for files being moved into a subfolder for the
 			// first time, or into a folder of a different name.
-			if (fileName.StartsWith("audio/"))
-				fileName = originalFileName.Substring(6);
-			else if (fileName.StartsWith("video/"))
-				fileName = originalFileName.Substring(6);
+			if (fileName.StartsWith("audio/") || fileName.StartsWith("video/"))
+				fileName = fileName.Substring(6);
 			string dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
@@ -2164,6 +2147,32 @@ namespace Bloom.Publish.Epub
 			_manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
 			_mapSrcPathToDestFileName [srcPath] = dstPath;
 			return dstPath;
+		}
+
+		public static string GetAdjustedFilename(string srcPath, string folderPath)
+		{
+			string originalFileName;
+			// keep subfolder structure if possible
+			if (!string.IsNullOrEmpty(folderPath) && srcPath.StartsWith(folderPath))
+				originalFileName = srcPath.Substring(folderPath.Length + 1).Replace('\\', '/');
+			else
+				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
+			// Validator warns against spaces in filenames. + and % and &<> are problematic because to get the real
+			// file name it is necessary to use just the right decoding process. Some clients may do this
+			// right but if we substitute them we can be sure things are fine.
+			// I'm deliberately not using UrlPathString here because it doesn't correctly encode a lot of Ascii characters like =$&<>
+			// which are technically not valid in hrefs
+			var revisedFileName = Regex.Replace(originalFileName, "[ +%&<>]", "_");
+			var encodedFileName = HttpUtility.UrlEncode(revisedFileName);
+			encodedFileName = encodedFileName.Replace("%2f","/");	// we don't want to encode directory separators!
+			// If a filename is encoded, epub readers don't seem to decode it very well in requesting
+			// the file.  Since we've protected ourselves against problematic characters, now we can
+			// protect against decoding issues by fixing encoded characters to effectively stay that
+			// way.  We could just change every problematic (nonalphanumeric) character to _, but
+			// doing things this way minimizes filename conflicts.  Note that the filename created
+			// here is stored verbatim in the ePUB's XHTML file and used verbatim in the filename
+			// stored in the ePUB archive.
+			return encodedFileName.Replace("%", "_");
 		}
 
 		private string SubfolderAdjustedName(string subfolder, string name)
