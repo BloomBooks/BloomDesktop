@@ -200,7 +200,7 @@ export default class AudioRecording {
                 .first()
                 .attr("data-audioRecordingMode");
             doWhenRecordingModeIsKnown(audioRecordingModeStr);
-        } else if (this.getPage().find("span.audio-sentence")) {
+        } else if (this.getPage().find("span.audio-sentence").length > 0) {
             // This may happen when loading books from 4.3 or earlier that already have text recorded,
             // and is especially important if the collection default is set to anything other than Sentence.
             doWhenRecordingModeIsKnown(AudioRecordingMode.Sentence);
@@ -324,7 +324,7 @@ export default class AudioRecording {
         changeTo: JQuery,
         checking?: boolean
     ): void {
-        if (current) {
+        if (current && current.length > 0) {
             current
                 .removeClass("ui-audioCurrent")
                 .removeClass("disableHighlight");
@@ -740,6 +740,14 @@ export default class AudioRecording {
     public newPageReady() {
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called. (e.g. when opening the toolbox with an empty text box)
         this.initializeForMarkup();
+    }
+
+    // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
+    public hideTool() {
+        this.stopListeningForLevels();
+
+        // Need to clear out any state. The next time this tool gets reopened, there is no guarantee that it will be reopened in the same context.
+        this.audioRecordingMode = AudioRecordingMode.Unknown;
     }
 
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
