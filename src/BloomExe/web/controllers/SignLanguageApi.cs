@@ -172,7 +172,7 @@ namespace Bloom.web.controllers
 			{
 				var videoContainer = GetSelectedVideoContainer();
 				string videoPath;
-				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
+				if (!GetFilePathFromVideoContainer(request, videoContainer, true, out videoPath))
 					return; // request.Failed was called inside the above method
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				if (!RobustFile.Exists(originalPath))
@@ -198,7 +198,7 @@ namespace Bloom.web.controllers
 			{
 				var videoContainer = GetSelectedVideoContainer();
 				string videoPath;
-				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
+				if (!GetFilePathFromVideoContainer(request, videoContainer, true, out videoPath))
 					return; // request.Failed was called inside the above method
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				if (!RobustFile.Exists(videoPath))
@@ -295,7 +295,7 @@ namespace Bloom.web.controllers
 			{
 				var videoContainer = GetSelectedVideoContainer();
 				string videoPath;
-				if (!GetFilePathFromVideoContainer(request, videoContainer, out videoPath))
+				if (!GetFilePathFromVideoContainer(request, videoContainer, true, out videoPath))
 					return; // request.Failed was called inside the above method
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				var label = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.SelectedVideo", "The selected video", "Appears in the contest \"X will be moved to the recycle bin\"");
@@ -329,7 +329,7 @@ namespace Bloom.web.controllers
 			lock (request)
 			{
 				string videoFilePath;
-				if (!GetFilePathFromVideoContainer(request, GetSelectedVideoContainer(), out videoFilePath))
+				if (!GetFilePathFromVideoContainer(request, GetSelectedVideoContainer(), false, out videoFilePath))
 					return; // request.Failed was called inside the above method
 				if (!RobustFile.Exists(videoFilePath))
 				{
@@ -498,7 +498,7 @@ namespace Bloom.web.controllers
 			return false;
 		}
 
-		private bool GetFilePathFromVideoContainer(ApiRequest request, GeckoHtmlElement videoContainer, out string videoFilePath)
+		private bool GetFilePathFromVideoContainer(ApiRequest request, GeckoHtmlElement videoContainer, bool forEditing, out string videoFilePath)
 		{
 			videoFilePath = null;
 			if (videoContainer == null)
@@ -509,7 +509,7 @@ namespace Bloom.web.controllers
 				return false;
 			}
 
-			if (WarnIfVideoCantChange(videoContainer))
+			if (forEditing && WarnIfVideoCantChange(videoContainer))
 			{
 				request.Failed("editing not allowed");
 				return false;
