@@ -125,12 +125,11 @@ function SetupVideoContainer(
 }
 
 function SetupClickToShowSignLanguageTool(containerDiv: Element) {
-    // if the user clicks on the video placeholder, bring up the sign language tool
-    if (containerDiv.classList.contains("bloom-noVideoSelected")) {
-        $(containerDiv).click(function() {
-            getToolboxFrameExports()
-                .getTheOneToolbox()
-                .activateToolFromId(SignLanguageToolControls.kToolID);
-        });
-    }
+    // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
+    // bring up the sign language tool
+    $(containerDiv).click(function() {
+        getToolboxFrameExports()
+            .getTheOneToolbox()
+            .activateToolFromId(SignLanguageToolControls.kToolID);
+    });
 }
