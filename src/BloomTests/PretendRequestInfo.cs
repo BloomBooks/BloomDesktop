@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.IO;
 using System.Text;
 using SIL.IO;
 
@@ -119,5 +120,10 @@ namespace Bloom.Api
 		public string RawUrl { get; private set; }
 
 		public byte[] GetRawPostData() { return new byte[0];}
+
+		public Stream GetRawPostStream()
+		{
+			return null;
+		}
 	}
 }
