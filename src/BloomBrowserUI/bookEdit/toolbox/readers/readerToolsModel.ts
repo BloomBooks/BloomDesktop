@@ -657,6 +657,14 @@ export class ReaderToolsModel {
 
         for (let i = 0; i < words.length; i++) {
             const dw = new DataWord(words[i]);
+            // Ensure a proper count for sight words found in the sample text data.
+            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6264.
+            const possibleCount = this.allWords[words[i]];
+            if (possibleCount) {
+                dw.Count = possibleCount;
+            } else {
+                dw.Count = 0; // Not found in sample text data.
+            }
             dw.isSightWord = true;
             returnVal.push(dw);
         }
