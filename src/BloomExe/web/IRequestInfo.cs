@@ -1,6 +1,8 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
+using System.IO;
+
 namespace Bloom.Api
 {
 	public enum HttpMethods
@@ -30,5 +32,6 @@ namespace Bloom.Api
 		void ExternalLinkSucceeded();
 		string DoNotCacheFolder { set; }
 		byte[] GetRawPostData();
+		Stream GetRawPostStream();
 	}
 }

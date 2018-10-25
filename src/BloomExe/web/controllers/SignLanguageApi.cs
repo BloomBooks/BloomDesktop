@@ -64,11 +64,26 @@ namespace Bloom.web.controllers
 		{
 			lock (request)
 			{
-				var bytes = request.RawPostData;
-				var fileName = GetNewVideoFileName();
 				var videoFolder = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
+				var fileName = GetNewVideoFileName();
 				var path = Path.Combine(videoFolder, fileName);
-				SaveVideoFile(path, bytes);
+				using (var rawVideo = TempFile.CreateAndGetPathButDontMakeTheFile())
+				{
+					using (var rawVideoOutput = new FileStream(rawVideo.Path, FileMode.Create))
+					{
+						// Do NOT just get RawPostData and try to write it to a file; this
+						// typically runs out of memory for anything more than about 2min of video.
+						// (It write to a MemoryStream, and this seems to manage memory very badly.
+						// 66MB should not be a huge problem, but somehow it is.)
+						using (var rawVideoInput = request.RawPostStream)
+						{
+							rawVideoInput.CopyTo(rawVideoOutput);
+						}
+
+						SaveVideoFile(path, rawVideo.Path);
+					}
+				}
+
 				var videoContainer = GetSelectedEditableVideoContainer(request, path);
 				if (videoContainer == null)
 					return;
@@ -126,19 +141,17 @@ namespace Bloom.web.controllers
 		/// trim the output later.  But the smaller size of the h264 format may be attractive if the
 		/// quality is still good enough to work from.
 		/// </remarks>
-		private static void SaveVideoFile(string path, byte [] bytes)
+		private static void SaveVideoFile(string path, string rawVideoPath)
 		{
 			var ffmpeg = FindFfmpegProgram();
 			if (ffmpeg != string.Empty)
 			{
-				var rawVideo = TempFile.CreateAndGetPathButDontMakeTheFile();
-				RobustFile.WriteAllBytes(rawVideo.Path, bytes);
 				// -hide_banner = don't write all the version and build information to the console
 				// -y = always overwrite output file
 				// -v 16 = verbosity level reports only errors, including ones that can be recovered from
 				// -i <path> = specify input file
 				// -force_key_frames "expr:gte(t,n_forced*0.5)" = insert keyframe every 0.5 seconds in the output file
-				var parameters = $"-hide_banner -y -v 16 -i \"{rawVideo.Path}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"";
+				var parameters = $"-hide_banner -y -v 16 -i \"{rawVideoPath}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"";
 				var result = CommandLineRunner.Run(ffmpeg, parameters, "", 60, new NullProgress());
 				var msg = string.Empty;
 				if (result.DidTimeOut)
@@ -162,12 +175,12 @@ namespace Bloom.web.controllers
 				{
 					Logger.WriteEvent(msg);
 					ErrorReport.NotifyUserOfProblem(msg);
-					RobustFile.WriteAllBytes(path, bytes);     // use the original, hoping it's better than nothing.
+					RobustFile.Copy(rawVideoPath, path);     // use the original, hoping it's better than nothing.
 				}
 			}
 			else
 			{
-				RobustFile.WriteAllBytes(path, bytes);
+				RobustFile.Copy(rawVideoPath, path);
 			}
 		}
 

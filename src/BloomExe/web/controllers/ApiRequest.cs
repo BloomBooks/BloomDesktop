@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Windows.Forms;
@@ -272,6 +273,7 @@ namespace Bloom.Api
 		}
 
 		public byte[] RawPostData => _requestInfo.GetRawPostData();
+		public Stream RawPostStream => _requestInfo.GetRawPostStream();
 
 		public NameValueCollection GetPostDataWhenFormEncoded()
 		{
