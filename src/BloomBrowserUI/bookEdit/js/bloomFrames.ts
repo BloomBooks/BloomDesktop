@@ -31,6 +31,7 @@ function getRootWindow(): Window {
     return window.parent || window;
 }
 function getFrame(id: string): WindowWithExports {
+    // Enhance: This needs a plan for what happens if getElementById returns null.
     return (<HTMLIFrameElement>getRootWindow().document.getElementById(id))
         .contentWindow as WindowWithExports;
 }
