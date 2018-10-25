@@ -187,7 +187,7 @@ namespace Bloom.web.controllers
 				var videoContainer = GetSelectedVideoContainer();
 				string fileName;
 				decimal[] timings;
-				if (!ParseVideoContainerSourceAttribute(request, videoContainer, out fileName, out timings))
+				if (!ParseVideoContainerSourceAttribute(request, videoContainer, true, out fileName, out timings))
 					return; // method reports failure
 				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
@@ -217,7 +217,7 @@ namespace Bloom.web.controllers
 				var videoContainer = GetSelectedVideoContainer();
 				string fileName;
 				decimal[] timings;
-				if (!ParseVideoContainerSourceAttribute(request, videoContainer, out fileName, out timings)) return;
+				if (!ParseVideoContainerSourceAttribute(request, videoContainer, true, out fileName, out timings)) return;
 				_currentVideoStartSeconds = timings[0];
 				_currentVideoEndSeconds = timings[1];
 				var videoPath = Path.Combine(CurrentBook.FolderPath, fileName);
@@ -318,7 +318,7 @@ namespace Bloom.web.controllers
 				var videoContainer = GetSelectedVideoContainer();
 				string fileName;
 				decimal[] dummy;
-				if (!ParseVideoContainerSourceAttribute(request, videoContainer, out fileName, out dummy))
+				if (!ParseVideoContainerSourceAttribute(request, videoContainer, true, out fileName, out dummy))
 				{
 					request.Failed("no file found");
 					return;
@@ -359,7 +359,7 @@ namespace Bloom.web.controllers
 			{
 				string fileName;
 				decimal[] timings;
-				var gotFileName = ParseVideoContainerSourceAttribute(request, GetSelectedVideoContainer(), out fileName, out timings);
+				var gotFileName = ParseVideoContainerSourceAttribute(request, GetSelectedVideoContainer(), false, out fileName, out timings);
 				if (!gotFileName)
 				{
 					return; // request.Failed was called inside the above method
@@ -537,7 +537,7 @@ namespace Bloom.web.controllers
 			return false;
 		}
 
-		private bool ParseVideoContainerSourceAttribute(ApiRequest request, GeckoHtmlElement videoContainer,
+		private bool ParseVideoContainerSourceAttribute(ApiRequest request, GeckoHtmlElement videoContainer, bool forEditing,
 			out string fileName, out decimal[] timings)
 		{
 			fileName = null;
@@ -550,7 +550,7 @@ namespace Bloom.web.controllers
 				return false;
 			}
 
-			if (WarnIfVideoCantChange(videoContainer))
+			if (forEditing && WarnIfVideoCantChange(videoContainer))
 			{
 				request.Failed("editing not allowed");
 				return false;
