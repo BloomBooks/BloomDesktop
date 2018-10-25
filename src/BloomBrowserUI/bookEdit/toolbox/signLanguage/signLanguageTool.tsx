@@ -412,10 +412,15 @@ export class SignLanguageToolControls extends React.Component<
         this.setState({
             cameraAccess: false
         });
+        // In case the user plugs in a camera, try once a second to turn it on.
+        window.setTimeout(() => this.turnOnVideo(), 1000);
     }
 
     // callback from getUserMedia when it succeeds; gives us a stream we can monitor and record from.
     private startMonitoring(stream: MediaStream) {
+        this.setState({
+            cameraAccess: true
+        });
         this.videoStream = stream;
         const videoMonitor = document.getElementById(
             "videoMonitor"
