@@ -38,7 +38,7 @@ export default class TalkingBookTool implements ITool {
 
     public hideTool() {
         if (AudioRecorder && AudioRecorder.theOneAudioRecorder) {
-            AudioRecorder.theOneAudioRecorder.stopListeningForLevels();
+            AudioRecorder.theOneAudioRecorder.hideTool();
         }
     }
 
