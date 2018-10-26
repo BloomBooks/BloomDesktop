@@ -5,7 +5,10 @@ import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import Slider from "rc-slider";
 import "./signLanguage.less";
-import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
+import {
+    RequiresBloomEnterpriseWrapper,
+    enterpriseFeaturesEnabled
+} from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
 import { HelpLink } from "../../../react_components/helpLink";
 
@@ -400,11 +403,15 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public turnOnVideo() {
-        const constraints = { video: true };
-        navigator.mediaDevices
-            .getUserMedia(constraints)
-            .then(stream => this.startMonitoring(stream))
-            .catch(reason => this.errorCallback(reason));
+        enterpriseFeaturesEnabled().then(enabled => {
+            const constraints = { video: true };
+            if (enabled) {
+                navigator.mediaDevices
+                    .getUserMedia(constraints)
+                    .then(stream => this.startMonitoring(stream))
+                    .catch(reason => this.errorCallback(reason));
+            }
+        });
     }
 
     public turnOffVideo() {
