@@ -1158,7 +1158,15 @@ export default class AudioRecording {
             if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
                 if (this.isRootRecordableDiv(root)) {
                     // Save which setting was used, so we can load it properly later
-                    root.setAttribute("data-audioRecordingMode", "Sentence");
+                    if (
+                        root.getAttribute("data-audioRecordingMode") !=
+                        "Sentence"
+                    ) {
+                        root.setAttribute(
+                            "data-audioRecordingMode",
+                            "Sentence"
+                        );
+                    }
 
                     // Cleanup markup from AudioRecordingMode=TextBox
                     if (root.classList.contains(kAudioSentence)) {
@@ -1168,7 +1176,12 @@ export default class AudioRecording {
             } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                 if (this.isRootRecordableDiv(root)) {
                     // Save which setting was used, so we can load it properly later
-                    root.setAttribute("data-audioRecordingMode", "TextBox");
+                    if (
+                        root.getAttribute("data-audioRecordingMode") !=
+                        "TextBox"
+                    ) {
+                        root.setAttribute("data-audioRecordingMode", "TextBox");
+                    }
 
                     // Cleanup markup from AudioRecordingMode=Sentence
                     $(root)
@@ -1405,22 +1418,43 @@ export default class AudioRecording {
 
     // ------------ State Machine ----------------
 
-    private changeStateAndSetExpected(expectedVerb: string) {
+    private changeStateAndSetExpected(
+        expectedVerb: string,
+        numRetriesRemaining: number = 1
+    ) {
         console.log("changeState(" + expectedVerb + ")");
 
         // Note: It's best not to modify the Enabled/Disabled state more than once if possible.
         //       It is subtle but it is possible to notice the flash of an element going from enabled -> disabled -> enabled.
         //       (and it is extremely noticeable if this function gets called several times in quick succession)
+        // Enhance: Consider whether it'd be a good idea to disable click events on these buttons, but still leave the buttons in their previous visual state.
+        //          In theory, there can be a small delay between when we are supposed to change state (right now) and when we actually determine the correct state (after a callback)
 
         if (this.getPage().find(".ui-audioCurrent").length === 0) {
-            this.setStatus("record", Status.Disabled);
-            this.setStatus("play", Status.Disabled);
-            this.setStatus("next", Status.Disabled);
-            this.setStatus("prev", Status.Disabled);
-            this.setStatus("clear", Status.Disabled);
-            this.setStatus("listen", Status.Disabled);
+            // We have reached an unexpected state :(
+            // (It can potentially happen if changes applied to the markup get wiped out and overwritten e.g. by CkEditor Onload())
+            if (numRetriesRemaining > 0) {
+                // It's best not to leave everything disabled. The user will be kinda stuck without any navigation.
+                // Attempt to set the markup to the first element
+                //  Practically speaking, it's most likely to get into this errornous state when loading which will be on the first element.
+                //  Even if the first element is "wrong"... the alternative is it points to nothing and you are stuck.
+                //  IMO pointing to the first element is less wrong than disabled the whole toolbox.
+                this.setCurrentAudioElementToFirstAudioElement(false);
+                this.changeStateAndSetExpected(
+                    expectedVerb,
+                    numRetriesRemaining - 1
+                );
+            } else {
+                // We have reached an error state and attempts to self-correct it haven't succeeded either. :(
+                this.setStatus("record", Status.Disabled);
+                this.setStatus("play", Status.Disabled);
+                this.setStatus("next", Status.Disabled);
+                this.setStatus("prev", Status.Disabled);
+                this.setStatus("clear", Status.Disabled);
+                this.setStatus("listen", Status.Disabled);
 
-            return;
+                return;
+            }
         }
 
         this.setEnabledOrExpecting("record", expectedVerb);
