@@ -177,8 +177,26 @@ namespace Bloom.Book
 
 			}
 
-			//default to A5Portrait
-			yield return new Layout {SizeAndOrientation = FromString("A5Portrait")};
+			// default set of Layouts (These used to be given in 'Basic Book.less'.)
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6125.
+			yield return new Layout { SizeAndOrientation = FromString("A5Portrait") };
+			yield return new Layout { SizeAndOrientation = FromString("A5Landscape") };
+			yield return new Layout { SizeAndOrientation = FromString("A6Portrait") };
+			yield return new Layout { SizeAndOrientation = FromString("A6Landscape") };
+			yield return new Layout { SizeAndOrientation = FromString("A4Portrait") };
+			yield return new Layout { SizeAndOrientation = FromString("A4Landscape") };
+			yield return new Layout { SizeAndOrientation = FromString("A4Landscape"), Style = "SideBySide" };
+			yield return new Layout { SizeAndOrientation = FromString("A4Landscape"), Style = "SplitAcrossPages" }; // does this work anywhere?
+			yield return new Layout { SizeAndOrientation = FromString("A3Landscape") };
+			yield return new Layout { SizeAndOrientation = FromString("B5Portrait") };
+			yield return new Layout { SizeAndOrientation = FromString("LetterPortrait") };
+			yield return new Layout { SizeAndOrientation = FromString("LetterLandscape") };
+			yield return new Layout { SizeAndOrientation = FromString("HalfLetterPortrait") };
+			yield return new Layout { SizeAndOrientation = FromString("HalfLetterLandscape") };
+			yield return new Layout { SizeAndOrientation = FromString("QuarterLetterPortrait") };
+			yield return new Layout { SizeAndOrientation = FromString("QuarterLetterLandscape") };
+			yield return new Layout { SizeAndOrientation = FromString("Device16x9Portrait") };
+			yield return new Layout { SizeAndOrientation = FromString("Device16x9Landscape") };
 		}
 
 
