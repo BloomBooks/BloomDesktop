@@ -128,31 +128,37 @@ function SetupVideoContainer(
 function videoSetupEventHandler(e: Event) {
     const video = e.target as HTMLVideoElement;
     const start: number = getVideoStartSeconds(video);
-    SignLanguageTool.setCurrentVideoPoint(video, start);
+    SignLanguageTool.setCurrentVideoPoint(start, video);
 }
 
 function videoPlayingEventHandler(e: Event) {
     // The main purpose of this handler is to stop the playback when the video reaches
     // the endPoint set by the user, since the (e.g.) "#t=1.3,3.4" format seems to stop appropriately in Firefox,
-    // but not in GeckoFx.
+    // but not in Geckofx. I've tested it in FF45 and FF63 and the video controls respect the segment timing.
+    // It is conceivable that we won't need this code if we can figure out why Bloom's Geckofx isn't respecting
+    // the timings. Currently running our code on Geckofx60 gets us a NotImplementedException inside of
+    // the SignLanguageApi C# code (in Geckofx-Core).
     const video = e.target as HTMLVideoElement;
     let end: number = getVideoEndSeconds(video);
     if (end === -1.0) {
         end = video.duration;
     }
-    checkForEndPointInPlayback(video, end);
+    resetToStartAfterPlayingToEndPoint(video, end);
 }
 
-function checkForEndPointInPlayback(video: HTMLVideoElement, endPoint: number) {
+function resetToStartAfterPlayingToEndPoint(
+    video: HTMLVideoElement,
+    endPoint: number
+) {
     window.setTimeout(() => {
         if (video.currentTime > endPoint) {
             video.pause();
             SignLanguageTool.setCurrentVideoPoint(
-                video,
-                getVideoStartSeconds(video)
+                getVideoStartSeconds(video),
+                video
             );
         } else {
-            checkForEndPointInPlayback(video, endPoint);
+            resetToStartAfterPlayingToEndPoint(video, endPoint);
         }
     }, 200);
 }

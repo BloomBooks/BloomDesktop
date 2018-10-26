@@ -2010,6 +2010,11 @@
         <source xml:lang="en">Start Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true">
+        <source xml:lang="en">Trim</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Trim</note>
+        <note>Appears above sign language video trimming sliders</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
         <source xml:lang="en">Here is what your camera sees:</source>
         <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
