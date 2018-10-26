@@ -2002,6 +2002,10 @@
         <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
         <note>Appears in the context "X will be moved to the recycle bin"</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectSignLanguageBox" sil:dynamic="true">
+        <source xml:lang="en">To use this tool, select a sign language box on the page.</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.SelectSignLanguageBox</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
         <source xml:lang="en">Start Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>

@@ -110,6 +110,17 @@
     pointer-events: none;
 }
 
+.signLanguageFrame {
+    // The video monitor box takes up space even when hidden.
+    .disabledVideoMonitor {
+        visibility: hidden;
+        // This shouldn't be necessary but in FF 45 it seems to be.
+        video {
+            display: none;
+        }
+    }
+}
+
 .ui-accordion h3[data-toolId="signLanguageTool"] span.ui-accordion-header-icon {
     background-image: url("signLanguageTool.svg") !important;
 }
