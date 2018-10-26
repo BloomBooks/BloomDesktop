@@ -337,8 +337,7 @@ namespace Bloom.web.controllers
 
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				var label = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.SelectedVideo", "The selected video", "Appears in the contest \"X will be moved to the recycle bin\"");
-				var didDelete = ConfirmRecycleDialog.ConfirmThenRecycle(label, videoPath);
-				if (!didDelete)
+				if (!ConfirmRecycleDialog.JustConfirm(label))
 				{
 					// We didn't exactly succeed, but having the user cancel is such a normal
 					// event that posting a failure, which is a nuisance to ignore, is not warranted.
@@ -358,6 +357,9 @@ namespace Bloom.web.controllers
 					View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 					View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 				}));
+				// After we refresh the page, breaking any state that has the video locked because it's been played,
+				// we should be actually able to recycle it.
+				ConfirmRecycleDialog.Recycle(videoPath);
 				request.PostSucceeded();
 			}
 		}
