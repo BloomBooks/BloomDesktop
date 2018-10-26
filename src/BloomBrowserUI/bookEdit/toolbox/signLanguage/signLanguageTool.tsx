@@ -306,10 +306,16 @@ export class SignLanguageToolControls extends React.Component<
         // whole slider className prop.
         const activeStyle: React.CSSProperties = { backgroundColor: "#59b4d4" }; // buttonColor from signLanguage.less
         const trimmedStyle: React.CSSProperties = {
-            backgroundColor: "#d2d2d2" // bloom-toolboxWhite from bloomUI.less
+            backgroundColor: "#575757" // bloom-gray or DisabledButtonColor from bloomUI.less
         };
         return (
             <div id="videoStatsWrapper">
+                <Label
+                    l10nKey="EditTab.Toolbox.SignLanguage.Trim"
+                    className="trimLabel"
+                >
+                    Trim
+                </Label>
                 <Range
                     className="videoTrimSlider"
                     count={1}
@@ -324,9 +330,8 @@ export class SignLanguageToolControls extends React.Component<
                     allowCross={false}
                     pushable={false}
                     max={maxDuration}
-                    railStyle={activeStyle}
-                    trackStyle={[trimmedStyle, trimmedStyle]}
-                    handleStyle={activeStyle}
+                    railStyle={trimmedStyle}
+                    trackStyle={[activeStyle, activeStyle]}
                 />
                 <div>
                     {/* duration is stored with tenths of seconds, but only displayed with seconds*/
