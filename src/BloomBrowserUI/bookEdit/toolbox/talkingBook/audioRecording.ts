@@ -89,6 +89,7 @@ export default class AudioRecording {
     private awaitingNewRecording: boolean;
     private audioRecordingMode: AudioRecordingMode;
     private recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
+    private isShowing: boolean;
 
     private listenerFunction: (MessageEvent) => void;
 
@@ -238,6 +239,7 @@ export default class AudioRecording {
             this.changeStateAndSetExpected("");
             return;
         }
+
         this.updateMarkupAndControlsToCurrentText();
 
         this.changeStateAndSetExpected("record");
@@ -248,7 +250,7 @@ export default class AudioRecording {
     // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
     public addAudioLevelListener(): void {
         WebSocketManager.addListener(kWebsocketContext, e => {
-            if (e.id == "peakAudioLevel") this.setstaticPeakLevel(e.message);
+            if (e.id == "peakAudioLevel") this.setStaticPeakLevel(e.message);
         });
     }
 
@@ -744,6 +746,7 @@ export default class AudioRecording {
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
     public hideTool() {
+        this.isShowing = false;
         this.stopListeningForLevels();
 
         // Need to clear out any state. The next time this tool gets reopened, there is no guarantee that it will be reopened in the same context.
@@ -752,6 +755,8 @@ export default class AudioRecording {
 
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
     public updateMarkupAndControlsToCurrentText() {
+        this.isShowing = true;
+
         var editable = this.getRecordableDivs();
         if (editable.length === 0) {
             // no editable text on this page.
@@ -777,6 +782,53 @@ export default class AudioRecording {
         //thisClass.setStatus('record', Status.Expected);
         thisClass.levelCanvas = $("#audio-meter").get()[0];
 
+        this.setCurrentAudioElementToFirstAudioElement(false); // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
+
+        // Note: Marking up the Current Element needs to happen after CKEditor's onload() fully finishes.  (onload sets the HTML of the bloom-editable to its original value, so it can wipe out any changes made to the original value).
+        //   There is a race condition as to which one finishes first.  We need to  finish AFTER Ckeditor's onload()
+        //   Strange because... supposedly this gets called through:
+        //   applyToolboxStateToUpdatedPage() -> doWhenPageReady() -> doWhenCkEditorReady() -> ... setupForRecording() -> updateMarkupAndControlsToCurrentText()
+        //   That means that this is some code which EXPECTS the CkEditor to be fully loaded, but somehow onload() is still getting called afterward. needs more investigation.
+        //     I suspect it might be a 2nd call to onload(). In some cases with high delays, you can observe that the toolbox is waiting for something (probaby CKEditor) to finish before it loads itself.
+        //
+        // Enhance (long-term): Why is onload() still called after doWhenCkEditorReady()?  Does updating the markup trigger an additional onload()?
+        // In the short-term, to deal with that, we just call the function several times at various delays to try to get it right.
+        //
+        // Estimated failure rates:
+        //   Synchronous (no timeout): 10/31 failure rate
+        //   Nested timeouts (20, 20): I estimated 2/13 fail rate
+        //   Nested timeouts (20, 100): 3/30 failure rate.  (Note: ideally we want at least 10 failures before we can semi-accurately estimate the probability)
+        //   Parallel timeouts (20, 100, 500): 0/30 failure rate.  Sometimes (probably 30%) single on-off-on flash of the highlight.
+        //   Parallel timeouts (20, exponential back-offs starting from 100): 0/30 failure rate. Flash still problematic.
+
+        let delayInMilliseconds = 20;
+        while (delayInMilliseconds < 1000) {
+            // Keep setting the current highlight for an additional roughly 1 second
+            setTimeout(() => {
+                this.setCurrentAudioElementToFirstAudioElement(true);
+            }, delayInMilliseconds);
+
+            delayInMilliseconds *= 2;
+        }
+    }
+
+    public setCurrentAudioElementToFirstAudioElement(
+        isEarlyAbortEnabled: boolean = false
+    ) {
+        if (isEarlyAbortEnabled && !this.isShowing) {
+            // e.g., the tool was closed during the timeout interval. We must not apply any markup
+            return;
+        }
+
+        const audioCurrentList = this.getPage().find(".ui-audioCurrent");
+
+        if (isEarlyAbortEnabled && audioCurrentList.length >= 1) {
+            // audioCurrent highlight is already working, so don't bother trying to fix anything up.
+            // I think this probably can also help if you rapidly check and uncheck the checkbox, then click Next.
+            // We wouldn't want multiple things highlighted, or end up pointing to the wrong thing, etc.
+            return;
+        }
+
         const firstSentence = this.getPage()
             .find(kAudioSentenceClassSelector)
             .first();
@@ -784,16 +836,14 @@ export default class AudioRecording {
             // no recordable sentence found.
             return;
         }
-        thisClass.setCurrentAudioElement(
-            this.getPage().find(".ui-audioCurrent"),
-            firstSentence
-        ); // typically first arg matches nothing.
+
+        this.setCurrentAudioElement(audioCurrentList, firstSentence); // typically first arg matches nothing.
     }
 
     // This gets invoked via websocket message. It draws a series of bars
     // (reminiscent of leds in a hardware level meter) within the canvas in the
     //  top right of the bubble to indicate the current peak level.
-    public setstaticPeakLevel(level: string): void {
+    public setStaticPeakLevel(level: string): void {
         if (!this.levelCanvas) return; // just in case C# calls this unexpectedly
         var ctx = this.levelCanvas.getContext("2d");
         // Erase the whole canvas
@@ -1357,16 +1407,21 @@ export default class AudioRecording {
 
     private changeStateAndSetExpected(expectedVerb: string) {
         console.log("changeState(" + expectedVerb + ")");
-        this.setStatus("record", Status.Disabled);
-        this.setStatus("play", Status.Disabled);
-        this.setStatus("next", Status.Disabled);
-        this.setStatus("prev", Status.Disabled);
-        this.setStatus("clear", Status.Disabled);
-        this.setStatus("listen", Status.Disabled);
 
-        this.enableRecordingModeControl(); // as with the disabling above, we will set the state we really want below
+        // Note: It's best not to modify the Enabled/Disabled state more than once if possible.
+        //       It is subtle but it is possible to notice the flash of an element going from enabled -> disabled -> enabled.
+        //       (and it is extremely noticeable if this function gets called several times in quick succession)
 
-        if (this.getPage().find(".ui-audioCurrent").length === 0) return;
+        if (this.getPage().find(".ui-audioCurrent").length === 0) {
+            this.setStatus("record", Status.Disabled);
+            this.setStatus("play", Status.Disabled);
+            this.setStatus("next", Status.Disabled);
+            this.setStatus("prev", Status.Disabled);
+            this.setStatus("clear", Status.Disabled);
+            this.setStatus("listen", Status.Disabled);
+
+            return;
+        }
 
         this.setEnabledOrExpecting("record", expectedVerb);
 
@@ -1380,9 +1435,14 @@ export default class AudioRecording {
                 if (response.data === "exists") {
                     this.setStatus("clear", Status.Enabled);
                     this.setEnabledOrExpecting("play", expectedVerb);
+                } else {
+                    this.setStatus("clear", Status.Disabled);
+                    this.setStatus("play", Status.Disabled);
                 }
             })
             .catch(error => {
+                this.setStatus("clear", Status.Disabled);
+                this.setStatus("play", Status.Disabled);
                 toastr.error(
                     "Error checking on audio file " + error.statusText
                 );
@@ -1391,9 +1451,13 @@ export default class AudioRecording {
 
         if (this.getNextAudioElement()) {
             this.setEnabledOrExpecting("next", expectedVerb);
+        } else {
+            this.setStatus("next", Status.Disabled);
         }
         if (this.getPreviousAudioElement()) {
             this.setStatus("prev", Status.Enabled);
+        } else {
+            this.setStatus("prev", Status.Disabled);
         }
 
         //set listen button based on whether we have an audio at all for this page
@@ -1407,12 +1471,16 @@ export default class AudioRecording {
                 if (response.statusText == "OK") {
                     this.setStatus("listen", Status.Enabled);
                     this.disableRecordingModeControl();
+                } else {
+                    this.setStatus("listen", Status.Disabled);
+                    this.enableRecordingModeControl();
                 }
             })
             .catch(response => {
                 // This handles the case where AudioRecording.HandleEnableListenButton() (in C#)
                 // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
                 this.setStatus("listen", Status.Disabled);
+                this.enableRecordingModeControl();
             });
     }
 
