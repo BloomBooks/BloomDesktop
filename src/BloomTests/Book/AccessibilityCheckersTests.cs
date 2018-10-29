@@ -133,6 +133,22 @@ namespace BloomTests.Book
 			Assert.AreEqual(0, results.Count(), "No errors were expected");
 		}
 
+		[Test]
+		public void CheckAudioForAllText_RecordingOnBloomEditable_NoErrors()
+		{
+			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
+										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on audio-sentence' id='iExist' lang='{
+					_collectionSettings.Language1Iso639Code
+				}'>
+											<p>This is the text</p>
+										</div>
+									</div>
+								</div>");
+
+			var results = AccessibilityCheckers.CheckAudioForAllText(testBook);
+			Assert.AreEqual(0, results.Count(), "No errors were expected");
+		}
+
 		[TestCase("<p>A flower.</p>")]
 		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span>
 					A dog.</p>")]

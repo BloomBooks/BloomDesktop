@@ -39,6 +39,8 @@ export default class WebSocketManager {
             let websocketPort = parseInt(window.location.port, 10) + 1;
             //here we're passing "socketName" in the "subprotocol" parameter, just for ease of identifying
             //sockets on the server side when debugging.
+
+            // Enhance: This needs a try/catch or something. What is the plan if the constructor throws an exception?
             WebSocketManager.socketMap[clientContext] = new WebSocket(
                 "ws://127.0.0.1:" + websocketPort.toString(),
                 clientContext
