@@ -635,16 +635,20 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // try to account for the fact that it disappears once first clicked).
         // It's also fairly fragile...future versions of Gecko may not have the exact same
         // controls in the same places. But it's the best I've been able to figure out.
-        const buttonRadius = 28;
-        const clientRect = container.getBoundingClientRect();
-        const x = event.clientX - clientRect.left;
+        const clientRect = container.getBoundingClientRect(); // real pixels, larger rect when zoomed
+        const scale = clientRect.height / container.offsetHeight; // e.g., 1.3 at 130%
+        const buttonRadius = 28 * scale;
+        const x = event.clientX - clientRect.left; // clientX and Y are also real pixels
         const y = event.clientY - clientRect.top;
+        // The fudge factor of 30 was determined experimentally. I don't know why
+        // Firefox puts the play button just above center.
+        const heightOfPlayCenter = (clientRect.height - 30 * scale) / 2;
         if (
-            y < container.offsetHeight - 40 && // above the control bar across the bottom
-            (y < container.offsetHeight / 2 - buttonRadius || // above the play button
-            y > container.offsetHeight / 2 + buttonRadius || // below the play button
-            x < container.offsetWidth / 2 - buttonRadius || // left of play button
-                x > container.offsetWidth / 2 + buttonRadius)
+            y < clientRect.height - 40 * scale && // above the control bar across the bottom
+            (y < heightOfPlayCenter - buttonRadius || // above the play button
+            y > heightOfPlayCenter + buttonRadius || // below the play button
+            x < clientRect.width / 2 - buttonRadius || // left of play button
+                x > clientRect.width / 2 + buttonRadius)
         ) {
             // right of play button
             event.preventDefault();
