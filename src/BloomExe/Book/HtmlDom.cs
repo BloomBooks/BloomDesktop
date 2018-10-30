@@ -934,7 +934,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private static string GetStyle(XmlNode elt)
+		public static string GetStyle(XmlNode elt)
 		{
 			var classAttr = elt.Attributes?["class"];
 			return classAttr?.Value.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
