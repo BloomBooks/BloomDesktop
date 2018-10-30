@@ -52,6 +52,7 @@ namespace Bloom.Book
 		HtmlDom MakeDomRelocatable(HtmlDom dom);
 		string SaveHtml(HtmlDom bookDom);
 		void SetBookName(string name);
+		string GetHtmlMessageIfFeatureIncompatibility();
 		string GetValidateErrors();
 		void CheckBook(IProgress progress,string pathToFolderOfReplacementImages = null);
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
@@ -64,6 +65,7 @@ namespace Bloom.Book
         BookInfo BookInfo { get; set; }
 		string NormalBaseForRelativepaths { get; }
 		string InitialLoadErrors { get; }
+		bool ErrorAllowsReporting { get; }
 		void UpdateSupportFiles();
 		void Update(string fileName, string factoryPath = "");
 		string Duplicate();
@@ -98,8 +100,10 @@ namespace Bloom.Book
 
 		public event EventHandler FolderPathChanged;
 
+
 		// Returns any errors reported while loading the book (during 'expensive initialization').
 		public string InitialLoadErrors { get; private set; }
+		public bool ErrorAllowsReporting { get; private set; }    // True if we want to display a Report to Bloom Support button
 
 		public BookInfo BookInfo
 		{
@@ -214,9 +218,9 @@ namespace Bloom.Book
 
 		public HtmlDom Dom { get; private set; }
 
-		public static string GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(HtmlDom dom,string path)
+		public static string GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(HtmlDom dom, string path)
 		{
-			var versionString = dom.GetMetaValue("BloomFormatVersion", "").Trim();
+			var versionString = dom.GetMetaValue("BloomFormatVersion", "").Trim();			
 			if (string.IsNullOrEmpty(versionString))
 				return "";// "This file lacks the following required element: <meta name='BloomFormatVersion' content='x.y'>";
 
@@ -227,14 +231,69 @@ namespace Bloom.Book
 			if (versionFloat > float.Parse(kBloomFormatVersion, CultureInfo.InvariantCulture))
 			{
 				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
-					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}","{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
+					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}", "{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
 				msg = string.Format(msg, path, string.Format("<a href='{0}'>BloomLibrary.org</a>", UrlLookup.LookupUrl(UrlType.LibrarySite)));
-				msg += string.Format(". (Format {0} vs. {1})",versionString, kBloomFormatVersion);
+				msg += string.Format(". (Format {0} vs. {1})", versionString, kBloomFormatVersion);
 				return msg;
 			}
 
 			return null;
 		}
+
+		// Returns HTML with error message for any features that this book contains which cannot be opened by this version of Bloom.
+		// Note that although we don't allow the user to open the book (because if this version opens and saves the book, it will cause major problems for a later version of Bloom),
+		// here isn't actually any corruption or malformed data or anything particularly wrong with the book storage. So, we need to handle these kind of errors differently than validation errors.
+		public string GetHtmlMessageIfFeatureIncompatibility()
+		{
+			// Check if there are any features in this file format (which is readable), but which won't be supported (and have effects bad enough to warrant blocking opening) in this version.
+			string featureVersionRequirementJson = Dom.GetMetaValue("FeatureRequirement", "");
+			if (String.IsNullOrEmpty(featureVersionRequirementJson))
+			{
+				return "";
+			}
+			VersionRequirement[] featureVersionRequirementList = (VersionRequirement[])JsonConvert.DeserializeObject(featureVersionRequirementJson, typeof(VersionRequirement[]));
+
+			if (featureVersionRequirementList != null && featureVersionRequirementList.Length >= 1)
+			{
+				string currentBloomDesktopVersion = typeof(BookStorage).Assembly?.GetName()?.Version?.ToString() ?? "1.0";
+				var breakingFeatureRequirements = featureVersionRequirementList.Where(x => VersionComparer.IsLessThanVersion(currentBloomDesktopVersion, x.BloomDesktopMinVersion));
+
+				// Note: even though versionRequirements is guaranated non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
+				if (breakingFeatureRequirements.Count() >= 1)
+				{
+					string messageNewVersionNeededHeader = LocalizationManager.GetString("Errors.NewVersionNeededHeader", "This book needs a new version of Bloom.");
+					string messageCurrentRunningVersion = String.Format(LocalizationManager.GetString("Errors.CurrentRunningVersion", "You are running Bloom {0}"), currentBloomDesktopVersion);
+					string messageDownloadLatestVersion = LocalizationManager.GetString("Errors.DownloadLatestVersion", "Upgrade to the latest Bloom (requires Internet connection)");
+
+					string messageFeatureRequiresNewerVersion;
+					if (breakingFeatureRequirements.Count() == 1)
+					{
+						var requirement = breakingFeatureRequirements.First();
+						messageFeatureRequiresNewerVersion = String.Format(LocalizationManager.GetString("Errors.FeatureRequiresNewerVersionSingular", "This book requires Bloom {0} or greater because it uses the feature \"{1}\".<br/>"), requirement.BloomDesktopMinVersion, requirement.FeaturePhrase);
+					}
+					else
+					{
+						var sortedRequirements = breakingFeatureRequirements.OrderByDescending(x => x.BloomDesktopMinVersion, new VersionComparer<string>());
+						var highestVersionRequired = sortedRequirements.First().BloomDesktopMinVersion;
+
+						messageFeatureRequiresNewerVersion = String.Format(LocalizationManager.GetString("Errors.FeatureRequiresNewerVersionPlural", "This book requires Bloom {0} or greater because it uses the following features:"), highestVersionRequired);
+
+						string listItemsHtml = String.Join("", sortedRequirements.Select(x => $"<li>{x.FeaturePhrase}</li>"));
+						messageFeatureRequiresNewerVersion += $"<ul>{listItemsHtml}</ul>";
+					}
+
+					string message =
+						$"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>" +
+						$"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>" +
+						$"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}/installers'>{messageDownloadLatestVersion}</a>";  // Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
+
+					return message;
+				}
+			}
+
+			return "";
+		}
+
 
 		public bool GetLooksOk()
 		{
@@ -986,6 +1045,7 @@ namespace Bloom.Book
 					else
 					{
 						ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
+						ErrorAllowsReporting = true;
 						Logger.WriteEvent("*** ERROR in " + PathToExistingHtml);
 						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
 						return;
@@ -1033,11 +1093,25 @@ namespace Bloom.Book
 						ErrorMessagesHtml = incompatibleVersionMessage;
 						Logger.WriteEvent("*** ERROR: " + incompatibleVersionMessage);
 						_errorAlreadyContainsInstructions = true;
+						ErrorAllowsReporting = true;
 						return;
 					}
 					else
 					{
-						Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
+						var incompatibleFeatureMessage = GetHtmlMessageIfFeatureIncompatibility();
+						if (!String.IsNullOrWhiteSpace(incompatibleFeatureMessage))
+						{
+							ErrorMessagesHtml = incompatibleFeatureMessage;
+							Logger.WriteEvent("*** ERROR: " + incompatibleFeatureMessage);
+							_errorAlreadyContainsInstructions = true;
+							ErrorAllowsReporting = false;	// This doesn't any corruption or bugs in the code, so no reporting button needed.
+							return;
+						}
+
+						else
+						{
+							Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
+						}
 					}
 				}
 
@@ -1111,6 +1185,7 @@ namespace Bloom.Book
 			message += "<br></br>" + String.Format(seeAlso, "<a href='" + helpUrl + "'>" + helpUrl + "</a>");
 			ErrorMessagesHtml = message;
 			_errorAlreadyContainsInstructions = true;
+			ErrorAllowsReporting = true;
 		}
 
 		/// <summary>
@@ -1155,6 +1230,7 @@ namespace Bloom.Book
 			catch (Exception error)
 			{
 				ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
+				ErrorAllowsReporting = true;
 			}
 		}
 

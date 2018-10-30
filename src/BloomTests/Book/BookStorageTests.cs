@@ -269,7 +269,27 @@ namespace BloomTests.Book
 			var result = storage.ValidateBook(storage.PathToExistingHtml);
 			Assert.IsTrue(result.StartsWith("Bloom-page element not found at root level: someOtherId"), "Bad Html should fail ValidateBook().");
 		}
+		
+		[Test]
+		public void ValidateBook_ReportsNewerVersionRequired()
+		{
+			var storage = GetInitialStorageWithCustomHtml(
+@"<html>
+	<head>
+		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.9&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]""></meta>
+	</head>
+	<body>
+		<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>
+		</div></div></div>
+	</body>
+</html>
+"
+				);
 
+			storage.GetHtmlMessageIfFeatureIncompatibility();
+			Assert.IsTrue(storage.ErrorMessagesHtml.Contains("or greater because it uses the feature"), "ErrorMessagesHtml");
+			Assert.IsFalse(storage.ErrorAllowsReporting, "ErrorAllowsReporting");
+		}
 		[Test]
 		public void Save_BookHasMissingImages_NoCrash()
 		{
