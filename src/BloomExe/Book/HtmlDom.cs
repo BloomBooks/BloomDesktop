@@ -1825,6 +1825,12 @@ namespace Bloom.Book
 			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and @recordingmd5]");
 		}
 
+		public bool DoesContainNarrationAudioRecordedUsingWholeTextBox()
+		{
+			var nodes = _dom.SafeSelectNodes("//*[@data-audiorecordingmode='TextBox']");
+			return nodes?.Count >= 1;
+		}
+
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)
 		{
 			return element.SelectNodes("self::img | self::*[contains(@style,'background-image')]").Count == 1;
