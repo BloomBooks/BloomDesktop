@@ -269,7 +269,7 @@ namespace Bloom.Book
 					if (breakingFeatureRequirements.Count() == 1)
 					{
 						var requirement = breakingFeatureRequirements.First();
-						messageFeatureRequiresNewerVersion = String.Format(LocalizationManager.GetString("Errors.FeatureRequiresNewerVersionSingular", "This book requires Bloom {0} or greater because it uses the feature \"{1}\".<br/>"), requirement.BloomDesktopMinVersion, requirement.FeaturePhrase);
+						messageFeatureRequiresNewerVersion = String.Format(LocalizationManager.GetString("Errors.FeatureRequiresNewerVersionSingular", "This book requires Bloom {0} or greater because it uses the feature \"{1}\"."), requirement.BloomDesktopMinVersion, requirement.FeaturePhrase) + "<br/>";
 					}
 					else
 					{
