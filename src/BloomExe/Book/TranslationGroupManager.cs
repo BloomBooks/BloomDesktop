@@ -41,6 +41,7 @@ namespace Bloom.Book
 			{
 				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language3Iso639Code);
 			}
+			FixGroupStyleSettings(pageOrDocumentNode);
 		}
 
 		/// <summary>
@@ -272,6 +273,38 @@ namespace Bloom.Book
 						t.Value = "";
 					//otherwise html tidy will throw away spans (at least) that are empty, so we never get a chance to fill in the values.
 				}
+			}
+		}
+
+		/// <summary>
+		/// Shift any translationGroup level style setting to child editable divs that lack a style.
+		/// This is motivated by the fact HTML/CSS underlining cannot be turned off in child nodes.
+		/// So if underlining is enabled for Normal, everything everywhere would be underlined
+		/// regardless of style or immediate character formatting.  If a style sets underlining
+		/// on, then immediate character formatting cannot turn it off anywhere in a text box that
+		/// uses that style.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6282.
+		/// </summary>
+		private static void FixGroupStyleSettings(XmlNode pageDiv)
+		{
+			foreach (
+				XmlElement groupElement in
+					pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
+			{
+				var groupStyle = HtmlDom.GetStyle(groupElement);
+				if (String.IsNullOrEmpty(groupStyle))
+					continue;
+				// Copy the group's style setting to any child div with the bloom-editable class that lacks one.
+				// Then remove the group style if it does have any child divs with the bloom-editable class.
+				bool hasInternalEditableDiv = false;
+				foreach (XmlElement element in groupElement.SafeSelectNodes("child::div[contains(@class, 'bloom-editable')]"))
+				{
+					var divStyle = HtmlDom.GetStyle(element);
+					if (String.IsNullOrEmpty(divStyle))
+						HtmlDom.AddClass(element, groupStyle);
+					hasInternalEditableDiv = true;
+				}
+				if (hasInternalEditableDiv)
+					HtmlDom.RemoveClass(groupElement, groupStyle);
 			}
 		}
 
