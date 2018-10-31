@@ -62,7 +62,7 @@ export class SubjectChooser extends React.Component<IProps> {
     // Public for testing.
     public handleSubjectChange(
         currentNode: SubjectTreeNode,
-        selectedNodes: SubjectTreeNode[] // not useful for our purposes: branches (parents) only
+        selectedNodes: SubjectTreeNode[] | null // not useful for our purposes: branches (parents) only
     ) {
         let metadataSubjects: SubjectTreeNode[] = this.props.subjects.value;
         if (!metadataSubjects) metadataSubjects = [];
