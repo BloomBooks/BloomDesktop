@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import { Label } from "../react_components/l10n";
 import { Markdown } from "../react_components/markdown";
 import { Link } from "../react_components/link";
+import { HelpLink } from "../react_components/helpLink";
 import { RadioGroup, Radio } from "../react_components/radio";
 import { BloomApi } from "../utils/bloomApi";
 import "./enterpriseSettings.less";
@@ -94,13 +95,13 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     needs while supporting the development and user support of
                     Bloom for the community at large.
                 </Label>
-                <Link
+                <HelpLink
                     className="learnMoreLink"
                     l10nKey="Settings.Enterprise.LearnMore"
-                    href="http://bit.ly/2zTQHfM"
+                    helpId="Tasks/Edit_tasks/Enterprise/EnterpriseRequired.htm"
                 >
                     Learn More
-                </Link>
+                </HelpLink>
                 <div className="bloomEnterpriseStatus">
                     <Label l10nKey="Settings.Enterprise.Status">
                         Bloom Enterprise Status
