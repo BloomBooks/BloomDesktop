@@ -331,6 +331,19 @@ namespace Bloom.Book
 				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
 			}
 			BookInfo.FormatVersion = kBloomFormatVersion;
+
+			VersionRequirement[] requiredVersions = GetRequiredVersions(Dom).ToArray();
+			if (requiredVersions != null && requiredVersions.Length >= 1)
+			{
+				string json = JsonConvert.SerializeObject(requiredVersions);
+				Dom.UpdateMetaElement("FeatureRequirement", json);
+			}
+			else
+			{
+				// Might be necessary if you duplicated a book, or modified a book such that it no longer needs this
+				Dom.RemoveMetaElement("FeatureRequirement");
+			}
+
 			var watch = Stopwatch.StartNew();
 			string tempPath = SaveHtml(Dom);
 			watch.Stop();
@@ -364,6 +377,26 @@ namespace Bloom.Book
 			}
 
 			BookInfo.Save();
+		}
+
+		// Determines which features will have serious breaking effects if not opened in the proper version of any relevant Bloom products
+		// Note: This should include not only BloomDesktop considerations, but needs to insert enough information for things like BloomReader to be able to figure it out too
+		public static IOrderedEnumerable<VersionRequirement> GetRequiredVersions(HtmlDom dom)
+		{
+			var reqList = new List<VersionRequirement>();
+
+			if (dom.DoesContainNarrationAudioRecordedUsingWholeTextBox())
+			{
+				reqList.Add(new VersionRequirement()
+				{
+					FeatureId = "wholeTextBoxAudio",
+					FeaturePhrase = "Whole Text Box Audio",
+					BloomDesktopMinVersion = "4.4",
+					BloomReaderMinVersion = "1.0"
+				});
+			}
+
+			return reqList.OrderByDescending(x => x.BloomDesktopMinVersion);
 		}
 
 		public const string BackupFilename = "bookhtml.bak"; // need to know this in BookCollection too.
