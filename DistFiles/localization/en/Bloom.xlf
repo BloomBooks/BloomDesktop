@@ -1977,6 +1977,10 @@
         <source xml:lang="en">Import Video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true">
+        <source xml:lang="en">Show In Folder</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.ShowInFolder</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.NoCameraFound" sil:dynamic="true">
         <source xml:lang="en">No camera found</source>
         <note>ID: EditTab.Toolbox.SignLanguage.NoCameraFound</note>

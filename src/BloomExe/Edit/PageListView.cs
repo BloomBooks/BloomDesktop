@@ -135,6 +135,11 @@ namespace Bloom.Edit
 			_thumbNailList.UpdateThumbnailAsync(page);
 		}
 
+		public void UpdateAllThumbnails()
+		{
+			_thumbNailList.UpdateAllThumbnails();
+		}
+
 		public void Clear()
 		{
 			_thumbNailList.SetItems(new IPage[]{});

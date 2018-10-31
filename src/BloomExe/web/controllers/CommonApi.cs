@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -10,6 +13,8 @@ using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
+using SIL.IO;
+using SIL.PlatformUtilities;
 using ApplicationException = System.ApplicationException;
 using Timer = System.Windows.Forms.Timer;
 
@@ -46,6 +51,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
 			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
 			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
+			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true);
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
 			apiHandler.RegisterEndpointHandler("common/clipboardText",
@@ -81,6 +87,67 @@ namespace Bloom.web.controllers
 				{
 					request.ReplyWithText(ApplicationUpdateSupport.ChannelName);
 				}, false);
+		}
+
+		// Request from javascript to open the folder containing the specified file,
+		// and select it.
+		// Currently we are assuming the path is relative to the book directory,
+		// since typically paths JS has access to only go that far up.
+		private void HandleShowInFolderRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var requestData = DynamicJson.Parse(request.RequiredPostJson());
+				string partialFolderPath = requestData.folderPath;
+				var folderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, partialFolderPath);
+				SelectFileInExplorer(folderPath);
+				// It may or may not have succeeded but nothing in JS wants to know it didn't, and hiding
+				// the failure there is a nuisance.
+
+				request.PostSucceeded();
+			}
+		}
+
+		/// <summary>
+		/// Open the folder containing the specified file and select it.
+		/// </summary>
+		/// <param name="filePath"></param>
+		public static void SelectFileInExplorer(string filePath)
+		{
+			try
+			{
+				PathUtilities.SelectFileInExplorer(filePath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+			}
+			catch (System.Runtime.InteropServices.COMException e)
+			{
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					$"Bloom had a problem asking your operating system to show {filePath}. Sorry!");
+			}
+			var folderName = Path.GetFileName(Path.GetDirectoryName(filePath));
+			BringFolderToFrontInLinux(folderName);
+		}
+
+		/// <summary>
+		/// Make sure the specified folder (typically one we just opened an explorer on)
+		/// is brought to the front in Linux (BL-673). This is automatic in Windows.
+		/// </summary>
+		/// <param name="folderName"></param>
+		public static void BringFolderToFrontInLinux(string folderName)
+		{
+			if (Platform.IsLinux)
+			{
+				// allow the external process to execute
+				Thread.Sleep(100);
+
+				// if the system has wmctrl installed, use it to bring the folder to the front
+				Process.Start(new ProcessStartInfo()
+				{
+					FileName = "wmctrl",
+					Arguments = "-a \"" + folderName + "\"",
+					UseShellExecute = false,
+					ErrorDialog = false // do not show a message if not successful
+				});
+			}
 		}
 
 		private void RethinkPageAndReloadIt(ApiRequest request)
