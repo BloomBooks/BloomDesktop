@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -30,6 +30,8 @@ namespace Bloom.web.controllers
 		private readonly PageSelection _pageSelection;
 		private decimal _currentVideoStartSeconds;
 		private decimal _currentVideoEndSeconds;
+		private DateTime _lastOpenFileLocationTime;
+		private string _lastOpenFileLocationPath;
 
 		public EditingView View { get; set; }
 		public EditingModel Model { get; set; }
@@ -45,6 +47,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/editVideo", HandleEditVideoRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
+			apiHandler.RegisterEndpointHandler("signLanguage/openFileLocation", HandleOpenFileLocationRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/restoreOriginal", HandleRestoreOriginalRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/getStats", HandleVideoStatisticsRequest, true);
@@ -115,7 +118,7 @@ namespace Bloom.web.controllers
 				// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
 				// video recording and importing if there is no container on the page.
 				var msg = "There's nowhere to put a video on this page." +
-					(string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
+				          (string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
 				MessageBox.Show(msg);
 				request.Failed("nowhere to put video");
 				return null;
@@ -126,6 +129,7 @@ namespace Bloom.web.controllers
 				request.Failed("editing not allowed");
 				return null;
 			}
+
 			return videoContainer;
 		}
 
@@ -364,6 +368,46 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		// Request from sign language tool to open the location of the video file.
+		// When Bloom is next activated, we will check to see whether the user changed it.
+		private void HandleOpenFileLocationRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var videoContainer = GetSelectedVideoContainer();
+				string videoPath;
+				decimal[] dummy;
+				// Passing false here for "forEditing" since the user may just want to look at the video
+				// in some other tool or something similar. We can't tell whether the intent is to edit it,
+				// so we shouldn't block this command even if editing is not allowed.
+				if (!ParseVideoContainerSourceAttribute(request, videoContainer, false, out videoPath, out dummy))
+					return; // request.Failed was called inside the above method
+				_lastOpenFileLocationTime = DateTime.Now;
+				_lastOpenFileLocationPath = videoPath;
+				try
+				{
+					PathUtilities.SelectFileInExplorer(videoPath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+				}
+				catch (System.Runtime.InteropServices.COMException e)
+				{
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+						$"Bloom had a problem asking your operating system to show {videoPath}. Sorry!");
+					// It didn't really succeed but nothing in JS wants to know it didn't, and hiding
+					// the failure there is a nuisance.
+					request.PostSucceeded();
+					return;
+				}
+
+				var mainForm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+				if (mainForm != null)
+				{
+					mainForm.Activated += CheckForChangedVideoOnActivate;
+				}
+
+				request.PostSucceeded();
+			}
+		}
+
 		private void HandleVideoStatisticsRequest(ApiRequest request)
 		{
 			if (request.HttpMethod != HttpMethods.Get)
@@ -550,32 +594,32 @@ namespace Bloom.web.controllers
 			out string videoFilePath, out decimal[] timings)
 		{
 			videoFilePath = null;
-			timings = new[] { 0.0m, -1.0m }; // default timings, -1.0 is a temporary stand-in for maximum duration
+			timings = new[] {0.0m, -1.0m}; // default timings, -1.0 is a temporary stand-in for maximum duration
 			if (videoContainer == null)
 			{
 				// Enhance: if we end up needing this it should be localizable. But the current plan is that the button should be
 				// disabled if we don't have a recording to edit.
-				request.Failed("no video container");
+				request?.Failed("no video container");
 				return false;
 			}
 
 			if (forEditing && WarnIfVideoCantChange(videoContainer))
 			{
-				request.Failed("editing not allowed");
+				request?.Failed("editing not allowed");
 				return false;
 			}
 
 			var videos = videoContainer.GetElementsByTagName("video");
 			if (videos.Length == 0)
 			{
-				request.Failed("no existing video to edit");
+				request?.Failed("no existing video to edit");
 				return false;
 			}
 
 			var sources = videos[0].GetElementsByTagName("source");
 			if (sources.Length == 0 || string.IsNullOrWhiteSpace(sources[0].GetAttribute("src")))
 			{
-				request.Failed("current video has no source");
+				request?.Failed("current video has no source");
 				return false;
 			}
 
@@ -677,8 +721,41 @@ namespace Bloom.web.controllers
 			}
 			catch (Exception e)
 			{
-				var msg = LocalizationManager.GetString("Errors.ProblemImportingVideo", "Bloom had a problem importing this video.");
+				var msg = LocalizationManager.GetString("Errors.ProblemImportingVideo",
+					"Bloom had a problem importing this video.");
 				ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+			}
+		}
+
+		private void CheckForChangedVideoOnActivate(object sender, EventArgs eventArgs)
+		{
+			(sender as Form).Activated -= CheckForChangedVideoOnActivate;
+			var videoFolderPath = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
+			var modifyTime = GetRealLastModifiedTime(new FileInfo(_lastOpenFileLocationPath));
+			if (modifyTime > _lastOpenFileLocationTime)
+			{
+				var videoContainer = GetSelectedVideoContainer();
+				string videoPath;
+				decimal[] dummy;
+				if (!ParseVideoContainerSourceAttribute(null, videoContainer, false, out videoPath, out dummy))
+					return; // give up
+				if (videoPath != _lastOpenFileLocationPath)
+					return; // too risky trying to fix things
+
+				// OK, the user has modified the file outside of Bloom. Something is determined to cache it.
+				// The only way to defeat it seems to be to give it a new name.
+				// (We can't capture the original file content as x.orig like we do in EditVideo because it's already changed.)
+				var newVideoPath =
+					Path.Combine(videoFolderPath,
+						GetNewVideoFileName()); // Use a new name to defeat caching; prefer our standard type of name.
+				RobustFile.Move(videoPath, newVideoPath);
+
+				// I'm not sure why it fails if we use the videoContainer variable we set above,
+				// but somehow QueryInterface on the underlying COM object fails. It's probably something to
+				// do with the COM threading model that forbids using it on a thread other than the
+				// one that created it.
+				View.Invoke((Action) (() =>
+					SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
 			}
 		}
 	}
