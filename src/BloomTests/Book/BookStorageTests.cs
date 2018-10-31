@@ -71,6 +71,25 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
+		[Test]
+		public void Save_BookHadNarrationAudioRecordedByWholeTextBox_AddsFeatureRequirementMetadata()
+		{
+			// Enhance: need an example in the future to test the result if two are generated. But right now this is the only feature that generates it.
+			GetInitialStorageWithCustomHtml("<html><head></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable' data-audioRecordingMode='TextBox'></div></div></div></body></html>");
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='FeatureRequirement']", 1);
+
+			// Note: No need to HTML-encode the XPath. The comparison will automatically figure that out (I guess by decoding the encoding version)
+			string expectedContent = "[{\"BloomDesktopMinVersion\":\"4.4\",\"BloomReaderMinVersion\":\"1.0\",\"FeatureId\":\"wholeTextBoxAudio\",\"FeaturePhrase\":\"Whole Text Box Audio\"}]";
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath($"//meta[@content='{expectedContent}']", 1);
+		}
+
+		[Test]
+		public void Save_BookHadNoAudio_CleansUpFeatureRequirementMetadata()
+		{
+			// Enhance: need an example in the future to test the result if two are generated. But right now this is the only feature that generates it.
+			GetInitialStorageWithCustomHtml("<html><head><meta name='FeatureRequirement' content='[{&quot;BloomDesktopMinVersion&quot;:&quot;4.4&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]'></meta></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable'></div></div></div></body></html>");
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='FeatureRequirement']", 0);
+		}
 
 		[Test]
 		public void CleanupUnusedVideoFiles_BookHadUnusedVideo_VideosRemoved()
