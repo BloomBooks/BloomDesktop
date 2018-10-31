@@ -228,6 +228,11 @@ namespace Bloom.Edit
 			}
 		}
 
+		public void UpdateAllThumbnails()
+		{
+			UpdateItems(_pages);
+		}
+
 		private bool _usingTwoColumns;
 		private string PageContainerClass = "pageContainer";
 		private string InvisbleThumbClass = "invisibleThumbnailCover";

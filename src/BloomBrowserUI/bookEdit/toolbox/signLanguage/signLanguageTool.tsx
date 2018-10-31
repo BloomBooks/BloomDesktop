@@ -11,6 +11,7 @@ import {
 } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
 import { HelpLink } from "../../../react_components/helpLink";
+import { Link } from "../../../react_components/link";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
@@ -249,6 +250,13 @@ export class SignLanguageToolControls extends React.Component<
                                 Delete Video
                             </Label>
                         </div>
+                        <Link
+                            id="showInFolderLink"
+                            l10nKey="EditTab.Toolbox.SignLanguage.ShowInFolder"
+                            onClick={() => this.showInFolder()}
+                        >
+                            Open File Location
+                        </Link>
                         <div>
                             <button
                                 id="videoStopRecording"
@@ -392,6 +400,10 @@ export class SignLanguageToolControls extends React.Component<
 
     private deleteRecording() {
         BloomApi.post("signLanguage/deleteVideo");
+    }
+
+    private showInFolder() {
+        BloomApi.post("signLanguage/showInFolder");
     }
 
     private editOutside() {

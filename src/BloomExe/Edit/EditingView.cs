@@ -1103,6 +1103,11 @@ namespace Bloom.Edit
 			_pageListView.UpdateThumbnailAsync(page);
 		}
 
+		public void UpdateAllThumbnails()
+		{
+			_pageListView.UpdateAllThumbnails();
+		}
+
 		/// <summary>
 		/// this started as an experiment, where our textareas were not being read when we saved because of the need
 		/// to change the picture

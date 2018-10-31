@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.web.controllers;
 using Bloom.Workspace;
 using SIL.Extensions;
 using SIL.Windows.Forms.PortableSettingsProvider;
@@ -31,13 +32,24 @@ namespace Bloom
 												BookDownloadStartingEvent bookDownloadStartingEvent,
 												LibraryClosing libraryClosingEvent,
 												QueueRenameOfCollection queueRenameOfCollection,
-												ControlKeyEvent controlKeyEvent)
+												ControlKeyEvent controlKeyEvent,
+												SignLanguageApi signLanguageApi)
 		{
 			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			_controlKeyEvent = controlKeyEvent;
 			InitializeComponent();
+			Activated += (sender, args) =>
+			{
+				// Some of the stuff we do to update things depends on a current editing view and model.
+				// So just don't try if the user is for some reason editing the videos while not editing
+				// the book. Hopefuly in that case he hasn't opened the book and none of its old state
+				// is cached.
+				if (_workspaceView.InEditMode)
+					signLanguageApi.CheckForChangedVideoOnActivate(sender, args);
+			};
+			Deactivate += (sender, args) => signLanguageApi.DeactivateTime = DateTime.Now;
 
 			//bring the application to the front (will normally be behind the user's web browser)
 			bookDownloadStartingEvent.Subscribe((x) =>

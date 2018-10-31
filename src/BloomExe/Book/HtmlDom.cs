@@ -1767,13 +1767,19 @@ namespace Bloom.Book
 				srcElement = videoElt.AppendChild("source");
 				srcElement.SetAttribute("type", "video/mp4");
 			}
-			// Encoding this can break links within epubs.
-			srcElement.SetAttribute("src", urlEncode ? url.UrlEncodedForHttpPath : url.NotEncoded); // We need the fwd slash to come through unencoded
+			SetSrcOfVideoElement(url, srcElement, urlEncode);
 			// Hides the placeholder.
 
 			videoContainer.SetAttribute("class",
 				RemoveClass("bloom-noVideoSelected",
 					videoContainer.GetAttribute("class")));
+		}
+
+		public static void SetSrcOfVideoElement(UrlPathString url, ElementProxy srcElement, bool urlEncode = true)
+		{
+			// Encoding this can break links within epubs.
+			srcElement.SetAttribute("src",
+				urlEncode ? url.UrlEncodedForHttpPath : url.NotEncoded); // We need the fwd slash to come through unencoded
 		}
 
 		public static string RemoveClass(string className, string input)

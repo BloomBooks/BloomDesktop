@@ -480,6 +480,8 @@ namespace Bloom.Workspace
 			_tabStrip.SelectedTab = _editTab;
 		}
 
+		public bool InEditMode => _tabStrip.SelectedTab == _editTab;
+
 		private void Application_Idle(object sender, EventArgs e)
 		{
 			Application.Idle -= Application_Idle;
