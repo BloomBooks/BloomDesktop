@@ -2117,6 +2117,11 @@
         <source xml:lang="en">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
         <note>ID: Errors.CouldNotSavePage</note>
       </trans-unit>
+      <trans-unit id="Errors.CurrentRunningVersion">
+        <source xml:lang="en">You are running Bloom {0}</source>
+        <note>ID: Errors.CurrentRunningVersion</note>
+        <note>The placeholder {0} represents the current version of Bloom. For example, {0} might be replaced with "4.3"</note>
+      </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtection">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
         <note>ID: Errors.DefenderFolderProtection</note>
@@ -2131,6 +2136,11 @@
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
         <note>ID: Errors.DeniedAccess</note>
       </trans-unit>
+      <trans-unit id="Errors.DownloadLatestVersion">
+        <source xml:lang="en">Upgrade to the latest Bloom (requires Internet connection)</source>
+        <note>ID: Errors.DownloadLatestVersion</note>
+        <note>This is a link that will take them to the Downloads (Installers) web page</note>
+      </trans-unit>
       <trans-unit id="Errors.ErrorSelecting">
         <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
         <note>ID: Errors.ErrorSelecting</note>
@@ -2141,11 +2151,27 @@
         <note>ID: Errors.ErrorUpdating</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
       </trans-unit>
+      <trans-unit id="Errors.FeatureRequiresNewerVersionPlural">
+        <source xml:lang="en">This book requires Bloom {0} or greater because it uses the following features:</source>
+        <note>ID: Errors.FeatureRequiresNewerVersionPlural</note>
+        <note>The placeholder {0} represents the required version of Bloom. For example, {0} might be replaced with "4.4"</note>
+        <note>A bulleted list of features (in English) will follow underneath this text</note>
+      </trans-unit>
+      <trans-unit id="Errors.FeatureRequiresNewerVersionSingular">
+        <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature \"{1}\".</source>
+        <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
+        <note>The placeholder {0} represents the required version of Bloom. For example, {0} might be replaced with "4.4"</note>
+        <note>The placeholder {1} represents a short description of the feature For example, {1} might be replaced with "Whole Text Audio"</note>
+      </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
         <note>ID: Errors.NeedNewerVersion</note>
         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
         <note xml:lang="en">OLD TEXT (before 3.9, removed period): {0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</note>
+      </trans-unit>
+      <trans-unit id="Errors.NewVersionNeededHeader">
+        <source xml:lang="en">"This book needs a new version of Bloom.</source>
+        <note>ID: Errors.NewVersionNeededHeader</note>
       </trans-unit>
       <trans-unit id="Errors.ProblemDeletingFile">
         <source xml:lang="en">Bloom had a problem deleting this file: {0}</source>
