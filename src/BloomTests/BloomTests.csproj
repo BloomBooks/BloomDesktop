@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -171,7 +171,6 @@
     <Compile Include="Book\TestBook.cs" />
     <Compile Include="Book\UserPrefsTests.cs" />
     <Compile Include="Book\BookTestsBase.cs" />
-    <Compile Include="Book\VersionRequirementTests.cs" />
     <Compile Include="CLI\HydrateBookCommandTests.cs" />
     <Compile Include="Collection\CollectionSettingsTests.cs" />
     <Compile Include="MiscellaneousTests.cs" />

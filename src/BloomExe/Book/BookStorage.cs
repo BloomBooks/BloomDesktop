@@ -131,6 +131,8 @@ namespace Bloom.Book
 			_bookRenamedEvent = bookRenamedEvent;
 			_collectionSettings = collectionSettings;
 
+			ErrorAllowsReporting = true;
+
 			ExpensiveInitialization(forSelectedBook);
 		}
 
@@ -255,8 +257,20 @@ namespace Bloom.Book
 
 			if (featureVersionRequirementList != null && featureVersionRequirementList.Length >= 1)
 			{
-				string currentBloomDesktopVersion = typeof(BookStorage).Assembly?.GetName()?.Version?.ToString() ?? "1.0";
-				var breakingFeatureRequirements = featureVersionRequirementList.Where(x => VersionComparer.IsLessThanVersion(currentBloomDesktopVersion, x.BloomDesktopMinVersion));
+				var assemblyVersion = typeof(BookStorage).Assembly?.GetName()?.Version;
+
+				Version currentBloomDesktopVersion;
+				if (assemblyVersion == null)
+				{
+					currentBloomDesktopVersion = new Version(1, 0);
+				}
+				else
+				{
+					// Make it so that it only compares Major/Minor and doesn't care about different or missing Build or Revision numbers.
+					currentBloomDesktopVersion = new Version(assemblyVersion.Major, assemblyVersion.Minor);
+				}
+
+				var breakingFeatureRequirements = featureVersionRequirementList.Where(x => currentBloomDesktopVersion.CompareTo(new Version(x.BloomDesktopMinVersion)) < 0);
 
 				// Note: even though versionRequirements is guaranated non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
 				if (breakingFeatureRequirements.Count() >= 1)
@@ -273,7 +287,7 @@ namespace Bloom.Book
 					}
 					else
 					{
-						var sortedRequirements = breakingFeatureRequirements.OrderByDescending(x => x.BloomDesktopMinVersion, new VersionComparer<string>());
+						var sortedRequirements = breakingFeatureRequirements.OrderByDescending(x => new Version(x.BloomDesktopMinVersion));
 						var highestVersionRequired = sortedRequirements.First().BloomDesktopMinVersion;
 
 						messageFeatureRequiresNewerVersion = String.Format(LocalizationManager.GetString("Errors.FeatureRequiresNewerVersionPlural", "This book requires Bloom {0} or greater because it uses the following features:"), highestVersionRequired);
@@ -293,7 +307,6 @@ namespace Bloom.Book
 
 			return "";
 		}
-
 
 		public bool GetLooksOk()
 		{

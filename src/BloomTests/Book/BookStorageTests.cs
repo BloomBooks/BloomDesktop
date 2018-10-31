@@ -268,28 +268,50 @@ namespace BloomTests.Book
 					"</body></html>", false);
 			var result = storage.ValidateBook(storage.PathToExistingHtml);
 			Assert.IsTrue(result.StartsWith("Bloom-page element not found at root level: someOtherId"), "Bad Html should fail ValidateBook().");
+			Assert.IsTrue(storage.ErrorAllowsReporting, "ErrorAllowsReporting");
 		}
-		
+
 		[Test]
-		public void ValidateBook_ReportsNewerVersionRequired()
+		public void ValidateBook_ReportsNewerVersionRequiredSingle()
 		{
 			var storage = GetInitialStorageWithCustomHtml(
 @"<html>
 	<head>
-		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.9&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]""></meta>
+		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.8&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 1&quot;}]""></meta>
 	</head>
 	<body>
 		<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>
 		</div></div></div>
 	</body>
-</html>
-"
+</html>"
 				);
 
 			storage.GetHtmlMessageIfFeatureIncompatibility();
-			Assert.IsTrue(storage.ErrorMessagesHtml.Contains("or greater because it uses the feature"), "ErrorMessagesHtml");
-			Assert.IsFalse(storage.ErrorAllowsReporting, "ErrorAllowsReporting");
+			Assert.That(storage.ErrorMessagesHtml.Contains("or greater because it uses the feature"), Is.True, "ErrorMessagesHtml");
+			Assert.That(storage.ErrorAllowsReporting, Is.False, "ErrorAllowsReporting");
 		}
+
+		[Test]
+		public void ValidateBook_ReportsNewerVersionRequiredMultiple()
+		{
+			var storage = GetInitialStorageWithCustomHtml(
+@"<html>
+	<head>
+		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.8&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 1&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.10&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;customSpanAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 2&quot;}]""></meta>
+	</head>
+	<body>
+		<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>
+		</div></div></div>
+	</body>
+</html>"
+				);
+
+			storage.GetHtmlMessageIfFeatureIncompatibility();
+			Assert.That(storage.ErrorMessagesHtml.Contains("or greater because it uses the following features"), Is.True, "ErrorMessagesHtml");
+			Assert.That(storage.ErrorAllowsReporting, Is.False, "ErrorAllowsReporting");
+			Assert.That(storage.ErrorMessagesHtml.IndexOf("Breaking Feature 1"), Is.GreaterThan(storage.ErrorMessagesHtml.IndexOf("Breaking Feature 2")), "sort order wrong");
+		}
+
 		[Test]
 		public void Save_BookHasMissingImages_NoCrash()
 		{
