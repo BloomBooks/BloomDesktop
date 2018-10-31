@@ -14,6 +14,14 @@
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
+      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
+        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
+        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
+        <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
+        <note>ID: ReaderSetup.SentencePunctuation.Help</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
