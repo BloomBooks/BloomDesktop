@@ -20,7 +20,7 @@ export class MeasureText {
         fontFamily: string,
         fontSize: number,
         width: number,
-        lineHeight: string
+        lineHeight: string | null
     ) {
         const t0 = performance.now();
         // Get the descent that the browser uses for various purposes,
@@ -162,13 +162,15 @@ export class MeasureText {
         fontFamily: string,
         fontSize: number
     ): void {
-        let context = canvas.getContext("2d");
-        context.textAlign = "start"; // was "top", which is not a valid choice
-        context.textBaseline = "alphabetic";
-        context.font = `${fontSize}px '${fontFamily}'`;
-        context.fillStyle = "white";
-        const width = context.measureText(text).width;
-        context.fillText(text, canvas.width - width, 0);
+        const context = canvas.getContext("2d");
+        if (context != null) {
+            context.textAlign = "start"; // was "top", which is not a valid choice
+            context.textBaseline = "alphabetic";
+            context.font = `${fontSize}px '${fontFamily}'`;
+            context.fillStyle = "white";
+            const width = context.measureText(text).width;
+            context.fillText(text, canvas.width - width, 0);
+        }
     }
 
     private static getLowest(
@@ -184,11 +186,13 @@ export class MeasureText {
 
     private static resetCanvas(canvas: HTMLCanvasElement): void {
         let context = canvas.getContext("2d");
-        // not just black but transparent black, so all four bytes for each pixel are zero.
-        // We only look at the first byte for each pixel, so 'black' would work, but this
-        // feels more robust.
-        context.fillStyle = "rgba(0,0,0,0)";
-        context.fillRect(0, 0, canvas.width, canvas.height);
+        if (context != null) {
+            // not just black but transparent black, so all four bytes for each pixel are zero.
+            // We only look at the first byte for each pixel, so 'black' would work, but this
+            // feels more robust.
+            context.fillStyle = "rgba(0,0,0,0)";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+        }
     }
 
     // Find the index of the lowest row that has anything drawn.
@@ -202,22 +206,27 @@ export class MeasureText {
     // non-black pixels. (Actually, we're depending on the fact
     // that we write opaque white on transparent black, so we only
     // need to check one byte for each pixel.)
+    // Returns -1 if nothing is drawn anywhere.
     private static findEdge(
         canvas: HTMLCanvasElement,
         firstRow: number,
         lastRow: number,
         step: number
     ): number {
-        let imageData = this.getImageData(canvas).data;
-        let valuesPerRow = canvas.width * 4;
+        const imageData: ImageData | null = this.getImageData(canvas);
+        if (imageData == null) {
+            return -1;
+        }
+        const imageDataArray = imageData.data;
+        const valuesPerRow = canvas.width * 4;
         let hitEnd = false;
         if (step === 0) {
             throw new Error("Step cannot be 0");
         }
         let row = firstRow;
         while (!hitEnd) {
-            let highestValue = this.scanRow(
-                imageData,
+            const highestValue = this.scanRow(
+                imageDataArray,
                 row * valuesPerRow,
                 canvas.width
             );
@@ -235,8 +244,11 @@ export class MeasureText {
         return lastRow + step;
     }
 
-    private static getImageData(canvas: HTMLCanvasElement) {
-        let context = canvas.getContext("2d");
+    private static getImageData(canvas: HTMLCanvasElement): ImageData | null {
+        const context = canvas.getContext("2d");
+        if (context == null) {
+            return null;
+        }
         return context.getImageData(0, 0, canvas.width, canvas.height);
     }
 
