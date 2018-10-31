@@ -270,7 +270,7 @@ namespace Bloom.Book
 					currentBloomDesktopVersion = new Version(assemblyVersion.Major, assemblyVersion.Minor);
 				}
 
-				var breakingFeatureRequirements = featureVersionRequirementList.Where(x => currentBloomDesktopVersion.CompareTo(new Version(x.BloomDesktopMinVersion)) < 0);
+				var breakingFeatureRequirements = featureVersionRequirementList.Where(x => currentBloomDesktopVersion < new Version(x.BloomDesktopMinVersion));
 
 				// Note: even though versionRequirements is guaranated non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
 				if (breakingFeatureRequirements.Count() >= 1)
