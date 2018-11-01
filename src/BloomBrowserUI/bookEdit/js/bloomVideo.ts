@@ -19,7 +19,7 @@ const mouseOverFunction = e => {
         return; // can this happen?
     }
     if (target.tagName.toLowerCase() === "video") {
-        target.setAttribute("controls", "true");
+        target.setAttribute("controls", ""); // attribute just has to exist to work
     }
 };
 
