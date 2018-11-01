@@ -208,8 +208,26 @@
 #videoStatsWrapper {
     color: @buttonColor;
     font-size: 1.25em;
+    .trimLabel {
+        color: white !important;
+        font-weight: bold;
+        margin-left: 50px;
+    }
 }
 .videoTrimSlider {
     margin-top: 15px;
     margin-bottom: 15px;
+    .rc-slider-handle {
+        border-radius: 0;
+        height: 19px;
+        width: 9px;
+        background-color: @buttonColor;
+        margin-top: -8px;
+    }
+    .rc-slider-rail {
+        background-color: @DisabledButtonColor;
+    }
+    .rc-slider-track {
+        background-color: @buttonColor;
+    }
 }

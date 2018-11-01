@@ -35,7 +35,7 @@ const mouseOutFunction = e => {
 
 export function SetupVideoEditing(container) {
     BloomApi.get("featurecontrol/enterpriseEnabled", result => {
-        const isEnterpriseEnabled = result.data;
+        const isEnterpriseEnabled: boolean = result.data;
         $(container)
             .find(".bloom-videoContainer")
             .each((index, vc) => {
@@ -62,14 +62,8 @@ function SetupVideoContainer(
         const video = videoElts[i] as HTMLVideoElement;
         // Early sign language code included this; now we do it only on hover.
         video.removeAttribute("controls");
-        const start: number = getVideoStartSeconds(video);
-        SignLanguageTool.seekToVideoStart(video, start);
-
-        video.addEventListener("ended", e => {
-            const video = e.target as HTMLVideoElement;
-            const start: number = getVideoStartSeconds(video);
-            SignLanguageTool.seekToVideoStart(video, start);
-        });
+        video.addEventListener("playing", e => videoPlayingEventHandler(e));
+        video.addEventListener("ended", e => videoSetupEventHandler(e));
     }
 
     SetupClickToShowSignLanguageTool(containerDiv);
@@ -131,6 +125,44 @@ function SetupVideoContainer(
     }
 }
 
+function videoSetupEventHandler(e: Event) {
+    const video = e.target as HTMLVideoElement;
+    const start: number = getVideoStartSeconds(video);
+    SignLanguageTool.setCurrentVideoPoint(start, video);
+}
+
+function videoPlayingEventHandler(e: Event) {
+    // The main purpose of this handler is to stop the playback when the video reaches
+    // the endPoint set by the user, since the (e.g.) "#t=1.3,3.4" format seems to stop appropriately in Firefox,
+    // but not in Geckofx. I've tested it in FF45 and FF63 and the video controls respect the segment timing.
+    // It is conceivable that we won't need this code if we can figure out why Bloom's Geckofx isn't respecting
+    // the timings. Currently running our code on Geckofx60 gets us a NotImplementedException inside of
+    // the SignLanguageApi C# code (in Geckofx-Core).
+    const video = e.target as HTMLVideoElement;
+    let end: number = getVideoEndSeconds(video);
+    if (end === -1.0) {
+        end = video.duration;
+    }
+    resetToStartAfterPlayingToEndPoint(video, end);
+}
+
+function resetToStartAfterPlayingToEndPoint(
+    video: HTMLVideoElement,
+    endPoint: number
+) {
+    window.setTimeout(() => {
+        if (video.currentTime > endPoint) {
+            video.pause();
+            SignLanguageTool.setCurrentVideoPoint(
+                getVideoStartSeconds(video),
+                video
+            );
+        } else {
+            resetToStartAfterPlayingToEndPoint(video, endPoint);
+        }
+    }, 200);
+}
+
 function getVideoStartSeconds(videoElt: HTMLVideoElement): number {
     const source = videoElt.getElementsByTagName(
         "source"
@@ -138,6 +170,15 @@ function getVideoStartSeconds(videoElt: HTMLVideoElement): number {
     const src = source.getAttribute("src");
     const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
     return parseFloat(urlTimingObj.start);
+}
+
+function getVideoEndSeconds(videoElt: HTMLVideoElement): number {
+    const source = videoElt.getElementsByTagName(
+        "source"
+    )[0] as HTMLSourceElement;
+    const src = source.getAttribute("src");
+    const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
+    return parseFloat(urlTimingObj.end);
 }
 
 function SetupClickToShowSignLanguageTool(containerDiv: Element) {
