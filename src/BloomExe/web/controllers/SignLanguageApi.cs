@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -18,6 +19,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
+using SIL.Xml;
 
 namespace Bloom.web.controllers
 {
@@ -30,6 +32,7 @@ namespace Bloom.web.controllers
 		private readonly PageSelection _pageSelection;
 		private decimal _currentVideoStartSeconds;
 		private decimal _currentVideoEndSeconds;
+		private bool _doingEditOutsideBloom;
 
 		public EditingView View { get; set; }
 		public EditingModel Model { get; set; }
@@ -38,6 +41,7 @@ namespace Bloom.web.controllers
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
+			DeactivateTime = DateTime.MaxValue; // no action needed on first activate.
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -115,7 +119,7 @@ namespace Bloom.web.controllers
 				// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
 				// video recording and importing if there is no container on the page.
 				var msg = "There's nowhere to put a video on this page." +
-					(string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
+				          (string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
 				MessageBox.Show(msg);
 				request.Failed("nowhere to put video");
 				return null;
@@ -126,6 +130,7 @@ namespace Bloom.web.controllers
 				request.Failed("editing not allowed");
 				return null;
 			}
+
 			return videoContainer;
 		}
 
@@ -259,6 +264,7 @@ namespace Bloom.web.controllers
 					EnableRaisingEvents = true
 				};
 				var begin = DateTime.Now;
+				_doingEditOutsideBloom = true;
 				proc.Exited += (sender, args) =>
 				{
 					var videoFolderPath = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
@@ -287,6 +293,7 @@ namespace Bloom.web.controllers
 						View.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
 						//_view.Invoke((Action)(()=> RethinkPageAndReloadIt()));
 					}
+					_doingEditOutsideBloom = false;
 				};
 				proc.Start();
 				request.PostSucceeded();
@@ -554,32 +561,32 @@ namespace Bloom.web.controllers
 			out string videoFilePath, out decimal[] timings)
 		{
 			videoFilePath = null;
-			timings = new[] { 0.0m, -1.0m }; // default timings, -1.0 is a temporary stand-in for maximum duration
+			timings = new[] {0.0m, -1.0m}; // default timings, -1.0 is a temporary stand-in for maximum duration
 			if (videoContainer == null)
 			{
 				// Enhance: if we end up needing this it should be localizable. But the current plan is that the button should be
 				// disabled if we don't have a recording to edit.
-				request.Failed("no video container");
+				request?.Failed("no video container");
 				return false;
 			}
 
 			if (forEditing && WarnIfVideoCantChange(videoContainer))
 			{
-				request.Failed("editing not allowed");
+				request?.Failed("editing not allowed");
 				return false;
 			}
 
 			var videos = videoContainer.GetElementsByTagName("video");
 			if (videos.Length == 0)
 			{
-				request.Failed("no existing video to edit");
+				request?.Failed("no existing video to edit");
 				return false;
 			}
 
 			var sources = videos[0].GetElementsByTagName("source");
 			if (sources.Length == 0 || string.IsNullOrWhiteSpace(sources[0].GetAttribute("src")))
 			{
-				request.Failed("current video has no source");
+				request?.Failed("current video has no source");
 				return false;
 			}
 
@@ -680,9 +687,91 @@ namespace Bloom.web.controllers
 			}
 			catch (Exception e)
 			{
-				var msg = LocalizationManager.GetString("Errors.ProblemImportingVideo", "Bloom had a problem importing this video.");
+				var msg = LocalizationManager.GetString("Errors.ProblemImportingVideo",
+					"Bloom had a problem importing this video.");
 				ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
 			}
+		}
+
+		public DateTime DeactivateTime { get; set; }
+
+		/// <summary>
+		/// In case the user has been editing video files outside of Bloom, for example,
+		/// after using the Show In Folder command in the sign language toolbox,
+		/// we want to update the pages that show those videos to use the new versions.
+		/// Unfortunately something, probably the browser itself, seems to be very
+		/// persistent about caching videos, even though our server tells it not to cache
+		/// things in the book folder (and debug builds don't ever tell it to cache anything).
+		/// The only way I've found to defeat it is to change the src attribute (and
+		/// move the file).
+		/// This function is called whenever Bloom is activated in Edit mode.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		public void CheckForChangedVideoOnActivate(object sender, EventArgs eventArgs)
+		{
+			// We're only going to check for video changes on the current book, if any.
+			// It's not inconceivable that whatever caches videos will keep a cached one
+			// for another book, but I think trying to modify books we don't even have open
+			// is to dangerous, as well as quite difficult.
+			if (CurrentBook == null)
+				return;
+			// These two mechanisms are in danger of fighting over the change. If we're in the
+			// middle of editing a single file from the Bloom command, don't do anything here.
+			// Note: this means we _could_ miss another edit the user did while he was off doing
+			// the edit outside. But the race condition between the event handlers for Bloom activated
+			// and the end of the edit-outside process is a real one (different threads) and they
+			// did really overlap before I put this in. The edit-outside process is looking for the most recently
+			// modified video to replace the current one, so things are likely to get confused
+			// anyway if the user is trying to use both mechanisms at once. This mechanism can't
+			// just replace that one (at least as it stands), because we're expecting the outside
+			// program to make a new file, allowing Bloom to save the old one as an original, while
+			// this is looking for in-place changes.
+			// A downside is that if the user never closes the edit-outside program, this mechanism
+			// will stay disabled. But I don't see a better answer, at least if we keep both commands.
+			if (_doingEditOutsideBloom)
+				return;
+			var videoFolderPath = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
+			var filesModifiedSinceDeactivate = new DirectoryInfo(videoFolderPath)
+				.GetFiles("*.mp4")
+				.Where(f => GetRealLastModifiedTime(f) > DeactivateTime)
+				.Select(f => f.FullName)
+				.ToList();
+
+			if (!filesModifiedSinceDeactivate.Any())
+				return;
+
+			// We might modify the current page, but the user may also have modified it
+			// without doing anything to cause a Save before the deactivate. So save their
+			// changes before we go to work on it.
+			Model.SaveNow();
+
+			foreach (var videoPath in filesModifiedSinceDeactivate)
+			{
+				var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(BookStorage.GetVideoFolderName + Path.GetFileName(videoPath));
+				var videoElts = CurrentBook.RawDom.SafeSelectNodes($"//video/source[@src='{expectedSrcAttr.UrlEncodedForHttpPath}']");
+				if (videoElts.Count == 0)
+					continue; // not used in book, ignore
+				// OK, the user has modified the file outside of Bloom. Something is determined to cache video.
+				// The only way to defeat it seems to be to give it a new name.
+				var newVideoPath =
+					Path.Combine(videoFolderPath,
+						GetNewVideoFileName()); // Use a new name to defeat caching; prefer our standard type of name.
+				RobustFile.Move(videoPath, newVideoPath);
+
+				var newSrcAttr = UrlPathString.CreateFromUnencodedString(BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath));
+				HtmlDom.SetSrcOfVideoElement(newSrcAttr, new ElementProxy((XmlElement)videoElts[0]));
+			}
+
+			// We could try to figure out whether one of the modified videos is on the current page.
+			// But that's the most likely video to be modified, and it doesn't take long to reload,
+			// and this only happens in the very special case that the user has modified a video outside
+			// of Bloom.
+			View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+
+			// Likewise, this is probably overkill, but it's a probably-rare case. 
+			View.UpdateAllThumbnails();
+
 		}
 	}
 }

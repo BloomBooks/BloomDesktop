@@ -11,6 +11,7 @@
 }
 
 @videoButtonSize: 40px;
+@commandLabelMargin: 10px;
 @videoButtonBorder: @videoButtonSize / 3;
 @videoButtonRimThickness: 3px;
 
@@ -77,10 +78,14 @@
     margin-bottom: 20px;
 }
 
+#showInFolderLink {
+    margin-left: @videoButtonSize + @commandLabelMargin;
+}
+
 .startRecording,
 .recordingLabel,
 .commandLabel {
-    margin-left: 10px;
+    margin-left: @commandLabelMargin;
 }
 .countdownNumber {
     margin-left: 40px;

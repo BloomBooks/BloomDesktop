@@ -11,6 +11,7 @@ import {
 } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
 import { HelpLink } from "../../../react_components/helpLink";
+import { Link } from "../../../react_components/link";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
@@ -254,6 +255,13 @@ export class SignLanguageToolControls extends React.Component<
                                 Delete Video
                             </Label>
                         </div>
+                        <Link
+                            id="showInFolderLink"
+                            l10nKey="EditTab.Toolbox.SignLanguage.ShowInFolder"
+                            onClick={() => this.showInFolder()}
+                        >
+                            Open File Location
+                        </Link>
                         <div>
                             <button
                                 id="videoStopRecording"
@@ -412,6 +420,14 @@ export class SignLanguageToolControls extends React.Component<
 
     private deleteRecording() {
         BloomApi.post("signLanguage/deleteVideo");
+    }
+
+    private showInFolder() {
+        const path = SignLanguageTool.getSelectedVideoPath();
+        BloomApi.postJson(
+            "common/showInFolder",
+            JSON.stringify({ folderPath: path })
+        );
     }
 
     private editOutside() {
@@ -613,6 +629,23 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             classes += " bloom-selected";
         }
         return ToolBox.getPage().getElementsByClassName(classes);
+    }
+
+    public static getSelectedVideoPath(): string {
+        const containers = this.getVideoContainers(true);
+        if (containers.length == 0) {
+            return null;
+        }
+        const container = containers[0];
+        const videos = container.getElementsByTagName("video");
+        if (videos.length == 0) {
+            return null;
+        }
+        const sources = videos[0].getElementsByTagName("source");
+        if (sources.length == 0) {
+            return null;
+        }
+        return sources[0].getAttribute("src");
     }
 
     public detachFromPage() {
