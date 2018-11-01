@@ -128,7 +128,7 @@ namespace Bloom.Book
 
 		public static IEnumerable<Layout> GetLayoutChoices(HtmlDom dom, IFileLocator fileLocator)
 		{
-			//here we walk through all the stylesheets, looking for one with the special style which tells us which page/orientations it supports
+			//here we walk through all the stylesheets, looking for one with the special comment which tells us which page/orientations it supports
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var fileName = link.GetStringAttribute("href");
@@ -139,10 +139,14 @@ namespace Bloom.Book
 
 				fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
 				var path = fileLocator.LocateFile(fileName);
+				// "../customCollectionStyles.css" and "../settingsCollectionStyles.css" won't be found when
+				// creating a book from a BloomPack shell book.
+				if (string.IsNullOrEmpty(path) && fileName.StartsWith("../"))
+					path = fileLocator.LocateFile(fileName.Substring(3));
 				if(string.IsNullOrEmpty(path))
 				{
 					// We're looking for a block of json that is typically found in Basic Book.css or a comparable place for
-					// a book based on some other template. Caling code is prepared for not finding this block.
+					// a book based on some other template. Calling code is prepared for not finding this block.
 					// It seems safe to ignore a reference to some missing style sheet.
 					if (fileName.ToLowerInvariant().Contains("branding"))
 						continue; // these don't contain page size info, anyhow.
