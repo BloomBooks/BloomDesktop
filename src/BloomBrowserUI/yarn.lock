@@ -176,9 +176,9 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-tabs@^1.0.4":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@types/react-tabs/-/react-tabs-1.0.5.tgz#4af76e27c5356d72e0cad73559938158cd9d0911"
+"@types/react-tabs@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@types/react-tabs/-/react-tabs-2.3.0.tgz#6afdf6e85c3a68ffe33824c65fee641982ef2b48"
   dependencies:
     "@types/react" "*"
 
@@ -4315,9 +4315,11 @@ hoek@4.x.x:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-4.2.1.tgz#9634502aa12c445dd5a7c5734b572bb8738aacbb"
 
-hoist-non-react-statics@^2.5.0:
-  version "2.5.5"
-  resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-2.5.5.tgz#c5903cf409c0dfd908f388e619d86b9c1174cb47"
+hoist-non-react-statics@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.1.0.tgz#42414ccdfff019cd2168168be998c7b3bd5245c0"
+  dependencies:
+    react-is "^16.3.2"
 
 home-or-tmp@^2.0.0:
   version "2.0.0"
@@ -6001,11 +6003,11 @@ mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   dependencies:
     minimist "0.0.8"
 
-mobx-react@^5.2.3:
-  version "5.2.8"
-  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-5.2.8.tgz#059c7f29254d7cd36e103d79113103b40348d3bf"
+mobx-react@^5.3.6:
+  version "5.3.6"
+  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-5.3.6.tgz#0bead0173aed7d12ace4981b53c28db4d61de9ef"
   dependencies:
-    hoist-non-react-statics "^2.5.0"
+    hoist-non-react-statics "^3.0.0"
     react-lifecycles-compat "^3.0.2"
 
 mobx@^5.0.3:
@@ -7490,28 +7492,28 @@ rc@^1.1.7, rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-close-on-escape@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/react-close-on-escape/-/react-close-on-escape-2.0.0.tgz#d3bf6d18fac516979d76e7732fda39057176f017"
+react-close-on-escape@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/react-close-on-escape/-/react-close-on-escape-3.0.0.tgz#02ea1f78301cd3e3c24c944cdfde2b37456c870a"
 
-react-desktop@^0.3.1:
+react-desktop@^0.3.7:
   version "0.3.7"
   resolved "https://registry.yarnpkg.com/react-desktop/-/react-desktop-0.3.7.tgz#5a029c02bf092fe1a39624da547f66d0e99fe478"
   dependencies:
     radium "=0.19.6"
 
-react-dom@16.2.0:
-  version "16.2.0"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.2.0.tgz#69003178601c0ca19b709b33a83369fe6124c044"
+react-dom@16.6.0:
+  version "16.6.0"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.6.0.tgz#6375b8391e019a632a89a0988bce85f0cc87a92f"
   dependencies:
-    fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.0"
+    prop-types "^15.6.2"
+    scheduler "^0.10.0"
 
-react-dropdown-tree-select@^1.12.4:
-  version "1.12.4"
-  resolved "https://registry.yarnpkg.com/react-dropdown-tree-select/-/react-dropdown-tree-select-1.12.4.tgz#79c084611d4320626c7e9e8a090a421c29c10241"
+react-dropdown-tree-select@^1.13.0:
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/react-dropdown-tree-select/-/react-dropdown-tree-select-1.13.0.tgz#e992f407564937903adef63930b23198547b2ba8"
   dependencies:
     array.partial "^1.0.4"
     classnames "^2.2.5"
@@ -7527,22 +7529,26 @@ react-input-autosize@^2.2.1:
   dependencies:
     prop-types "^15.5.8"
 
+react-is@^16.3.2:
+  version "16.6.0"
+  resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.6.0.tgz#456645144581a6e99f6816ae2bd24ee94bdd0c01"
+
 react-lifecycles-compat@^3.0.0, react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
 
-react-modal@^3.5.1:
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/react-modal/-/react-modal-3.5.1.tgz#33d38527def90ea324848f7d63e53acc4468a451"
+react-modal@^3.6.1:
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/react-modal/-/react-modal-3.6.1.tgz#54d27a1ec2b493bbc451c7efaa3557b6af82332d"
   dependencies:
     exenv "^1.2.0"
     prop-types "^15.5.10"
     react-lifecycles-compat "^3.0.0"
     warning "^3.0.0"
 
-react-select@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/react-select/-/react-select-2.0.0.tgz#7e7ba31eff360b37ffc52b343a720f4248bd9b3b"
+react-select@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/react-select/-/react-select-2.1.1.tgz#762d0babd8c7c46a944db51cbb72e4ee117253f9"
   dependencies:
     classnames "^2.2.5"
     emotion "^9.1.2"
@@ -7558,7 +7564,7 @@ react-table@^6.8.6:
   dependencies:
     classnames "^2.2.5"
 
-react-tabs@^2.2.2:
+react-tabs@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/react-tabs/-/react-tabs-2.3.0.tgz#0c37e786f288d369824acd06a96bd1818ab8b0dc"
   dependencies:
@@ -7574,14 +7580,14 @@ react-transition-group@^2.2.1:
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
 
-react@16.2.0:
-  version "16.2.0"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.2.0.tgz#a31bd2dab89bff65d42134fa187f24d054c273ba"
+react@16.6.0:
+  version "16.6.0"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.6.0.tgz#b34761cfaf3e30f5508bc732fb4736730b7da246"
   dependencies:
-    fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.0"
+    prop-types "^15.6.2"
+    scheduler "^0.10.0"
 
 read-chunk@^2.1.0:
   version "2.1.0"
@@ -8085,6 +8091,13 @@ safe-regex@^1.1.0:
 sax@^1.2.4, sax@~1.2.1:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
+
+scheduler@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.10.0.tgz#7988de90fe7edccc774ea175a783e69c40c521e1"
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
 
 schema-utils@^0.4.4, schema-utils@^0.4.5:
   version "0.4.7"
