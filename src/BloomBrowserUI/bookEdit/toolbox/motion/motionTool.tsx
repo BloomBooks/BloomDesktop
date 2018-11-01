@@ -444,7 +444,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                     ) as string
                 );
                 firstImage.removeAttribute("data-disabled-initialrect");
-                this.updateMarkup();
+                this.newPageReady(); // ensures start/stop rectangles visible
             }
         } else {
             if (firstImage.getAttribute("data-initialrect")) {
@@ -467,7 +467,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // If they once choose a picture, there's no going back to a placeholder (on this page).
         this.rootControl.setState({ haveImageContainerButNoImage: false });
         this.observer.disconnect();
-        this.updateMarkup(); // one effect is to show the rectangles.
+        //this.updateMarkup(); - does nothing
     }
 
     private resizeRectanglesDelay: number = 200;
@@ -500,7 +500,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             if (images[0].getAttribute("style") === this.resizeOldStyle) {
                 return; // spurious notification
             }
-            this.updateMarkup();
+            //this.updateMarkup(); - does nothing
         }, this.resizeRectanglesDelay);
         this.resizeInProgress = true; // ignore notifications until timeout
     }
