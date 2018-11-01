@@ -57,7 +57,7 @@
         "@types/webrtc": "^0.0.23",
         "axios": "^0.18.0",
         "color-blind": "^0.1.1",
-        "css-element-queries": "^0.3.2",
+        "css-element-queries": "^1.0.5",
         "global": "^4.3.2",
         "jquery": "^1.12.4",
         "jquery.hotkeys": "^0.1.0",
@@ -81,7 +81,7 @@
         "time-require": "^0.1.2",
         "toastr": "^2.1.4",
         "underscore": "^1.9.1",
-        "xregexp": "^3.0.0",
+        "xregexp": "^4.2.0",
         "yarn": "^1.12.1"
     },
     "devDependencies": {
