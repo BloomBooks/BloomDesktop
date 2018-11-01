@@ -33,6 +33,7 @@ namespace Bloom.web.controllers
 		private decimal _currentVideoStartSeconds;
 		private decimal _currentVideoEndSeconds;
 		private bool _doingEditOutsideBloom;
+		private const string noVideoClass = "bloom-noVideoSelected";
 
 		public EditingView View { get; set; }
 		public EditingModel Model { get; set; }
@@ -102,12 +103,10 @@ namespace Bloom.web.controllers
 
 		private void SetInitialVideoTimings(GeckoHtmlElement videoContainer, string fileName)
 		{
+			const string defaultTimings = "#t=0.0,-1.0";
 			var path = Path.Combine("video", fileName);
-			_currentVideoStartSeconds = 0.0m;
-			_currentVideoEndSeconds = -1.0m; // temporary stand-in for maximum duration
-			var srcAttrWithTimings = path + "#t=" + _currentVideoStartSeconds.ToString("F1") + "," +
-			                         _currentVideoEndSeconds.ToString("F1");
-			var srcAttrUrl = UrlPathString.CreateFromUnencodedString(srcAttrWithTimings, true);
+			ResetTimings();
+			var srcAttrUrl = UrlPathString.CreateFromUnencodedString(path + defaultTimings, true);
 			HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainer), srcAttrUrl);
 		}
 
@@ -119,7 +118,7 @@ namespace Bloom.web.controllers
 				// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
 				// video recording and importing if there is no container on the page.
 				var msg = "There's nowhere to put a video on this page." +
-				          (string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
+					(string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
 				MessageBox.Show(msg);
 				request.Failed("nowhere to put video");
 				return null;
@@ -219,8 +218,8 @@ namespace Bloom.web.controllers
 					request.Failed("no original video file ("+originalPath+")");
 					return;
 				}
-				_currentVideoStartSeconds = timings[0];
-				_currentVideoEndSeconds = timings[1];
+
+				SetTimings(timings);
 				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
 				RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
@@ -243,8 +242,7 @@ namespace Bloom.web.controllers
 				if (!ParseVideoContainerSourceAttribute(request, videoContainer, true, out videoPath, out timings))
 					return; // request.Failed was called inside the above method
 
-				_currentVideoStartSeconds = timings[0];
-				_currentVideoEndSeconds = timings[1];
+				SetTimings(timings);
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				if (!RobustFile.Exists(videoPath))
 				{
@@ -357,8 +355,7 @@ namespace Bloom.web.controllers
 					return;
 				}
 
-				_currentVideoStartSeconds = 0.0m;
-				_currentVideoEndSeconds = -1.0m;
+				ResetTimings();
 				ConfirmRecycleDialog.Recycle(originalPath);
 				View.Invoke((Action)(() =>
 				{
@@ -368,7 +365,7 @@ namespace Bloom.web.controllers
 					var video = container.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
 					video.ParentNode.RemoveChild(video);
 					// BL-6136 add back in the class that shows the placeholder
-					container.ClassName += " bloom-noVideoSelected";
+					container.ClassName += " " + noVideoClass;
 					Model.SaveNow();
 					View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 					View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
@@ -382,6 +379,18 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		private void ResetTimings()
+		{
+			_currentVideoStartSeconds = 0.0m;
+			_currentVideoEndSeconds = -1.0m; // temporary stand-in for maximum duration
+		}
+
+		private void SetTimings(decimal[] timings)
+		{
+			_currentVideoStartSeconds = timings[0];
+			_currentVideoEndSeconds = timings[1];
+		}
+
 		private void HandleVideoStatisticsRequest(ApiRequest request)
 		{
 			if (request.HttpMethod != HttpMethods.Get)
@@ -393,8 +402,7 @@ namespace Bloom.web.controllers
 				if (!ParseVideoContainerSourceAttribute(request, GetSelectedVideoContainer(), false, out videoFilePath, out timings))
 					return; // request.Failed was called inside the above method
 
-				_currentVideoStartSeconds = timings[0];
-				_currentVideoEndSeconds = timings[1];
+				SetTimings(timings);
 				if (!RobustFile.Exists(videoFilePath))
 				{
 					request.Failed("Cannot find video file ("+videoFilePath+")");
@@ -404,28 +412,28 @@ namespace Bloom.web.controllers
 				var ffmpeg = FindFfmpegProgram();
 				if (ffmpeg == string.Empty)
 				{
-					request.Failed("Cannot find FFMpeg program");
+					request.Failed("Cannot find ffmpeg program");
 					return;
 				}
 
 				var fileInfo = new FileInfo(videoFilePath);
 				var sizeInBytes = fileInfo.Length;
 
-				// Run FFMpeg on the file to get statistics.
+				// Run ffmpeg on the file to get statistics.
 				// -hide_banner = don't write all the version and build information to the console
 				// -i <path> = specify input file
 				var parameters = $"-hide_banner -i \"{videoFilePath}\"";
 				var result = CommandLineRunner.Run(ffmpeg, parameters, "", 60, new NullProgress());
 				if (result.DidTimeOut)
 				{
-					request.Failed("FFMpeg timed out getting video statistics");
+					request.Failed("ffmpeg timed out getting video statistics");
 					return;
 				}
 
 				var output = result.StandardError;
 				if (string.IsNullOrWhiteSpace(output))
 				{
-					request.Failed("FFMpeg failed to get video statistics");
+					request.Failed("ffmpeg failed to get video statistics");
 					return;
 				}
 
