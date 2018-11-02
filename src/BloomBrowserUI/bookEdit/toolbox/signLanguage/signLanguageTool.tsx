@@ -631,7 +631,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return ToolBox.getPage().getElementsByClassName(classes);
     }
 
-    public static getSelectedVideoPath(): string {
+    public static getSelectedVideoPathAndTiming(): string {
         const containers = this.getVideoContainers(true);
         if (containers.length == 0) {
             return null;
@@ -646,6 +646,33 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             return null;
         }
         return sources[0].getAttribute("src");
+    }
+
+    public static getSelectedVideoPath(): string {
+        return SignLanguageTool.stripExtrasFromVideoFile(
+            SignLanguageTool.getSelectedVideoPathAndTiming()
+        );
+    }
+
+    // src may have ? followed by fake params to defeat caching.
+    // src may have # followed by timings.
+    // strip them off.
+    public static stripExtrasFromVideoFile(combined: string) {
+        if (!combined) {
+            return null;
+        }
+        // tried  return new URL(combined).pathname;, but URL is 'unavailable' according to debugger.
+        // src may have # followed by timings.
+        const hashIndex = combined.indexOf("#");
+        if (hashIndex > 0) {
+            combined = combined.substring(0, hashIndex);
+        }
+        // src may have ? followed by fake params to defeat caching.
+        const paramIndex = combined.indexOf("?");
+        if (paramIndex > 0) {
+            combined = combined.substring(0, paramIndex);
+        }
+        return combined;
     }
 
     public detachFromPage() {
@@ -783,18 +810,23 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         stats.startSeconds = start;
         stats.endSeconds = end;
         this.reactControls.setState({ videoStatistics: stats });
-        BloomApi.get("toolbox/fileExists?filename=" + src, result => {
-            const fileExists: boolean = result.data;
-            if (fileExists) {
-                this.reactControls.getVideoStatsFromFile();
-                SignLanguageTool.setCurrentVideoPoint(
-                    parseFloat(
-                        this.reactControls.state.videoStatistics.startSeconds
-                    )
-                );
+        BloomApi.get(
+            "toolbox/fileExists?filename=" +
+                SignLanguageTool.stripExtrasFromVideoFile(src),
+            result => {
+                const fileExists: boolean = result.data;
+                if (fileExists) {
+                    this.reactControls.getVideoStatsFromFile();
+                    SignLanguageTool.setCurrentVideoPoint(
+                        parseFloat(
+                            this.reactControls.state.videoStatistics
+                                .startSeconds
+                        )
+                    );
+                }
+                this.reactControls.setState({ haveRecording: fileExists });
             }
-            this.reactControls.setState({ haveRecording: fileExists });
-        });
+        );
         BloomApi.get(
             "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
             result => {
