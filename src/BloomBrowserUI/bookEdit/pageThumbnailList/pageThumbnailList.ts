@@ -106,6 +106,12 @@ function applyOverflowWarnings() {
     const overflowPages = $(".gridly").find(".pageOverflows");
     overflowPages.each((index: number, element: Element) => {
         if ($(element).find("div.pageOverflowsIcon").length <= 0) {
+            // We would like this warning icon to appear over the page preview.
+            // Regardless of z-index value, no descendant can be behind its ancestors' background.
+            // But our CSS styles the warning icon as a background image
+            // Therefore, if we wish for the warning icon to appear over the page preview, we must not apply the background-image to any ancestor of the page preview.
+            // So, this code inserts a new node (which is not a strict ancestor of the page) which we can manipulate instead of the ancestor
+            // Refer to https://issues.bloomlibrary.org/youtrack/issue/BL-6467
             $(element).append('<div class="pageOverflowsIcon"></div>');
         }
     });
