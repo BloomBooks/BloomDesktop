@@ -23,7 +23,7 @@ namespace Bloom.Edit
 			var isSameFile = IsSameFilePath(bookFolderPath, HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage), imageInfo);
 			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
 			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,
-				UrlPathString.CreateFromUnencodedString(imageFileName));
+				UrlPathString.CreateFromUnencodedString(imageFileName, true));
 			UpdateMetadataAttributesOnImage(imgOrDivWithBackgroundImage, imageInfo);
 		}
 

@@ -593,6 +593,12 @@ namespace Bloom.web.controllers
 			var fileNameWithTimings = sources[0].GetAttribute("src");
 			string rawTimings;
 			var fileName = StripTimingFromVideoUrl(fileNameWithTimings, out rawTimings);
+			var paramIndex = fileName.IndexOf("?");
+			if (paramIndex >= 0)
+			{
+				fileName = fileName.Substring(0, paramIndex);
+			}
+
 			videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
 			// Some callers need this file to exist, others don't, but decoding is required for all.
 			if (!RobustFile.Exists(videoFilePath) && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]"))
@@ -702,8 +708,8 @@ namespace Bloom.web.controllers
 		/// Unfortunately something, probably the browser itself, seems to be very
 		/// persistent about caching videos, even though our server tells it not to cache
 		/// things in the book folder (and debug builds don't ever tell it to cache anything).
-		/// The only way I've found to defeat it is to change the src attribute (and
-		/// move the file).
+		/// We prevent cache hits on modified files by adding a fake param to the URI.
+		/// (Also we will remove any trimming...see comment below.)
 		/// This function is called whenever Bloom is activated in Edit mode.
 		/// </summary>
 		/// <param name="sender"></param>
@@ -749,18 +755,18 @@ namespace Bloom.web.controllers
 			foreach (var videoPath in filesModifiedSinceDeactivate)
 			{
 				var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(BookStorage.GetVideoFolderName + Path.GetFileName(videoPath));
-				var videoElts = CurrentBook.RawDom.SafeSelectNodes($"//video/source[@src='{expectedSrcAttr.UrlEncodedForHttpPath}']");
+				var videoElts = CurrentBook.RawDom.SafeSelectNodes($"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]");
 				if (videoElts.Count == 0)
 					continue; // not used in book, ignore
-				// OK, the user has modified the file outside of Bloom. Something is determined to cache video.
-				// The only way to defeat it seems to be to give it a new name.
-				var newVideoPath =
-					Path.Combine(videoFolderPath,
-						GetNewVideoFileName()); // Use a new name to defeat caching; prefer our standard type of name.
-				RobustFile.Move(videoPath, newVideoPath);
 
-				var newSrcAttr = UrlPathString.CreateFromUnencodedString(BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath));
-				HtmlDom.SetSrcOfVideoElement(newSrcAttr, new ElementProxy((XmlElement)videoElts[0]));
+				// OK, the user has modified the file outside of Bloom. Something is determined to cache video.
+				// Defeat it by setting a fake param.
+				// Note that doing this will discard any fragment in the existing URL, typically trimming.
+				// I think this is good...if the user has edited the video, we should start over assuming he
+				// wants all of it.
+
+				var newSrcAttr = UrlPathString.CreateFromUnencodedString(BookStorage.GetVideoFolderName + Path.GetFileName(videoPath));
+				HtmlDom.SetSrcOfVideoElement(newSrcAttr, new ElementProxy((XmlElement)videoElts[0]), true, "?now=" + DateTime.Now.Ticks);
 			}
 
 			// We could try to figure out whether one of the modified videos is on the current page.
