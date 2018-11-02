@@ -16,6 +16,7 @@ import "../../modified_libraries/gridly/jquery.gridly.js";
 import { SetImageElementUrl } from "../js/bloomImages";
 import "errorHandler";
 import WebSocketManager from "../../utils/WebSocketManager";
+import { number } from "prop-types";
 
 const timerName = "thumbnailInterval";
 const kWebsocketContext = "pageThumbnailList";
@@ -32,6 +33,9 @@ $(window).ready(function() {
             reordered: reorder
         }
     });
+
+    applyOverflowWarnings();
+
     jQuery(".gridItem").click(function(e) {
         // adding "preventDefault()"" here and the cursor css might make the
         // invisibleThumbnailCover unneccessary, but all of it together should be plenty
@@ -39,6 +43,10 @@ $(window).ready(function() {
         e.stopPropagation();
         e.preventDefault();
         fireCSharpEvent("gridClick", $(this).attr("id"));
+
+        // When a page with an overflow icon loses focus (i.e. by selecting a different grid item), the overflow warning gets wiped out
+        // So, just re-apply it
+        applyOverflowWarnings();
     });
 
     // start the thumbnail timer
@@ -92,6 +100,16 @@ $(window).ready(function() {
             WebSocketManager.addListener(kWebsocketContext, listenerFunction);
         });
 });
+
+// Updates all overflow warning icons on the page
+function applyOverflowWarnings() {
+    const overflowPages = $(".gridly").find(".pageOverflows");
+    overflowPages.each((index: number, element: Element) => {
+        if ($(element).find("div.pageOverflowsIcon").length <= 0) {
+            $(element).append('<div class="pageOverflowsIcon"></div>');
+        }
+    });
+}
 
 export function stopListeningForSave() {
     WebSocketManager.closeSocket(kWebsocketContext);

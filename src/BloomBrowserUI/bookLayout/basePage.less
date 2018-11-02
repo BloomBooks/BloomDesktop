@@ -103,10 +103,15 @@ To handling the mis-match.*/
 /* gridItem means this is a page thumbnail */
 .gridItem {
     .pageOverflows {
+        height: 100%;
+    }
+    .pageOverflowsIcon {
         background-image: url("/bloom/Attention.svg"); /* red triangle with exclamation point */
         background-position: bottom;
         background-repeat: no-repeat;
         background-size: 70%;
+        z-index: 3; // Should be above split-pane-component and split-pane-divider
+        height: 100%;
     }
 }
 div.ui-tooltip-content {

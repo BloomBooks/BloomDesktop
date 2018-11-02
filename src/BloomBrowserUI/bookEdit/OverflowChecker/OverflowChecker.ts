@@ -364,6 +364,7 @@ export default class OverflowChecker {
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
     private static UpdatePageOverflow(page) {
+        // TODO: It seems that it takes more clicks to propagate the pageOverflows class onto a FrontCover page than a normal page??? Repro in both 4.4 and 4.5
         const $page = $(page);
         if (
             !$page.find(".overflow").length &&
