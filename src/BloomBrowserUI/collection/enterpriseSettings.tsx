@@ -510,6 +510,6 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
 }
 
 // allow plain 'ol javascript in the html to connect up react
-(window as any).connectEnterpriseSettingsScreen = function(element) {
+(window as any).connectEnterpriseSettingsScreen = element => {
     ReactDOM.render(<EnterpriseSettings />, element);
 };

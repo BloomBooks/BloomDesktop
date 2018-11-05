@@ -210,7 +210,7 @@ export default class BloomField {
             .filter(function() {
                 return this.localName.toLowerCase() != "div";
             })
-            .each(function() {
+            .each(() => {
                 //divToProtect.removeChild(this);
             });
         //also remove any raw text nodes, which you can only get at with "contents"
@@ -223,7 +223,7 @@ export default class BloomField {
                     this.textContent.trim().length > 0
                 );
             })
-            .each(function() {
+            .each(() => {
                 // divToProtect.removeChild(this);
             });
 

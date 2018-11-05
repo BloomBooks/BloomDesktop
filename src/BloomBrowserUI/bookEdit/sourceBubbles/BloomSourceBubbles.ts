@@ -127,7 +127,7 @@ export default class BloomSourceBubbles {
 
         // First, sort the divs (and/or textareas) alphabetically by language code
         let items = $this.find("textarea, div");
-        items.sort(function(a, b) {
+        items.sort((a, b) => {
             //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
             //it's just a one-line change.
             const keyA = $(a).attr("lang");
@@ -434,7 +434,7 @@ export default class BloomSourceBubbles {
                     },
                     hide: hideEvents ? hideEventsStr : hideEvents,
                     events: {
-                        show: function(event, api) {
+                        show: (event, api) => {
                             // don't need to do this if there is only one editable area
                             const $body: JQuery = $("body");
                             if (
@@ -469,7 +469,7 @@ export default class BloomSourceBubbles {
                                 $tip.attr("data-max-height", maxHeight);
                             }
                         },
-                        render: function(event, api) {
+                        render: (event, api) => {
                             api.elements.tooltip.keydown(kevent => {
                                 // When the user types <Control-A> inside a source bubble, we don't
                                 // want the whole page selected.  We want just the current text of
@@ -551,7 +551,7 @@ export default class BloomSourceBubbles {
             $(elt).focus(event => {
                 // reset tool tips that may be expanded
                 const $body = $("body");
-                $body.find(".qtip").each(function(idx, obj) {
+                $body.find(".qtip").each((idx, obj) => {
                     const $thisTip = $(obj);
                     $thisTip.addClass("passive-bubble");
                     const maxHeight = $thisTip.attr("data-max-height");
