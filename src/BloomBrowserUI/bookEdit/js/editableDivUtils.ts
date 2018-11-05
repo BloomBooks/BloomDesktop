@@ -258,7 +258,7 @@ export class EditableDivUtils {
             }
         });
         // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-        setTimeout(function() {
+        setTimeout(() => {
             (<qtipInterface>$("div[data-hasqtip]")).qtip("reposition");
         }, 100); // make sure the DOM has the inserted text before we try to reposition qtips
     }

@@ -24,7 +24,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import dummyToGetElementQueriesLoadedIntoWindow = require("css-element-queries");
 var pretentToUseDummy = dummyToGetElementQueriesLoadedIntoWindow; //without this, something in our build process discards the import
 
-$(function() {
+$(() => {
     $("div.split-pane").splitPane();
 });
 
@@ -131,7 +131,7 @@ function layoutToggleClickHandler() {
         // delay further processing to avoid messing up origami toggle transition
         // 400ms CSS toggle transition + 50ms extra to give it time to finish up.
         const toggleTransitionLength = 450;
-        setTimeout(function() {
+        setTimeout(() => {
             $("html").off("keydown.origami");
             BloomApi.postThatMightNavigate(
                 "common/saveChangesAndRethinkPageEvent"
@@ -263,7 +263,7 @@ function closeClickHandler() {
 
     // The idea here is we need the position-* class from the parent to replace the sibling's position-* class.
     // This is working for now, but should be cleaned up since it could also add other classes.
-    sibling.removeClass(function(index, css) {
+    sibling.removeClass((index, css) => {
         return (css.match(/(^|\s)position-\S+/g) || []).join(" ");
     });
     sibling.addClass(positionClass);

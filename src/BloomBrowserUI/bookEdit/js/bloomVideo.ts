@@ -77,7 +77,7 @@ function SetupVideoContainer(
                 "Import Video",
                 ""
             )
-            .done(function(changeVideoText) {
+            .done(changeVideoText => {
                 $(containerDiv)
                     .mouseenter(function() {
                         const $this = $(this);
@@ -184,7 +184,7 @@ function getVideoEndSeconds(videoElt: HTMLVideoElement): number {
 function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
-    $(containerDiv).click(function() {
+    $(containerDiv).click(() => {
         getToolboxFrameExports()
             .getTheOneToolbox()
             .activateToolFromId(SignLanguageToolControls.kToolID);
