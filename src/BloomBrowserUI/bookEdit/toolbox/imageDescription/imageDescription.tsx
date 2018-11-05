@@ -13,6 +13,7 @@ import {
     RequiresBloomEnterpriseWrapper,
     enterpriseFeaturesEnabled
 } from "../../../react_components/requiresBloomEnterprise";
+import { number } from "prop-types";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -251,6 +252,10 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         const page = ToolBox.getPage();
         if (page) {
             page.classList.remove("bloom-showImageDescriptions");
+
+            this.updateDraggablesPosition((x: number) => {
+                return x * 2;
+            });
         }
     }
 
@@ -276,6 +281,65 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         }
     };
 
+    public static parseNumberAndUnit(text: string) {
+        // Assumption: Hope we don't get any scientific notation...
+        let indexOfFirstNonNumericChar = 0;
+        while (indexOfFirstNonNumericChar < text.length) {
+            const c: string = text.charAt(indexOfFirstNonNumericChar);
+
+            // Check if each character is valid or invalid as a number
+            const isNumeric: boolean = "0" <= c && c <= "9";
+            const isDecimalPoint: boolean = c == ".";
+
+            if (!isNumeric && !isDecimalPoint) {
+                break;
+            } else {
+                ++indexOfFirstNonNumericChar;
+            }
+        }
+
+        const num: number = Number(
+            text.substring(0, indexOfFirstNonNumericChar)
+        );
+
+        const unit = text.substring(indexOfFirstNonNumericChar);
+
+        return { num: num, unit: unit };
+    }
+
+    protected updateDraggablesPosition(
+        newPositionCalculationMethod: (x: number) => number
+    ) {
+        const page = ToolBox.getPage();
+        if (!page) {
+            return;
+        }
+
+        // Re-adjust any user-draggable items to their new position given that the margins
+        // Note: it might've been nice to set up the HTML structure such that the img and bloom-textOverPicture had an ancestor that was exactly the size of the img
+        // but then it's a huge mess for how to make it work on existing books that already have this HTML structure set.
+        const draggablesThatNeedToMove = page.getElementsByClassName(
+            "ui-draggable"
+        );
+        // Alternatively, use class "bloom-textOverPicture" if there are any .ui-draggables that aren't supposed to stay at the same relative position over the image
+
+        for (let i = 0; i < draggablesThatNeedToMove.length; ++i) {
+            const draggableElement = draggablesThatNeedToMove[i] as HTMLElement;
+
+            if (draggableElement.style.left) {
+                const {
+                    num,
+                    unit
+                } = ImageDescriptionAdapter.parseNumberAndUnit(
+                    draggableElement.style.left
+                );
+                const newLeftPosition: number = newPositionCalculationMethod(
+                    (num as any) as number
+                );
+                draggableElement.style.left = newLeftPosition.toString() + unit;
+            }
+        }
+    }
     // Make sure the page has the elements used to store image descriptions,
     // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
@@ -286,12 +350,20 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 if (!page) {
                     return;
                 }
-                // turn on special layout to make image descriptions visible (might already be on)
-                page.classList.add("bloom-showImageDescriptions");
-                // Make sure every image container has a child bloom-translationGroup to hold the image description.
                 const imageContainers = page.getElementsByClassName(
                     "bloom-imageContainer"
                 );
+
+                // turn on special layout to make image descriptions visible (might already be on)
+                if (!page.classList.contains("bloom-showImageDescriptions")) {
+                    page.classList.add("bloom-showImageDescriptions");
+
+                    this.updateDraggablesPosition((x: number) => {
+                        return x / 2;
+                    });
+                }
+
+                // Make sure every image container has a child bloom-translationGroup to hold the image description.
                 let addedTranslationGroup = false;
                 for (let i = 0; i < imageContainers.length; i++) {
                     const container = imageContainers[i];
