@@ -276,7 +276,7 @@ export default class AudioRecording {
         var divs = this.getPage().find(
             ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
         );
-        return divs.filter(":visible").filter(function(idx, elt) {
+        return divs.filter(":visible").filter((idx, elt) => {
             return theOneLibSynphony
                 .stringToSentences(elt.innerHTML)
                 .some(frag => {

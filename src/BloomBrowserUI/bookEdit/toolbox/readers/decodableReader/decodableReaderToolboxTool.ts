@@ -63,7 +63,7 @@ export class DecodableReaderToolboxTool implements ITool {
         // invoke function when a bloom-editable element loses focus.
         $(container)
             .find(".bloom-editable")
-            .focusout(function() {
+            .focusout(() => {
                 getTheOneReaderToolsModel().doMarkup();
             });
 
@@ -75,25 +75,27 @@ export class DecodableReaderToolboxTool implements ITool {
 
         $(container)
             .find(".bloom-editable")
-            .keydown(function(e): boolean {
-                if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
-                    // ctrl-z or ctrl-Y
-                    if (
-                        getTheOneReaderToolsModel().currentMarkupType !==
-                        MarkupType.None
-                    ) {
-                        e.preventDefault();
-                        if (e.shiftKey || e.keyCode == 89) {
-                            // ctrl-shift-z or ctrl-y
-                            getTheOneReaderToolsModel().redo();
-                        } else {
-                            getTheOneReaderToolsModel().undo();
+            .keydown(
+                (e): boolean => {
+                    if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
+                        // ctrl-z or ctrl-Y
+                        if (
+                            getTheOneReaderToolsModel().currentMarkupType !==
+                            MarkupType.None
+                        ) {
+                            e.preventDefault();
+                            if (e.shiftKey || e.keyCode == 89) {
+                                // ctrl-shift-z or ctrl-y
+                                getTheOneReaderToolsModel().redo();
+                            } else {
+                                getTheOneReaderToolsModel().undo();
+                            }
+                            return false;
                         }
-                        return false;
                     }
+                    return true;
                 }
-                return true;
-            });
+            );
     }
 
     // Some things were impossible to do i18n on via the jade/pug

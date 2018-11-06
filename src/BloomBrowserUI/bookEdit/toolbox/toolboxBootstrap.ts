@@ -54,7 +54,7 @@ export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
 
-$(document).ready(function() {
+$(document).ready(() => {
     getTheOneToolbox().initialize();
 });
 

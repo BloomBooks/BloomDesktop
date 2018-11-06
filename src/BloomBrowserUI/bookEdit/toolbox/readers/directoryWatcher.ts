@@ -67,7 +67,7 @@ export class DirectoryWatcher {
     private restartTimer(self): void {
         if (self.run === true) {
             if (self.refreshInterval > 0) {
-                setTimeout(function() {
+                setTimeout(() => {
                     self.checkNow(self);
                 }, self.refreshInterval * 1000);
             }
@@ -86,7 +86,7 @@ export class DirectoryWatcher {
             ajaxSettings["data"] = postKeyValueDataObject;
 
         // we are expecting the value returned in 'data' to be either 'yes' or 'no'
-        $.ajax(ajaxSettings).done(function(data) {
+        $.ajax(ajaxSettings).done(data => {
             self.ifChangedFireEvents(data, self);
         });
     }

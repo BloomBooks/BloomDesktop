@@ -6,7 +6,7 @@ import {
 import * as _ from "underscore";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 
-describe("readerTools-libSynphony tests", function() {
+describe("readerTools-libSynphony tests", () => {
     function generateTestData() {
         //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
         ResetLanguageDataInstance();
@@ -75,19 +75,19 @@ describe("readerTools-libSynphony tests", function() {
     var divTextEntry2;
     var divTextEntry3;
 
-    beforeEach(function() {
+    beforeEach(() => {
         divTextEntry1 = addDiv("text_entry1");
         divTextEntry2 = addDiv("text_entry2");
         divTextEntry3 = addDiv("text_entry3");
     });
 
-    afterEach(function() {
+    afterEach(() => {
         document.body.removeChild(divTextEntry1);
         document.body.removeChild(divTextEntry2);
         document.body.removeChild(divTextEntry3);
     });
 
-    it("addWordsFromFile", function() {
+    it("addWordsFromFile", () => {
         getTheOneReaderToolsModel().clearForTest();
         var fileContents = "The cat sat on the mat. The rat sat on the cat.";
 
@@ -102,7 +102,7 @@ describe("readerTools-libSynphony tests", function() {
         });
     });
 
-    it("addWordsFromFile properly handles paragraphs", function() {
+    it("addWordsFromFile properly handles paragraphs", () => {
         getTheOneReaderToolsModel().clearForTest();
         var fileContents = "one\r\ntwo\nthree four five.\r\n six. seven";
 
@@ -119,7 +119,7 @@ describe("readerTools-libSynphony tests", function() {
     });
 
     /* skipping See BL-3554
-                it("addWordsToSynphony", function() {
+                it("addWordsToSynphony", () => {
 
                         generateTestData();
                         var synphony = getTheOneReaderToolsModel().synphony;
@@ -141,7 +141,7 @@ describe("readerTools-libSynphony tests", function() {
     /**
      * Test for BL-223, div displaying markup if there is no text
      */
-    it("markupEndsWithBreakTag", function() {
+    it("markupEndsWithBreakTag", () => {
         generateTestData();
 
         var knownGraphemes = [
@@ -204,7 +204,7 @@ describe("readerTools-libSynphony tests", function() {
         );
     });
 
-    it("sightWordOnlyStages", function() {
+    it("sightWordOnlyStages", () => {
         generateSightWordsOnlyTestData();
 
         var knownGraphemes = [];
