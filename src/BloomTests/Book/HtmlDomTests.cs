@@ -36,6 +36,28 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void RemoveCkEditorMarkup_RemovesCke_editable()
+		{
+			var dom = new HtmlDom(
+				@"<html><body><div>
+					<div id='middle' class='bloom-content1 cke_editable cke_focus cke_content_ltr another-style'></div>
+					<div id='end' class='bloom-content1 cke_editable cke_focus cke_content_ltr'></div>
+					<div id='start' class='cke_editable cke_focus cke_content_ltr bloom-content1'></div>
+					<div id='whole' class='cke_editable cke_focus cke_content_ltr'></div>
+					<div id='none' class='bloom-content1'></div>
+				</div></body></html>");
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[contains(@class, 'cke_')]", 4); // test this xpath :-)
+			HtmlDom.RemoveCkEditorMarkup(dom.RawDom.DocumentElement);
+			var assertThatResult = AssertThatXmlIn.Dom(dom.RawDom);
+			assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//div[@id='middle' and @class='bloom-content1 another-style']",1);
+			assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//div[@id='end' and @class='bloom-content1']", 1);
+			assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//div[@id='start' and @class='bloom-content1']", 1);
+			assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//div[@id='whole' and @class='']", 1);
+			assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//div[@id='none' and @class='bloom-content1']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//*[contains(@class, 'cke_')]"); // further verify result
+		}
+
+		[Test]
 		public void BaseForRelativePaths_NoHead_NoLongerThrows()
 		{
 			var dom = new HtmlDom(
