@@ -1,7 +1,7 @@
 import { removeCommentsFromEditableHtml } from "./toolbox";
 
-describe("toolbox tests", function() {
-    it("removeCommentsFromEditableHtml removes comments correctly including ones with new lines", function() {
+describe("toolbox tests", () => {
+    it("removeCommentsFromEditableHtml removes comments correctly including ones with new lines", () => {
         var p = document.createElement("p");
         var span1 = document.createElement("span");
         span1.appendChild(document.createTextNode("text"));

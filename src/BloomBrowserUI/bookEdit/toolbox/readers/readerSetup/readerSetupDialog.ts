@@ -45,7 +45,7 @@ export function showSetupDialog(showWhat) {
     theOneLocalizationManager.loadStrings(
         getSettingsDialogLocalizedStrings(),
         null,
-        function() {
+        () => {
             var title;
             if (showWhat == "stages")
                 title = theOneLocalizationManager.getText(
@@ -81,7 +81,7 @@ export function showSetupDialog(showWhat) {
                                 "Help"
                             ),
                             class: "left-button",
-                            click: function() {
+                            click: () => {
                                 settingsFrameWindow().postMessage("Help", "*");
                             }
                         },
@@ -90,7 +90,7 @@ export function showSetupDialog(showWhat) {
                                 "Common.OK",
                                 "OK"
                             ),
-                            click: function() {
+                            click: () => {
                                 settingsFrameWindow().postMessage("OK", "*");
                             }
                         },
@@ -100,7 +100,7 @@ export function showSetupDialog(showWhat) {
                                 "Common.Cancel",
                                 "Cancel"
                             ),
-                            click: function() {
+                            click: () => {
                                 //nb: the element pointed to here by setupDialogElement is the same as "this"
                                 //however, the jquery that you'd get by saying $(this) is *not* the same one as
                                 //that stored in setupDialogElement. Ref BL-3331.
@@ -108,13 +108,13 @@ export function showSetupDialog(showWhat) {
                             }
                         }
                     },
-                    close: function() {
+                    close: () => {
                         // $(this).remove(); uses the wrong document (see https://silbloom.myjetbrains.com/youtrack/issue/BL-3962)
                         // the following derives from http://stackoverflow.com/questions/2864740/jquery-how-to-completely-remove-a-dialog-on-close
                         setupDialogElement.dialog("destroy").remove();
                         fireCSharpEvent("setModalStateEvent", "false");
                     },
-                    open: function() {
+                    open: () => {
                         $("#synphonyConfig").css("overflow", "hidden");
                         $('button span:contains("Help")').prepend(
                             '<i class="fa fa-question-circle"></i> '

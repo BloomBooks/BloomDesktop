@@ -7,6 +7,10 @@
         },
         "prefer-const": {
             "severity": "warning"
+        },
+        "only-arrow-functions": {
+            "options": "allow-declarations",
+            "severity": "error"
         }
     },
     "extends": [

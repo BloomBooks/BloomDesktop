@@ -37,7 +37,7 @@ function process_UI_Message(event: MessageEvent): void {
                     "format_not_supported"
                 );
                 let foundNotSupported: boolean = false;
-                files.forEach(function(element, index, array) {
+                files.forEach((element, index, array) => {
                     const filenameComponents: string[] = element.split(".");
                     if (filenameComponents.length < 2) {
                         array[index] =
@@ -100,7 +100,7 @@ function process_UI_Message(event: MessageEvent): void {
             }
 
             // handle the beforeActivate event
-            tabs.on("tabsbeforeactivate", function(event, ui) {
+            tabs.on("tabsbeforeactivate", (event, ui) => {
                 tabBeforeActivate(ui);
             });
 
@@ -158,7 +158,7 @@ export function displayLetters(): void {
     let letters: string[] = cleanSpaceDelimitedList(
         (<HTMLInputElement>document.getElementById("dls_letters")).value.trim()
     ).split(" ");
-    letters = letters.filter(function(n) {
+    letters = letters.filter(n => {
         return n !== "";
     });
 
@@ -344,7 +344,7 @@ export function selectLetters(tr: HTMLTableRowElement) {
     let stage_letters: string[] = (<HTMLTableCellElement>(
         tr.cells[1]
     )).innerHTML.split(" ");
-    const current: JQuery = letters.filter(function(index, element) {
+    const current: JQuery = letters.filter((index, element) => {
         return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
     });
 
@@ -358,7 +358,7 @@ export function selectLetters(tr: HTMLTableRowElement) {
                 );
             })
     );
-    const previous = letters.filter(function(index, element) {
+    const previous = letters.filter((index, element) => {
         return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
     });
 
@@ -418,20 +418,17 @@ export function selectLevel(tr: HTMLTableRowElement) {
 
 // prevent pasting anything but plain text into the contenteditable children of the argument
 export function forcePlainTextPaste(parent: NodeSelector): void {
-    [].forEach.call(
-        parent.querySelectorAll('[contenteditable="true"]'),
-        function(el) {
-            el.addEventListener(
-                "paste",
-                function(e) {
-                    e.preventDefault();
-                    const text = e.clipboardData.getData("text/plain");
-                    document.execCommand("insertHTML", false, text);
-                },
-                false
-            );
-        }
-    );
+    [].forEach.call(parent.querySelectorAll('[contenteditable="true"]'), el => {
+        el.addEventListener(
+            "paste",
+            e => {
+                e.preventDefault();
+                const text = e.clipboardData.getData("text/plain");
+                document.execCommand("insertHTML", false, text);
+            },
+            false
+        );
+    });
 }
 
 function getCellInnerHTML(tr: HTMLTableRowElement, cellIndex: number): string {
@@ -460,7 +457,7 @@ function displayAllowedWordsForSelectedStage(wordsStr: string): void {
     let longestWord: string = "";
     let longestWordLength: number = 0;
 
-    _.each(words, function(w: string) {
+    _.each(words, (w: string) => {
         result += '<div class="book-font word">' + w + "</div>";
 
         if (w.length > longestWordLength) {
@@ -489,8 +486,8 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     let words: DataWord[] = <DataWord[]>_.toArray(wordsObj);
 
     // add sight words
-    _.each(sightWords, function(sw: string) {
-        let word: DataWord = _.find(words, function(w: DataWord) {
+    _.each(sightWords, (sw: string) => {
+        let word: DataWord = _.find(words, (w: DataWord) => {
             return w.Name === sw;
         });
 
@@ -510,7 +507,7 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     });
 
     // sort the list
-    words = _.sortBy(words, function(w) {
+    words = _.sortBy(words, w => {
         return w.Name;
     });
 
@@ -518,7 +515,7 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     let longestWord: string = "";
     let longestWordLength: number = 0;
 
-    _.each(words, function(w: DataWord) {
+    _.each(words, (w: DataWord) => {
         if (!w.html) w.html = $.markupGraphemes(w.Name, w.GPCForm, desiredGPCs);
         result += '<div class="book-font word">' + w.html + "</div>";
 
@@ -731,8 +728,7 @@ function resetStageDetail(): void {
     (<HTMLElement>document.getElementById("rs-matching-words")).innerHTML = "";
     (<HTMLInputElement>(
         document.getElementById("setup-stage-sight-words")
-    )).value =
-        "";
+    )).value = "";
     $(".rs-letters")
         .removeClass("current-letter")
         .removeClass("previous-letter")
@@ -801,7 +797,7 @@ function storeThingsToRemember(): void {
         .split("</li>");
 
     // remove blank lines
-    vals = vals.filter(function(e) {
+    vals = vals.filter(e => {
         const x = e.trim();
         return x.length > 0 && x !== "&nbsp;";
     });
@@ -872,37 +868,37 @@ function firstSetupLetters(): boolean {
  */
 function attachEventHandlers(): void {
     if (typeof $ === "function") {
-        $("#open-text-folder").onSafe("click", function() {
+        $("#open-text-folder").onSafe("click", () => {
             BloomApi.post("readers/ui/openTextsFolder");
             return false;
         });
 
-        $("#setup-add-stage").onSafe("click", function() {
+        $("#setup-add-stage").onSafe("click", () => {
             addNewStage();
             return false;
         });
 
-        $("#define-sight-words").onSafe("click", function() {
+        $("#define-sight-words").onSafe("click", () => {
             alert("What are sight words?");
             return false;
         });
 
-        $("#setup-stage-sight-words").onSafe("keyup", function() {
+        $("#setup-stage-sight-words").onSafe("keyup", () => {
             updateSightWords(this);
             requestWordsForSelectedStage();
         });
 
-        $("#setup-remove-stage").onSafe("click", function() {
+        $("#setup-remove-stage").onSafe("click", () => {
             removeStage();
             return false;
         });
 
-        $("#setup-add-level").onSafe("click", function() {
+        $("#setup-add-level").onSafe("click", () => {
             addNewLevel();
             return false;
         });
 
-        $("#setup-remove-level").onSafe("click", function() {
+        $("#setup-remove-level").onSafe("click", () => {
             removeLevel();
             return false;
         });
@@ -930,11 +926,11 @@ function attachEventHandlers(): void {
                 .html(this.value);
         });
 
-        $('input[name="words-or-letters"]').onSafe("change", function() {
+        $('input[name="words-or-letters"]').onSafe("change", () => {
             enableSampleWords();
         });
 
-        $("#setup-choose-allowed-words-file").onSafe("click", function() {
+        $("#setup-choose-allowed-words-file").onSafe("click", () => {
             BloomApi.get("readers/ui/chooseAllowedWordsListFile", result => {
                 const fileName = result.data;
                 if (fileName) setAllowedWordsFile(fileName);
@@ -947,7 +943,7 @@ function attachEventHandlers(): void {
             return false;
         });
 
-        $("#remove-allowed-word-file").onSafe("click", function() {
+        $("#remove-allowed-word-file").onSafe("click", () => {
             setAllowedWordsFile("");
 
             // hide stale controls
@@ -1104,7 +1100,7 @@ function wordListChangedCallback() {
 
 import { getToolboxFrameExports } from "../../../js/bloomFrames";
 
-$(document).ready(function() {
+$(document).ready(() => {
     attachEventHandlers();
     $("body")
         .find("*[data-i18n]")

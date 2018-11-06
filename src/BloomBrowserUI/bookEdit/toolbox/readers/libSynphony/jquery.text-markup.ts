@@ -15,7 +15,7 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
-(function($) {
+($ => {
     var cssSentenceTooLong = "sentence-too-long";
     var cssSightWord = "sight-word";
     var cssWordNotFound = "word-not-found";
@@ -42,7 +42,7 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
         // initialize words per page
         var totalWordCount = 0;
 
-        var checkLeaf = function(leaf) {
+        var checkLeaf = leaf => {
             stashNonTextUIElementsInEditBox(leaf);
             // split into sentences
             var fragments = theOneLibSynphony.stringToSentences($(leaf).html());
@@ -86,7 +86,7 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
             restoreNonTextUIElementsInEditBox(leaf);
         };
 
-        var checkRoot = function(root) {
+        var checkRoot = root => {
             var children = root.children();
             var processedChild = false; // Did we find a significant child?
             for (var i = 0; i < children.length; i++) {
@@ -225,13 +225,13 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
             if (!fragments || fragments.length === 0) return;
 
             // remove inter-sentence space
-            fragments = fragments.filter(function(frag) {
+            fragments = fragments.filter(frag => {
                 return frag.isSentence;
             });
 
             var subMax = Math.max.apply(
                 Math,
-                fragments.map(function(frag) {
+                fragments.map(frag => {
                     return frag.wordCount();
                 })
             );
@@ -256,7 +256,7 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
             );
 
             // remove inter-sentence space
-            fragments = fragments.filter(function(frag) {
+            fragments = fragments.filter(frag => {
                 return frag.isSentence;
             });
 
@@ -321,7 +321,7 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
          * @param {String[]} desiredGPCs
          * @returns {String}
          */
-        markupGraphemes: function(word, gpcForm, desiredGPCs) {
+        markupGraphemes: (word, gpcForm, desiredGPCs) => {
             // for backward compatibility
             if (Array.isArray(word)) return oldMarkup(word, gpcForm);
 
@@ -349,22 +349,22 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
     });
 
     $.extend({
-        cssSentenceTooLong: function() {
+        cssSentenceTooLong: () => {
             return cssSentenceTooLong;
         }
     });
     $.extend({
-        cssSightWord: function() {
+        cssSightWord: () => {
             return cssSightWord;
         }
     });
     $.extend({
-        cssWordNotFound: function() {
+        cssWordNotFound: () => {
             return cssWordNotFound;
         }
     });
     $.extend({
-        cssPossibleWord: function() {
+        cssPossibleWord: () => {
             return cssPossibleWord;
         }
     });

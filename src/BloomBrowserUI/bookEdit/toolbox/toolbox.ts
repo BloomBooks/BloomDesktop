@@ -111,7 +111,7 @@ export class ToolBox {
 
             $(container)
                 .find(".bloom-editable")
-                .keydown(function(event) {
+                .keydown(event => {
                     //don't do markup on cursor keys
                     if (event.keyCode >= 37 && event.keyCode <= 40) {
                         // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
@@ -121,7 +121,7 @@ export class ToolBox {
                     }
                     handleKeyboardInput();
                 })
-                .on("compositionend", function(argument) {
+                .on("compositionend", argument => {
                     // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
                     // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
                     handleKeyboardInput();
@@ -193,7 +193,7 @@ export class ToolBox {
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
         // toolbox one. Nothing outside toolbox imports it directly, so it must be some indirect link.
         // It's important that this function is only hooked up to the real toolbox instance.
-        $(parent.window.document).ready(function() {
+        $(parent.window.document).ready(() => {
             $(parent.window.document)
                 .find("#pure-toggle-right")
                 .change(function() {
@@ -206,7 +206,7 @@ export class ToolBox {
             axios
                 .all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
                 .then(
-                    axios.spread(function(showAdvancedFeatures, enabledTools) {
+                    axios.spread((showAdvancedFeatures, enabledTools) => {
                         // Both requests are complete
                         // remove the experimental tools if the user doesn't want them
                         showExperimentalTools =
@@ -246,7 +246,7 @@ export class ToolBox {
                         // which means putting it last in the array.
                         toolsToLoad.push("settings");
                         $("#toolbox").hide();
-                        const loadNextTool = function() {
+                        const loadNextTool = () => {
                             if (toolsToLoad.length === 0) {
                                 $("#toolbox").accordion({
                                     heightStyle: "fill"
@@ -256,7 +256,7 @@ export class ToolBox {
                                     .localize(); // run localization
 
                                 // Now bind the window's resize function to the toolbox resizer
-                                $(window).bind("resize", function() {
+                                $(window).bind("resize", () => {
                                     clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
                                     resizeTimer = setTimeout(
                                         resizeToolbox,
@@ -623,7 +623,7 @@ function setCurrentTool(toolID: string) {
     // the active tool (if it's already the one we want, typically the first), so we can't rely on
     // the activate event happening in the initial call. Instead, we make SURE to call it for the
     // tool we are making active.
-    toolbox.onSafe("accordionactivate.toolbox", function(event, ui) {
+    toolbox.onSafe("accordionactivate.toolbox", (event, ui) => {
         let newToolName = "";
         if (ui.newHeader.attr("data-toolId")) {
             newToolName = ui.newHeader.attr("data-toolId").toString();
@@ -739,7 +739,7 @@ function handleKeyboardInput(): void {
     //  this.keypressTimer.clearTimeout();
     //}
     if (keypressTimer) clearTimeout(keypressTimer);
-    keypressTimer = setTimeout(function() {
+    keypressTimer = setTimeout(() => {
         // This happens 500ms after the user stops typing.
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")

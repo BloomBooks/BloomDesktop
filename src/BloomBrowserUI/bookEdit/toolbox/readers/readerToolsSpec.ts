@@ -5,10 +5,10 @@ import {
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 
-describe("Bloom Edit Controls tests", function() {
+describe("Bloom Edit Controls tests", () => {
     var classValues;
 
-    beforeEach(function() {
+    beforeEach(() => {
         //noinspection JSUndeclaredVariable
         //reviewslog: this is not allowed: theOneLanguageDataInstance = null;
         ResetLanguageDataInstance();
@@ -73,19 +73,19 @@ describe("Bloom Edit Controls tests", function() {
             decLevel: "something",
             incLevel: "something"
         };
-        getTheOneReaderToolsModel().setElementAttribute = function(
+        getTheOneReaderToolsModel().setElementAttribute = (
             elementId,
             attrName,
             val
-        ) {
+        ) => {
             classValues[elementId] = val;
         };
 
         //noinspection JSUnusedLocalSymbols
-        getTheOneReaderToolsModel().getElementAttribute = function(
+        getTheOneReaderToolsModel().getElementAttribute = (
             elementId,
             attrName
-        ) {
+        ) => {
             var result = classValues[elementId];
             if (result) {
                 return result;
@@ -95,7 +95,7 @@ describe("Bloom Edit Controls tests", function() {
     });
 
     /* skipping until we figure out how to make work with localization See BL-3554
-        it("increments stage to limit on stage right button", function() {
+        it("increments stage to limit on stage right button", () => {
                 getTheOneReaderToolsModel().incrementStage();
 
 //        setTimeout(function(){
@@ -114,7 +114,7 @@ describe("Bloom Edit Controls tests", function() {
 */
 
     /* skipping until we figure out how to make work with localization See BL-3554
-         it("decrements stage to 1 on stage left button", function() {
+         it("decrements stage to 1 on stage left button", () => {
                 getTheOneReaderToolsModel().setStageNumber(3);
                 (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
                 getTheOneReaderToolsModel().decrementStage();
@@ -129,7 +129,7 @@ describe("Bloom Edit Controls tests", function() {
                 expect(getTheOneReaderToolsModel().updateElementContent).not.toHaveBeenCalled();
         });
 */
-    it("increments level to limit on level right button", function() {
+    it("increments level to limit on level right button", () => {
         getTheOneReaderToolsModel().incrementLevel();
         expect(
             getTheOneReaderToolsModel().updateElementContent
@@ -149,7 +149,7 @@ describe("Bloom Edit Controls tests", function() {
     });
 
     /* skipping until we figure out how to make work with localization See BL-3554
-        it("decrements level to 1 on level left button", function() {
+        it("decrements level to 1 on level left button", () => {
                 getTheOneReaderToolsModel().setLevelNumber(3);
                 (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
                 getTheOneReaderToolsModel().decrementLevel();
@@ -165,7 +165,7 @@ describe("Bloom Edit Controls tests", function() {
         });
 */
     /* skipping until we figure out how to make work with localization See BL-3554
-        it("setting stage updates stage button visibility", function() {
+        it("setting stage updates stage button visibility", () => {
                 getTheOneReaderToolsModel().setStageNumber(3);
                 expect(getTheOneReaderToolsModel().getElementAttribute("decStage", "class")).toBe("something");
                 expect(getTheOneReaderToolsModel().getElementAttribute("incStage", "class")).toBe("something disabledIcon");
@@ -188,7 +188,7 @@ describe("Bloom Edit Controls tests", function() {
         });
 */
 
-    it("updates level button visibility when setting level", function() {
+    it("updates level button visibility when setting level", () => {
         getTheOneReaderToolsModel().setLevelNumber(3);
         expect(
             getTheOneReaderToolsModel().getElementAttribute("decLevel", "class")
@@ -230,7 +230,7 @@ describe("Bloom Edit Controls tests", function() {
         ).toBe("something disabledIcon");
     });
 
-    it("updates content of level element when setting level", function() {
+    it("updates content of level element when setting level", () => {
         getTheOneReaderToolsModel().setLevelNumber(3);
         expect(
             getTheOneReaderToolsModel().updateElementContent
@@ -238,7 +238,7 @@ describe("Bloom Edit Controls tests", function() {
     });
 
     /* skipping due to mistery. See BL-3554
-        it("sorts word list correctly when sort buttons clicked", function() {
+        it("sorts word list correctly when sort buttons clicked", () => {
 
                 getTheOneReaderToolsModel().setStageNumber(2);
                 getTheOneReaderToolsModel().ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
@@ -274,7 +274,7 @@ describe("Bloom Edit Controls tests", function() {
         });
         */
 
-    it("sets selected class when sort button clicked", function() {
+    it("sets selected class when sort button clicked", () => {
         classValues.sortAlphabetic = "sortItem sortIconSelected";
         classValues.sortLength = "sortItem";
         classValues.sortFrequency = "sortItem";
@@ -339,7 +339,7 @@ describe("Bloom Edit Controls tests", function() {
         ).toBe("sortItem sortIconSelected");
     });
 
-    it("updates word list on init", function() {
+    it("updates word list on init", () => {
         getTheOneReaderToolsModel().ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
         getTheOneReaderToolsModel().updateControlContents();
         expect(
@@ -350,7 +350,7 @@ describe("Bloom Edit Controls tests", function() {
         );
     });
 
-    it("updates stage count and buttons on init", function() {
+    it("updates stage count and buttons on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
         expect(
             getTheOneReaderToolsModel().updateElementContent
@@ -360,7 +360,7 @@ describe("Bloom Edit Controls tests", function() {
         ).toBe("something disabledIcon");
     });
 
-    it("updates level buttons on init", function() {
+    it("updates level buttons on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
         expect(
             getTheOneReaderToolsModel().updateElementContent
@@ -370,14 +370,14 @@ describe("Bloom Edit Controls tests", function() {
         ).toBe("something disabledIcon");
     });
 
-    it("updates stage label on init", function() {
+    it("updates stage label on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
         expect(
             getTheOneReaderToolsModel().updateElementContent
         ).toHaveBeenCalledWith("stageNumber", "1");
     });
 
-    it("sets level max values on init", function() {
+    it("sets level max values on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
         expect(
             getTheOneReaderToolsModel().updateElementContent
@@ -400,7 +400,7 @@ describe("Bloom Edit Controls tests", function() {
         ).toBe("");
     });
 
-    it("updates max values when level changes", function() {
+    it("updates max values when level changes", () => {
         getTheOneReaderToolsModel().incrementLevel();
         expect(
             getTheOneReaderToolsModel().updateElementContent

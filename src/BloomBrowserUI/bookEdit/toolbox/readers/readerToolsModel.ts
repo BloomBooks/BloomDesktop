@@ -514,12 +514,12 @@ export class ReaderToolsModel {
         // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
         switch (this.sort) {
             case SortType.alphabetic:
-                words.sort(function(a: DataWord, b: DataWord) {
+                words.sort((a: DataWord, b: DataWord) => {
                     return a.Name.localeCompare(b.Name);
                 });
                 break;
             case SortType.byLength:
-                words.sort(function(a: DataWord, b: DataWord) {
+                words.sort((a: DataWord, b: DataWord) => {
                     if (a.Name.length === b.Name.length) {
                         return a.Name.localeCompare(b.Name);
                     }
@@ -527,7 +527,7 @@ export class ReaderToolsModel {
                 });
                 break;
             case SortType.byFrequency:
-                words.sort(function(a: DataWord, b: DataWord) {
+                words.sort((a: DataWord, b: DataWord) => {
                     const aFreq = a.Count;
                     const bFreq = b.Count;
                     if (aFreq === bFreq) {
@@ -603,7 +603,7 @@ export class ReaderToolsModel {
         const allLetters = this.synphony.source.letters.split(" ");
 
         // Sort our letters based on the order they were entered
-        letters.sort(function(a, b) {
+        letters.sort((a, b) => {
             return allLetters.indexOf(a) - allLetters.indexOf(b);
         });
 
@@ -713,9 +713,7 @@ export class ReaderToolsModel {
         const sightWords = this.getSightWordsAsObjects(stageNumber);
         const stageWords = this.getStageWords();
 
-        return _.uniq(stageWords.concat(sightWords), false, function(
-            w: DataWord
-        ) {
+        return _.uniq(stageWords.concat(sightWords), false, (w: DataWord) => {
             return w.Name;
         });
     }
@@ -1104,7 +1102,7 @@ export class ReaderToolsModel {
             );
 
             // remove inter-sentence space
-            fragments = fragments.filter(function(frag) {
+            fragments = fragments.filter(frag => {
                 return frag.isSentence;
             });
 
@@ -1124,7 +1122,7 @@ export class ReaderToolsModel {
             );
 
             // remove inter-sentence space
-            fragments = fragments.filter(function(frag) {
+            fragments = fragments.filter(frag => {
                 return frag.isSentence;
             });
 
@@ -1149,7 +1147,7 @@ export class ReaderToolsModel {
             );
 
             // remove inter-sentence space
-            fragments = fragments.filter(function(frag) {
+            fragments = fragments.filter(frag => {
                 return frag.isSentence;
             });
 
@@ -1174,7 +1172,7 @@ export class ReaderToolsModel {
             );
 
             // remove inter-sentence space
-            fragments = fragments.filter(function(frag) {
+            fragments = fragments.filter(frag => {
                 return frag.isSentence;
             });
 
