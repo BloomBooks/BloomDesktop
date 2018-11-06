@@ -74,7 +74,7 @@ export class BloomApi {
             // If all goes well this better report will replace it:
             StackTrace.fromError(axiosCallState).then(stackframes => {
                 var stringifiedStackAxiosCall = stackframes
-                    .map(function(sf) {
+                    .map(sf => {
                         return sf.toString();
                     })
                     .join("\n");
@@ -85,7 +85,7 @@ export class BloomApi {
                 if (error && error.message && error.stack) {
                     StackTrace.fromError(error).then(stackframes => {
                         var stringifiedStackError = stackframes
-                            .map(function(sf) {
+                            .map(sf => {
                                 return sf.toString();
                             })
                             .join("\n");

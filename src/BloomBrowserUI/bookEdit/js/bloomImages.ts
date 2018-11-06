@@ -305,7 +305,7 @@ function SetOverlayForImagesWithoutMetadataInner(container, img) {
     //and if the bloom program changes these values (i.e. the user changes them using bloom), I
     //haven't figured out a way (apart from polling) to know that. So for now I'm using a hack
     //where Bloom calls click() on the image when it wants an update, and we detect that here.
-    $(img).click(function() {
+    $(img).click(() => {
         UpdateOverlay(container, img);
     });
 }
@@ -404,7 +404,7 @@ export function SetupResizableElement(element) {
             handles: "nw, ne, sw, se",
             containment: "parent",
             alsoResize: childImgContainer,
-            resize: function(event, ui) {
+            resize: (event, ui) => {
                 img.scaleImage({ scale: "fit" });
             }
         });
@@ -415,7 +415,7 @@ export function SetupResizableElement(element) {
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
-            resize: function(event, ui) {
+            resize: (event, ui) => {
                 img.scaleImage({ scale: "fit" });
             }
         });
@@ -426,7 +426,7 @@ export function SetupResizableElement(element) {
             handles: "nw, ne, sw, se",
             containment: "parent",
             stop: ResizeUsingPercentages,
-            start: function(e, ui) {
+            start: (e, ui) => {
                 if (
                     $(ui.element).css("top") == "0px" &&
                     $(ui.element).css("left") == "0px"

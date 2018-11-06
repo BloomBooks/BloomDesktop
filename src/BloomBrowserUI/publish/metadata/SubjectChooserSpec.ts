@@ -1,8 +1,8 @@
 import { SubjectChooser, IProps } from "./SubjectChooser";
 import { SubjectTreeNode } from "./SubjectTreeNode";
 
-describe("SubjectChooser tests", function() {
-    it("handleSubjectChange deletes Subjects correctly", function() {
+describe("SubjectChooser tests", () => {
+    it("handleSubjectChange deletes Subjects correctly", () => {
         let list: Array<SubjectTreeNode> = [];
         var sub1: SubjectTreeNode = {
             value: "MNP",
@@ -48,7 +48,7 @@ describe("SubjectChooser tests", function() {
         expect(result[1].value).toBe("Y");
     });
 
-    it("handleSubjectChange adds a new Subject and sorts correctly", function() {
+    it("handleSubjectChange adds a new Subject and sorts correctly", () => {
         let list: Array<SubjectTreeNode> = [];
         var sub1: SubjectTreeNode = {
             value: "MNP",
