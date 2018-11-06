@@ -14,6 +14,7 @@ import {
     enterpriseFeaturesEnabled
 } from "../../../react_components/requiresBloomEnterprise";
 import { number } from "prop-types";
+import { containerCSS } from "react-select/lib/components/containers";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -236,9 +237,36 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 }
 
+export class DraggablePositioningInfo {
+    // The original position info before shrinking to create space for Image Description
+    public left: string;
+    public top: string;
+    public width: string;
+    public height: string;
+    public fontSize: string;
+    public transform: string;
+
+    // The position info after applying shrinking. We save it to determine if the user has moved the elements or not during the shrunken stage.
+    // If they didn't move anything, I prefer to re-use the pre-existing values as it is safer and more exact than attempting to re-calculate the original
+    public lastLeft: string;
+    public lastTop: string;
+    public lastWidth: string;
+    public lastHeight: string;
+    public lastFontSize: string;
+    public lastTransform: string;
+
+    // If the user did move something, then we need this info to calculate the reverse transformation
+    public lastImageClientWidth: number;
+    public lastImageClientHeight: number;
+}
+
 export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     private reactControls: ImageDescriptionToolControls | null;
     public static kToolID = "imageDescription";
+    private isActive: boolean = false;
+    private originalDraggablePositions: DraggablePositioningInfo[] = [];
+    private leftOffsetOfImageFromContainer: number = 0;
+    private topOffsetOfImageFromContainer: number = 20; // There is a 20 pixel bar that appears at the top
 
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
@@ -253,10 +281,12 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         if (page) {
             page.classList.remove("bloom-showImageDescriptions");
 
-            this.updateDraggablesPosition((x: number) => {
-                return x * 2;
-            });
+            if (this.isActive) {
+                this.unshrinkDraggablesOnPageForImageDescription();
+            }
         }
+
+        this.isActive = false;
     }
 
     public isExperimental(): boolean {
@@ -281,38 +311,10 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         }
     };
 
-    public static parseNumberAndUnit(text: string) {
-        // Assumption: Hope we don't get any scientific notation...
-        let indexOfFirstNonNumericChar = 0;
-        while (indexOfFirstNonNumericChar < text.length) {
-            const c: string = text.charAt(indexOfFirstNonNumericChar);
-
-            // Check if each character is valid or invalid as a number
-            const isNumeric: boolean = "0" <= c && c <= "9";
-            const isDecimalPoint: boolean = c == ".";
-
-            if (!isNumeric && !isDecimalPoint) {
-                break;
-            } else {
-                ++indexOfFirstNonNumericChar;
-            }
-        }
-
-        const num: number = Number(
-            text.substring(0, indexOfFirstNonNumericChar)
-        );
-
-        const unit = text.substring(indexOfFirstNonNumericChar);
-
-        return { num: num, unit: unit };
-    }
-
-    protected updateDraggablesPosition(
-        newPositionCalculationMethod: (x: number) => number
-    ) {
+    public getDraggablesOnPage(): HTMLCollectionOf<Element> {
         const page = ToolBox.getPage();
         if (!page) {
-            return;
+            return null;
         }
 
         // Re-adjust any user-draggable items to their new position given that the margins
@@ -323,23 +325,190 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         );
         // Alternatively, use class "bloom-textOverPicture" if there are any .ui-draggables that aren't supposed to stay at the same relative position over the image
 
-        for (let i = 0; i < draggablesThatNeedToMove.length; ++i) {
-            const draggableElement = draggablesThatNeedToMove[i] as HTMLElement;
+        return draggablesThatNeedToMove;
+    }
 
-            if (draggableElement.style.left) {
-                const {
-                    num,
-                    unit
-                } = ImageDescriptionAdapter.parseNumberAndUnit(
-                    draggableElement.style.left
-                );
-                const newLeftPosition: number = newPositionCalculationMethod(
-                    (num as any) as number
-                );
-                draggableElement.style.left = newLeftPosition.toString() + unit;
+    private unshrinkDraggablesOnPageForImageDescription() {
+        const draggableList = this.getDraggablesOnPage();
+
+        if (!draggableList) {
+            return;
+        }
+
+        for (let i = 0; i < draggableList.length; ++i) {
+            const draggableElement: HTMLElement = draggableList[
+                i
+            ] as HTMLElement;
+
+            let originalPos: DraggablePositioningInfo;
+            if (i < this.originalDraggablePositions.length) {
+                originalPos = this.originalDraggablePositions[i];
             }
+
+            this.unshrinkDraggableForImageDescription(
+                draggableElement,
+                originalPos
+            );
         }
     }
+
+    // Precondition: the image element should already be re-sized by the time this function is called.
+    public unshrinkDraggableForImageDescription(
+        draggableElement: HTMLElement,
+        originalPos: DraggablePositioningInfo
+    ) {
+        draggableElement.classList.remove("imageDescriptionShrink");
+        const shrunkDescendants = draggableElement.getElementsByClassName(
+            "imageDescriptionShrink"
+        );
+
+        // Note: shrunkDescendants will shrink as you remove the class names, so can't use a for loop assuming the length is static
+        let indexOfFirstUnprocessedElement = 0;
+        while (shrunkDescendants.length > indexOfFirstUnprocessedElement) {
+            const oldLength = shrunkDescendants.length;
+            shrunkDescendants[indexOfFirstUnprocessedElement].classList.remove(
+                "imageDescriptionShrink"
+            );
+
+            if (oldLength == shrunkDescendants.length) {
+                // This would be unexpected, but deal with it so that we don't risk an infinite loop
+                ++indexOfFirstUnprocessedElement;
+            }
+        }
+
+        if (originalPos) {
+            // Determine the true width and height of the image.
+            // (because clientWidth tells you the width and height allocated to the element, but the image probably will not consume all of it)
+            const imageElement = this.GetMainImageFromImageContainer(
+                draggableElement.parentElement
+            );
+
+            const oldTrueDimensions = this.getTrueImageDimensionsInBoundingBox(
+                imageElement.naturalWidth,
+                imageElement.naturalHeight,
+                originalPos.lastImageClientWidth,
+                originalPos.lastImageClientHeight
+            );
+            const newTrueDimensions = this.getTrueImageDimensionsInBoundingBox(
+                imageElement.naturalWidth,
+                imageElement.naturalHeight,
+                imageElement.clientWidth,
+                imageElement.clientHeight
+            );
+            const scalingFactor: number =
+                newTrueDimensions.trueWidth / oldTrueDimensions.trueWidth;
+
+            // For each attribute, check if it is safe to restore from saved settings, or if we need re-calculate the position
+            if (draggableElement.style.left == originalPos.lastLeft) {
+                draggableElement.style.left = originalPos.left;
+            } else {
+                draggableElement.style.left = this.scalePosition(
+                    draggableElement.style.left,
+                    draggableElement.clientWidth,
+                    oldTrueDimensions.trueWidth,
+                    newTrueDimensions.trueWidth,
+                    draggableElement.parentElement.clientWidth,
+                    originalPos.lastImageClientWidth,
+                    draggableElement.parentElement.clientWidth,
+                    this.leftOffsetOfImageFromContainer,
+                    0,
+                    scalingFactor
+                );
+            }
+
+            if (draggableElement.style.top == originalPos.lastTop) {
+                draggableElement.style.top = originalPos.top;
+            } else {
+                draggableElement.style.top = this.scalePosition(
+                    draggableElement.style.top,
+                    draggableElement.clientHeight,
+                    oldTrueDimensions.trueHeight,
+                    newTrueDimensions.trueHeight,
+                    draggableElement.parentElement.clientHeight,
+                    originalPos.lastImageClientHeight,
+                    draggableElement.parentElement.clientHeight,
+                    this.topOffsetOfImageFromContainer,
+                    0,
+                    scalingFactor
+                );
+            }
+
+            if (draggableElement.style.width == originalPos.lastWidth) {
+                draggableElement.style.width = originalPos.width;
+            } else {
+                this.scaleWidth(draggableElement, scalingFactor);
+            }
+
+            if (draggableElement.style.height == originalPos.lastHeight) {
+                draggableElement.style.height = originalPos.height;
+            } else {
+                this.scaleHeight(draggableElement, scalingFactor);
+            }
+
+            if (draggableElement.style.fontSize == originalPos.lastFontSize) {
+                draggableElement.style.fontSize = originalPos.fontSize;
+            } else {
+                this.scaleFont(draggableElement, scalingFactor);
+            }
+
+            this.upscaleChildren(draggableElement, 1.0);
+        } else {
+            // Well, this is an unexpected state... we are really expecting to restore it from the orignalPos
+            // Just leave it where it is now for simplicity, but utry to restore it ot the default size
+
+            draggableElement.style.fontSize = "1em";
+        }
+    }
+
+    private scaleFont(element: HTMLElement, scalingFactor: number) {
+        let oldFontSizeStr: string;
+        if (element.style.fontSize) {
+            oldFontSizeStr = element.style.fontSize;
+        } else {
+            const computedStyle = window.getComputedStyle(element);
+            oldFontSizeStr = computedStyle.fontSize;
+        }
+
+        const oldParsedFontSize = ImageDescriptionAdapter.parseNumberAndUnit(
+            oldFontSizeStr
+        );
+        const newFontSizeValue = oldParsedFontSize.num * scalingFactor;
+        const newFontSizeStr =
+            newFontSizeValue.toString() + oldParsedFontSize.unit;
+        element.style.fontSize = newFontSizeStr;
+    }
+
+    private scaleWidth(element: HTMLElement, scalingFactor: number) {
+        let oldWidthStr: string;
+        if (element.style.width) {
+            oldWidthStr = element.style.width;
+        } else {
+            oldWidthStr = window.getComputedStyle(element).width;
+        }
+        const oldParsedWidthSize = ImageDescriptionAdapter.parseNumberAndUnit(
+            oldWidthStr
+        );
+        const newWidthValue = oldParsedWidthSize.num * scalingFactor;
+        const newWidthStr = newWidthValue.toString() + oldParsedWidthSize.unit;
+        element.style.width = newWidthStr;
+    }
+
+    private scaleHeight(element: HTMLElement, scalingFactor: number) {
+        let oldHeightStr: string;
+        if (element.style.height) {
+            oldHeightStr = element.style.height;
+        } else {
+            oldHeightStr = window.getComputedStyle(element).height;
+        }
+        const oldParsedHeightSize = ImageDescriptionAdapter.parseNumberAndUnit(
+            oldHeightStr
+        );
+        const newHeightValue = oldParsedHeightSize.num * scalingFactor;
+        const newHeightStr =
+            newHeightValue.toString() + oldParsedHeightSize.unit;
+        element.style.height = newHeightStr;
+    }
+
     // Make sure the page has the elements used to store image descriptions,
     // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
@@ -358,9 +527,8 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 if (!page.classList.contains("bloom-showImageDescriptions")) {
                     page.classList.add("bloom-showImageDescriptions");
 
-                    this.updateDraggablesPosition((x: number) => {
-                        return x / 2;
-                    });
+                    this.shrinkDraggablesOnPageForImageDescription();
+                    this.isActive = true;
                 }
 
                 // Make sure every image container has a child bloom-translationGroup to hold the image description.
@@ -422,5 +590,352 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 }
             }
         });
+    }
+
+    protected shrinkDraggablesOnPageForImageDescription() {
+        // Enhance: The ::after text (which display the language of the textbox needs to be scaled down.
+        const draggablesThatNeedToMove = this.getDraggablesOnPage();
+
+        if (draggablesThatNeedToMove == null) {
+            return;
+        }
+
+        this.originalDraggablePositions = [];
+        for (let i = 0; i < draggablesThatNeedToMove.length; ++i) {
+            const draggableElement = draggablesThatNeedToMove[i] as HTMLElement;
+
+            if (draggableElement) {
+                // Save the information that we need from before we mutate the element
+                const originalPositionInfo: DraggablePositioningInfo = new DraggablePositioningInfo();
+                this.originalDraggablePositions.push(originalPositionInfo);
+                if (draggableElement.style) {
+                    originalPositionInfo.left = draggableElement.style.left;
+                    originalPositionInfo.top = draggableElement.style.top;
+                    originalPositionInfo.width = draggableElement.style.width;
+                    originalPositionInfo.height = draggableElement.style.height;
+                    originalPositionInfo.fontSize =
+                        draggableElement.style.fontSize;
+                    originalPositionInfo.transform =
+                        draggableElement.style.transform;
+                }
+
+                // Do the real work of shrinking the element
+                const imageElement = this.GetMainImageFromImageContainer(
+                    draggableElement.parentElement
+                );
+                this.shrinkDraggableForImageDescription(
+                    draggableElement,
+                    imageElement
+                );
+
+                // Save the information that we need from after mutating the element
+                if (draggableElement.style) {
+                    originalPositionInfo.lastLeft = draggableElement.style.left;
+                    originalPositionInfo.lastTop = draggableElement.style.top;
+                    originalPositionInfo.lastWidth =
+                        draggableElement.style.width;
+                    originalPositionInfo.lastHeight =
+                        draggableElement.style.height;
+                    originalPositionInfo.lastFontSize =
+                        draggableElement.style.fontSize;
+                    originalPositionInfo.lastTransform =
+                        draggableElement.style.transform;
+                }
+
+                originalPositionInfo.lastImageClientWidth =
+                    imageElement.clientWidth;
+                originalPositionInfo.lastImageClientHeight =
+                    imageElement.clientHeight;
+            }
+        }
+    }
+
+    private GetMainImageFromImageContainer(
+        parentElement: Element
+    ): HTMLImageElement {
+        if (!parentElement) {
+            return null;
+        }
+
+        let imageElement: HTMLImageElement;
+
+        const imageTags = parentElement.getElementsByTagName("img");
+
+        if (imageTags && imageTags.length > 0) {
+            imageElement = imageTags[0];
+            let maxArea: number =
+                imageElement.clientWidth * imageElement.clientHeight;
+            for (let i = 1; i < imageTags.length; ++i) {
+                const area: number =
+                    imageTags[i].clientWidth * imageTags[i].clientHeight;
+                if (area > maxArea) {
+                    imageElement = imageTags[i];
+                    maxArea = area;
+                }
+            }
+        }
+
+        return imageElement;
+    }
+
+    public shrinkDraggableForImageDescription(
+        element: HTMLElement,
+        imageElement: HTMLImageElement
+    ): void {
+        if (!element || !element.parentElement || !imageElement) {
+            return;
+        }
+
+        const parentElement = element.parentElement;
+
+        // Determine the true width and height of the image.
+        // (because clientWidth tells you the width and height allocated to the element, but the image probably will not consume all of it)
+        const oldTrueDimensions = this.getTrueImageDimensionsInBoundingBox(
+            imageElement.naturalWidth,
+            imageElement.naturalHeight,
+            parentElement.clientWidth,
+            parentElement.clientHeight
+        );
+        const newTrueDimensions = this.getTrueImageDimensionsInBoundingBox(
+            imageElement.naturalWidth,
+            imageElement.naturalHeight,
+            imageElement.clientWidth,
+            imageElement.clientHeight
+        );
+
+        const scalingFactor: number =
+            newTrueDimensions.trueWidth / oldTrueDimensions.trueWidth; // scalingX and scalingY are equivalent.
+
+        // Calculate x position
+        if (element.style.left) {
+            const newPosition: string = this.scalePosition(
+                element.style.left,
+                element.clientWidth,
+                oldTrueDimensions.trueWidth,
+                newTrueDimensions.trueWidth,
+                parentElement.clientWidth,
+                parentElement.clientWidth,
+                imageElement.clientWidth,
+                0,
+                this.leftOffsetOfImageFromContainer,
+                scalingFactor
+            );
+            if (newPosition) {
+                element.style.left = newPosition;
+            }
+        }
+
+        // Calculate y position
+        if (element.style.top) {
+            const newPosition: string = this.scalePosition(
+                element.style.top,
+                element.clientHeight,
+                oldTrueDimensions.trueHeight,
+                newTrueDimensions.trueHeight,
+                parentElement.clientHeight,
+                parentElement.clientHeight,
+                imageElement.clientHeight,
+                0,
+                this.topOffsetOfImageFromContainer,
+                scalingFactor
+            );
+
+            if (newPosition) {
+                element.style.top = newPosition;
+            }
+        }
+
+        this.applyScaling(element, scalingFactor);
+    }
+
+    // Given the old and new image dimension information, calculates where the text box element should be moved to (for a single dimension)
+    protected scalePosition(
+        positionString: string, // The CSS string specifying the position of the near edge in the current dimension
+        elementLength: number, // The length of the text box in the current dimension
+        oldImageLength: number, // The true length of the image in the current dimension when sized to fit into the old bounding box
+        newImageLength: number, // The true length of the image in the current dimension  when sized to fit into the new bounding box
+        physicalContainerLength: number, // The physical container is what actually contains the element.
+        oldVisualContainerLength: number, // The virtual container is what visually looks like should contain the element.
+        newVisualContainerLength: number, // The virtual container is what visually looks like should contain the element.
+        oldOffsetBetweenPhysicalAndVisual: number,
+        newOffsetBetweenPhysicalAndVisual: number,
+        scalingFactor: number
+    ): string {
+        if (positionString) {
+            const { num, unit } = ImageDescriptionAdapter.parseNumberAndUnit(
+                positionString
+            );
+
+            let oldTextBoxNearEdgePosition: number; // i.e, explicitly in pixels
+            if (unit == "%") {
+                oldTextBoxNearEdgePosition =
+                    (physicalContainerLength * num) / 100;
+            } else if (unit == "px" || unit == "") {
+                oldTextBoxNearEdgePosition = num;
+            }
+
+            if (oldTextBoxNearEdgePosition != undefined) {
+                oldTextBoxNearEdgePosition -= oldOffsetBetweenPhysicalAndVisual;
+
+                const oldCenter = oldVisualContainerLength / 2;
+
+                // Calculate the left (or top) boundary of the image. It is not necessarily at the physical boundary (e.g. 0 or 20), if the image doesn't have the perfect aspect ratio
+                const oldImageNearEdgePosition = oldCenter - oldImageLength / 2;
+
+                // Calculate the proportion at which the text box started in the old frame of reference.
+                const textBoxRelativePositionProportion =
+                    (oldTextBoxNearEdgePosition - oldImageNearEdgePosition) /
+                    oldImageLength;
+
+                const newCenter: number =
+                    newVisualContainerLength / 2 +
+                    newOffsetBetweenPhysicalAndVisual;
+
+                const newImageNearEdgePosition: number =
+                    newCenter - newImageLength / 2;
+                const newTextBoxNearEdgePosition: number =
+                    newImageNearEdgePosition +
+                    textBoxRelativePositionProportion * newImageLength;
+
+                // This code is needed if you use transform: scale(). Scaling down will cause the top-left corner to move so we need to adjust pre-maturely for that.
+                // newTextBoxNearEdgePosition -= (1 - scalingFactor) * (elementLength / 2);
+
+                let newPosition: number;
+                if (unit == "%") {
+                    newPosition =
+                        (newTextBoxNearEdgePosition / physicalContainerLength) *
+                        100;
+                } else if (unit == "px" || unit == "") {
+                    newPosition = newTextBoxNearEdgePosition;
+                }
+
+                if (newPosition != undefined) {
+                    return newPosition.toString() + unit;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private applyScaling(element: HTMLElement, scalingFactor: number) {
+        // Setting the scaling factor is good because you can modify a lot of attributes all in one go as well as those in the descendants
+        //   The downside is it makes positioning the top-left corner much less intuitive (because the scaling is applied from the center of the box)
+        //   But the bigger probably is that having scaling applied causes disastrously confusing results for the user when trying to move the elemnt.
+        //
+        // So, instead, we need to specify the width, height, font-size, etc. as well as descendants.
+        //   The benefit of not scaling is the calculation for the top-left corner position is simpler and more intuitive.
+        element.classList.add("imageDescriptionShrink");
+
+        this.scaleWidth(element, scalingFactor);
+        this.scaleHeight(element, scalingFactor);
+        this.scaleFont(element, scalingFactor);
+
+        this.downscaleChildren(element, scalingFactor);
+    }
+
+    // that is, to un-shrink them
+    private upscaleChildren(element: HTMLElement, scalingFactor: number) {
+        this.scaleChildren(element, scalingFactor, false);
+    }
+    // that is, to shrink them
+    private downscaleChildren(element: HTMLElement, scalingFactor: number) {
+        this.scaleChildren(element, scalingFactor, true);
+    }
+    private scaleChildren(
+        element: HTMLElement,
+        scalingFactor: number,
+        shouldApplyShrink: boolean
+    ) {
+        // Note: in the future would also need to update anything else that can possibly show up here, which is admittedly a pain.
+        const divDescendants = element.getElementsByTagName("div");
+        for (let i = 0; i < divDescendants.length; ++i) {
+            if (!divDescendants[i]) {
+                continue;
+            }
+
+            if (divDescendants[i].id == "formatButton") {
+                divDescendants[i].style.transform =
+                    "scale(" + scalingFactor + ", " + scalingFactor + ")";
+
+                if (shouldApplyShrink) {
+                    divDescendants[i].classList.add("imageDescriptionShrink");
+                }
+            }
+
+            if (shouldApplyShrink) {
+                if (
+                    divDescendants[i].classList.contains(
+                        "bloom-translationGroup"
+                    )
+                ) {
+                    divDescendants[i].classList.add("imageDescriptionShrink");
+                } else if (
+                    divDescendants[i].classList.contains("bloom-editable")
+                ) {
+                    divDescendants[i].classList.add("imageDescriptionShrink");
+
+                    for (
+                        let j = 0;
+                        j < divDescendants[i].children.length;
+                        ++j
+                    ) {
+                        const editableDescendant =
+                            divDescendants[i].children[j];
+                        editableDescendant.classList.add(
+                            "imageDescriptionShrink"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    public static parseNumberAndUnit(text: string) {
+        // Assumption: Hope we don't get any scientific notation...
+        let index = 0;
+        while (index < text.length) {
+            const c: string = text.charAt(index);
+
+            // Check if each character is valid or invalid as a number
+            const isSign = (c == "+" || c == "-") && index == 0;
+            const isNumeric: boolean = "0" <= c && c <= "9";
+            const isDecimalPoint: boolean = c == ".";
+
+            // Enhance: maybe you should get mad about multiple decimal points.
+            if (!isSign && !isNumeric && !isDecimalPoint) {
+                break;
+            } else {
+                ++index;
+            }
+        }
+
+        const indexOfFirstNonNumericCharacter = index;
+        const num: number = Number(
+            text.substring(0, indexOfFirstNonNumericCharacter)
+        );
+
+        const unit = text.substring(indexOfFirstNonNumericCharacter).trim();
+
+        return { num: num, unit: unit };
+    }
+
+    // Note: Will up-scale the image to fit if the image is smaller than the bounding box
+    public getTrueImageDimensionsInBoundingBox(
+        naturalWidth: number,
+        naturalHeight: number,
+        boundingWidth: number,
+        boundingHeight: number
+    ) {
+        const resizeScalingX = boundingWidth / naturalWidth;
+        const resizeScalingY = boundingHeight / naturalHeight;
+
+        const resizeScaling =
+            resizeScalingX < resizeScalingY ? resizeScalingX : resizeScalingY;
+
+        const newTrueWidth = naturalWidth * resizeScaling;
+        const newTrueHeight = naturalHeight * resizeScaling;
+
+        return { trueWidth: newTrueWidth, trueHeight: newTrueHeight };
     }
 }

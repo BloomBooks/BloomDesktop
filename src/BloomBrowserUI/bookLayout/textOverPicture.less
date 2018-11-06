@@ -30,7 +30,15 @@
         width: @DefaultTextBoxWidth;
         height: @DefaultTextBoxHeight;
         min-width: @MinTextBoxWidth;
-        min-height: @MinTextBoxHeight;
+
+        :not(.imageDescriptionShrink) {
+            min-height: @MinTextBoxHeight;
+        }
+        .imageDescriptionShrink,
+        .imageDescriptionShrink .bloom-translationGroup {
+            // Enhance: theoretically need to worry about minWidth as well, for cases when the textbox is < 30 px wide
+            min-height: @MinTextBoxHeight / 2 !important; // Needed to match with other rules that attempt to specify min-height with an "important" override
+        }
         border-radius: 3px;
         border: none !important; // needed to override ui-draggable blue border
         z-index: @textOverPictureZIndex;
@@ -52,7 +60,17 @@
             border: none;
             .bloom-editable {
                 min-width: @MinTextBoxWidth - 3;
-                min-height: @MinTextBoxHeight - 3 !important;
+                :not(.imageDescriptionShrink) {
+                    min-height: @MinTextBoxHeight - 3 !important;
+                }
+
+                .imageDescriptionShrink,
+                .imageDescriptionShrink p,
+                .imageDescriptionShrink #formatButton,
+                .imageDescriptionShrink img {
+                    min-height: (@MinTextBoxHeight / 2) - 3 !important;
+                }
+
                 text-align: center;
             }
         }
