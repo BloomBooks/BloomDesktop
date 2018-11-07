@@ -17,6 +17,7 @@ using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using System.Collections.Generic;
+using Bloom.web.controllers;
 
 namespace Bloom.Book
 {
@@ -215,12 +216,14 @@ namespace Bloom.Book
 					modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent);
 					newEntry.Size = modifiedContent.Length;
 				}
-				else if (reduceImages && (bookFile == filePath))
+				// CompressBookForDevice is always called with reduceImages set.
+				else if (reduceImages && bookFile == filePath)
 				{
 					StripImgWithFilesWeCannotFind(dom, bookFile);
 					StripContentEditable(dom);
 					InsertReaderStylesheet(dom);
 					ConvertImagesToBackground(dom);
+					ProcessAnyVideos(dom, directoryToCompress);
 					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
 					modifiedContent = Encoding.UTF8.GetBytes(newContent);
 					newEntry.Size = modifiedContent.Length;
@@ -274,6 +277,17 @@ namespace Bloom.Book
 					continue; // Don't want to bundle these up
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
+			}
+		}
+
+		protected static void ProcessAnyVideos(XmlDocument dom, string sourceFolder)
+		{
+			// We are counting on this method processing the videos before
+			// the recursive CompressDirectory() method gets to the video subdirectory.
+			// We are also assuming that 'sourceFolder' is a staging folder (so we can delete modified videos).
+			foreach (XmlElement videoContainerElement in HtmlDom.SelectChildVideoElements(dom.DocumentElement).Cast<XmlElement>())
+			{
+				SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, sourceFolder);
 			}
 		}
 
