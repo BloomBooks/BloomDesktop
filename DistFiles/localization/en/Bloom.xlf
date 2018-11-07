@@ -1961,6 +1961,10 @@
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.CameraUnavailable" sil:dynamic="true">
+        <source xml:lang="en">Camera not available (perhaps in use by another program)</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.CameraUnavailable</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true">
         <source xml:lang="en">Delete Video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.DeleteVideo</note>

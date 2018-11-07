@@ -29,6 +29,7 @@ interface IComponentState {
     haveRecording: boolean;
     originalExists: boolean;
     cameraAccess: boolean;
+    cameraUnavailable: boolean;
     videoStatistics: {
         duration: string;
         fileSize: string;
@@ -81,6 +82,7 @@ export class SignLanguageToolControls extends React.Component<
         haveRecording: false,
         originalExists: false,
         cameraAccess: true,
+        cameraUnavailable: false,
         videoStatistics: {
             duration: "",
             fileSize: "",
@@ -382,6 +384,15 @@ export class SignLanguageToolControls extends React.Component<
                     Here is what your camera sees:
                 </Label>
             );
+        } else if (this.state.cameraUnavailable) {
+            return (
+                <Label
+                    key="CameraUnavailable"
+                    l10nKey="EditTab.Toolbox.SignLanguage.CameraUnavailable"
+                >
+                    Camera not available (perhaps in use by another program)
+                </Label>
+            );
         } else {
             return (
                 <Label
@@ -463,8 +474,14 @@ export class SignLanguageToolControls extends React.Component<
     private errorCallback(reason) {
         // something wrong! Developers note: Bloom and Firefox cannot both use it, so be careful about
         // "open in browser".
+        // reason.name seems to be "NotFoundError" if there is no camera at all.
         this.setState({
-            cameraAccess: false
+            cameraAccess: false,
+            cameraUnavailable:
+                reason &&
+                reason.name &&
+                (reason.name === "NotReadableError" || // Gecko63 or so
+                    reason.name == "SourceUnavailableError") // Gecko45
         });
         // In case the user plugs in a camera, try once a second to turn it on.
         window.setTimeout(() => this.turnOnVideo(), 1000);
