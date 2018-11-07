@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -117,11 +117,17 @@
       <HintPath>..\..\packages\Fleck.0.14.0.59\lib\net40\Fleck.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Geckofx-Core, Version=60.0.16.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\Geckofx60.32.60.0.16\lib\net45\Geckofx-Core.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Winforms, Version=60.0.16.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\Geckofx60.32.60.0.16\lib\net45\Geckofx-Winforms.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
+      <HintPath>..\..\output\$(Configuration)\net40\Geckofx-Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'!='Windows_NT'">
+      <HintPath>..\..\output\$(Configuration)\Geckofx-Winforms.dll</HintPath>
     </Reference>
     <Reference Include="Glob, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Glob.0.4.0\lib\net46\Glob.dll</HintPath>
@@ -1302,10 +1308,10 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
     <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || npm install) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || npm run build)" />
-    <!-- copy the appropriate Geckofx45 files to the output directory, first creating it if necessary -->
+    <!-- copy the appropriate Geckofx60 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />
-    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.23.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.23.0 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; else find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.23.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.23.0 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; fi" />
+    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.16 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.16 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; else find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.16 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.16 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; fi" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
@@ -1413,9 +1419,8 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
   </Target>
-  <Import Project="..\..\packages\Geckofx60.32.60.0.7-alpha\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.7-alpha\build\Geckofx60.32.targets')" />
   <Import Project="..\..\packages\Geckofx60.32.60.0.16\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.16\build\Geckofx60.32.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition="'$(OS)'=='Windows_NT'">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
