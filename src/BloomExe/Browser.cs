@@ -1209,6 +1209,10 @@ namespace Bloom
 			// more than a toast, even for developers. But they should now be reported through CommonApi.HandleJavascriptError.
 			// Any that still come here we want to know about.
 			// But, myseriously, we're still getting more than we can deal with, so going back to toast-only for now.
+			// This one is particularly common while playing videos, and seems harmless, and being from the depths of
+			// Gecko, not something we can do anything about.
+			if (ex.Message.Contains("file: \"chrome://global/content/bindings/videocontrols.xml\""))
+				return;
 			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", ex.Message, ex);
 		}
 
