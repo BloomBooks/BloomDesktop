@@ -69,8 +69,9 @@ namespace BloomTests.Book
 						Path.Combine(folderPath, "thumbnail.png"));
 					File.WriteAllText(Path.Combine(folderPath, "previewMode.css"), @"This is wanted");
 				},
-				assertionsOnZipArchive: zip =>
+				assertionsOnZipArchive: paramObj =>
 				{
+					var zip = paramObj.ZipFile;
 					foreach (var name in wantedFiles)
 					{
 						Assert.AreNotEqual(-1, zip.FindEntry(Path.GetFileName(name), true), "expected " + name + " to be part of .bloomd zip");
@@ -101,9 +102,10 @@ namespace BloomTests.Book
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail-256.png"));
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail-70.png"));
 				},
-				assertionsOnZipArchive: zip =>
+				assertionsOnZipArchive: paramObj =>
 				{
-					foreach(var name in unwantedFiles)
+					var zip = paramObj.ZipFile;
+					foreach (var name in unwantedFiles)
 					{
 						Assert.AreEqual(-1, zip.FindEntry(Path.GetFileName(name), true),
 							"expected " + name + " to not be part of .bloomd zip");
@@ -236,12 +238,13 @@ namespace BloomTests.Book
 					AssertThatXmlIn.Dom(XmlHtmlConverter.GetXmlDomFromHtml(html)).HasSpecifiedNumberOfMatchesForXpath("//html/head/link[@rel='stylesheet' and @href='readerStyles.css' and @type='text/css']", 1);
 				},
 
-				assertionsOnZipArchive: zip =>
+				assertionsOnZipArchive: paramObj =>
 					// This test worked when we didn't have to modify the book before making the .bloomd.
 					// Now that we do I haven't figured out a reasonable way to rewrite it to test this value again...
 					// Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html, bookPath)));
 					// ... so for now we just make sure that it was added and looks like a hash code
 				{
+					var zip = paramObj.ZipFile;
 					entryContents = GetEntryContents(zip, "version.txt");
 					Assert.AreEqual(44, entryContents.Length);
 				},
@@ -412,8 +415,9 @@ namespace BloomTests.Book
 					AssertThatXmlIn.Dom(htmlDom).HasNoMatchForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
 				},
 
-				assertionsOnZipArchive: zip =>
+				assertionsOnZipArchive: paramObj =>
 				{
+					var zip = paramObj.ZipFile;
 					var json = GetEntryContents(zip, BloomReaderFileMaker.QuestionFileName);
 					var groups = QuestionGroup.FromJson(json);
 					// Two (non-z-language) groups in first question page, one in second.
@@ -460,7 +464,6 @@ namespace BloomTests.Book
 			);
 		}
 
-
 		[Test]
 		public void CompressBookForDevice_MakesThumbnailFromCoverPicture()
 		{
@@ -493,8 +496,9 @@ namespace BloomTests.Book
 						Path.Combine(bookFolderPath, "Listen to My Body_Cover.png"));
 				},
 
-				assertionsOnZipArchive: zip =>
+				assertionsOnZipArchive: paramObj =>
 				{
+					var zip = paramObj.ZipFile;
 					using (var thumbStream = GetEntryContentsStream(zip, "thumbnail.png"))
 					{
 						using (var thumbImage = Image.FromStream(thumbStream))
@@ -508,6 +512,84 @@ namespace BloomTests.Book
 							Assert.That(thumbImage.Height, Is.LessThanOrEqualTo(256));
 						}
 					}
+				}
+			);
+		}
+
+		private const string _pathToTestVideos = "src/BloomTests/videos";
+
+		[Test]
+		public void CompressBookForDevice_HandlesVideosAndModifiesSrcAttribute()
+		{
+			// This requires a real book file (which a mocked book usually doesn't have).
+			var bookHtml = @"<html>
+					<head>
+						<meta charset='UTF-8'></meta>
+						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
+					</head>
+					<body>
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+							<div class='marginBox'>
+								<div class='someSplitContainerStuff'>
+									<div class='bloom-videoContainer'>
+										<video>
+											<source src='video/Five%20count.mp4'></source>
+										</video>
+									</div>
+								</div>
+								<div class='someSplitContainerStuff'>
+									<div class='bloom-videoContainer bloom-noVideoSelected'>
+									</div>
+								</div>
+								<div class='someSplitContainerStuff'>
+									<div class='bloom-videoContainer'>
+										<video>
+											<source src='video/Crow.mp4#t=1.0,3.4'></source>
+										</video>
+									</div>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>";
+
+			TestHtmlAfterCompression(bookHtml,
+				actionsOnFolderBeforeCompressing: folderPath =>
+				{
+					// These video files have to be real.
+					var videoFolderPath = Path.Combine(folderPath, "video");
+					Directory.CreateDirectory(videoFolderPath);
+					RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Crow.mp4"),
+						Path.Combine(videoFolderPath, "Crow.mp4"));
+					RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Five count.mp4"),
+						Path.Combine(videoFolderPath, "Five count.mp4"));
+				},
+				assertionsOnZipArchive: paramObj =>
+				{
+					const int originalCrowSize = 330000; // roughly equivalent to 324Kb
+					var zip = paramObj.ZipFile;
+					Assert.AreNotEqual(-1, zip.FindEntry("video/Five count.mp4", false), "Expected to find untrimmed video");
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(paramObj.Html);
+					var secondSource = htmlDom.SelectNodes("//source")[1];
+					var srcAttr = secondSource.Attributes["src"].Value;
+					Assert.AreNotEqual(-1, zip.FindEntry(srcAttr, false), "Expected to find a new filename for trimmed 'Crow.mp4'");
+					var entry = zip.GetEntry(srcAttr);
+					// 100000 here is a semi-random quantification of 'considerably'.
+					Assert.Less(entry.Size, originalCrowSize - 100000, "Should have trimmed the file considerably.");
+				},
+				assertionsOnResultingHtmlString: html =>
+				{
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasSpecifiedNumberOfMatchesForXpath(
+							"//video[@controls]", 2);
+					// Crow.mp4 should have been trimmed and had a name change
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasNoMatchForXpath("//source[@src='video/Crow.mp4']");
+					// Five count.mp4 was not trimmed and should have kept its name
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasSpecifiedNumberOfMatchesForXpath(
+							"//source[@src='video/Five%20count.mp4']", 1);
 				}
 			);
 		}
@@ -836,9 +918,21 @@ namespace BloomTests.Book
 
 		}
 
+		private class ZipHtmlObj
+		{
+			internal ZipHtmlObj(ZipFile zip, string html)
+			{
+				ZipFile = zip;
+				Html = html;
+			}
+
+			internal ZipFile ZipFile { get; }
+			internal string Html { get; }
+		}
+
 		private void TestHtmlAfterCompression(string originalBookHtml, Action<string> actionsOnFolderBeforeCompressing = null,
 			Action<string> assertionsOnResultingHtmlString = null,
-			Action<ZipFile> assertionsOnZipArchive = null,
+			Action<ZipHtmlObj> assertionsOnZipArchive = null,
 			Action<ZipFile> assertionsOnRepeat = null)
 		{
 			var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
@@ -850,8 +944,9 @@ namespace BloomTests.Book
 			{
 				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 				var zip = new ZipFile(bloomdTempFile.Path);
-				assertionsOnZipArchive?.Invoke(zip);
 				var newHtml = GetEntryContents(zip, bookFileName);
+				var paramObj = new ZipHtmlObj(zip, newHtml);
+				assertionsOnZipArchive?.Invoke(paramObj); // send in html in case we need to compare it with the zip contents
 				assertionsOnResultingHtmlString?.Invoke(newHtml);
 				if (assertionsOnRepeat != null)
 				{
