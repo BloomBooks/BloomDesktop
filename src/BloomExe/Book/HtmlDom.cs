@@ -1266,6 +1266,7 @@ namespace Bloom.Book
 					edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
 				node.ParentNode.RemoveChild(node);
 			RemoveTemplateEditingMarkup(edittedPageDiv);
+			RemoveCkEditorMarkup(edittedPageDiv);
 
 			destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
@@ -1311,6 +1312,19 @@ namespace Bloom.Book
 			{
 				string currentValue = node.Attributes["class"].Value;
 				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
+			}
+		}
+
+		internal static void RemoveCkEditorMarkup(XmlElement edittedPageDiv)
+		{
+			foreach (XmlElement elt in edittedPageDiv.SafeSelectNodes("//*[contains(@class, 'cke_')]"))
+			{
+				elt.SetAttribute("class",
+					string.Join(" ",
+						elt.GetAttribute("class")
+							.Split(' ')
+							.Where(c => !c.StartsWith("cke_"))
+					));
 			}
 		}
 
