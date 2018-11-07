@@ -14,6 +14,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using Bloom.web;
+using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
 #if !__MonoCS__
@@ -260,13 +261,18 @@ namespace Bloom.Publish.Epub
 			_svgItems = new List<string>();
 			_firstContentPageItem = null;
 			HandleImageDescriptions(Book.OurHtmlDom);
+			var ffmpeg = SignLanguageApi.FindFfmpegProgram();
+			if (ffmpeg == string.Empty)
+			{
+				Logger.WriteEvent("Cannot find ffmpeg program while preparing videos for publishing.");
+			}
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
 				progress.MessageWithoutLocalizing(HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement));
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
-				MakePageFile(pageElement);
+				MakePageFile(pageElement, ffmpeg);
 			}
 
 			string coverPageImageFile = "thumbnail-256.png";
@@ -778,7 +784,7 @@ namespace Bloom.Publish.Epub
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288 for discussion of blank pages.
 		/// </remarks>
-		private void MakePageFile(XmlElement pageElement)
+		private void MakePageFile(XmlElement pageElement, string ffmpeg)
 		{
 			// nonprinting pages (e.g., comprehension questions) are omitted for now
 			if (pageElement.Attributes["class"]?.Value?.Contains("bloom-nonprinting") ?? false)
@@ -859,8 +865,7 @@ namespace Bloom.Publish.Epub
 				pageDocName = preferedPageName;
 
 			CopyImages(pageDom);
-			CopyVideos(pageDom);
-			AddVideoAttributes(pageDom);
+			CopyVideos(pageDom, ffmpeg);
 
 			AddEpubNamespace(pageDom);
 			AddPageBreakSpan(pageDom, pageDocName);
@@ -1216,32 +1221,16 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
-		private void CopyVideos(HtmlDom pageDom)
+		private void CopyVideos(HtmlDom pageDom, string ffmpeg)
 		{
-			foreach (XmlElement vid in HtmlDom.SelectChildVideoElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>())
+			foreach (XmlElement videoContainerElement in HtmlDom.SelectChildVideoElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>())
 			{
-				var src = FindVideoFileIfPossible(vid);
-				if (String.IsNullOrEmpty(src))
+				var trimmedFilePath = SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, ffmpeg, Book.FolderPath);
+				if (string.IsNullOrEmpty(trimmedFilePath))
 					continue;
-				var srcPath = Path.Combine(Book.FolderPath, src);
-				if (!RobustFile.Exists(srcPath))
-					continue;
-				var dstPath = CopyFileToEpub(srcPath, subfolder:kVideoFolder);
+				var dstPath = CopyFileToEpub(trimmedFilePath, subfolder:kVideoFolder);
 				var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
-				HtmlDom.SetVideoElementUrl(new ElementProxy(vid), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
-			}
-		}
-
-		/// <summary>
-		/// Add attributes needed for videos to work in Readium and possibly other readers.
-		/// </summary>
-		private void AddVideoAttributes(HtmlDom pageDom)
-		{
-			foreach (XmlElement vid in pageDom.SafeSelectNodes("//div[contains(@class,'bloom-videoContainer')]/video").Cast<XmlElement>())
-			{
-				vid.SetAttribute("controls", "controls");
-				// Can we produce landscape oriented books where this should be height="100%" instead?
-				vid.SetAttribute("width", "100%");
+				HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
 			}
 		}
 

@@ -14,6 +14,7 @@ using DesktopAnalytics;
 using Gecko;
 using Gecko.DOM;
 using L10NSharp;
+using SIL.Code;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
@@ -188,7 +189,7 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private static string FindFfmpegProgram()
+		public static string FindFfmpegProgram()
 		{
 			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
 			if (SIL.PlatformUtilities.Platform.IsWindows)
@@ -622,10 +623,13 @@ namespace Bloom.web.controllers
 
 		public static string StripTimingFromVideoUrl(string videoUrl, out string timings)
 		{
-			// strip off any timing elements
-			var parts = videoUrl.Split('#');
-			timings = parts.Length == 1 ? string.Empty : parts[1].Substring(2);
-			return parts[0];
+			var baseUri = new Uri("https://bloomlibrary.org"); // only used to get Uri class to function properly.
+			var videoUri = new Uri(baseUri, videoUrl);
+			var fragment = videoUri.Fragment; // timing fragments
+			timings = fragment.Length > 0 ? fragment.Substring(3) : string.Empty; // strip off timing prefix ('#t=')
+			// this will actually strip off the query too (if there is one).
+			// Should we? If we don't want to strip off the query here, we should use 'return videoUri.PathAndQuery'.
+			return videoUri.LocalPath.Substring(1); // most callers won't want the initial slash '/', LocalPath ensures no encoding
 		}
 
 		private GeckoHtmlElement GetSelectedVideoContainer()
@@ -779,7 +783,102 @@ namespace Bloom.web.controllers
 
 			// Likewise, this is probably overkill, but it's a probably-rare case. 
 			View.UpdateAllThumbnails();
+		}
 
+		/// <summary>
+		/// When publishing videos in any form but PDF, we want to trim the actual video to just the part that
+		/// the user wants to see and add the controls attribute, so that the video controls are visible.
+		/// </summary>
+		/// <param name="videoContainerElement">bloom-videoContainer element from copied DOM</param>
+		/// <param name="ffmpeg">Path to ffmpeg.exe program</param>
+		/// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
+		/// <returns>the new filepath if a video file exists and was copied, empty string if no video file was found</returns>
+		/// <remarks>Caller is responsible to delete timings from the new src attribute in the videoContainerElement</remarks>
+		public static string PrepareVideoForPublishing(XmlElement videoContainerElement, string ffmpeg,
+			string sourceBookFolder)
+		{
+			var videoFolder = Path.Combine(sourceBookFolder, "video");
+
+			var videoElement = videoContainerElement.SelectSingleNode("video") as XmlElement;
+			if (videoElement == null)
+				return string.Empty;
+
+			// In each valid video element, we remove any timings in the 'src' attribute of the source element.
+			var sourceElement = videoElement.SelectSingleNode("source") as XmlElement;
+			var srcAttrVal = sourceElement?.Attributes["src"]?.Value;
+			if (srcAttrVal == null)
+				return string.Empty;
+
+			string timings;
+			var videoUrl = StripTimingFromVideoUrl(srcAttrVal, out timings);
+
+			// Check for valid video file to match url
+			var urlWithoutPrefix = videoUrl.Substring(6); // grab everything after 'video/'
+			var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix);
+			if (!RobustFile.Exists(originalVideoFilePath))
+				return string.Empty;
+
+			var tempName = originalVideoFilePath;
+			if (!string.IsNullOrEmpty(ffmpeg) && timings != string.Empty)
+			{
+				tempName = Path.Combine(videoFolder, GetNewVideoFileName());
+				var successful = TrimVideoUsingFfmpeg(ffmpeg, originalVideoFilePath, tempName, timings);
+				if (successful)
+				{
+					RobustFile.Delete(originalVideoFilePath);
+					var trimmedFileName = Path.Combine("video", Path.GetFileName(tempName)).Replace('\\', '/');
+					HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(trimmedFileName, true), false);
+				}
+				else
+				{
+					tempName = originalVideoFilePath;
+				}
+			}
+			// Add attributes needed for videos to work in Readium and possibly other readers.
+			// Existence of the 'controls' attribute is enough to trigger controls
+			videoElement.SetAttribute("controls", string.Empty);
+			// Can we produce landscape oriented books where this should be height="100%" instead?
+			videoElement.SetAttribute("width", "100%");
+			return tempName;
+		}
+
+		private static bool TrimVideoUsingFfmpeg(string ffmpeg,
+			string sourceVideoFilePath,
+			string destinationPath,
+			string timings)
+		{
+			Guard.Against(string.IsNullOrEmpty(ffmpeg), "Caller should have verified 'ffmpeg' existence.");
+			var timingArray = timings.Split(',');
+			var startTiming = ConvertSecondsToHhMmSsString(timingArray[0]);
+			var endTiming = ConvertSecondsToHhMmSsString(timingArray[1]);
+			// Run ffmpeg on the file to trim it down using the timings.
+			// -hide_banner = don't write all the version and build information to the console
+			// -i <path> = specify input file
+			// -ss HH:MM:SS.T = trim to this start time
+			// -to HH:MM:SS.T = trim to this end time
+			// -c:v copy -c:a copy = copy video (and audio) streams with no codec modification
+			var parameters = $"-hide_banner -i \"{sourceVideoFilePath}\" -ss {startTiming} -to {endTiming} -c:v copy -c:a copy \"{destinationPath}\"";
+			var result = CommandLineRunner.Run(ffmpeg, parameters, "", 60, new NullProgress());
+			if (result.DidTimeOut)
+			{
+				Logger.WriteEvent("ffmpeg timed out trimming video for publication");
+				return false;
+			}
+
+			var output = result.StandardError;
+			if (string.IsNullOrWhiteSpace(output) || output.Contains("Invalid data found when processing input"))
+			{
+				Logger.WriteEvent("ffmpeg did not return normal output");
+				return false;
+			}
+
+			return true;
+		}
+
+		private static string ConvertSecondsToHhMmSsString(string seconds)
+		{
+			var time = TimeSpan.FromSeconds(double.Parse(seconds));
+			return time.ToString(@"hh\:mm\:ss\.f");
 		}
 	}
 }

@@ -460,7 +460,6 @@ namespace BloomTests.Book
 			);
 		}
 
-
 		[Test]
 		public void CompressBookForDevice_MakesThumbnailFromCoverPicture()
 		{
@@ -508,6 +507,75 @@ namespace BloomTests.Book
 							Assert.That(thumbImage.Height, Is.LessThanOrEqualTo(256));
 						}
 					}
+				}
+			);
+		}
+
+		private const string _pathToTestVideos = "src/BloomTests/videos";
+
+		[Test]
+		public void CompressBookForDevice_HandlesVideosAndModifiesSrcAttribute()
+		{
+			// This requires a real book file (which a mocked book usually doesn't have).
+			var bookHtml = @"<html>
+					<head>
+						<meta charset='UTF-8'></meta>
+						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
+					</head>
+					<body>
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+							<div class='marginBox'>
+								<div class='someSplitContainerStuff'>
+									<div class='bloom-videoContainer'>
+										<video>
+											<source src='video/Five%20count.mp4'></source>
+										</video>
+									</div>
+								</div>
+								<div class='someSplitContainerStuff'>
+									<div class='bloom-videoContainer bloom-noVideoSelected'>
+									</div>
+								</div>
+								<div class='someSplitContainerStuff'>
+									<div class='bloom-videoContainer'>
+										<video>
+											<source src='video/Crow.mp4#t=1.0,3.4'></source>
+										</video>
+									</div>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>";
+
+			TestHtmlAfterCompression(bookHtml,
+				actionsOnFolderBeforeCompressing: folderPath =>
+				{
+					// These video files have to be real.
+					var videoFolderPath = Path.Combine(folderPath, "video");
+					Directory.CreateDirectory(videoFolderPath);
+					RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Crow.mp4"),
+						Path.Combine(videoFolderPath, "Crow.mp4"));
+					RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Five count.mp4"),
+						Path.Combine(videoFolderPath, "Five count.mp4"));
+				},
+				assertionsOnZipArchive: zip =>
+				{
+					Assert.AreNotEqual(-1, zip.FindEntry("video/Five count.mp4", false), "Expected to find untrimmed video");
+				},
+				assertionsOnResultingHtmlString: html =>
+				{
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasSpecifiedNumberOfMatchesForXpath(
+							"//video[@controls]", 2);
+					// Crow.mp4 should have been trimmed and had a name change
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasNoMatchForXpath("//source[@src='video/Crow.mp4']");
+					// Five count.mp4 was not trimmed and should have kept its name
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasSpecifiedNumberOfMatchesForXpath(
+							"//source[@src='video/Five%20count.mp4']", 1);
 				}
 			);
 		}
