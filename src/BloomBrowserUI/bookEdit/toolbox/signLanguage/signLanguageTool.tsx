@@ -62,8 +62,8 @@ declare var MediaRecorder: {
     new (s: MediaStream, options: any): MediaRecorder;
 };
 
-const MAX_DURATION: string = "-1.0"; // temporary placeholder for maximum duration
-const DEFAULT_START: string = "0.0";
+const DEFAULT_TIMING: string = "0.0";
+const DEFAULT_TIMING_NUM: number = 0.0;
 
 // This react class implements the UI for the sign language (video) toolbox.
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
@@ -90,8 +90,8 @@ export class SignLanguageToolControls extends React.Component<
             frameSize: "",
             framesPerSecond: "",
             fileFormat: "",
-            startSeconds: DEFAULT_START,
-            endSeconds: MAX_DURATION
+            startSeconds: DEFAULT_TIMING,
+            endSeconds: DEFAULT_TIMING
         }
     };
     private videoStream: MediaStream;
@@ -305,7 +305,7 @@ export class SignLanguageToolControls extends React.Component<
         );
         const start = parseFloat(this.state.videoStatistics.startSeconds);
         let end = parseFloat(this.state.videoStatistics.endSeconds);
-        if (end === -1.0) {
+        if (end == DEFAULT_TIMING_NUM) {
             end = maxDuration;
         }
         const valueArray: number[] = [start, end];
@@ -327,7 +327,7 @@ export class SignLanguageToolControls extends React.Component<
                         v => SignLanguageTool.setCurrentVideoPoint(v[0])
                     }
                     step={0.1}
-                    min={0.0}
+                    min={DEFAULT_TIMING_NUM}
                     allowCross={false}
                     pushable={false}
                     max={maxDuration}
@@ -416,8 +416,8 @@ export class SignLanguageToolControls extends React.Component<
                         frameSize: "",
                         framesPerSecond: "",
                         fileFormat: "",
-                        startSeconds: DEFAULT_START,
-                        endSeconds: MAX_DURATION
+                        startSeconds: DEFAULT_TIMING,
+                        endSeconds: DEFAULT_TIMING
                     }
                 });
             } else {
@@ -804,7 +804,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
         const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
         const start = urlTimingObj.start;
-        const end = urlTimingObj.end; // could be -1.0
+        const end = urlTimingObj.end; // could be 0.0
         const stats = this.reactControls.state.videoStatistics;
         stats.startSeconds = start;
         stats.endSeconds = end;
@@ -915,6 +915,13 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         )[0] as HTMLVideoElement;
     }
 
+    public static getSrcAttribute(videoElement: HTMLVideoElement): string {
+        const source = videoElement.getElementsByTagName(
+            "source"
+        )[0] as HTMLSourceElement;
+        return source.getAttribute("src");
+    }
+
     public static setCurrentVideoPoint(
         timeInSeconds: number,
         videoElement?: HTMLVideoElement
@@ -928,7 +935,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     // Returns an Object containing the results of executing a regexp on the src attribute of the source element.
     // url: the url without timings
     // start: the start time in seconds, or default of 0.0
-    // end: the end time in seconds, or default of -1.0 (temporary placeholder for maxDuration)
+    // end: the end time in seconds, or default of 0.0
     public static parseVideoSrcAttribute(srcAttr: string): UrlTimingObject {
         const re = /(.*)#t=([0-9]*[.][0-9]+)[,]([0-9]*[.][0-9]+)+/;
         const matches = re.exec(srcAttr);
@@ -949,7 +956,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public static convertTimeStringToSecondsNumber(duration: string): number {
-        if (duration === "" || duration === MAX_DURATION) {
+        if (duration === "" || duration === DEFAULT_TIMING) {
             return 0;
         }
         // from https://stackoverflow.com/questions/9640266/convert-hhmmss-string-to-seconds-only-in-javascript/9640417
@@ -971,7 +978,7 @@ class UrlTimingObject {
 
     constructor() {
         this.url = "";
-        this.start = DEFAULT_START;
-        this.end = MAX_DURATION;
+        this.start = DEFAULT_TIMING;
+        this.end = DEFAULT_TIMING;
     }
 }

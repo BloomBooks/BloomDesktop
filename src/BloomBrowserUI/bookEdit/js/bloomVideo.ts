@@ -140,8 +140,8 @@ function videoPlayingEventHandler(e: Event) {
     // the SignLanguageApi C# code (in Geckofx-Core).
     const video = e.target as HTMLVideoElement;
     let end: number = getVideoEndSeconds(video);
-    if (end === -1.0) {
-        end = video.duration;
+    if (end == 0.0) {
+        end = video.duration - 0.11;
     }
     resetToStartAfterPlayingToEndPoint(video, end);
 }
@@ -160,23 +160,17 @@ function resetToStartAfterPlayingToEndPoint(
         } else {
             resetToStartAfterPlayingToEndPoint(video, endPoint);
         }
-    }, 200);
+    }, 100);
 }
 
 function getVideoStartSeconds(videoElt: HTMLVideoElement): number {
-    const source = videoElt.getElementsByTagName(
-        "source"
-    )[0] as HTMLSourceElement;
-    const src = source.getAttribute("src");
+    const src = SignLanguageTool.getSrcAttribute(videoElt);
     const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
     return parseFloat(urlTimingObj.start);
 }
 
 function getVideoEndSeconds(videoElt: HTMLVideoElement): number {
-    const source = videoElt.getElementsByTagName(
-        "source"
-    )[0] as HTMLSourceElement;
-    const src = source.getAttribute("src");
+    const src = SignLanguageTool.getSrcAttribute(videoElt);
     const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
     return parseFloat(urlTimingObj.end);
 }
