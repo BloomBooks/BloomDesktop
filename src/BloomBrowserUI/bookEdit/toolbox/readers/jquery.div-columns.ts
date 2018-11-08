@@ -18,7 +18,7 @@ interface JQueryStatic {
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
-(function($) {
+($ => {
     $.extend({
         /**
          * Set the width of the column (div) to be a multiple of the min-width.
@@ -26,7 +26,7 @@ interface JQueryStatic {
          * will line up correctly.
          * @param {String} cssClassName
          */
-        divsToColumns: function(cssClassName) {
+        divsToColumns: cssClassName => {
             var div = $("div." + cssClassName + ":first");
             if (div.length === 0) return;
 
@@ -39,7 +39,7 @@ interface JQueryStatic {
                 return this.offsetWidth > minWidth;
             });
 
-            elements.css("width", function() {
+            elements.css("width", () => {
                 var w = this.offsetWidth;
                 var i = Math.ceil(w / minWidth);
                 w = minWidth * i + (i - 1) * (marginLeft + marginRight);
@@ -53,10 +53,10 @@ interface JQueryStatic {
          * @param {String} cssClassName
          * @param {String} longestWord
          */
-        divsToColumnsBasedOnLongestWord: function(
+        divsToColumnsBasedOnLongestWord: (
             cssClassName: string,
             longestWord: string
-        ) {
+        ) => {
             var div = $("div." + cssClassName + ":first");
             if (div.length === 0) return;
 

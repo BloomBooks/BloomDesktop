@@ -120,23 +120,24 @@ namespace Bloom.web.controllers
 			return null;
 		}
 
-		private static string ElementContainsMissingAudio(XmlElement element, DirectoryInfo audioFolderInfo)
+		// Check node (which on an external call is a bloom-editable, but on recursive calls could be any
+		// of its children) for missing audio. Return the text of the first child, if any,
+		// that is missing a recording, or null if all is well.
+		private static string ElementContainsMissingAudio(XmlNode node, DirectoryInfo audioFolderInfo)
 		{
-			foreach (XmlNode child in element.ChildNodes)
-			{
-				var childElement = child as XmlElement;
-				switch (child.NodeType)
+				var childElement = node as XmlElement;
+				switch (node.NodeType)
 				{
 					case XmlNodeType.Text:
 						// we found some text that was not wrapped in an span.audio-sentence
 						// return true if it isn't just whitespace
-						if (!String.IsNullOrWhiteSpace(child.InnerText))
-							return child.InnerText;// +" (no audio span)";
-						// else go on to the sibling of this child
+						if (!String.IsNullOrWhiteSpace(node.InnerText))
+							return node.InnerText;// +" (no audio span)";
+						// else done with this node, return null at end
 						break;
 					case XmlNodeType.Element:
 						
-						if (childElement.Name == "span" && childElement.GetAttribute("class").Contains("audio-sentence"))
+						if (HtmlDom.DoesElementAllowAudioSentence(childElement.Name) && childElement.GetAttribute("class").Contains("audio-sentence"))
 						{
 							var id = childElement.GetAttribute("id");
 							//Whatever the audio extension, here we assume other parts of Bloom are taking care of that,
@@ -145,24 +146,28 @@ namespace Bloom.web.controllers
 							if (!Directory.Exists(audioFolderInfo.FullName) ||
 								!audioFolderInfo.GlobFiles(id + ".*").Any())
 								return childElement.InnerText;
-							// else go on to the sibling of this child
+							// else this node is good, return null at end.
 						} else if (childElement.Name == "label")
 						{
-							// ignore
+							// ignore, return null
 						}
-						else if (child.HasChildNodes)
+						else if (node.HasChildNodes)
 						{
-							var problemText = ElementContainsMissingAudio(childElement, audioFolderInfo);
-							if (!string.IsNullOrEmpty(problemText)) // recurse down the tree
-								return problemText;
-							// else go on to the sibling of this child
+							// recurse down the tree, if we find a problem return it.
+							foreach (XmlNode child in node.ChildNodes)
+							{
+								var problemText = ElementContainsMissingAudio(child, audioFolderInfo);
+								if (!string.IsNullOrEmpty(problemText))
+									return problemText;
+							}
 						}
 						break;
 					default:
 						break;
 				}
-			}
 			return null;
 		}
+
+
 	}
 }

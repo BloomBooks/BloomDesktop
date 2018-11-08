@@ -1,7 +1,7 @@
 import { SubjectTreeNode } from "./SubjectTreeNode";
 
-describe("SubjectTreeNode tests", function() {
-    it("getCodeList produces a space-delimited string of codes from an array of SubjectTreeNodes", function() {
+describe("SubjectTreeNode tests", () => {
+    it("getCodeList produces a space-delimited string of codes from an array of SubjectTreeNodes", () => {
         let list: Array<SubjectTreeNode> = [];
         var sub1: SubjectTreeNode = {
             value: "MNP",
@@ -35,7 +35,7 @@ describe("SubjectTreeNode tests", function() {
         expect(result).toBe("MNP THV Y");
     });
 
-    it("markSelectedSubjectNodes accomplishes its job selecting the correct nodes", function() {
+    it("markSelectedSubjectNodes accomplishes its job selecting the correct nodes", () => {
         let list: Array<SubjectTreeNode> = [];
         var sub1: SubjectTreeNode = {
             value: "MNP",

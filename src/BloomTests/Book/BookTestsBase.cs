@@ -27,7 +27,7 @@ namespace BloomTests.Book
 		protected Mock<PageSelection> _pageSelection;
 		protected PageListChangedEvent _pageListChangedEvent;
 		protected TemporaryFolder _testFolder;
-		private TemporaryFolder _tempFolder;
+		protected TemporaryFolder _tempFolder;
 		protected CollectionSettings _collectionSettings;
 		protected HtmlDom _bookDom;
 		protected BookInfo _metadata;

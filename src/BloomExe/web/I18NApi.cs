@@ -64,15 +64,9 @@ namespace Bloom.Api
 					langId = langId.Replace("N1", request.CurrentCollectionSettings.Language2Iso639Code);
 					langId = langId.Replace("N2", request.CurrentCollectionSettings.Language3Iso639Code);
 					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
-					if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
+					string localizedString;
+					if (GetSomeTranslation(id, langId, out localizedString))
 					{
-						// tricky. It might be in Bloom, or it might be in BloomLowPriority. Must be somewhere, because
-						// we know it's available. Can't use GetString, because it's not a literal string. So, we try in one,
-						// using null as the English, so we won't get anything if not in that one. Then try the other.
-						// Just in case something unexpected happens, we do pass the english the second time.
-						var localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, null, null, langId);
-						if (localizedString == null)
-							localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishText, null, langId);
 						request.ReplyWithJson(new {text = localizedString, success = true });
 					}
 					else
@@ -120,6 +114,47 @@ namespace Bloom.Api
 			}
 		}
 
+		// Get a translation of the specified string, in the specified language,
+		// or the closest fallback language (other than English).
+		// Needs to use something from the GetDynamicString method family, because GetString is only
+		// permitted with fixed, literal ids.
+		// However, the dynamic methods all require an appId, and we want to search both
+		// Bloom and BloomLowPriority. But if it's not there at all, we need to know that,
+		// so callers can report the missing string. If we passed a default English string
+		// to GetDynamicString, we couldn't tell whether it was in the English xliff or not.
+		// So, we first call GetIsStringAvailableForLangId to see whether it is.
+		// But, THAT routine, while smart about trying all the appIds, only tries one language.
+		// And we want to search using whatever FallbackLanguageIds are in effect (except English...
+		// if it's only in English this routine should return null, and the caller will check
+		// whether it's missing from the xliff, report if so, and use the default).
+		// So, we loop over the interesting language IDs, and when we find one that has a result,
+		// we have to try GetDynamicString on each of the appIds until we find it.
+		static bool GetSomeTranslation(string id, string initialLangId, out string val)
+		{
+			var langsToTry = new List<string>();
+			langsToTry.Add(initialLangId);
+			langsToTry.AddRange(LocalizationManager.FallbackLanguageIds.Except(new [] {"en"}));
+			foreach (var langId in langsToTry)
+			{
+				if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
+				{
+					// tricky. It might be in Bloom, or it might be in BloomLowPriority. Must be somewhere, because
+					// we know it's available. Can't use GetString, because it's not a literal string. So, we try in one,
+					// using null as the English, so we won't get anything if not in that one. Then try the other.
+					// We don't need to pass English (in fact, it's not passed to this method) because we only come
+					// here if LM DOES have a translation in the requested language (which we've made sure is not English)
+					var localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, null, null, langId);
+					if (string.IsNullOrEmpty(localizedString))
+						localizedString = LocalizationManager.GetDynamicStringOrEnglish("BloomLowPriority", id, null, null, langId);
+					val = localizedString;
+					return true;
+				}
+			}
+
+			val = null;
+			return false;
+		}
+
 		private static bool IsTemplateBookKey(string key)
 		{
 			return key.StartsWith("TemplateBooks.BookName") ||
@@ -146,19 +181,7 @@ namespace Bloom.Api
 		public static string GetTranslationDefaultMayNotBeEnglish(string key, string defaultCurrent, string comment = null)
 		{
 			string translation;
-			if (LocalizationManager.GetIsStringAvailableForLangId(key, LocalizationManager.UILanguageId))
-			{
-				// If we HAVE the string in the desired localization, we don't need
-				// a default and can just return the localized string; not passing a default ensures that
-				// even in English we get the true English string for this ID from the XLF.
-				translation = LocalizationManager.GetDynamicString("Bloom", key, null);
-				if (string.IsNullOrWhiteSpace(translation))
-				{
-					// try low priority
-					translation = LocalizationManager.GetDynamicString("BloomLowPriority", key, null);
-				}
-			}
-			else
+			if (!I18NApi.GetSomeTranslation(key, LocalizationManager.UILanguageId, out translation))
 			{
 				// Don't report missing strings if they are numbers
 				// Enhance: We might get the Javascript to do locale specific numbers someday

@@ -1009,6 +1009,14 @@ namespace Bloom
 
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 
+				// Per BL-6449, these two languages should try Spanish before English if a localization is missing.
+				// (If they ever get localized enough to show up in our list.)
+				// The full names are Mam and K'iche'.
+				if (LocalizationManager.UILanguageId == "mam" || LocalizationManager.UILanguageId == "quc")
+				{
+					LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
+				}
+
 				// If this is removed, change code in WorkspaceView.OnSettingsProtectionChanged
 				LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = false; // BL-5111
 			}

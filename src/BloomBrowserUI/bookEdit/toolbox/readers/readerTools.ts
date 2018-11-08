@@ -158,37 +158,37 @@ export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
     // load synphony settings and then finish init
     return beginLoadSynphonySettings().then(() => {
         // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
-        $("#incStage").onSafe("click.readerTools", function() {
+        $("#incStage").onSafe("click.readerTools", () => {
             getTheOneReaderToolsModel().incrementStage();
         });
 
-        $("#decStage").onSafe("click.readerTools", function() {
+        $("#decStage").onSafe("click.readerTools", () => {
             getTheOneReaderToolsModel().decrementStage();
         });
 
-        $("#sortAlphabetic").onSafe("click.readerTools", function() {
+        $("#sortAlphabetic").onSafe("click.readerTools", () => {
             getTheOneReaderToolsModel().sortAlphabetically();
         });
 
-        $("#sortLength").onSafe("click.readerTools", function() {
+        $("#sortLength").onSafe("click.readerTools", () => {
             getTheOneReaderToolsModel().sortByLength();
         });
 
-        $("#sortFrequency").onSafe("click.readerTools", function() {
+        $("#sortFrequency").onSafe("click.readerTools", () => {
             getTheOneReaderToolsModel().sortByFrequency();
         });
 
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
 
-        $(window).resize(function() {
+        $(window).resize(() => {
             resizeWordList(false);
         });
 
-        setTimeout(function() {
+        setTimeout(() => {
             resizeWordList();
         }, 200);
-        setTimeout(function() {
+        setTimeout(() => {
             $.divsToColumns("letter");
         }, 100);
     });
@@ -197,11 +197,11 @@ export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
 export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     // load synphony settings
     return beginLoadSynphonySettings().then(() => {
-        $("#incLevel").onSafe("click.readerTools", function() {
+        $("#incLevel").onSafe("click.readerTools", () => {
             getTheOneReaderToolsModel().incrementLevel();
         });
 
-        $("#decLevel").onSafe("click.readerTools", function() {
+        $("#decLevel").onSafe("click.readerTools", () => {
             getTheOneReaderToolsModel().decrementLevel();
         });
 
@@ -273,7 +273,7 @@ function initializeSynphony(settingsFileContent: string): void {
  */
 function beginSetTextsList(textsList: string): Promise<void> {
     return getTheOneReaderToolsModel().beginSetTextsList(
-        textsList.split(/\r/).filter(function(e) {
+        textsList.split(/\r/).filter(e => {
             return e ? true : false;
         })
     );
@@ -478,7 +478,7 @@ export function resizeWordList(startTimeout: boolean = true): void {
     }
 
     if (startTimeout)
-        setTimeout(function() {
+        setTimeout(() => {
             resizeWordList();
         }, 500);
 }

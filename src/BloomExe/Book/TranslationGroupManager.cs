@@ -41,6 +41,7 @@ namespace Bloom.Book
 			{
 				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language3Iso639Code);
 			}
+			FixGroupStyleSettings(pageOrDocumentNode);
 		}
 
 		/// <summary>
@@ -276,6 +277,38 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Shift any translationGroup level style setting to child editable divs that lack a style.
+		/// This is motivated by the fact HTML/CSS underlining cannot be turned off in child nodes.
+		/// So if underlining is enabled for Normal, everything everywhere would be underlined
+		/// regardless of style or immediate character formatting.  If a style sets underlining
+		/// on, then immediate character formatting cannot turn it off anywhere in a text box that
+		/// uses that style.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6282.
+		/// </summary>
+		private static void FixGroupStyleSettings(XmlNode pageDiv)
+		{
+			foreach (
+				XmlElement groupElement in
+					pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
+			{
+				var groupStyle = HtmlDom.GetStyle(groupElement);
+				if (String.IsNullOrEmpty(groupStyle))
+					continue;
+				// Copy the group's style setting to any child div with the bloom-editable class that lacks one.
+				// Then remove the group style if it does have any child divs with the bloom-editable class.
+				bool hasInternalEditableDiv = false;
+				foreach (XmlElement element in groupElement.SafeSelectNodes("child::div[contains(@class, 'bloom-editable')]"))
+				{
+					var divStyle = HtmlDom.GetStyle(element);
+					if (String.IsNullOrEmpty(divStyle))
+						HtmlDom.AddClass(element, groupStyle);
+					hasInternalEditableDiv = true;
+				}
+				if (hasInternalEditableDiv)
+					HtmlDom.RemoveClass(groupElement, groupStyle);
+			}
+		}
+
+		/// <summary>
 		/// For each group (meaning they have a common parent) of editable items, we
 		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
 		/// </summary>
@@ -318,6 +351,16 @@ namespace Bloom.Book
 				newElementInThisLanguage = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
 				//if there is an id, get rid of it, because we don't want 2 elements with the same id
 				newElementInThisLanguage.RemoveAttribute("id");
+
+				// No need to copy over the audio-sentence markup
+				// Various code expects elements with class audio-sentence to have an ID.
+				// Both will be added when and if  we do audio recording (in whole-text-box mode) on the new div.
+				// Until then it makes things more consistent if we make sure elements without ids
+				// don't have this class.
+				// Also, if audio recording markup is done using one audio-sentence span per sentence, we won't copy it.  (Because we strip all out the text underneath this node)
+				// So, it's more consistent to treat all scenarios the same way (don't copy the audio-sentence markup)
+				HtmlDom.RemoveClass(newElementInThisLanguage, "audio-sentence");
+
 				//OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
 				StripOutText(newElementInThisLanguage);
 			}

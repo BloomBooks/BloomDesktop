@@ -23,7 +23,7 @@ const kWebsocketContext = "pageThumbnailList";
 let thumbnailTimerInterval = 200; // yes, this actually is not a constant!
 let listenerFunction;
 
-$(window).ready(function() {
+$(window).ready(() => {
     $(".gridly").gridly({
         base: 35, // px
         gutter: 10, // px

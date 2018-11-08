@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -70,6 +71,25 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'basePage')]", 1);
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
+		[Test]
+		public void Save_BookHadNarrationAudioRecordedByWholeTextBox_AddsFeatureRequirementMetadata()
+		{
+			// Enhance: need an example in the future to test the result if two are generated. But right now this is the only feature that generates it.
+			GetInitialStorageWithCustomHtml("<html><head></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable' data-audioRecordingMode='TextBox'></div></div></div></body></html>");
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='FeatureRequirement']", 1);
+
+			// Note: No need to HTML-encode the XPath. The comparison will automatically figure that out (I guess by decoding the encoding version)
+			string expectedContent = "[{\"BloomDesktopMinVersion\":\"4.4\",\"BloomReaderMinVersion\":\"1.0\",\"FeatureId\":\"wholeTextBoxAudio\",\"FeaturePhrase\":\"Whole Text Box Audio\"}]";
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath($"//meta[@content='{expectedContent}']", 1);
+		}
+
+		[Test]
+		public void Save_BookHadNoAudio_CleansUpFeatureRequirementMetadata()
+		{
+			// Enhance: need an example in the future to test the result if two are generated. But right now this is the only feature that generates it.
+			GetInitialStorageWithCustomHtml("<html><head><meta name='FeatureRequirement' content='[{&quot;BloomDesktopMinVersion&quot;:&quot;4.4&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]'></meta></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable'></div></div></div></body></html>");
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='FeatureRequirement']", 0);
+		}
 
 		[Test]
 		public void CleanupUnusedVideoFiles_BookHadUnusedVideo_VideosRemoved()
@@ -132,38 +152,17 @@ namespace BloomTests.Book
 		{
 			const string usedAudioGuid = "i3afb14d9-6362-40bf-9dca-de1b24d793f3";   //The files to keep.
 			const string unusedAudioGuid = "d3afb14d9-6362-40bf-9dca-de1b24d793f3"; //The files to drop.
+			const string usedFrontMatterAudioGuid = "usedFrontMatterAudioGuid"; // This file should be kept (even though it's not referenced in the normal section) because it's referenced in the bloomDataDiv instead
+			const string usedFrontMatterBackgroundAudio = "usedFrontMatterBackgroundAudio"; // This file should be kept (even though it's not referenced in the normal section) because it's referenced in the bloomDataDiv instead
 			const string usedBackgroundAudio = "Fur-elise-music-box";         //Background file to keep.
 			const string unusedBackgroundAudio = "Eine-kleine-Nachtmusik";
+
+			var audioPath = Path.Combine(_folder.Path, "audio");              //Path to the audio files.
+			Directory.CreateDirectory(audioPath);
+
 			var usedBgWavFilename = usedBackgroundAudio + ".wav";
 			var usedBgMp3Filename = usedBackgroundAudio + ".mp3";
 			var usedBgOggFilename = usedBackgroundAudio + ".ogg";
-			var audioPath = Path.Combine(_folder.Path, "audio");              //Path to the audio files.
-			Directory.CreateDirectory(audioPath);
-			var storage =
-				GetInitialStorageWithCustomHtml(
-					"<html><body>" +
-					"<div class='bloom-page numberedPage customPage bloom-combinedPage " +
-					"A5Portrait side-right bloom-monolingual' data-page='' " +
-					"id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage=" +
-					"'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' " +
-					"lang='' data-backgroundaudio='" + usedBgWavFilename + "'>" +
-					"<div class='marginBox'>" +
-					"<p><span data-duration='2.300227' id='" + usedAudioGuid + "' " +
-					"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
-					"</div></div>" +
-					"<div class='bloom-page numberedPage customPage bloom-combinedPage " +
-					"A5Portrait side-right bloom-monolingual' data-page-number='2' " +
-					"lang='' data-backgroundaudio='" + usedBgMp3Filename + "'>" +
-					"<div class='marginBox'>" +
-					"<p>I am me.</p>" +
-					"</div></div>" +
-					"<div class='bloom-page numberedPage customPage bloom-combinedPage " +
-					"A5Portrait side-right bloom-monolingual' data-page-number='2' " +
-					"lang='' data-backgroundaudio='" + usedBgOggFilename + "'>" +
-					"<div class='marginBox'>" +
-					"<p>I am me.</p>" +
-					"</div></div>" +
-					"</body></html>");
 			var usedWavFilename = usedAudioGuid + ".wav";
 			var usedMp3Filename = usedAudioGuid + ".mp3";
 			var unusedWavFilename = unusedAudioGuid + ".wav";
@@ -171,43 +170,135 @@ namespace BloomTests.Book
 			var unusedBgWavFilename = unusedBackgroundAudio + ".wav";
 			var unusedBgMp3Filename = unusedBackgroundAudio + ".mp3";
 			var unusedBgOggFilename = unusedBackgroundAudio + ".ogg";
-			var usedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedBgWavFilename), true, true);
+			var usedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedBgWavFilename), true, true).Path;
+			var usedFrontMatterWavFilename = usedFrontMatterAudioGuid + ".wav";
+			var usedFrontMatterMp3Filename = usedFrontMatterAudioGuid + ".mp3";
+			var usedFrontMatterBgWavFilename = usedFrontMatterBackgroundAudio + ".wav";
+			var usedFrontMatterBgMp3Filename = usedFrontMatterBackgroundAudio + ".mp3";
+
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					$"<html><body><div id='bloomDataDiv'><div data-backgroundaudio='{usedFrontMatterBgWavFilename}'</div>" +
+					$"<div data-book='bookTitle' lang='en'><p><span id='{usedFrontMatterAudioGuid}' class='audio-sentence'>Title</span></p></div></div>" +
+					"<div class='bloom-page numberedPage customPage bloom-combinedPage " +
+					"A5Portrait side-right bloom-monolingual' data-page='' " +
+					"id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage=" +
+					"'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' " +
+					$"lang='' data-backgroundaudio='{usedBgWavFilename}'>" +
+					"<div class='marginBox'>" +
+					$"<p><span data-duration='2.300227' id='{usedAudioGuid}' " +
+					"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
+					"</div></div>" +
+					"<div class='bloom-page numberedPage customPage bloom-combinedPage " +
+					"A5Portrait side-right bloom-monolingual' data-page-number='2' " +
+					$"lang='' data-backgroundaudio='{usedBgMp3Filename}'>" +
+					"<div class='marginBox'>" +
+					"<p>I am me.</p>" +
+					"</div></div>" +
+					"<div class='bloom-page numberedPage customPage bloom-combinedPage " +
+					"A5Portrait side-right bloom-monolingual' data-page-number='2' " +
+					$"lang='' data-backgroundaudio='{usedBgOggFilename}'>" +
+					"<div class='marginBox'>" +
+					"<p>I am me.</p>" +
+					"</div></div>" +
+					"</body></html>");
+
+			// Note: These must be executed after GetInitialStorage
 			var usedBGMp3Path = Path.Combine(audioPath, usedBgMp3Filename);
 			var usedBGOggPath = Path.Combine(audioPath, usedBgOggFilename);
-			var unusedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, unusedBgWavFilename), true, true);
+			var unusedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, unusedBgWavFilename), true, true).Path;
 			var unusedBGMp3Path = Path.Combine(audioPath, unusedBgMp3Filename);
 			var unusedBGOggPath = Path.Combine(audioPath, unusedBgOggFilename);
-			var usedWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedWavFilename), true);
+			var usedWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedWavFilename), true, true).Path;
 			var usedMp3Path = Path.Combine(audioPath, usedMp3Filename);
-			var unusedWavPath = MakeSampleWavAudio(Path.Combine(audioPath, unusedWavFilename), true);
+			var unusedWavPath = MakeSampleWavAudio(Path.Combine(audioPath, unusedWavFilename), true, true).Path;
 			var unusedMp3Path = Path.Combine(audioPath, unusedMp3Filename);
+			var usedFrontMatterWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedFrontMatterWavFilename), true).Path;
+			var usedFrontMatterMp3Path = Path.Combine(audioPath, usedFrontMatterMp3Filename);
+			var usedFrontMatterBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedFrontMatterBgWavFilename), true).Path;
+			var unusedFrontMatterBGMp3Path = Path.Combine(audioPath, usedFrontMatterBgMp3Filename);	// Note: For Background music, we only need to keep around the one directly referenced. Other extensions should be removed.
+
 
 			// Verify setup
-			Assert.IsTrue(File.Exists(usedWavPath.Path));
-			Assert.IsTrue(File.Exists(usedMp3Path));
-			Assert.IsTrue(File.Exists(unusedWavPath.Path));
-			Assert.IsTrue(File.Exists(unusedMp3Path));
-			Assert.IsTrue(File.Exists(usedBGWavPath.Path));
-			Assert.IsTrue(File.Exists(usedBGMp3Path));
-			Assert.IsTrue(File.Exists(usedBGOggPath));
-			Assert.IsTrue(File.Exists(unusedBGWavPath.Path));
-			Assert.IsTrue(File.Exists(unusedBGMp3Path));
-			Assert.IsTrue(File.Exists(unusedBGOggPath));
+			Assert.IsTrue(File.Exists(usedWavPath), "Pre: Audio Sentence WAV");
+			Assert.IsTrue(File.Exists(usedMp3Path), "Pre: Audio Sentence MP3");
+			Assert.IsTrue(File.Exists(unusedWavPath), "Pre: Unused Audio Sentence WAV");
+			Assert.IsTrue(File.Exists(unusedMp3Path), "Pre: Unused Audio Sentence MP3");
+			Assert.IsTrue(File.Exists(usedBGWavPath), "Pre: Background Music WAV");
+			Assert.IsTrue(File.Exists(usedBGMp3Path), "Pre: Background Music MP3");
+			Assert.IsTrue(File.Exists(usedBGOggPath), "Pre: Background Music Ogg");
+			Assert.IsTrue(File.Exists(unusedBGWavPath), "Pre: Unused Background Music WAV");
+			Assert.IsTrue(File.Exists(unusedBGMp3Path), "Pre: Unused Background Music MP3");
+			Assert.IsTrue(File.Exists(unusedBGOggPath), "Pre: Unused Background Music Ogg");
+			Assert.IsTrue(File.Exists(usedFrontMatterWavPath), "Pre: Front Matter Audio Sentence WAV");
+			Assert.IsTrue(File.Exists(usedFrontMatterMp3Path), "Pre: Front Matter Audio Sentence MP3");
+			Assert.IsTrue(File.Exists(usedFrontMatterBGWavPath), "Pre: Front Matter Background Music WAV");
+			Assert.IsTrue(File.Exists(unusedFrontMatterBGMp3Path), "Pre: Front Matter Background Music MP3");
 
 			// SUT
 			storage.CleanupUnusedAudioFiles();
 
-			// Verify result
-			Assert.IsTrue(File.Exists(usedWavPath.Path));
-			Assert.IsTrue(File.Exists(usedMp3Path));
-			Assert.IsFalse(File.Exists(unusedWavPath.Path));
-			Assert.IsFalse(File.Exists(unusedMp3Path));
-			Assert.IsTrue(File.Exists(usedBGWavPath.Path));
-			Assert.IsTrue(File.Exists(usedBGMp3Path));
-			Assert.IsTrue(File.Exists(usedBGOggPath));
-			Assert.IsFalse(File.Exists(unusedBGWavPath.Path));
-			Assert.IsFalse(File.Exists(unusedBGMp3Path));
-			Assert.IsFalse(File.Exists(unusedBGOggPath));
+
+			Assert.IsTrue(File.Exists(usedWavPath), "Audio Sentence WAV");
+			Assert.IsTrue(File.Exists(usedMp3Path), "Audio Sentence MP3");
+			Assert.IsFalse(File.Exists(unusedWavPath), "Unused Audio Sentence WAV");
+			Assert.IsFalse(File.Exists(unusedMp3Path), "Unused Audio Sentence MP3");
+			Assert.IsTrue(File.Exists(usedBGWavPath), "Background Music WAV");
+			Assert.IsTrue(File.Exists(usedBGMp3Path), "Background Music MP3");
+			Assert.IsFalse(File.Exists(unusedBGWavPath), "Unused Background Music WAV");
+			Assert.IsFalse(File.Exists(unusedBGMp3Path), "Unused Background Music MP3");
+			Assert.IsTrue(File.Exists(usedFrontMatterWavPath), "Front Matter Audio Sentence WAV");
+			Assert.IsTrue(File.Exists(usedFrontMatterMp3Path), "Front Matter Audio Sentence MP3");
+			Assert.IsTrue(File.Exists(usedFrontMatterBGWavPath), "Front Matter Background Music WAV");
+			Assert.IsFalse(File.Exists(unusedFrontMatterBGMp3Path), "Front Matter Background Music MP3");
+			Assert.IsTrue(File.Exists(usedBGOggPath), "Background Music Ogg");
+			Assert.IsFalse(File.Exists(unusedBGOggPath), "Unused Background Music Ogg");
+		}
+
+		[Test]
+		// Regression test that verifies that the function does not mistakenly preserve the contents of a data div rather than the value of a data div's data-backgroundaudio attribute.
+		public void CleanupUnusedAudioFiles_BloomDataDivWithMalformedFrontMatterHTML_AudiosRemoved()
+		{
+			// Test setup //
+
+			var audioPath = Path.Combine(_folder.Path, "audio");              //Path to the audio files.
+			Directory.CreateDirectory(audioPath);
+
+			// This HTML is messed up and contains data-backgroundaudio as the inner text instead of as an attribute
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div id='bloomDataDiv'><div>data-backgroundaudio</div><div>audio-sentence</div><span>audio-sentence</span></div><div class='bloom-page numberedPage customPage bloom-combinedPage " +
+					"A5Portrait side-right bloom-monolingual' data-page='' " +
+					"id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage=" +
+					"'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' " +
+					"lang=''><div class='marginBox'>" +
+					"<p>Who are you?</p>" +
+					"</div></div></body></html>");
+
+			string[] unneededFilenames = { "audio-sentence", "data-backgroundaudio" };
+			var expectedPathsToBeRemoved = new List<string>();
+
+			foreach (var filename in unneededFilenames)
+			{
+				string wavFilename = $"{filename}.wav";
+				var wavPath= MakeSampleWavAudio(Path.Combine(audioPath, wavFilename), true).Path;
+				expectedPathsToBeRemoved.Add(wavPath);
+
+				string mp3Filename = $"{filename}.mp3";
+				var mp3Path = Path.Combine(audioPath, mp3Filename);
+				expectedPathsToBeRemoved.Add(mp3Path);
+			}
+						
+			// Test exercise //
+			storage.CleanupUnusedAudioFiles();
+
+
+			// Test verification //
+			// The files should no longer exist because they are not correctly referenced in the bloomDataDiv
+			foreach (var unneededPath in expectedPathsToBeRemoved)
+			{
+				Assert.IsFalse(File.Exists(unneededPath), $"File path: {unneededPath}");
+			}
 		}
 
 		[Test]
@@ -305,6 +396,48 @@ namespace BloomTests.Book
 					"</body></html>", false);
 			var result = storage.ValidateBook(storage.PathToExistingHtml);
 			Assert.IsTrue(result.StartsWith("Bloom-page element not found at root level: someOtherId"), "Bad Html should fail ValidateBook().");
+			Assert.IsTrue(storage.ErrorAllowsReporting, "ErrorAllowsReporting");
+		}
+
+		[Test]
+		public void ValidateBook_ReportsNewerVersionRequiredSingle()
+		{
+			var storage = GetInitialStorageWithCustomHtml(
+@"<html>
+	<head>
+		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.8&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 1&quot;}]""></meta>
+	</head>
+	<body>
+		<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>
+		</div></div></div>
+	</body>
+</html>"
+				);
+
+			storage.GetHtmlMessageIfFeatureIncompatibility();
+			Assert.That(storage.ErrorMessagesHtml.Contains("or greater because it uses the feature"), Is.True, "ErrorMessagesHtml");
+			Assert.That(storage.ErrorAllowsReporting, Is.False, "ErrorAllowsReporting");
+		}
+
+		[Test]
+		public void ValidateBook_ReportsNewerVersionRequiredMultiple()
+		{
+			var storage = GetInitialStorageWithCustomHtml(
+@"<html>
+	<head>
+		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.8&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 1&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.10&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;customSpanAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 2&quot;}]""></meta>
+	</head>
+	<body>
+		<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>
+		</div></div></div>
+	</body>
+</html>"
+				);
+
+			storage.GetHtmlMessageIfFeatureIncompatibility();
+			Assert.That(storage.ErrorMessagesHtml.Contains("or greater because it uses the following features"), Is.True, "ErrorMessagesHtml");
+			Assert.That(storage.ErrorAllowsReporting, Is.False, "ErrorAllowsReporting");
+			Assert.That(storage.ErrorMessagesHtml.IndexOf("Breaking Feature 1"), Is.GreaterThan(storage.ErrorMessagesHtml.IndexOf("Breaking Feature 2")), "sort order wrong");
 		}
 
 		[Test]
@@ -323,7 +456,29 @@ namespace BloomTests.Book
 			return temp;
 		}
 
-		private TempFile MakeSampleWavAudio(string name, bool makeMp3Also=false, bool makeOggAlso=false)
+		internal static void MakeSampleFiles(string folderPath, string filenameWithoutExtension, params string[] extensions)
+		{
+			Directory.CreateDirectory(folderPath);
+
+			foreach (string extension in extensions)
+			{
+				string filename;
+				if (extension.StartsWith("."))
+					filename = $"{filenameWithoutExtension}{extension}"; 
+				else
+					filename = $"{filenameWithoutExtension}.{extension}";
+
+				TempFile.WithFilename(Path.Combine(folderPath, filename));
+			}
+		}
+
+		internal static void MakeSampleAudioFiles(string bookfolderPath, string filenameWithoutExtension, params string[] extensions)
+		{
+			var audioPath = Path.Combine(bookfolderPath, "audio");
+			MakeSampleFiles(audioPath, filenameWithoutExtension, extensions);
+		}
+
+		private TempFile MakeSampleWavAudio(string name, bool makeMp3Also = false, bool makeOggAlso = false)
 		{
 			var temp = TempFile.WithFilename(name);
 			var ext = Path.GetExtension(name);

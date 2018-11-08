@@ -144,7 +144,7 @@ function SetupDeletable(containerDiv) {
             const button = $(
                 "<button class='deleteButton smallImageButton' title='Delete'></button>"
             );
-            $(button).click(function() {
+            $(button).click(() => {
                 $(containerDiv).remove();
             });
             $(this).prepend(button);
@@ -166,7 +166,7 @@ function AddEditKeyHandlers(container) {
     //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "F6", function(e) {
+        .on("keydown", null, "F6", e => {
             const selection = document.getSelection();
             if (selection) {
                 //NB: by using exeCommand, we get undo-ability
@@ -183,7 +183,7 @@ function AddEditKeyHandlers(container) {
     //ctrl alt 0 is from google drive for "normal text"
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "ALT+CTRL+0", function(e) {
+        .on("keydown", null, "ALT+CTRL+0", e => {
             e.preventDefault();
             document.execCommand("formatBlock", false, "P");
         });
@@ -191,13 +191,13 @@ function AddEditKeyHandlers(container) {
     // Make F7 apply top-level header style (H1)
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "F7", function(e) {
+        .on("keydown", null, "F7", e => {
             e.preventDefault();
             document.execCommand("formatBlock", false, "H1");
         });
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "ALT+CTRL+1", function(e) {
+        .on("keydown", null, "ALT+CTRL+1", e => {
             //ctrl alt 1 is from google drive
             e.preventDefault();
             document.execCommand("formatBlock", false, "H1");
@@ -206,45 +206,45 @@ function AddEditKeyHandlers(container) {
     // Make F8 apply header style (H2)
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "F8", function(e) {
+        .on("keydown", null, "F8", e => {
             e.preventDefault();
             document.execCommand("formatBlock", false, "H2");
         });
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "ALT+CTRL+2", function(e) {
+        .on("keydown", null, "ALT+CTRL+2", e => {
             //ctrl alt 2 is from google drive
             e.preventDefault();
             document.execCommand("formatBlock", false, "H2");
         });
 
-    $(document).bind("keydown", "ctrl+space", function(e) {
+    $(document).bind("keydown", "ctrl+space", e => {
         e.preventDefault();
-        document.execCommand("removeFormat", false, false); //will remove bold, italics, etc. but not things that use elements, like h1
+        document.execCommand("removeFormat"); //will remove bold, italics, etc. but not things that use elements, like h1
     });
 
-    $(document).bind("keydown", "ctrl+u", function(e) {
+    $(document).bind("keydown", "ctrl+u", e => {
         e.preventDefault();
         document.execCommand("underline");
     });
-    $(document).bind("keydown", "ctrl+b", function(e) {
+    $(document).bind("keydown", "ctrl+b", e => {
         e.preventDefault();
         document.execCommand("bold");
     });
-    $(document).bind("keydown", "ctrl+i", function(e) {
+    $(document).bind("keydown", "ctrl+i", e => {
         e.preventDefault();
         document.execCommand("italic");
     });
     //note: these have the effect of introducing a <div> inside of the div.bloom-editable we're in.
-    $(document).bind("keydown", "ctrl+r", function(e) {
+    $(document).bind("keydown", "ctrl+r", e => {
         e.preventDefault();
         document.execCommand("justifyright", false, null);
     });
-    $(document).bind("keydown", "ctrl+l", function(e) {
+    $(document).bind("keydown", "ctrl+l", e => {
         e.preventDefault();
         document.execCommand("justifyleft", false, null);
     });
-    $(document).bind("keydown", "ctrl+shift+e", function(e) {
+    $(document).bind("keydown", "ctrl+shift+e", e => {
         //ctrl+shiift+e is what google drive uses
         e.preventDefault();
         document.execCommand("justifycenter", false, null);
@@ -434,7 +434,7 @@ function SetupElements(container) {
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable"
             );
-            contentElements.sort(function(a, b) {
+            contentElements.sort((a, b) => {
                 //using negatives so that something with none of these labels ends up with a > score and at the end
                 //reviewSlog
                 const scoreA =
@@ -775,7 +775,7 @@ function SetupElements(container) {
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container)
         .find(".bloom-editable")
-        .keypress(function(event) {
+        .keypress(event => {
             // this is causing a worse problem, (preventing us from typing empty lines to move the start of the
             // text down), so we're going to live with the empty space for now.
             // TODO: perhaps we can act when the DEL or Backspace occurs and then detect this situation and clean it up.
@@ -868,14 +868,14 @@ function AddXMatterLabelAfterPageLabel(container) {
     if (xMatterLabel === "" || xMatterLabel === "none") return;
     theOneLocalizationManager
         .asyncGetText(pageLabelL18nPrefix + xMatterLabel, xMatterLabel, "")
-        .done(function(xMatterLabelTranslation) {
+        .done(xMatterLabelTranslation => {
             theOneLocalizationManager
                 .asyncGetText(
                     pageLabelL18nPrefix + "FrontBackMatter",
                     "Front/Back Matter",
                     ""
                 )
-                .done(function(frontBackTranslation) {
+                .done(frontBackTranslation => {
                     $(pageLabel).attr(
                         "data-after-content",
                         xMatterLabelTranslation + " " + frontBackTranslation
@@ -966,7 +966,7 @@ export function bootstrap() {
             mapCkeditDiv[ckedit.id] = this;
 
             // show or hide the toolbar when the text selection changes
-            ckedit.on("selectionCheck", function(evt) {
+            ckedit.on("selectionCheck", evt => {
                 const editor = evt["editor"];
                 // Length of selected text is more reliable than comparing
                 // endpoints of the first range.  Mozilla can return multiple
@@ -995,7 +995,7 @@ export function bootstrap() {
             });
 
             // hide the toolbar when ckeditor starts
-            ckedit.on("instanceReady", function(evt) {
+            ckedit.on("instanceReady", evt => {
                 const editor = evt["editor"];
                 const bar = $("body").find("." + editor.id);
                 bar.hide();
@@ -1022,7 +1022,7 @@ export function bootstrap() {
 // we could abort if we already got another zoom event. For now, just trying
 // to stop it crashing.)
 function setupWheelZooming() {
-    $("body").on("wheel", function(e) {
+    $("body").on("wheel", e => {
         const theEvent = e.originalEvent as WheelEvent;
         if (!theEvent.ctrlKey) return;
         let command: string = "";
@@ -1047,28 +1047,28 @@ function localizeCkeditorTooltips(bar: JQuery) {
     const toolGroup = bar.find(".cke_toolgroup");
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Bold", "Bold", "")
-        .done(function(result) {
+        .done(result => {
             $(toolGroup)
                 .find(".cke_button__bold")
                 .attr("title", result);
         });
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Italic", "Italic", "")
-        .done(function(result) {
+        .done(result => {
             $(toolGroup)
                 .find(".cke_button__italic")
                 .attr("title", result);
         });
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Underline", "Underline", "")
-        .done(function(result) {
+        .done(result => {
             $(toolGroup)
                 .find(".cke_button__underline")
                 .attr("title", result);
         });
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Superscript", "Superscript", "")
-        .done(function(result) {
+        .done(result => {
             $(toolGroup)
                 .find(".cke_button__superscript")
                 .attr("title", result);
@@ -1079,14 +1079,14 @@ function localizeCkeditorTooltips(bar: JQuery) {
 // but saveChangesAndRethinkPageEvent currently has the (very important)
 // side effect of saving the changes to the current page.
 // [GJM: But this doesn't call saveChangesAndRethinkPageEvent! I'm confused.]
-export const pageSelectionChanging = function() {
+export const pageSelectionChanging = () => {
     const marginBox = $(".marginBox");
     marginBox.removeClass("origami-layout-mode");
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
 };
 
 // For usage, see editViewFrame.switchContentPage()
-export const pageUnloading = function() {
+export const pageUnloading = () => {
     theOneTextOverPictureManager.cleanUp();
 };
 
@@ -1094,7 +1094,7 @@ export const pageUnloading = function() {
 // method for changing pages).  It is mainly to clean things up so that garbage collection
 // won't lose multiple megabytes of data that both the DOM (C++) and Javascript subsystems
 // think the other is still using.
-export const disconnectForGarbageCollection = function() {
+export const disconnectForGarbageCollection = () => {
     // disconnect all event handlers
     //review: was this, but TS didn't like it    $.find().off();
     $("body")
@@ -1127,7 +1127,7 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
                         "To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.",
                         ""
                     )
-                    .done(function(translation) {
+                    .done(translation => {
                         jQuerySetOfMatchedElements.longPress({
                             instructions:
                                 "<div class='instructions'>" +

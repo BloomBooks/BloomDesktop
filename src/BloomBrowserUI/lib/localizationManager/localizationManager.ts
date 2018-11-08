@@ -59,7 +59,7 @@ export class LocalizationManager {
         };
         if (keyValuePairs) ajaxSettings["data"] = keyValuePairs;
 
-        $.ajax(ajaxSettings).done(function(data) {
+        $.ajax(ajaxSettings).done(data => {
             theOneLocalizationManager.dictionary = $.extend(
                 theOneLocalizationManager.dictionary,
                 data
@@ -377,10 +377,7 @@ export class LocalizationManager {
      * @returns {String}
      */
     public simpleDotNetFormat(format: string, args: string[]) {
-        return format.replace(/{(\d+)}/g, function(
-            match: string,
-            index: number
-        ) {
+        return format.replace(/{(\d+)}/g, (match: string, index: number) => {
             return typeof args[index] !== "undefined" ? args[index] : match;
         });
     }

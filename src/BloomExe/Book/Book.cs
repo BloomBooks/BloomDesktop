@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -565,7 +565,7 @@ namespace Bloom.Book
 		private HtmlDom GetErrorDom(string extraMessages="")
 		{
 			var builder = new StringBuilder();
-			builder.Append("<html><body style='font-family:arial,sans'>");
+			builder.Append("<html><head><meta charset=\"UTF-8\" /></head><body style='font-family:arial,sans'>");
 
 			if(_storage != null)
 			{
@@ -578,14 +578,17 @@ namespace Bloom.Book
 
 			// often GetBrokenBookRecommendation and FatalErrorDescription both come from _storage.ErrorMessagesHtml.
 			// Try not to say the same thing twice.
-			if (!builder.ToString().Contains(FatalErrorDescription))
+			if (FatalErrorDescription != null && !builder.ToString().Contains(FatalErrorDescription))
 				builder.Append(FatalErrorDescription);
 
 			builder.Append("<p>"+ WebUtility.HtmlEncode(extraMessages)+"</p>");
 
-			var message = LocalizationManager.GetString("Errors.ReportThisProblemButton", "Report this problem to Bloom Support");
-			builder.AppendFormat(
-				"<input type='button' value='"+message+"' href='ReportProblem'></input>");
+			if (_storage.ErrorAllowsReporting)
+			{
+				var message = LocalizationManager.GetString("Errors.ReportThisProblemButton", "Report this problem to Bloom Support");
+				builder.AppendFormat(
+					"<input type='button' value='" + message + "' href='ReportProblem'></input>");
+			}
 
 			builder.Append("</body></html>");
 
@@ -719,6 +722,7 @@ namespace Bloom.Book
 			{
 				return GetErrorDom(_storage.GetValidateErrors());
 			}
+
 			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			AddCreationTypeAttribute(previewDom);
 
@@ -1708,10 +1712,10 @@ namespace Bloom.Book
 		public bool HasAudio()
 		{
 			return
-				RawDom.SafeSelectNodes("//span[@id]")
+				HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement)
 					.Cast<XmlElement>()
 					.Any(
-						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value));
+						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"]?.Value));
 		}
 
 		/// <summary>
@@ -1736,18 +1740,20 @@ namespace Bloom.Book
 						continue;   // this won't go into the book -- it's a different language.
 					// TODO: Ensure handles image descriptions once those get implemented.
 					var textOfDiv = div.InnerText.Trim();
-					foreach (var span in div.SafeSelectNodes(".//span[@class]").Cast<XmlElement>())
+
+					// Note: Prior to version 4.4, audio-sentences were only in spans, but in version 4.4 they can be divs
+					// (because the boundaries may need to cross multiple paragraphs, and <span> cannot contain <p> (because span is inline, and p is not))
+					foreach (var audioSentenceChildNode in HtmlDom.SelectAudioSentenceElements(div).Cast<XmlElement>())
 					{
-						if (!HtmlDom.HasClass(span, "audio-sentence"))
-							continue;
-						var id = span.GetOptionalStringAttribute("id", "");
-						if (string.IsNullOrEmpty(id) || !AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value))
+						var id = audioSentenceChildNode.GetOptionalStringAttribute("id", "");
+						if (string.IsNullOrEmpty(id) || !AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, audioSentenceChildNode.Attributes["id"].Value))
 							return false;   // missing audio file
-						if (!textOfDiv.StartsWith(span.InnerText))
+						if (!textOfDiv.StartsWith(audioSentenceChildNode.InnerText))
 							return false;   // missing audio span?
-						textOfDiv = textOfDiv.Substring(span.InnerText.Length);
+						textOfDiv = textOfDiv.Substring(audioSentenceChildNode.InnerText.Length);
 						textOfDiv = textOfDiv.TrimStart();
 					}
+
 					if (!string.IsNullOrEmpty(textOfDiv))
 						return false;       // non-whitespace not covered by functional audio spans
 				}
@@ -2168,15 +2174,32 @@ namespace Bloom.Book
 
 		private static void RemoveAudioMarkup(XmlElement newpageDiv)
 		{
-			foreach (var span in newpageDiv.SafeSelectNodes(".//span[contains(@class,'audio-sentence')]").Cast<XmlElement>().ToList())
+			foreach (var audioElement in HtmlDom.SelectAudioSentenceElements(newpageDiv).Cast<XmlElement>().ToList())
 			{
-				XmlNode after = span;
-				foreach (XmlNode child in span.ChildNodes)
+				XmlNode after = audioElement;
+
+				string audioElementClassesValue = audioElement.GetStringAttribute("class");
+				List<string> audioElementClassList = null;
+				if (!String.IsNullOrEmpty(audioElementClassesValue))
 				{
-					span.ParentNode.InsertAfter(child, after);
-					after = child;
+					audioElementClassList = audioElementClassesValue.Split(HtmlDom.kHtmlClassDelimiters, StringSplitOptions.RemoveEmptyEntries).ToList();
 				}
-				span.ParentNode.RemoveChild(span);
+
+				if (audioElementClassList != null && audioElementClassList.Contains("bloom-editable"))
+				{
+					// This should definitely not be deleted. Just remove the markup as best you can.
+					HtmlDom.RemoveClass(audioElement, "audio-sentence");
+				}
+				else
+				{
+					// Looks safe to remove the audio markup wrapper
+					foreach (XmlNode child in audioElement.ChildNodes)
+					{
+						audioElement.ParentNode.InsertAfter(child, after);
+						after = child;
+					}
+					audioElement.ParentNode.RemoveChild(audioElement);
+				}
 			}
 		}
 
@@ -2968,8 +2991,7 @@ namespace Bloom.Book
 				foreach (XmlElement editable in page.SafeSelectNodes(
 					".//div[contains(@class,'bloom-editable') and contains(@class, 'bloom-content1')]"))
 				{
-					foreach (XmlElement span in editable.SafeSelectNodes(
-						".//span[contains(@class, 'audio-sentence') and @data-duration]"))
+					foreach (XmlElement span in HtmlDom.SelectAudioSentenceElementsWithDataDuration(editable))
 					{
 						double time;
 						double.TryParse(span.Attributes["data-duration"].Value, out time);

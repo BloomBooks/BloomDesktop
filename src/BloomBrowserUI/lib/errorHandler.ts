@@ -57,13 +57,13 @@ export function reportPreliminaryError(message: string, stack: string) {
 // Using our own api to report the errors also makes us independent of GeckoFx's
 // way of dealing with unhandled exceptions, and helps us distinguish thrown
 // from unhandled ones, which some Gecko45 reporting doesn't.
-window.onerror = function(msg, url, line, col, error) {
+window.onerror = (msg, url, line, col, error) => {
     // Make a preliminary report, which will be discarded if the stack conversion succeeds.
     reportPreliminaryError(msg.toString(), error.stack);
     // Try to make the report using source stack.
     StackTrace.fromError(error).then(stackframes => {
         var stringifiedStack = stackframes
-            .map(function(sf) {
+            .map(sf => {
                 return sf.toString();
             })
             .join("\n");

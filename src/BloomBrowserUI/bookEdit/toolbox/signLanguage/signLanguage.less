@@ -11,6 +11,7 @@
 }
 
 @videoButtonSize: 40px;
+@commandLabelMargin: 10px;
 @videoButtonBorder: @videoButtonSize / 3;
 @videoButtonRimThickness: 3px;
 
@@ -77,10 +78,14 @@
     margin-bottom: 20px;
 }
 
+#showInFolderLink {
+    margin-left: @videoButtonSize + @commandLabelMargin;
+}
+
 .startRecording,
 .recordingLabel,
 .commandLabel {
-    margin-left: 10px;
+    margin-left: @commandLabelMargin;
 }
 .countdownNumber {
     margin-left: 40px;
@@ -108,6 +113,17 @@
 *.disabled {
     opacity: 0.4;
     pointer-events: none;
+}
+
+.signLanguageFrame {
+    // The video monitor box takes up space even when hidden.
+    .disabledVideoMonitor {
+        visibility: hidden;
+        // This shouldn't be necessary but in FF 45 it seems to be.
+        video {
+            display: none;
+        }
+    }
 }
 
 .ui-accordion h3[data-toolId="signLanguageTool"] span.ui-accordion-header-icon {
@@ -197,4 +213,26 @@
 #videoStatsWrapper {
     color: @buttonColor;
     font-size: 1.25em;
+    .trimLabel {
+        color: white !important;
+        font-weight: bold;
+        margin-left: 50px;
+    }
+}
+.videoTrimSlider {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    .rc-slider-handle {
+        border-radius: 0;
+        height: 19px;
+        width: 9px;
+        background-color: @buttonColor;
+        margin-top: -8px;
+    }
+    .rc-slider-rail {
+        background-color: @DisabledButtonColor;
+    }
+    .rc-slider-track {
+        background-color: @buttonColor;
+    }
 }

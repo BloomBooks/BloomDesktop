@@ -56,6 +56,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
+        this.makeRectsVisible();
+    }
+
+    private makeRectsVisible() {
         // First, abort any preview that's in progress.
         if (this.rootControl.state.playing) {
             this.toggleMotionPreviewPlaying();
@@ -444,7 +448,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                     ) as string
                 );
                 firstImage.removeAttribute("data-disabled-initialrect");
-                this.updateMarkup();
+                this.makeRectsVisible(); // ensures start/stop rectangles visible
             }
         } else {
             if (firstImage.getAttribute("data-initialrect")) {
@@ -467,7 +471,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // If they once choose a picture, there's no going back to a placeholder (on this page).
         this.rootControl.setState({ haveImageContainerButNoImage: false });
         this.observer.disconnect();
-        this.updateMarkup(); // one effect is to show the rectangles.
     }
 
     private resizeRectanglesDelay: number = 200;
@@ -492,15 +495,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             return;
         }
         setTimeout(() => {
-            // allow any future notifications to be processed. We want to clear this first,
-            // because a new notification while we are doing updateMarkup does need to
-            // be handled.
+            // allow any future notifications to be processed.
             this.resizeInProgress = false;
             const images = this.getImages();
             if (images[0].getAttribute("style") === this.resizeOldStyle) {
                 return; // spurious notification
             }
-            this.updateMarkup();
         }, this.resizeRectanglesDelay);
         this.resizeInProgress = true; // ignore notifications until timeout
     }
@@ -952,7 +952,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         let duration = 0;
         $(page)
             .find(".bloom-editable.bloom-content1")
-            .find("span.audio-sentence")
+            .find(".audio-sentence")
             .each((index, span) => {
                 const spanDuration = parseFloat($(span).attr("data-duration"));
                 if (spanDuration) {

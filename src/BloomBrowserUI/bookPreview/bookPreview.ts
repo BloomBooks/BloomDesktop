@@ -17,7 +17,7 @@ $.fn.CenterVerticallyInParent = function() {
     });
 };
 
-$(document).ready(function() {
+$(document).ready(() => {
     $("textarea").focus(function() {
         $(this).attr("readonly", "readonly");
     });

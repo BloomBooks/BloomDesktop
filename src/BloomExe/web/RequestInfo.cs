@@ -304,6 +304,20 @@ namespace Bloom.Api
 			}
 		}
 
+		/// <summary>
+		/// Get the data from the request as a stream. Caller is responsible to dispose of it.
+		/// </summary>
+		/// <returns></returns>
+		public Stream GetRawPostStream()
+		{
+			var request = _actualContext.Request;
+
+			if (!request.HasEntityBody)
+				return null;
+
+			return request.InputStream;
+		}
+
 		public NameValueCollection GetPostDataWhenFormEncoded()
 		{
 			if(_postData == null)

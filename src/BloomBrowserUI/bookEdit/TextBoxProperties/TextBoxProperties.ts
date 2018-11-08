@@ -91,7 +91,7 @@ export default class TextBoxProperties {
                     dialogElement.css("opacity", 1.0);
                     if (!noFormatChange) {
                         // Hook up change event handlers
-                        $("#language-group").change(function() {
+                        $("#language-group").change(() => {
                             propDlg.changeLanguageGroup();
                         });
                         new WebFXTabPane($("#tabRoot").get(0), false);
@@ -111,7 +111,7 @@ export default class TextBoxProperties {
                         dialogElement.draggable("enable");
 
                         $("html").off("click.dialogElement");
-                        $("html").on("click.dialogElement", function(event) {
+                        $("html").on("click.dialogElement", event => {
                             if (
                                 event.target !== dialogElement.get(0) &&
                                 dialogElement.has(event.target).length === 0 &&
@@ -124,9 +124,7 @@ export default class TextBoxProperties {
                                 event.preventDefault();
                             }
                         });
-                        dialogElement.on("click.dialogElement", function(
-                            event
-                        ) {
+                        dialogElement.on("click.dialogElement", event => {
                             // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                             event.stopPropagation();
                         });
@@ -466,7 +464,7 @@ export default class TextBoxProperties {
         //     items.push(current.toString());
         // }
 
-        items.sort(function(a, b) {
+        items.sort((a, b) => {
             return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
         });
 

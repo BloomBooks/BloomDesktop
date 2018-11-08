@@ -840,16 +840,15 @@ export default class StyleEditor {
         if (!styleName) {
             return;
         }
-        const editor = this;
         // I'm assuming here that since we're dealing with a local server, we'll get a result long before
         // the user could actually modify a style and thus need the information.
         // More dangerous is using it in getCharTabDescription. But as that is launched by a later
         // async request, I think it should be OK.
 
         BloomApi.get("authorMode", result => {
-            editor.authorMode = result.data === true;
+            this.authorMode = result.data === true;
         });
-        editor.xmatterMode = IsPageXMatter($(targetBox));
+        this.xmatterMode = IsPageXMatter($(targetBox));
 
         if (this._previousBox != null) {
             StyleEditor.CleanupElement(this._previousBox);
@@ -863,7 +862,7 @@ export default class StyleEditor {
         // the user won't see resize and drag controls when they click on it
         $(targetBox).append(
             '<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' +
-                editor._supportFilesRoot +
+                this._supportFilesRoot +
                 '/img/cogGrey.svg"></div>'
         );
 
@@ -906,7 +905,7 @@ export default class StyleEditor {
         // The .off prevents adding multiple event handlers as the parent box gains focus repeatedly.
         // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
         $(targetBox).off("click.formatButton");
-        $(targetBox).on("click.formatButton", "#formatButton", function() {
+        $(targetBox).on("click.formatButton", "#formatButton", () => {
             // Using axios directly because BloomApi does not support combining multiple promises with .all
             BloomApi.wrapAxios(
                 axios
@@ -920,26 +919,26 @@ export default class StyleEditor {
                         const fonts = results[0].data["fonts"];
                         const html = results[1].data;
 
-                        editor.boxBeingEdited = targetBox;
+                        this.boxBeingEdited = targetBox;
                         styleName = StyleEditor.GetBaseStyleNameForElement(
                             targetBox
                         );
-                        const current = editor.getFormatValues();
+                        const current = this.getFormatValues();
 
                         //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                         // Enhance: lineHeight may well be something like 35px; what should we select initially?
 
-                        editor.styles = editor.getFormattingStyles();
+                        this.styles = this.getFormattingStyles();
                         if (
                             styleName != null &&
-                            editor.styles.every(
+                            this.styles.every(
                                 style => !style.hasStyleId(styleName as string)
                             )
                         ) {
-                            editor.styles.push(
+                            this.styles.push(
                                 new FormattingStyle(
                                     styleName,
-                                    editor.getDisplayName(styleName)
+                                    this.getDisplayName(styleName)
                                 )
                             );
                         }
@@ -953,7 +952,7 @@ export default class StyleEditor {
                             // The tab library doesn't allow us to put other class names on the tab-page,
                             // so we are doing it this way rather than the approach of using css to hide
                             // tabs based on class names.
-                            if (!editor.authorMode || editor.xmatterMode) {
+                            if (!this.authorMode || this.xmatterMode) {
                                 $("#style-page").remove();
                             }
 
@@ -965,11 +964,7 @@ export default class StyleEditor {
                                     .remove();
                             }
 
-                            editor.setupSelectControls(
-                                fonts,
-                                current,
-                                styleName
-                            );
+                            this.setupSelectControls(fonts, current, styleName);
                         }
 
                         //make some select boxes permit custom values
@@ -991,13 +986,13 @@ export default class StyleEditor {
                         toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                         toolbar.css("opacity", 1.0);
                         if (!noFormatChange) {
-                            editor.getCharTabDescription();
-                            editor.getParagraphTabDescription();
+                            this.getCharTabDescription();
+                            this.getParagraphTabDescription();
 
-                            $("#font-select").change(function() {
-                                editor.changeFont();
+                            $("#font-select").change(() => {
+                                this.changeFont();
                             });
-                            editor.AddQtipToElement(
+                            this.AddQtipToElement(
                                 $("#font-select"),
                                 theOneLocalizationManager.getText(
                                     "EditTab.FormatDialog.FontFaceToolTip",
@@ -1005,10 +1000,10 @@ export default class StyleEditor {
                                 ),
                                 1500
                             );
-                            $("#size-select").change(function() {
-                                editor.changeSize();
+                            $("#size-select").change(() => {
+                                this.changeSize();
                             });
-                            editor.AddQtipToElement(
+                            this.AddQtipToElement(
                                 $("#size-select"),
                                 theOneLocalizationManager.getText(
                                     "EditTab.FormatDialog.FontSizeToolTip",
@@ -1016,10 +1011,10 @@ export default class StyleEditor {
                                 ),
                                 1500
                             );
-                            $("#line-height-select").change(function() {
-                                editor.changeLineheight();
+                            $("#line-height-select").change(() => {
+                                this.changeLineheight();
                             });
-                            editor.AddQtipToElement(
+                            this.AddQtipToElement(
                                 $("#line-height-select").parent(),
                                 theOneLocalizationManager.getText(
                                     "EditTab.FormatDialog.LineSpacingToolTip",
@@ -1027,10 +1022,10 @@ export default class StyleEditor {
                                 ),
                                 1500
                             );
-                            $("#word-space-select").change(function() {
-                                editor.changeWordSpace();
+                            $("#word-space-select").change(() => {
+                                this.changeWordSpace();
                             });
-                            editor.AddQtipToElement(
+                            this.AddQtipToElement(
                                 $("#word-space-select").parent(),
                                 theOneLocalizationManager.getText(
                                     "EditTab.FormatDialog.WordSpacingToolTip",
@@ -1038,9 +1033,9 @@ export default class StyleEditor {
                                 ),
                                 1500
                             );
-                            if (editor.authorMode && !editor.xmatterMode) {
-                                $("#styleSelect").change(function() {
-                                    editor.selectStyle();
+                            if (this.authorMode && !this.xmatterMode) {
+                                $("#styleSelect").change(() => {
+                                    this.selectStyle();
                                 });
                                 (<alphanumInterface>(
                                     $("#style-select-input")
@@ -1049,42 +1044,37 @@ export default class StyleEditor {
                                     preventLeadingNumeric: true
                                 });
                                 // don't use .change() here, as it only fires on loss of focus
-                                $("#style-select-input").on(
-                                    "input",
-                                    function() {
-                                        editor.styleInputChanged();
-                                    }
-                                );
+                                $("#style-select-input").on("input", () => {
+                                    this.styleInputChanged();
+                                });
                                 // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
                                 // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
                                 (<any>(
                                     $("#style-select-input").get(0)
-                                )).trimNotification = function() {
-                                    editor.styleStateChange(
-                                        "invalid-characters"
-                                    );
+                                )).trimNotification = () => {
+                                    this.styleStateChange("invalid-characters");
                                 };
-                                $("#show-createStyle").click(function(event) {
+                                $("#show-createStyle").click(event => {
                                     event.preventDefault();
-                                    editor.showCreateStyle();
+                                    this.showCreateStyle();
                                     return false;
                                 });
-                                $("#create-button").click(function() {
-                                    editor.createStyle();
+                                $("#create-button").click(() => {
+                                    this.createStyle();
                                 });
                             }
-                            const buttonIds = editor.getButtonIds();
+                            const buttonIds = this.getButtonIds();
                             for (let i = 0; i < buttonIds.length; i++) {
                                 const button = $("#" + buttonIds[i]);
                                 button.click(function() {
-                                    editor.buttonClick(this);
+                                    this.buttonClick(this);
                                 });
                                 button.addClass("propButton");
                             }
-                            $("#para-spacing-select").change(function() {
-                                editor.changeParaSpacing();
+                            $("#para-spacing-select").change(() => {
+                                this.changeParaSpacing();
                             });
-                            editor.selectButtons(current);
+                            this.selectButtons(current);
                             new WebFXTabPane($("#tabRoot").get(0), false);
                         }
                         const orientOnButton = $("#formatButton");
@@ -1095,7 +1085,7 @@ export default class StyleEditor {
                         toolbar.draggable("enable");
 
                         $("html").off("click.toolbar");
-                        $("html").on("click.toolbar", function(event) {
+                        $("html").on("click.toolbar", event => {
                             if (
                                 event.target !== toolbar.get(0) &&
                                 toolbar.has(event.target).length === 0 &&
@@ -1108,7 +1098,7 @@ export default class StyleEditor {
                                 event.preventDefault();
                             }
                         });
-                        toolbar.on("click.toolbar", function(event) {
+                        toolbar.on("click.toolbar", event => {
                             // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                             event.stopPropagation();
                         });
@@ -1191,7 +1181,7 @@ export default class StyleEditor {
         const stateToAdd = "state-" + newState;
         const stateElement = $("#" + id);
         const existingClasses = stateElement.attr("class").split(/\s+/);
-        $.each(existingClasses, function(index, elem) {
+        $.each(existingClasses, (index, elem) => {
             if (elem.startsWith("state-")) {
                 stateElement.removeClass(elem);
             }

@@ -53,7 +53,7 @@ export function showAddPageDialog(forChooseLayout: boolean) {
         //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
         // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
 
-        jQuery(document).on("click", "body > .ui-widget-overlay", function() {
+        jQuery(document).on("click", "body > .ui-widget-overlay", () => {
             $(".ui-dialog-titlebar-close").trigger("click");
             return false;
         });

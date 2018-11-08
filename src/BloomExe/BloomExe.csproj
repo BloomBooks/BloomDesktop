@@ -291,6 +291,7 @@
     <Compile Include="Book\BloomReaderFileMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
+    <Compile Include="Book\VersionRequirements.cs" />
     <Compile Include="CLI\ChangeLayoutCommand.cs" />
     <Compile Include="Collection\BrandingProject.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
@@ -620,6 +621,7 @@
     <Compile Include="web\controllers\BrandingSettings.cs" />
     <Compile Include="web\BloomHttpListenerContext.cs" />
     <Compile Include="web\controllers\SignLanguageApi.cs" />
+    <Compile Include="web\controllers\TalkingBookApi.cs" />
     <Compile Include="web\IBloomWebSocketServer.cs" />
     <Compile Include="web\controllers\MusicApi.cs" />
     <Compile Include="web\controllers\ToolboxApi.cs" />

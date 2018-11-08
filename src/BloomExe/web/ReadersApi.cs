@@ -15,6 +15,7 @@ using Amazon.Runtime.Internal.Util;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.web.controllers;
 using L10NSharp;
 using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
@@ -446,22 +447,7 @@ namespace Bloom.Api
 				Directory.CreateDirectory(path);
 
 			PathUtilities.OpenDirectoryInExplorer(path);
-
-			// BL-673: Make sure the folder comes to the front in Linux
-			if (Platform.IsLinux)
-			{
-				// allow the external process to execute
-				Thread.Sleep(100);
-
-				// if the system has wmctrl installed, use it to bring the folder to the front
-				Process.Start(new ProcessStartInfo()
-				{
-					FileName = "wmctrl",
-					Arguments = "-a \"Sample Texts\"",
-					UseShellExecute = false,
-					ErrorDialog = false // do not show a message if not successful
-				});
-			}
+			CommonApi.BringFolderToFrontInLinux("Sample Texts");
 		}
 
 		private string ShowSelectAllowedWordsFileDialog()

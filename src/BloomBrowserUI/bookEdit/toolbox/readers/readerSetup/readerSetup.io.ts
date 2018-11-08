@@ -207,7 +207,7 @@ function getChangedSettings(): ReaderSettings {
     );
 
     // remove empty lines from the more words list
-    moreWords = _.filter(moreWords, function(a: string) {
+    moreWords = _.filter(moreWords, (a: string) => {
         return a.trim() !== "";
     });
     settings.moreWords = moreWords.join(" ");

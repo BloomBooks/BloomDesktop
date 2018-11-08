@@ -284,6 +284,9 @@ namespace Bloom.Publish.Epub
 			// to the book folder. It's also possible we could get away with only copying the HTML file itself,
 			// if we modified it to have localhost: links to the JS and CSS. Haven't tried this yet. The current
 			// approach at least works.
+			// Note October 2018: upgraded to Readium 0.3.2. Doc indicates this definitely should support
+			// using any url (that doesn't involve a cross-domain problem) in the ?epub= param.
+			// So we could probably now rewrite this to not copy the Readium files over. Not sure it's worth the effort.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 
 			// Not sure if we will need this. The current UI does not appear to have a way to indicate whether
@@ -294,7 +297,7 @@ namespace Bloom.Publish.Epub
 			//else if (BookHasAudio)
 			//	audioSituationClass = "isTalkingBook";
 
-			var targetFile = Path.Combine(tempFolder, "readium-cloudreader.htm");
+			var targetFile = Path.Combine(tempFolder, "index.html");
 
 			var iframeSource = targetFile.ToLocalhost() + "?epub=" + Path.GetFileName(StagingDirectory);
 			return iframeSource;

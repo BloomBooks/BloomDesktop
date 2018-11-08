@@ -99,7 +99,7 @@ window["PasteImageCredits"] = () => {
     EditableDivUtils.pasteImageCredits();
 };
 
-$(document).ready(function() {
+$(document).ready(() => {
     $("body")
         .find("*[data-i18n]")
         .localize();

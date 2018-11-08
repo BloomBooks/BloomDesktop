@@ -112,8 +112,11 @@ namespace BloomTests.Book
 		/* -----------------------------------------------------------------------------------*/
 
 		[TestCase("<p><span id='iExist' class='audio-sentence'>A flower.</span></p>")]
+		[TestCase("<p><div id='iExist' class='audio-sentence'>A flower.</div></p>")]
 		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span>
 					<span id='iExist' class='audio-sentence'>A dog.</span></p>")]
+		[TestCase(@"<p><div id='iExist' class='audio-sentence'>A flower.</div>
+					<div id='iExist' class='audio-sentence'>A dog.</div></p>")]
 		[TestCase(@"<label>This is bubble text</label>")]
 		public void CheckAudioForAllText_NoErrors(string content)
 		{
@@ -130,8 +133,26 @@ namespace BloomTests.Book
 			Assert.AreEqual(0, results.Count(), "No errors were expected");
 		}
 
+		[Test]
+		public void CheckAudioForAllText_RecordingOnBloomEditable_NoErrors()
+		{
+			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
+										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on audio-sentence' id='iExist' lang='{
+					_collectionSettings.Language1Iso639Code
+				}'>
+											<p>This is the text</p>
+										</div>
+									</div>
+								</div>");
+
+			var results = AccessibilityCheckers.CheckAudioForAllText(testBook);
+			Assert.AreEqual(0, results.Count(), "No errors were expected");
+		}
+
 		[TestCase("<p>A flower.</p>")]
 		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span>
+					A dog.</p>")]
+		[TestCase(@"<p><div id='iExist' class='audio-sentence'>A flower.</div>
 					A dog.</p>")]
 		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span></p>
 					<p>A dog.</p>")]
@@ -150,8 +171,11 @@ namespace BloomTests.Book
 		}
 
 		[TestCase("<p><span id='bogus123' class='audio-sentence'>A flower.</span></p>")]
+		[TestCase("<p><div id='bogus123' class='audio-sentence'>A flower.</div></p>")]
 		[TestCase(@"<p><span id='iExist' class='audio-sentence'>A flower.</span></p>
 					<p><span id='bogus456' class='audio-sentence'>A dog.</span</p>")]
+		[TestCase(@"<p><div id='iExist' class='audio-sentence'>A flower.</div></p>
+					<p><div id='bogus456' class='audio-sentence'>A dog.</div</p>")]
 		public void CheckAudioForAllText_SpansAudioMissing(string content)
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
@@ -216,7 +240,9 @@ namespace BloomTests.Book
 		// CheckAudioForAllText(), because the code is shared beteween them
 
 		[TestCase(0, "<p><span id='iExist' class='audio-sentence'>A flower.</span></p>")]
+		[TestCase(0, "<p><div id='iExist' class='audio-sentence'>A flower.</div></p>")]
 		[TestCase(1, "<p><span id='bogus123' class='audio-sentence'>A flower.</span></p>")]
+		[TestCase(1, "<p><div id='bogus123' class='audio-sentence'>A flower.</div></p>")]
 		public void CheckAudioForAllImageDescriptions_AudioMissing(int numberOfErrorsExpected, string content)
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup bloom-imageDescription'>

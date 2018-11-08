@@ -4,15 +4,15 @@
 import BloomSourceBubbles from "./BloomSourceBubbles";
 "use strict";
 
-describe("SourceBubbles", function() {
+describe("SourceBubbles", () => {
     // reset fixture
-    beforeEach(function() {
+    beforeEach(() => {
         $("body").html("");
     });
-    afterEach(function() {
+    afterEach(() => {
         $("body").html("");
     });
-    it("Run MakeSourceTextDivForGroup with pre-defined settings", function() {
+    it("Run MakeSourceTextDivForGroup with pre-defined settings", () => {
         // TODO: Testing is a bit hampered by not being able (currently) to put test values
         // into the cSharpDependencyInjector version of GetSettings(). Someday it might
         // be worth modifying that file so that tests can setup their own values for:
@@ -64,7 +64,7 @@ describe("SourceBubbles", function() {
         expect(result.find("div").length).toBe(3);
     });
 
-    it("Run CreateDropdownIfNecessary with pre-defined settings", function() {
+    it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
         var testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
@@ -123,7 +123,7 @@ describe("SourceBubbles", function() {
         expect(topLevelDivs.length).toBe(3);
     });
 
-    it("CreateDropdownIfNecessary doesn't if doesn't need to", function() {
+    it("CreateDropdownIfNecessary doesn't if doesn't need to", () => {
         var testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",

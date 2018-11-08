@@ -18,7 +18,6 @@ namespace Bloom.Publish.BloomLibrary
 		private readonly Metadata _licenseMetadata;
 		private readonly LicenseInfo _license;
 		private readonly BookTransfer _transferrer;
-		private readonly string _storedWebPassword;
 
 		public BloomLibraryPublishModel(BookTransfer transferer, BookInstance book)
 		{
@@ -32,8 +31,6 @@ namespace Bloom.Publish.BloomLibrary
 			_license = _licenseMetadata.License;
 
 			EnsureBookAndUploaderId();
-			WebUserId = Settings.Default.WebUserId;
-			_storedWebPassword = Settings.Default.WebPassword;
 		}
 
 		internal BookInstance Book { get; }
@@ -122,7 +119,14 @@ namespace Bloom.Publish.BloomLibrary
 		/// <summary>
 		/// Stored Web user Id
 		/// </summary>
-		internal string WebUserId { get; }
+		///  Best not to store its own value, because the username/password can be changed if the user logs into a different account.
+		internal string WebUserId { get { return Settings.Default.WebUserId; } }
+
+		/// <summary>
+		/// Stored Web password.
+		/// </summary>
+		///  Best not to store its own value, because the username/password can be changed if the user logs into a different account.
+		private string StoredWebPassword { get { return Settings.Default.WebPassword; } }
 
 		internal bool OkToUploadWithNoLanguages => Book.BookInfo.IsSuitableForMakingShells;
 
@@ -142,7 +146,7 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			if (string.IsNullOrEmpty(WebUserId))
 				return;
-			_transferrer.LogIn(WebUserId, _storedWebPassword);
+			_transferrer.LogIn(WebUserId, StoredWebPassword);
 		}
 
 		internal void Logout()

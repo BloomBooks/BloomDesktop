@@ -75,7 +75,8 @@ export class EditableDivUtils {
                     !node.childNodes[i].textContent;
                     i++
                 ) {
-                    if (node.childNodes[i].localName === "br") divBrCount--;
+                    if ((node.childNodes[i] as Element).localName === "br")
+                        divBrCount--;
                 }
                 // We want the selection in node itself, before childNode[i].
                 EditableDivUtils.selectAtOffset(node, i);
@@ -257,7 +258,7 @@ export class EditableDivUtils {
             }
         });
         // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-        setTimeout(function() {
+        setTimeout(() => {
             (<qtipInterface>$("div[data-hasqtip]")).qtip("reposition");
         }, 100); // make sure the DOM has the inserted text before we try to reposition qtips
     }

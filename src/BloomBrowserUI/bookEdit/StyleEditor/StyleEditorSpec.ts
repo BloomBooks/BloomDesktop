@@ -149,9 +149,9 @@ function HasRuleMatchingThisSelector(selector: string): boolean {
     return count > 0;
 }
 
-describe("StyleEditor", function() {
+describe("StyleEditor", () => {
     // most perplexingly, jasmine doesn't reset the dom between tests
-    beforeEach(function() {
+    beforeEach(() => {
         $('style[title="userModifiedStyles"]').remove();
         $("body").html("");
     });
@@ -174,7 +174,7 @@ describe("StyleEditor", function() {
     //  expect(GetUserModifiedStyleSheet()).not.toBeNull();
     //});
 
-    it("MakeBigger creates a style for the correct class if it is missing", function() {
+    it("MakeBigger creates a style for the correct class if it is missing", () => {
         $("body").append(
             "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>"
         );
@@ -195,7 +195,7 @@ describe("StyleEditor", function() {
     //note originally i was just letting everything be changeable, regardless. The problem is that then things like title
     //and subtitle were getting conflated. So that is a future enhancement; for now, I'm keeping things simple by saying
     //I have to have an explict x-style in the @class, except in the special case of known legacy pages, which all started with the same bit of guid
-    it("MakeBigger does nothing if no x-style classes, and ancestor is not a known old-format basic-book page", function() {
+    it("MakeBigger does nothing if no x-style classes, and ancestor is not a known old-format basic-book page", () => {
         $("body").append(
             "<div class='bloom-page' data-pagelineage='123-blah-blah'><div id='testTarget'>i don't want to get bigger</div></div>"
         );
@@ -204,7 +204,7 @@ describe("StyleEditor", function() {
     });
 
     // Handle books created with the original (0.9) version of "Basic Book", which lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
-    it("MakeBigger adds normal-style if there are no x-style classes, but ancestor is a known old-format basic-book page", function() {
+    it("MakeBigger adds normal-style if there are no x-style classes, but ancestor is a known old-format basic-book page", () => {
         $("body").append(
             "<div  class='bloom-page'  data-pagelineage='5dcd48df-blah-blah'><div id='testTarget'>i want to get bigger</div></div>"
         );
@@ -212,7 +212,7 @@ describe("StyleEditor", function() {
         expect(GetRuleForNormalStyle()).not.toBeNull();
     });
 
-    it("MakeBigger can add a new rule without removing other rules", function() {
+    it("MakeBigger can add a new rule without removing other rules", () => {
         $("body").append(
             "<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='normal-style'></div>"
         );
@@ -221,7 +221,7 @@ describe("StyleEditor", function() {
         expect(GetRuleForNormalStyle()).not.toBeNull();
     });
 
-    it("MakeBigger doesn't make a duplicate style if there is already one there", function() {
+    it("MakeBigger doesn't make a duplicate style if there is already one there", () => {
         $("body").append(
             "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>"
         );
@@ -240,7 +240,7 @@ describe("StyleEditor", function() {
         expect(count).toBe(1);
     });
 
-    it("When the element has an @lang, MakeBigger adds rules that only affect the given language", function() {
+    it("When the element has an @lang, MakeBigger adds rules that only affect the given language", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
@@ -256,7 +256,7 @@ describe("StyleEditor", function() {
         expect(count).toBe(1);
     });
 
-    it("When the element does not have @lang, MakeBigger adds rules that apply only when there is no @lang", function() {
+    it("When the element does not have @lang, MakeBigger adds rules that apply only when there is no @lang", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
@@ -267,7 +267,7 @@ describe("StyleEditor", function() {
         );
     });
 
-    it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", function() {
+    it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", () => {
         $("head").append(
             "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>"
         );
@@ -287,7 +287,7 @@ describe("StyleEditor", function() {
         expect(GetFontSizeRuleByLang("xyz")).toBe(10);
     });
 
-    it("When the element does not have @lang, ChangeSizeAbsolute adds rules that apply only when there is no @lang", function() {
+    it("When the element does not have @lang, ChangeSizeAbsolute adds rules that apply only when there is no @lang", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style'></div><div id='testTarget2' class='normal-style' lang='xyz'></div>"
         );
@@ -299,7 +299,7 @@ describe("StyleEditor", function() {
         if (rule != null) expect(ParseRuleForFontSize(rule.cssText)).toBe(20);
     });
 
-    it("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", function() {
+    it("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", () => {
         $("head").append(
             "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>"
         );
@@ -319,7 +319,7 @@ describe("StyleEditor", function() {
         expect(GetFontSizeRuleByLang("xyz")).toBe(20);
     });
 
-    it("When the element has an @lang, but no existing rule, ChangeSizeAbsolute adds rules that only affect the given language", function() {
+    it("When the element has an @lang, but no existing rule, ChangeSizeAbsolute adds rules that only affect the given language", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
@@ -336,7 +336,7 @@ describe("StyleEditor", function() {
         expect(GetFontSizeRuleByLang("xyz")).toBe(20);
     });
 
-    it("If a 'default-style' slips through, make it 'normal-style'", function() {
+    it("If a 'default-style' slips through, make it 'normal-style'", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>"
         );
@@ -345,7 +345,7 @@ describe("StyleEditor", function() {
         expect(GetRuleForNormalStyle()).not.toBeNull();
     });
 
-    it("If a 'coverTitle' slips through, make it 'Title-On-Cover-style'", function() {
+    it("If a 'coverTitle' slips through, make it 'Title-On-Cover-style'", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='coverTitle'></div>"
         );
@@ -354,7 +354,7 @@ describe("StyleEditor", function() {
         expect(GetRuleForCoverTitleStyle()).not.toBeNull();
     });
 
-    it("MakeSmaller has no effect if it will be smaller than 7pt", function() {
+    it("MakeSmaller has no effect if it will be smaller than 7pt", () => {
         $("body").append(
             "<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='foo-style' lang='xyz'></div>"
         );
@@ -364,7 +364,7 @@ describe("StyleEditor", function() {
         expect(GetFontSizeRuleByLang("xyz")).toBe(8);
     });
 
-    it("When the element has a size rule in 'em's, MakeSmaller is still limited to bigger than 6pt font", function() {
+    it("When the element has a size rule in 'em's, MakeSmaller is still limited to bigger than 6pt font", () => {
         $("head").append(
             "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.6em ! important; }</style>"
         );
@@ -384,7 +384,7 @@ describe("StyleEditor", function() {
         expect(GetFontSizeRuleByLang("xyz")).toBe(0.6); // 0.6em -> 8pt -> smaller is 6pt (not allowed; remains 0.6em)
     });
 
-    it("When the element has a size rule in enough 'em's, MakeSmaller will still work", function() {
+    it("When the element has a size rule in enough 'em's, MakeSmaller will still work", () => {
         $("head").append(
             "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.8em ! important; }</style>"
         );

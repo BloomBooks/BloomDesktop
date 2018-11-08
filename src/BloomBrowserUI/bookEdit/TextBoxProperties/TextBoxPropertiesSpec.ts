@@ -3,10 +3,10 @@
 import TextBoxProperties from "./TextBoxProperties";
 "use strict";
 
-describe("TextBoxProperties", function() {
+describe("TextBoxProperties", () => {
     var dialog;
     // most perplexingly, jasmine doesn't reset the dom between tests
-    beforeEach(function() {
+    beforeEach(() => {
         $("body").html("");
         $("body").append(
             '<div id="testTarget" class="bloom-translationGroup"></div>'
@@ -14,7 +14,7 @@ describe("TextBoxProperties", function() {
         dialog = new TextBoxProperties("");
     });
 
-    it("changeBackground, to none, css set properly", function() {
+    it("changeBackground, to none, css set properly", () => {
         // this div represents the button used to select the 'none' background option
         $("body").append(
             '<div id="background-none" class="selectedIcon"></div>'
@@ -24,7 +24,7 @@ describe("TextBoxProperties", function() {
         expect($("#testTarget").hasClass("bloom-background-none")).toBeTruthy();
     });
 
-    it("changeBackground, to gray, css set properly", function() {
+    it("changeBackground, to gray, css set properly", () => {
         // this div represents the button used to select the 'gray' background option
         $("body").append(
             '<div id="background-gray" class="selectedIcon"></div>'
@@ -34,7 +34,7 @@ describe("TextBoxProperties", function() {
         expect($("#testTarget").hasClass("bloom-background-gray")).toBeTruthy();
     });
 
-    it("changeBorder, nothing to something, no sides selected, css classes set properly and border side buttons selected", function() {
+    it("changeBorder, nothing to something, no sides selected, css classes set properly and border side buttons selected", () => {
         $("#testTarget").addClass("bloom-borderstyle-black");
         $("#testTarget").addClass("bloom-top-border-off");
         $("#testTarget").addClass("bloom-right-border-off");
@@ -94,7 +94,7 @@ describe("TextBoxProperties", function() {
         // expect($('#testTarget').css('box-sizing')).toBe('border-box');
     });
 
-    it("changeBorder, something to nothing, css classes set properly and border side buttons deselected", function() {
+    it("changeBorder, something to nothing, css classes set properly and border side buttons deselected", () => {
         $("#testTarget").addClass("bloom-borderstyle-black");
 
         // this div represents the buttons used to select border styles
@@ -128,7 +128,7 @@ describe("TextBoxProperties", function() {
         expect($("#borderleft").hasClass("selectedIcon")).toBeFalsy();
     });
 
-    it("changeBorder, change border style with only some sides, css classes set properly and border side buttons unchanged", function() {
+    it("changeBorder, change border style with only some sides, css classes set properly and border side buttons unchanged", () => {
         $("#testTarget").addClass("bloom-borderstyle-black");
         $("#testTarget").addClass("bloom-right-border-off");
         $("#testTarget").addClass("bloom-left-border-off");
@@ -167,7 +167,7 @@ describe("TextBoxProperties", function() {
         expect($("#borderleft").hasClass("selectedIcon")).toBeTruthy();
     });
 
-    it("changeBorder, deselect bottom side, border style unchanged and bottom border turned off", function() {
+    it("changeBorder, deselect bottom side, border style unchanged and bottom border turned off", () => {
         $("#testTarget").addClass("bloom-borderstyle-black-round");
 
         // these divs represent the buttons used to select border styles
@@ -203,7 +203,7 @@ describe("TextBoxProperties", function() {
         ).toBeTruthy();
     });
 
-    it("changeBorder, deselect last side, css classes set properly and border set to none", function() {
+    it("changeBorder, deselect last side, css classes set properly and border set to none", () => {
         $("#testTarget").addClass("bloom-borderstyle-black-round");
         $("#testTarget").addClass("bloom-top-border-off");
         $("#testTarget").addClass("bloom-right-border-off");

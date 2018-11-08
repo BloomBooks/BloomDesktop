@@ -673,7 +673,8 @@ namespace Bloom.Book
 						leveledReaderLevel = LeveledReaderLevel,
 						country = CountryName,
 						province = ProvinceName,
-						district = DistrictName
+						district = DistrictName,
+						features = Features,
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -914,6 +915,32 @@ namespace Bloom.Book
 		// Global Digital Library: The typical range of ages the content’s intended end user.
 		[JsonProperty("typicalAgeRange")]
 		public string TypicalAgeRange { get; set; }
+
+		[JsonProperty("features")]
+		public string[] Features
+		{
+			get
+			{
+				var features = new List<string>(3);
+				if (Feature_Blind) features.Add("blind");
+				if (Feature_VisuallyImpaired) features.Add("visuallyImpaired");
+				if (Feature_SignLanguage) features.Add("signLanguage");
+				return features.ToArray();
+			}
+			set
+			{
+				Feature_Blind = value.Contains("blind");
+				Feature_VisuallyImpaired = value.Contains("visuallyImpaired");
+				Feature_SignLanguage = value.Contains("signLanguage");
+			}
+		}
+
+		[JsonIgnore]
+		public bool Feature_Blind { get; set; }
+		[JsonIgnore]
+		public bool Feature_VisuallyImpaired { get; set; }
+		[JsonIgnore]
+		public bool Feature_SignLanguage { get; set; }
 	}
 
 	/// <summary>
