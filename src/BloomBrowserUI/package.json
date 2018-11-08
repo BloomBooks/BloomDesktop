@@ -34,7 +34,6 @@
         "watchBookLayoutLess": "less-watch-compiler bookLayout ../../output/browser/bookLayout",
         "watch": "npm-run-all --parallel watchBrandingLess watchXMatterTemplatesLess watchBookEditLess watchBookLayoutLess watchBrandingFiles watchCode",
         "gitSemiClean": "git clean -X --dry-run --exclude='!node_modules'",
-        "precommit": "pretty-quick --staged",
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
         "tslint": "tslint --project tsconfig.json"
     },
@@ -138,5 +137,10 @@
         "webpack": "^4.23.1",
         "webpack-cli": "^3.1.2",
         "webpack-stream": "^5.1.1"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "pretty-quick --staged"
+        }
     }
 }
