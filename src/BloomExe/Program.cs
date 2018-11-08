@@ -295,7 +295,8 @@ namespace Bloom
 						Browser.SetUpXulRunner();
 						Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 #if DEBUG
-						StartDebugServer();
+						if (SIL.PlatformUtilities.Platform.IsWindows)
+							StartDebugServer();
 #endif
 
 						if (!BloomIntegrityDialog.CheckIntegrity())
