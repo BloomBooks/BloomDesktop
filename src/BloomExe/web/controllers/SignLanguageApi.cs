@@ -369,7 +369,9 @@ namespace Bloom.web.controllers
 					View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 				}));
 				// After we refresh the page, breaking any state that has the video locked because it's been played,
-				// we should be actually able to recycle it.
+				// we should be actually able to recycle it. Clearing the cache may help (in case it is holding on to
+				// the video somehow).
+				Browser.ClearCache();
 				ConfirmRecycleDialog.Recycle(videoPath);
 				request.PostSucceeded();
 			}
