@@ -507,42 +507,6 @@ namespace Bloom.web.controllers
 			statistics.Add("fileFormat", match.Value.Substring(7).ToUpper(CultureInfo.CurrentUICulture));
 		}
 
-		internal void OnChangeVideo(DomEventArgs ge)
-		{
-			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
-			var videoContainer = target.Parent;
-			if (videoContainer == null)
-				return; // should never happen
-			if (WarnIfVideoCantChange(videoContainer))
-				return;
-
-			var videoFiles = LocalizationManager.GetString("EditTab.FileDialogVideoFiles", "Video files");
-			using (var dlg = new DialogAdapters.OpenFileDialogAdapter
-			{
-				Multiselect = false,
-				CheckFileExists = true,
-				// rather restrictive, but the only type that works in all browsers.
-				Filter = String.Format("{0} (*.mp4)|*.mp4", videoFiles)
-			})
-			{
-				var result = dlg.ShowDialog();
-				if (result == DialogResult.OK)
-				{
-					// Check memory for the benefit of developers.  The user won't see anything.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "video chosen or canceled", false);
-					if (DialogResult.OK == result)
-					{
-						// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-						SaveChangedVideo(videoContainer, dlg.FileName, "Bloom had a problem including that video");
-						// Warn the user if we're starting to use too much memory.
-						SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "video chosen and saved", true);
-					}
-				}
-			}
-
-			Logger.WriteMinorEvent("Changed Video");
-		}
-
 		internal bool WarnIfVideoCantChange(GeckoHtmlElement videoContainer)
 		{
 			if (!Model.CanChangeImages())

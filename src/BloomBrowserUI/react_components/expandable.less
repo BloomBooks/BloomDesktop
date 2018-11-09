@@ -1,0 +1,44 @@
+.expandable {
+    // We make a relative-position wrapper so we can put both the triangles
+    // positioned absolutely on top of each other.
+    .wrapper {
+        position: relative;
+        cursor: default; // The triangles are technically text, but we don't want a text cursor.
+    }
+
+    .triangle {
+        width: 20px;
+        transition: 0.3s;
+        position: absolute;
+        opacity: 0; // we transition from this in the .show rule.
+        font-size: 9pt;
+        top: 0;
+        left: 0;
+    }
+
+    .rotate {
+        // These numbers were found experimentally to make it appear to rotate
+        // from pointing straight right to pointing slightly down, with
+        // the rotation roughly around the bottom left corner. It may be
+        // possible to fine-tune it more.
+        transform: rotate(50deg);
+        transform-origin: 15% 60%;
+    }
+
+    .show {
+        opacity: 1;
+    }
+
+    // This keeps it clear of the arrows, which being absolutely positioned
+    // take up no space. Typically child controls want this indent too.
+    // We could plausibly apply this to contentWrap, too, so child controls
+    // would not have to, but I'm not sure every child will want it.
+    > label {
+        margin-left: 20px;
+    }
+
+    .contentWrap {
+        transition: 0.3s;
+        overflow: hidden;
+    }
+}

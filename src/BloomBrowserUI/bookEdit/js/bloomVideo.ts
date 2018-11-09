@@ -82,18 +82,6 @@ function SetupVideoContainer(
                     .mouseenter(function() {
                         const $this = $(this);
 
-                        const buttonModifier = GetButtonModifier($this);
-
-                        // The code that executes when this button is clicked is currently C#.
-                        // See EditingView._browser1_OnBrowserClick for the start of the chain.
-                        $this.prepend(
-                            "<button class='importVideoButtonOverlay imageButton " +
-                                buttonModifier +
-                                "' title='" +
-                                changeVideoText +
-                                "'></button>"
-                        );
-
                         //SetImageTooltip(containerDiv, img);
 
                         // Enhance: we will have to do something about license information for videos, but it's complicated.
@@ -115,11 +103,6 @@ function SetupVideoContainer(
                     .mouseleave(function() {
                         const $this = $(this);
                         $this.removeClass("hoverUp");
-                        $this
-                            .find(".importVideoButtonOverlay")
-                            .each(function() {
-                                $(this).remove();
-                            });
                     });
             });
     }
