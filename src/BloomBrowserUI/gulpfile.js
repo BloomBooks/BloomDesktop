@@ -140,6 +140,14 @@ gulp.task("webpack", function() {
         .pipe(gulp.dest(outputDir));
 });
 
+gulp.task("webpack-prod", function() {
+    var webpackconfig = require("./webpack.config-prod.js");
+    return gulp
+        .src("unused") // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
+        .pipe(webpackStream(webpackconfig, require("webpack")))
+        .pipe(gulp.dest(outputDir));
+});
+
 gulp.task("clean", function() {
     return del([outputDir + "/**/*"], { force: true });
 });
@@ -355,6 +363,7 @@ gulp.task("default", function(callback) {
     // This parallelism seems to provide the best performance.  The pug and markdown tasks must all be done before the
     // translateHtml and createXliff tasks.  Putting 'less' with the first group and 'webpack' with the second group
     // minimizes the overall build time according to tests.
+    // Keep the "build-prod" task in sync with this.
     runSequence(
         "clean",
         "copy",
@@ -368,6 +377,26 @@ gulp.task("default", function(callback) {
             "markdownDistInfo"
         ],
         ["webpack", "translateHtmlFiles", "createXliffFiles"],
+        callback
+    );
+});
+
+gulp.task("build-prod", function(callback) {
+    //Should generally match default, with just those changes needed for a production
+    // build.
+    runSequence(
+        "clean",
+        "copy",
+        [
+            "brandings",
+            "less",
+            "pug",
+            "pugLRT",
+            "markdownHelp",
+            "markdownTemplateReadme",
+            "markdownDistInfo"
+        ],
+        ["webpack-prod", "translateHtmlFiles", "createXliffFiles"],
         callback
     );
 });
