@@ -63,10 +63,14 @@ export interface IWrapperComponentState {
     enterprise: boolean;
 }
 
+export interface IRequiresBloomEnterpriseProps {
+    className?: string;
+}
+
 // The children of this component will be displayed if an enterprise project has been selected;
 // otherwise, the RequiresBloomEnterprise message will be displayed.
 export class RequiresBloomEnterpriseWrapper extends React.Component<
-    {},
+    IRequiresBloomEnterpriseProps,
     IWrapperComponentState
 > {
     constructor(props) {
@@ -78,8 +82,9 @@ export class RequiresBloomEnterpriseWrapper extends React.Component<
     }
     public render() {
         return (
-            <div>
+            <div className={this.props.className}>
                 <div
+                    className="enterpriseContentWrapper"
                     style={{
                         display: this.state.enterprise ? "block" : "none"
                     }}
