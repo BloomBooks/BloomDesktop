@@ -12,6 +12,7 @@ import {
 import { BloomApi } from "../../../utils/bloomApi";
 import { HelpLink } from "../../../react_components/helpLink";
 import { Link } from "../../../react_components/link";
+import { UrlUtils } from "../../../utils/UrlUtils";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
@@ -648,7 +649,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return ToolBox.getPage().getElementsByClassName(classes);
     }
 
-    public static getSelectedVideoPath(): string {
+    public static getSelectedVideoPathAndTiming(): string {
         const containers = this.getVideoContainers(true);
         if (containers.length == 0) {
             return null;
@@ -663,6 +664,14 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             return null;
         }
         return sources[0].getAttribute("src");
+    }
+
+    public static getSelectedVideoPath(): string {
+        // strip off the ?now= param we sometimes use to prevent use of cached old versions,
+        // and the #t= fragment used to trim videos.
+        return UrlUtils.extractPathComponent(
+            SignLanguageTool.getSelectedVideoPathAndTiming()
+        );
     }
 
     public detachFromPage() {
@@ -800,18 +809,25 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         stats.startSeconds = start;
         stats.endSeconds = end;
         this.reactControls.setState({ videoStatistics: stats });
-        BloomApi.get("toolbox/fileExists?filename=" + src, result => {
-            const fileExists: boolean = result.data;
-            if (fileExists) {
-                this.reactControls.getVideoStatsFromFile();
-                SignLanguageTool.setCurrentVideoPoint(
-                    parseFloat(
-                        this.reactControls.state.videoStatistics.startSeconds
-                    )
-                );
+        BloomApi.get(
+            // extractPathComponent doesn't unencode the path, so if needed this
+            // URL should already be %encoded. But video filenames in Bloom are currently
+            // all GUIDs, even for imported videos, so this isn't really an issue.
+            "toolbox/fileExists?filename=" + UrlUtils.extractPathComponent(src),
+            result => {
+                const fileExists: boolean = result.data;
+                if (fileExists) {
+                    this.reactControls.getVideoStatsFromFile();
+                    SignLanguageTool.setCurrentVideoPoint(
+                        parseFloat(
+                            this.reactControls.state.videoStatistics
+                                .startSeconds
+                        )
+                    );
+                }
+                this.reactControls.setState({ haveRecording: fileExists });
             }
-            this.reactControls.setState({ haveRecording: fileExists });
-        });
+        );
         BloomApi.get(
             "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
             result => {

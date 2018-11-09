@@ -1789,11 +1789,23 @@ namespace Bloom.Book
 					videoContainer.GetAttribute("class")));
 		}
 
-		public static void SetSrcOfVideoElement(UrlPathString url, ElementProxy srcElement, bool urlEncode = true)
+		/// <summary>
+		/// Set the src attribute of the element to the path indicated by the url argument, optionally
+		/// adding the supplied params. If urlEncodePath is true, we will take the encoded path version
+		/// of the url argument. Caller is responsible to encode the paramString if necessary.
+		/// </summary>
+		/// <param name="url"></param>
+		/// <param name="srcElement"></param>
+		/// <param name="urlEncodePath"></param>
+		/// <param name="encodedParamString"></param>
+		public static void SetSrcOfVideoElement(UrlPathString url, ElementProxy srcElement, bool urlEncodePath, string encodedParamString = "")
 		{
-			// Encoding this can break links within epubs.
+			if (encodedParamString == null)
+				encodedParamString = "";
+			if (!string.IsNullOrEmpty(encodedParamString) && !(encodedParamString.StartsWith("?")))
+				encodedParamString = "?" + encodedParamString;
 			srcElement.SetAttribute("src",
-				urlEncode ? url.UrlEncodedForHttpPath : url.NotEncoded); // We need the fwd slash to come through unencoded
+				(urlEncodePath ? url.UrlEncodedForHttpPath : url.NotEncoded) + encodedParamString);
 		}
 
 		public static string RemoveClass(string className, string input)
