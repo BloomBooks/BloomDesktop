@@ -2170,7 +2170,7 @@
         <note xml:lang="en">OLD TEXT (before 3.9, removed period): {0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</note>
       </trans-unit>
       <trans-unit id="Errors.NewVersionNeededHeader">
-        <source xml:lang="en">"This book needs a new version of Bloom.</source>
+        <source xml:lang="en">This book needs a new version of Bloom.</source>
         <note>ID: Errors.NewVersionNeededHeader</note>
       </trans-unit>
       <trans-unit id="Errors.ProblemDeletingFile">
