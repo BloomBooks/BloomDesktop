@@ -143,6 +143,7 @@ namespace Bloom.Publish
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
 			// This is only supposed to be active in one mode of PublishView.
 			Browser.SuppressJavaScriptErrors = false;
+			Browser.ClearCache(); // of anything used in publish mode; may help free memory.
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -429,6 +430,7 @@ namespace Bloom.Publish
 		{
 			// This is only supposed to be active in one mode of PublishView.
 			Browser.SuppressJavaScriptErrors = false;
+			Browser.ClearCache(); // try to free memory when switching
 
 			if (displayMode != PublishModel.DisplayModes.Upload && _uploadControl != null)
 			{

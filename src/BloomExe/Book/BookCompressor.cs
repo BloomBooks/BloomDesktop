@@ -77,7 +77,7 @@ namespace Bloom.Book
 			var bookInfo = new BookInfo(tempFolderPath, true);
 			bookInfo.XMatterNameOverride = "Device";
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-			modifiedBook.BringBookUpToDate(new NullProgress());
+			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.AdjustCollectionStylesToBookFolder();
 			modifiedBook.RemoveNonPublishablePages();
 			modifiedBook.Save();

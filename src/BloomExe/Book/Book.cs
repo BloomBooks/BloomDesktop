@@ -751,7 +751,7 @@ namespace Bloom.Book
 			htmlDom.AddCreationType(LockedDown ? "translation" : "original");
 		}
 
-		public void BringBookUpToDate(IProgress progress)
+		public void BringBookUpToDate(IProgress progress, bool forCopyOfUpToDateBook = false)
 		{
 			_pagesCache = null;
 			string oldMetaData = string.Empty;
@@ -766,7 +766,10 @@ namespace Bloom.Book
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
 				//ImageUpdater.CompressImages(FolderPath, progress);
-				ImageUtils.RemoveTransparencyOfImagesInFolder(FolderPath, progress);
+				// This is only needed for updating from old Bloom versions. No need if we're copying the current
+				// edit book, on which it's already been done, to make an epub or similar.
+				if (!forCopyOfUpToDateBook)
+					ImageUtils.RemoveTransparencyOfImagesInFolder(FolderPath, progress);
 				Save();
 			}
 
@@ -2873,8 +2876,15 @@ namespace Bloom.Book
 						continue;
 					if (path == filePath)
 						continue; // we already included a simplified version of the main HTML file
-					var data = File.ReadAllBytes(path);
-					sha.TransformBlock(data, 0, data.Length, data, 0);
+					using (var input = new FileStream(path, FileMode.Open))
+					{
+						byte[] buffer = new byte[4096];
+						int count;
+						while ((count = input.Read(buffer, 0, 4096)) > 0)
+						{
+							sha.TransformBlock(buffer, 0, count, buffer, 0);
+						}
+					}
 				}
 			}
 			sha.TransformFinalBlock(new byte[0], 0, 0);

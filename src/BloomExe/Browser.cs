@@ -780,6 +780,12 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
+		public static void ClearCache()
+		{
+			var instance = Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
+			instance.Clear();
+		}
+
 		public void SetEditDom(HtmlDom editDom)
 		{
 			_pageEditDom = editDom.RawDom;
