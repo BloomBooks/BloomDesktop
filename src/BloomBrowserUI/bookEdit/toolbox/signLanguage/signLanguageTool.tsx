@@ -12,7 +12,7 @@ import {
 import { BloomApi } from "../../../utils/bloomApi";
 import { HelpLink } from "../../../react_components/helpLink";
 import { Link } from "../../../react_components/link";
-import { UrlUtils } from "../../../utils/UrlUtils";
+import { UrlUtils } from "../../../utils/urlUtils";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
