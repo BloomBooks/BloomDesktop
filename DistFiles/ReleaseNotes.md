@@ -14,6 +14,8 @@ Here's what's new in 4.4 beta:
 ⭐ Cover pages have some improved default typography:
 Regular--->Bold, line space 1.4 --> 1.1 (national language 1.7-->1.1), min-height: (1.8em --> auto). This puts the two boxes closer to each other. _This works well for most scripts, but some will need to increase the line height._
 
+⭐ When recording Talking Books, you can now choose to record whole text boxes at once. You can still record each sentence separately, as before. Note that during playback, if you record the whole box at once, the whole box will be highlighted at once. So what you may gain in naturalness, you may give up highlight synchronization. See the new "Record by sentences" checkbox in the Talking Book tool. **Books that use this feature will not be usable with earlier versions of Bloom.**
+
 ⭐ Impairment Visualizer. See an approximation of how images will look to readers with colorblindness or cataracts.
 
 ### Publish Tab
@@ -21,6 +23,10 @@ Regular--->Bold, line space 1.4 --> 1.1 (national language 1.7-->1.1), min-heigh
 Previously, if you had a large paper size (like A3), the booklet buttons would be greyed out but it wasn't obvious why. Now, there is a message on screen explaining the situation.
 
 ⭐ Book Metadata form. In the ePUB tool, there is now a form you can open up that adds various metadata to to the ePUB. These include accessibility features and fields needed for submission to the Global Digital Library.
+
+⭐ When uploading a book to BloomLibrary.org, you can now choose to upload a book's audio (narration and background music).
+
+⭐ When uploading a book to BloomLibrary.org, you can now specify features of the book to help people find it. Current options are "Accessible to the Blind", "Accessible to the Visually Impaired", and "Sign Language".
 
 ## 4.3
 
