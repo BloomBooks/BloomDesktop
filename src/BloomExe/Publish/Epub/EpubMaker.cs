@@ -74,7 +74,7 @@ namespace Bloom.Publish.Epub
 	{
 		public delegate EpubMaker Factory();// autofac uses this
 
-		public const string kEPUBExportFolder = "ePUB export";
+		public const string kEPUBExportFolder = "ePUB_export";
 		protected const string kEpubNamespace = "http://www.idpf.org/2007/ops";
 
 		public const string kAudioFolder = "audio";
