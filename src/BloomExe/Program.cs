@@ -320,6 +320,9 @@ namespace Bloom
 						if (!InstallerSupport.SharedByAllUsers() && FontInstaller.InstallFont("AndikaNewBasic"))
 							return 1;
 
+						// This has served its purpose on Linux, and with Geckofx60 it interferes with CommandLineRunner.
+						Environment.SetEnvironmentVariable("LD_PRELOAD", null);
+
 						Run();
 					}
 				}
