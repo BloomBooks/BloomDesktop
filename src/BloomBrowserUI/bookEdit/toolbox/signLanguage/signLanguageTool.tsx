@@ -12,7 +12,7 @@ import {
 import { BloomApi } from "../../../utils/bloomApi";
 import { HelpLink } from "../../../react_components/helpLink";
 import { Link } from "../../../react_components/link";
-import { UrlUtils } from "../../../utils/UrlUtils";
+import { UrlUtils } from "../../../utils/urlUtils";
 import { Expandable } from "../../../react_components/expandable";
 import theOneLocalizationManager, {
     LocalizationManager
