@@ -16,6 +16,7 @@ import "../../modified_libraries/gridly/jquery.gridly.js";
 import { SetImageElementUrl } from "../js/bloomImages";
 import "errorHandler";
 import WebSocketManager from "../../utils/WebSocketManager";
+import { number } from "prop-types";
 
 const timerName = "thumbnailInterval";
 const kWebsocketContext = "pageThumbnailList";
@@ -32,6 +33,9 @@ $(window).ready(() => {
             reordered: reorder
         }
     });
+
+    applyOverflowWarnings();
+
     jQuery(".gridItem").click(function(e) {
         // adding "preventDefault()"" here and the cursor css might make the
         // invisibleThumbnailCover unneccessary, but all of it together should be plenty
@@ -39,6 +43,10 @@ $(window).ready(() => {
         e.stopPropagation();
         e.preventDefault();
         fireCSharpEvent("gridClick", $(this).attr("id"));
+
+        // When a page with an overflow icon loses focus (i.e. by selecting a different grid item), the overflow warning gets wiped out
+        // So, just re-apply it
+        applyOverflowWarnings();
     });
 
     // start the thumbnail timer
@@ -92,6 +100,22 @@ $(window).ready(() => {
             WebSocketManager.addListener(kWebsocketContext, listenerFunction);
         });
 });
+
+// Updates all overflow warning icons on the page
+function applyOverflowWarnings() {
+    const overflowPages = $(".gridly").find(".pageOverflows");
+    overflowPages.each((index: number, element: Element) => {
+        if ($(element).find("div.pageOverflowsIcon").length <= 0) {
+            // We would like this warning icon to appear over the page preview.
+            // Regardless of z-index value, no descendant can be behind its ancestors' background.
+            // But our CSS styles the warning icon as a background image
+            // Therefore, if we wish for the warning icon to appear over the page preview, we must not apply the background-image to any ancestor of the page preview.
+            // So, this code inserts a new node (which is not a strict ancestor of the page) which we can manipulate instead of the ancestor
+            // Refer to https://issues.bloomlibrary.org/youtrack/issue/BL-6467
+            $(element).append('<div class="pageOverflowsIcon"></div>');
+        }
+    });
+}
 
 export function stopListeningForSave() {
     WebSocketManager.closeSocket(kWebsocketContext);

@@ -3,6 +3,7 @@
     "version": "4.2.0",
     "description": "Bloom Desktop",
     "main": "none",
+    "sideEffects": false,
     "directories": {
         "test": "test"
     },
@@ -22,6 +23,7 @@
         "buildBrandingLess": "lessc-glob branding/**/*.less ../../output/browser/branding",
         "buildBrandings": "npm-run-all --parallel buildBrandingLess buildBrandingFiles ",
         "build": "gulp",
+        "build-prod": "gulp build-prod",
         "watchCode": "webpack --watch",
         "watchBrandingFiles": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding --watch",
         "// note: there is no less watcher that can supports globs such that you could say 'everything, minus node_modules. See BL-6270': ['./**/*.less', '!./node_modules/**/*.less']": "",
@@ -34,7 +36,6 @@
         "watchBookLayoutLess": "less-watch-compiler bookLayout ../../output/browser/bookLayout",
         "watch": "npm-run-all --parallel watchBrandingLess watchXMatterTemplatesLess watchBookEditLess watchBookLayoutLess watchBrandingFiles watchCode",
         "gitSemiClean": "git clean -X --dry-run --exclude='!node_modules'",
-        "precommit": "pretty-quick --staged",
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
         "tslint": "tslint --project tsconfig.json"
     },
@@ -64,8 +65,8 @@
         "markdown-it": "^8.4.2",
         "mobx": "^5.5.2",
         "mobx-react": "^5.3.6",
-        "rc-slider": "^8.6.3",
         "prop-types": "^15.6.2",
+        "rc-slider": "^8.6.3",
         "react": "16.6.0",
         "react-close-on-escape": "^3.0.0",
         "react-desktop": "^0.3.7",
@@ -107,11 +108,11 @@
         "gulp-watch": "^5.0.1",
         "husky": "^1.1.2",
         "jasmine": "^3.3.0",
+        "jasmine-core": "^3.3.0",
         "jasmine-jquery": "^2.1.1",
         "karma": "^3.1.1",
         "karma-chrome-launcher": "^2.2.0",
         "karma-firefox-launcher": "^1.1.0",
-        "jasmine-core": "^3.3.0",
         "karma-jasmine": "^1.1.2",
         "karma-sourcemap-loader": "^0.3.7",
         "karma-spec-reporter": "0.0.32",
@@ -137,6 +138,12 @@
         "typescript": "^3.1.5",
         "webpack": "^4.23.1",
         "webpack-cli": "^3.1.2",
+        "webpack-merge": "^4.1.4",
         "webpack-stream": "^5.1.1"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "pretty-quick --staged"
+        }
     }
 }
