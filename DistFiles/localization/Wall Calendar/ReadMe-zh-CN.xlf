@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="zh-CN">关于挂历模板</target>
+        <target xml:lang="zh-CN" state="translated">关于挂历模板</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="zh-CN">使用此模板，您可以制作A5尺寸的全年挂历，图片和引用语句在页面上方，页面下方显示日期。 将用您的语言显示日历上的月份和日期。</target>
+        <target xml:lang="zh-CN" state="translated">使用此模板，您可以制作A5尺寸的全年挂历，图片和引用语句在页面上方，页面下方显示日期。 将用您的语言显示日历上的月份和日期。</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="zh-CN">本版本的局限性</target>
+        <target xml:lang="zh-CN" state="translated">本版本的局限性</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="zh-CN">目前无法制作可供其他语言使用的日历“壳”。</target>
+        <target xml:lang="zh-CN" state="translated">目前无法制作可供其他语言使用的日历“壳”。</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="zh-CN">致谢</target>
+        <target xml:lang="zh-CN" state="translated">致谢</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="zh-CN">感谢Bruce Cox（SIL喀麦隆）启动了模板的创制工作。</target>
+        <target xml:lang="zh-CN" state="translated">感谢Bruce Cox（SIL喀麦隆）启动了模板的创制工作。</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

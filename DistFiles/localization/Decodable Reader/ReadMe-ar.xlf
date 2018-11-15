@@ -4,38 +4,38 @@
     <body>
       <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="ar">
+        <target xml:lang="ar" state="translated">
           <g id="genid-1" ctype="x-html-strong">كتاب المستوى المحدد</g> هو كتاب يراعي دقة وضع قيود على الأحرف والكلمات المستخدمة حتى تناسب مع ما يستطيع القارئ الجديد قراءته. عادة يتراوح عدد <g id="genid-2" ctype="x-html-strong">مراحل مستوى القراءة</g> في لغة ما بين 5 و10 مراحل يحرز الطلاب خلالها تقدماً.</target>
         <note>ID: decodable.definition</note>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="ar">يساعدك Bloom في تحديد تسلسل <g id="genid-3" ctype="x-html-strong">المراحل</g> هذه التي يمر بها القارئ. يتم توجيه كل كتاب تؤلفه إلى إحدى هذه المراحل، ويساعدك Bloom في التأكد من أن كتابك <g id="genid-4" ctype="x-html-strong">يتبع هذه المراحل</g> (يمكن للطلاب قراءته) في تلك <g id="genid-5" ctype="x-html-strong">المرحلة</g>.</target>
+        <target xml:lang="ar" state="translated">يساعدك Bloom في تحديد تسلسل <g id="genid-3" ctype="x-html-strong">المراحل</g> هذه التي يمر بها القارئ. يتم توجيه كل كتاب تؤلفه إلى إحدى هذه المراحل، ويساعدك Bloom في التأكد من أن كتابك <g id="genid-4" ctype="x-html-strong">يتبع هذه المراحل</g> (يمكن للطلاب قراءته) في تلك <g id="genid-5" ctype="x-html-strong">المرحلة</g>.</target>
         <note>ID: decodable.stages</note>
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="ar">كما يمكنك إعداد حزمة Bloom من <g id="genid-6" ctype="x-html-strong">نماذج</g> يمكن للآخرين استخدامها لإنشاء الكتب بسرعة بناءً على المستويات والمراحل التي تم تجهيزها بواسطة أحد المختصين بتعليم القراءة والكتابة.</target>
+        <target xml:lang="ar" state="translated">كما يمكنك إعداد حزمة Bloom من <g id="genid-6" ctype="x-html-strong">نماذج</g> يمكن للآخرين استخدامها لإنشاء الكتب بسرعة بناءً على المستويات والمراحل التي تم تجهيزها بواسطة أحد المختصين بتعليم القراءة والكتابة.</target>
         <note>ID: decodable.templates</note>
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="ar">للتعرف على معلومات حول استخدام كتب مستويات القراءة في Bloom، يمكنك:</target>
+        <target xml:lang="ar" state="translated">للتعرف على معلومات حول استخدام كتب مستويات القراءة في Bloom، يمكنك:</target>
         <note>ID: decodable.learn</note>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="ar">مشاهدة <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">مقاطع الفيديو الإرشادية هذه</g>.</target>
+        <target xml:lang="ar" state="translated">مشاهدة <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">مقاطع الفيديو الإرشادية هذه</g>.</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="ar">اذهب إلى قائمة "مساعدة"، واختار"مساعدة" والاطلاع على الفهرس ضمن "كتب المستويات المحددة".</target>
+        <target xml:lang="ar" state="translated">اذهب إلى قائمة "مساعدة"، واختار"مساعدة" والاطلاع على الفهرس ضمن "كتب المستويات المحددة".</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="ar">اذهب إلى قائمة "مساعدة" واختيار "تصميم نماذج كتب".</target>
+        <target xml:lang="ar" state="translated">اذهب إلى قائمة "مساعدة" واختيار "تصميم نماذج كتب".</target>
         <note>ID: decodable.learn.helpmenu</note>
       </trans-unit>
     </body>

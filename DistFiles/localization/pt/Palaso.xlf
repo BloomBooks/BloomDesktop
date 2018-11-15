@@ -11,23 +11,23 @@
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="pt-PT">Não há atualizações</target>
+        <target xml:lang="pt-PT" state="translated">Não há atualizações</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="pt-PT">Sobre {0}</target>
+        <target xml:lang="pt-PT" state="translated">Sobre {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="pt-PT">Verificar se há atualizações</target>
+        <target xml:lang="pt-PT" state="translated">Verificar se há atualizações</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="pt-PT">Notas de versão</target>
+        <target xml:lang="pt-PT" state="translated">Notas de versão</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -70,7 +70,7 @@
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="pt-PT">&amp;Cancelar</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Cancelar</target>
         <alt-trans>
           <target xml:lang="pt-PT">&amp; Cancelar</target>
         </alt-trans>
@@ -83,7 +83,7 @@
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="pt-PT">Não</target>
+        <target xml:lang="pt-PT" state="translated">Não</target>
       </trans-unit>
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
@@ -93,7 +93,7 @@
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="pt-PT">&amp;OK</target>
+        <target xml:lang="pt-PT" state="translated">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
@@ -103,7 +103,7 @@
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="pt-PT">Sim</target>
+        <target xml:lang="pt-PT" state="translated">Sim</target>
       </trans-unit>
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
@@ -130,7 +130,7 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="pt-PT">&amp;Cancelar</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Cancelar</target>
         <alt-trans>
           <target xml:lang="pt-PT">&amp; Cancelar</target>
         </alt-trans>
@@ -138,7 +138,7 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="pt-PT">&amp;Deletar</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Deletar</target>
         <alt-trans>
           <target xml:lang="pt-PT">&amp; Deletar</target>
         </alt-trans>
@@ -147,7 +147,7 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
-        <source xml:lang="en">Found {0} images with names close to {1}</source>
+        <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
         <target xml:lang="pt-PT" state="translated">{0} imagens encontrados com nomes semelhantes a {1}</target>
@@ -160,7 +160,7 @@
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="pt-PT">Câmera</target>
+        <target xml:lang="pt-PT" state="translated">Câmera</target>
         <alt-trans>
           <target xml:lang="pt-PT">Câmara</target>
         </alt-trans>
@@ -169,7 +169,7 @@
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="pt-PT">Use {0}</target>
+        <target xml:lang="pt-PT" state="translated">Use {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
@@ -184,7 +184,7 @@
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="pt-PT">Editar...</target>
+        <target xml:lang="pt-PT" state="translated">Editar...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
@@ -195,7 +195,7 @@
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="pt-PT">Arquivo</target>
+        <target xml:lang="pt-PT" state="translated">Arquivo</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
@@ -242,7 +242,7 @@
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="pt-PT">Encontradas {0} imagens</target>
+        <target xml:lang="pt-PT" state="translated">Encontradas {0} imagens</target>
         <alt-trans>
           <target xml:lang="pt-PT">Encontro {0} imagens</target>
         </alt-trans>
@@ -272,7 +272,7 @@
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="pt-PT">arquivos de imagens</target>
+        <target xml:lang="pt-PT" state="translated">arquivos de imagens</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
@@ -313,7 +313,7 @@
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="pt-PT">Outros nomes</target>
+        <target xml:lang="pt-PT" state="translated">Outros nomes</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
@@ -324,7 +324,7 @@
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="pt-PT">Ethnologue.com</target>
+        <target xml:lang="pt-PT" state="translated">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
@@ -453,7 +453,7 @@
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="pt-PT">Nenhum licença especificada</target>
+        <target xml:lang="pt-PT" state="translated">Nenhum licença especificada</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse">
         <source xml:lang="en">Allow commercial uses of your work?</source>
@@ -503,12 +503,12 @@
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="pt-PT">Direitos autorais e licença</target>
+        <target xml:lang="pt-PT" state="translated">Direitos autorais e licença</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="pt-PT">Créditos, direitos autorais, e licença</target>
+        <target xml:lang="pt-PT" state="translated">Créditos, direitos autorais, e licença</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
@@ -530,7 +530,7 @@
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="pt-PT">mais informação</target>
+        <target xml:lang="pt-PT" state="translated">mais informação</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
         <source xml:lang="en">Not Enforceable</source>
@@ -607,7 +607,7 @@
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="pt-PT">&amp;Fonte:</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Fonte:</target>
         <alt-trans>
           <target xml:lang="pt-PT">&amp; Fonte:</target>
         </alt-trans>
@@ -628,7 +628,7 @@
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="pt-PT">&amp;Tamanho:</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Tamanho:</target>
         <alt-trans>
           <target xml:lang="pt-PT">&amp; Tamanho:</target>
         </alt-trans>
@@ -692,7 +692,7 @@
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="pt-PT">Aviso</target>
+        <target xml:lang="pt-PT" state="translated">Aviso</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
         <source xml:lang="en">Unable to connect to SLDR</source>

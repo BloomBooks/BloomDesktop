@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="id">Tentang Template Kalender Dinding</target>
+        <target xml:lang="id" state="translated">Tentang Template Kalender Dinding</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="id">Menggunakan template ini, Anda dapat membuat kalender 12 bulan ukuran A5, dengan gambar dan kutipan pada bagian atas halaman, dan nama hari di bagian bawahnya. Kalender akan menggunakan nama-nama bulan dan hari dalam bahasa Anda.</target>
+        <target xml:lang="id" state="translated">Menggunakan template ini, Anda dapat membuat kalender 12 bulan ukuran A5, dengan gambar dan kutipan pada bagian atas halaman, dan nama hari di bagian bawahnya. Kalender akan menggunakan nama-nama bulan dan hari dalam bahasa Anda.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="id">Keterbatasan Versi ini</target>
+        <target xml:lang="id" state="translated">Keterbatasan Versi ini</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="id">Saat ini, Anda tidak dapat membuat "kerangka" untuk bahasa lain untuk digunakan.</target>
+        <target xml:lang="id" state="translated">Saat ini, Anda tidak dapat membuat "kerangka" untuk bahasa lain untuk digunakan.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="id">Pengakuan</target>
+        <target xml:lang="id" state="translated">Pengakuan</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="id">Ucapan terima kasih untuk Bruce Cox (SIL Kamerun) yang telah membuat template ini dapat dimulai.</target>
+        <target xml:lang="id" state="translated">Ucapan terima kasih untuk Bruce Cox (SIL Kamerun) yang telah membuat template ini dapat dimulai.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

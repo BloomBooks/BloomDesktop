@@ -4,43 +4,43 @@
     <body>
       <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="id">Tentang Buku Besar</target>
+        <target xml:lang="id" state="translated">Tentang Buku Besar</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="id">Buku Besar dirancang bagi guru untuk dipegang dan dibaca di depan kelas. Untuk informasi lebih lanjut, lihat ini <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF dari Scholastic</g>.</target>
+        <target xml:lang="id" state="translated">Buku Besar dirancang bagi guru untuk dipegang dan dibaca di depan kelas. Untuk informasi lebih lanjut, lihat ini <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF dari Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="id">Mencetak Buku Besar</target>
+        <target xml:lang="id" state="translated">Mencetak Buku Besar</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="id">Untuk membuat hal-hal lebih mudah dikelola, template ini ditetapkan pada landskap A4, dengan huruf besar.
+        <target xml:lang="id" state="translated">Untuk membuat hal-hal lebih mudah dikelola, template ini ditetapkan pada landskap A4, dengan huruf besar.
 Anda dengan mudah dapat membuat buku-buku yang berukuran A3 (dua kali lebih besar).
 Cukup dengan membawa ukuran A4 PDF Anda ke printer dan memintanya untuk memperbesar ke A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="id">Keterbatasan Versi ini</target>
+        <target xml:lang="id" state="translated">Keterbatasan Versi ini</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="id">Jika Anda menggunakan layar kecil, akan sulit untuk membaca halaman pengakuan. Coba gunakan roda mouse+CTRL untuk memperbesar halaman tersebut sehingga Anda dapat mengeditnya.</target>
+        <target xml:lang="id" state="translated">Jika Anda menggunakan layar kecil, akan sulit untuk membaca halaman pengakuan. Coba gunakan roda mouse+CTRL untuk memperbesar halaman tersebut sehingga Anda dapat mengeditnya.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="id">Versi ini mencakup halaman "Petunjuk untuk Guru" yang sudah diisi, dalam bahasa Inggris.
+        <target xml:lang="id" state="translated">Versi ini mencakup halaman "Petunjuk untuk Guru" yang sudah diisi, dalam bahasa Inggris.
 Jika Anda ingin memiliki petunjuk dalam bahasa lain, Anda dapat menghapus teks dan ketik bahasa Anda sendiri.
 Jika Anda mengirimkan teks itu, kami bisa memasukkannya dalam versi masa depan template tersebut.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>

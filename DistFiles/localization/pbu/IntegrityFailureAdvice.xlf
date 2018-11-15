@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="pbu">بلوم خپل ځینې دوسیي نشي پیدا کولی او ادامه نشي ورکولی</target>
+        <target xml:lang="pbu" state="translated">بلوم خپل ځینې دوسیي نشي پیدا کولی او ادامه نشي ورکولی</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="pbu">ممکن علتونه</target>
+        <target xml:lang="pbu" state="translated">ممکن علتونه</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
-        <target xml:lang="pbu">ستاسو انټی ویروس ښایي چې د بلوم یو یا څو دوسیی قرنطین ‏"quarantined"‏ کړي وي.</target>
+        <target xml:lang="pbu" state="translated">ستاسو انټی ویروس ښایي چې د بلوم یو یا څو دوسیی قرنطین ‏"quarantined"‏ کړي وي.</target>
         <note>ID: integrity.causes.1</note>
       </trans-unit>
       <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="pbu">ستاسو د کمپیوټر اداره کوونکی ښایي ستاسې کمپیوټر قفل کړي وئ ترڅو د بد شیانو مخنیوی وکړي، مګر په داسې طریقه چې بلوم نشي کولی دا فایلونه په کوم ځای پوری چې اړه لري په ځای کړي. </target>
+        <target xml:lang="pbu" state="translated">ستاسو د کمپیوټر اداره کوونکی ښایي ستاسې کمپیوټر قفل کړي وئ ترڅو د بد شیانو مخنیوی وکړي، مګر په داسې طریقه چې بلوم نشي کولی دا فایلونه په کوم ځای پوری چې اړه لري په ځای کړي. </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="pbu">څه باید وکړو</target>
+        <target xml:lang="pbu" state="translated">څه باید وکړو</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="pbu">وروسته له دې چې تاسو دا راپور تسلیم کړئ، مونږ به تاسې سره اړیکه ونیسو او مرسته به وکړو. په همدې وخت کې، ځینې نظرونه په لاندې ډول شته:</target>
+        <target xml:lang="pbu" state="translated">وروسته له دې چې تاسو دا راپور تسلیم کړئ، مونږ به تاسې سره اړیکه ونیسو او مرسته به وکړو. په همدې وخت کې، ځینې نظرونه په لاندې ډول شته:</target>
         <note>ID: integrity.todo.ideas</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="pbu">د بلوم نصب کوونکی بیا وچلوئ، او وګورئ که دا ځل په سمه توګه پیل شي.</target>
+        <target xml:lang="pbu" state="translated">د بلوم نصب کوونکی بیا وچلوئ، او وګورئ که دا ځل په سمه توګه پیل شي.</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="pbu"> ‏".exe"‏ ختم شوی وي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <target xml:lang="pbu" state="translated"> ‏".exe"‏ ختم شوی وي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
         <alt-trans>
           <target xml:lang="pbu">که دا کار ونه کړي، نو ستاسو ویروس پروګرام سره د کار کولو وخت دی. لاندې برخه کی د "ورک شوي فایلونه" کوم چې  ‏".exe"‏ کی ختم شوی وي ښکاره شي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، کوم چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
@@ -47,12 +47,12 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
-        <target xml:lang="pbu">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">لارښوونې‏</g>.</target>
+        <target xml:lang="pbu" state="translated">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">لارښوونې‏</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Norton" approved="yes">
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
-        <target xml:lang="pbu">د ‏Norton‏ انټی ویروس: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">د ‏Symantec‏ لخوا لارښوونې‏‏</g>.</target>
+        <target xml:lang="pbu" state="translated">د ‏Norton‏ انټی ویروس: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">د ‏Symantec‏ لخوا لارښوونې‏‏</g>.</target>
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG">
@@ -63,7 +63,7 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
-        <target xml:lang="pbu">نور: د "خپل انټی-ویروس پوښتی-نوم ‏whitelist ‏" ته زیاد کړي</target>
+        <target xml:lang="pbu" state="translated">نور: د "خپل انټی-ویروس پوښتی-نوم ‏whitelist ‏" ته زیاد کړي</target>
         <note>ID: integrity.todo.ideas.Others</note>
         <alt-trans>
           <target xml:lang="pbu">نور: د "خپل انټی-ویروس-نوم سپین ‏whitelist ‏"</target>
@@ -71,12 +71,12 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="pbu">د بلوم نصب کوونکی بیا وچلوئ، او وګورئ که دا ځل په سمه توګه پیل شي.</target>
+        <target xml:lang="pbu" state="translated">د بلوم نصب کوونکی بیا وچلوئ، او وګورئ که دا ځل په سمه توګه پیل شي.</target>
         <note>ID: integrity.todo.ideas.Restart</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
-        <target xml:lang="pbu">تاسو کوښښ کولی شي او بیرته د بلوم هغه برخه لاس ته راوړلی شئ چې ستاسې د انټی-ویروس پروګرام اخیستې وه. د ‏AVG‏ لپاره تاسو باید د ‏AVG‏ اختیارونه پیدا کړئ په مینیو کې، بیا به "virus vault"‏ کیکاږئ، په صندوق کې په بلوم فایل زور وکړئ، او په بیا اعاده کولو زور وکړئ. بصري لارښود لپاره، دا <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">انځور وګورئ</g>.</target>
+        <target xml:lang="pbu" state="translated">تاسو کوښښ کولی شي او بیرته د بلوم هغه برخه لاس ته راوړلی شئ چې ستاسې د انټی-ویروس پروګرام اخیستې وه. د ‏AVG‏ لپاره تاسو باید د ‏AVG‏ اختیارونه پیدا کړئ په مینیو کې، بیا به "virus vault"‏ کیکاږئ، په صندوق کې په بلوم فایل زور وکړئ، او په بیا اعاده کولو زور وکړئ. بصري لارښود لپاره، دا <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">انځور وګورئ</g>.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
         <alt-trans>
           <target xml:lang="pbu">تاسو کوښښ کولی شي او بیرته د بلوم هغه برخه لاس ته راوړلی شئ چې ستاسې د انټی-ویروس پروګرام اخیستې وه. د ‏AVG‏ لپاره تاسو باید د ‏AVG‏ اختیارونه پیدا کړئ په مینیو کې، بیا په "virus vault"‏ کیکاږئ، په صندوق کې په بلوم فایل زور وکړئ، او په بیا اعاده کولو زور وکړئ. بصري لارښود لپاره، دا <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">انځور وګورئ</g>.</target>
@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="pbu">ورکې شوي دوسیی</target>
+        <target xml:lang="pbu" state="translated">ورکې شوي دوسیی</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>
