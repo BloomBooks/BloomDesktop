@@ -18,6 +18,7 @@ import theOneLocalizationManager, {
     LocalizationManager
 } from "../../../lib/localizationManager/localizationManager";
 import { string } from "prop-types";
+import calculateAspectRatio from "calculate-aspect-ratio";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
@@ -49,6 +50,7 @@ interface IComponentState {
         fileFormat: string;
         startSeconds: string;
         endSeconds: string;
+        aspectRatio: string;
     };
 }
 
@@ -103,7 +105,8 @@ export class SignLanguageToolControls extends React.Component<
             framesPerSecond: "",
             fileFormat: "",
             startSeconds: DEFAULT_START,
-            endSeconds: MAX_DURATION
+            endSeconds: MAX_DURATION,
+            aspectRatio: ""
         }
     };
     private videoStream: MediaStream;
@@ -355,7 +358,14 @@ export class SignLanguageToolControls extends React.Component<
                     )}
                 </div>
                 <div>{this.state.videoStatistics.fileSize}</div>
-                <div>{this.state.videoStatistics.frameSize}</div>
+                <div>
+                    {this.state.videoStatistics.frameSize +
+                        (this.state.videoStatistics.aspectRatio
+                            ? " (" +
+                              this.state.videoStatistics.aspectRatio +
+                              ")"
+                            : "")}
+                </div>
                 <div>{this.state.videoStatistics.framesPerSecond}</div>
                 <div>{this.state.videoStatistics.fileFormat}</div>
             </div>
@@ -425,10 +435,20 @@ export class SignLanguageToolControls extends React.Component<
                         framesPerSecond: "",
                         fileFormat: "",
                         startSeconds: DEFAULT_START,
-                        endSeconds: MAX_DURATION
+                        endSeconds: MAX_DURATION,
+                        aspectRatio: ""
                     }
                 });
             } else {
+                const frameSize: string = result.data.frameSize;
+                if (frameSize) {
+                    const index = frameSize.indexOf(" x ");
+                    if (index > 0) {
+                        const x = parseInt(frameSize.substring(0, index));
+                        const y = parseInt(frameSize.substring(index + 3));
+                        result.data.aspectRatio = calculateAspectRatio(x, y);
+                    }
+                }
                 this.setState({ videoStatistics: result.data });
             }
         });
