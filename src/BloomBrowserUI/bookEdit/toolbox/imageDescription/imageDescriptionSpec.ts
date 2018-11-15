@@ -103,9 +103,6 @@ describe("image description tests", () => {
         //
         // Image Y: Now 200x200.
         // Center at 314/2 = 157.  57 to 257.  Then take in 20 pixel offset = 77
-        // 77 - 40*(1-0.60)/2 = 69
-        //
-        // scaling factor = 200/334 =0.60
 
         testCases.push(["Exact fit", 200, 314, "150px", "0px", 53.0, 20, 0.94]);
         // Worked example #2
@@ -115,8 +112,6 @@ describe("image description tests", () => {
         // Text box was at 150.   (150-93.63) / 212.74 = 0.265
         // Now image goes from 0 to 200.
         // Text box should be at 0 + 0.265*200 = 53
-        // Now apply effects of scaling:
-        //  53 - 100*(1-0.94)/2 = 50
 
         testCases.push([
             "Landscape too wide",
@@ -204,23 +199,6 @@ describe("image description tests", () => {
                 precision,
                 "Test Case #" + (i + 1) + " (" + testId + "): Style top"
             );
-
-            // // Manual adapter verification
-            // // 85 is in theory the right answer.
-            // const deltaWidth = (1-expectedScalingFactor) * draggableElement2.clientWidth/2;
-            // const deltaHeight = (1-expectedScalingFactor) * draggableElement2.clientHeight/2;
-            // expect(getNumber(draggableElement2.style.left)).toBeCloseTo(
-            //     expectedLeft + deltaWidth,
-            //     0,
-            //     "Test Case #" + (i + 1) + " (" + testId + "): Manual Style left"
-            // );
-            // expect(getNumber(draggableElement2.style.top)).toBeCloseTo(
-            //     expectedTop + deltaHeight,
-            //     0,
-            //     "Test Case #" + (i + 1) + " (" + testId + "): Manual Style top"
-            // );
-            // // TODO: verify height and font-size and stuff
-            // //expect(draggableElement.style.height
         }
     });
 
