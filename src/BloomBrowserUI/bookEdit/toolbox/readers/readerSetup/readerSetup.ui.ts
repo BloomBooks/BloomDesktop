@@ -883,7 +883,7 @@ function attachEventHandlers(): void {
             return false;
         });
 
-        $("#setup-stage-sight-words").onSafe("keyup", () => {
+        $("#setup-stage-sight-words").onSafe("keyup", function() {
             updateSightWords(this);
             requestWordsForSelectedStage();
         });
