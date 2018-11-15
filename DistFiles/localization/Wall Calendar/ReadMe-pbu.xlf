@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="pbu">د دیوالي تقویم نمونی په اړه</target>
+        <target xml:lang="pbu" state="translated">د دیوالي تقویم نمونی په اړه</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="pbu">د دې نمونی په استعمال سره تاسې د ‏A5‏ په اندازې 12 میاشتینی تقویم جوړولی شئ، د یو تصویر او بیان سره د پاڼې په سر کې، او ورځې لاندې. تقویم به ستاسې په ژبه د میاشتو او ورځو نومونه و کاروئ.</target>
+        <target xml:lang="pbu" state="translated">د دې نمونی په استعمال سره تاسې د ‏A5‏ په اندازې 12 میاشتینی تقویم جوړولی شئ، د یو تصویر او بیان سره د پاڼې په سر کې، او ورځې لاندې. تقویم به ستاسې په ژبه د میاشتو او ورځو نومونه و کاروئ.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="pbu">د دې نسخې محدودیتونه</target>
+        <target xml:lang="pbu" state="translated">د دې نسخې محدودیتونه</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="pbu">اوس د نورو ژبو کارولو لپاره ‏"shell"‏ نشئ جوړولای.</target>
+        <target xml:lang="pbu" state="translated">اوس د نورو ژبو کارولو لپاره ‏"shell"‏ نشئ جوړولای.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="pbu">امتیازات</target>
+        <target xml:lang="pbu" state="translated">امتیازات</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="pbu">د بروس کاکس (‏SIL‏ کیمرون) څخه د دې نمونې په پيل کولو مننه.</target>
+        <target xml:lang="pbu" state="translated">د بروس کاکس (‏SIL‏ کیمرون) څخه د دې نمونې په پيل کولو مننه.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

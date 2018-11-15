@@ -4,108 +4,93 @@
     <body>
       <trans-unit id="template.starter" approved="yes">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="prs">نحوه استفاده از نمونه آغازی</target>
+        <target xml:lang="prs" state="translated">نحوه استفاده از نمونه آغازی</target>
         <note>ID: template.starter</note>
       </trans-unit>
       <trans-unit id="template.starter.firstusage" approved="yes">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="prs">این نمونه خاص به شما اجازه می دهد تا نمونه های خود را ایجاد کنید. یک نمونه یک سیت از صفحات مربوطه را فراهم می کند که مؤلف می تواند در نوشتن یک کتاب اصلی از ان انتخاب کند. معمولا بلاک های متنی و بلاک های تصویر در صفحات نمونه خالی خواهند بود، آماده برای نویسنده که آنها را پر کند. گاهی اوقات ممکن است متن استندرد یا تصاویری باشد که باید در هر کاپی از صفحات باشد.
+        <target xml:lang="prs" state="translated">این نمونه خاص به شما اجازه می دهد تا نمونه های خود را ایجاد کنید. یک نمونه یک سیت از صفحات مربوطه را فراهم می کند که مؤلف می تواند در نوشتن یک کتاب اصلی از ان انتخاب کند. معمولا بلاک های متنی و بلاک های تصویر در صفحات نمونه خالی خواهند بود، آماده برای نویسنده که آنها را پر کند. گاهی اوقات ممکن است متن استندرد یا تصاویری باشد که باید در هر کاپی از صفحات باشد.
 دو راه وجود دارد که مردم می توانند از نمونه شما استفاده کنند. اولین راه ایجاد کتاب های جدید است. بطور مثال، تصور کنید کتاب های شاه گرد که برای هر روز درسی درهفته یک صفحه داشته باشد. شما می توانید نمونه را با 5 صفحه ایجاد کنید، هر کدام با مکان هایی برای تایپ متن و انتخاب تصاویر. مؤلفین برنامه درسی میتوانند نمونه شما را انتخاب کنند و یک کتاب جدید ایجاد کنند، یکی برای هر هفته<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         <note>ID: template.starter.firstusage</note>
       </trans-unit>
       <trans-unit id="template.starter.secondusage" approved="yes">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="prs">دومین روش استفاده از نمونه ها، به عنوان منبع صفحات جدید، صرف نظر از اینکه چگونه کتاب را شروع کردند، می باشد. بطور مثال، در بعضی از نقاط، هر کتاب یک صفحه به عنوان بخشی از یک عنوان تصویب دولت نیاز دارد. شما ممکن است یک نمونه حاوی این صفحه را ایجاد کرده و به دیگران در کشور خود بسپارید. سپس، هنگامی که مردم یک کتاب قبلاً تهیه شده به زبان دیگر(shellbook) را ترجمه می کنند، به انتهای کتاب می روند و روی «اضافه کردن صفحه» کلیک می کنند. صفحه ای که ساخته اید در لیست انتخاب خود ظاهر می شود. بعضی های دیگر برای نمونه ها، الفبا، لغات نامه ها و دستورالعمل هایی درباره نحوه استفاده از کتاب در یک صنف است. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        <target xml:lang="prs" state="translated">دومین روش استفاده از نمونه ها، به عنوان منبع صفحات جدید، صرف نظر از اینکه چگونه کتاب را شروع کردند، می باشد. بطور مثال، در بعضی از نقاط، هر کتاب یک صفحه به عنوان بخشی از یک عنوان تصویب دولت نیاز دارد. شما ممکن است یک نمونه حاوی این صفحه را ایجاد کرده و به دیگران در کشور خود بسپارید. سپس، هنگامی که مردم یک کتاب قبلاً تهیه شده به زبان دیگر(shellbook) را ترجمه می کنند، به انتهای کتاب می روند و روی «اضافه کردن صفحه» کلیک می کنند. صفحه ای که ساخته اید در لیست انتخاب خود ظاهر می شود. بعضی های دیگر برای نمونه ها، الفبا، لغات نامه ها و دستورالعمل هایی درباره نحوه استفاده از کتاب در یک صنف است. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
       </trans-unit>
       <trans-unit id="template.starter.waystohelp" approved="yes">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
-        <target xml:lang="prs">ساخت نمونه ها درست مثل ساختن هر کتاب دلخوا دیگر است؛ تمام کنترل های مشابه برای ساخت و دلخوا کردن صفحات در دسترس 
+        <target xml:lang="prs" state="translated">ساخت نمونه ها درست مثل ساختن هر کتاب دلخوا دیگر است؛ تمام کنترل های مشابه برای ساخت و دلخوا کردن صفحات در دسترس 
  میباشند. اما از آنجا که احتمالا با افراد دیگر به اشتراک گذاشته می شود، تعدادی از مواردی که می توانید برای کمک به استفاده کننده گان خود انجام دهید وجود دارد:</target>
         <note>ID: template.starter.waystohelp</note>
       </trans-unit>
       <trans-unit id="template.starter.labelpages" approved="yes">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="prs">صفحات خود را لیبل کنید</target>
+        <target xml:lang="prs" state="translated">صفحات خود را لیبل کنید</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage" approved="yes">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="prs">هنگامی که صفحات را به نمونه خود اضافه میکنید، مطمئن شوید که به هر کدام یک لیبل مؤثر داده شده است<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
+        <target xml:lang="prs" state="translated">هنگامی که صفحات را به نمونه خود اضافه میکنید، مطمئن شوید که به هر کدام یک لیبل مؤثر داده شده است<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails" approved="yes">
         <source xml:lang="en">Check Your Thumbnails</source>
-        <target xml:lang="prs">تصاویر کوچک را بررسی کنید</target>
+        <target xml:lang="prs" state="translated">تصاویر کوچک را بررسی کنید</target>
         <note>ID: template.starter.thumbnails</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.onlyonce" approved="yes">
         <source xml:lang="en">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</source>
-        <target xml:lang="prs">برای انجام کارهای سریع، بلوم تنها یک بار این تصویر کوچک را ایجاد می کند و آن را در"نمونه" زیر سب دایریکتری نمونه شما ذخیره می کند:</target>
+        <target xml:lang="prs" state="translated">برای انجام کارهای سریع، بلوم تنها یک بار این تصویر کوچک را ایجاد می کند و آن را در"نمونه" زیر سب دایریکتری نمونه شما ذخیره می کند:</target>
         <note>ID: template.starter.thumbnails.onlyonce</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.update" approved="yes">
         <source xml:lang="en">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</source>
-        <target xml:lang="prs">اگر بعدا تغییری در صفحه ایجاد کنید، تصویر کوچک از بین خواهد رفت. برای رفع آن، روی دکمه «افزودن صفحه» کلیک کنید، و بلوم آن تصاویر کوچک را بطور اوتومات بازسازی خواهد کرد. اگر تصویر کوچک به صورت اوتومات تولید اهداف صفحه را به بار نه اورد، می توانید خود آنرا ایجاد کنید. فقط مطمئن شوید که فایل را به عنوان «فقط خوانشی» علامتگذاری کنید تا بلوم آن را بازنویسی نکند. اگر خوش دارید، شما همچنین می توانید تصاویر کوچک را به عنوان svgs بسازید (این چیزی است که ما برای نمونه هایکه با بلوم ارائه می دهیم، انجام می دهیم). در هر صورت، قبل از توزیع نمونه خود حداقل یک بار بر روی «افزودن صفحه» کلیک کنید تا تمام تصاویر کوچک تولید شوند.</target>
+        <target xml:lang="prs" state="translated">اگر بعدا تغییری در صفحه ایجاد کنید، تصویر کوچک از بین خواهد رفت. برای رفع آن، روی دکمه «افزودن صفحه» کلیک کنید، و بلوم آن تصاویر کوچک را بطور اوتومات بازسازی خواهد کرد. اگر تصویر کوچک به صورت اوتومات تولید اهداف صفحه را به بار نه اورد، می توانید خود آنرا ایجاد کنید. فقط مطمئن شوید که فایل را به عنوان «فقط خوانشی» علامتگذاری کنید تا بلوم آن را بازنویسی نکند. اگر خوش دارید، شما همچنین می توانید تصاویر کوچک را به عنوان svgs بسازید (این چیزی است که ما برای نمونه هایکه با بلوم ارائه می دهیم، انجام می دهیم). در هر صورت، قبل از توزیع نمونه خود حداقل یک بار بر روی «افزودن صفحه» کلیک کنید تا تمام تصاویر کوچک تولید شوند.</target>
         <note>ID: template.starter.thumbnails.update</note>
       </trans-unit>
       <trans-unit id="template.starter.document" approved="yes">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="prs">سندسازی نمونه شما</target>
+        <target xml:lang="prs" state="translated">سندسازی نمونه شما</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours" approved="yes">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="prs">همچنین در حال اضافه کردن یک توضیح از نمونه خود، مانند آنچه که اکنون در حال خواندن است را در نظر بگیرید. برای انجام این کار، یک فایل متنی به نام<g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>در فولدر نمونه شما. این فایل باید به تعقیب<g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">استندرد نشانه گذاری</g>. 
+        <target xml:lang="prs" state="translated">همچنین در حال اضافه کردن یک توضیح از نمونه خود، مانند آنچه که اکنون در حال خواندن است را در نظر بگیرید. برای انجام این کار، یک فایل متنی به نام<g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>در فولدر نمونه شما. این فایل باید به تعقیب<g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">استندرد نشانه گذاری</g>. 
 برای ارائه دستورالعمل های خود به زبان های دیگر، نسخه هایی از این فایل را ایجاد کنید که "en" را به کد دو حرفی هر زبان تغییر دهید. مثلا<g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g>هنگامی که بلوم تنظیم می شود لیبل ها را در فرانسوی نشان بدهد. شما همچنین می توانید تصاویر را شامل کنید، مانند ما در این سند. هر تصاویر یکه استفاده می کنید در یک فولدر به نام "ReadMeImages" ذخیره کنید، به طوریکه تصاویر به این صورت حواله میدهند:</target>
         <note>ID: template.starter.describeyours</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown" approved="yes">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="prs">وقتی اضافه صفحه بکس محاوره (Add Page dialog box) صفحات نمونه شما را نشان می دهد، یک تصویر کوچک نشان داذه میشود:</target>
+        <target xml:lang="prs" state="translated">وقتی اضافه صفحه بکس محاوره (Add Page dialog box) صفحات نمونه شما را نشان می دهد، یک تصویر کوچک نشان داذه میشود:</target>
         <note>ID: template.starter.thumbnailsshown</note>
       </trans-unit>
       <trans-unit id="template.starter.share" approved="yes">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="prs">نمونه خود را به اشتراک بگذارید</target>
+        <target xml:lang="prs" state="translated">نمونه خود را به اشتراک بگذارید</target>
         <note>ID: template.starter.share</note>
       </trans-unit>
       <trans-unit id="template.starter.share.publish" approved="yes">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="prs">به یاد داشته باشید که بلوم درمورد کشت تخم، در مورد اشتراک است. بنابراین برنامه ریزی کنید که نمونه خود را در BloomLibrary برای مردم سراسر جهان بگزارید تا بتوانند پیدا کنند. این تنها چند کلیک در تب انتشار را دربر میگیرد.</target>
+        <target xml:lang="prs" state="translated">به یاد داشته باشید که بلوم درمورد کشت تخم، در مورد اشتراک است. بنابراین برنامه ریزی کنید که نمونه خود را در BloomLibrary برای مردم سراسر جهان بگزارید تا بتوانند پیدا کنند. این تنها چند کلیک در تب انتشار را دربر میگیرد.</target>
         <note>ID: template.starter.share.publish</note>
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack" approved="yes">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="prs">برای همکاران محلی، یک راه آسان برای توزیع نمونه شما از طریق بسته بلوم است. در تب مجموعه ها، روی تصویر کوچک خود راست کلیک کنید. "Make Bloom Pack"را انتخاب کنید. آنرا به جایی ذخیره کنید، بطور مثال به یک کلید USB بروید. سپس آن را به یک کمپیوتر دیگربرده، روی دوسیه یکه ساخته اید، دو بار کلیک کنید و نمونه شما به «منبع برای کتابهای جدید» در آن کمپیوتر اضافه می شود.</target>
+        <target xml:lang="prs" state="translated">برای همکاران محلی، یک راه آسان برای توزیع نمونه شما از طریق بسته بلوم است. در تب مجموعه ها، روی تصویر کوچک خود راست کلیک کنید. "Make Bloom Pack"را انتخاب کنید. آنرا به جایی ذخیره کنید، بطور مثال به یک کلید USB بروید. سپس آن را به یک کمپیوتر دیگربرده، روی دوسیه یکه ساخته اید، دو بار کلیک کنید و نمونه شما به «منبع برای کتابهای جدید» در آن کمپیوتر اضافه می شود.</target>
         <note>ID: template.starter.share.bloompack</note>
       </trans-unit>
       <trans-unit id="template.starter.notes" approved="yes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="prs">یادداشت ها</target>
+        <target xml:lang="prs" state="translated">یادداشت ها</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="prs">
+        <target xml:lang="prs" state="translated">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم 3.9 هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
+<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
         <note>ID: template.starter.nothingautomatic</note>
         <alt-trans>
           <target xml:lang="prs">
@@ -124,6 +109,47 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
+          
+<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم 3.9 هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم 3.9 هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم 3.9 هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
         </alt-trans>
         <alt-trans>
@@ -148,37 +174,6 @@ There are two ways people can use your template. The first way is to start new b
           <target xml:lang="prs">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم 3.9 هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم 3.9 هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
           
           
@@ -195,7 +190,8 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="prs">
+        <target xml:lang="prs" state="translated">
+          
           
           
           
@@ -231,6 +227,26 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
+<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: اگر شما نمی خواهید صفحات نمونه شما در صفحه محاوره ( Add Page dialog) نمایش داده شود، شما می توانید با ایجاد یک فایل در فولدر نمونه کتاب به نام NotForAddPage.txt به Bloom خاطرنشان سازید.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: اگر شما نمی خواهید صفحات نمونه شما در صفحه محاوره ( Add Page dialog) نمایش داده شود، شما می توانید با ایجاد یک فایل در فولدر نمونه کتاب به نام NotForAddPage.txt به Bloom خاطرنشان سازید.</target>
         </alt-trans>
         <alt-trans>
@@ -271,21 +287,6 @@ There are two ways people can use your template. The first way is to start new b
         <alt-trans>
           <target xml:lang="prs">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: اگر شما نمی خواهید صفحات نمونه شما در صفحه محاوره ( Add Page dialog) نمایش داده شود، شما می توانید با ایجاد یک فایل در فولدر نمونه کتاب به نام NotForAddPage.txt به Bloom خاطرنشان سازید.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
           
           
@@ -302,7 +303,8 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="prs">
+        <target xml:lang="prs" state="translated">
+          
           
           
           
@@ -338,6 +340,26 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
+<g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: مردم نمیتوانند لیبل ها و تشریحات شما را به زبانهای دیگر ترجمه کنند. اگر این مشکل است، لطفا با تیم بلوم تماس بگیرید.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: مردم نمیتوانند لیبل ها و تشریحات شما را به زبانهای دیگر ترجمه کنند. اگر این مشکل است، لطفا با تیم بلوم تماس بگیرید.</target>
         </alt-trans>
         <alt-trans>
@@ -378,21 +400,6 @@ There are two ways people can use your template. The first way is to start new b
         <alt-trans>
           <target xml:lang="prs">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: مردم نمیتوانند لیبل ها و تشریحات شما را به زبانهای دیگر ترجمه کنند. اگر این مشکل است، لطفا با تیم بلوم تماس بگیرید.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
           
           
@@ -409,7 +416,8 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="prs">
+        <target xml:lang="prs" state="translated">
+          
           
           
           
@@ -447,6 +455,28 @@ Context | Edit Context</target>
           
           
           
+          
+          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: اگر می خواهید صفحه اضافه (Add Page screen) را نیز توضیح کوتاهی ارائه دهید، باید بلوم را ترک کرده و Html را در Notepad ایدیت کنید، مانند این: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/>
+ 
+Context | Edit Context</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: اگر می خواهید صفحه اضافه (Add Page screen) را نیز توضیح کوتاهی ارائه دهید، باید بلوم را ترک کرده و Html را در Notepad ایدیت کنید، مانند این: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/>
  
 Context | Edit Context</target>
@@ -493,23 +523,6 @@ Context | Edit Context</target>
         <alt-trans>
           <target xml:lang="prs">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: اگر می خواهید صفحه اضافه (Add Page screen) را نیز توضیح کوتاهی ارائه دهید، باید بلوم را ترک کرده و Html را در Notepad ایدیت کنید، مانند این: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/>
- 
-Context | Edit Context</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
           
           

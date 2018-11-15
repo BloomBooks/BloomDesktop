@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="es-ES">Acerca de la Plantilla de Diccionario Ilustrado</target>
+        <target xml:lang="es-ES" state="translated">Acerca de la Plantilla de Diccionario Ilustrado</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="es-ES">Utilice esta plantilla para hacer un diccionario ilustrado que es monolingüe, bilingüe o trilingüe.</target>
+        <target xml:lang="es-ES" state="translated">Utilice esta plantilla para hacer un diccionario ilustrado que es monolingüe, bilingüe o trilingüe.</target>
         <note>ID: picture.dictionary.use</note>
         <alt-trans>
           <target xml:lang="es-ES">Utilice esta plantilla para hacer un diccionario que es monolingüe, bilingüe o trilingüe.</target>
@@ -17,12 +17,12 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="es-ES">Limitaciones de esta versión</target>
+        <target xml:lang="es-ES" state="translated">Limitaciones de esta versión</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="es-ES">Este libro actualmente está marcado como "experimental" porque conocemos varios problemas en el diseño y comodidad.</target>
+        <target xml:lang="es-ES" state="translated">Este libro actualmente está marcado como "experimental" porque conocemos varios problemas en el diseño y comodidad.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
         <alt-trans>
           <target xml:lang="es-ES">Este libro actualmente está marcado "experimental" porque conocemos varios problemas de diseño y comodidad.</target>

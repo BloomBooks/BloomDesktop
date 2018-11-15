@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="vi">
+    <body>
+      <trans-unit id="bigbook.title">
+        <source xml:lang="en">About Big Books</source>
+        <target xml:lang="vi" state="translated">Về Cuốn Sách Lớn</target>
+        <note>ID: bigbook.title</note>
+      </trans-unit>
+      <trans-unit id="bigbook.use">
+        <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
+        <target xml:lang="vi" state="translated">Cuốn Sách Lớn được thiết kế để giáo viên cầm và đọc trước cả lớp. Để có thêm thông tin, hãy đọc ở đây<g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF từ Scholastic</g>.</target>
+        <note>ID: bigbook.use</note>
+      </trans-unit>
+      <trans-unit id="bigbook.printing">
+        <source xml:lang="en">Printing a Big Book</source>
+        <target xml:lang="vi" state="translated">In Cuốn Sách Lớn</target>
+        <note>ID: bigbook.printing</note>
+      </trans-unit>
+      <trans-unit id="bigbook.printing.enlargeA4">
+        <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
+You can easily produce books that are A3 (twice as large).
+Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
+        <target xml:lang="vi" state="translated">Để dễ quản lý hơn, mẫu này được thiết kế theo khổ A4 Landscape, với phông chữ lớn.
+Bạn có thể dễ dàng in sách khổ A3 (lớn gấp đôi).
+Chỉ cần đem tài liệu PDF A4 của bạn đến tiệm photo/in ấn và nhờ họ phóng to thành khổ A3.</target>
+        <note>ID: bigbook.printing.enlargeA4</note>
+      </trans-unit>
+      <trans-unit id="bigbook.limits">
+        <source xml:lang="en">Limitations of this version</source>
+        <target xml:lang="vi" state="translated">Hạn chế của phiên bản này</target>
+        <note>ID: bigbook.limits</note>
+      </trans-unit>
+      <trans-unit id="bigbook.limits.smallscreen">
+        <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
+        <target xml:lang="vi" state="translated">Nếu bạn đang sử dụng màn hình cỡ nhỏ, có thể sẽ khó đọc trang thông tin xuất bản. Hãy thử phóng to bằng cách sử dụng nút điều khiển + /-zoom ở góc trên bên phải màn hình.</target>
+        <note>ID: bigbook.limits.smallscreen</note>
+      </trans-unit>
+      <trans-unit id="bigbook.limits.Englishtemplate">
+        <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
+If you would like to have instructions in a different language, you can delete that text and type in your own.
+If you send us that text, we can include it in a future version of the template.</source>
+        <target xml:lang="vi" state="translated">Phiên bản này bao gồm một trang "Hướng dẫn cho giáo viên" đã có chữ tiếng Anh.
+Nếu muốn có trang hướng dẫn bằng ngôn ngữ khác, bạn có thể xóa văn bản đó và gõ lại bằng ngôn ngữ của mình.
+Nếu bạn gửi cho chúng tôi văn bản đó, chúng tôi có thể sẽ đưa nó vào template ở phiên bản tương lai.</target>
+        <note>ID: bigbook.limits.Englishtemplate</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

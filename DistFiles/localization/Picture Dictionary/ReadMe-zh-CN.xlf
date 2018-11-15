@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="zh-CN">关于图片词典模板</target>
+        <target xml:lang="zh-CN" state="translated">关于图片词典模板</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="zh-CN">用该模板创建单语，双语或三语图片词典。</target>
+        <target xml:lang="zh-CN" state="translated">用该模板创建单语，双语或三语图片词典。</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="zh-CN">本版本的局限性</target>
+        <target xml:lang="zh-CN" state="translated">本版本的局限性</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="zh-CN">这本书目前标记为“实验”性质，因为我们知道在布局和使用便利性方面还存在一些问题。</target>
+        <target xml:lang="zh-CN" state="translated">这本书目前标记为“实验”性质，因为我们知道在布局和使用便利性方面还存在一些问题。</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
     </body>

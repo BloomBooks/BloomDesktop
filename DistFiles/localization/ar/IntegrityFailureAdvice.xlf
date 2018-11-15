@@ -4,47 +4,47 @@
     <body>
       <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="ar">يتعذر على Bloom العثور على بعض الملفات الخاصة به، ولا يمكنه المتابعة</target>
+        <target xml:lang="ar" state="translated">يتعذر على Bloom العثور على بعض الملفات الخاصة به، ولا يمكنه المتابعة</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="ar">الأسباب الممكنة</target>
+        <target xml:lang="ar" state="translated">الأسباب الممكنة</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
-        <target xml:lang="ar">ربما قام مكافح الفيروسات بعزل ملف واحد أو أكثر من ملفات Bloom.</target>
+        <target xml:lang="ar" state="translated">ربما قام مكافح الفيروسات بعزل ملف واحد أو أكثر من ملفات Bloom.</target>
         <note>ID: integrity.causes.1</note>
       </trans-unit>
       <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="ar">ربما قام مشرف الكمبيوتر بقفل الكمبيوتر لمنع القيام بأنشطة سيئة، وأدى ذلك إلى تعذر Bloom عن وضع الملفات في المكان المناسب. </target>
+        <target xml:lang="ar" state="translated">ربما قام مشرف الكمبيوتر بقفل الكمبيوتر لمنع القيام بأنشطة سيئة، وأدى ذلك إلى تعذر Bloom عن وضع الملفات في المكان المناسب. </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="ar">الإجراء اللازم</target>
+        <target xml:lang="ar" state="translated">الإجراء اللازم</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="ar">بعد إرسال هذا التقرير، سنتصل بك ونساعدك في حل هذه المشكلة. إلى أن يتم ذلك، فيما يلي بعض الأفكار:</target>
+        <target xml:lang="ar" state="translated">بعد إرسال هذا التقرير، سنتصل بك ونساعدك في حل هذه المشكلة. إلى أن يتم ذلك، فيما يلي بعض الأفكار:</target>
         <note>ID: integrity.todo.ideas</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="ar">يمكنك تشغيل أداة تثبيت Bloom مرة أخرى، لمعرفة ما إذا كانت تعمل على نحو جيد هذه المرة أم لا.</target>
+        <target xml:lang="ar" state="translated">يمكنك تشغيل أداة تثبيت Bloom مرة أخرى، لمعرفة ما إذا كانت تعمل على نحو جيد هذه المرة أم لا.</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="ar">إذا لم يساعد هذا في حل المشكلة، فيجب طرح الأمر على برنامج مكافحة الفيروسات. إذا كان قسم "الملفات المفقودة" أدناه يعرض أي ملفات تنتهي بالامتداد "exe."، فجرِّب وضع مجلد برنامج Bloom في "القائمة البيضاء" التي تتوفر في <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <target xml:lang="ar" state="translated">إذا لم يساعد هذا في حل المشكلة، فيجب طرح الأمر على برنامج مكافحة الفيروسات. إذا كان قسم "الملفات المفقودة" أدناه يعرض أي ملفات تنتهي بالامتداد "exe."، فجرِّب وضع مجلد برنامج Bloom في "القائمة البيضاء" التي تتوفر في <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
-        <target xml:lang="ar">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">الإرشادات</g>.</target>
+        <target xml:lang="ar" state="translated">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">الإرشادات</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Norton">

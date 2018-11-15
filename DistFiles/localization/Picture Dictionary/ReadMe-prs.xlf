@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="prs">درباره نمونه لغتنامه تصویری</target>
+        <target xml:lang="prs" state="translated">درباره نمونه لغتنامه تصویری</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="prs">نمونه را برای ساختار لغتنامه تصویری استفاده نمائید که یک لسانه، دو لسانه، یا سه لسانه باشد.</target>
+        <target xml:lang="prs" state="translated">نمونه را برای ساختار لغتنامه تصویری استفاده نمائید که یک لسانه، دو لسانه، یا سه لسانه باشد.</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="prs">محدودیت های این نسخه</target>
+        <target xml:lang="prs" state="translated">محدودیت های این نسخه</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="prs">این کتاب در حال حاضر به عنوان "تجربوِی" مشخص شده است، زیرا ما از چندین مشکل در طرح و اعتبار می دانیم.</target>
+        <target xml:lang="prs" state="translated">این کتاب در حال حاضر به عنوان "تجربوِی" مشخص شده است، زیرا ما از چندین مشکل در طرح و اعتبار می دانیم.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
     </body>
