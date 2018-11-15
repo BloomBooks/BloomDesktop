@@ -1483,7 +1483,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
-        <target xml:lang="es-ES" state="needs-translation">Advanced</target>
+        <target xml:lang="es-ES" state="translated">Avanzado</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1520,7 +1520,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Info</source>
         <note>ID: Common.Info</note>
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-        <target xml:lang="es-ES" state="needs-translation">Info</target>
+        <target xml:lang="es-ES" state="translated">Información</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
@@ -3593,7 +3593,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Processing</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Processing</note>
         <note>Displayed while video just recorded is processed into a more compressed form</note>
-        <target xml:lang="es-ES" state="needs-translation">Processing</target>
+        <target xml:lang="es-ES" state="translated">Procesando</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
         <source xml:lang="en">Recording</source>
@@ -6572,14 +6572,6 @@ Desea seguir?</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Palabras máximas en cada frase</target>
-        </alt-trans>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="es-ES" state="translated">Puntuación especial para finales de oración</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Puntuación especial para finales de frase</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
