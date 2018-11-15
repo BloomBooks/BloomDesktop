@@ -63,7 +63,9 @@ export class Expandable extends React.Component<
                         &#x25b6;
                     </div>
                 </div>
-                <Label {...this.props}>{this.props.headingText}</Label>
+                <Label {...this.props} onClick={() => this.toggleExpanded()}>
+                    {this.props.headingText}
+                </Label>
                 <div
                     className="contentWrap"
                     style={{

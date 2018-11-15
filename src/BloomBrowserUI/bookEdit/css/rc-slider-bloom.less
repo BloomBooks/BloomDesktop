@@ -14,7 +14,9 @@
     position: relative;
     height: 14px;
     padding: 5px 0;
-    width: 100%;
+    // The -9px and margin allow it to fit in 100% without the controls extending beyond that.
+    width: calc(100% - 9px);
+    margin-left: 7px;
     border-radius: 6px;
     box-sizing: border-box;
 }

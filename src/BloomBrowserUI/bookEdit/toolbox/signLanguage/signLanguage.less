@@ -3,6 +3,12 @@
 @text-color: @bloom-buff;
 #videoMonitorWrapper {
     width: 100%;
+    // I wish we didn't need this. It works fine without it most of the time;
+    // figures out how high to make the wrapper based on auto-sizing the video
+    // monitor to width:100%. But there is flicker: the lower controls are
+    // drawn as if this had a smaller size, then moved when the video appears.
+    // FF 63 does better, so maybe we can take this out when we get GeckoFx60.
+    height: 120px;
 }
 .recording {
     #videoMonitor {
@@ -20,6 +26,9 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    .ui-widget-content & a {
+        color: @text-color; // prevents an override by jquery on ".ui-widget-content a" by being more specific
+    }
 }
 
 // All the layers down to .signLanguageFrame have to be 100%
@@ -49,6 +58,7 @@
     border-radius: @videoButtonSize / 2; // circle
     background-color: transparent;
     position: relative;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.65));
     &.counting {
         // This hides it during the 3..2..1 countdown
         display: none;
@@ -179,8 +189,8 @@
     margin-left: @advancedIndent;
     label {
         margin-top: 20px;
-        margin-bottom: 10px;
         display: block; // otherwise margins have no effect
+        font-weight: bolder;
     }
 }
 
@@ -202,10 +212,12 @@
     .countdown3,
     .countdown2,
     .countdown1,
-    .counting,
     .recording,
     .notIdle {
         display: none;
+    }
+    .counting {
+        visibility: hidden; // let one label take up space, to prevent things below jumping
     }
 }
 .countdown3 {
@@ -253,10 +265,14 @@
     .recording,
     .countdown1,
     .countdown2,
-    .countdown3,
+    .countdown3 {
+        display: none;
+    }
+    // let one label take up space, to prevent things below jumping.
+    // For the same reason trim is hidden, not none.
     .counting,
     #trimWrapper {
-        display: none;
+        visibility: hidden;
     }
 }
 #videoStatsWrapper {
