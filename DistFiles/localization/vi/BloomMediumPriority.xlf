@@ -2,33 +2,13 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomMediumPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="vi">
     <header>
-      <note>This file is not yet being used.  We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations, approval status, and whatever other information can be preserved.</note>
+      <note>This file is not yet being used.  We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord" sil:dynamic="true">
-        <source xml:lang="en">Sight Word</source>
-        <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord</note>
-        <target xml:lang="vi" state="needs-translation">Sight Word</target>
-      </trans-unit>
-      <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable" sil:dynamic="true">
-        <source xml:lang="en">This word is not decodable in this stage.</source>
-        <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable</note>
-        <target xml:lang="vi" state="needs-translation">This word is not decodable in this stage.</target>
-      </trans-unit>
-      <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
-        <source xml:lang="en">This sentence is too long for this level.</source>
-        <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
-        <target xml:lang="vi" state="needs-translation">This sentence is too long for this level.</target>
-      </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
         <target xml:lang="vi" state="needs-translation">Special Sentence-Ending Punctuation</target>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
-        <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="vi" state="needs-translation">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</target>
       </trans-unit>
     </body>
   </file>

@@ -3663,7 +3663,7 @@
         <source xml:lang="en">InDesign XML Information</source>
         <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
         <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
-        <target xml:lang="am" state="needs-translation">InDesign XML Information</target>
+        <target xml:lang="am" state="needs translation">InDesign XML Information</target>
       </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
@@ -4408,11 +4408,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Maximum Words in each Sentence</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <target xml:lang="am" state="needs-translation">Maximum Words in each Sentence</target>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
-        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="am" state="needs-translation">Special Sentence-Ending Punctuation</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>

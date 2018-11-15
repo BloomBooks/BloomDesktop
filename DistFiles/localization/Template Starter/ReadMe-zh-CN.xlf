@@ -59,7 +59,7 @@ There are two ways people can use your template. The first way is to start new b
         <target xml:lang="zh-CN" state="translated">如果要为模板添加说明文字，可以在模板的文件夹里放一个叫 <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>的文档。这个文档一定要遵守 <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">“Markdown标准”</g>。如果还要加入各种语言的说明，把文档名称中的“en”改成代表相应语言的双字母简称。如把Bloom设置成显示法语标签，那么该文件应该是 <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g>。您也可以像我们在这里一样使用屏幕截图，请把所用图片保存在名为“ReadMeImage”的文件夹里，这样图片才能被如此引用：</target>
         <note>ID: template.starter.describeyours</note>
         <alt-trans>
-          <target xml:lang="zh-CN">如果要为模板添加说明文字，可以在模板的文件夹里放一个叫 <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>的文档。这个文档一定要遵守 <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">“Markdown标准”</g>。如果还要加入各种语言的说明，把文档名称中的“en”改成代表相应语言的双字母简称。如把Bloom设置成显示法语标签，那么该文件应该是 <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g>。您也可以像我们在这里一样使用屏幕截图，请把所用图片保存在名为“ReadMeImage”的文件夹里，这样图片才能被如此引用：</target>
+          <target xml:lang="zh-CN">如果要为模板添加说明文字，可以在模板的文件夹里放一个叫 <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">Readme-en.md</g>的文档。这个文档一定要遵守 <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">“Markdown标准”</g>。如果还要加入各种语言的说明，把文档名称中的“en”改成代表相应语言的双字母简称。如把Bloom设置成显示法语标签，那么该文件应该是 <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g>。您也可以像我们在这里一样使用屏幕截图，请把所用图片保存在名为“ReadMeImage”的文件夹里，这样图片才能被如此引用：</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown" approved="yes">
@@ -91,8 +91,14 @@ There are two ways people can use your template. The first way is to start new b
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="zh-CN" state="translated">
           
+          
 <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: 即将到来的Folio功能可以将这些书整合在一起。注意Bloom不支持在新书中自动添加页面，作者必须通过“添加页面”功能添加每一个页面。</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: 即将到来的Folio功能可以将这些书整合在一起。注意Bloom不支持在新书中自动添加页面，作者必须通过“添加页面”功能添加每一个页面。</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
@@ -102,8 +108,18 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
 <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>:如果不希望您制作的模板页面出现在“添加页面”对话框中，可以在该书的模板文件夹里添加一个名为“NotForAddPage.txt”的文档，Bloom将不再显示您的模板页面。</target>
         <note>ID: template.starter.nametonotaddpage</note>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
+<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>:如果不希望您制作的模板页面出现在“添加页面”对话框中，可以在该书的模板文件夹里添加一个名为“NotForAddPage.txt”的文档，Bloom将不再显示您的模板页面。</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="zh-CN">
           
@@ -139,8 +155,18 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
 <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: 别人无法将标签和描述翻译成其他语言。如果您觉得这是个问题，请联系Bloom团队。</target>
         <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
+<g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: 别人无法将标签和描述翻译成其他语言。如果您觉得这是个问题，请联系Bloom团队。</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="zh-CN">
           
@@ -176,8 +202,18 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
 <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: 如果您希望在“添加页面”时为页面加一段简短的描述，请先退出Bloom并在Notepad里编辑页面的html，像这样：<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
+<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: 如果您希望在“添加页面”时为页面加一段简短的描述，请先退出Bloom并在Notepad里编辑页面的html，像这样：<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="zh-CN">
           

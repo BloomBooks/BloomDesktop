@@ -4409,11 +4409,6 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <target xml:lang="bn" state="translated">প্রতিটি বাক্যে সর্বোচ্চ শব্দ</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
-        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="bn" state="needs-translation">Special Sentence-Ending Punctuation</target>
-      </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
@@ -4438,6 +4433,9 @@ Do you want to go ahead?</note>
         <source xml:lang="en">New Sight Words</source>
         <note>ID: ReaderSetup.SightWordLabel</note>
         <target xml:lang="bn" state="translated">নতুন সাইট শব্দসমূহ</target>
+        <alt-trans>
+          <target xml:lang="bn">নতুন সাইট শব্দসমূহ: {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sight Words</source>
@@ -4567,6 +4565,9 @@ Do you want to go ahead?</note>
         <source xml:lang="en">&amp;Register</source>
         <note>ID: RegisterDialog.RegisterButton</note>
         <target xml:lang="bn" state="translated">&amp;নিবন্ধন</target>
+        <alt-trans>
+          <target xml:lang="bn">&amp;নিবন্ধন {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="RegisterDialog.Surname" approved="yes">
         <source xml:lang="en">Surname</source>

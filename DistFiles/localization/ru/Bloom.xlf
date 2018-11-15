@@ -4409,11 +4409,6 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <target xml:lang="ru" state="translated">Максимальное количество слов в предложении</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
-        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="ru" state="needs-translation">Special Sentence-Ending Punctuation</target>
-      </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
