@@ -150,7 +150,7 @@ a normal merge with all that history would probably be okay.)
    single commit.  This requires figuring out how many commits have been made to the branch.
 
     <pre>
-        git log --oneline | grep -c '^[0-9A-Fa-f]\{7\} New translations .*\.xlf (.*)$'
+        git log --oneline | grep -c '^[0-9A-Fa-f]\{9\} New translations .*\.xlf (.*)$'
     </pre>
 
    <p>Then use the git command for amending history.  (Use whatever number the preceding command
@@ -158,7 +158,7 @@ a normal merge with all that history would probably be okay.)
    commits labeled "New translations" in the branch.)  Every line in the commit message file
    except the first should be marked as *fixup*.  The first line should be marked *reword*.  The
    "git log" command is just to reassure yourself that everything looks okay after squashing
-   down all the history.  [NB: the count may be too high.  I think 3 individual commits have
+   down all the history.  [NB: the count is likely too high.  I think 3 individual commits have
    snuck through somehow.]
 
     <pre>
@@ -195,10 +195,10 @@ a normal merge with all that history would probably be okay.)
 
    Fix any crashing errors that are (still) reported.  If the XML file is malformed or malformed
    formatting markers remain that would crash Bloom, the output log file will contain the words
-   "crash" or "invalid" in it.  This can be checked easily by
+   "crash", "invalid", or "unexpected" in it.  This can be checked easily by
 
    <pre>
-       grep '\(crash\|invalid\)' check-xliff.log
+       grep -c '\(crash\|invalid\|unexpected\)' check-xliff.log
    </pre>
 
    Fixing any remaining crashing errors may require hand editing the offending xliff file, or it

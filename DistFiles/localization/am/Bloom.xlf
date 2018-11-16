@@ -3663,7 +3663,7 @@
         <source xml:lang="en">InDesign XML Information</source>
         <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
         <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
-        <target xml:lang="am" state="needs translation">InDesign XML Information</target>
+        <target xml:lang="am" state="needs-translation">InDesign XML Information</target>
       </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
