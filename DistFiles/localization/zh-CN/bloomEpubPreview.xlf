@@ -13,6 +13,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.describe</note>
         <alt-trans>
@@ -23,6 +24,17 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">这是您的书的 <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> （电子）版。 <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">该书含有音频，新读者可以边听边读。</g>
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -45,12 +57,6 @@
         <alt-trans>
           <target xml:lang="zh-CN">这是您的书的 <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> （电子）版。 <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">该书含有音频，新读者可以边听边读。</g>
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">这是您的书的 <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> （电子）版。 <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">该书含有音频，新读者可以边听边读。</g>
       
       
       </target>
@@ -82,6 +88,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.readium</note>
         <alt-trans>
@@ -92,6 +99,17 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">本页使用 <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB阅读器。 图书在不同阅读设备上可能看起来不同。
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -114,12 +132,6 @@
         <alt-trans>
           <target xml:lang="zh-CN">本页使用 <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB阅读器。 图书在不同阅读设备上可能看起来不同。
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">本页使用 <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB阅读器。 图书在不同阅读设备上可能看起来不同。
       
       
       </target>
@@ -129,6 +141,7 @@
         <source xml:lang="en">The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> e-book reader.
       </source>
         <target xml:lang="zh-CN" state="translated">预览暂时无法播放有声书。 您可以使用Adobe公司出品的免费有声电子书阅读器—— <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>。听
+      
       
       
       
@@ -146,6 +159,17 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">预览暂时无法播放有声书。 您可以使用Adobe公司出品的免费有声电子书阅读器—— <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>。听
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -168,12 +192,6 @@
         <alt-trans>
           <target xml:lang="zh-CN">预览暂时无法播放有声书。 您可以使用Adobe公司出品的免费有声电子书阅读器—— <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>。听
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">预览暂时无法播放有声书。 您可以使用Adobe公司出品的免费有声电子书阅读器—— <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>。听
       
       
       </target>
@@ -195,6 +213,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.usingdropbox</note>
         <alt-trans>
@@ -205,6 +224,17 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">把书发送到手机的简便方法是，在计算机和手机/平板电脑上都安装Dropbox或类似软件。 只需点击保存ePUB，然后选择Dropbox文件夹。 在手机上打开Dropbox并选取您所要的书。 如果您用的是笔记本电脑，也可以尝试用免费的 <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> 软件把文件从笔记本电脑发送到手机或平板电脑上。
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -227,12 +257,6 @@
         <alt-trans>
           <target xml:lang="zh-CN">把书发送到手机的简便方法是，在计算机和手机/平板电脑上都安装Dropbox或类似软件。 只需点击保存ePUB，然后选择Dropbox文件夹。 在手机上打开Dropbox并选取您所要的书。 如果您用的是笔记本电脑，也可以尝试用免费的 <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> 软件把文件从笔记本电脑发送到手机或平板电脑上。
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">把书发送到手机的简便方法是，在计算机和手机/平板电脑上都安装Dropbox或类似软件。 只需点击保存ePUB，然后选择Dropbox文件夹。 在手机上打开Dropbox并选取您所要的书。 如果您用的是笔记本电脑，也可以尝试用免费的 <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> 软件把文件从笔记本电脑发送到手机或平板电脑上。
       
       
       </target>
@@ -254,6 +278,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.gitden.okay</note>
         <alt-trans>
@@ -264,6 +289,17 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">我们的测试显示 <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> 对于搭载Android和IOS（IPhone &amp;amp; IPad）系统的设备来说是不错的选择。
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -286,12 +322,6 @@
         <alt-trans>
           <target xml:lang="zh-CN">我们的测试显示 <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> 对于搭载Android和IOS（IPhone &amp;amp; IPad）系统的设备来说是不错的选择。
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">我们的测试显示 <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> 对于搭载Android和IOS（IPhone &amp;amp; IPad）系统的设备来说是不错的选择。
       
       
       </target>
@@ -322,6 +352,7 @@
       
       
       
+      
       </target>
         <note>ID: epubpreview.talking.book.tool</note>
         <alt-trans>
@@ -332,6 +363,17 @@
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">如果你想制作一本让新读者可以跟着音频一起读的“有声书”，可以用Bloom的 <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">有声书工具</g> 来添加语音录音。
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -354,12 +396,6 @@
         <alt-trans>
           <target xml:lang="zh-CN">如果你想制作一本让新读者可以跟着音频一起读的“有声书”，可以用Bloom的 <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">有声书工具</g> 来添加语音录音。
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">如果你想制作一本让新读者可以跟着音频一起读的“有声书”，可以用Bloom的 <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">有声书工具</g> 来添加语音录音。
       
       
       </target>

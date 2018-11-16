@@ -78,6 +78,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
@@ -97,6 +98,26 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">押韵——故事有规律或有顺序，而且还押韵。如：
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">一二三四五，
+上山打老虎。
+老虎没打着，
+打了小松鼠。
+松鼠有几只？
+一二三四五。</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author"> </g>
+        </g>
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -146,21 +167,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <g id="genid-4" ctype="x-html-div" html:class="author"> </g>
         </g>
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">押韵——故事有规律或有顺序，而且还押韵。如：
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">一二三四五，
-上山打老虎。
-老虎没打着，
-打了小松鼠。
-松鼠有几只？
-一二三四五。</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author"> </g>
-        </g>
       
       
       </target>
@@ -181,6 +187,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
@@ -190,6 +197,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">配图能对故事起辅助作用。不同等级、不同类型的读者（见下文）对配图的需要也不尽相同。<g id="genid-5" ctype="x-html-em"> </g>切记在没有很多出版物的文化里，人们很难理解复杂的配图。
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -210,11 +227,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">配图能对故事起辅助作用。不同等级、不同类型的读者（见下文）对配图的需要也不尽相同。<g id="genid-5" ctype="x-html-em"> </g>切记在没有很多出版物的文化里，人们很难理解复杂的配图。
     
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">配图能对故事起辅助作用。不同等级、不同类型的读者（见下文）对配图的需要也不尽相同。<g id="genid-5" ctype="x-html-em"> </g>切记在没有很多出版物的文化里，人们很难理解复杂的配图。
     
     </target>
         </alt-trans>
@@ -223,6 +235,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <target xml:lang="zh-CN" state="translated">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
+      
       
       
       
@@ -238,6 +251,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -258,11 +281,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-6" ctype="x-html-strong">萌芽读者</g>来说，配图应该和故事内容紧密结合。 让读者看见配图就能猜到故事情节。 这个等级的配图力求简单。
       
       </target>
         </alt-trans>
@@ -271,6 +289,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <target xml:lang="zh-CN" state="translated">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
+      
       
       
       
@@ -286,6 +305,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -306,11 +335,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-7" ctype="x-html-strong">早期读者</g>来说，配图的作用是帮助读者理解故事情节。 随着文本长度的增加，读者对配图的依赖逐渐减少，更多从文本中理解意思。 这时的配图可以更复杂一些。
       
       </target>
         </alt-trans>
@@ -319,6 +343,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
         <target xml:lang="zh-CN" state="translated">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
+      
       
       
       
@@ -334,6 +359,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -354,11 +389,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-8" ctype="x-html-strong">流利读者</g>来说，配图不用或极少支持故事内容。 读者更多从文本中理解意思，而不是从配图理解意思。 配图可以更加复杂。
       
       </target>
         </alt-trans>
@@ -383,6 +413,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
@@ -392,6 +423,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-9" ctype="x-html-strong">萌芽读者</g>来说， 内容应该具体且集中于一个话题，而且该话题必须是读者熟悉且容易理解的。
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -412,11 +453,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-9" ctype="x-html-strong">萌芽读者</g>来说， 内容应该具体且集中于一个话题，而且该话题必须是读者熟悉且容易理解的。
       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-9" ctype="x-html-strong">萌芽读者</g>来说， 内容应该具体且集中于一个话题，而且该话题必须是读者熟悉且容易理解的。
       
       </target>
         </alt-trans>
@@ -425,6 +461,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
         <target xml:lang="zh-CN" state="translated">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
+      
       
       
       
@@ -440,6 +477,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -460,11 +507,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-10" ctype="x-html-strong">早期读者</g>来说， 可以选择他们熟悉的话题，较深入地介绍。
       
       </target>
         </alt-trans>
@@ -473,6 +515,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
         <target xml:lang="zh-CN" state="translated">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
+      
       
       
       
@@ -488,6 +531,16 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -508,11 +561,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="zh-CN">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">对<g id="genid-11" ctype="x-html-strong">流利读者</g>来说，话题可以超出他们熟悉的范围，更多样化、更抽象。
       
       </target>
         </alt-trans>
