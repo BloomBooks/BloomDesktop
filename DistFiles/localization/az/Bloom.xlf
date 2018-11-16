@@ -5,7 +5,10 @@
       <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
-        <target xml:lang="az" state="needs-translation">Accessibility Checker</target>
+        <target xml:lang="az" state="translated">Əlverişlilik Yoxlayıcısı</target>
+        <alt-trans>
+          <target xml:lang="az">Xüsusi İmkanlar Yoxlayıcısı</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
         <source xml:lang="en">ACE by Daisy Automated Checks</source>
@@ -21,18 +24,21 @@
       <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
-        <target xml:lang="az" state="needs-translation">Audio for all image descriptions</target>
+        <target xml:lang="az" state="translated">Bütün şəkillərinin təsvirləri üçün səs</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
-        <target xml:lang="az" state="needs-translation">Bloom can automatically check these for you:</target>
+        <target xml:lang="az" state="translated">Bloom avtomatik olaraq sizin üçün bunları yoxlaya bilər:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="az" state="needs-translation">Accessibility Checklist</target>
+        <target xml:lang="az" state="translated">Əlverişlilik Kontrol Siyahısı</target>
+        <alt-trans>
+          <target xml:lang="az">Əlverişlilik Yoxlayıcısı</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
         <source xml:lang="en">Descriptions for all images</source>
@@ -321,12 +327,12 @@
       <trans-unit id="BookMetadata.soundHazard" sil:dynamic="true">
         <source xml:lang="en">Sound Hazard</source>
         <note>ID: BookMetadata.soundHazard</note>
-        <target xml:lang="az" state="needs-translation">Sound Hazard</target>
+        <target xml:lang="az" state="translated">Səs təhlükəsi</target>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects" sil:dynamic="true">
         <source xml:lang="en">Subjects</source>
         <note>ID: BookMetadata.subjects</note>
-        <target xml:lang="az" state="needs-translation">Subjects</target>
+        <target xml:lang="az" state="translated">Mövzu</target>
       </trans-unit>
       <trans-unit id="BookMetadata.typicalAgeRange" sil:dynamic="true">
         <source xml:lang="en">Typical age range</source>
@@ -337,7 +343,7 @@
         <source xml:lang="en">What's this?</source>
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
-        <target xml:lang="az" state="needs-translation">What's this?</target>
+        <target xml:lang="az" state="translated">Bu nədir?</target>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
@@ -473,17 +479,17 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="az" state="needs-translation">Armenian</target>
+        <target xml:lang="az" state="translated">Ermənicə</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="az" state="needs-translation">Bengali</target>
+        <target xml:lang="az" state="translated">Benqalca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="az" state="needs-translation">Cambodian</target>
+        <target xml:lang="az" state="translated">Kamboca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true">
         <source xml:lang="en">Cjk-Decimal</source>
@@ -493,72 +499,78 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" sil:dynamic="true">
         <source xml:lang="en">Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
-        <target xml:lang="az" state="needs-translation">Decimal</target>
+        <target xml:lang="az" state="translated">Onluq</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari" sil:dynamic="true">
         <source xml:lang="en">Devanagari</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
-        <target xml:lang="az" state="needs-translation">Devanagari</target>
+        <target xml:lang="az" state="translated">Devanagari Dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" sil:dynamic="true">
         <source xml:lang="en">Georgian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian</note>
-        <target xml:lang="az" state="needs-translation">Georgian</target>
+        <target xml:lang="az" state="translated">Gürcücə</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" sil:dynamic="true">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="az" state="needs-translation">Gujarati</target>
+        <target xml:lang="az" state="translated">Qucaratca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" sil:dynamic="true">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
-        <target xml:lang="az" state="needs-translation">Gurmukhi</target>
+        <target xml:lang="az" state="translated">Qurmuxıca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="az" state="needs-translation">Hebrew</target>
+        <target xml:lang="az" state="translated">İvritcə</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada" sil:dynamic="true">
         <source xml:lang="en">Kannada</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada</note>
-        <target xml:lang="az" state="needs-translation">Kannada</target>
+        <target xml:lang="az" state="translated">Kannadaca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" sil:dynamic="true">
         <source xml:lang="en">Khmer</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
-        <target xml:lang="az" state="needs-translation">Khmer</target>
+        <target xml:lang="az" state="translated">Ximercə</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" sil:dynamic="true">
         <source xml:lang="en">Lao</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao</note>
-        <target xml:lang="az" state="needs-translation">Lao</target>
+        <target xml:lang="az" state="translated">Laoca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" sil:dynamic="true">
         <source xml:lang="en">Lower-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
-        <target xml:lang="az" state="needs-translation">Lower-Armenian</target>
+        <target xml:lang="az" state="translated">Aşağı Ərmənicə</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam" sil:dynamic="true">
         <source xml:lang="en">Malayalam</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
-        <target xml:lang="az" state="needs-translation">Malayalam</target>
+        <target xml:lang="az" state="translated">Malayalam dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" sil:dynamic="true">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="az" state="needs-translation">Mongolian</target>
+        <target xml:lang="az" state="translated">Monqolca</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar" sil:dynamic="true">
         <source xml:lang="en">Myanmar</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
-        <target xml:lang="az" state="needs-translation">Myanmar</target>
+        <target xml:lang="az" state="translated">Myanmar dili</target>
+        <alt-trans>
+          <target xml:lang="az">Myanmar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" sil:dynamic="true">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
-        <target xml:lang="az" state="needs-translation">Oriya</target>
+        <target xml:lang="az" state="translated">Oriya dili</target>
+        <alt-trans>
+          <target xml:lang="az">Oriya</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
@@ -568,7 +580,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" sil:dynamic="true">
         <source xml:lang="en">Persian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian</note>
-        <target xml:lang="az" state="needs-translation">Persian</target>
+        <target xml:lang="az" state="translated">Fars dili</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" sil:dynamic="true">
         <source xml:lang="en">Tamil</source>
@@ -2453,10 +2465,10 @@
         <target xml:lang="az" state="translated">Əlavə məlumat</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">Requires Bloom Enterprise Subscription.</source>
+        <source xml:lang="en">This feature requires Bloom Enterprise.</source>
         <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
-        <note>Appears in place of other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
-        <target xml:lang="az" state="needs-translation">Requires Bloom Enterprise Subscription.</target>
+        <note>Appears in notice obscuring other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
+        <target xml:lang="az" state="needs-translation">This feature requires Bloom Enterprise.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
@@ -3664,6 +3676,12 @@
         <source xml:lang="en">Preparing preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
         <target xml:lang="az" state="needs-translation">Preparing preview</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.ReadiumCredit">
+        <source xml:lang="en">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</source>
+        <note>ID: PublishTab.Epub.ReadiumCredit</note>
+        <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
+        <target xml:lang="az" state="needs-translation">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
         <source xml:lang="en">Use ePUB reader's text size</source>
