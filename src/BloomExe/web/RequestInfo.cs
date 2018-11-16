@@ -130,7 +130,7 @@ namespace Bloom.Api
 				return;
 			}
 
-			using(fs)
+			try
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
@@ -146,7 +146,7 @@ namespace Bloom.Api
 				// are the Content-Length and Last-Modified headers. The requestor can use this information to determine if the
 				// contents of the file have changed, and if they have changed the requestor can then decide if the file needs to
 				// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
-				if(_actualContext.Request.HttpMethod == "HEAD")
+				if (_actualContext.Request.HttpMethod == "HEAD")
 				{
 					var lastModified = RobustFile.GetLastWriteTimeUtc(path).ToString("R");
 
@@ -163,18 +163,45 @@ namespace Bloom.Api
 					// for the complete data transfer. At a minimum, it makes this thread available to work on another
 					// request sooner.
 					var buffer = new byte[fs.Length];
-					fs.Read(buffer, 0, (int)fs.Length);
+					fs.Read(buffer, 0, (int) fs.Length);
+					// The client may not read the whole stream (e.g. paused video). I don't know whether that could lead
+					// to a delay in Close() returning; probably not. But just to be safe, make sure we aren't holding
+					// on to the file.
+					fs.Dispose();
+					fs = null;
 					_actualContext.Response.Close(buffer, false);
 				}
 				else
 				{
-					// For really big (typically image) files, use the old buffered approach
+					// For really big (typically image) files, use the old buffered approach.
+					// Here we have to be careful. The client may not read the whole file content (e.g.,
+					// it may be a long video, and the user may pause it). We don't want to keep the file
+					// locked, even for read, because the user may decide to delete it.
 					try
 					{
 						var buffer = new byte[1024 * 512]; //512KB
 						int read;
 						while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+						{
+							long pos = fs.Position;
+							fs.Dispose();
+							fs = null; // prevent double dispose
 							_actualContext.Response.OutputStream.Write(buffer, 0, read);
+							try
+							{
+								fs = RobustFile.OpenRead(path);
+							}
+							catch (FileNotFoundException)
+							{
+								// and we've made it possible to delete (or move) the file in the middle
+								// of our read, so it may be gone. If so, just pretend it ended with
+								// what we already returned.
+								break;
+							}
+
+							fs.Seek(pos, SeekOrigin.Begin);
+						}
+
 						_actualContext.Response.OutputStream.Close();
 					}
 					catch (HttpListenerException e)
@@ -184,6 +211,11 @@ namespace Bloom.Api
 					}
 				}
 
+			}
+			finally
+			{
+				if (fs != null)
+					fs.Dispose();
 			}
 
 			HaveOutput = true;
