@@ -66,13 +66,15 @@ namespace Bloom.Api
 					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
 					if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
 					{
-						// tricky. It might be in Bloom, or it might be in BloomLowPriority. Must be somewhere, because
+						// tricky. It might be in Bloom, or BloomMediumPriority, or BloomLowPriority. Must be somewhere, because
 						// we know it's available. Can't use GetString, because it's not a literal string. So, we try in one,
-						// using null as the English, so we won't get anything if not in that one. Then try the other.
-						// Just in case something unexpected happens, we do pass the english the second time.
+						// using null as the English, so we won't get anything if not in that one. Then try the next one.
+						// Just in case something unexpected happens, we do pass the english the last time.
 						var localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, null, null, langId);
 						if (localizedString == null)
-							localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishText, null, langId);
+							localizedString = LocalizationManager.GetDynamicStringOrEnglish("BloomMediumPriority", id, null, null, langId);
+						if (localizedString == null)
+							localizedString = LocalizationManager.GetDynamicStringOrEnglish("BloomLowPriority", id, englishText, null, langId);
 						request.ReplyWithJson(new {text = localizedString, success = true });
 					}
 					else
@@ -152,6 +154,11 @@ namespace Bloom.Api
 				// a default and can just return the localized string; not passing a default ensures that
 				// even in English we get the true English string for this ID from the XLF.
 				translation = LocalizationManager.GetDynamicString("Bloom", key, null);
+				if (string.IsNullOrWhiteSpace(translation))
+				{
+					// try medium priority
+					translation = LocalizationManager.GetDynamicString("BloomMediumPriority", key, null);
+				}
 				if (string.IsNullOrWhiteSpace(translation))
 				{
 					// try low priority
