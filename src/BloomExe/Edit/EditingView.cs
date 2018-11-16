@@ -197,13 +197,28 @@ namespace Bloom.Edit
 				if (targetProxy.SelfOrAncestorHasClass("bloom-textOverPicture"))
 				{
 					var deleteMessage = LocalizationManager.GetString("EditTab.DeleteTextBoxFromImage", "Delete Text Box From Image");
-					args.ContextMenu.MenuItems.Add(deleteMessage, (sender, e) => deleteTextbox_Click());
+					var menuItem = args.ContextMenu.MenuItems.Add(deleteMessage, (sender, e) => deleteTextbox_Click());
+
+					// Mostly unnecessary because targetProxy shouldn't be able to be a bloom-textOverPicture if bloom-showImageDescriptions is on,
+					// but better safe than sorry I guess.
+					if (targetProxy.SelfOrAncestorHasClass("bloom-showImageDescriptions", excludeBody: false))
+					{
+						menuItem.Enabled = false;
+					}
+
 					return false; // we don't expect to need both Add and Delete in the same place
 				}
 				if (targetProxy.SelfOrAncestorHasClass("bloom-imageContainer"))
 				{
 					var addMessage = LocalizationManager.GetString("EditTab.AddTextBoxToImage", "Add Text Box To Image");
-					args.ContextMenu.MenuItems.Add(addMessage, (sender, e) => addTextbox_Click());
+					var menuItem = args.ContextMenu.MenuItems.Add(addMessage, (sender, e) => addTextbox_Click());
+
+					// Check if the body element indicates that image descriptions are active.
+					// This will shrink the image.  Repositioning, shrinking, adding and deleting text-over-picture elements while in shrunk state is possible but massively complicates the code.
+					// So, for now just disable the text-over-picture elements and adding them.
+					if (targetProxy.SelfOrAncestorHasClass("bloom-showImageDescriptions", excludeBody: false)) {
+						menuItem.Enabled = false;
+					}
 				}
 				return false;
 			};

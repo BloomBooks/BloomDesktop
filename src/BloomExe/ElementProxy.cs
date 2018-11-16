@@ -209,14 +209,14 @@ namespace Bloom
 			return ((IList) elementClassName.Split(' ')).Contains(className);
 		}
 
-		public bool SelfOrAncestorHasClass(string className)
+		public bool SelfOrAncestorHasClass(string className, bool excludeBody = true)
 		{
 			if (HasClass(this, className))
 			{
 				return true;
 			}
 			var parent = Parent;
-			while (parent != null && parent.Name != "BODY")
+			while (parent != null && (parent.Name != "BODY" || !excludeBody))
 			{
 				if (HasClass(parent, className))
 					return true;
