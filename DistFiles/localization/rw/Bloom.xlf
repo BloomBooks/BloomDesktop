@@ -1214,6 +1214,9 @@
         <source xml:lang="en">This page will be permanently removed.</source>
         <note>ID: EditTab.ConfirmRemovePageDialog._messageLabel</note>
         <target xml:lang="rw" state="translated">irahita yoherezwa mu gakangara k'ibyasiibwe</target>
+        <alt-trans>
+          <target xml:lang="rw">{0} irahita yoherezwa mu gakangara k'ibyasiibwe</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown" approved="yes">
         <source xml:lang="en">Multilingual Settings</source>
@@ -4408,11 +4411,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Maximum Words in each Sentence</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <target xml:lang="rw" state="translated">Amagambo yose ashoboka muri buri nteruro</target>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
-        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="rw" state="needs-translation">Special Sentence-Ending Punctuation</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
