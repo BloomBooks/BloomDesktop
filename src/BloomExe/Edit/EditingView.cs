@@ -201,7 +201,7 @@ namespace Bloom.Edit
 
 					// Mostly unnecessary because targetProxy shouldn't be able to be a bloom-textOverPicture if bloom-showImageDescriptions is on,
 					// but better safe than sorry I guess.
-					if (targetProxy.SelfOrAncestorHasClass("bloom-showImageDescriptions", excludeBody: false))
+					if (targetProxy.SelfOrAncestorHasClass("bloom-showImageDescriptions"))
 					{
 						menuItem.Enabled = false;
 					}
@@ -216,7 +216,7 @@ namespace Bloom.Edit
 					// Check if the body element indicates that image descriptions are active.
 					// This will shrink the image.  Repositioning, shrinking, adding and deleting text-over-picture elements while in shrunk state is possible but massively complicates the code.
 					// So, for now just disable the text-over-picture elements and adding them.
-					if (targetProxy.SelfOrAncestorHasClass("bloom-showImageDescriptions", excludeBody: false)) {
+					if (targetProxy.SelfOrAncestorHasClass("bloom-showImageDescriptions")) {
 						menuItem.Enabled = false;
 					}
 				}
