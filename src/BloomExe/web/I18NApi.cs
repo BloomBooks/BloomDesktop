@@ -67,6 +67,9 @@ namespace Bloom.Api
 					string localizedString;
 					if (GetSomeTranslation(id, langId, out localizedString))
 					{
+						// Ensure that we actually have a value for localized string.  (This should already be true, but I'm paranoid.)
+						if (localizedString == null)
+							localizedString = englishText;
 						request.ReplyWithJson(new {text = localizedString, success = true });
 					}
 					else
@@ -138,12 +141,14 @@ namespace Bloom.Api
 			{
 				if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
 				{
-					// tricky. It might be in Bloom, or it might be in BloomLowPriority. Must be somewhere, because
+					// tricky. It might be in Bloom, or BloomMediumPriority, or BloomLowPriority. Must be somewhere, because
 					// we know it's available. Can't use GetString, because it's not a literal string. So, we try in one,
-					// using null as the English, so we won't get anything if not in that one. Then try the other.
+					// using null as the English, so we won't get anything if not in that one. Then try the next.
 					// We don't need to pass English (in fact, it's not passed to this method) because we only come
 					// here if LM DOES have a translation in the requested language (which we've made sure is not English)
 					var localizedString = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, null, null, langId);
+					if (string.IsNullOrEmpty(localizedString))
+						localizedString = LocalizationManager.GetDynamicStringOrEnglish("BloomMediumPriority", id, null, null, langId);
 					if (string.IsNullOrEmpty(localizedString))
 						localizedString = LocalizationManager.GetDynamicStringOrEnglish("BloomLowPriority", id, null, null, langId);
 					val = localizedString;
@@ -195,6 +200,11 @@ namespace Bloom.Api
 				{
 					// We don't have the string in the desired localization, so will return the English.
 					translation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", key, null, null, "en");
+					if (string.IsNullOrWhiteSpace(translation))
+					{
+						// try medium priority
+						translation = LocalizationManager.GetDynamicStringOrEnglish("BloomMediumPriority", key, null, null, "en");
+					}
 					if (string.IsNullOrWhiteSpace(translation))
 					{
 						// try low priority
