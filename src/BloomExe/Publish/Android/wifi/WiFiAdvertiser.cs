@@ -18,7 +18,19 @@ namespace Bloom.Publish.Android.wifi
 	{
 		// The information we will advertise.
 		public string BookTitle;
-		public string BookVersion;
+		private string _bookVersion;
+
+		public string BookVersion
+		{
+			get { return _bookVersion; }
+			set
+			{
+				_bookVersion = value;
+				// In case this gets modified after we start advertising, we need to recompute the advertisement
+				// next time we send it. Clearing this makes sure it happens.
+				_currentIpAddress = "";
+			}
+		}
 		public string TitleLanguage;
 
 		private UdpClient _client;
