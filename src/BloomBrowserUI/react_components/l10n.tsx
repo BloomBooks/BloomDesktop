@@ -190,6 +190,11 @@ export class LocalizableElement<
     }
 
     public getLocalizedContent(): JSX.Element {
+        const parts = this.getLocalizedContentAndClass();
+        return <span className={parts.l10nClass}>{parts.text}</span>;
+    }
+
+    private getLocalizedContentAndClass(): { text: string; l10nClass: string } {
         let l10nClass = "untranslated";
         let text = this.getOriginalStringContent();
         if (this.props.alreadyLocalized) {
@@ -202,7 +207,13 @@ export class LocalizableElement<
             l10nClass = "translated";
             text = this.state.translation;
         }
-        return <span className={l10nClass}>{text}</span>;
+        return { text: text, l10nClass: l10nClass };
+    }
+
+    // Should return the same text that getLocalizedContent would wrap in a span
+    public getPlainLocalizedContent(): string {
+        const parts = this.getLocalizedContentAndClass();
+        return parts.text;
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {
