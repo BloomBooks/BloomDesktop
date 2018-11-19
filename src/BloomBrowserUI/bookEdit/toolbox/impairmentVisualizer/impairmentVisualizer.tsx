@@ -287,6 +287,6 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public isExperimental(): boolean {
-        return true;
+        return false;
     }
 }

@@ -255,7 +255,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     }
 
     public isExperimental(): boolean {
-        return true;
+        return false;
     }
     public id(): string {
         return ImageDescriptionAdapter.kToolID;
