@@ -23,6 +23,7 @@ namespace Bloom.Book
 	public class BookCompressor
 	{
 		public const string ExtensionForDeviceBloomBook = ".bloomd";
+		public static string LastVersionCode { get; private set; }
 
 		// these image files may need to be reduced before being stored in the compressed output file
 		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
@@ -230,6 +231,7 @@ namespace Bloom.Book
 						var sha = Book.MakeVersionCode(File.ReadAllText(pathToFileForSha, Encoding.UTF8), pathToFileForSha);
 						var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
 						MakeExtraEntry(zipStream, name, sha);
+						LastVersionCode = sha;
 					}
 					MakeExtraEntry(zipStream, "readerStyles.css",
 						File.ReadAllText(FileLocationUtilities.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"))));
