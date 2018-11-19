@@ -148,6 +148,8 @@ namespace Bloom.web.controllers
 		/// </remarks>
 		private static void SaveVideoFile(string path, string rawVideoPath)
 		{
+			var length = new FileInfo(rawVideoPath).Length;
+			var seconds = (int)(length / 312500); // we're asking for 2.5mpbs, which works out to 312.5K bytes per second.
 			var ffmpeg = FindFfmpegProgram();
 			if (ffmpeg != string.Empty)
 			{
@@ -157,7 +159,10 @@ namespace Bloom.web.controllers
 				// -i <path> = specify input file
 				// -force_key_frames "expr:gte(t,n_forced*0.5)" = insert keyframe every 0.5 seconds in the output file
 				var parameters = $"-hide_banner -y -v 16 -i \"{rawVideoPath}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"";
-				var result = CommandLineRunner.Run(ffmpeg, parameters, "", 60, new NullProgress());
+				// On slowish machines, this compression seems to take about 1/5 as long as the video took to record.
+				// Allowing for some possibly being slower still, we're basing the timeout on half the length of the video,
+				// plus a minute to be sure.
+				var result = CommandLineRunner.Run(ffmpeg, parameters, "", seconds / 2 + 60, new NullProgress());
 				var msg = string.Empty;
 				if (result.DidTimeOut)
 				{
