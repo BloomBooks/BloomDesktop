@@ -76,6 +76,7 @@ export function switchContentPage(newSource: string) {
     // other cases since I have no explanation. Rather than leaving control state
     // permanently wrong, if the event is delayed much longer than expected we just
     // call the handler.
+    // For a similar event not firing problem, see bloomEditing.ts.
     window.setTimeout(() => {
         if (!handlerCalled) {
             handler();

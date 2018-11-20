@@ -2346,6 +2346,65 @@ namespace BloomTests.Book
 			Assert.AreEqual(expectedOuterHtml, page1Div.OuterXml.Replace(" id=\"id1\"", ""), $"Outer HTML");
 		}
 
+		private const string _pathToTestVideos = "src/BloomTests/videos";
+
+		[Test]
+		public void PrepareBookVideoForPublishing_AddControls()
+		{
+			SetDom(
+				@"<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+					<div class='marginBox'>
+						<div class='variousSplitContainerStuff'>
+							<div class='bloom-videoContainer'>
+								<video>
+									<source src='video/Crow.mp4#t=1.2,5.7'></source>
+								</video>
+							</div>
+						</div>
+						<div class='variousSplitContainerStuff'>
+							<div class='bloom-videoContainer bloom-noVideoSelected'></div>
+						</div>
+						<div class='variousSplitContainerStuff'>
+							<div class='bloom-videoContainer bloom-selected'>
+								<video>
+									<source src='video/Five%20count.mp4#t=0.0,5.2'></source>
+								</video>
+							</div>
+						</div>
+					</div>
+				</div>");
+			var book = CreateBook();
+			var bookDom = book.OurHtmlDom;
+
+			// Setup 'real' video files, otherwise we aren't actually trimming any video files
+			var videoFolder = Path.Combine(book.FolderPath, "video");
+			Directory.CreateDirectory(videoFolder);
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Crow.mp4"),
+				Path.Combine(videoFolder, "Crow.mp4"));
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Five count.mp4"),
+				Path.Combine(videoFolder, "Five count.mp4"));
+
+			var videoContainerElements = bookDom.SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]");
+			// Process each discovered videoContainer
+			foreach (XmlElement videoContainerElement in videoContainerElements)
+			{
+				SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, book.FolderPath);
+			}
+
+			const string videoWithControlsXpath = ".//video[@controls='']";
+			const string hashTimingsXpath = ".//source[contains(@src, '#t=')]";
+
+			// We didn't change the # of videos or sources and the video elements now include 'controls' attribute.
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(videoWithControlsXpath, 2);
+			// For the Crow video, which was trimmed, we should also strip off timings in 'src' attributes.
+			// The Five count video should not actually be trimmed, due to the timings being set to the whole
+			// length of the video. And due to it not being trimmed, it still has its timings in the 'src' attribute.
+			// This can happen if the user set timings on a video at some point and then went back and
+			// moved the sliders back to their maximum settings.
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(hashTimingsXpath, 1);
+		}
+
 
 #if UserControlledTemplate
 		[Test]

@@ -11,13 +11,9 @@ import {
 } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
 import { HelpLink } from "../../../react_components/helpLink";
-import { Link } from "../../../react_components/link";
 import { UrlUtils } from "../../../utils/urlUtils";
 import { Expandable } from "../../../react_components/expandable";
-import theOneLocalizationManager, {
-    LocalizationManager
-} from "../../../lib/localizationManager/localizationManager";
-import { string } from "prop-types";
+import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import calculateAspectRatio from "calculate-aspect-ratio";
 
 // The recording process can be in one of these states:
@@ -74,8 +70,11 @@ declare var MediaRecorder: {
     new (s: MediaStream, options: any): MediaRecorder;
 };
 
-const MAX_DURATION: string = "-1.0"; // temporary placeholder for maximum duration
-const DEFAULT_START: string = "0.0";
+// string and number versions of the untrimmed values for both the start and end points of a video.
+// In the case of the endpoint, zero is just a placeholder that will be replaced with the duration of the video.
+// When a trimmed endpoint is stored, it represents the time in seconds from the start of the untrimmed video.
+const UNTRIMMED_TIMING: string = "0.0";
+const UNTRIMMED_TIMING_NUM: number = 0.0;
 
 // This react class implements the UI for the sign language (video) toolbox.
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
@@ -104,8 +103,8 @@ export class SignLanguageToolControls extends React.Component<
             frameSize: "",
             framesPerSecond: "",
             fileFormat: "",
-            startSeconds: DEFAULT_START,
-            endSeconds: MAX_DURATION,
+            startSeconds: UNTRIMMED_TIMING,
+            endSeconds: UNTRIMMED_TIMING,
             aspectRatio: ""
         }
     };
@@ -115,24 +114,29 @@ export class SignLanguageToolControls extends React.Component<
     private timerId: number;
     private recordingStarted: number;
     public render() {
-        let videoStats = <div />;
+        let videoStats = <div id="videoStatsWrapper" />;
+        let trimSlider = <div id="trimWrapper" />;
         if (
             // Protects against showing slider and stats when
             // the video info hasn't yet been loaded from the file.
             this.state.haveRecording &&
             this.state.videoStatistics.duration != ""
         ) {
+            const start = parseFloat(this.state.videoStatistics.startSeconds);
+            let end = parseFloat(this.state.videoStatistics.endSeconds);
+            const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
+                this.state.videoStatistics.duration
+            );
+            if (end == UNTRIMMED_TIMING_NUM) {
+                // if the video has not been "end-trimmed", set the end slider to the equivalent of the
+                // untrimmed video's duration, since the end of the video in seconds is equal to its duration
+                // in seconds.
+                end = maxDuration;
+            }
+            const valueArray: number[] = [start, end];
+            trimSlider = this.getTrimSlider(valueArray, maxDuration);
             videoStats = this.getVideoStats();
         }
-        const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
-            this.state.videoStatistics.duration
-        );
-        const start = parseFloat(this.state.videoStatistics.startSeconds);
-        let end = parseFloat(this.state.videoStatistics.endSeconds);
-        if (end === -1.0) {
-            end = maxDuration;
-        }
-        const valueArray: number[] = [start, end];
         return (
             <RequiresBloomEnterpriseWrapper className="signLanguageOuterWrapper">
                 <div className={"signLanguageFrame " + this.state.stateClass}>
@@ -209,44 +213,7 @@ export class SignLanguageToolControls extends React.Component<
                                     Press any key to stop
                                 </Label>
                             </div>
-                            <div
-                                id="trimWrapper"
-                                className={
-                                    this.state.haveRecording &&
-                                    this.state.videoStatistics.duration != ""
-                                        ? ""
-                                        : "hidden"
-                                }
-                            >
-                                <Range
-                                    className="videoTrimSlider"
-                                    count={1}
-                                    value={valueArray}
-                                    onChange={v =>
-                                        this.setTrimPoints(v[0], v[1])
-                                    }
-                                    onAfterChange={
-                                        // set video back to start point in case we were viewing the end point
-                                        v =>
-                                            SignLanguageTool.setCurrentVideoPoint(
-                                                v[0]
-                                            )
-                                    }
-                                    step={0.1}
-                                    min={0.0}
-                                    allowCross={false}
-                                    pushable={false}
-                                    max={maxDuration}
-                                />
-                                <div id="trimLabelWrapper">
-                                    <Label
-                                        l10nKey="EditTab.Toolbox.SignLanguage.Trim"
-                                        className="trimLabel"
-                                    >
-                                        Trim
-                                    </Label>
-                                </div>
-                            </div>
+                            {trimSlider}
                         </div>
                     </div>
                     <div style={{ height: "210px" }}>
@@ -337,16 +304,37 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getVideoStats() {
-        const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
-            this.state.videoStatistics.duration
+    private getTrimSlider(valueArray: number[], maxDuration: number) {
+        return (
+            <div id="trimWrapper">
+                <Range
+                    className="videoTrimSlider"
+                    count={1}
+                    value={valueArray}
+                    onChange={v => this.setTrimPoints(v[0], v[1])}
+                    onAfterChange={
+                        // set video back to start point in case we were viewing the end point
+                        v => SignLanguageTool.setCurrentVideoPoint(v[0])
+                    }
+                    step={0.1}
+                    min={UNTRIMMED_TIMING_NUM}
+                    allowCross={false}
+                    pushable={false}
+                    max={maxDuration}
+                />
+                <div id="trimLabelWrapper">
+                    <Label
+                        l10nKey="EditTab.Toolbox.SignLanguage.Trim"
+                        className="trimLabel"
+                    >
+                        Trim
+                    </Label>
+                </div>
+            </div>
         );
-        const start = parseFloat(this.state.videoStatistics.startSeconds);
-        let end = parseFloat(this.state.videoStatistics.endSeconds);
-        if (end === -1.0) {
-            end = maxDuration;
-        }
-        const valueArray: number[] = [start, end];
+    }
+
+    private getVideoStats() {
         return (
             <div id="videoStatsWrapper">
                 <Label l10nKey="Common.Info">Info</Label>
@@ -434,8 +422,8 @@ export class SignLanguageToolControls extends React.Component<
                         frameSize: "",
                         framesPerSecond: "",
                         fileFormat: "",
-                        startSeconds: DEFAULT_START,
-                        endSeconds: MAX_DURATION,
+                        startSeconds: UNTRIMMED_TIMING,
+                        endSeconds: UNTRIMMED_TIMING,
                         aspectRatio: ""
                     }
                 });
@@ -892,7 +880,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
         const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
         const start = urlTimingObj.start;
-        const end = urlTimingObj.end; // could be -1.0
+        const end = urlTimingObj.end; // could be 0.0
         const stats = this.reactControls.state.videoStatistics;
         stats.startSeconds = start;
         stats.endSeconds = end;
@@ -1006,6 +994,19 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         )[0] as HTMLVideoElement;
     }
 
+    // Currently only used in bloomVideo.ts
+    public static getSrcAttribute(videoElement: HTMLVideoElement): string {
+        const sources = videoElement.getElementsByTagName("source");
+        if (!sources || sources.length === 0) {
+            return "";
+        }
+        const source = sources[0] as HTMLSourceElement;
+        if (!source.hasAttribute("src")) {
+            return "";
+        }
+        return source.getAttribute("src");
+    }
+
     public static setCurrentVideoPoint(
         timeInSeconds: number,
         videoElement?: HTMLVideoElement
@@ -1019,7 +1020,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     // Returns an Object containing the results of executing a regexp on the src attribute of the source element.
     // url: the url without timings
     // start: the start time in seconds, or default of 0.0
-    // end: the end time in seconds, or default of -1.0 (temporary placeholder for maxDuration)
+    // end: the end time in seconds, or default of 0.0
     public static parseVideoSrcAttribute(srcAttr: string): UrlTimingObject {
         const re = /(.*)#t=([0-9]*[.][0-9]+)[,]([0-9]*[.][0-9]+)+/;
         const matches = re.exec(srcAttr);
@@ -1040,7 +1041,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public static convertTimeStringToSecondsNumber(duration: string): number {
-        if (duration === "" || duration === MAX_DURATION) {
+        if (duration === "" || duration === UNTRIMMED_TIMING) {
             return 0;
         }
         // from https://stackoverflow.com/questions/9640266/convert-hhmmss-string-to-seconds-only-in-javascript/9640417
@@ -1062,7 +1063,7 @@ class UrlTimingObject {
 
     constructor() {
         this.url = "";
-        this.start = DEFAULT_START;
-        this.end = MAX_DURATION;
+        this.start = UNTRIMMED_TIMING;
+        this.end = UNTRIMMED_TIMING;
     }
 }
