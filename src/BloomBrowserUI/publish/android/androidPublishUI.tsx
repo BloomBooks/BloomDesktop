@@ -103,9 +103,7 @@ class AndroidPublishUI extends React.Component<
         return false;
     }
 
-    private onCopy(e) {
-        e.preventDefault();
-
+    private onCopy() {
         // Yes, this is a hack. I simply could not get the client to populate the clipboard.
         // I tried using react-copy-to-clipboard, but kept getting runtime errors as if the component was not found.
         // I tried using document.execCommand("copy"), but though it worked in FF and Chrome, it did not work in Bloom.
