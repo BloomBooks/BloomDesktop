@@ -223,6 +223,12 @@ function AddEditKeyHandlers(container) {
         document.execCommand("removeFormat"); //will remove bold, italics, etc. but not things that use elements, like h1
     });
 
+    $(document).keydown(e => {
+        if (e.char === " " && e.ctrlKey) {
+            document.execCommand("removeFormat"); //will remove bold, italics, etc. but not things that use elements, like h1
+        }
+    });
+
     $(document).bind("keydown", "ctrl+u", e => {
         e.preventDefault();
         document.execCommand("underline");
