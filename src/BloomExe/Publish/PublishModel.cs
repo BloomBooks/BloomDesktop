@@ -470,10 +470,6 @@ namespace Bloom.Publish
 		{
 			if (BookSelection.CurrentSelection != null)
 			{
-				// Before loading layout, first trigger an expensive intialization of the book to make sure that all needed support files are copied e.g. Branding files.				
-				_bookServer.GetBookFromBookInfo(BookSelection.CurrentSelection.BookInfo, forSelectedBook:true);
-
-				// Now load layout
 				PageLayout = BookSelection.CurrentSelection.GetLayout();
 			}
 
