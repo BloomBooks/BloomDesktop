@@ -33,7 +33,6 @@ interface IComponentState {
     enabled: boolean;
     stateClass: string; // one of idle, countdown3, countdown2, countdown1, recording
     haveRecording: boolean;
-    originalExists: boolean;
     cameraAccess: boolean;
     cameraUnavailable: boolean;
     minutesRecorded: string;
@@ -92,7 +91,6 @@ export class SignLanguageToolControls extends React.Component<
         enabled: false,
         stateClass: "idle",
         haveRecording: false,
-        originalExists: false,
         cameraAccess: true,
         cameraUnavailable: false,
         minutesRecorded: "",
@@ -412,42 +410,122 @@ export class SignLanguageToolControls extends React.Component<
         }
     }
 
+    // Get an object with source: (the video pathname) and timings: (everything
+    // after the #) from the currently selected video element. This becomes
+    // the params passed to the SignLanguageApi functions which need details
+    // of a particular selected existing video.
+    private getParamsObjForCurrentVideo() {
+        const pathAndTiming = SignLanguageTool.getSelectedVideoPathAndTiming();
+        if (!pathAndTiming) {
+            return null;
+        }
+        const paramsObj = {
+            source: UrlUtils.extractPathComponent(pathAndTiming),
+            timings: ""
+        };
+        const indexOfHash = pathAndTiming.indexOf("#");
+        if (indexOfHash >= 0) {
+            paramsObj.timings = pathAndTiming.substring(indexOfHash + 1);
+        }
+        return paramsObj;
+    }
+
     public getVideoStatsFromFile() {
-        BloomApi.get("signLanguage/getStats", result => {
-            if (result.statusText != "OK") {
-                this.setState({
-                    videoStatistics: {
-                        duration: "",
-                        fileSize: "",
-                        frameSize: "",
-                        framesPerSecond: "",
-                        fileFormat: "",
-                        startSeconds: UNTRIMMED_TIMING,
-                        endSeconds: UNTRIMMED_TIMING,
-                        aspectRatio: ""
+        const paramsObj = this.getParamsObjForCurrentVideo();
+        if (!paramsObj) {
+            return;
+        }
+        BloomApi.getWithConfig(
+            "signLanguage/getStats",
+            { params: paramsObj },
+            result => {
+                if (result.statusText != "OK") {
+                    this.setState({
+                        videoStatistics: {
+                            duration: "",
+                            fileSize: "",
+                            frameSize: "",
+                            framesPerSecond: "",
+                            fileFormat: "",
+                            startSeconds: UNTRIMMED_TIMING,
+                            endSeconds: UNTRIMMED_TIMING,
+                            aspectRatio: ""
+                        }
+                    });
+                } else {
+                    const frameSize: string = result.data.frameSize;
+                    if (frameSize) {
+                        const index = frameSize.indexOf(" x ");
+                        if (index > 0) {
+                            const x = parseInt(frameSize.substring(0, index));
+                            const y = parseInt(frameSize.substring(index + 3));
+                            result.data.aspectRatio = calculateAspectRatio(
+                                x,
+                                y
+                            );
+                        }
                     }
-                });
-            } else {
-                const frameSize: string = result.data.frameSize;
-                if (frameSize) {
-                    const index = frameSize.indexOf(" x ");
-                    if (index > 0) {
-                        const x = parseInt(frameSize.substring(0, index));
-                        const y = parseInt(frameSize.substring(index + 3));
-                        result.data.aspectRatio = calculateAspectRatio(x, y);
-                    }
+                    this.setState({ videoStatistics: result.data });
                 }
-                this.setState({ videoStatistics: result.data });
             }
-        });
+        );
+    }
+
+    private getSelectedVideoContainer(): Element {
+        return SignLanguageTool.getVideoContainers(true)[0];
+    }
+
+    private updateVideo(url: string): void {
+        const container = this.getSelectedVideoContainer();
+        let video = container.getElementsByTagName("video")[0];
+        if (!video) {
+            video = container.ownerDocument.createElement("video");
+            container.appendChild(video);
+        }
+        let source = video.getElementsByTagName("source")[0];
+        if (!source) {
+            source = container.ownerDocument.createElement("source");
+            video.appendChild(source);
+        }
+        source.setAttribute("src", url);
     }
 
     private importRecording() {
-        BloomApi.post("signLanguage/importVideo");
+        BloomApi.post("signLanguage/importVideo", result => {
+            this.updateVideo(result.data);
+            // Makes sure the page gets saved with a reference to the new video,
+            // and incidentally that everything gets updated to be consistent with the
+            // new state of things.
+            BloomApi.postThatMightNavigate(
+                "common/saveChangesAndRethinkPageEvent"
+            );
+        });
     }
 
     private deleteRecording() {
-        BloomApi.post("signLanguage/deleteVideo");
+        const paramsObj = this.getParamsObjForCurrentVideo();
+        if (!paramsObj) {
+            return;
+        }
+        BloomApi.postDataWithConfig(
+            "signLanguage/deleteVideo",
+            "",
+            { params: paramsObj },
+            result => {
+                if (result.data == "deleted") {
+                    const elt = this.getSelectedVideoContainer();
+                    elt.classList.add("bloom-noVideoSelected");
+                    const video = elt.getElementsByTagName("video")[0];
+                    video.parentElement.removeChild(video);
+                    // Makes sure the page gets saved without a reference to the deleted video,
+                    // and incidentally that everything gets updated to be consistent with the
+                    // new state of things.
+                    BloomApi.postThatMightNavigate(
+                        "common/saveChangesAndRethinkPageEvent"
+                    );
+                }
+            }
+        );
     }
 
     private showInFolder() {
@@ -456,14 +534,6 @@ export class SignLanguageToolControls extends React.Component<
             "common/showInFolder",
             JSON.stringify({ folderPath: path })
         );
-    }
-
-    private editOutside() {
-        BloomApi.post("signLanguage/editVideo");
-    }
-
-    private restoreOriginal() {
-        BloomApi.post("signLanguage/restoreOriginal");
     }
 
     public turnOnVideo() {
@@ -613,11 +683,24 @@ export class SignLanguageToolControls extends React.Component<
             // raised when the user clicks stop and we call this.mediaRecorder.stop() above.
             const blob = new Blob(this.chunks, { type: "video/webm" });
             this.chunks = []; // enable garbage collection?
-            BloomApi.postDataWithConfig("signLanguage/recordedVideo", blob, {
-                headers: {
-                    "Content-Type": "video/mp4"
+            BloomApi.postDataWithConfig(
+                "signLanguage/recordedVideo",
+                blob,
+                {
+                    headers: {
+                        "Content-Type": "video/mp4"
+                    }
+                },
+                result => {
+                    this.updateVideo(result.data);
+                    // Makes sure the page gets saved with a reference to the new video,
+                    // and incidentally that everything gets updated to be consistent with the
+                    // new state of things.
+                    BloomApi.postThatMightNavigate(
+                        "common/saveChangesAndRethinkPageEvent"
+                    );
                 }
-            });
+            );
             // Don't know why this is necessary, but for some reason, the stream we have is no
             // longer useful after calling mediaRecorder.stop(). The monitor freezes and
             // nothing happens when I click record. So dispose of it and start a new one.
@@ -689,7 +772,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     // Specify 'true' to get only containers marked as selected
-    private static getVideoContainers(
+    public static getVideoContainers(
         selected?: boolean
     ): HTMLCollectionOf<Element> {
         let classes = "bloom-videoContainer";
@@ -855,8 +938,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         const videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
             this.reactControls.setState({
-                haveRecording: false,
-                originalExists: false
+                haveRecording: false
             });
             return;
         }
@@ -864,8 +946,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
         if (sources.length === 0) {
             this.reactControls.setState({
-                haveRecording: false,
-                originalExists: false
+                haveRecording: false
             });
             return;
         }
@@ -873,8 +954,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         const src = sources[0].getAttribute("src");
         if (!src) {
             this.reactControls.setState({
-                haveRecording: false,
-                originalExists: false
+                haveRecording: false
             });
             return;
         }
@@ -902,12 +982,6 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                     );
                 }
                 this.reactControls.setState({ haveRecording: fileExists });
-            }
-        );
-        BloomApi.get(
-            "toolbox/fileExists?filename=" + src.replace(".mp4", ".orig"),
-            result => {
-                this.reactControls.setState({ originalExists: result.data });
             }
         );
     }
