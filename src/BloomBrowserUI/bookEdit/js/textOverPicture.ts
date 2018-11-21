@@ -81,9 +81,12 @@ class TextOverPictureManager {
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
     private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
-        return $(document.elementFromPoint(mouseX, mouseY)).closest(
-            ".bloom-imageContainer"
-        );
+        const clickElement = document.elementFromPoint(mouseX, mouseY);
+        if (!clickElement) {
+            // method not specified to return null
+            return $();
+        }
+        return $(clickElement).closest(".bloom-imageContainer");
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
@@ -106,9 +109,7 @@ class TextOverPictureManager {
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
     private deleteFloatingTOPBox(mouseX: number, mouseY: number) {
-        const focusedBubble = $(
-            document.elementFromPoint(mouseX, mouseY)
-        ).closest(".bloom-textOverPicture");
+        const focusedBubble = this.getImageContainerFromMouse(mouseX, mouseY);
         if (focusedBubble && focusedBubble.length > 0) {
             focusedBubble.remove();
         }

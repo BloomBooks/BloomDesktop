@@ -50,7 +50,7 @@ class PageChooser {
             alert("Expected url in PageChooser ctor!");
         }
 
-        this._selectedGridItem = undefined;
+        this._selectedGridItem = $();
         this._indexOfPageToSelect = 0;
         this._scrollTopOfTheScrollingDiv = 0;
         this._convertWholeBook = false;
@@ -149,10 +149,11 @@ class PageChooser {
             10
         );
 
-        const current = $(
-            (<HTMLIFrameElement>window.parent.document.getElementById("page"))
-                .contentWindow.document
+        const page = <HTMLIFrameElement>(
+            window.parent.document.getElementById("page")
         );
+        const current =
+            page && page.contentWindow ? $(page.contentWindow.document) : $();
         const currentTranslationGroupCount = this.countTranslationGroupsForChangeLayout(
             current
         );
@@ -205,7 +206,7 @@ class PageChooser {
                 }
                 // We couldn't find the proper object, so don't do anything.  The user
                 // apparently clicked on a visually empty spot that got misidentified.
-                return null;
+                return $();
             }
         }
         return gridItem;

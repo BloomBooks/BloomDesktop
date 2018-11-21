@@ -28,7 +28,7 @@ export default class EpubPreview extends React.Component<
         super(props);
         WebSocketManager.addListener(props.websocketClientContext, e => {
             if (e.id === "epubPreview") {
-                this.setState({ previewSrc: e.message });
+                this.setState({ previewSrc: e.message || "" });
             }
         });
     }

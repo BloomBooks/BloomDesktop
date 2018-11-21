@@ -57,7 +57,7 @@ class AndroidPublishUI extends React.Component<
 
         WebSocketManager.addListener(kWebSocketLifetime, e => {
             if (e.id === "publish/android/state") {
-                this.handleUpdateState(e.message);
+                this.handleUpdateState(e.message || "");
             }
         });
 
@@ -109,7 +109,7 @@ class AndroidPublishUI extends React.Component<
         // I tried using document.execCommand("copy"), but though it worked in FF and Chrome, it did not work in Bloom.
         BloomApi.postDataWithConfig(
             "publish/android/textToClipboard",
-            document.getElementById("progress-box").innerText,
+            document.getElementById("progress-box")!.innerText, // want to crash here if no progress box
             { headers: { "Content-Type": "text/plain" } }
         );
     }

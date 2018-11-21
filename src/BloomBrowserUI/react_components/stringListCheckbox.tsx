@@ -32,9 +32,13 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
         if (indexOfOnName > -1) {
             parts.splice(indexOfOnName, 1);
         }
-        const indexOfOffName = parts.indexOf(this.props.tristateItemOffName);
-        if (indexOfOffName > -1) {
-            parts.splice(indexOfOffName, 1);
+        if (this.props.tristateItemOffName) {
+            const indexOfOffName = parts.indexOf(
+                this.props.tristateItemOffName
+            );
+            if (indexOfOffName > -1) {
+                parts.splice(indexOfOffName, 1);
+            }
         }
 
         if (buttonState) {
@@ -48,12 +52,15 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
         return parts.length > 0 ? parts.join(",") : "";
     }
 
-    private getCheckStatus(): boolean {
+    private getCheckStatus(): boolean | undefined {
         const parts = this.props.list.split(",");
         if (parts.indexOf(this.props.itemName) > -1) {
             return true;
         }
-        if (parts.indexOf(this.props.tristateItemOffName) > -1) {
+        if (
+            this.props.tristateItemOffName &&
+            parts.indexOf(this.props.tristateItemOffName) > -1
+        ) {
             return false;
         }
         return undefined; // indeterminate

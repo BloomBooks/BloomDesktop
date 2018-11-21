@@ -231,16 +231,16 @@ function AddEditKeyHandlers(container) {
     // adding to the handler for ctrl-space above might work.
     $(document).bind("keydown", "ctrl+r", e => {
         e.preventDefault();
-        document.execCommand("justifyright", false, null);
+        document.execCommand("justifyright", false);
     });
     $(document).bind("keydown", "ctrl+l", e => {
         e.preventDefault();
-        document.execCommand("justifyleft", false, null);
+        document.execCommand("justifyleft", false);
     });
     $(document).bind("keydown", "ctrl+shift+e", e => {
         //ctrl+shiift+e is what google drive uses
         e.preventDefault();
-        document.execCommand("justifycenter", false, null);
+        document.execCommand("justifycenter", false);
     });
 
     // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
