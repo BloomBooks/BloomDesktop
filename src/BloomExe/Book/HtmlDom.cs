@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
 using SIL.Code;
@@ -1655,13 +1656,15 @@ namespace Bloom.Book
 			// we choose to return an empty path for failure instead of null to reduce errors created by things like
 			// HtmlDom.GetImageElementUrl(element).UrlEncoded.
 			if (videoElt == null)
-				return UrlPathString.CreateFromUnencodedString(String.Empty);
+				return UrlPathString.CreateFromUnencodedString(string.Empty);
 			var srcElt = videoElt.GetChildWithName("source");
 			if (srcElt == null)
-				return UrlPathString.CreateFromUnencodedString(String.Empty);
+				return UrlPathString.CreateFromUnencodedString(string.Empty);
 
 			var src = srcElt.GetAttribute("src");
-			return UrlPathString.CreateFromUrlEncodedString(src);
+			string dummy;
+			var fileName = SignLanguageApi.StripTimingFromVideoUrl(src, out dummy);
+			return UrlPathString.CreateFromUrlEncodedString(fileName);
 		}
 
 		/// <summary>

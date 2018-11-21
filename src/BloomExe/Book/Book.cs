@@ -2208,9 +2208,12 @@ namespace Bloom.Book
 			foreach (var source in newpageDiv.SafeSelectNodes(".//video/source[contains(@type,'video/')]").Cast<XmlElement>().ToList())
 			{
 				var src = source.GetAttribute("src");
-				if (String.IsNullOrWhiteSpace(src))
+				if (string.IsNullOrWhiteSpace(src))
 					continue;
-				var oldVideoPath = Path.Combine(FolderPath, src);
+				// The following will lose any params that might have been on the video url, but preserve timings.
+				string oldTimings;
+				var oldVideoUrl = SignLanguageApi.StripTimingFromVideoUrl(src, out oldTimings);
+				var oldVideoPath = Path.Combine(FolderPath, oldVideoUrl);
 				// If the video file doesn't exist, don't bother adjusting anything.
 				// If it does exist, copy it with a new name based on the current one, similarly
 				// to how we've been renaming image files that already exist in the book's folder.
@@ -2227,7 +2230,7 @@ namespace Bloom.Book
 						newVideoPath = Path.Combine(FolderPath, "video", newFileName + extension);
 					} while (RobustFile.Exists(newVideoPath));
 					RobustFile.Copy(oldVideoPath, newVideoPath, false);
-					source.SetAttribute("src", "video/" + Path.GetFileName(newVideoPath));
+					source.SetAttribute("src", BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath) + oldTimings);
 				}
 			}
 		}
