@@ -118,7 +118,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
-      <HintPath>..\..\output\$(Configuration)\net40\Geckofx-Core.dll</HintPath>
+      <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
     </Reference>
     <Reference Include="Geckofx-Core, Version=60.0.22.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\Geckofx60.32.60.0.22\lib\net45\Geckofx-Core.dll</HintPath>
@@ -1302,7 +1302,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
     <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
-    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx60.32.60.0.18\content\Firefox\*.* $(OutDir)Firefox" />
+    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx60.32.60.0.22\content\Firefox\*.* $(OutDir)Firefox" />
   </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
