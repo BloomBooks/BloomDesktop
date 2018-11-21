@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="fr">À propos des Grands Livres</target>
+        <target xml:lang="fr" state="translated">À propos des Grands Livres</target>
         <note>ID: bigbook.title</note>
         <alt-trans>
           <target xml:lang="fr">À propos de gros livres</target>
@@ -12,7 +12,7 @@
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="fr">Les Grands Livres sont conçus de manière à ce que les enseignants les lisent en les montrant à la classe. Pour plus d'informations, consultez ceci<g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF de Scholastic</g> (en anglais).</target>
+        <target xml:lang="fr" state="translated">Les Grands Livres sont conçus de manière à ce que les enseignants les lisent en les montrant à la classe. Pour plus d'informations, consultez ceci<g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF de Scholastic</g> (en anglais).</target>
         <note>ID: bigbook.use</note>
         <alt-trans>
           <target xml:lang="fr">Les Grands Livres sont conçus de manière à ce que les enseignants les lisent en les montrant à la classe. Pour plus d'informations, consultez ceci <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF de Scholastic</g> (en anglais).</target>
@@ -20,7 +20,7 @@
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="fr">Impression d'un Grand livre</target>
+        <target xml:lang="fr" state="translated">Impression d'un Grand livre</target>
         <note>ID: bigbook.printing</note>
         <alt-trans>
           <target xml:lang="fr">Impression d'un Grand Livre</target>
@@ -36,7 +36,7 @@
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="fr">Pour faciliter la tâche, ce modèle est au format A4 paysage, en gros caractères.
+        <target xml:lang="fr" state="translated">Pour faciliter la tâche, ce modèle est au format A4 paysage, en gros caractères.
 Vous pourrez facilement faire des livres au format A3 (deux fois plus grand).
 Il vous suffit de demander à l'imprimerie d'agrandir votre PDF en format A4 au format A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
@@ -53,7 +53,7 @@ Il suffit de prendre votre PDF A4 à une imprimerie et leur demander de l'agrand
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="fr">Limitations de cette version</target>
+        <target xml:lang="fr" state="translated">Limitations de cette version</target>
         <note>ID: bigbook.limits</note>
         <alt-trans>
           <target xml:lang="fr">Limites de cette version</target>
@@ -61,7 +61,7 @@ Il suffit de prendre votre PDF A4 à une imprimerie et leur demander de l'agrand
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="fr">Si votre écran est petit, il sera difficile de lire la page des crédits. Pour pouvoir la modifier, essayez de zoomer avec le zoom +/- en haut à droite de votre écran.</target>
+        <target xml:lang="fr" state="translated">Si votre écran est petit, il sera difficile de lire la page des crédits. Pour pouvoir la modifier, essayez de zoomer avec le zoom +/- en haut à droite de votre écran.</target>
         <note>ID: bigbook.limits.smallscreen</note>
         <alt-trans>
           <target xml:lang="fr">Si vous utilisez un petit écran, il peut être difficile de lire la page de crédits.  Essayez d'utiliser CTRL + molette de la souris pour zoomer sur la page afin que vous puissiez la modifier.</target>
@@ -78,7 +78,7 @@ Il suffit de prendre votre PDF A4 à une imprimerie et leur demander de l'agrand
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="fr">Cette version comporte une page "Instructions pour les enseignants" déjà rédigée en anglais.
+        <target xml:lang="fr" state="translated">Cette version comporte une page "Instructions pour les enseignants" déjà rédigée en anglais.
 Si vous souhaitez mettre des instructions dans une autre langue, vous pouvez remplacer ce texte par le vôtre.
 Si vous nous envoyez ce texte, nous pourrons le faire figurer dans une prochaine version de ce modèle.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>

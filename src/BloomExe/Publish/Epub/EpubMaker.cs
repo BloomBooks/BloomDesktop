@@ -14,6 +14,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using Bloom.web;
+using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
 #if !__MonoCS__
@@ -74,7 +75,7 @@ namespace Bloom.Publish.Epub
 	{
 		public delegate EpubMaker Factory();// autofac uses this
 
-		public const string kEPUBExportFolder = "ePUB export";
+		public const string kEPUBExportFolder = "ePUB_export";
 		protected const string kEpubNamespace = "http://www.idpf.org/2007/ops";
 
 		public const string kAudioFolder = "audio";
@@ -260,6 +261,10 @@ namespace Bloom.Publish.Epub
 			_svgItems = new List<string>();
 			_firstContentPageItem = null;
 			HandleImageDescriptions(Book.OurHtmlDom);
+			if (string.IsNullOrEmpty(SignLanguageApi.FfmpegProgram))
+			{
+				Logger.WriteEvent("Cannot find ffmpeg program while preparing videos for publishing.");
+			}
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
 				progress.MessageWithoutLocalizing(HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement));
@@ -860,7 +865,6 @@ namespace Bloom.Publish.Epub
 
 			CopyImages(pageDom);
 			CopyVideos(pageDom);
-			AddVideoAttributes(pageDom);
 
 			AddEpubNamespace(pageDom);
 			AddPageBreakSpan(pageDom, pageDocName);
@@ -1218,30 +1222,14 @@ namespace Bloom.Publish.Epub
 
 		private void CopyVideos(HtmlDom pageDom)
 		{
-			foreach (XmlElement vid in HtmlDom.SelectChildVideoElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>())
+			foreach (XmlElement videoContainerElement in HtmlDom.SelectChildVideoElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>())
 			{
-				var src = FindVideoFileIfPossible(vid);
-				if (String.IsNullOrEmpty(src))
+				var trimmedFilePath = SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, Book.FolderPath);
+				if (string.IsNullOrEmpty(trimmedFilePath))
 					continue;
-				var srcPath = Path.Combine(Book.FolderPath, src);
-				if (!RobustFile.Exists(srcPath))
-					continue;
-				var dstPath = CopyFileToEpub(srcPath, subfolder:kVideoFolder);
+				var dstPath = CopyFileToEpub(trimmedFilePath, subfolder:kVideoFolder);
 				var newSrc = dstPath.Substring(_contentFolder.Length+1).Replace('\\','/');
-				HtmlDom.SetVideoElementUrl(new ElementProxy(vid), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
-			}
-		}
-
-		/// <summary>
-		/// Add attributes needed for videos to work in Readium and possibly other readers.
-		/// </summary>
-		private void AddVideoAttributes(HtmlDom pageDom)
-		{
-			foreach (XmlElement vid in pageDom.SafeSelectNodes("//div[contains(@class,'bloom-videoContainer')]/video").Cast<XmlElement>())
-			{
-				vid.SetAttribute("controls", "controls");
-				// Can we produce landscape oriented books where this should be height="100%" instead?
-				vid.SetAttribute("width", "100%");
+				HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(newSrc, true), false);
 			}
 		}
 

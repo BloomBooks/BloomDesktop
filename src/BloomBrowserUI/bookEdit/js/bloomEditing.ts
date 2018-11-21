@@ -361,12 +361,31 @@ function IsInTranslationMode() {
     }
 }
 
+let onLoadHappenedNormally = false;
+
+const windowLoadedHandler = () => {
+    onLoadHappenedNormally = true;
+    fireCSharpEditEvent("jsNotification", "editPagePainted");
+};
+
+// When we don't already have a video (either a new page, or it has been deleted),
+// and record a new one, we switchContentPage to make the new video show up.
+// And for no known reason, the window load event never fires. There may possibly be
+// other cases since I have no explanation. Rather than never sending the editPagePainted
+// notification which would prevent saving subsequent changes to the page, if the event
+// is delayed much longer than expected we just call the handler.
+// For a similar event not firing problem, see editViewFrame.switchContentPage().
+window.setTimeout(() => {
+    if (onLoadHappenedNormally) {
+        return;
+    }
+    windowLoadedHandler();
+}, 1000);
+
 window.onload = () => {
     // onload means we have all the parts, and waiting for one more animation frame
     // seems to mean it has actually been painted.
-    window.requestAnimationFrame(() => {
-        fireCSharpEditEvent("jsNotification", "editPagePainted");
-    });
+    window.requestAnimationFrame(windowLoadedHandler);
 };
 
 // Originally, all this code was in document.load and the selectors were acting

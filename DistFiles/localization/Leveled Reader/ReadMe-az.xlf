@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="leveled.definition">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="az" state="needs-translation">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</target>
+        <target xml:lang="az" state="translated"><g id="genid-1" ctype="x-html-strong">Səviyyəli Oxuyan</g> xüsusi bir oxu inkişaf səviyyəsində olan bir şagird üçün yazılmış bir kitabdır. Səviyyələr söz uzunluğu, cümlə uzunluğu və s. hədəfləri müəyyən edirlər. Həmçinin, müvafiq formatlaşdırma, extiyat sözlər, illüstrasiya dəstəyi və mövzu müəyyənləşdirir.</target>
         <note>ID: leveled.definition</note>
       </trans-unit>
       <trans-unit id="leveled.levels">
@@ -49,12 +49,12 @@
       </trans-unit>
       <trans-unit id="leveled.reader.level">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="az" state="needs-translation">Leveled Reader Level</target>
+        <target xml:lang="az" state="translated">Mərhələli Oxuyan Səviyyəsi</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="az" state="needs-translation">Decodable Stage</target>
+        <target xml:lang="az" state="translated">Dünsüncəli Mərhələsi</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>

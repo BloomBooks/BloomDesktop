@@ -1006,6 +1006,12 @@ namespace Bloom
 											Resources.BloomIcon, "issues@bloomlibrary.org", "SIL");
 
 				LocalizationManager.Create(uiLanguage,
+					"BloomMediumPriority", "BloomMediumPriority", Application.ProductVersion,
+					installedStringFileFolder,
+					"SIL/Bloom",
+					Resources.BloomIcon, "issues@bloomlibrary.org", "Bloom");
+
+				LocalizationManager.Create(uiLanguage,
 					"BloomLowPriority", "BloomLowPriority", Application.ProductVersion,
 					installedStringFileFolder,
 					"SIL/Bloom",

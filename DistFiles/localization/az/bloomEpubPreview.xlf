@@ -6,8 +6,19 @@
         <source xml:lang="en">This is an <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) version of your book. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">It contains audio, so that new readers can listen as they read.</g>
       </source>
         <target xml:lang="az" state="translated">Bu sizin kitabınızdan <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB"> ePUB</g> (Elektron kitab) növüdür. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks"> O, səs yazıları daxil edir ki, yəni oxuyanlar oxuyuraq eşidə bilsinlər deyə</g>
+      
+      
       </target>
         <note>ID: epubpreview.describe</note>
+        <alt-trans>
+          <target xml:lang="az">Bu sizin kitabınızdan <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB"> ePUB</g> (Elektron kitab) növüdür. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks"> O, səs yazıları daxil edir ki, yəni oxuyanlar oxuyuraq eşidə bilsinlər deyə</g>
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="az">Bu sizin kitabınızdan <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB"> ePUB</g> (Elektron kitab) növüdür. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks"> O, səs yazıları daxil edir ki, yəni oxuyanlar oxuyuraq eşidə bilsinlər deyə</g>
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.recording.butnotalk">
         <source xml:lang="en">This book has some recordings, but this audio is not included in the ePUB.</source>

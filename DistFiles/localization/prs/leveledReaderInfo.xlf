@@ -4,37 +4,39 @@
     <body>
       <trans-unit id="leveled.reader.vocabulary" approved="yes">
         <source xml:lang="en">Vocabulary</source>
-        <target xml:lang="prs">ذخیره لغات</target>
+        <target xml:lang="prs" state="translated">ذخیره لغات</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="prs">در مراحل مقدماتی، لغات ساده را استعمال نمائید که به اطفال اشنا باشد. اگر در لسان شما ممکن باشد لغات فقط با یک سیلاب را استعمال نمائید. قسمیکه اطفال به سطوح بالا میرود، شما میتوانید که لغات با سیلاب های زیاد را استعمال نمائید. شما میتوانید لغات کمتر اشنا را استفاده نمائید. اطفال باید بتوانند که معنی این کلیمات کمتر اشنا را حدس بزنند از فهم لغات و جملات مروج محیطی و همچناناز ترسم ها.</target>
+        <target xml:lang="prs" state="translated">در مراحل مقدماتی، لغات ساده را استعمال نمائید که به اطفال اشنا باشد. اگر در لسان شما ممکن باشد لغات فقط با یک سیلاب را استعمال نمائید. قسمیکه اطفال به سطوح بالا میرود، شما میتوانید که لغات با سیلاب های زیاد را استعمال نمائید. شما میتوانید لغات کمتر اشنا را استفاده نمائید. اطفال باید بتوانند که معنی این کلیمات کمتر اشنا را حدس بزنند از فهم لغات و جملات مروج محیطی و همچناناز ترسم ها.</target>
         <note>ID: leveled.reader.start.simple</note>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting" approved="yes">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="prs">طرحه دادن</target>
+        <target xml:lang="prs" state="translated">طرحه دادن</target>
         <note>ID: leveled.reader.formatting</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
-        <target xml:lang="prs">خوانندگان ابتدایی ازانواع خط های بزرگتر همراه با فاصله واضح میان کلمیات مستفید شود. داشتن کلیمات جملات در عین محل در هر صفحه نیز ممد میباشد. قسمیکه خوانندگان دارای سطوح بالا پیشرفت میکنند، اندازه نوع خط و فاصله کم خواهد شد وجملات نیز میتواند در جاهای مختلف در هر صفحه باشد.</target>
+        <target xml:lang="prs" state="translated">خوانندگان ابتدایی ازانواع خط های بزرگتر همراه با فاصله واضح میان کلمیات مستفید شود. داشتن کلیمات جملات در عین محل در هر صفحه نیز ممد میباشد. قسمیکه خوانندگان دارای سطوح بالا پیشرفت میکنند، اندازه نوع خط و فاصله کم خواهد شد وجملات نیز میتواند در جاهای مختلف در هر صفحه باشد.</target>
         <note>ID: leveled.reader.start.large</note>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
-        <target xml:lang="prs">بخاطر ازدیاد اندازه نوع خط ، فاصله خط، وفاصله کلمات در بلوم، در خانه متن کلیک نموده و بعدا بالای ‏"cog"‏ خاکی در کنج چپ پائینی. اگر شما این کار را بکنید و یک کتاب نمونه بسازید، کتابهای ساخته شده با آن نمونه نیز تنظیمات نوع خط را بکار خواهد برد.</target>
+        <target xml:lang="prs" state="translated">بخاطر ازدیاد اندازه نوع خط ، فاصله خط، وفاصله کلمات در بلوم، در خانه متن کلیک نموده و بعدا بالای ‏"cog"‏ خاکی در کنج چپ پائینی. اگر شما این کار را بکنید و یک کتاب نمونه بسازید، کتابهای ساخته شده با آن نمونه نیز تنظیمات نوع خط را بکار خواهد برد.</target>
         <note>ID: leveled.reader.increase.sizes</note>
       </trans-unit>
       <trans-unit id="leveled.reader.predictability" approved="yes">
         <source xml:lang="en">Predictability</source>
-        <target xml:lang="prs">قابلیت پیش بینی</target>
+        <target xml:lang="prs" state="translated">قابلیت پیش بینی</target>
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="prs">
+        <target xml:lang="prs" state="translated">
+          
+          
           
           
           
@@ -68,6 +70,45 @@
           
           
           
+          
+          
+           <g id="genid-1" ctype="x-html-em">قابلیت پیش بینی</g> دریک متن به این معنی است که خواننده حدس زده میتواند که بعدی چیست. شما میتوانید پیش بینی کردن را با استفاده از طرح های تکراری ازدیاد نمایید. بعضی از روش های است که میتوانید استفاده کنید:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+           <g id="genid-1" ctype="x-html-em">قابلیت پیش بینی</g> دریک متن به این معنی است که خواننده حدس زده میتواند که بعدی چیست. شما میتوانید پیش بینی کردن را با استفاده از طرح های تکراری ازدیاد نمایید. بعضی از روش های است که میتوانید استفاده کنید:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
            <g id="genid-1" ctype="x-html-em">قابلیت پیش بینی</g> دریک متن به این معنی است که خواننده حدس زده میتواند که بعدی چیست. شما میتوانید پیش بینی کردن را با استفاده از طرح های تکراری ازدیاد نمایید. بعضی از روش های است که میتوانید استفاده کنید:</target>
         </alt-trans>
         <alt-trans>
@@ -91,35 +132,6 @@
           <target xml:lang="prs">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">قابلیت پیش بینی</g> دریک متن به این معنی است که خواننده حدس زده میتواند که بعدی چیست. شما میتوانید پیش بینی کردن را با استفاده از طرح های تکراری ازدیاد نمایید. بعضی از روش های است که میتوانید استفاده کنید:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">قابلیت پیش بینی</g> دریک متن به این معنی است که خواننده حدس زده میتواند که بعدی چیست. شما میتوانید پیش بینی کردن را با استفاده از طرح های تکراری ازدیاد نمایید. بعضی از روش های است که میتوانید استفاده کنید:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
           
           
@@ -135,17 +147,17 @@
       </trans-unit>
       <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
-        <target xml:lang="prs">تکرار – تکرار بخش های متن، بطور مثال، استعمال عین جمله با هر صفحه و فقط تغیر یک لغت در هر جمله</target>
+        <target xml:lang="prs" state="translated">تکرار – تکرار بخش های متن، بطور مثال، استعمال عین جمله با هر صفحه و فقط تغیر یک لغت در هر جمله</target>
         <note>ID: leveled.reader.repetition</note>
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="prs">تسلسل – داستان با تسلسل شناخته شده مانند روز های هفته و یا استعمال ارقام به ترتیب</target>
+        <target xml:lang="prs" state="translated">تسلسل – داستان با تسلسل شناخته شده مانند روز های هفته و یا استعمال ارقام به ترتیب</target>
         <note>ID: leveled.reader.sequencing</note>
       </trans-unit>
       <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="prs">تسلسل سازی – داستان نه به ترتیب تکرار شده و به هر صفحه جدید علاوه شده است</target>
+        <target xml:lang="prs" state="translated">تسلسل سازی – داستان نه به ترتیب تکرار شده و به هر صفحه جدید علاوه شده است</target>
         <note>ID: leveled.reader.building.sequence</note>
         <alt-trans>
           <target xml:lang="prs">تسلسل سازی – داستانی نه به ترتیب تکرار شده و به هر صفحه جدید علاوه شده است</target>
@@ -159,7 +171,7 @@ Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
-        <target xml:lang="prs">وزن و قافیه – یک داستان با ترتیب یا تسلسل که شامل وزن وقافیه نیز باشد. بطور مثال:
+        <target xml:lang="prs" state="translated">وزن و قافیه – یک داستان با ترتیب یا تسلسل که شامل وزن وقافیه نیز باشد. بطور مثال:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre"> خرس نصواری، خرس نصواری، شما چه میبینید؟
 من گنجشک سرخ را میبینم که بطرف من نگاه میکند.
@@ -168,6 +180,8 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
 ‏ مرغ آبی زرد، مرغ آبی زرد، شما چه میبینید؟</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. و ایرک کارل</g>
         </g>
+      
+      
       
       
       
@@ -211,6 +225,63 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">وزن و قافیه – یک داستان با ترتیب یا تسلسل که شامل وزن وقافیه نیز باشد. بطور مثال:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> خرس نصواری، خرس نصواری، شما چه میبینید؟
+من گنجشک سرخ را میبینم که بطرف من نگاه میکند.
+گنجشک سرخ، گنجشک سرخ، شما چه میبینید؟
+من مرغ آبی زرد میبینم که به من نگاه میکند.
+‏ مرغ آبی زرد، مرغ آبی زرد، شما چه میبینید؟</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. و ایرک کارل</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">وزن و قافیه – یک داستان با ترتیب یا تسلسل که شامل وزن وقافیه نیز باشد. بطور مثال:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> خرس نصواری، خرس نصواری، شما چه میبینید؟
+من گنجشک سرخ را میبینم که بطرف من نگاه میکند.
+گنجشک سرخ، گنجشک سرخ، شما چه میبینید؟
+من مرغ آبی زرد میبینم که به من نگاه میکند.
+‏ مرغ آبی زرد، مرغ آبی زرد، شما چه میبینید؟</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. و ایرک کارل</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -251,53 +322,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         </g>
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">وزن و قافیه – یک داستان با ترتیب یا تسلسل که شامل وزن وقافیه نیز باشد. بطور مثال:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre"> خرس نصواری، خرس نصواری، شما چه میبینید؟
-من گنجشک سرخ را میبینم که بطرف من نگاه میکند.
-گنجشک سرخ، گنجشک سرخ، شما چه میبینید؟
-من مرغ آبی زرد میبینم که به من نگاه میکند.
-‏ مرغ آبی زرد، مرغ آبی زرد، شما چه میبینید؟</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. و ایرک کارل</g>
-        </g>
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">وزن و قافیه – یک داستان با ترتیب یا تسلسل که شامل وزن وقافیه نیز باشد. بطور مثال:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre"> خرس نصواری، خرس نصواری، شما چه میبینید؟
-من گنجشک سرخ را میبینم که بطرف من نگاه میکند.
-گنجشک سرخ، گنجشک سرخ، شما چه میبینید؟
-من مرغ آبی زرد میبینم که به من نگاه میکند.
-‏ مرغ آبی زرد، مرغ آبی زرد، شما چه میبینید؟</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- بل مارتین، جه آر. و ایرک کارل</g>
-        </g>
       
       
       
@@ -314,13 +338,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
-        <target xml:lang="prs">قابلیت حمایه تصویر</target>
+        <target xml:lang="prs" state="translated">قابلیت حمایه تصویر</target>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
-        <target xml:lang="prs">ترسیم ها به داستان حمایت فراهم مینمایند. ترسیم ها به داستان به نواع و روشهای مختلف ارتباط دارند <g id="genid-5" ctype="x-html-em">سطوح</g> و برای انواع مختلف شاگردان (پائین را ببنید). به یاد داشته باشید که در اکثر فرهنگ ها ی که مواد چاپی زیاد ندارند، تصاویر مغلق شاید بخاطر فهم مشکل باشد.
+        <target xml:lang="prs" state="translated">ترسیم ها به داستان حمایت فراهم مینمایند. ترسیم ها به داستان به نواع و روشهای مختلف ارتباط دارند <g id="genid-5" ctype="x-html-em">سطوح</g> و برای انواع مختلف شاگردان (پائین را ببنید). به یاد داشته باشید که در اکثر فرهنگ ها ی که مواد چاپی زیاد ندارند، تصاویر مغلق شاید بخاطر فهم مشکل باشد.
+    
+    
     
     
     
@@ -354,6 +380,45 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">ترسیم ها به داستان حمایت فراهم مینمایند. ترسیم ها به داستان به نواع و روشهای مختلف ارتباط دارند <g id="genid-5" ctype="x-html-em">سطوح</g> و برای انواع مختلف شاگردان (پائین را ببنید). به یاد داشته باشید که در اکثر فرهنگ ها ی که مواد چاپی زیاد ندارند، تصاویر مغلق شاید بخاطر فهم مشکل باشد.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">ترسیم ها به داستان حمایت فراهم مینمایند. ترسیم ها به داستان به نواع و روشهای مختلف ارتباط دارند <g id="genid-5" ctype="x-html-em">سطوح</g> و برای انواع مختلف شاگردان (پائین را ببنید). به یاد داشته باشید که در اکثر فرهنگ ها ی که مواد چاپی زیاد ندارند، تصاویر مغلق شاید بخاطر فهم مشکل باشد.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -377,35 +442,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="prs">ترسیم ها به داستان حمایت فراهم مینمایند. ترسیم ها به داستان به نواع و روشهای مختلف ارتباط دارند <g id="genid-5" ctype="x-html-em">سطوح</g> و برای انواع مختلف شاگردان (پائین را ببنید). به یاد داشته باشید که در اکثر فرهنگ ها ی که مواد چاپی زیاد ندارند، تصاویر مغلق شاید بخاطر فهم مشکل باشد.
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">ترسیم ها به داستان حمایت فراهم مینمایند. ترسیم ها به داستان به نواع و روشهای مختلف ارتباط دارند <g id="genid-5" ctype="x-html-em">سطوح</g> و برای انواع مختلف شاگردان (پائین را ببنید). به یاد داشته باشید که در اکثر فرهنگ ها ی که مواد چاپی زیاد ندارند، تصاویر مغلق شاید بخاطر فهم مشکل باشد.
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">ترسیم ها به داستان حمایت فراهم مینمایند. ترسیم ها به داستان به نواع و روشهای مختلف ارتباط دارند <g id="genid-5" ctype="x-html-em">سطوح</g> و برای انواع مختلف شاگردان (پائین را ببنید). به یاد داشته باشید که در اکثر فرهنگ ها ی که مواد چاپی زیاد ندارند، تصاویر مغلق شاید بخاطر فهم مشکل باشد.
     
     
     
@@ -422,7 +458,9 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
-        <target xml:lang="prs">برای <g id="genid-6" ctype="x-html-strong">کتاب نوظهور</g> تصاویر باید با داستان مطابقت نزدیک داشته باشد. خواننده باید بتواند که داستان را فقط با نگاه کردن به تصاویر پیش بینی کند. ترسیم های این سطح یا سویه باید ساده باشد.
+        <target xml:lang="prs" state="translated">برای <g id="genid-6" ctype="x-html-strong">کتاب نوظهور</g> تصاویر باید با داستان مطابقت نزدیک داشته باشد. خواننده باید بتواند که داستان را فقط با نگاه کردن به تصاویر پیش بینی کند. ترسیم های این سطح یا سویه باید ساده باشد.
+      
+      
       
       
       
@@ -456,6 +494,45 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-6" ctype="x-html-strong">کتاب نوظهور</g> تصاویر باید با داستان مطابقت نزدیک داشته باشد. خواننده باید بتواند که داستان را فقط با نگاه کردن به تصاویر پیش بینی کند. ترسیم های این سطح یا سویه باید ساده باشد.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-6" ctype="x-html-strong">کتاب نوظهور</g> تصاویر باید با داستان مطابقت نزدیک داشته باشد. خواننده باید بتواند که داستان را فقط با نگاه کردن به تصاویر پیش بینی کند. ترسیم های این سطح یا سویه باید ساده باشد.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -479,35 +556,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="prs">برای <g id="genid-6" ctype="x-html-strong">کتاب نوظهور</g> تصاویر باید با داستان مطابقت نزدیک داشته باشد. خواننده باید بتواند که داستان را فقط با نگاه کردن به تصاویر پیش بینی کند. ترسیم های این سطح یا سویه باید ساده باشد.
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-6" ctype="x-html-strong">کتاب نوظهور</g> تصاویر باید با داستان مطابقت نزدیک داشته باشد. خواننده باید بتواند که داستان را فقط با نگاه کردن به تصاویر پیش بینی کند. ترسیم های این سطح یا سویه باید ساده باشد.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-6" ctype="x-html-strong">کتاب نوظهور</g> تصاویر باید با داستان مطابقت نزدیک داشته باشد. خواننده باید بتواند که داستان را فقط با نگاه کردن به تصاویر پیش بینی کند. ترسیم های این سطح یا سویه باید ساده باشد.
       
       
       
@@ -524,7 +572,9 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
-        <target xml:lang="prs">برای <g id="genid-7" ctype="x-html-strong">خوانندگان ابتدایی</g> تصاویر باید به داستان یک اندازه حمایت بدهد. قسمیکه مقدار متن زیاد میشود، خواننده کم وابسته به تصاویر میباشد و معنی زیاد تر را از تصاویر میگیرد. ترسیم ها میتواند زیادتر مغلق تر باشد.
+        <target xml:lang="prs" state="translated">برای <g id="genid-7" ctype="x-html-strong">خوانندگان ابتدایی</g> تصاویر باید به داستان یک اندازه حمایت بدهد. قسمیکه مقدار متن زیاد میشود، خواننده کم وابسته به تصاویر میباشد و معنی زیاد تر را از تصاویر میگیرد. ترسیم ها میتواند زیادتر مغلق تر باشد.
+      
+      
       
       
       
@@ -558,6 +608,45 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-7" ctype="x-html-strong">خوانندگان ابتدایی</g> تصاویر باید به داستان یک اندازه حمایت بدهد. قسمیکه مقدار متن زیاد میشود، خواننده کم وابسته به تصاویر میباشد و معنی زیاد تر را از تصاویر میگیرد. ترسیم ها میتواند زیادتر مغلق تر باشد.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-7" ctype="x-html-strong">خوانندگان ابتدایی</g> تصاویر باید به داستان یک اندازه حمایت بدهد. قسمیکه مقدار متن زیاد میشود، خواننده کم وابسته به تصاویر میباشد و معنی زیاد تر را از تصاویر میگیرد. ترسیم ها میتواند زیادتر مغلق تر باشد.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -581,35 +670,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="prs">برای <g id="genid-7" ctype="x-html-strong">خوانندگان ابتدایی</g> تصاویر باید به داستان یک اندازه حمایت بدهد. قسمیکه مقدار متن زیاد میشود، خواننده کم وابسته به تصاویر میباشد و معنی زیاد تر را از تصاویر میگیرد. ترسیم ها میتواند زیادتر مغلق تر باشد.
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-7" ctype="x-html-strong">خوانندگان ابتدایی</g> تصاویر باید به داستان یک اندازه حمایت بدهد. قسمیکه مقدار متن زیاد میشود، خواننده کم وابسته به تصاویر میباشد و معنی زیاد تر را از تصاویر میگیرد. ترسیم ها میتواند زیادتر مغلق تر باشد.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-7" ctype="x-html-strong">خوانندگان ابتدایی</g> تصاویر باید به داستان یک اندازه حمایت بدهد. قسمیکه مقدار متن زیاد میشود، خواننده کم وابسته به تصاویر میباشد و معنی زیاد تر را از تصاویر میگیرد. ترسیم ها میتواند زیادتر مغلق تر باشد.
       
       
       
@@ -626,7 +686,9 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
-        <target xml:lang="prs">برای <g id="genid-8" ctype="x-html-strong">خوانندگان روان</g> تصاویر باید حمایت کم یا هیچ را به داستان ندهد. خواننده زیادتر به متن تکیه میکند نظر به تصاویر بخاطر معنی. ترسیم ها دیگر هم زیادتر مغلق بوده میتواند.
+        <target xml:lang="prs" state="translated">برای <g id="genid-8" ctype="x-html-strong">خوانندگان روان</g> تصاویر باید حمایت کم یا هیچ را به داستان ندهد. خواننده زیادتر به متن تکیه میکند نظر به تصاویر بخاطر معنی. ترسیم ها دیگر هم زیادتر مغلق بوده میتواند.
+      
+      
       
       
       
@@ -660,6 +722,45 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-8" ctype="x-html-strong">خوانندگان روان</g> تصاویر باید حمایت کم یا هیچ را به داستان ندهد. خواننده زیادتر به متن تکیه میکند نظر به تصاویر بخاطر معنی. ترسیم ها دیگر هم زیادتر مغلق بوده میتواند.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-8" ctype="x-html-strong">خوانندگان روان</g> تصاویر باید حمایت کم یا هیچ را به داستان ندهد. خواننده زیادتر به متن تکیه میکند نظر به تصاویر بخاطر معنی. ترسیم ها دیگر هم زیادتر مغلق بوده میتواند.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -683,35 +784,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="prs">برای <g id="genid-8" ctype="x-html-strong">خوانندگان روان</g> تصاویر باید حمایت کم یا هیچ را به داستان ندهد. خواننده زیادتر به متن تکیه میکند نظر به تصاویر بخاطر معنی. ترسیم ها دیگر هم زیادتر مغلق بوده میتواند.
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-8" ctype="x-html-strong">خوانندگان روان</g> تصاویر باید حمایت کم یا هیچ را به داستان ندهد. خواننده زیادتر به متن تکیه میکند نظر به تصاویر بخاطر معنی. ترسیم ها دیگر هم زیادتر مغلق بوده میتواند.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-8" ctype="x-html-strong">خوانندگان روان</g> تصاویر باید حمایت کم یا هیچ را به داستان ندهد. خواننده زیادتر به متن تکیه میکند نظر به تصاویر بخاطر معنی. ترسیم ها دیگر هم زیادتر مغلق بوده میتواند.
       
       
       
@@ -727,18 +799,20 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
-        <target xml:lang="prs">انتخاب عنوان یا موضوع</target>
+        <target xml:lang="prs" state="translated">انتخاب عنوان یا موضوع</target>
         <note>ID: leveled.reader.topic.choice</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="prs">کتاب ها میتواند دارای عناوین و موضوعات مختلف باشد. در وقت پیشرفت دادن کتب برای خوانندگان آغاز کننده، عناوین را انتخاب نمائید که به آنها اشنا باشد. خوانندگان به خواندن علاقمند خواهند بود و زیادتر خواهند خواند اگر آنها در باره اشیای بخوانند که جالب و اشنا پیدا کنند. برای خوانندگان متجرب، عناوین شامل معلومات شده میتواند که خواننده همرایش اشنایی ندارد.</target>
+        <target xml:lang="prs" state="translated">کتاب ها میتواند دارای عناوین و موضوعات مختلف باشد. در وقت پیشرفت دادن کتب برای خوانندگان آغاز کننده، عناوین را انتخاب نمائید که به آنها اشنا باشد. خوانندگان به خواندن علاقمند خواهند بود و زیادتر خواهند خواند اگر آنها در باره اشیای بخوانند که جالب و اشنا پیدا کنند. برای خوانندگان متجرب، عناوین شامل معلومات شده میتواند که خواننده همرایش اشنایی ندارد.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
       </source>
-        <target xml:lang="prs">برای <g id="genid-9" ctype="x-html-strong">کتاب نوظهور</g> کتاب باید دقیق باشد، باید روی یک نظریه/طرح متمرکز باشد، و عام فهم و اسان و اشنا باشد.
+        <target xml:lang="prs" state="translated">برای <g id="genid-9" ctype="x-html-strong">کتاب نوظهور</g> کتاب باید دقیق باشد، باید روی یک نظریه/طرح متمرکز باشد، و عام فهم و اسان و اشنا باشد.
+      
+      
       
       
       
@@ -772,6 +846,45 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-9" ctype="x-html-strong">کتاب نوظهور</g> کتاب باید دقیق باشد، باید روی یک نظریه/طرح متمرکز باشد، و عام فهم و اسان و اشنا باشد.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-9" ctype="x-html-strong">کتاب نوظهور</g> کتاب باید دقیق باشد، باید روی یک نظریه/طرح متمرکز باشد، و عام فهم و اسان و اشنا باشد.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -795,35 +908,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="prs">برای <g id="genid-9" ctype="x-html-strong">کتاب نوظهور</g> کتاب باید دقیق باشد، باید روی یک نظریه/طرح متمرکز باشد، و عام فهم و اسان و اشنا باشد.
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-9" ctype="x-html-strong">کتاب نوظهور</g> کتاب باید دقیق باشد، باید روی یک نظریه/طرح متمرکز باشد، و عام فهم و اسان و اشنا باشد.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-9" ctype="x-html-strong">کتاب نوظهور</g> کتاب باید دقیق باشد، باید روی یک نظریه/طرح متمرکز باشد، و عام فهم و اسان و اشنا باشد.
       
       
       
@@ -840,7 +924,9 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
-        <target xml:lang="prs">برای <g id="genid-10" ctype="x-html-strong">خوانندگان ابتدایی</g>، درمورد یک مفکوره داستان بنویس اما عمیقتر.
+        <target xml:lang="prs" state="translated">برای <g id="genid-10" ctype="x-html-strong">خوانندگان ابتدایی</g>، درمورد یک مفکوره داستان بنویس اما عمیقتر.
+      
+      
       
       
       
@@ -874,6 +960,45 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-10" ctype="x-html-strong">خوانندگان ابتدایی</g>، درمورد یک مفکوره داستان بنویس اما عمیقتر.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-10" ctype="x-html-strong">خوانندگان ابتدایی</g>، درمورد یک مفکوره داستان بنویس اما عمیقتر.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -897,35 +1022,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="prs">برای <g id="genid-10" ctype="x-html-strong">خوانندگان ابتدایی</g>، درمورد یک مفکوره داستان بنویس اما عمیقتر.
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-10" ctype="x-html-strong">خوانندگان ابتدایی</g>، درمورد یک مفکوره داستان بنویس اما عمیقتر.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-10" ctype="x-html-strong">خوانندگان ابتدایی</g>، درمورد یک مفکوره داستان بنویس اما عمیقتر.
       
       
       
@@ -942,7 +1038,9 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
-        <target xml:lang="prs">برای <g id="genid-11" ctype="x-html-strong">خوانندگان روان</g> مفکوره ها میتوانند برعلاوه از اشیای اشنا وسعت پیدا کند، و بسیار فشرده باشید.
+        <target xml:lang="prs" state="translated">برای <g id="genid-11" ctype="x-html-strong">خوانندگان روان</g> مفکوره ها میتوانند برعلاوه از اشیای اشنا وسعت پیدا کند، و بسیار فشرده باشید.
+      
+      
       
       
       
@@ -976,6 +1074,45 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-11" ctype="x-html-strong">خوانندگان روان</g> مفکوره ها میتوانند برعلاوه از اشیای اشنا وسعت پیدا کند، و بسیار فشرده باشید.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">برای <g id="genid-11" ctype="x-html-strong">خوانندگان روان</g> مفکوره ها میتوانند برعلاوه از اشیای اشنا وسعت پیدا کند، و بسیار فشرده باشید.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -999,35 +1136,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="prs">برای <g id="genid-11" ctype="x-html-strong">خوانندگان روان</g> مفکوره ها میتوانند برعلاوه از اشیای اشنا وسعت پیدا کند، و بسیار فشرده باشید.
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-11" ctype="x-html-strong">خوانندگان روان</g> مفکوره ها میتوانند برعلاوه از اشیای اشنا وسعت پیدا کند، و بسیار فشرده باشید.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">برای <g id="genid-11" ctype="x-html-strong">خوانندگان روان</g> مفکوره ها میتوانند برعلاوه از اشیای اشنا وسعت پیدا کند، و بسیار فشرده باشید.
       
       
       

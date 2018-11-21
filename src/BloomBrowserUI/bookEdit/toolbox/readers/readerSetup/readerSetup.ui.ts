@@ -728,7 +728,8 @@ function resetStageDetail(): void {
     (<HTMLElement>document.getElementById("rs-matching-words")).innerHTML = "";
     (<HTMLInputElement>(
         document.getElementById("setup-stage-sight-words")
-    )).value = "";
+    )).value =
+        "";
     $(".rs-letters")
         .removeClass("current-letter")
         .removeClass("previous-letter")
@@ -883,7 +884,7 @@ function attachEventHandlers(): void {
             return false;
         });
 
-        $("#setup-stage-sight-words").onSafe("keyup", () => {
+        $("#setup-stage-sight-words").onSafe("keyup", function() {
             updateSightWords(this);
             requestWordsForSelectedStage();
         });

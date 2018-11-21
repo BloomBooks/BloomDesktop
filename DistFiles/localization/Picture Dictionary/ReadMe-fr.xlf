@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="fr">À propos du modèle de dictionnaire illustré</target>
+        <target xml:lang="fr" state="translated">À propos du modèle de dictionnaire illustré</target>
         <note>ID: picture.dictionary</note>
         <alt-trans>
           <target xml:lang="fr">À propos du modèle de dictionnaire d'images</target>
@@ -12,7 +12,7 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="fr">Utilisez ce modèle pour rédiger un dictionnaire illustré monolingue, bilingue ou trilingue.</target>
+        <target xml:lang="fr" state="translated">Utilisez ce modèle pour rédiger un dictionnaire illustré monolingue, bilingue ou trilingue.</target>
         <note>ID: picture.dictionary.use</note>
         <alt-trans>
           <target xml:lang="fr">Utilisez ce modèle pour créer un dictionnaire d'images monolingue, bilingue ou trilingue.</target>
@@ -20,12 +20,12 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="fr">Limitations de cette version</target>
+        <target xml:lang="fr" state="translated">Limitations de cette version</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="fr">Ce livre est actuellement marqué "expérimental" parce que nous connaissons plusieurs problèmes de mise en page et de praticité.</target>
+        <target xml:lang="fr" state="translated">Ce livre est actuellement marqué "expérimental" parce que nous connaissons plusieurs problèmes de mise en page et de praticité.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
         <alt-trans>
           <target xml:lang="fr">Ce livre est actuellement marqué "expérimental" parce que nous connaissons plusieurs problèmes de mise en page et de commodité.</target>

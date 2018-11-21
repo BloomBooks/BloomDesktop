@@ -4,78 +4,78 @@
     <body>
       <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="bn">ব্লুম তার  নিজস্ব কিছু ফাইল খুঁজে পায়নি, তাই আর চলবে না</target>
+        <target xml:lang="bn" state="translated">ব্লুম তার  নিজস্ব কিছু ফাইল খুঁজে পায়নি, তাই আর চলবে না</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="bn">সম্ভাব্য কারণসমূহ</target>
+        <target xml:lang="bn" state="translated">সম্ভাব্য কারণসমূহ</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
-        <target xml:lang="bn">১)  আপনার এন্টিভাইরাস ব্লুমের এক বা একাধিক ফাইল "পৃথক করে রাখতে" পারে।</target>
+        <target xml:lang="bn" state="translated">১)  আপনার এন্টিভাইরাস ব্লুমের এক বা একাধিক ফাইল "পৃথক করে রাখতে" পারে।</target>
         <note>ID: integrity.causes.1</note>
       </trans-unit>
       <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="bn">২)  আপনার কম্পিউটার প্রশাসক খারাপ জিনিস থেকে আপনার কম্পিউটারকে রক্ষা করার জন্য তালাবদ্ধ করে রাখতে পারে, কিন্তু এইভাবে ব্লুম কোন ফাইল যেখানে থাকা উচিত সেখানে রাখতে পারে না। </target>
+        <target xml:lang="bn" state="translated">২)  আপনার কম্পিউটার প্রশাসক খারাপ জিনিস থেকে আপনার কম্পিউটারকে রক্ষা করার জন্য তালাবদ্ধ করে রাখতে পারে, কিন্তু এইভাবে ব্লুম কোন ফাইল যেখানে থাকা উচিত সেখানে রাখতে পারে না। </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="bn">কী করতে হবে</target>
+        <target xml:lang="bn" state="translated">কী করতে হবে</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="bn">আপনি এই রিপোর্ট জমা দেওয়ার পর, আমরা আপনার সাথে যোগাযোগ করব এবং কাজটি করতে আপনাকে সাহায্য করব।ইতোমধ্যে, এখানে কিছু ধারণা দেওয়া হল:</target>
+        <target xml:lang="bn" state="translated">আপনি এই রিপোর্ট জমা দেওয়ার পর, আমরা আপনার সাথে যোগাযোগ করব এবং কাজটি করতে আপনাকে সাহায্য করব।ইতোমধ্যে, এখানে কিছু ধারণা দেওয়া হল:</target>
         <note>ID: integrity.todo.ideas</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="bn">ব্লুম ইনস্টলারটি পুনরায় চালু করুন, এবং দেখুন এইবার এটি ঠিকমত চালু হয় কিনা।</target>
+        <target xml:lang="bn" state="translated">ব্লুম ইনস্টলারটি পুনরায় চালু করুন, এবং দেখুন এইবার এটি ঠিকমত চালু হয় কিনা।</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="bn">যদি এটি ঠিক না করতে পারে, তাহলে আপনার এন্টিভাইরাস কার্যক্রম সম্পর্কে আলোচনা করতে হবে।যদি "হারিয়ে যাওয়া ফাইলসমূহ" বিভাগেরর নীচে যেকোনো ফাইল দেখায় যার শেষে ".exe" রয়েছে, তা  ব্লুম কার্যক্রম ফোল্ডার "পরিচ্ছন্নতালিকা" হিসেবে,  <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g> এ বিদ্যমান।</target>
+        <target xml:lang="bn" state="translated">যদি এটি ঠিক না করতে পারে, তাহলে আপনার এন্টিভাইরাস কার্যক্রম সম্পর্কে আলোচনা করতে হবে।যদি "হারিয়ে যাওয়া ফাইলসমূহ" বিভাগেরর নীচে যেকোনো ফাইল দেখায় যার শেষে ".exe" রয়েছে, তা  ব্লুম কার্যক্রম ফোল্ডার "পরিচ্ছন্নতালিকা" হিসেবে,  <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g> এ বিদ্যমান।</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
-        <target xml:lang="bn">এভাস্ট: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">নির্দেশনাসমূহ</g>।</target>
+        <target xml:lang="bn" state="translated">এভাস্ট: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">নির্দেশনাসমূহ</g>।</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Norton" approved="yes">
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
-        <target xml:lang="bn">নরটন এন্টিভাইরাস: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">সিম্যানটেক এর নির্দেশনাসমূহ</g>।</target>
+        <target xml:lang="bn" state="translated">নরটন এন্টিভাইরাস: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">সিম্যানটেক এর নির্দেশনাসমূহ</g>।</target>
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="bn">এভিজি: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">এভিজি এর নির্দেশনাসমূহ</g>।</target>
+        <target xml:lang="bn" state="translated">এভিজি: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">এভিজি এর নির্দেশনাসমূহ</g>।</target>
         <note>ID: integrity.todo.ideas.AVG</note>
         <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
-        <target xml:lang="bn">অন্যান্যসমূহ: "whitelist directory name-of-your-antivirus" জন্য গুগলে খুঁজুন।</target>
+        <target xml:lang="bn" state="translated">অন্যান্যসমূহ: "whitelist directory name-of-your-antivirus" জন্য গুগলে খুঁজুন।</target>
         <note>ID: integrity.todo.ideas.Others</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="bn">ব্লুম ইনস্টলারটি পুনরায় চালু করুন, এবং দেখুন এইবার এটি ঠিকমত চালু হয় কিনা।</target>
+        <target xml:lang="bn" state="translated">ব্লুম ইনস্টলারটি পুনরায় চালু করুন, এবং দেখুন এইবার এটি ঠিকমত চালু হয় কিনা।</target>
         <note>ID: integrity.todo.ideas.Restart</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
-        <target xml:lang="bn">এছাড়াও আপনার এন্টিভাইরাস ব্লুমের যে অংশটি নিয়ে নিয়েছিল তা পুনরুদ্ধার করার চেষ্টা করতে পারেন। AVG-র জন্য, আপনার AVG বিকল্প তালিকা খুঁজতে হবে, "ভাইরাস ভল্ট" এ ক্লিক করুন, ভল্টে ব্লুম ফাইলটিতে ক্লিক করুন, এবং "পুনরুদ্ধার করুন" এ ক্লিক করুন।দৃশ্যমান নির্দেশিকার জন্য, দেখুন <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">এই ছবি</g>।</target>
+        <target xml:lang="bn" state="translated">এছাড়াও আপনার এন্টিভাইরাস ব্লুমের যে অংশটি নিয়ে নিয়েছিল তা পুনরুদ্ধার করার চেষ্টা করতে পারেন। AVG-র জন্য, আপনার AVG বিকল্প তালিকা খুঁজতে হবে, "ভাইরাস ভল্ট" এ ক্লিক করুন, ভল্টে ব্লুম ফাইলটিতে ক্লিক করুন, এবং "পুনরুদ্ধার করুন" এ ক্লিক করুন।দৃশ্যমান নির্দেশিকার জন্য, দেখুন <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">এই ছবি</g>।</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
       </trans-unit>
       <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="bn">হারিয়ে যাওয়া ফাইলসমূহ</target>
+        <target xml:lang="bn" state="translated">হারিয়ে যাওয়া ফাইলসমূহ</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>

@@ -4,43 +4,43 @@
     <body>
       <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="sw">Kuhusu Vitabu Vikubwa</target>
+        <target xml:lang="sw" state="translated">Kuhusu Vitabu Vikubwa</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="sw">Vitabu vikubwa vimebuniwa kwa ajili ya walimu ili kushika na kusoma darasani. Kwa habari zaidi, tazama hii <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">kutoka kwa PDF ya Chuo</g>.</target>
+        <target xml:lang="sw" state="translated">Vitabu vikubwa vimebuniwa kwa ajili ya walimu ili kushika na kusoma darasani. Kwa habari zaidi, tazama hii <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">kutoka kwa PDF ya Chuo</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="sw">Kuchapisha Kitabu Kikubwa</target>
+        <target xml:lang="sw" state="translated">Kuchapisha Kitabu Kikubwa</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="sw">Ili kufanya mambo kuwa rahisi zaidi, kigezo hiki kimewekwa kwa mandhari ya A4, kwa fonti kubwa.
+        <target xml:lang="sw" state="translated">Ili kufanya mambo kuwa rahisi zaidi, kigezo hiki kimewekwa kwa mandhari ya A4, kwa fonti kubwa.
 Unaweza kutengeneza kwa urahisi vitabu vya A3 (mara mbili zaidi kwa ukubwa).
 Peleka tu A4 PDF yako kwa wapiga chapa na uwaambie waifanye kuwa ya ukubwa wa A3</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="sw">Udhaifu wa Tafsiri Hii</target>
+        <target xml:lang="sw" state="translated">Udhaifu wa Tafsiri Hii</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="sw">Iwapo unatumia skrini ndogo, inaweza kuwa vigumu kusoma ukurasa wa sifa. Jaribu kutumia gurudumu la mausi + CTRL kupanda kwa ukurasa ili uweze kuihariri.</target>
+        <target xml:lang="sw" state="translated">Iwapo unatumia skrini ndogo, inaweza kuwa vigumu kusoma ukurasa wa sifa. Jaribu kutumia gurudumu la mausi + CTRL kupanda kwa ukurasa ili uweze kuihariri.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="sw">Tafsiri hii inajumuisha "Maelekezo kwa Walimu" ukurasa ambao tayari umejaa, kwa lugha ya Kiingereza.
+        <target xml:lang="sw" state="translated">Tafsiri hii inajumuisha "Maelekezo kwa Walimu" ukurasa ambao tayari umejaa, kwa lugha ya Kiingereza.
 Iwapo ungependa kupata maelekezo katika lugha tofauti, unaweza kuyafuta maandishi hayo na kuyapiga chapa upya kwa lugha yako.
 Ikiwa utatutumia maandishi hayo, tunaweza kuyajumuisha kwa tafsiri ya wakati ujao ya kigezo.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>

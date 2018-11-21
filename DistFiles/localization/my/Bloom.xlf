@@ -1,56 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="my">
     <body>
-      <trans-unit id="AccessibilityCheck.AccessibilityChecker">
+      <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
         <target xml:lang="my" state="needs-translation">Accessibility Checker</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ACEByDaisy">
+      <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
         <source xml:lang="en">ACE by Daisy Automated Checks</source>
         <note>ID: AccessibilityCheck.ACEByDaisy</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
         <target xml:lang="my" state="needs-translation">ACE by Daisy Automated Checks</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllText">
+      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
         <target xml:lang="my" state="needs-translation">Audio for all text</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions">
+      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
         <target xml:lang="my" state="needs-translation">Audio for all image descriptions</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading">
+      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
         <target xml:lang="my" state="needs-translation">Bloom can automatically check these for you:</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.Checklist">
+      <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
         <target xml:lang="my" state="needs-translation">Accessibility Checklist</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.descriptionsForAllImages">
+      <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
         <target xml:lang="my" state="needs-translation">Descriptions for all images</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout">
+      <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
         <source xml:lang="en">Learn About Accessibility</source>
         <note>ID: AccessibilityCheck.LearnAbout</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
         <target xml:lang="my" state="needs-translation">Learn About Accessibility</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ManualChecksHeading">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true">
+        <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</source>
+        <note>ID: AccessibilityCheck.LearnAbout.AccessibleBookDefinition</note>
+        <note>The * and ** are footnote markers that should remain the same.</note>
+        <target xml:lang="my" state="needs-translation">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true">
+        <source xml:lang="en">This tool, the Accessibility Checker, has:</source>
+        <note>ID: AccessibilityCheck.LearnAbout.CheckerHas</note>
+        <target xml:lang="my" state="needs-translation">This tool, the Accessibility Checker, has:</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true">
+        <source xml:lang="en">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</source>
+        <note>ID: AccessibilityCheck.LearnAbout.AccessibilityCheckList</note>
+        <target xml:lang="my" state="needs-translation">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true">
+        <source xml:lang="en">The "Ace by Daisy Checker" searches the actual ePUB generated by Bloom looking for any problems.</source>
+        <note>ID: AccessibilityCheck.LearnAbout.AceByDaisyChecker</note>
+        <target xml:lang="my" state="needs-translation">The "Ace by Daisy Checker" searches the actual ePUB generated by Bloom looking for any problems.</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true">
+        <source xml:lang="en">definition of the ePUB format</source>
+        <note>ID: AccessibilityCheck.LearnAbout.EpubDefinition</note>
+        <target xml:lang="my" state="needs-translation">definition of the ePUB format</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true">
+        <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
+        <note>ID: AccessibilityCheck.LearnAbout.Footnote</note>
+        <target xml:lang="my" state="needs-translation">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
         <source xml:lang="en">You need to check these yourself:</source>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
         <target xml:lang="my" state="needs-translation">You need to check these yourself:</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor">
+      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
         <target xml:lang="my" state="needs-translation">No essential information by color</target>
@@ -58,17 +89,17 @@
       <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
-        <target xml:lang="my">ဘလွန်း၏ပြဿနာ</target>
+        <target xml:lang="my" state="translated">ဘလွန်း၏ပြဿနာ</target>
       </trans-unit>
       <trans-unit id="BloomIntegrityDialog.ReportProblem" approved="yes">
         <source xml:lang="en">Report Problem</source>
         <note>ID: BloomIntegrityDialog.ReportProblem</note>
-        <target xml:lang="my">ပြဿနာကို သတင်းပို့ရန်</target>
+        <target xml:lang="my" state="translated">ပြဿနာကို သတင်းပို့ရန်</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName" approved="yes">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
-        <target xml:lang="my">ဘလွန်းအထုပ်အဟောင်းဖြစ်သောကြောင့် ဤအက္ခရာအချို့ကို မဖတ်နိုင်ပါ။ ဘလွန်းတီထွင်သူနှင့်ဆက်သွယ်၍ နောက်ဆုံးပေါ်ဘလွန်းကို အသုံးပြုလျှင် အက္ခရာများကို ဖတ်နိုင်မည်။ သို့မဟုတ် ကွန်ပြူတာနည်းပညာကျွမ်းကျင်သူကိုလည်း အကူအညီတောင်းနိုင်သည်။ </target>
+        <target xml:lang="my" state="translated">ဘလွန်းအထုပ်အဟောင်းဖြစ်သောကြောင့် ဤအက္ခရာအချို့ကို မဖတ်နိုင်ပါ။ ဘလွန်းတီထွင်သူနှင့်ဆက်သွယ်၍ နောက်ဆုံးပေါ်ဘလွန်းကို အသုံးပြုလျှင် အက္ခရာများကို ဖတ်နိုင်မည်။ သို့မဟုတ် ကွန်ပြူတာနည်းပညာကျွမ်းကျင်သူကိုလည်း အကူအညီတောင်းနိုင်သည်။ </target>
         <alt-trans>
           <target xml:lang="my">ဘလွန်းအထုတ်အဟောင်းဖြစ်သောကြောင့် အက္ခရာအချို့ကို မဖတ်နိုင်ပါ။ ဘလွန်းတီထွင်သူနှင့်ဆက်သွယ်၍ နောက်ဆုံးပေါ်ဘလွန်းရနိုင် </target>
         </alt-trans>
@@ -76,12 +107,12 @@
       <trans-unit id="BloomPackInstallDialog.BloomPackInstallation" approved="yes">
         <source xml:lang="en">Bloom Pack Installation</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstallation</note>
-        <target xml:lang="my">ဘလွန်းအထုပ်ကို သင်၏ကွန်ပြူတာပရိုဂရမ်တွင် ထည့်သွင်းပါ။</target>
+        <target xml:lang="my" state="translated">ဘလွန်းအထုပ်ကို သင်၏ကွန်ပြူတာပရိုဂရမ်တွင် ထည့်သွင်းပါ။</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstalled" approved="yes">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
-        <target xml:lang="my">{0} စာအုပ်ပေါင်းချုပ်ဖိုင်ကို ကွန်ပြူတာတွင် အသုံးပြုရန် အဆင်သင့်ဖြစ်ပြီ။</target>
+        <target xml:lang="my" state="translated">{0} စာအုပ်ပေါင်းချုပ်ဖိုင်ကို ကွန်ပြူတာတွင် အသုံးပြုရန် အဆင်သင့်ဖြစ်ပြီ။</target>
         <alt-trans>
           <target xml:lang="my">ဖိုင်စာအုပ်ပေါင်းချုပ်ကို ကွန်ပြူတာတွင် အသုံးပြုရန် အဆင်သင့်ဖြစ်ပြီ။</target>
         </alt-trans>
@@ -90,7 +121,7 @@
         <source xml:lang="en">Bloom Pack Installer</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
         <note>Displayed as the message box title</note>
-        <target xml:lang="my">ဘလွန်းအထုပ် ကွန်ပြူတာတွင် အသင့်ထည့်သွင်းတပ်ဆင်ရန် ဆော့ဖ်ဝဲ</target>
+        <target xml:lang="my" state="translated">ဘလွန်းအထုပ် ကွန်ပြူတာတွင် အသင့်ထည့်သွင်းတပ်ဆင်ရန် ဆော့ဖ်ဝဲ</target>
         <alt-trans>
           <target xml:lang="my">ဘလွန်းအထုတ် ထည့်သွင်းတပ်ဆင်ရန် ပစ္စည်း</target>
         </alt-trans>
@@ -98,43 +129,43 @@
       <trans-unit id="BloomPackInstallDialog.CorruptBloomPack" approved="yes">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
         <note>ID: BloomPackInstallDialog.CorruptBloomPack</note>
-        <target xml:lang="my">ဤဘလွန်းအထုပ် အပြီးမသတ်သောကြောင့် (သို့) ပျက်စီးသွားခြင်းကြောင့်ဖြစ်သည်။.</target>
+        <target xml:lang="my" state="translated">ဤဘလွန်းအထုပ် အပြီးမသတ်သောကြောင့် (သို့) ပျက်စီးသွားခြင်းကြောင့်ဖြစ်သည်။.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.DoesNotExist" approved="yes">
         <source xml:lang="en">{0} does not exist</source>
         <note>ID: BloomPackInstallDialog.DoesNotExist</note>
-        <target xml:lang="my">{0} မရှိပါ။</target>
+        <target xml:lang="my" state="translated">{0} မရှိပါ။</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack" approved="yes">
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
-        <target xml:lang="my">ဘလွန်းထဲတွင် ဘလွန်းအထုပ်ကို မထည့်သွင်းနိုင်သေးပါ။ </target>
+        <target xml:lang="my" state="translated">ဘလွန်းထဲတွင် ဘလွန်းအထုပ်ကို မထည့်သွင်းနိုင်သေးပါ။ </target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Extracting" approved="yes">
         <source xml:lang="en">Extracting...</source>
         <note>ID: BloomPackInstallDialog.Extracting</note>
         <note>Shown while Bloom Packs are being installed</note>
-        <target xml:lang="my">ဖိုင်ကို ဆွဲထုတ်နေသည်။</target>
+        <target xml:lang="my" state="translated">ဖိုင်ကို ဆွဲထုတ်နေသည်။</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.MustRestartToSee" approved="yes">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="my">သင့်ကွန်ပြူတာတွင် ဘလွန်းအလုပ်လုပ်နေပြီ၊ သို့သော် ဘလွန်းကိုပရိုဂရမ် ပိတ်၍ နောက်တစ်ကြိမ်မဖွင့်ခင်အထိ ၎င်းတွင်ပါရှိသောအရာများကို ပြမည်မဟုတ်ပါ။ </target>
+        <target xml:lang="my" state="translated">သင့်ကွန်ပြူတာတွင် ဘလွန်းအလုပ်လုပ်နေပြီ၊ သို့သော် ဘလွန်းကိုပရိုဂရမ် ပိတ်၍ နောက်တစ်ကြိမ်မဖွင့်ခင်အထိ ၎င်းတွင်ပါရှိသောအရာများကို ပြမည်မဟုတ်ပါ။ </target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.NotInstalled" approved="yes">
         <source xml:lang="en">The Bloom collection will not be installed.</source>
         <note>ID: BloomPackInstallDialog.NotInstalled</note>
-        <target xml:lang="my">ဘလွန်း ပေါင်းချုပ်ဖိုင်ကို ကွန်ပြူတာတွင် မထည်သွင်းနိုင်ပါ။</target>
+        <target xml:lang="my" state="translated">ဘလွန်း ပေါင်းချုပ်ဖိုင်ကို ကွန်ပြူတာတွင် မထည်သွင်းနိုင်ပါ။</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Opening" approved="yes">
         <source xml:lang="en">Opening {0}...</source>
         <note>ID: BloomPackInstallDialog.Opening</note>
-        <target xml:lang="my">{0}... ဖွင့်နေသည်။</target>
+        <target xml:lang="my" state="translated">{0}... ဖွင့်နေသည်။</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Replace" approved="yes">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
-        <target xml:lang="my">ကွန်ပြူတာတွင် ဤအမည်ဖြင့် ဘလွန်းပေါင်းချုပ်ဖိုင် ရှိပြီးသားဖြစ်သည်။</target>
+        <target xml:lang="my" state="translated">ကွန်ပြူတာတွင် ဤအမည်ဖြင့် ဘလွန်းပေါင်းချုပ်ဖိုင် ရှိပြီးသားဖြစ်သည်။</target>
         <alt-trans>
           <target xml:lang="my">ကွန်ပြူတာတွင် ဤအမည်ဖြင့် ဘလွန်းဖိုင်ပေါင်းချုပ် ရှိပြီးသားဖြစ်သည်။</target>
         </alt-trans>
@@ -142,24 +173,24 @@
       <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder" approved="yes">
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
-        <target xml:lang="my">ဘလွန်းအထုပ်သည် ဇစ်ဖိုင်၏ ထိပ်ဆုံးအဆင့်တွင် ပေါင်းချုပ်ဖိုင်တစ်ခုတည်းသာ ရှိသင့်သည်။</target>
+        <target xml:lang="my" state="translated">ဘလွန်းအထုပ်သည် ဇစ်ဖိုင်၏ ထိပ်ဆုံးအဆင့်တွင် ပေါင်းချုပ်ဖိုင်တစ်ခုတည်းသာ ရှိသင့်သည်။</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.UnableToReplace" approved="yes">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="my">ရှိပြီးသား ကော်ပီ'{0}'ကို မရွေ့နိုင်ပါ။ &amp; ဟုပြလျှင် ဘလွန်းကိုပိတ်၍ နောက်တစ်ကြိမ်ပြန်ဖွင့်ကြည့်ပါ (သို့) ကွန်ပြူတာကိုပိတ်၍  နောက်တစ်ကြိမ်ပြန်ဖွင့်သည့်အချိန်မှ ဖွင့်ကြည့်ပါ။</target>
+        <target xml:lang="my" state="translated">ရှိပြီးသား ကော်ပီ'{0}'ကို မရွေ့နိုင်ပါ။ &amp; ဟုပြလျှင် ဘလွန်းကိုပိတ်၍ နောက်တစ်ကြိမ်ပြန်ဖွင့်ကြည့်ပါ (သို့) ကွန်ပြူတာကိုပိတ်၍  နောက်တစ်ကြိမ်ပြန်ဖွင့်သည့်အချိန်မှ ဖွင့်ကြည့်ပါ။</target>
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="my">ရွေးချယ်နိုင်ရန် မောက်စ်၏ဘီးကို အသုံးပြု၍ (သို့) ခရမ်းရောင်ဖြင့်ပြသော ခလုတ်ကို နိပ်ပါ။ အဆုံးတွင် ရွေးချယ်ထားသည့်အရာများ မြင်နိုင်ရန် သင်ဖိထားသောခလုတ်ကို လွှတ်လိုက်ပါ။</target>
+        <target xml:lang="my" state="translated">ရွေးချယ်နိုင်ရန် မောက်စ်၏ဘီးကို အသုံးပြု၍ (သို့) ခရမ်းရောင်ဖြင့်ပြသော ခလုတ်ကို နိပ်ပါ။ အဆုံးတွင် ရွေးချယ်ထားသည့်အရာများ မြင်နိုင်ရန် သင်ဖိထားသောခလုတ်ကို လွှတ်လိုက်ပါ။</target>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
-        <target xml:lang="my">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့်စာရိုက်ရန်ဇယားကွက်များအတွက် ရွေးချယ်ထားသော ပုံသေပုံစံဖြစ်သည်။ </target>
+        <target xml:lang="my" state="translated">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့်စာရိုက်ရန်ဇယားကွက်များအတွက် ရွေးချယ်ထားသော ပုံသေပုံစံဖြစ်သည်။ </target>
         <alt-trans>
           <target xml:lang="my">ဤပုံစံအချိုးအစားသည် စာရိုက်ရန်သေတ္တာအားလုံးအတွက် '{0}' စတိုင်နှင့်ရေးရန် သတ်မှတ်ရွေးချယ်ထားသောပုံစံဖြစ်သည်။</target>
         </alt-trans>
@@ -167,12 +198,12 @@
       <trans-unit id="BookEditor.ForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.ForText</note>
-        <target xml:lang="my">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့်စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။ </target>
+        <target xml:lang="my" state="translated">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့်စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။ </target>
       </trans-unit>
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="my">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့် {0}စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။</target>
+        <target xml:lang="my" state="translated">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့် {0}စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။</target>
         <alt-trans>
           <target xml:lang="my">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့် {0}စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။ 
 </target>
@@ -181,12 +212,43 @@
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
-        <target xml:lang="my">ပုံစံအသစ်ပြောင်းရန်  ဖတ်စာနမူနာ (Reader Templates)မှ ခွင့်မပြုပါ။</target>
+        <target xml:lang="my" state="translated">ပုံစံအသစ်ပြောင်းရန်  ဖတ်စာနမူနာ (Reader Templates)မှ ခွင့်မပြုပါ။</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yCertifier" sil:dynamic="true">
+        <source xml:lang="en">Level certified by</source>
+        <note>ID: BookMetadata.a11yCertifier</note>
+        <target xml:lang="my" state="needs-translation">Level certified by</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yFeatures" sil:dynamic="true">
         <source xml:lang="en">Accessibility features</source>
         <note>ID: BookMetadata.a11yFeatures</note>
         <target xml:lang="my" state="needs-translation">Accessibility features</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevel" sil:dynamic="true">
+        <source xml:lang="en">Accessibility level</source>
+        <note>ID: BookMetadata.a11yLevel</note>
+        <target xml:lang="my" state="needs-translation">Accessibility level</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true">
+        <source xml:lang="en">None</source>
+        <note>ID: BookMetadata.a11yLevelNone</note>
+        <note>indicates that no level of accessibility conformance is claimed</note>
+        <target xml:lang="my" state="needs-translation">None</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
+        <source xml:lang="en">Level A conformance</source>
+        <note>ID: BookMetadata.a11yLevelA</note>
+        <target xml:lang="my" state="needs-translation">Level A conformance</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true">
+        <source xml:lang="en">Level AA conformance</source>
+        <note>ID: BookMetadata.a11yLevelAA</note>
+        <target xml:lang="my" state="needs-translation">Level AA conformance</target>
+      </trans-unit>
+      <trans-unit id="BookMetadata.a11yLevelAAA" sil:dynamic="true">
+        <source xml:lang="en">Level AAA conformance</source>
+        <note>ID: BookMetadata.a11yLevelAAA</note>
+        <target xml:lang="my" state="needs-translation">Level AAA conformance</target>
       </trans-unit>
       <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
         <source xml:lang="en">Alternative text</source>
@@ -263,25 +325,31 @@
         <note>ID: BookMetadata.typicalAgeRange</note>
         <target xml:lang="my" state="needs-translation">Typical age range</target>
       </trans-unit>
+      <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true">
+        <source xml:lang="en">What's this?</source>
+        <note>ID: BookMetadata.WhatsThis</note>
+        <note>minimal question indicating a link to information</note>
+        <target xml:lang="my" state="needs-translation">What's this?</target>
+      </trans-unit>
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="my">ဤစာအုပ်ကိုဖတ်ရန် ပြဿနာရှိသည်။ ဤစာအုပ်ကို ---မှ ပြန်လည်ရှာဖွေထားခြင်းဖြစ်သည်။ ဤစာအုပ်တွင် နောက်ဆုံးအပြောင်းအလဲလုပ်ထားသည့်အရာများကို ပြန်စစ်ကြည့်ပါ။ အကယ်၍ အကြောင်းမဲ့မဖတ်နိုင်ပါက အောက်တွင်ဖော်ပြထားသော “အသေးစိတ်” (Detail) ဆိုသည့်နေရာကို နိပ်၍ သတင်းပို့နိုင်သည်။ </target>
+        <target xml:lang="my" state="translated">ဤစာအုပ်ကိုဖတ်ရန် ပြဿနာရှိသည်။ ဤစာအုပ်ကို ---မှ ပြန်လည်ရှာဖွေထားခြင်းဖြစ်သည်။ ဤစာအုပ်တွင် နောက်ဆုံးအပြောင်းအလဲလုပ်ထားသည့်အရာများကို ပြန်စစ်ကြည့်ပါ။ အကယ်၍ အကြောင်းမဲ့မဖတ်နိုင်ပါက အောက်တွင်ဖော်ပြထားသော “အသေးစိတ်” (Detail) ဆိုသည့်နေရာကို နိပ်၍ သတင်းပို့နိုင်သည်။ </target>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved" approved="yes">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="my">ဤစာအုပ်ထည့်ထားသော ဖိုင်တွဲကို နေရာရွေ့ထား (သို့) ဖိုင်အမည်ပြောင်းထားသည်။ ထို့ကြောင့် ဤစာမျက်နှာ တွင် အပြောင်းအလဲလုပ်ထားသည့်အရာများ မသိမ်းနိုင်ပါ။ ဖိုင်ကိုလည်း ပိတ်ရမည်။ အကယ်၍ ဖိုင်တွဲကို နေရာ ရွေ့ထားခြင်း (သို့) ဖိုင်အမည်ပြောင်းထားခြင်းမရှိပါက အောက်တွင်ဖော်ပြထားသော “အသေးစိတ်” (Detail) ဆိုသည့်နေရာကို နိပ်၍ ဘလွန်းတီထွင်သူထံ သတင်းပို့နိုင်သည်။ </target>
+        <target xml:lang="my" state="translated">ဤစာအုပ်ထည့်ထားသော ဖိုင်တွဲကို နေရာရွေ့ထား (သို့) ဖိုင်အမည်ပြောင်းထားသည်။ ထို့ကြောင့် ဤစာမျက်နှာ တွင် အပြောင်းအလဲလုပ်ထားသည့်အရာများ မသိမ်းနိုင်ပါ။ ဖိုင်ကိုလည်း ပိတ်ရမည်။ အကယ်၍ ဖိုင်တွဲကို နေရာ ရွေ့ထားခြင်း (သို့) ဖိုင်အမည်ပြောင်းထားခြင်းမရှိပါက အောက်တွင်ဖော်ပြထားသော “အသေးစိတ်” (Detail) ဆိုသည့်နေရာကို နိပ်၍ ဘလွန်းတီထွင်သူထံ သတင်းပို့နိုင်သည်။ </target>
       </trans-unit>
       <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="my">ပြဿနာပေးသည့် အချက်အလက်များကို ကူးယူနေသည်။</target>
+        <target xml:lang="my" state="translated">ပြဿနာပေးသည့် အချက်အလက်များကို ကူးယူနေသည်။</target>
       </trans-unit>
       <trans-unit id="Browser.OpenPageInFirefox" approved="yes">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
-        <target xml:lang="my">ဖိုင်းယားဖော့တွင် စာမျက်နှာအလွှတ်ဖြစ်သည်။ (မူသေမဟုတ် အရှင်ဖြစ်နိုင်သည်။)</target>
+        <target xml:lang="my" state="translated">ဖိုင်းယားဖော့တွင် စာမျက်နှာအလွှတ်ဖြစ်သည်။ (မူသေမဟုတ် အရှင်ဖြစ်နိုင်သည်။)</target>
       </trans-unit>
       <trans-unit id="Browser.ProblemSaving">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
@@ -292,17 +360,17 @@
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="my">ဘလွန်းတီထွင်ဖန်တီးသူ ဝန်ဆောင်မှုလုပ်ငန်းအကြောင်း</target>
+        <target xml:lang="my" state="translated">ဘလွန်းတီထွင်ဖန်တီးသူ ဝန်ဆောင်မှုလုပ်ငန်းအကြောင်း</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
-        <target xml:lang="my">အဆင့်မြင့် ပရိုဂရမ်ဆက်တင်ပုံစံ</target>
+        <target xml:lang="my" state="translated">အဆင့်မြင့် ပရိုဂရမ်ဆက်တင်ပုံစံ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate" approved="yes">
         <source xml:lang="en">Automatically update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="my">အလိုအလျောက် ဘလွန်းကို ပြုပြင်မွမ်းမံ အပ်ဒိတ်လုပ်ပေးသည်။</target>
+        <target xml:lang="my" state="translated">အလိုအလျောက် ဘလွန်းကို ပြုပြင်မွမ်းမံ အပ်ဒိတ်လုပ်ပေးသည်။</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
         <source xml:lang="en">Show Experimental Features</source>
@@ -317,7 +385,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="my">အစမ်းလုပ်ဆောင်ချက်နမူနာပုံစံပြသရန် (ဥပမာ-ရုပ်ပြအဘိဓာန်)</target>
+        <target xml:lang="my" state="translated">အစမ်းလုပ်ဆောင်ချက်နမူနာပုံစံပြသရန် (ဥပမာ-ရုပ်ပြအဘိဓာန်)</target>
         <alt-trans>
           <target xml:lang="my">အစမ်းလုပ်ဆောင်ချက်နမူနာပုံစံပြသရန် (ဥပမာ-ရုပ်ပြအဘိဓာန်)
 
@@ -327,45 +395,45 @@
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="my">ရွေးချယ်ထားသောဖောင့်စာလုံးပုံစံ "{0}"ကို "Andika New Basic"ဖောင့်စာလုံးပုံစံသို့ ပြောင်းနေသည်။ </target>
+        <target xml:lang="my" state="translated">ရွေးချယ်ထားသောဖောင့်စာလုံးပုံစံ "{0}"ကို "Andika New Basic"ဖောင့်စာလုံးပုံစံသို့ ပြောင်းနေသည်။ </target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="my">ဤအရာသည် ဘာသာစကားအများစုအတွက် ပိုကောင်းသော print ထုတ်စေသည်။ အကယ်၍ သင်၏ ဘာသာစကားကို “Andika” ဖြင့်ရေးသားရန်လိုအပ်ပါက “စာအုပ်ပြုလုပ်ရန်”ဟူသော ဆက်တင် (Setting) သို့ နေရာရွေ့လိုက်ပါ။ </target>
+        <target xml:lang="my" state="translated">ဤအရာသည် ဘာသာစကားအများစုအတွက် ပိုကောင်းသော print ထုတ်စေသည်။ အကယ်၍ သင်၏ ဘာသာစကားကို “Andika” ဖြင့်ရေးသားရန်လိုအပ်ပါက “စာအုပ်ပြုလုပ်ရန်”ဟူသော ဆက်တင် (Setting) သို့ နေရာရွေ့လိုက်ပါ။ </target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="my">စာအုပ်ပြုလုပ်ရန်</target>
+        <target xml:lang="my" state="translated">စာအုပ်ပြုလုပ်ရန်</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding" approved="yes">
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
         <note xml:lang="en">Used in 3.9 and 4.0; not used in 4.1</note>
-        <target xml:lang="my">နာမည်ပေးခြင်း (သို့) တံဆိပ်တပ်ခြင်း</target>
+        <target xml:lang="my" state="translated">နာမည်ပေးခြင်း (သို့) တံဆိပ်တပ်ခြင်း</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="my">တစ်ခုမှမဟုတ်ပါ။</target>
+        <target xml:lang="my" state="translated">တစ်ခုမှမဟုတ်ပါ။</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="my">{0} ရွေးထားသော ပုံသေဖောင့်စာလုံးပုံစံအတွက်</target>
+        <target xml:lang="my" state="translated">{0} ရွေးထားသော ပုံသေဖောင့်စာလုံးပုံစံအတွက်</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="my">ရှေ့/နောက်အဖုံးအတွက်</target>
+        <target xml:lang="my" state="translated">ရှေ့/နောက်အဖုံးအတွက်</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
-        <target xml:lang="my">ကိရိယာ (ကွန်ပြူတာ/ဖုန်း)</target>
+        <target xml:lang="my" state="translated">ကိရိယာ (ကွန်ပြူတာ/ဖုန်း)</target>
         <alt-trans>
           <target xml:lang="my">ကိရိယာ</target>
         </alt-trans>
@@ -374,66 +442,66 @@
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
-        <target xml:lang="my">စာရွက်ခြွေတာ</target>
+        <target xml:lang="my" state="translated">စာရွက်ခြွေတာ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-PNG</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
-        <target xml:lang="my">အဲစ်အိုင်အယ်လ် (SIL)-ပပွာနယူးဂီနီ</target>
+        <target xml:lang="my" state="translated">အဲစ်အိုင်အယ်လ် (SIL)-ပပွာနယူးဂီနီ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
-        <target xml:lang="my">စာရွက်အထူးခြွေတာ</target>
+        <target xml:lang="my" state="translated">စာရွက်အထူးခြွေတာ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
-        <target xml:lang="my">ပုံမှန်သမရိုးကျပုံစံ</target>
+        <target xml:lang="my" state="translated">ပုံမှန်သမရိုးကျပုံစံ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Video</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
         <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
-        <target xml:lang="my">ဗီဒီယို</target>
+        <target xml:lang="my" state="translated">ဗီဒီယို</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="my">အာရပ်-အိန္နိယဘာသာစကားများ</target>
+        <target xml:lang="my" state="translated">အာရပ်-အိန္နိယဘာသာစကားများ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="my">အာရေမိဘာသာစကား</target>
+        <target xml:lang="my" state="translated">အာရေမိဘာသာစကား</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="my">ဘင်္ဂါလီ</target>
+        <target xml:lang="my" state="translated">ဘင်္ဂါလီ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="my">ခမာဘာသာစကား (ကမ္ဘာဒီးယား)</target>
+        <target xml:lang="my" state="translated">ခမာဘာသာစကား (ကမ္ဘာဒီးယား)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cjk-Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal</note>
-        <target xml:lang="my">တရုတ်-ဂျပန်-ကိုးရီးယားဘာသာစကား ဆယ်လီစိတ်</target>
+        <target xml:lang="my" state="translated">တရုတ်-ဂျပန်-ကိုးရီးယားဘာသာစကား ဆယ်လီစိတ်</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
-        <target xml:lang="my">ဆယ်လီစိတ်</target>
+        <target xml:lang="my" state="translated">ဆယ်လီစိတ်</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Devanagari</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
-        <target xml:lang="my">ပါဠိအက္ခရာ</target>
+        <target xml:lang="my" state="translated">ပါဠိအက္ခရာ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" sil:dynamic="true">
         <source xml:lang="en">Georgian</source>
@@ -932,6 +1000,12 @@
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
         <target xml:lang="my" state="needs-translation">Downloading update to {0} ({1}K)</target>
       </trans-unit>
+      <trans-unit id="Common.Advanced">
+        <source xml:lang="en">Advanced</source>
+        <note>ID: Common.Advanced</note>
+        <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
+        <target xml:lang="my" state="needs-translation">Advanced</target>
+      </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
@@ -953,6 +1027,12 @@
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
         <target xml:lang="my" state="needs-translation">&amp;Finish</target>
+      </trans-unit>
+      <trans-unit id="Common.Info">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Info</note>
+        <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
+        <target xml:lang="my" state="needs-translation">Info</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
@@ -1077,6 +1157,11 @@
         <source xml:lang="en">Continue anyway</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
         <target xml:lang="my" state="needs-translation">Continue anyway</target>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox" sil:dynamic="true">
+        <source xml:lang="en">Change all similar pages in this book to this layout.</source>
+        <note>ID: EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox</note>
+        <target xml:lang="my" state="needs-translation">Change all similar pages in this book to this layout.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
@@ -1977,6 +2062,41 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="my" state="needs-translation">Picture Intellectual Property Information</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
+        <source xml:lang="en">Impairment Visualizer</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>
+        <target xml:lang="my" state="needs-translation">Impairment Visualizer</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow" sil:dynamic="true">
+        <source xml:lang="en">Blue-Yellow</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.BlueYellow</note>
+        <target xml:lang="my" state="needs-translation">Blue-Yellow</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Cataracts" sil:dynamic="true">
+        <source xml:lang="en">Cataracts</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Cataracts</note>
+        <target xml:lang="my" state="needs-translation">Cataracts</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness" sil:dynamic="true">
+        <source xml:lang="en">Color Blindness</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness</note>
+        <target xml:lang="my" state="needs-translation">Color Blindness</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Complete" sil:dynamic="true">
+        <source xml:lang="en">Complete</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Complete</note>
+        <target xml:lang="my" state="needs-translation">Complete</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Overview" sil:dynamic="true">
+        <source xml:lang="en">You can use these check boxes to have Bloom simulate how your images would look with various visual impairments.</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Overview</note>
+        <target xml:lang="my" state="needs-translation">You can use these check boxes to have Bloom simulate how your images would look with various visual impairments.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.RedGreen" sil:dynamic="true">
+        <source xml:lang="en">Red-Green</source>
+        <note>ID: EditTab.Toolbox.ImpairmentVisualizer.RedGreen</note>
+        <target xml:lang="my" state="needs-translation">Red-Green</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
@@ -2342,10 +2462,15 @@
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
         <target xml:lang="my" state="needs-translation">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.CameraUnavailable" sil:dynamic="true">
+        <source xml:lang="en">Camera not available (perhaps in use by another program)</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.CameraUnavailable</note>
+        <target xml:lang="my" state="needs-translation">Camera not available (perhaps in use by another program)</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true">
-        <source xml:lang="en">Delete Video</source>
+        <source xml:lang="en">Delete</source>
         <note>ID: EditTab.Toolbox.SignLanguage.DeleteVideo</note>
-        <target xml:lang="my" state="needs-translation">Delete Video</target>
+        <target xml:lang="my" state="needs-translation">Delete</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true">
         <source xml:lang="en">Edit outside of Bloom</source>
@@ -2358,9 +2483,19 @@
         <target xml:lang="my" state="needs-translation">Video Files</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
-        <source xml:lang="en">Import Video</source>
+        <source xml:lang="en">Import</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
-        <target xml:lang="my" state="needs-translation">Import Video</target>
+        <target xml:lang="my" state="needs-translation">Import</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true">
+        <source xml:lang="en">Show In Folder</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.ShowInFolder</note>
+        <target xml:lang="my" state="needs-translation">Show In Folder</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.NoCameraFound" sil:dynamic="true">
+        <source xml:lang="en">No camera found</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.NoCameraFound</note>
+        <target xml:lang="my" state="needs-translation">No camera found</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
         <source xml:lang="en">Press any key to cancel</source>
@@ -2371,6 +2506,12 @@
         <source xml:lang="en">Press any key to stop</source>
         <note>ID: EditTab.Toolbox.SignLanguage.PressStop</note>
         <target xml:lang="my" state="needs-translation">Press any key to stop</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Processing" sil:dynamic="true">
+        <source xml:lang="en">Processing</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Processing</note>
+        <note>Displayed while video just recorded is processed into a more compressed form</note>
+        <target xml:lang="my" state="needs-translation">Processing</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
         <source xml:lang="en">Recording</source>
@@ -2388,10 +2529,21 @@
         <note>Appears in the context "X will be moved to the recycle bin"</note>
         <target xml:lang="my" state="needs-translation">The selected video</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectSignLanguageBox" sil:dynamic="true">
+        <source xml:lang="en">To use this tool, select a sign language box on the page.</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.SelectSignLanguageBox</note>
+        <target xml:lang="my" state="needs-translation">To use this tool, select a sign language box on the page.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
         <source xml:lang="en">Start Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
         <target xml:lang="my" state="needs-translation">Start Recording</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true">
+        <source xml:lang="en">Trim</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Trim</note>
+        <note>Appears above sign language video trimming sliders</note>
+        <target xml:lang="my" state="needs-translation">Trim</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
         <source xml:lang="en">Here is what your camera sees:</source>
@@ -2456,14 +2608,25 @@
         <target xml:lang="my" state="needs-translation">Listen to the whole page</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
-        <source xml:lang="en">2) Look at the highlighted sentence</source>
+        <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
-        <target xml:lang="my" state="needs-translation">2) Look at the highlighted sentence</target>
+        <target xml:lang="my" state="needs-translation">2) Look at the highlighted text</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
         <target xml:lang="my" state="needs-translation">5) Next</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
+        <source xml:lang="en">Record by sentences</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
+        <target xml:lang="my" state="needs-translation">Record by sentences</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
+        <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
+        <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
+        <target xml:lang="my" state="needs-translation">Please clear all existing recordings on this page before changing modes.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
         <source xml:lang="en">3) Speak</source>
@@ -2471,9 +2634,9 @@
         <target xml:lang="my" state="needs-translation">3) Speak</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
-        <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
+        <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
-        <target xml:lang="my" state="needs-translation">Make an e-book that can play recordings while highlighting sentences.</target>
+        <target xml:lang="my" state="needs-translation">Make an e-book that can play audio recordings while highlighting text.</target>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual">
         <source xml:lang="en">Three Languages</source>
@@ -2524,6 +2687,12 @@
         <note>ID: Errors.CouldNotSavePage</note>
         <target xml:lang="my" state="needs-translation">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</target>
       </trans-unit>
+      <trans-unit id="Errors.CurrentRunningVersion">
+        <source xml:lang="en">You are running Bloom {0}</source>
+        <note>ID: Errors.CurrentRunningVersion</note>
+        <note>The placeholder {0} represents the current version of Bloom. For example, {0} might be replaced with "4.3"</note>
+        <target xml:lang="my" state="needs-translation">You are running Bloom {0}</target>
+      </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtection">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
         <note>ID: Errors.DefenderFolderProtection</note>
@@ -2541,6 +2710,12 @@
         <note>ID: Errors.DeniedAccess</note>
         <target xml:lang="my" state="needs-translation">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</target>
       </trans-unit>
+      <trans-unit id="Errors.DownloadLatestVersion">
+        <source xml:lang="en">Upgrade to the latest Bloom (requires Internet connection)</source>
+        <note>ID: Errors.DownloadLatestVersion</note>
+        <note>This is a link that will take them to the Downloads (Installers) web page</note>
+        <target xml:lang="my" state="needs-translation">Upgrade to the latest Bloom (requires Internet connection)</target>
+      </trans-unit>
       <trans-unit id="Errors.ErrorSelecting">
         <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
         <note>ID: Errors.ErrorSelecting</note>
@@ -2553,12 +2728,31 @@
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
         <target xml:lang="my" state="needs-translation">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</target>
       </trans-unit>
+      <trans-unit id="Errors.FeatureRequiresNewerVersionPlural">
+        <source xml:lang="en">This book requires Bloom {0} or greater because it uses the following features:</source>
+        <note>ID: Errors.FeatureRequiresNewerVersionPlural</note>
+        <note>The placeholder {0} represents the required version of Bloom. For example, {0} might be replaced with "4.4"</note>
+        <note>A bulleted list of features (in English) will follow underneath this text</note>
+        <target xml:lang="my" state="needs-translation">This book requires Bloom {0} or greater because it uses the following features:</target>
+      </trans-unit>
+      <trans-unit id="Errors.FeatureRequiresNewerVersionSingular">
+        <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature \"{1}\".</source>
+        <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
+        <note>The placeholder {0} represents the required version of Bloom. For example, {0} might be replaced with "4.4"</note>
+        <note>The placeholder {1} represents a short description of the feature For example, {1} might be replaced with "Whole Text Audio"</note>
+        <target xml:lang="my" state="needs-translation">This book requires Bloom {0} or greater because it uses the feature \"{1}\".</target>
+      </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
         <note>ID: Errors.NeedNewerVersion</note>
         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
         <note xml:lang="en">OLD TEXT (before 3.9, removed period): {0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</note>
         <target xml:lang="my" state="needs-translation">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</target>
+      </trans-unit>
+      <trans-unit id="Errors.NewVersionNeededHeader">
+        <source xml:lang="en">This book needs a new version of Bloom.</source>
+        <note>ID: Errors.NewVersionNeededHeader</note>
+        <target xml:lang="my" state="needs-translation">This book needs a new version of Bloom.</target>
       </trans-unit>
       <trans-unit id="Errors.ProblemDeletingFile">
         <source xml:lang="en">Bloom had a problem deleting this file: {0}</source>
@@ -2702,6 +2896,18 @@
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
         <note>ID: InstallProblem.BloomPdfMaker</note>
         <target xml:lang="my" state="needs-translation">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</target>
+      </trans-unit>
+      <trans-unit id="LameEncoder.DeleteFailedShort">
+        <source xml:lang="en">Cannot replace mp3 file</source>
+        <note>ID: LameEncoder.DeleteFailedShort</note>
+        <note>short message for a popup toast notification</note>
+        <target xml:lang="my" state="needs-translation">Cannot replace mp3 file</target>
+      </trans-unit>
+      <trans-unit id="LameEncoder.DeleteFailedLong">
+        <source xml:lang="en">Bloom could not replace an mp3 file. If this continues, check your antivirus.</source>
+        <note>ID: LameEncoder.DeleteFailedLong</note>
+        <note>longer message for a detailed description of the problem</note>
+        <target xml:lang="my" state="needs-translation">Bloom could not replace an mp3 file. If this continues, check your antivirus.</target>
       </trans-unit>
       <trans-unit id="LameEncoder.Progress">
         <source xml:lang="en"> Converting to mp3</source>
@@ -3495,6 +3701,12 @@
         <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
         <target xml:lang="my" state="needs-translation">Use less memory (slower)</target>
       </trans-unit>
+      <trans-unit id="PublishTab.NoBookletsMessage">
+        <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
+        <note>ID: PublishTab.NoBookletsMessage</note>
+        <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
+        <target xml:lang="my" state="needs-translation">Bloom cannot make booklets using the current page size.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
         <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
@@ -3690,6 +3902,11 @@
         <note>ID: PublishTab.Upload.AllReserved</note>
         <target xml:lang="my" state="needs-translation">All rights reserved (Contact the Copyright holder for any permissions.)</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.BackgroundMusic">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: PublishTab.Upload.BackgroundMusic</note>
+        <target xml:lang="my" state="needs-translation">Background Music</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Cancelled">
         <source xml:lang="en">Upload was cancelled</source>
         <note>ID: PublishTab.Upload.Cancelled</note>
@@ -3758,9 +3975,10 @@
         <target xml:lang="my" state="needs-translation">(incomplete translation)</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Languages">
-        <source xml:lang="en">Languages</source>
+        <source xml:lang="en">Upload Text</source>
         <note>ID: PublishTab.Upload.Languages</note>
-        <target xml:lang="my" state="needs-translation">Languages</target>
+        <note>Prior to 4.4, this was "Languages"</note>
+        <target xml:lang="my" state="needs-translation">Upload Text</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.License">
         <source xml:lang="en">Usage/License</source>
@@ -3878,6 +4096,11 @@
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
         <target xml:lang="my" state="needs-translation">Making thumbnail image...</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.Narration">
+        <source xml:lang="en">Narration</source>
+        <note>ID: PublishTab.Upload.Narration</note>
+        <target xml:lang="my" state="needs-translation">Narration</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.NoLangsFound">
         <source xml:lang="en">(None found)</source>
         <note>ID: PublishTab.Upload.NoLangsFound</note>
@@ -3951,6 +4174,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Title</source>
         <note>ID: PublishTab.Upload.Title</note>
         <target xml:lang="my" state="needs-translation">Title</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadAudio">
+        <source xml:lang="en">Upload Audio</source>
+        <note>ID: PublishTab.Upload.UploadAudio</note>
+        <target xml:lang="my" state="needs-translation">Upload Audio</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton">
         <source xml:lang="en">Upload Book</source>
@@ -4210,11 +4438,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Maximum Words in each Sentence</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <target xml:lang="my" state="needs-translation">Maximum Words in each Sentence</target>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
-        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="my" state="needs-translation">Special Sentence-Ending Punctuation</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>

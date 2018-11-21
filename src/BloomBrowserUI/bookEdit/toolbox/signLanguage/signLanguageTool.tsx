@@ -11,17 +11,22 @@ import {
 } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
 import { HelpLink } from "../../../react_components/helpLink";
-import { Link } from "../../../react_components/link";
 import { UrlUtils } from "../../../utils/urlUtils";
+import { Expandable } from "../../../react_components/expandable";
+import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
+import calculateAspectRatio from "calculate-aspect-ratio";
 
 // The recording process can be in one of these states:
-// idle...the initial state, returned to when stopped; top label shows "Start Recording"; stop button and second label hidden
-// countdown{3,2,1}...record button has been pressed, top label shows countdown, not recording, stop button shows,
+// idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
+// countdown{3,2,1}...record button has been pressed, countdown labels show, current one brighter,
 //  "press any key to cancel" shows in bottom label
-// recording...top label shows "Recording", stop button shows, recording is happening, bottom label shows "press any key to stop"
+// recording...stop button shows, recording is happening, bottom label shows "press any key to stop"
+// processing...after completing a recording, all buttons and labels hidden ("Processing" shows in main
+// window overlay)
 // Transitions:
 // Start recording button: state idle -> countdown{3}, * -> idle (save video if any)
-// Stop button or any key: * -> idle
+// recording + Stop button or any key: -> processing
+// processing + newPageReady (e.g., after refresh with new video) -> idle
 interface IComponentState {
     recording: boolean;
     countdown: number;
@@ -31,6 +36,8 @@ interface IComponentState {
     originalExists: boolean;
     cameraAccess: boolean;
     cameraUnavailable: boolean;
+    minutesRecorded: string;
+    secondsRecorded: string;
     videoStatistics: {
         duration: string;
         fileSize: string;
@@ -39,6 +46,7 @@ interface IComponentState {
         fileFormat: string;
         startSeconds: string;
         endSeconds: string;
+        aspectRatio: string;
     };
 }
 
@@ -62,8 +70,11 @@ declare var MediaRecorder: {
     new (s: MediaStream, options: any): MediaRecorder;
 };
 
-const MAX_DURATION: string = "-1.0"; // temporary placeholder for maximum duration
-const DEFAULT_START: string = "0.0";
+// string and number versions of the untrimmed values for both the start and end points of a video.
+// In the case of the endpoint, zero is just a placeholder that will be replaced with the duration of the video.
+// When a trimmed endpoint is stored, it represents the time in seconds from the start of the untrimmed video.
+const UNTRIMMED_TIMING: string = "0.0";
+const UNTRIMMED_TIMING_NUM: number = 0.0;
 
 // This react class implements the UI for the sign language (video) toolbox.
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
@@ -84,239 +95,218 @@ export class SignLanguageToolControls extends React.Component<
         originalExists: false,
         cameraAccess: true,
         cameraUnavailable: false,
+        minutesRecorded: "",
+        secondsRecorded: "",
         videoStatistics: {
             duration: "",
             fileSize: "",
             frameSize: "",
             framesPerSecond: "",
             fileFormat: "",
-            startSeconds: DEFAULT_START,
-            endSeconds: MAX_DURATION
+            startSeconds: UNTRIMMED_TIMING,
+            endSeconds: UNTRIMMED_TIMING,
+            aspectRatio: ""
         }
     };
     private videoStream: MediaStream;
     private chunks: Blob[];
     private mediaRecorder: MediaRecorder;
     private timerId: number;
+    private recordingStarted: number;
     public render() {
-        let videoStats = <div />;
+        let videoStats = <div id="videoStatsWrapper" />;
+        let trimSlider = <div id="trimWrapper" />;
         if (
             // Protects against showing slider and stats when
             // the video info hasn't yet been loaded from the file.
             this.state.haveRecording &&
             this.state.videoStatistics.duration != ""
         ) {
+            const start = parseFloat(this.state.videoStatistics.startSeconds);
+            let end = parseFloat(this.state.videoStatistics.endSeconds);
+            const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
+                this.state.videoStatistics.duration
+            );
+            if (end == UNTRIMMED_TIMING_NUM) {
+                // if the video has not been "end-trimmed", set the end slider to the equivalent of the
+                // untrimmed video's duration, since the end of the video in seconds is equal to its duration
+                // in seconds.
+                end = maxDuration;
+            }
+            const valueArray: number[] = [start, end];
+            trimSlider = this.getTrimSlider(valueArray, maxDuration);
             videoStats = this.getVideoStats();
         }
         return (
-            <RequiresBloomEnterpriseWrapper>
+            <RequiresBloomEnterpriseWrapper className="signLanguageOuterWrapper">
                 <div className={"signLanguageFrame " + this.state.stateClass}>
-                    {this.getCameraMessageLabel()}
-                    <div className={this.state.enabled ? "" : "disabled"}>
-                        <div
-                            id="videoMonitorWrapper"
-                            className={
-                                this.state.enabled ? "" : "disabledVideoMonitor"
-                            }
-                        >
-                            <video id="videoMonitor" autoPlay={true} />
-                        </div>
-                        <div className="button-label-wrapper">
-                            <div id="videoPlayAndLabelWrapper">
-                                <div className="videoButtonWrapper">
-                                    <button
-                                        id="videoToggleRecording"
-                                        className={
-                                            "video-button ui-button" +
-                                            (this.state.stateClass !== "idle"
-                                                ? " started"
-                                                : "") +
-                                            (this.state.recording
-                                                ? " recordingNow"
-                                                : "") +
-                                            (this.state.enabled &&
-                                            this.state.cameraAccess
-                                                ? " enabled"
-                                                : " disabled")
-                                        }
-                                        onClick={() => this.toggleRecording()}
-                                    />
-                                    <Label
-                                        className={
-                                            "startRecording idle" +
-                                            (this.state.enabled &&
-                                            this.state.cameraAccess
-                                                ? " enabled"
-                                                : " disabled")
-                                        }
-                                        l10nKey="EditTab.Toolbox.SignLanguage.StartRecording"
-                                        onClick={() => this.toggleRecording()}
-                                    >
-                                        Start Recording
-                                    </Label>
-                                    <span className="countdown3 countdownNumber">
-                                        3
-                                    </span>
-                                    <span className="countdown2 countdownNumber">
-                                        2
-                                    </span>
-                                    <span className="countdown1 countdownNumber">
-                                        1
-                                    </span>
-                                    <Label
-                                        className="recording recordingLabel"
-                                        l10nKey="EditTab.Toolbox.SignLanguage.Recording"
-                                    >
-                                        Recording
-                                    </Label>
+                    <div>
+                        {this.getCameraMessageLabel()}
+                        <div className={this.state.enabled ? "" : "disabled"}>
+                            <div
+                                id="videoMonitorWrapper"
+                                className={
+                                    this.state.enabled
+                                        ? ""
+                                        : "disabledVideoMonitor"
+                                }
+                            >
+                                <video id="videoMonitor" autoPlay={true} />
+                            </div>
+                            <div id="timeWrapper">
+                                <span>
+                                    {this.state.minutesRecorded +
+                                        ":" +
+                                        this.state.secondsRecorded}
+                                </span>
+                            </div>
+                            <div className="button-label-wrapper">
+                                <div id="videoPlayAndLabelWrapper">
+                                    <div className="videoButtonWrapper">
+                                        <button
+                                            id="videoToggleRecording"
+                                            className={
+                                                "video-button ui-button" +
+                                                (this.state.stateClass !==
+                                                    "idle" &&
+                                                this.state.stateClass !==
+                                                    "recording"
+                                                    ? " counting"
+                                                    : "") +
+                                                (this.state.recording
+                                                    ? " recordingNow"
+                                                    : "") +
+                                                (this.state.enabled &&
+                                                this.state.cameraAccess
+                                                    ? " enabled"
+                                                    : " disabled")
+                                            }
+                                            onClick={() =>
+                                                this.toggleRecording()
+                                            }
+                                        />
+                                        <div id="countdownWrapper">
+                                            <span className="countdown3 countdownNumber">
+                                                3
+                                            </span>
+                                            <span className="countdown2 countdownNumber">
+                                                2
+                                            </span>
+                                            <span className="countdown1 countdownNumber">
+                                                1
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <div id="stopWrapper">
+                                <Label
+                                    l10nKey="EditTab.Toolbox.SignLanguage.PressCancel"
+                                    className="counting stopLabel"
+                                >
+                                    Press any key to cancel
+                                </Label>
+                                <Label
+                                    l10nKey="EditTab.Toolbox.SignLanguage.PressStop"
+                                    className="recording stopLabel"
+                                >
+                                    Press any key to stop
+                                </Label>
+                            </div>
+                            {trimSlider}
                         </div>
-                        <div
-                            id="editOutsideWrapper"
-                            className={
-                                "videoButtonWrapper" +
-                                (this.state.haveRecording &&
-                                this.state.stateClass === "idle"
-                                    ? ""
-                                    : " disabled ")
-                            }
+                    </div>
+                    <div style={{ height: "210px" }}>
+                        <Expandable
+                            l10nKey="Common.Advanced"
+                            headingText="Advanced"
+                            expandedHeight="210px"
                         >
-                            <button
-                                id="editOutsideButton"
-                                onClick={() => this.editOutside()}
-                            />
-                            <Label
-                                className="commandLabel"
-                                l10nKey="EditTab.Toolbox.SignLanguage.EditOutside"
-                                onClick={() => this.editOutside()}
+                            <div
+                                id="importRecordingWrapper"
+                                className={
+                                    "smallVideoButtonWrapper" +
+                                    (this.state.stateClass === "idle"
+                                        ? ""
+                                        : " disabled")
+                                }
                             >
-                                Edit outside of Bloom
-                            </Label>
-                        </div>
-                        <div
-                            id="restoreOriginalWrapper"
-                            className={
-                                "videoButtonWrapper" +
-                                (this.state.originalExists ? "" : " disabled ")
-                            }
-                        >
-                            <button
-                                id="restoreOriginalButton"
-                                onClick={() => this.restoreOriginal()}
-                            />
-                            <Label
-                                className="commandLabel"
-                                l10nKey="EditTab.Toolbox.SignLanguage.RestoreOriginal"
-                                onClick={() => this.restoreOriginal()}
+                                <button
+                                    id="videoImport"
+                                    onClick={() => this.importRecording()}
+                                />
+                                <Label
+                                    className="commandLabel"
+                                    l10nKey="EditTab.Toolbox.SignLanguage.ImportVideo"
+                                    onClick={() => this.importRecording()}
+                                >
+                                    Import
+                                </Label>
+                            </div>
+                            <div
+                                id="showInFolderWrapper"
+                                className={
+                                    "smallVideoButtonWrapper" +
+                                    (this.state.haveRecording &&
+                                    this.state.stateClass === "idle"
+                                        ? ""
+                                        : " disabled")
+                                }
                             >
-                                Restore Original
-                            </Label>
-                        </div>
-                        <div
-                            id="importRecordingWrapper"
-                            className={
-                                "videoButtonWrapper" +
-                                (this.state.stateClass === "idle"
-                                    ? ""
-                                    : " disabled")
-                            }
-                        >
-                            <button
-                                id="videoImport"
-                                onClick={() => this.importRecording()}
-                            />
-                            <Label
-                                className="commandLabel"
-                                l10nKey="EditTab.Toolbox.SignLanguage.ImportVideo"
-                                onClick={() => this.importRecording()}
+                                <button
+                                    id="showInFolder"
+                                    onClick={() => this.showInFolder()}
+                                />
+                                <Label
+                                    className="commandLabel"
+                                    l10nKey="EditTab.Toolbox.SignLanguage.ShowInFolder"
+                                    onClick={() => this.showInFolder()}
+                                >
+                                    Show in Folder
+                                </Label>
+                            </div>
+
+                            <div
+                                id="deleteRecordingWrapper"
+                                className={
+                                    "smallVideoButtonWrapper" +
+                                    (this.state.haveRecording &&
+                                    this.state.stateClass === "idle"
+                                        ? ""
+                                        : " disabled ")
+                                }
                             >
-                                Import Video
-                            </Label>
-                        </div>
-                        <div
-                            id="deleteRecordingWrapper"
-                            className={
-                                "videoButtonWrapper" +
-                                (this.state.haveRecording &&
-                                this.state.stateClass === "idle"
-                                    ? ""
-                                    : " disabled ")
-                            }
+                                <button
+                                    id="videoDelete"
+                                    onClick={() => this.deleteRecording()}
+                                />
+                                <Label
+                                    className="commandLabel"
+                                    l10nKey="EditTab.Toolbox.SignLanguage.DeleteVideo"
+                                    onClick={() => this.deleteRecording()}
+                                >
+                                    Delete
+                                </Label>
+                            </div>
+                            {videoStats}
+                        </Expandable>
+                    </div>
+                    <div className="helpLinkWrapper">
+                        <HelpLink
+                            l10nKey="Common.Help"
+                            helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm"
                         >
-                            <button
-                                id="videoDelete"
-                                onClick={() => this.deleteRecording()}
-                            >
-                                X
-                            </button>
-                            <Label
-                                className="commandLabel"
-                                l10nKey="EditTab.Toolbox.SignLanguage.DeleteVideo"
-                                onClick={() => this.deleteRecording()}
-                            >
-                                Delete Video
-                            </Label>
-                        </div>
-                        <Link
-                            id="showInFolderLink"
-                            l10nKey="EditTab.Toolbox.SignLanguage.ShowInFolder"
-                            onClick={() => this.showInFolder()}
-                        >
-                            Open File Location
-                        </Link>
-                        <div>
-                            <button
-                                id="videoStopRecording"
-                                className={"video-button ui-button notIdle"}
-                                onClick={() => this.toggleRecording()}
-                            />
-                        </div>
-                        <Label
-                            l10nKey="EditTab.Toolbox.SignLanguage.PressCancel"
-                            className="counting stopLabel"
-                        >
-                            Press any key to cancel
-                        </Label>
-                        <Label
-                            l10nKey="EditTab.Toolbox.SignLanguage.PressStop"
-                            className="recording stopLabel"
-                        >
-                            Press any key to stop
-                        </Label>
-                        {videoStats}
-                        <div className="helpLinkWrapper">
-                            <HelpLink
-                                l10nKey="Common.Help"
-                                helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm"
-                            >
-                                Help
-                            </HelpLink>
-                        </div>
+                            Help
+                        </HelpLink>
                     </div>
                 </div>
             </RequiresBloomEnterpriseWrapper>
         );
     }
 
-    private getVideoStats() {
-        const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
-            this.state.videoStatistics.duration
-        );
-        const start = parseFloat(this.state.videoStatistics.startSeconds);
-        let end = parseFloat(this.state.videoStatistics.endSeconds);
-        if (end === -1.0) {
-            end = maxDuration;
-        }
-        const valueArray: number[] = [start, end];
+    private getTrimSlider(valueArray: number[], maxDuration: number) {
         return (
-            <div id="videoStatsWrapper">
-                <Label
-                    l10nKey="EditTab.Toolbox.SignLanguage.Trim"
-                    className="trimLabel"
-                >
-                    Trim
-                </Label>
+            <div id="trimWrapper">
                 <Range
                     className="videoTrimSlider"
                     count={1}
@@ -327,11 +317,27 @@ export class SignLanguageToolControls extends React.Component<
                         v => SignLanguageTool.setCurrentVideoPoint(v[0])
                     }
                     step={0.1}
-                    min={0.0}
+                    min={UNTRIMMED_TIMING_NUM}
                     allowCross={false}
                     pushable={false}
                     max={maxDuration}
                 />
+                <div id="trimLabelWrapper">
+                    <Label
+                        l10nKey="EditTab.Toolbox.SignLanguage.Trim"
+                        className="trimLabel"
+                    >
+                        Trim
+                    </Label>
+                </div>
+            </div>
+        );
+    }
+
+    private getVideoStats() {
+        return (
+            <div id="videoStatsWrapper">
+                <Label l10nKey="Common.Info">Info</Label>
                 <div>
                     {/* duration is stored with tenths of seconds, but only displayed with seconds*/
                     this.state.videoStatistics.duration.substr(
@@ -340,7 +346,14 @@ export class SignLanguageToolControls extends React.Component<
                     )}
                 </div>
                 <div>{this.state.videoStatistics.fileSize}</div>
-                <div>{this.state.videoStatistics.frameSize}</div>
+                <div>
+                    {this.state.videoStatistics.frameSize +
+                        (this.state.videoStatistics.aspectRatio
+                            ? " (" +
+                              this.state.videoStatistics.aspectRatio +
+                              ")"
+                            : "")}
+                </div>
                 <div>{this.state.videoStatistics.framesPerSecond}</div>
                 <div>{this.state.videoStatistics.fileFormat}</div>
             </div>
@@ -377,14 +390,7 @@ export class SignLanguageToolControls extends React.Component<
             );
         }
         if (this.state.cameraAccess) {
-            return (
-                <Label
-                    key="CameraOn"
-                    l10nKey="EditTab.Toolbox.SignLanguage.WhatCameraSees"
-                >
-                    Here is what your camera sees:
-                </Label>
-            );
+            return ""; // no label in this case
         } else if (this.state.cameraUnavailable) {
             return (
                 <Label
@@ -416,11 +422,21 @@ export class SignLanguageToolControls extends React.Component<
                         frameSize: "",
                         framesPerSecond: "",
                         fileFormat: "",
-                        startSeconds: DEFAULT_START,
-                        endSeconds: MAX_DURATION
+                        startSeconds: UNTRIMMED_TIMING,
+                        endSeconds: UNTRIMMED_TIMING,
+                        aspectRatio: ""
                     }
                 });
             } else {
+                const frameSize: string = result.data.frameSize;
+                if (frameSize) {
+                    const index = frameSize.indexOf(" x ");
+                    if (index > 0) {
+                        const x = parseInt(frameSize.substring(0, index));
+                        const y = parseInt(frameSize.substring(index + 3));
+                        result.data.aspectRatio = calculateAspectRatio(x, y);
+                    }
+                }
                 this.setState({ videoStatistics: result.data });
             }
         });
@@ -518,7 +534,7 @@ export class SignLanguageToolControls extends React.Component<
         const wasRecording = this.state.recording;
         if (wasRecording) {
             document.removeEventListener("keydown", this.onKeyPress);
-            this.setState({ recording: false, stateClass: "idle" });
+            this.setState({ recording: false, stateClass: "processing" });
             // triggers all the interesting behavior defined in onstop below.
             this.mediaRecorder.stop();
             return;
@@ -561,7 +577,11 @@ export class SignLanguageToolControls extends React.Component<
                 break;
             case "recording":
                 SignLanguageTool.showOverlayToHideVideo();
-                SignLanguageTool.addRecordingLabelToOverlay(document);
+                SignLanguageTool.addLabelToOverlay("Recording");
+                break;
+            case "processing":
+                SignLanguageTool.showOverlayToHideVideo();
+                SignLanguageTool.addLabelToOverlay("Processing");
                 break;
             default:
                 // back to 'idle'
@@ -609,6 +629,36 @@ export class SignLanguageToolControls extends React.Component<
 
         // All set, get the actual recording going.
         this.mediaRecorder.start();
+        this.setState({ minutesRecorded: "00", secondsRecorded: "00" });
+        this.recordingStarted = Date.now();
+        window.setTimeout(() => this.recordingDurationTimerTick(), 1000);
+    }
+
+    private recordingDurationTimerTick() {
+        if (!this.state.recording) {
+            return; // also stops the chain of recurring timeouts.
+        }
+        window.setTimeout(() => this.recordingDurationTimerTick(), 1000);
+        const now = Date.now();
+        const elapsed = (now - this.recordingStarted) / 1000;
+        const minutes = elapsed / 60;
+        const seconds = elapsed - Math.floor(minutes) * 60;
+        this.setState({
+            minutesRecorded: this.twoDigits(minutes),
+            secondsRecorded: this.twoDigits(seconds)
+        });
+    }
+
+    private twoDigits(val: number): string {
+        let result = val.toString();
+        const indexOfDot = result.indexOf(".");
+        if (indexOfDot >= 0) {
+            result = result.substring(0, indexOfDot);
+        }
+        if (result.length < 2) {
+            result = "0" + result;
+        }
+        return result;
     }
 
     public static setup(root): SignLanguageToolControls {
@@ -630,7 +680,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public isExperimental(): boolean {
-        return true;
+        return false;
     }
 
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
@@ -674,6 +724,27 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return UrlUtils.extractPathComponent(
             SignLanguageTool.getSelectedVideoPathAndTiming()
         );
+    }
+
+    // src may have ? followed by fake params to defeat caching.
+    // src may have # followed by timings.
+    // strip them off.
+    public static stripExtrasFromVideoFile(combined: string) {
+        if (!combined) {
+            return null;
+        }
+        // tried  return new URL(combined).pathname;, but URL is 'unavailable' according to debugger.
+        // src may have # followed by timings.
+        const hashIndex = combined.indexOf("#");
+        if (hashIndex > 0) {
+            combined = combined.substring(0, hashIndex);
+        }
+        // src may have ? followed by fake params to defeat caching.
+        const paramIndex = combined.indexOf("?");
+        if (paramIndex > 0) {
+            combined = combined.substring(0, paramIndex);
+        }
+        return combined;
     }
 
     public detachFromPage() {
@@ -737,11 +808,16 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     };
 
     public newPageReady() {
+        // among other things, this clears us out of "processing"
+        // when the page is refreshed with the new video
+        this.reactControls.setState({ stateClass: "idle" });
         const containers = SignLanguageTool.getVideoContainers(false);
         if (containers.length === 0) {
             if (this.reactControls.state.enabled) {
                 this.reactControls.turnOffVideo();
-                this.reactControls.setState({ enabled: false });
+                this.reactControls.setState({
+                    enabled: false
+                });
             }
         } else {
             // We want one video container to be selected, so pick the first.
@@ -806,7 +882,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
         const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
         const start = urlTimingObj.start;
-        const end = urlTimingObj.end; // could be -1.0
+        const end = urlTimingObj.end; // could be 0.0
         const stats = this.reactControls.state.videoStatistics;
         stats.startSeconds = start;
         stats.endSeconds = end;
@@ -864,10 +940,13 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     // Grab the "Recording" label in React-land and stick it in the edit pane overlay
-    public static addRecordingLabelToOverlay(reactDoc: Document): void {
+    public static addLabelToOverlay(key: string): void {
         const container = SignLanguageTool.getVideoContainers(true)[0];
-        const recordingLabel = SignLanguageTool.getRecordingLabel(reactDoc);
-        container.previousElementSibling.firstChild.textContent = recordingLabel;
+        theOneLocalizationManager
+            .asyncGetText("EditTab.Toolbox.SignLanguage." + key, key, "")
+            .done(recordingLabel => {
+                container.previousElementSibling.firstChild.textContent = recordingLabel;
+            });
     }
 
     // Remove the overlay hiding the video, now that we're done recording
@@ -917,6 +996,19 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         )[0] as HTMLVideoElement;
     }
 
+    // Currently only used in bloomVideo.ts
+    public static getSrcAttribute(videoElement: HTMLVideoElement): string {
+        const sources = videoElement.getElementsByTagName("source");
+        if (!sources || sources.length === 0) {
+            return "";
+        }
+        const source = sources[0] as HTMLSourceElement;
+        if (!source.hasAttribute("src")) {
+            return "";
+        }
+        return source.getAttribute("src");
+    }
+
     public static setCurrentVideoPoint(
         timeInSeconds: number,
         videoElement?: HTMLVideoElement
@@ -930,7 +1022,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     // Returns an Object containing the results of executing a regexp on the src attribute of the source element.
     // url: the url without timings
     // start: the start time in seconds, or default of 0.0
-    // end: the end time in seconds, or default of -1.0 (temporary placeholder for maxDuration)
+    // end: the end time in seconds, or default of 0.0
     public static parseVideoSrcAttribute(srcAttr: string): UrlTimingObject {
         const re = /(.*)#t=([0-9]*[.][0-9]+)[,]([0-9]*[.][0-9]+)+/;
         const matches = re.exec(srcAttr);
@@ -951,7 +1043,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public static convertTimeStringToSecondsNumber(duration: string): number {
-        if (duration === "" || duration === MAX_DURATION) {
+        if (duration === "" || duration === UNTRIMMED_TIMING) {
             return 0;
         }
         // from https://stackoverflow.com/questions/9640266/convert-hhmmss-string-to-seconds-only-in-javascript/9640417
@@ -973,7 +1065,7 @@ class UrlTimingObject {
 
     constructor() {
         this.url = "";
-        this.start = DEFAULT_START;
-        this.end = MAX_DURATION;
+        this.start = UNTRIMMED_TIMING;
+        this.end = UNTRIMMED_TIMING;
     }
 }

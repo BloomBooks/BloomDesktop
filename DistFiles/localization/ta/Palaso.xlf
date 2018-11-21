@@ -11,7 +11,7 @@
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="ta">புதுப்பிகள் ஏதும்</target>
+        <target xml:lang="ta" state="translated">புதுப்பிகள் ஏதும்</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
@@ -22,12 +22,12 @@
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="ta">புதுப்பித்தல்களை பார்</target>
+        <target xml:lang="ta" state="translated">புதுப்பித்தல்களை பார்</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="ta">வெளியீட்டு அறிக்கை</target>
+        <target xml:lang="ta" state="translated">வெளியீட்டு அறிக்கை</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -70,7 +70,7 @@
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="ta">ரத்து செய்</target>
+        <target xml:lang="ta" state="translated">ரத்து செய்</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
@@ -80,7 +80,7 @@
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="ta">இல்லை</target>
+        <target xml:lang="ta" state="translated">இல்லை</target>
       </trans-unit>
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
@@ -90,7 +90,7 @@
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="ta">சரி</target>
+        <target xml:lang="ta" state="translated">சரி</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
@@ -100,7 +100,7 @@
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="ta">ஆம்</target>
+        <target xml:lang="ta" state="translated">ஆம்</target>
       </trans-unit>
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
@@ -111,55 +111,55 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="ta">{0} மறுசுழற்சிக் கூடைக்கு நகர்த்தப்படும்.</target>
+        <target xml:lang="ta" state="translated">{0} மறுசுழற்சிக் கூடைக்கு நகர்த்தப்படும்.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="ta">{0} மறுசுழற்சிக் கூடைக்கு நகர்த்தப்படும்.</target>
+        <target xml:lang="ta" state="translated">{0} மறுசுழற்சிக் கூடைக்கு நகர்த்தப்படும்.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="ta">நீக்குதல் உறுதிசெய்</target>
+        <target xml:lang="ta" state="translated">நீக்குதல் உறுதிசெய்</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="ta">ரத்து செய்</target>
+        <target xml:lang="ta" state="translated">ரத்து செய்</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="ta">நீக்கு</target>
+        <target xml:lang="ta" state="translated">நீக்கு</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
-        <source xml:lang="en">Found {0} images with names close to {1}</source>
+        <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="ta" state="needs-translation">Found {0} images with names close to {1}</target>
+        <target xml:lang="ta" state="needs-translation">Found {0} images with names close to “{1}”</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="ta">வாசித்தல் கலை</target>
+        <target xml:lang="ta" state="translated">வாசித்தல் கலை</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="ta">கேமரா</target>
+        <target xml:lang="ta" state="translated">கேமரா</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="ta">{0} பயன்படுத்து</target>
+        <target xml:lang="ta" state="translated">{0} பயன்படுத்து</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="ta">பயிர்</target>
+        <target xml:lang="ta" state="translated">பயிர்</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
@@ -169,18 +169,18 @@
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="ta">திருத்து...</target>
+        <target xml:lang="ta" state="translated">திருத்து...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="ta">'கலை, வாசித்தல்' தொகுப்பு இது. மேற்கண்ட பெட்டியில் என்ன நீங்கள் உள்ளன தேடுகிறது தட்டச்சு செய்யவும், பிறகு ENTER விசையை அழுத்தவும். ஆங்கிலம் மற்றும் இந்தோனேசியம் சொற்களை தட்டச்சு செய்யலாம்.</target>
+        <target xml:lang="ta" state="translated">'கலை, வாசித்தல்' தொகுப்பு இது. மேற்கண்ட பெட்டியில் என்ன நீங்கள் உள்ளன தேடுகிறது தட்டச்சு செய்யவும், பிறகு ENTER விசையை அழுத்தவும். ஆங்கிலம் மற்றும் இந்தோனேசியம் சொற்களை தட்டச்சு செய்யலாம்.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="ta">கோப்பு</target>
+        <target xml:lang="ta" state="translated">கோப்பு</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
@@ -196,17 +196,17 @@
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="ta">மன்னிக்கவும், ஏதோ சென்று தவறான போது உருவம் பெறுகிறது.</target>
+        <target xml:lang="ta" state="translated">மன்னிக்கவும், ஏதோ சென்று தவறான போது உருவம் பெறுகிறது.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="ta">மன்னிக்கவும், ஏதோ சென்று, பட பெட்டி கொண்டு தவறான</target>
+        <target xml:lang="ta" state="translated">மன்னிக்கவும், ஏதோ சென்று, பட பெட்டி கொண்டு தவறான</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="ta">படம் பெறு</target>
+        <target xml:lang="ta" state="translated">படம் பெறு</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
@@ -216,7 +216,7 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="ta">உருவம் கருவிபெட்டி</target>
+        <target xml:lang="ta" state="translated">உருவம் கருவிபெட்டி</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
@@ -248,33 +248,33 @@
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="ta">எந்த பொருத்தமான படிமங்கள் காணப்படவில்லை</target>
+        <target xml:lang="ta" state="translated">எந்த பொருத்தமான படிமங்கள் காணப்படவில்லை</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="ta">படம் கோப்புகள்</target>
+        <target xml:lang="ta" state="translated">படம் கோப்புகள்</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="ta">படிமம் பெறுகிறது சிக்கல்</target>
+        <target xml:lang="ta" state="translated">படிமம் பெறுகிறது சிக்கல்</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="ta">மன்னிக்கவும், இருந்தது அந்த உருவம் ஒரு சிக்கல்.</target>
+        <target xml:lang="ta" state="translated">மன்னிக்கவும், இருந்தது அந்த உருவம் ஒரு சிக்கல்.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="ta">இந்தப் படிமத்தை இல்லை இல்லை know:\n\nஅதனை யார்?\nயார் அதை பயன்படுத்தலாம்?</target>
+        <target xml:lang="ta" state="translated">இந்தப் படிமத்தை இல்லை இல்லை know:\n\nஅதனை யார்?\nயார் அதை பயன்படுத்தலாம்?</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="ta">ஸ்கேனர்</target>
+        <target xml:lang="ta" state="translated">ஸ்கேனர்</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
@@ -290,12 +290,12 @@
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="ta">மீத்தரவு அமை...</target>
+        <target xml:lang="ta" state="translated">மீத்தரவு அமை...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="ta">மற்ற பெயர்கள்</target>
+        <target xml:lang="ta" state="translated">மற்ற பெயர்கள்</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
@@ -311,17 +311,17 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="ta">மொழி 639-3 குறியீடுகள் &amp; புதியவை விண்ணப்பிக்க எப்படி பற்றி</target>
+        <target xml:lang="ta" state="translated">மொழி 639-3 குறியீடுகள் &amp; புதியவை விண்ணப்பிக்க எப்படி பற்றி</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="ta">ISO மொழி பதிவகம் பற்றி</target>
+        <target xml:lang="ta" state="translated">ISO மொழி பதிவகம் பற்றி</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="ta">குறியீடு</target>
+        <target xml:lang="ta" state="translated">குறியீடு</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount">
         <source xml:lang="en">{0} Countries</source>
@@ -332,22 +332,22 @@
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="ta">நாடு</target>
+        <target xml:lang="ta" state="translated">நாடு</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="ta">எப்படி மொழி பெயர் காண்பிக்கப்படும் இங்கு நீங்கள் மாற்றலாம்:</target>
+        <target xml:lang="ta" state="translated">எப்படி மொழி பெயர் காண்பிக்கப்படும் இங்கு நீங்கள் மாற்றலாம்:</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="ta">பார்த்து மொழி குறியீடு...</target>
+        <target xml:lang="ta" state="translated">பார்த்து மொழி குறியீடு...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="ta">பெயர்</target>
+        <target xml:lang="ta" state="translated">பெயர்</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
         <source xml:lang="en">Show regional dialects</source>
@@ -357,12 +357,12 @@
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="ta">பட்டியலிடாத மொழி</target>
+        <target xml:lang="ta" state="translated">பட்டியலிடாத மொழி</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="ta">உங்கள் மொழி கண்டுபிடிக்க முடியவில்லை?</target>
+        <target xml:lang="ta" state="translated">உங்கள் மொழி கண்டுபிடிக்க முடியவில்லை?</target>
       </trans-unit>
       <trans-unit id="MemoryWarning">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
@@ -372,7 +372,7 @@
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="ta">உருவாக்கியவர் {0}</target>
+        <target xml:lang="ta" state="translated">உருவாக்கியவர் {0}</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel">
         <source xml:lang="en">Creator</source>
@@ -382,7 +382,7 @@
       <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="ta">உரிமம் தகவல்</target>
+        <target xml:lang="ta" state="translated">உரிமம் தகவல்</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
@@ -435,22 +435,22 @@
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="ta">குறிப்பிட்ட உரிமத்தை</target>
+        <target xml:lang="ta" state="translated">குறிப்பிட்ட உரிமத்தை</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="ta">உங்கள் வேலை வணிக பயன்பாடுகளும் அனுமதி?</target>
+        <target xml:lang="ta" state="translated">உங்கள் வேலை வணிக பயன்பாடுகளும் அனுமதி?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="ta">உங்கள் வேலை மாற்றமைவுகள் அனுமதி?</target>
+        <target xml:lang="ta" state="translated">உங்கள் வேலை மாற்றமைவுகள் அனுமதி?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="ta">பதிப்புரிமை கொண்டிருப்பவர்கள்</target>
+        <target xml:lang="ta" state="translated">பதிப்புரிமை கொண்டிருப்பவர்கள்</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
@@ -460,7 +460,7 @@
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="ta">ஆக்கப்பூர்வ செய்தியாக</target>
+        <target xml:lang="ta" state="translated">ஆக்கப்பூர்வ செய்தியாக</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
@@ -470,12 +470,12 @@
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="ta">உருவாக்கியவர்</target>
+        <target xml:lang="ta" state="translated">உருவாக்கியவர்</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="ta">விருப்பம்</target>
+        <target xml:lang="ta" state="translated">விருப்பம்</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
@@ -485,98 +485,98 @@
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="ta">பதிப்புரிமை &amp; உரிமம்</target>
+        <target xml:lang="ta" state="translated">பதிப்புரிமை &amp; உரிமம்</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="ta">கடன், பதிப்புரிமை, &amp; உரிமம்</target>
+        <target xml:lang="ta" state="translated">கடன், பதிப்புரிமை, &amp; உரிமம்</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="ta">எந்த அனுமதிகள் பதிப்புரிமை கொண்டிருப்பவர்கள் உதவிக்கு</target>
+        <target xml:lang="ta" state="translated">எந்த அனுமதிகள் பதிப்புரிமை கொண்டிருப்பவர்கள் உதவிக்கு</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="ta">ஆம், உள்ளவர்களை மற்றவர்கள் போல பகிர</target>
+        <target xml:lang="ta" state="translated">ஆம், உள்ளவர்களை மற்றவர்கள் போல பகிர</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="ta">கூடுதல் கோரிக்கைகள்</target>
+        <target xml:lang="ta" state="translated">கூடுதல் கோரிக்கைகள்</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="ta">மேலும் தகவல்</target>
+        <target xml:lang="ta" state="translated">மேலும் தகவல்</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="ta">இல்லை அமல்படுத்தப்பட</target>
+        <target xml:lang="ta" state="translated">இல்லை அமல்படுத்தப்பட</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="ta">இது கூட மறைக்க எந்த தேவை அல்லாத-மேம்பட்ட பயனரால் மற்ற பொத்தான்கள் இருக்கலாம்.</target>
+        <target xml:lang="ta" state="translated">இது கூட மறைக்க எந்த தேவை அல்லாத-மேம்பட்ட பயனரால் மற்ற பொத்தான்கள் இருக்கலாம்.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="ta">பிடித்திருக்கையில் Ctrl மற்றும் Shift விசைகளை இணைந்து உள்ள பொத்தானை கிடைக்கப்பட்ட.</target>
+        <target xml:lang="ta" state="translated">பிடித்திருக்கையில் Ctrl மற்றும் Shift விசைகளை இணைந்து உள்ள பொத்தானை கிடைக்கப்பட்ட.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="ta">அமைப்புகள்...</target>
+        <target xml:lang="ta" state="translated">அமைப்புகள்...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="ta">பொத்தான் அமைப்புகள் திறக்கும் மறை.</target>
+        <target xml:lang="ta" state="translated">பொத்தான் அமைப்புகள் திறக்கும் மறை.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="ta">தொழிற்சாலை கடவுச்சொல்</target>
+        <target xml:lang="ta" state="translated">தொழிற்சாலை கடவுச்சொல்</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="ta">உங்களுக்கு வேலை நிறுத்த இந்த கருவி ஏற்படுத்தலாம் எதிர்பாராத மாற்றங்கள் தடுக்க, இந்த அமைப்புகள் உங்களுக்கு பூட்டப்பட்டுள்ளது.</target>
+        <target xml:lang="ta" state="translated">உங்களுக்கு வேலை நிறுத்த இந்த கருவி ஏற்படுத்தலாம் எதிர்பாராத மாற்றங்கள் தடுக்க, இந்த அமைப்புகள் உங்களுக்கு பூட்டப்பட்டுள்ளது.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="ta">அமைப்புகளை பாதுகாப்பு கடவுச்சொல்</target>
+        <target xml:lang="ta" state="translated">அமைப்புகளை பாதுகாப்பு கடவுச்சொல்</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="ta">எழுத்துக்குறிகளைக் காண்பி</target>
+        <target xml:lang="ta" state="translated">எழுத்துக்குறிகளைக் காண்பி</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
-        <target xml:lang="ta">இந்த அமைப்புகளை தொழிற்சாலை கடவுச்சொல்லை உள்ளது "{0}".  நீங்கள் அதை மறந்து, என்றால் நீங்கள் முடியும் எப்போதும் google "{1}" மற்றும் "{2}"</target>
+        <target xml:lang="ta" state="translated">இந்த அமைப்புகளை தொழிற்சாலை கடவுச்சொல்லை உள்ளது "{0}".  நீங்கள் அதை மறந்து, என்றால் நீங்கள் முடியும் எப்போதும் google "{1}" மற்றும் "{2}"</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="ta">அமைப்புகள் வர தொழிற்சாலை கடவுச்சொல் தேவைப்படும்.</target>
+        <target xml:lang="ta" state="translated">அமைப்புகள் வர தொழிற்சாலை கடவுச்சொல் தேவைப்படும்.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="ta">பாதுகாப்பு அமைப்புகள்</target>
+        <target xml:lang="ta" state="translated">பாதுகாப்பு அமைப்புகள்</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
         <source xml:lang="en">Release Notes</source>
@@ -611,37 +611,37 @@
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="ta">நீங்கள் விசைப்பலகையை பட்டியலில், இல்லையெனில் தகுந்த கீழே உள்ள இணைப்பை சொடுக்கவும் அது அமைக்க</target>
+        <target xml:lang="ta" state="translated">நீங்கள் விசைப்பலகையை பட்டியலில், இல்லையெனில் தகுந்த கீழே உள்ள இணைப்பை சொடுக்கவும் அது அமைக்க</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="ta">Windows விசைப்பலகை அமைப்புகள்</target>
+        <target xml:lang="ta" state="translated">Windows விசைப்பலகை அமைப்புகள்</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="ta">கிடைக்கப்பெறும் விசைப்பலகைகள்</target>
+        <target xml:lang="ta" state="translated">கிடைக்கப்பெறும் விசைப்பலகைகள்</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="ta">முன்பு விசைப்பலகைகள் பயன்படுத்தப்படுகிறது</target>
+        <target xml:lang="ta" state="translated">முன்பு விசைப்பலகைகள் பயன்படுத்தப்படுகிறது</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="ta">Keyman உள்ளமைவு</target>
+        <target xml:lang="ta" state="translated">Keyman உள்ளமைவு</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="ta">Keyman 5.0 அல்லது பிந்தைய நிறுவப்படவில்லை.</target>
+        <target xml:lang="ta" state="translated">Keyman 5.0 அல்லது பிந்தைய நிறுவப்படவில்லை.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="ta">கொண்ட {0} உரை தட்டச்சு செய்ய விசைப்பலகை தேர்ந்தெடு</target>
+        <target xml:lang="ta" state="translated">கொண்ட {0} உரை தட்டச்சு செய்ய விசைப்பலகை தேர்ந்தெடு</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
@@ -651,7 +651,7 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="ta">சோதனை பகுதி (பயன்பாடு இந்த பகுதிக்கு வெளியே விசைப்பலகையைப் சோதிக்க ஏதேனும் தட்டச்சு செய்ய.)</target>
+        <target xml:lang="ta" state="translated">சோதனை பகுதி (பயன்பாடு இந்த பகுதிக்கு வெளியே விசைப்பலகையைப் சோதிக்க ஏதேனும் தட்டச்சு செய்ய.)</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>

@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="leveled.reader.vocabulary" approved="yes">
         <source xml:lang="en">Vocabulary</source>
-        <target xml:lang="fr">Vocabulaire</target>
+        <target xml:lang="fr" state="translated">Vocabulaire</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="fr">Pour les grands débutants, employez des mots simples, bien connus des enfants. Dans la mesure du possible, employez des mots monosyllabiques. Au fur et à mesure que les enfants progressent, utilisez des mots de plusieurs syllabes. Vous pouvez commencer à employer des termes moins connus. Les enfants doivent pouvoir deviner le sens de ces derniers grâce aux autres mots et phrases du contexte ainsi que grâce aux illustrations.</target>
+        <target xml:lang="fr" state="translated">Pour les grands débutants, employez des mots simples, bien connus des enfants. Dans la mesure du possible, employez des mots monosyllabiques. Au fur et à mesure que les enfants progressent, utilisez des mots de plusieurs syllabes. Vous pouvez commencer à employer des termes moins connus. Les enfants doivent pouvoir deviner le sens de ces derniers grâce aux autres mots et phrases du contexte ainsi que grâce aux illustrations.</target>
         <note>ID: leveled.reader.start.simple</note>
         <alt-trans>
           <target xml:lang="fr">Pour les niveaux débutants, employez des mots simples, utilisables par des enfants. Dans la mesure du possible, employez des mots monosyllabiques. Au fur et à mesure que les enfants progressent, utilisez des mots de plus d'une syllabe. Vous pouvez commencer à employer des termes d'un registre plus sophistiqué. Les enfants doivent pouvoir comprendre le sens de ces termes d'un registre plus sophistiqué d'après les illustrations et le contexte global du texte.</target>
@@ -17,12 +17,12 @@
       </trans-unit>
       <trans-unit id="leveled.reader.formatting" approved="yes">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="fr">Mise en forme</target>
+        <target xml:lang="fr" state="translated">Mise en forme</target>
         <note>ID: leveled.reader.formatting</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
-        <target xml:lang="fr">Pour les livres destinés aux débutants, il vaut mieux employer de gros caractères et un clair espacement entre les mots. Il est également préférable de disposer les mots ou les phrases au même endroit sur chaque page. Au fur et à mesure que les livres de lecture deviennent plus difficiles, la taille de la police et l'espacement diminueront et les phrases figureront à différents endroits sur la page.</target>
+        <target xml:lang="fr" state="translated">Pour les livres destinés aux débutants, il vaut mieux employer de gros caractères et un clair espacement entre les mots. Il est également préférable de disposer les mots ou les phrases au même endroit sur chaque page. Au fur et à mesure que les livres de lecture deviennent plus difficiles, la taille de la police et l'espacement diminueront et les phrases figureront à différents endroits sur la page.</target>
         <note>ID: leveled.reader.start.large</note>
         <alt-trans>
           <target xml:lang="fr">Une police et un espacement entre les mots relativement importants sont préférables pour des lecteurs débutants. Il est également préférable de disposer les mots ou les phrases au même emplacement sur chaque page. Au fur et à mesure que les lecteurs progressent et montent en niveau, la taille de la police et l'espacement peuvent être réduits, et les phrases peuvent être disposées à différents emplacements des pages.</target>
@@ -30,7 +30,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
-        <target xml:lang="fr">Pour augmenter la taille de la police, l'interligne et l'espacement entre les mots dans Bloom, cliquez sur une zone de texte, puis sur l'icône représentant une roue dentée grise dans le coin inférieur gauche. Si après avoir fait cela, vous créez un modèle, tous les livres réalisés à partir de ce modèle utiliseront ces mêmes paramètres.</target>
+        <target xml:lang="fr" state="translated">Pour augmenter la taille de la police, l'interligne et l'espacement entre les mots dans Bloom, cliquez sur une zone de texte, puis sur l'icône représentant une roue dentée grise dans le coin inférieur gauche. Si après avoir fait cela, vous créez un modèle, tous les livres réalisés à partir de ce modèle utiliseront ces mêmes paramètres.</target>
         <note>ID: leveled.reader.increase.sizes</note>
         <alt-trans>
           <target xml:lang="fr">Pour augmenter la taille de la police et l'espacement entre les lignes et entre les mots dans Bloom, cliquez sur une zone de texte, puis sur l'icône représentant une roue dentée dans le coin inférieur gauche de la page. Si, après avoir procédé ainsi, vous créez un modèle de livre, tous les livres créés à partir de ce modèle utiliseront les mêmes paramètres de police.</target>
@@ -38,12 +38,14 @@
       </trans-unit>
       <trans-unit id="leveled.reader.predictability" approved="yes">
         <source xml:lang="en">Predictability</source>
-        <target xml:lang="fr">Prévisibilité</target>
+        <target xml:lang="fr" state="translated">Prévisibilité</target>
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="fr">
+        <target xml:lang="fr" state="translated">
+          
+          
           
           
           
@@ -65,6 +67,33 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
           
           
           
+          
+          
+La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
 La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
         </alt-trans>
         <alt-trans>
@@ -82,23 +111,6 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
           <target xml:lang="fr">
           
           
-          
-          
-          
-          
-La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
-          
-          
-          
-          
-          
-La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           
@@ -108,7 +120,7 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
       </trans-unit>
       <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
-        <target xml:lang="fr">La répétition - c'est-à-dire, répéter des parties du texte, par exemple, utiliser une même phrase dans chaque page en en changeant un seul mot</target>
+        <target xml:lang="fr" state="translated">La répétition - c'est-à-dire, répéter des parties du texte, par exemple, utiliser une même phrase dans chaque page en en changeant un seul mot</target>
         <note>ID: leveled.reader.repetition</note>
         <alt-trans>
           <target xml:lang="fr">La répétition - c'est-à-dire, répéter des parties du texte, par exemple, utiliser une même phrase dans chaque page en en changeant juste un mot</target>
@@ -116,7 +128,7 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="fr">Les successions : histoire dont la structure comporte une succession connue telles que les jours de la semaine ou des chiffres</target>
+        <target xml:lang="fr" state="translated">Les successions : histoire dont la structure comporte une succession connue telles que les jours de la semaine ou des chiffres</target>
         <note>ID: leveled.reader.sequencing</note>
         <alt-trans>
           <target xml:lang="fr">Le séquençage - cette technique s'applique à une histoire découpée, ou séquencée, en vertu d'éléments bien définis, calendaires ou numériques, par exemple</target>
@@ -124,7 +136,7 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
       </trans-unit>
       <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="fr">Succession structurante : histoire qui comporte la répétition d'une même structure à laquelle s'ajoute à chaque page un nouvel élément</target>
+        <target xml:lang="fr" state="translated">Succession structurante : histoire qui comporte la répétition d'une même structure à laquelle s'ajoute à chaque page un nouvel élément</target>
         <note>ID: leveled.reader.building.sequence</note>
         <alt-trans>
           <target xml:lang="fr">Sucession structurante : histoire qui comporte la répétition d'une même structure à laquelle s'ajoute à chaque page un nouvel élément</target>
@@ -144,7 +156,7 @@ Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
-        <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
+        <target xml:lang="fr" state="translated">Les poésie : histoire dont la structure comporte des rimes, par exemple :
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre">Ourson, ourson, qu'est-ce que tu vois ?
 Je vois un rouge-gorge tout près de moi.
@@ -154,6 +166,8 @@ Canard, canard, qu'est-ce que tu vois ?</g>
            <g id="genid-4" ctype="x-html-div" html:class="author">-adaptation d'un texte de Bill Martin, Jr. and Eric Carle</g>
          </g>
        
+      
+      
       
       
       
@@ -176,6 +190,43 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">Ourson, ourson, qu'est-ce que tu vois ?
+Je vois un rouge-gorge tout près de moi.
+Rouge-gorge, rouge-gorge, qu'est-ce que tu vois ?
+Je vois un canard tout près de moi.
+Canard, canard, qu'est-ce que tu vois ?</g>
+           <g id="genid-4" ctype="x-html-div" html:class="author">-adaptation d'un texte de Bill Martin, Jr. and Eric Carle</g>
+         </g>
+       
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">Ourson, ourson, qu'est-ce que tu vois ?
+Je vois un rouge-gorge tout près de moi.
+Rouge-gorge, rouge-gorge, qu'est-ce que tu vois ?
+Je vois un canard tout près de moi.
+Canard, canard, qu'est-ce que tu vois ?</g>
+           <g id="genid-4" ctype="x-html-div" html:class="author">-adaptation d'un texte de Bill Martin, Jr. and Eric Carle</g>
+         </g>
+       
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -207,39 +258,12 @@ Canard, canard, qu'est-ce que tu vois ?</g>
        
       
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Ourson, ourson, qu'est-ce que tu vois ?
-Je vois un rouge-gorge tout près de moi.
-Rouge-gorge, rouge-gorge, qu'est-ce que tu vois ?
-Je vois un canard tout près de moi.
-Canard, canard, qu'est-ce que tu vois ?</g>
-           <g id="genid-4" ctype="x-html-div" html:class="author">-adaptation d'un texte de Bill Martin, Jr. and Eric Carle</g>
-         </g>
-       
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Ourson, ourson, qu'est-ce que tu vois ?
-Je vois un rouge-gorge tout près de moi.
-Rouge-gorge, rouge-gorge, qu'est-ce que tu vois ?
-Je vois un canard tout près de moi.
-Canard, canard, qu'est-ce que tu vois ?</g>
-           <g id="genid-4" ctype="x-html-div" html:class="author">-adaptation d'un texte de Bill Martin, Jr. and Eric Carle</g>
-         </g>
-       
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
-        <target xml:lang="fr">À propos des illustrations</target>
+        <target xml:lang="fr" state="translated">À propos des illustrations</target>
         <note>ID: leveled.reader.illustrations</note>
         <alt-trans>
           <target xml:lang="fr">Illustration</target>
@@ -251,7 +275,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
-        <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
+        <target xml:lang="fr" state="translated">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
+    
+    
     
     
     
@@ -293,6 +319,53 @@ Canard, canard, qu'est-ce que tu vois ?</g>
     
     
     
+    
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -320,43 +393,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
           <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
     
     
     
@@ -377,7 +413,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
-        <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
+        <target xml:lang="fr" state="translated">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
+      
+      
       
       
       
@@ -419,6 +457,53 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -446,43 +531,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
           <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
       
       
       
@@ -503,7 +551,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
-        <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
+        <target xml:lang="fr" state="translated">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
+      
+      
       
       
       
@@ -554,22 +604,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
       
       
       </target>
@@ -589,10 +623,34 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
+      
+      
       
       
       
@@ -611,7 +669,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
-        <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
+        <target xml:lang="fr" state="translated">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
+      
+      
       
       
       
@@ -631,6 +691,31 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -647,21 +732,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
           <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       
       
       
@@ -670,7 +740,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
-        <target xml:lang="fr">Choix du sujet</target>
+        <target xml:lang="fr" state="translated">Choix du sujet</target>
         <note>ID: leveled.reader.topic.choice</note>
         <alt-trans>
           <target xml:lang="fr">Choix du thème</target>
@@ -678,7 +748,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="fr">Les livres peuvent porter sur de nombreux sujets. Lorsque vous rédigez des livres destinés aux lecteurs débutants, choisissez des sujets qu'ils connaissent. Les lecteurs liront plus volontiers des textes portant sur des sujets qu'ils trouvent intéressant et qui leur sont familiers. Les livres destinés aux lecteurs plus expérimentés peuvent apporter aux lecteurs des informations nouvelles.</target>
+        <target xml:lang="fr" state="translated">Les livres peuvent porter sur de nombreux sujets. Lorsque vous rédigez des livres destinés aux lecteurs débutants, choisissez des sujets qu'ils connaissent. Les lecteurs liront plus volontiers des textes portant sur des sujets qu'ils trouvent intéressant et qui leur sont familiers. Les livres destinés aux lecteurs plus expérimentés peuvent apporter aux lecteurs des informations nouvelles.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
         <alt-trans>
           <target xml:lang="fr">Les livres peuvent porter sur un large éventail de thèmes. En ce qui concerne les livres pour lecteurs débutants, il conviendra de choisir des thèmes leur étant familiers. Les lecteurs liront plus volontiers des textes portant sur des thèmes qui les intéressent et leur sont familiers. Les lecteurs plus expérimentés sont susceptibles de lire des textes portant sur des thèmes qui ne leur sont pas forcément familiers.</target>
@@ -687,7 +757,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
       </source>
-        <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
+        <target xml:lang="fr" state="translated">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
+      
+      
       
       
       
@@ -707,6 +779,31 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -723,21 +820,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
           <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
       
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
       
       
       
@@ -747,7 +829,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
-        <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
+        <target xml:lang="fr" state="translated">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
+      
+      
       
       
       
@@ -801,23 +885,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
       
       
       </target>
@@ -838,10 +905,35 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
+      
+      
       
       
       
@@ -861,7 +953,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
-        <target xml:lang="fr">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
+        <target xml:lang="fr" state="translated">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
+      
+      
       
       
       
@@ -912,22 +1006,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
       
       
       </target>
@@ -947,10 +1025,34 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
+      
+      
       
       
       

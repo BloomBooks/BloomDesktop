@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="tr">Bu raporu sunduktan sonra, sizinle irtibata geçip bu konuda size yardımcı olacağız. Bu arada, burada bazı fikirler var:</target>
+        <target xml:lang="tr" state="translated">Bu raporu sunduktan sonra, sizinle irtibata geçip bu konuda size yardımcı olacağız. Bu arada, burada bazı fikirler var:</target>
         <note>ID: integrity.todo.ideas</note>
         <alt-trans>
           <target xml:lang="tr">Bu raporu sunduktan sonra, sizinle irtibata geçeceğiz ve bu konuda size yardımcı olacağız. Bu arada, burada bazı fikirler var:</target>

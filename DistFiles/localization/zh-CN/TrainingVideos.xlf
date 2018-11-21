@@ -4,33 +4,33 @@
     <body>
       <trans-unit id="training.videos" approved="yes">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="zh-CN">介绍Bloom使用方法的视频</target>
+        <target xml:lang="zh-CN" state="translated">介绍Bloom使用方法的视频</target>
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="zh-CN">已连接互联网时，可以用浏览器在线观看视频：</target>
+        <target xml:lang="zh-CN" state="translated">已连接互联网时，可以用浏览器在线观看视频：</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">所有视频</g>
         </target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="zh-CN">入门视频</target>
+        <target xml:lang="zh-CN" state="translated">入门视频</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
       <trans-unit id="training.videos.whofor" approved="yes">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom：服务对象是谁</g>
         </target>
         <note>ID: training.videos.whofor</note>
@@ -39,7 +39,7 @@
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">了解模板和壳书</g>
         </target>
         <note>ID: training.videos.templates</note>
@@ -48,7 +48,7 @@
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">使用普通书模板</g>
         </target>
         <note>ID: training.videos.basicbook</note>
@@ -57,21 +57,21 @@
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">使用拼读读物模板和分级读物模板（几个视频）</g>
         </target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="zh-CN">高级主题</target>
+        <target xml:lang="zh-CN" state="translated">高级主题</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting" approved="yes">
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">更改文本格式</g>
         </target>
         <note>ID: training.videos.formatting</note>
@@ -80,7 +80,7 @@
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">使用自定义页面模板</g>
         </target>
         <note>ID: training.videos.custompage</note>
@@ -89,7 +89,7 @@
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">插入特殊字符</g>
         </target>
         <note>ID: training.videos.specialcharacters</note>
@@ -98,24 +98,26 @@
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">制作成套的拼读读物模板和分级读物模板（几个视频）</g>
         </target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
-        <target xml:lang="zh-CN">离线观看</target>
+        <target xml:lang="zh-CN" state="translated">离线观看</target>
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
-        <target xml:lang="zh-CN">如果您想下载这些视频，以便在没有网络时观看和分享，可以将视频下载到本地计算机：</target>
+        <target xml:lang="zh-CN" state="translated">如果您想下载这些视频，以便在没有网络时观看和分享，可以将视频下载到本地计算机：</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
+          
+          
           
           
           
@@ -131,6 +133,27 @@
           
           
           
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
         </alt-trans>
         <alt-trans>
@@ -145,24 +168,15 @@
           <target xml:lang="zh-CN">
           
           
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">
           
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="zh-CN">
+        <target xml:lang="zh-CN" state="translated">
+          
+          
           
           
           
@@ -178,6 +192,27 @@
           
           
           
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
         </alt-trans>
         <alt-trans>
@@ -192,17 +227,6 @@
           <target xml:lang="zh-CN">
           
           
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">
           
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
         </alt-trans>

@@ -216,7 +216,7 @@ namespace Bloom
 				return true;
 			}
 			var parent = Parent;
-			while (parent != null && parent.Name != "BODY")
+			while (parent != null)
 			{
 				if (HasClass(parent, className))
 					return true;

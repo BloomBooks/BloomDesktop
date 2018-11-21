@@ -4,33 +4,33 @@
     <body>
       <trans-unit id="training.videos" approved="yes">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="bn">ব্লুম প্রশিক্ষণ ভিডিও</target>
+        <target xml:lang="bn" state="translated">ব্লুম প্রশিক্ষণ ভিডিও</target>
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="bn">যদি আপনি এখন ইন্টারনেটের সাথে সংযুক্ত থাকেন, ওয়েব ব্রাউজারে আপনি ভিডিও দেখতে পারেন:</target>
+        <target xml:lang="bn" state="translated">যদি আপনি এখন ইন্টারনেটের সাথে সংযুক্ত থাকেন, ওয়েব ব্রাউজারে আপনি ভিডিও দেখতে পারেন:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">সকল ভিডিওসমূহ</g>
         </target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="bn">প্রারম্ভিক ভিডিওসমূহ</target>
+        <target xml:lang="bn" state="translated">প্রারম্ভিক ভিডিওসমূহ</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
       <trans-unit id="training.videos.whofor" approved="yes">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">ব্লুম: এটি কার জন্য</g>
         </target>
         <note>ID: training.videos.whofor</note>
@@ -39,7 +39,7 @@
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">টেমপ্লেট ও শেল বুকসমূহ বোঝা</g>
         </target>
         <note>ID: training.videos.templates</note>
@@ -48,7 +48,7 @@
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">প্রাথমিক বই টেমপ্লেটের ব্যবহার</g>
         </target>
         <note>ID: training.videos.basicbook</note>
@@ -57,21 +57,21 @@
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">ডিকোডেবল এবং লেভেলড রিডার টেমপ্লেট ব্যবহার (বিভিন্ন ভিডিওসমূহ)</g>
         </target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="bn">উচ্চতর বিষয়সমূহ</target>
+        <target xml:lang="bn" state="translated">উচ্চতর বিষয়সমূহ</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting" approved="yes">
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">লেখার ধরন পরিবর্তন</g>
         </target>
         <note>ID: training.videos.formatting</note>
@@ -80,7 +80,7 @@
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">কাস্টম পেজের টেমপ্লেট ব্যবহার</g>
         </target>
         <note>ID: training.videos.custompage</note>
@@ -89,7 +89,7 @@
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">বিশেষ অক্ষরসমূহ যোগ বা অর্ন্তভূক্ত করা</g>
         </target>
         <note>ID: training.videos.specialcharacters</note>
@@ -98,24 +98,26 @@
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">ডিকোডেবল এবং লেভেলড রিডার টেমপ্লেটের সেট তৈরি (বিভিন্ন ভিডিওসমূহ)</g>
         </target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
-        <target xml:lang="bn">অফলাইনে দেখা</target>
+        <target xml:lang="bn" state="translated">অফলাইনে দেখা</target>
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
-        <target xml:lang="bn">যদি আপনি ইন্টারনেট সংযোগ না থাকা অবস্থায় ভিডিওগুলোর যে কোন একটি কাউকে দেখাতে ও শেয়ার করতে চান তবে আপনি আপনার কম্পিউটারে ভিডিওগুলো ডাউনলোড করতে পারেন:</target>
+        <target xml:lang="bn" state="translated">যদি আপনি ইন্টারনেট সংযোগ না থাকা অবস্থায় ভিডিওগুলোর যে কোন একটি কাউকে দেখাতে ও শেয়ার করতে চান তবে আপনি আপনার কম্পিউটারে ভিডিওগুলো ডাউনলোড করতে পারেন:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
+          
+          
           
           
           
@@ -131,6 +133,27 @@
           
           
           
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">
+          
+          
+          
+          
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)</target>
         </alt-trans>
         <alt-trans>
@@ -145,24 +168,15 @@
           <target xml:lang="bn">
           
           
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
           
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="bn">
+        <target xml:lang="bn" state="translated">
+          
+          
           
           
           
@@ -178,6 +192,27 @@
           
           
           
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">কম রেজল্যুশন</g> (ছোট ফাইলসমূহ)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">
+          
+          
+          
+          
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">কম রেজল্যুশন</g> (ছোট ফাইলসমূহ)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">কম রেজল্যুশন</g> (ছোট ফাইলসমূহ)</target>
         </alt-trans>
         <alt-trans>
@@ -192,17 +227,6 @@
           <target xml:lang="bn">
           
           
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">কম রেজল্যুশন</g> (ছোট ফাইলসমূহ)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">কম রেজল্যুশন</g> (ছোট ফাইলসমূহ)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
           
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">কম রেজল্যুশন</g> (ছোট ফাইলসমূহ)</target>
         </alt-trans>

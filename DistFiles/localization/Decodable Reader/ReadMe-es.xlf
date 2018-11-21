@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="es-ES">Un <g id="genid-1" ctype="x-html-strong">Libro Descifrable</g> es un libro que limita cuidadosamente el uso de letras y palabras para asegurarse de que se ajuste a lo que un nuevo lector está listo para leer. Generalmente, un idioma puede tener de 5 a 10 <g id="genid-2" ctype="x-html-em">etapas descifrables</g> por las cuales progresan los alumnos.</target>
+        <target xml:lang="es-ES" state="translated">Un <g id="genid-1" ctype="x-html-strong">Libro Descifrable</g> es un libro que limita cuidadosamente el uso de letras y palabras para asegurarse de que se ajuste a lo que un nuevo lector está listo para leer. Generalmente, un idioma puede tener de 5 a 10 <g id="genid-2" ctype="x-html-em">etapas descifrables</g> por las cuales progresan los alumnos.</target>
         <note>ID: decodable.definition</note>
         <alt-trans>
           <target xml:lang="es-ES">Un <g id="genid-1" ctype="x-html-strong">Libro Descifrable</g> es un libro que limita cuidadosamente el uso de letras y palabras para asegurar que conforme a lo que un nuevo lector está listo para leer. Generalmente, un idioma puede tener 5 a 10 <g id="genid-2" ctype="x-html-em">etapas descifrables</g> por los cuales progresan los alumnos.</target>
@@ -12,7 +12,7 @@
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="es-ES">Bloom le ayuda a definir la secuencia de las <g id="genid-3" ctype="x-html-em">etapas</g> por las cuales los lectores pasan. Cada libro que usted crea estará dirigido a una de esas etapas, y Bloom le ayuda a asegurarse de que su libro es <g id="genid-4" ctype="x-html-em"> descifrable</g> (capaz de ser descifrado) por los estudiantes en esa <g id="genid-5" ctype="x-html-em"> etapa</g>.</target>
+        <target xml:lang="es-ES" state="translated">Bloom le ayuda a definir la secuencia de las <g id="genid-3" ctype="x-html-em">etapas</g> por las cuales los lectores pasan. Cada libro que usted crea estará dirigido a una de esas etapas, y Bloom le ayuda a asegurarse de que su libro es <g id="genid-4" ctype="x-html-em"> descifrable</g> (capaz de ser descifrado) por los estudiantes en esa <g id="genid-5" ctype="x-html-em"> etapa</g>.</target>
         <note>ID: decodable.stages</note>
         <alt-trans>
           <target xml:lang="es-ES">Bloom le auda definir la secuencia de <g id="genid-3" ctype="x-html-em">etapas</g> por los cuales los lectores pasan. Cada libro que crea estará dirigido en una de esas etapas, y Bloom le facilita estar seguro es <g id="genid-4" ctype="x-html-em"> descifrable</g> (capaz de ser descifrado) por los estudiantes en esa <g id="genid-5" ctype="x-html-em"> etapa</g>.</target>
@@ -20,7 +20,7 @@
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="es-ES">También puede crear un Paquete de Bloom de <g id="genid-6" ctype="x-html-em">plantillas</g> que otros pueden utilizar para crear fácilmente libros basados en los niveles y etapas que han sido preparados por un especialista en alfabetización.</target>
+        <target xml:lang="es-ES" state="translated">También puede crear un Paquete de Bloom de <g id="genid-6" ctype="x-html-em">plantillas</g> que otros pueden utilizar para crear fácilmente libros basados en los niveles y etapas que han sido preparados por un especialista en alfabetización.</target>
         <note>ID: decodable.templates</note>
         <alt-trans>
           <target xml:lang="es-ES">También puede hacer un Paquete de Bloom de <g id="genid-6" ctype="x-html-em">plantillas</g> que otros pueden utilizar para facilment crear libros basados en los niveles y etapas que han sido preparados por un especialista en alfabetización.</target>
@@ -28,7 +28,7 @@
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="es-ES">Para aprender cómo usar Libros Descifrables en Bloom, puede:</target>
+        <target xml:lang="es-ES" state="translated">Para aprender cómo usar Libros Descifrables en Bloom, puede:</target>
         <note>ID: decodable.learn</note>
         <alt-trans>
           <target xml:lang="es-ES">Para aprender como usar Libros Descifrables en Bloom, puede:</target>
@@ -36,7 +36,7 @@
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="es-ES">Vea <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">estos vídeos de capacitación</g>.</target>
+        <target xml:lang="es-ES" state="translated">Vea <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">estos vídeos de capacitación</g>.</target>
         <note>ID: decodable.learn.videos</note>
         <alt-trans>
           <target xml:lang="es-ES">Vea <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">estos videos de capacitación</g>.</target>
@@ -47,12 +47,12 @@
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="es-ES">Vaya al menú de Ayuda, seleccione 'Ayuda' y busque "Libros Descifrables" en el índice.</target>
+        <target xml:lang="es-ES" state="translated">Vaya al menú de Ayuda, seleccione 'Ayuda' y busque "Libros Descifrables" en el índice.</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="es-ES">Vaya al menú de Ayuda y seleccione: "Creando Plantillas de Libros".</target>
+        <target xml:lang="es-ES" state="translated">Vaya al menú de Ayuda y seleccione: "Creando Plantillas de Libros".</target>
         <note>ID: decodable.learn.helpmenu</note>
       </trans-unit>
     </body>

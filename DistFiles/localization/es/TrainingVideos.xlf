@@ -4,33 +4,33 @@
     <body>
       <trans-unit id="training.videos" approved="yes">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="es-ES">Vídeos de capacitación de Bloom</target>
+        <target xml:lang="es-ES" state="translated">Vídeos de capacitación de Bloom</target>
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="es-ES">Si su computadora está conectada al internet, puede ver vídeos por medio de su navegador:</target>
+        <target xml:lang="es-ES" state="translated">Si su computadora está conectada al internet, puede ver vídeos por medio de su navegador:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Todos los vídeos</g>
         </target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="es-ES">Vídeos introductorios</target>
+        <target xml:lang="es-ES" state="translated">Vídeos introductorios</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
       <trans-unit id="training.videos.whofor" approved="yes">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Para quién es</g>
         </target>
         <note>ID: training.videos.whofor</note>
@@ -39,7 +39,7 @@
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Comprendiendo las Plantillas y los Libros Prediseñados</g>
         </target>
         <note>ID: training.videos.templates</note>
@@ -48,7 +48,7 @@
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Utilizando la plantilla de Libros Básicos</g>
         </target>
         <note>ID: training.videos.basicbook</note>
@@ -57,7 +57,7 @@
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizando las plantillas de Libros Descifrables y Libros Graduados (varios vídeos)</g>
         </target>
         <note>ID: training.videos.readers</note>
@@ -74,14 +74,14 @@
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="es-ES">Temas avanzados</target>
+        <target xml:lang="es-ES" state="translated">Temas avanzados</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting" approved="yes">
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Cambiando el formato del texto</g>
         </target>
         <note>ID: training.videos.formatting</note>
@@ -90,7 +90,7 @@
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Utilizando la plantilla de Página Personalizada</g>
         </target>
         <note>ID: training.videos.custompage</note>
@@ -99,7 +99,7 @@
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Ingresando caracteres especiales</g>
         </target>
         <note>ID: training.videos.specialcharacters</note>
@@ -108,7 +108,7 @@
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros Graduados (varios vídeos)</g>
         </target>
         <note>ID: training.videos.readertemplates</note>
@@ -125,17 +125,19 @@
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
-        <target xml:lang="es-ES">Visualización fuera de línea</target>
+        <target xml:lang="es-ES" state="translated">Visualización fuera de línea</target>
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
-        <target xml:lang="es-ES">Si desea descargar alguno de estos vídeos para mostrar y compartir fuera de línea, puede descargarlos a su computadora:</target>
+        <target xml:lang="es-ES" state="translated">Si desea descargar alguno de estos vídeos para mostrar y compartir fuera de línea, puede descargarlos a su computadora:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
+          
+          
           
           
           
@@ -181,6 +183,57 @@
           
           
           
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
         </alt-trans>
         <alt-trans>
@@ -210,47 +263,6 @@
           <target xml:lang="es-ES">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
           
           
           
@@ -272,7 +284,9 @@
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="es-ES">
+        <target xml:lang="es-ES" state="translated">
+          
+          
           
           
           
@@ -318,6 +332,57 @@
           
           
           
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
         </alt-trans>
         <alt-trans>
@@ -347,47 +412,6 @@
           <target xml:lang="es-ES">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
           
           
           

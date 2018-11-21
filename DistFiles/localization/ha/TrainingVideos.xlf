@@ -4,33 +4,33 @@
     <body>
       <trans-unit id="training.videos" approved="yes">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="ha">Hoton bidiyon koyarwa na Bloom</target>
+        <target xml:lang="ha" state="translated">Hoton bidiyon koyarwa na Bloom</target>
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="ha">Idan yanzu kana kan yanar gizo-gizo, za ka iya kallon hotunan bidiyo a kan gidan shigar yanar gizo-gizonka:</target>
+        <target xml:lang="ha" state="translated">Idan yanzu kana kan yanar gizo-gizo, za ka iya kallon hotunan bidiyo a kan gidan shigar yanar gizo-gizonka:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Dukan Hotunan Bidiyo</g>
         </target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="ha">Hotunan gabatarwa na bidiyon</target>
+        <target xml:lang="ha" state="translated">Hotunan gabatarwa na bidiyon</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
       <trans-unit id="training.videos.whofor" approved="yes">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Domin Wa aka yi shi</g>
         </target>
         <note>ID: training.videos.whofor</note>
@@ -39,7 +39,7 @@
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Fahimtar Wurin Ajiyar Littafai da yadda aka riga aka tsara wurin ajiyar</g>
         </target>
         <note>ID: training.videos.templates</note>
@@ -48,7 +48,7 @@
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Yin amfani da tushen tsarin Littafin</g>
         </target>
         <note>ID: training.videos.basicbook</note>
@@ -57,21 +57,21 @@
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Amfani da Muhallan Karatu waɗanda aka ayyana (hotunan bidiyo daban-daban)</g>
         </target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="ha">Darussa na Gaba</target>
+        <target xml:lang="ha" state="translated">Darussa na Gaba</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting" approved="yes">
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Canza tsarin matani</g>
         </target>
         <note>ID: training.videos.formatting</note>
@@ -80,7 +80,7 @@
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Amfani da tsararren Shafin da aka saba da shi</g>
         </target>
         <note>ID: training.videos.custompage</note>
@@ -89,7 +89,7 @@
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Saka alamu na musamman</g>
         </target>
         <note>ID: training.videos.specialcharacters</note>
@@ -98,24 +98,26 @@
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Tsara Muhallan Karatu waɗanda aka ayyana (hotunan bidiyo daban-daban)</g>
         </target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
-        <target xml:lang="ha">Kallon da ba akan yanar gizo-gizo ba</target>
+        <target xml:lang="ha" state="translated">Kallon da ba akan yanar gizo-gizo ba</target>
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
-        <target xml:lang="ha">Idan kana son ka sami wani daga cikin waɗannan hotunan bidiyo don nunawa da rabawa a lokacin da babu sadarwar a yanar gizo-gizo, zaka iya samun hotunan bidiyon akan na'urarka mai ƙwaƙwalwa:</target>
+        <target xml:lang="ha" state="translated">Idan kana son ka sami wani daga cikin waɗannan hotunan bidiyo don nunawa da rabawa a lokacin da babu sadarwar a yanar gizo-gizo, zaka iya samun hotunan bidiyon akan na'urarka mai ƙwaƙwalwa:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
+          
+          
           
           
           
@@ -131,6 +133,27 @@
           
           
           
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Hotuna Masu Inganci</g> (Manyan kundayen ajiya)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">
+          
+          
+          
+          
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Hotuna Masu Inganci</g> (Manyan kundayen ajiya)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Hotuna Masu Inganci</g> (Manyan kundayen ajiya)</target>
         </alt-trans>
         <alt-trans>
@@ -145,24 +168,15 @@
           <target xml:lang="ha">
           
           
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Hotuna Masu Inganci</g> (Manyan kundayen ajiya)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Hotuna Masu Inganci</g> (Manyan kundayen ajiya)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">
           
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Hotuna Masu Inganci</g> (Manyan kundayen ajiya)</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="ha">
+        <target xml:lang="ha" state="translated">
+          
+          
           
           
           
@@ -178,6 +192,27 @@
           
           
           
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Hotuna Marasa Inganci</g> (Ƙananan kundayen ajiya)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">
+          
+          
+          
+          
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Hotuna Marasa Inganci</g> (Ƙananan kundayen ajiya)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Hotuna Marasa Inganci</g> (Ƙananan kundayen ajiya)</target>
         </alt-trans>
         <alt-trans>
@@ -192,17 +227,6 @@
           <target xml:lang="ha">
           
           
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Hotuna Marasa Inganci</g> (Ƙananan kundayen ajiya)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Hotuna Marasa Inganci</g> (Ƙananan kundayen ajiya)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">
           
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Hotuna Marasa Inganci</g> (Ƙananan kundayen ajiya)</target>
         </alt-trans>

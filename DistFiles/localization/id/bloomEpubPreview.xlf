@@ -5,7 +5,9 @@
       <trans-unit id="epubpreview.describe" approved="yes">
         <source xml:lang="en">This is an <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) version of your book. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">It contains audio, so that new readers can listen as they read.</g>
       </source>
-        <target xml:lang="id">Ini adalah <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> versi buku Anda. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ini berisi audio, sehingga pembaca baru dapat mendengarkan ketika mereka membaca.</g>
+        <target xml:lang="id" state="translated">Ini adalah <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> versi buku Anda. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ini berisi audio, sehingga pembaca baru dapat mendengarkan ketika mereka membaca.</g>
+      
+      
       
       
       
@@ -23,6 +25,29 @@
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Ini adalah <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> versi buku Anda. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ini berisi audio, sehingga pembaca baru dapat mendengarkan ketika mereka membaca.</g>
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Ini adalah <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> versi buku Anda. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ini berisi audio, sehingga pembaca baru dapat mendengarkan ketika mereka membaca.</g>
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -38,19 +63,6 @@
           <target xml:lang="id">Ini adalah <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> versi buku Anda. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ini berisi audio, sehingga pembaca baru dapat mendengarkan ketika mereka membaca.</g>
       
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Ini adalah <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> versi buku Anda. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ini berisi audio, sehingga pembaca baru dapat mendengarkan ketika mereka membaca.</g>
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Ini adalah <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> versi buku Anda. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Ini berisi audio, sehingga pembaca baru dapat mendengarkan ketika mereka membaca.</g>
       
       
       </target>
@@ -58,23 +70,25 @@
       </trans-unit>
       <trans-unit id="epubpreview.recording.butnotalk" approved="yes">
         <source xml:lang="en">This book has some recordings, but this audio is not included in the ePUB.</source>
-        <target xml:lang="id">Buku ini memiliki beberapa rekaman, tapi audio ini tidak termasuk dalam ePUB.</target>
+        <target xml:lang="id" state="translated">Buku ini memiliki beberapa rekaman, tapi audio ini tidak termasuk dalam ePUB.</target>
         <note>ID: epubpreview.recording.butnotalk</note>
       </trans-unit>
       <trans-unit id="epubpreview.preview" approved="yes">
         <source xml:lang="en">Preview</source>
-        <target xml:lang="id">Pratinjau</target>
+        <target xml:lang="id" state="translated">Pratinjau</target>
         <note>ID: epubpreview.preview</note>
       </trans-unit>
       <trans-unit id="epubpreview.resizing" approved="yes">
         <source xml:lang="en">You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.</source>
-        <target xml:lang="id">Anda dapat mengubah ukuran pratinjau dengan menyeret sudut kanan bawah dari perangkat simulasi ini. Lihat bagaimana buku Anda akan terlihat pada layar dengan berbagai ukuran.</target>
+        <target xml:lang="id" state="translated">Anda dapat mengubah ukuran pratinjau dengan menyeret sudut kanan bawah dari perangkat simulasi ini. Lihat bagaimana buku Anda akan terlihat pada layar dengan berbagai ukuran.</target>
         <note>ID: epubpreview.resizing</note>
       </trans-unit>
       <trans-unit id="epubpreview.readium" approved="yes">
         <source xml:lang="en">This page uses the <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB reader. Books will likely look different on different readers.
       </source>
-        <target xml:lang="id">Halaman ini menggunakan <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
+        <target xml:lang="id" state="translated">Halaman ini menggunakan <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
+      
+      
       
       
       
@@ -92,6 +106,29 @@
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Halaman ini menggunakan <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Halaman ini menggunakan <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -107,19 +144,6 @@
           <target xml:lang="id">Halaman ini menggunakan <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
       
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Halaman ini menggunakan <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Halaman ini menggunakan <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
       
       
       </target>
@@ -128,7 +152,9 @@
       <trans-unit id="epubpreview.talkingbookpreview" approved="yes">
         <source xml:lang="en">The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> e-book reader.
       </source>
-        <target xml:lang="id">Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Edisi Digital</g> buku bacaan buku elektronik.
+        <target xml:lang="id" state="translated">Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Edisi Digital</g> buku bacaan buku elektronik.
+      
+      
       
       
       
@@ -146,6 +172,29 @@
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Edisi Digital</g> buku bacaan buku elektronik.
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Edisi Digital</g> buku bacaan buku elektronik.
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -161,19 +210,6 @@
           <target xml:lang="id">Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Edisi Digital</g> buku bacaan buku elektronik.
       
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Edisi Digital</g> buku bacaan buku elektronik.
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Edisi Digital</g> buku bacaan buku elektronik.
       
       
       </target>
@@ -181,13 +217,15 @@
       </trans-unit>
       <trans-unit id="epubpreview.ontodevice" approved="yes">
         <source xml:lang="en">Getting this book onto your Device</source>
-        <target xml:lang="id">Mendapatkan Buku Ini Ke Perangkat Anda</target>
+        <target xml:lang="id" state="translated">Mendapatkan Buku Ini Ke Perangkat Anda</target>
         <note>ID: epubpreview.ontodevice</note>
       </trans-unit>
       <trans-unit id="epubpreview.usingdropbox" approved="yes">
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
       </source>
-        <target xml:lang="id">Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> untuk mengirim file dari laptop Anda ke ponsel atau tablet.
+        <target xml:lang="id" state="translated">Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> untuk mengirim file dari laptop Anda ke ponsel atau tablet.
+      
+      
       
       
       
@@ -205,6 +243,29 @@
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> untuk mengirim file dari laptop Anda ke ponsel atau tablet.
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> untuk mengirim file dari laptop Anda ke ponsel atau tablet.
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -220,19 +281,6 @@
           <target xml:lang="id">Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> untuk mengirim file dari laptop Anda ke ponsel atau tablet.
       
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> untuk mengirim file dari laptop Anda ke ponsel atau tablet.
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> untuk mengirim file dari laptop Anda ke ponsel atau tablet.
       
       
       </target>
@@ -240,13 +288,15 @@
       </trans-unit>
       <trans-unit id="epubpreview.recommended.reader" approved="yes">
         <source xml:lang="en">Recommended Reader</source>
-        <target xml:lang="id">Buku baca yang direkomendasikan</target>
+        <target xml:lang="id" state="translated">Buku baca yang direkomendasikan</target>
         <note>ID: epubpreview.recommended.reader</note>
       </trans-unit>
       <trans-unit id="epubpreview.gitden.okay" approved="yes">
         <source xml:lang="en">Our testing has shown <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
       </source>
-        <target xml:lang="id">Pengujian kami menunjukkan <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Buku Baca Gitden</g> menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; IPad).
+        <target xml:lang="id" state="translated">Pengujian kami menunjukkan <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Buku Baca Gitden</g> menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; IPad).
+      
+      
       
       
       
@@ -264,6 +314,29 @@
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Pengujian kami menunjukkan <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Buku Baca Gitden</g> menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; IPad).
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Pengujian kami menunjukkan <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Buku Baca Gitden</g> menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; IPad).
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -279,19 +352,6 @@
           <target xml:lang="id">Pengujian kami menunjukkan <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Buku Baca Gitden</g> menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; IPad).
       
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Pengujian kami menunjukkan <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Buku Baca Gitden</g> menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; IPad).
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Pengujian kami menunjukkan <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Buku Baca Gitden</g> menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; IPad).
       
       
       </target>
@@ -299,19 +359,21 @@
       </trans-unit>
       <trans-unit id="epubpreview.gitden.limits" approved="yes">
         <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Read aloud (TTS)" feature. Then it will show you the audio controls.</source>
-        <target xml:lang="id">Untuk mendengarkan Buku Berbicara ini yang menggunakan Gitden pada ponsel atau tablet, Anda perlu untuk menonaktifkan fitur "Text To Speech" Gitden. Maka ia akan menampilkan kontrol audio.</target>
+        <target xml:lang="id" state="translated">Untuk mendengarkan Buku Berbicara ini yang menggunakan Gitden pada ponsel atau tablet, Anda perlu untuk menonaktifkan fitur "Text To Speech" Gitden. Maka ia akan menampilkan kontrol audio.</target>
         <note>ID: epubpreview.gitden.limits</note>
         <note>OLD TEXT (Gitden's wording changed): To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</note>
       </trans-unit>
       <trans-unit id="epubpreview.make.it.talk" approved="yes">
         <source xml:lang="en">Make it Talk</source>
-        <target xml:lang="id">Buatlah Berbicara</target>
+        <target xml:lang="id" state="translated">Buatlah Berbicara</target>
         <note>ID: epubpreview.make.it.talk</note>
       </trans-unit>
       <trans-unit id="epubpreview.talking.book.tool" approved="yes">
         <source xml:lang="en">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
       </source>
-        <target xml:lang="id">Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> untuk menambahkan rekaman suara.
+        <target xml:lang="id" state="translated">Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> untuk menambahkan rekaman suara.
+      
+      
       
       
       
@@ -329,6 +391,29 @@
       
       
       
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> untuk menambahkan rekaman suara.
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> untuk menambahkan rekaman suara.
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -344,19 +429,6 @@
           <target xml:lang="id">Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> untuk menambahkan rekaman suara.
       
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> untuk menambahkan rekaman suara.
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> untuk menambahkan rekaman suara.
       
       
       </target>
@@ -364,12 +436,12 @@
       </trans-unit>
       <trans-unit id="epubpreview.write.us" approved="yes">
         <source xml:lang="en">Write to us!</source>
-        <target xml:lang="id">Tulislah kepada kami!</target>
+        <target xml:lang="id" state="translated">Tulislah kepada kami!</target>
         <note>ID: epubpreview.write.us</note>
       </trans-unit>
       <trans-unit id="epubpreview.use.help.report" approved="yes">
         <source xml:lang="en">Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</source>
-        <target xml:lang="id">Apakah Anda tertarik untuk mendistribusikan buku Bloom untuk digunakan pada ponsel dan buku bacaan ebook lainnya? Apakah ada sesuatu yang menurut Anda perlu kami lakukan supaya hal ini berguna untuk Anda? Silakan gunakan petunjuk Bantuan:Laporkan Suatu Masalah untuk mengirimkan kami masukan. Terima kasih!</target>
+        <target xml:lang="id" state="translated">Apakah Anda tertarik untuk mendistribusikan buku Bloom untuk digunakan pada ponsel dan buku bacaan ebook lainnya? Apakah ada sesuatu yang menurut Anda perlu kami lakukan supaya hal ini berguna untuk Anda? Silakan gunakan petunjuk Bantuan:Laporkan Suatu Masalah untuk mengirimkan kami masukan. Terima kasih!</target>
         <note>ID: epubpreview.use.help.report</note>
       </trans-unit>
     </body>

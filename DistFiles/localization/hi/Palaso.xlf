@@ -11,7 +11,7 @@
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="hi">कोई अद्यतन</target>
+        <target xml:lang="hi" state="translated">कोई अद्यतन</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
@@ -22,12 +22,12 @@
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="hi">अद्यतनों के लिए जाँच करें</target>
+        <target xml:lang="hi" state="translated">अद्यतनों के लिए जाँच करें</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="hi">रिलीज नोट्स</target>
+        <target xml:lang="hi" state="translated">रिलीज नोट्स</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -70,7 +70,7 @@
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="hi">रद्द करें</target>
+        <target xml:lang="hi" state="translated">रद्द करें</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
@@ -80,7 +80,7 @@
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="hi">नहीं</target>
+        <target xml:lang="hi" state="translated">नहीं</target>
       </trans-unit>
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
@@ -90,7 +90,7 @@
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="hi">ठीक है</target>
+        <target xml:lang="hi" state="translated">ठीक है</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
@@ -100,7 +100,7 @@
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="hi">हाँ</target>
+        <target xml:lang="hi" state="translated">हाँ</target>
       </trans-unit>
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
@@ -111,55 +111,55 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="hi">{0} को रीसायकल बिन में ले जाई जाएगी।</target>
+        <target xml:lang="hi" state="translated">{0} को रीसायकल बिन में ले जाई जाएगी।</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="hi">{0} को रीसायकल बिन में ले जाई जाएगी।</target>
+        <target xml:lang="hi" state="translated">{0} को रीसायकल बिन में ले जाई जाएगी।</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="hi">हटाने की पुष्टि करें</target>
+        <target xml:lang="hi" state="translated">हटाने की पुष्टि करें</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="hi">रद्द करें</target>
+        <target xml:lang="hi" state="translated">रद्द करें</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="hi">हटाएँ</target>
+        <target xml:lang="hi" state="translated">हटाएँ</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
-        <source xml:lang="en">Found {0} images with names close to {1}</source>
+        <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="hi" state="needs-translation">Found {0} images with names close to {1}</target>
+        <target xml:lang="hi" state="needs-translation">Found {0} images with names close to “{1}”</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="hi">पढ़ने की कला</target>
+        <target xml:lang="hi" state="translated">पढ़ने की कला</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="hi">कैमरा</target>
+        <target xml:lang="hi" state="translated">कैमरा</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="hi">{0} का उपयोग करें</target>
+        <target xml:lang="hi" state="translated">{0} का उपयोग करें</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="hi">फसल</target>
+        <target xml:lang="hi" state="translated">फसल</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
@@ -169,18 +169,18 @@
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="hi">संपादित करें...</target>
+        <target xml:lang="hi" state="translated">संपादित करें...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="hi">इस 'पढ़ने की कला' गैलरी है। उपरोक्त बॉक्स, में लिखें क्या आप के लिए खोज रहे हैं, तो दर्ज दबाएँ। आप शब्दों के अंग्रेजी और इंडोनेशिया में टाइप कर सकते हैं।</target>
+        <target xml:lang="hi" state="translated">इस 'पढ़ने की कला' गैलरी है। उपरोक्त बॉक्स, में लिखें क्या आप के लिए खोज रहे हैं, तो दर्ज दबाएँ। आप शब्दों के अंग्रेजी और इंडोनेशिया में टाइप कर सकते हैं।</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="hi">फ़ाइल</target>
+        <target xml:lang="hi" state="translated">फ़ाइल</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
@@ -196,17 +196,17 @@
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="hi">क्षमा करें, कुछ छवि हो रही है जबकि गलत हो गया था।</target>
+        <target xml:lang="hi" state="translated">क्षमा करें, कुछ छवि हो रही है जबकि गलत हो गया था।</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="hi">क्षमा करें, कुछ छवि उपकरण बॉक्स के साथ गलत हो गया था</target>
+        <target xml:lang="hi" state="translated">क्षमा करें, कुछ छवि उपकरण बॉक्स के साथ गलत हो गया था</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="hi">चित्र प्राप्त करें</target>
+        <target xml:lang="hi" state="translated">चित्र प्राप्त करें</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
@@ -216,7 +216,7 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="hi">छवि उपकरण बॉक्स</target>
+        <target xml:lang="hi" state="translated">छवि उपकरण बॉक्स</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
@@ -248,33 +248,33 @@
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="hi">कोई मेल खाने वाला चित्र पाया</target>
+        <target xml:lang="hi" state="translated">कोई मेल खाने वाला चित्र पाया</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="hi">चित्र फ़ाइलें</target>
+        <target xml:lang="hi" state="translated">चित्र फ़ाइलें</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="hi">समस्या हो रही छवि</target>
+        <target xml:lang="hi" state="translated">समस्या हो रही छवि</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="hi">क्षमा करें, कि छवि लोड करने में कोई समस्या थी।</target>
+        <target xml:lang="hi" state="translated">क्षमा करें, कि छवि लोड करने में कोई समस्या थी।</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="hi">इस छवि जिसने इसे बनाया नहीं know:\n\nकरता है?\nकौन इसे का उपयोग कर सकते हैं?</target>
+        <target xml:lang="hi" state="translated">इस छवि जिसने इसे बनाया नहीं know:\n\nकरता है?\nकौन इसे का उपयोग कर सकते हैं?</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="hi">स्कैनर</target>
+        <target xml:lang="hi" state="translated">स्कैनर</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
@@ -290,12 +290,12 @@
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="hi">मेटाडेटा को सेट करें...</target>
+        <target xml:lang="hi" state="translated">मेटाडेटा को सेट करें...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="hi">अन्य नाम</target>
+        <target xml:lang="hi" state="translated">अन्य नाम</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
@@ -306,22 +306,22 @@
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="hi">एन्थोनोलोग .काम</target>
+        <target xml:lang="hi" state="translated">एन्थोनोलोग .काम</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="hi">भाषा 639-3 कोड्स &amp; नए लोगों के लिए आवेदन कैसे करें के बारे में</target>
+        <target xml:lang="hi" state="translated">भाषा 639-3 कोड्स &amp; नए लोगों के लिए आवेदन कैसे करें के बारे में</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="hi">आईएसओ भाषा रजिस्ट्री के बारे में</target>
+        <target xml:lang="hi" state="translated">आईएसओ भाषा रजिस्ट्री के बारे में</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="hi">कोड</target>
+        <target xml:lang="hi" state="translated">कोड</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount">
         <source xml:lang="en">{0} Countries</source>
@@ -332,22 +332,22 @@
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="hi">देश</target>
+        <target xml:lang="hi" state="translated">देश</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="hi">आप बदल सकते हैं कैसे भाषा नाम यहाँ प्रदर्शित किया जाएगा:</target>
+        <target xml:lang="hi" state="translated">आप बदल सकते हैं कैसे भाषा नाम यहाँ प्रदर्शित किया जाएगा:</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="hi">लुकअप भाषा कोड...</target>
+        <target xml:lang="hi" state="translated">लुकअप भाषा कोड...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="hi">नाम</target>
+        <target xml:lang="hi" state="translated">नाम</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
         <source xml:lang="en">Show regional dialects</source>
@@ -357,12 +357,12 @@
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="hi">असूचीबद्ध भाषा</target>
+        <target xml:lang="hi" state="translated">असूचीबद्ध भाषा</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="hi">आपकी भाषा नहीं ढूँढ सकता?</target>
+        <target xml:lang="hi" state="translated">आपकी भाषा नहीं ढूँढ सकता?</target>
       </trans-unit>
       <trans-unit id="MemoryWarning">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
@@ -372,7 +372,7 @@
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="hi">निर्माता: {0}</target>
+        <target xml:lang="hi" state="translated">निर्माता: {0}</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel">
         <source xml:lang="en">Creator</source>
@@ -382,7 +382,7 @@
       <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="hi">लाइसेंस जानकारी</target>
+        <target xml:lang="hi" state="translated">लाइसेंस जानकारी</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
@@ -435,22 +435,22 @@
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="hi">निर्दिष्ट कोई लाइसेंस</target>
+        <target xml:lang="hi" state="translated">निर्दिष्ट कोई लाइसेंस</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="hi">अपने काम के वाणिज्यिक उपयोग करता है की अनुमति दें?</target>
+        <target xml:lang="hi" state="translated">अपने काम के वाणिज्यिक उपयोग करता है की अनुमति दें?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="hi">संशोधनों के अपने काम की अनुमति दें?</target>
+        <target xml:lang="hi" state="translated">संशोधनों के अपने काम की अनुमति दें?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="hi">कॉपीराइट धारक</target>
+        <target xml:lang="hi" state="translated">कॉपीराइट धारक</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
@@ -460,7 +460,7 @@
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="hi">क्रिएटिव कॉमन्स</target>
+        <target xml:lang="hi" state="translated">क्रिएटिव कॉमन्स</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
@@ -470,12 +470,12 @@
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="hi">निर्माता</target>
+        <target xml:lang="hi" state="translated">निर्माता</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="hi">कस्टम</target>
+        <target xml:lang="hi" state="translated">कस्टम</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
@@ -485,98 +485,98 @@
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="hi">कॉपीराइट &amp; लाइसेंस</target>
+        <target xml:lang="hi" state="translated">कॉपीराइट &amp; लाइसेंस</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="hi">क्रेडिट, कॉपीराइट, &amp; लाइसेंस</target>
+        <target xml:lang="hi" state="translated">क्रेडिट, कॉपीराइट, &amp; लाइसेंस</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="hi">कॉपीराइट धारक के लिए किसी भी अनुमतियों से संपर्क करें</target>
+        <target xml:lang="hi" state="translated">कॉपीराइट धारक के लिए किसी भी अनुमतियों से संपर्क करें</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="hi">हाँ, लंबे समय के रूप में दूसरों के एक जैसे साझा करें</target>
+        <target xml:lang="hi" state="translated">हाँ, लंबे समय के रूप में दूसरों के एक जैसे साझा करें</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="hi">अतिरिक्त अनुरोध</target>
+        <target xml:lang="hi" state="translated">अतिरिक्त अनुरोध</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="hi">और अधिक जानकारी</target>
+        <target xml:lang="hi" state="translated">और अधिक जानकारी</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="hi">प्रवर्तनीय नहीं</target>
+        <target xml:lang="hi" state="translated">प्रवर्तनीय नहीं</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="hi">यह अन्य बटन जो गैर-उन्नत उपयोगकर्ता द्वारा जरूरी नहीं हैं छुपा भी सकते हैं।</target>
+        <target xml:lang="hi" state="translated">यह अन्य बटन जो गैर-उन्नत उपयोगकर्ता द्वारा जरूरी नहीं हैं छुपा भी सकते हैं।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="hi">जब आप संयम और पाली कुंजियाँ एक साथ पकड़ बटन दिखाई देंगे।</target>
+        <target xml:lang="hi" state="translated">जब आप संयम और पाली कुंजियाँ एक साथ पकड़ बटन दिखाई देंगे।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="hi">सेटिंग्स संरक्षण...</target>
+        <target xml:lang="hi" state="translated">सेटिंग्स संरक्षण...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="hi">छुपाएँ बटन कि सेटिंग्स को खोलता है।</target>
+        <target xml:lang="hi" state="translated">छुपाएँ बटन कि सेटिंग्स को खोलता है।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="hi">फैक्टरी पासवर्ड</target>
+        <target xml:lang="hi" state="translated">फैक्टरी पासवर्ड</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="hi">आकस्मिक परिवर्तन जो आप के लिए काम करना बंद करने के लिए इस उपकरण का कारण बन सकता है को रोकने के लिए, ये सेटिंग अवरोधित किया गया है।</target>
+        <target xml:lang="hi" state="translated">आकस्मिक परिवर्तन जो आप के लिए काम करना बंद करने के लिए इस उपकरण का कारण बन सकता है को रोकने के लिए, ये सेटिंग अवरोधित किया गया है।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="hi">सेटिंग्स सुरक्षा पासवर्ड</target>
+        <target xml:lang="hi" state="translated">सेटिंग्स सुरक्षा पासवर्ड</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="hi">वर्ण दिखाएँ</target>
+        <target xml:lang="hi" state="translated">वर्ण दिखाएँ</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
-        <target xml:lang="hi">इन सेटिंग्स के लिए कारखाने पासवर्ड "{0}" है।  अगर तुम इसे भूल जाओ, तुम हमेशा "{1}" और "{2}" के लिए गूगल कर सकते हैं</target>
+        <target xml:lang="hi" state="translated">इन सेटिंग्स के लिए कारखाने पासवर्ड "{0}" है।  अगर तुम इसे भूल जाओ, तुम हमेशा "{1}" और "{2}" के लिए गूगल कर सकते हैं</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="hi">कारखाना सेटिंग्स को प्राप्त करने के लिए पासवर्ड की आवश्यकता होती है।</target>
+        <target xml:lang="hi" state="translated">कारखाना सेटिंग्स को प्राप्त करने के लिए पासवर्ड की आवश्यकता होती है।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="hi">सेटिंग्स संरक्षण</target>
+        <target xml:lang="hi" state="translated">सेटिंग्स संरक्षण</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
         <source xml:lang="en">Release Notes</source>
@@ -611,37 +611,37 @@
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="hi">अगर आप की जरूरत कुंजीपटल सूचीबद्ध नहीं है, यह सेट अप करने के लिए नीचे उपयुक्त लिंक पर क्लिक करें</target>
+        <target xml:lang="hi" state="translated">अगर आप की जरूरत कुंजीपटल सूचीबद्ध नहीं है, यह सेट अप करने के लिए नीचे उपयुक्त लिंक पर क्लिक करें</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="hi">विंडोज़  कुंजीपटल सेटिंग्स</target>
+        <target xml:lang="hi" state="translated">विंडोज़  कुंजीपटल सेटिंग्स</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="hi">उपलब्ध कीबोर्ड</target>
+        <target xml:lang="hi" state="translated">उपलब्ध कीबोर्ड</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="hi">पहले इस्तेमाल कीबोर्ड</target>
+        <target xml:lang="hi" state="translated">पहले इस्तेमाल कीबोर्ड</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="hi">कीमेन विन्यास</target>
+        <target xml:lang="hi" state="translated">कीमेन विन्यास</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="hi">कीमेन 5.0 या बाद के संस्करण स्थापित नहीं है।</target>
+        <target xml:lang="hi" state="translated">कीमेन 5.0 या बाद के संस्करण स्थापित नहीं है।</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="hi">{0} पाठ टाइप करने के लिए जो के साथ कुंजीपटल का चयन करें</target>
+        <target xml:lang="hi" state="translated">{0} पाठ टाइप करने के लिए जो के साथ कुंजीपटल का चयन करें</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
@@ -651,7 +651,7 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="hi">परीक्षण क्षेत्र (अपने कुंजीपटल बाहर का परीक्षण करने के लिए कुछ टाइप करने के लिए उपयोग इस क्षेत्र.)</target>
+        <target xml:lang="hi" state="translated">परीक्षण क्षेत्र (अपने कुंजीपटल बाहर का परीक्षण करने के लिए कुछ टाइप करने के लिए उपयोग इस क्षेत्र.)</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>

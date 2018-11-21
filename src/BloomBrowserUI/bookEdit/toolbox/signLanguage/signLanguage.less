@@ -1,74 +1,117 @@
 @import "../../../bloomUI.less";
 @buttonColor: @accordion-active-element;
-@recordingColor: @bloom-yellow;
+@text-color: @bloom-buff;
 #videoMonitorWrapper {
     width: 100%;
-    height: 160px;
+    // I wish we didn't need this. It works fine without it most of the time;
+    // figures out how high to make the wrapper based on auto-sizing the video
+    // monitor to width:100%. But there is flicker: the lower controls are
+    // drawn as if this had a smaller size, then moved when the video appears.
+    // FF 63 does better, so maybe we can take this out when we get GeckoFx60.
+    min-height: 120px;
+}
+.recording {
+    #videoMonitor {
+        border: solid 4px @bloom-red;
+    }
 }
 #videoMonitor {
     width: 100%;
     height: 100%;
+    box-sizing: border-box;
+}
+
+.signLanguageFrame {
+    color: @text-color;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    .ui-widget-content & a {
+        color: @text-color; // prevents an override by jquery on ".ui-widget-content a" by being more specific
+    }
+    .rc-slider {
+        // In this context the slider initially has controls overlaid at the left and right.
+        // Since they are centered at the ends of the slider bar, the bar needs to be made
+        // smaller to make the initial effect look aligned.
+        // The -9px on width and the 7px margin make the slider line up with the video
+        // preview. There's probably some relationship to the various dimensions in
+        // rc-slider-bloom.less, but I don't know what.
+        width: calc(100% - 9px);
+        margin-left: 7px;
+    }
+}
+
+// All the layers down to .signLanguageFrame have to be 100%
+// to allow it to stretch and put Help at the bottom
+// (and divide spare space between the three main blocks)
+.signLanguageOuterWrapper,
+.enterpriseContentWrapper,
+.signLanguageFrame {
+    height: 100%;
 }
 
 @videoButtonSize: 40px;
+@smallVideoButtonSize: 20px;
+@advancedIndent: 20px;
 @commandLabelMargin: 10px;
-@videoButtonBorder: @videoButtonSize / 3;
+@videoButtonBorder: @videoButtonSize / 2;
 @videoButtonRimThickness: 3px;
-
+@stopBorderThickness: @videoButtonSize / 10;
+@stopCenterBlockSize: @videoButtonSize / 3;
 #videoToggleRecording {
-    // These properties make a blue circle, with the border thickness equal to the center diameter
+    // These properties make a red circle
     height: @videoButtonSize;
     width: @videoButtonSize;
     border-style: solid;
     border-width: @videoButtonBorder;
-    border-color: @buttonColor;
+    border-color: @bloom-red;
     border-radius: @videoButtonSize / 2; // circle
     background-color: transparent;
     position: relative;
-    &.started {
-        background-color: @recordingColor;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.65));
+    &.counting {
+        // This hides it during the 3..2..1 countdown
+        display: none;
     }
-    &.recordingNow::after {
-        position: absolute;
-        content: "";
-        box-sizing: border-box;
-        height: @videoButtonSize;
-        width: @videoButtonSize;
-        border-style: solid;
-        border-width: @videoButtonRimThickness;
-        border-color: @recordingColor;
-        left: -@videoButtonBorder;
-        top: -@videoButtonBorder;
-        border-radius: @videoButtonSize / 2;
-        background-color: transparent;
+    &.recordingNow {
+        // during recording the button is blue, with square cutout in the middle
+        border-color: @buttonColor;
+        &::after {
+            // And this lot put a dark square in the middle of it.
+            content: "";
+            position: absolute;
+            height: @stopCenterBlockSize;
+            width: @stopCenterBlockSize;
+            background-color: @DarkBackgroundColor;
+            // The button is an infinitesimal dot with a thick border making the circle.
+            // The square is in the center of the circle, so the overlay rectangle's top left needs to be
+            // up and left of the infinitesimal box in the center.
+            left: (-@stopCenterBlockSize)/2;
+            top: (-@stopCenterBlockSize)/2;
+        }
     }
 }
 
-@stopBorderThickness: @videoButtonSize / 10;
-@stopCenterBlockSize: @videoButtonSize / 3;
-#videoStopRecording {
-    // These properties make a thin blue circle
-    position: relative;
-    height: @videoButtonSize;
-    width: @videoButtonSize;
-    border-width: @stopBorderThickness;
-    border-color: @buttonColor;
-    border-radius: @videoButtonSize / 2; // circle
-    border-style: solid;
-    background-color: transparent;
-    margin-top: 20px;
-    margin-bottom: 30px;
-    &::after {
-        // And this lot put a blue square in the middle of it.
-        content: "";
-        position: absolute;
-        height: @stopCenterBlockSize;
-        width: @stopCenterBlockSize;
-        background-color: @buttonColor;
-        left: (@videoButtonSize - @stopCenterBlockSize)/2 - @stopBorderThickness;
-        top: (@videoButtonSize - @stopCenterBlockSize)/2 - @stopBorderThickness;
+#videoPlayAndLabelWrapper,
+#trimLabelWrapper,
+#stopWrapper {
+    display: flex;
+    justify-content: center;
+}
+#countdownWrapper {
+    display: flex;
+}
+
+#timeWrapper {
+    display: flex;
+    justify-content: flex-end;
+    color: @bloom-red;
+    visibility: hidden;
+    .recording & {
+        visibility: visible;
     }
 }
+
 .videoButtonWrapper {
     display: flex;
     align-items: center;
@@ -78,8 +121,15 @@
     margin-bottom: 20px;
 }
 
-#showInFolderLink {
-    margin-left: @videoButtonSize + @commandLabelMargin;
+.smallVideoButtonWrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    margin-left: @advancedIndent;
+}
+
+#importRecordingWrapper {
+    margin-top: 10px;
 }
 
 .startRecording,
@@ -88,21 +138,13 @@
     margin-left: @commandLabelMargin;
 }
 .countdownNumber {
-    margin-left: 40px;
+    margin-left: 1px;
     font-size: 40px;
     margin-top: -6px; // experimentally, makes it look centered on the button.
 }
 .countdownNumber,
 .recordingLabel {
-    color: @recordingColor;
-}
-.recordingLabel,
-.stopLabel {
-    font-size: 20px;
-}
-
-.stopLabel {
-    color: @buttonColor;
+    color: @bloom-red;
 }
 
 .signLanguageFrame {
@@ -131,26 +173,35 @@
 }
 
 #videoImport,
-#editOutsideButton,
-#restoreOriginalButton {
-    height: @videoButtonSize;
-    width: @videoButtonSize;
+#showInFolder,
+#videoDelete {
     background-repeat: no-repeat;
     background-size: contain;
     background-color: transparent;
     border: none;
-}
-
-#editOutsideButton {
-    background-image: url("blue pencil.svg");
-}
-
-#restoreOriginalButton {
-    background-image: url("restore-original.svg");
+    height: @smallVideoButtonSize;
+    width: @smallVideoButtonSize;
 }
 
 #videoImport {
     background-image: url("ImportVideo.svg");
+}
+
+#showInFolder {
+    background-image: url("../../../images/folder.svg");
+}
+
+#videoDelete {
+    background-image: url("../../../images/delete.svg");
+}
+
+#videoStatsWrapper {
+    margin-left: @advancedIndent;
+    label {
+        margin-top: 20px;
+        display: block; // otherwise margins have no effect
+        font-weight: bolder;
+    }
 }
 
 #restoreOriginalWrapper.disabled {
@@ -160,45 +211,53 @@
 #videoDelete {
     background-color: transparent;
     color: @buttonColor;
-    font-style: oblique;
-    font-size: 2.5em;
     border: none;
-    width: @videoButtonSize;
 }
 
-// state management
+// state management. Each item has a class, and we use the same classes
+// on an outer element to identify which state we're in. So for example items which
+// themselves have the class countdown3 will be invisible when the outer
+// class is idle.
 .idle {
     .countdown3,
     .countdown2,
     .countdown1,
-    .counting,
     .recording,
     .notIdle {
         display: none;
     }
+    .counting {
+        visibility: hidden; // let one label take up space, to prevent things below jumping
+    }
 }
 .countdown3 {
     .idle,
-    .countdown2,
-    .countdown1,
     .recording {
         display: none;
+    }
+    .countdown2,
+    .countdown1 {
+        opacity: 0.2;
     }
 }
 .countdown2 {
     .idle,
-    .countdown3,
-    .countdown1,
     .recording {
         display: none;
+    }
+    .countdown3,
+    .countdown1 {
+        opacity: 0.2;
     }
 }
 .countdown1 {
     .idle,
-    .countdown3,
-    .countdown2,
     .recording {
         display: none;
+    }
+    .countdown3,
+    .countdown2 {
+        opacity: 0.2;
     }
 }
 .recording {
@@ -210,18 +269,31 @@
         display: none;
     }
 }
+
+.processing {
+    .idle,
+    .recording,
+    .countdown1,
+    .countdown2,
+    .countdown3 {
+        display: none;
+    }
+    // let one label take up space, to prevent things below jumping.
+    // For the same reason trim is hidden, not none.
+    .counting,
+    #trimWrapper {
+        visibility: hidden;
+    }
+}
 #videoStatsWrapper {
-    color: @buttonColor;
-    font-size: 1.25em;
     .trimLabel {
-        color: white !important;
         font-weight: bold;
         margin-left: 50px;
     }
 }
 .videoTrimSlider {
     margin-top: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     .rc-slider-handle {
         border-radius: 0;
         height: 19px;
@@ -234,5 +306,16 @@
     }
     .rc-slider-track {
         background-color: @buttonColor;
+    }
+}
+
+// By default help has a large margin. In this tool we want it fixed at the bottom,
+// so it's in a FLEX box that distributes any spare space to keep it there.
+// We need a rather specific rule to override the default one.
+div.toolboxRoot {
+    .signLanguageOuterWrapper {
+        .helpLinkWrapper {
+            margin-top: 0;
+        }
     }
 }

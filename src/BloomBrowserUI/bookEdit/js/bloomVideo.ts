@@ -1,5 +1,4 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { GetButtonModifier } from "./bloomImages";
 import { BloomApi } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
@@ -19,7 +18,7 @@ const mouseOverFunction = e => {
         return; // can this happen?
     }
     if (target.tagName.toLowerCase() === "video") {
-        target.setAttribute("controls", "true");
+        target.setAttribute("controls", ""); // attribute just has to exist to work
     }
 };
 
@@ -82,18 +81,6 @@ function SetupVideoContainer(
                     .mouseenter(function() {
                         const $this = $(this);
 
-                        const buttonModifier = GetButtonModifier($this);
-
-                        // The code that executes when this button is clicked is currently C#.
-                        // See EditingView._browser1_OnBrowserClick for the start of the chain.
-                        $this.prepend(
-                            "<button class='importVideoButtonOverlay imageButton " +
-                                buttonModifier +
-                                "' title='" +
-                                changeVideoText +
-                                "'></button>"
-                        );
-
                         //SetImageTooltip(containerDiv, img);
 
                         // Enhance: we will have to do something about license information for videos, but it's complicated.
@@ -115,11 +102,6 @@ function SetupVideoContainer(
                     .mouseleave(function() {
                         const $this = $(this);
                         $this.removeClass("hoverUp");
-                        $this
-                            .find(".importVideoButtonOverlay")
-                            .each(function() {
-                                $(this).remove();
-                            });
                     });
             });
     }
@@ -140,8 +122,13 @@ function videoPlayingEventHandler(e: Event) {
     // the SignLanguageApi C# code (in Geckofx-Core).
     const video = e.target as HTMLVideoElement;
     let end: number = getVideoEndSeconds(video);
-    if (end === -1.0) {
-        end = video.duration;
+    const untrimmedEndPoint: number = 0.0;
+    if (end == untrimmedEndPoint) {
+        // We can't just set the endpoint to equal the duration of the video here, because
+        // we will be testing that the current playback time is greater than the endpoint.
+        // Since we test for the end of the video every 1/10th of a second, set the endpoint
+        // slightly more than 1/10th of a second from the end of the video.
+        end = video.duration - 0.11;
     }
     resetToStartAfterPlayingToEndPoint(video, end);
 }
@@ -160,23 +147,23 @@ function resetToStartAfterPlayingToEndPoint(
         } else {
             resetToStartAfterPlayingToEndPoint(video, endPoint);
         }
-    }, 200);
+    }, 100);
 }
 
 function getVideoStartSeconds(videoElt: HTMLVideoElement): number {
-    const source = videoElt.getElementsByTagName(
-        "source"
-    )[0] as HTMLSourceElement;
-    const src = source.getAttribute("src");
+    const src = SignLanguageTool.getSrcAttribute(videoElt);
+    if (src === "") {
+        return 0.0;
+    }
     const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
     return parseFloat(urlTimingObj.start);
 }
 
 function getVideoEndSeconds(videoElt: HTMLVideoElement): number {
-    const source = videoElt.getElementsByTagName(
-        "source"
-    )[0] as HTMLSourceElement;
-    const src = source.getAttribute("src");
+    const src = SignLanguageTool.getSrcAttribute(videoElt);
+    if (src === "") {
+        return 0.0;
+    }
     const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
     return parseFloat(urlTimingObj.end);
 }

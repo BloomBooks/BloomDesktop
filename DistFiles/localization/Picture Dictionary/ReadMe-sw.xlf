@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="sw">Kuhusu Picha ya Kigezo cha Kamusi</target>
+        <target xml:lang="sw" state="translated">Kuhusu Picha ya Kigezo cha Kamusi</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="sw">Tumia kigezo hiki ili kutengeneza kamusi ya picha ambayo ni ya lugha moja, lugha mbili, au lugha tatu.</target>
+        <target xml:lang="sw" state="translated">Tumia kigezo hiki ili kutengeneza kamusi ya picha ambayo ni ya lugha moja, lugha mbili, au lugha tatu.</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="sw">Udhaifu wa Tafsiri Hii</target>
+        <target xml:lang="sw" state="translated">Udhaifu wa Tafsiri Hii</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="sw">Kitabu hiki kwa sasa kimewekwa alama ya "kimajaribio" kwa kuwa tunajua kuhusu matatizo kadhaa katika muundo na kufaa kwake.</target>
+        <target xml:lang="sw" state="translated">Kitabu hiki kwa sasa kimewekwa alama ya "kimajaribio" kwa kuwa tunajua kuhusu matatizo kadhaa katika muundo na kufaa kwake.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
     </body>

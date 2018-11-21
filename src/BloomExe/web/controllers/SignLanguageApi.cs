@@ -14,6 +14,7 @@ using DesktopAnalytics;
 using Gecko;
 using Gecko.DOM;
 using L10NSharp;
+using SIL.Code;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
@@ -30,12 +31,13 @@ namespace Bloom.web.controllers
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
-		private decimal _currentVideoStartSeconds;
-		private decimal _currentVideoEndSeconds;
 		private bool _doingEditOutsideBloom;
+		private const string noVideoClass = "bloom-noVideoSelected";
 
 		public EditingView View { get; set; }
 		public EditingModel Model { get; set; }
+
+		private static string _ffmpeg;
 
 		public SignLanguageApi(BookSelection bookSelection, PageSelection pageSelection)
 		{
@@ -95,20 +97,8 @@ namespace Bloom.web.controllers
 				// Technically this could fail and we might want to report that the post failed.
 				// But currently nothing is using the success/fail status, and we don't expect this to fail.
 				SaveChangedVideo(videoContainer, path, "Bloom had a problem including that video");
-				SetInitialVideoTimings(videoContainer, fileName);
 				request.PostSucceeded();
 			}
-		}
-
-		private void SetInitialVideoTimings(GeckoHtmlElement videoContainer, string fileName)
-		{
-			var path = Path.Combine("video", fileName);
-			_currentVideoStartSeconds = 0.0m;
-			_currentVideoEndSeconds = -1.0m; // temporary stand-in for maximum duration
-			var srcAttrWithTimings = path + "#t=" + _currentVideoStartSeconds.ToString("F1") + "," +
-			                         _currentVideoEndSeconds.ToString("F1");
-			var srcAttrUrl = UrlPathString.CreateFromUnencodedString(srcAttrWithTimings, true);
-			HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainer), srcAttrUrl);
 		}
 
 		private GeckoHtmlElement GetSelectedEditableVideoContainer(ApiRequest request, string path)
@@ -119,7 +109,7 @@ namespace Bloom.web.controllers
 				// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
 				// video recording and importing if there is no container on the page.
 				var msg = "There's nowhere to put a video on this page." +
-				          (string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
+					(string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
 				MessageBox.Show(msg);
 				request.Failed("nowhere to put video");
 				return null;
@@ -148,8 +138,9 @@ namespace Bloom.web.controllers
 		/// </remarks>
 		private static void SaveVideoFile(string path, string rawVideoPath)
 		{
-			var ffmpeg = FindFfmpegProgram();
-			if (ffmpeg != string.Empty)
+			var length = new FileInfo(rawVideoPath).Length;
+			var seconds = (int)(length / 312500); // we're asking for 2.5mpbs, which works out to 312.5K bytes per second.
+			if (!string.IsNullOrEmpty(FfmpegProgram))
 			{
 				// -hide_banner = don't write all the version and build information to the console
 				// -y = always overwrite output file
@@ -157,7 +148,10 @@ namespace Bloom.web.controllers
 				// -i <path> = specify input file
 				// -force_key_frames "expr:gte(t,n_forced*0.5)" = insert keyframe every 0.5 seconds in the output file
 				var parameters = $"-hide_banner -y -v 16 -i \"{rawVideoPath}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"";
-				var result = CommandLineRunner.Run(ffmpeg, parameters, "", 60, new NullProgress());
+				// On slowish machines, this compression seems to take about 1/5 as long as the video took to record.
+				// Allowing for some possibly being slower still, we're basing the timeout on half the length of the video,
+				// plus a minute to be sure.
+				var result = CommandLineRunner.Run(FfmpegProgram, parameters, "", seconds / 2 + 60, new NullProgress());
 				var msg = string.Empty;
 				if (result.DidTimeOut)
 				{
@@ -189,6 +183,19 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		public static string FfmpegProgram
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(_ffmpeg))
+				{
+					_ffmpeg = FindFfmpegProgram();
+				}
+
+				return _ffmpeg;
+			}
+		}
+
 		private static string FindFfmpegProgram()
 		{
 			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
@@ -214,8 +221,7 @@ namespace Bloom.web.controllers
 					request.Failed("no original video file ("+originalPath+")");
 					return;
 				}
-				_currentVideoStartSeconds = timings[0];
-				_currentVideoEndSeconds = timings[1];
+
 				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
 				RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
@@ -238,8 +244,6 @@ namespace Bloom.web.controllers
 				if (!ParseVideoContainerSourceAttribute(request, videoContainer, true, out videoPath, out timings))
 					return; // request.Failed was called inside the above method
 
-				_currentVideoStartSeconds = timings[0];
-				_currentVideoEndSeconds = timings[1];
 				var originalPath = Path.ChangeExtension(videoPath, "orig");
 				if (!RobustFile.Exists(videoPath))
 				{
@@ -313,7 +317,7 @@ namespace Bloom.web.controllers
 				{
 					Multiselect = false,
 					CheckFileExists = true,
-					Filter = String.Format("{0} (*.mp4)|*.mp4", videoFiles)
+					Filter = $"{videoFiles} (*.mp4)|*.mp4"
 				};
 				var result = dlg.ShowDialog();
 				if (result == DialogResult.OK)
@@ -324,7 +328,6 @@ namespace Bloom.web.controllers
 				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				RobustFile.Copy(path, newVideoPath);
 				SaveChangedVideo(videoContainer, newVideoPath, "Bloom had a problem including that video");
-				SetInitialVideoTimings(videoContainer, Path.GetFileName(newVideoPath));
 			}
 			// If the user canceled, we didn't exactly succeed, but having the user cancel is such a normal
 			// event that posting a failure, which is a nuisance to ignore, is not warranted.
@@ -352,8 +355,6 @@ namespace Bloom.web.controllers
 					return;
 				}
 
-				_currentVideoStartSeconds = 0.0m;
-				_currentVideoEndSeconds = -1.0m;
 				ConfirmRecycleDialog.Recycle(originalPath);
 				View.Invoke((Action)(() =>
 				{
@@ -363,7 +364,7 @@ namespace Bloom.web.controllers
 					var video = container.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
 					video.ParentNode.RemoveChild(video);
 					// BL-6136 add back in the class that shows the placeholder
-					container.ClassName += " bloom-noVideoSelected";
+					container.ClassName += " " + noVideoClass;
 					Model.SaveNow();
 					View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 					View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
@@ -388,47 +389,52 @@ namespace Bloom.web.controllers
 				if (!ParseVideoContainerSourceAttribute(request, GetSelectedVideoContainer(), false, out videoFilePath, out timings))
 					return; // request.Failed was called inside the above method
 
-				_currentVideoStartSeconds = timings[0];
-				_currentVideoEndSeconds = timings[1];
 				if (!RobustFile.Exists(videoFilePath))
 				{
 					request.Failed("Cannot find video file ("+videoFilePath+")");
 					return;
 				}
 
-				var ffmpeg = FindFfmpegProgram();
-				if (ffmpeg == string.Empty)
+				if (string.IsNullOrEmpty(FfmpegProgram))
 				{
-					request.Failed("Cannot find FFMpeg program");
+					request.Failed("Cannot find ffmpeg program");
 					return;
 				}
 
 				var fileInfo = new FileInfo(videoFilePath);
 				var sizeInBytes = fileInfo.Length;
 
-				// Run FFMpeg on the file to get statistics.
-				// -hide_banner = don't write all the version and build information to the console
-				// -i <path> = specify input file
-				var parameters = $"-hide_banner -i \"{videoFilePath}\"";
-				var result = CommandLineRunner.Run(ffmpeg, parameters, "", 60, new NullProgress());
-				if (result.DidTimeOut)
-				{
-					request.Failed("FFMpeg timed out getting video statistics");
-					return;
-				}
-
-				var output = result.StandardError;
-				if (string.IsNullOrWhiteSpace(output))
-				{
-					request.Failed("FFMpeg failed to get video statistics");
-					return;
-				}
+				var output = RunFfmpegOnVideoToGetStatistics(request, videoFilePath);
 
 				var statistics = ParseFfmpegStatistics(output, sizeInBytes);
-				statistics.Add("startSeconds", _currentVideoStartSeconds.ToString("F1"));
-				statistics.Add("endSeconds", _currentVideoEndSeconds.ToString("F1"));
+				statistics.Add("startSeconds", timings[0].ToString("F1"));
+				statistics.Add("endSeconds", timings[1].ToString("F1"));
 				request.ReplyWithJson(statistics);
 			}
+		}
+
+		// Run ffmpeg on the file to get statistics.
+		// request is an optional parameter, the method works fine with it set to null.
+		private static string RunFfmpegOnVideoToGetStatistics(ApiRequest request, string videoFilePath)
+		{
+			// -hide_banner = don't write all the version and build information to the console
+			// -i <path> = specify input file
+			var parameters = $"-hide_banner -i \"{videoFilePath}\"";
+			var result = CommandLineRunner.Run(FfmpegProgram, parameters, "", 60, new NullProgress());
+			if (result.DidTimeOut)
+			{
+				request?.Failed("ffmpeg timed out getting video statistics");
+				return string.Empty;
+			}
+
+			var output = result.StandardError;
+			if (string.IsNullOrWhiteSpace(output))
+			{
+				request?.Failed("ffmpeg failed to get video statistics");
+				return string.Empty;
+			}
+
+			return output;
 		}
 
 		private static Dictionary<string, object> ParseFfmpegStatistics(string output, long sizeInBytes)
@@ -462,7 +468,7 @@ namespace Bloom.web.controllers
 		private static void ParseFileSize(long sizeInBytes, IDictionary<string, object> statistics)
 		{
 			var sizeInMb = ConvertBytesToMegabyteString(sizeInBytes);
-			if (sizeInMb != string.Empty)
+			if (!string.IsNullOrEmpty(sizeInMb))
 			{
 				statistics.Add("fileSize", sizeInMb + " MB");
 			}
@@ -507,42 +513,6 @@ namespace Bloom.web.controllers
 			statistics.Add("fileFormat", match.Value.Substring(7).ToUpper(CultureInfo.CurrentUICulture));
 		}
 
-		internal void OnChangeVideo(DomEventArgs ge)
-		{
-			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
-			var videoContainer = target.Parent;
-			if (videoContainer == null)
-				return; // should never happen
-			if (WarnIfVideoCantChange(videoContainer))
-				return;
-
-			var videoFiles = LocalizationManager.GetString("EditTab.FileDialogVideoFiles", "Video files");
-			using (var dlg = new DialogAdapters.OpenFileDialogAdapter
-			{
-				Multiselect = false,
-				CheckFileExists = true,
-				// rather restrictive, but the only type that works in all browsers.
-				Filter = String.Format("{0} (*.mp4)|*.mp4", videoFiles)
-			})
-			{
-				var result = dlg.ShowDialog();
-				if (result == DialogResult.OK)
-				{
-					// Check memory for the benefit of developers.  The user won't see anything.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "video chosen or canceled", false);
-					if (DialogResult.OK == result)
-					{
-						// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-						SaveChangedVideo(videoContainer, dlg.FileName, "Bloom had a problem including that video");
-						// Warn the user if we're starting to use too much memory.
-						SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "video chosen and saved", true);
-					}
-				}
-			}
-
-			Logger.WriteMinorEvent("Changed Video");
-		}
-
 		internal bool WarnIfVideoCantChange(GeckoHtmlElement videoContainer)
 		{
 			if (!Model.CanChangeImages())
@@ -563,7 +533,7 @@ namespace Bloom.web.controllers
 			out string videoFilePath, out decimal[] timings)
 		{
 			videoFilePath = null;
-			timings = new[] {0.0m, -1.0m}; // default timings, -1.0 is a temporary stand-in for maximum duration
+			timings = new[] {0.0m, 0.0m};
 			if (videoContainer == null)
 			{
 				// Enhance: if we end up needing this it should be localizable. But the current plan is that the button should be
@@ -608,24 +578,31 @@ namespace Bloom.web.controllers
 				videoFilePath = Path.Combine(CurrentBook.FolderPath,
 					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);
 			}
-			if (!string.IsNullOrEmpty(rawTimings))
-			{
-				var timingArray = rawTimings.Split(',');
-				timings[0] = Convert.ToDecimal(timingArray[0]);
-				if (timingArray.Length > 1)
-				{
-					timings[1] = Convert.ToDecimal(timingArray[1]);
-				}
-			}
+			ConvertRawTimingsToDecimalArray(rawTimings, timings);
 			return true;
+		}
+
+		private static void ConvertRawTimingsToDecimalArray(string rawTimings, decimal[] timings)
+		{
+			if (string.IsNullOrEmpty(rawTimings))
+				return; // do nothing. timings array will hold default values
+			var timingArray = rawTimings.Split(',');
+			timings[0] = Convert.ToDecimal(timingArray[0]);
+			if (timingArray.Length > 1)
+			{
+				timings[1] = Convert.ToDecimal(timingArray[1]);
+			}
 		}
 
 		public static string StripTimingFromVideoUrl(string videoUrl, out string timings)
 		{
-			// strip off any timing elements
-			var parts = videoUrl.Split('#');
-			timings = parts.Length == 1 ? string.Empty : parts[1].Substring(2);
-			return parts[0];
+			var baseUri = new Uri("https://bloomlibrary.org"); // only used to get Uri class to function properly.
+			var videoUri = new Uri(baseUri, videoUrl);
+			var fragment = videoUri.Fragment; // timing fragments
+			timings = fragment.Length > 0 ? fragment.Substring(3) : string.Empty; // strip off timing prefix ('#t=')
+			// The next line will strip off the query too (if there is one).
+			// Currently we never want the query here, if we do someday, we should use 'videoUri.PathAndQuery'.
+			return videoUri.LocalPath.Substring(1); // most callers won't want the initial slash '/', LocalPath ensures no encoding
 		}
 
 		private GeckoHtmlElement GetSelectedVideoContainer()
@@ -779,7 +756,129 @@ namespace Bloom.web.controllers
 
 			// Likewise, this is probably overkill, but it's a probably-rare case. 
 			View.UpdateAllThumbnails();
+		}
 
+		/// <summary>
+		/// When publishing videos in any form but PDF, we want to trim the actual video to just the part that
+		/// the user wants to see and add the controls attribute, so that the video controls are visible.
+		/// </summary>
+		/// <param name="videoContainerElement">bloom-videoContainer element from copied DOM</param>
+		/// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
+		/// <returns>the new filepath if a video file exists and was copied, empty string if no video file was found</returns>
+		public static string PrepareVideoForPublishing(XmlElement videoContainerElement,
+			string sourceBookFolder)
+		{
+			var videoFolder = Path.Combine(sourceBookFolder, "video");
+
+			var videoElement = videoContainerElement.SelectSingleNode("video") as XmlElement;
+			if (videoElement == null)
+				return string.Empty;
+
+			// In each valid video element, we remove any timings in the 'src' attribute of the source element.
+			var sourceElement = videoElement.SelectSingleNode("source") as XmlElement;
+			var srcAttrVal = sourceElement?.Attributes["src"]?.Value;
+			if (srcAttrVal == null)
+				return string.Empty;
+
+			string timings;
+			var videoUrl = StripTimingFromVideoUrl(srcAttrVal, out timings);
+
+			// Check for valid video file to match url
+			var urlWithoutPrefix = UrlPathString.CreateFromUrlEncodedString(videoUrl.Substring(6)); // grab everything after 'video/'
+			var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix.NotEncoded);
+			if (!RobustFile.Exists(originalVideoFilePath))
+				return string.Empty;
+
+			var tempName = originalVideoFilePath;
+			if (!string.IsNullOrEmpty(FfmpegProgram) && !string.IsNullOrEmpty(timings) &&
+			    IsVideoMarkedForTrimming(sourceBookFolder, videoUrl, timings))
+			{
+				tempName = Path.Combine(videoFolder, GetNewVideoFileName());
+				var successful = TrimVideoUsingFfmpeg(originalVideoFilePath, tempName, timings);
+				if (successful)
+				{
+					RobustFile.Delete(originalVideoFilePath);
+					var trimmedFileName = "video/" + Path.GetFileName(tempName); // we never want backslash here...
+					HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(trimmedFileName, true), false);
+				}
+				else
+				{
+					// probably doesn't exist, but if it does we don't need it.
+					// File.Delete (underneath RobustFile.Delete) does not throw if the file doesn't exist.
+					RobustFile.Delete(tempName);
+					tempName = originalVideoFilePath;
+				}
+			}
+			// Add attributes needed for videos to work in Readium and possibly other readers.
+			// Existence of the 'controls' attribute is enough to trigger controls
+			videoElement.SetAttribute("controls", string.Empty);
+			videoElement.SetAttribute("width", "100%");
+			return tempName;
+		}
+
+		private static bool IsVideoMarkedForTrimming(string sourceBookFolder, string videoUrl, string rawTimings)
+		{
+			var timings = new[] { 0.0m, 0.0m };
+			ConvertRawTimingsToDecimalArray(rawTimings, timings);
+			var startTrimPoint = timings[0];
+			var endTrimPoint = timings[1];
+			if (startTrimPoint > 0)
+				return true;
+
+			var stats = new Dictionary<string, object>();
+			var videoFilePath = Path.Combine(sourceBookFolder, videoUrl);
+			var output = RunFfmpegOnVideoToGetStatistics(null, videoFilePath);
+			ParseDuration(output, stats);
+			var durStr = stats["duration"] as string;
+			var duration = ConvertHhMmSsStringToSeconds(durStr);
+			// if our trim setting is less than 1/10 second from the end of the whole video, don't bother trimming the video.
+			// duration in seconds is equal to the endpoint of the (untrimmed) video.
+			return duration - endTrimPoint > 0.1m;
+		}
+
+		private static bool TrimVideoUsingFfmpeg(string sourceVideoFilePath,
+			string destinationPath,
+			string timings)
+		{
+			Guard.Against(string.IsNullOrEmpty(FfmpegProgram), "Caller should have verified 'ffmpeg' existence.");
+			var timingArray = timings.Split(',');
+			var startTiming = ConvertSecondsToHhMmSsString(timingArray[0]);
+			var endTiming = ConvertSecondsToHhMmSsString(timingArray[1]);
+			// Run ffmpeg on the file to trim it down using the timings.
+			// -hide_banner = don't write all the version and build information to the console
+			// -i <path> = specify input file
+			// -ss HH:MM:SS.T = trim to this start time
+			// -to HH:MM:SS.T = trim to this end time
+			// -c:v copy -c:a copy = copy video (and audio) streams with no codec modification
+			var parameters = $"-hide_banner -i \"{sourceVideoFilePath}\" -ss {startTiming} -to {endTiming} -c:v copy -c:a copy \"{destinationPath}\"";
+			var result = CommandLineRunner.Run(FfmpegProgram, parameters, "", 60, new NullProgress());
+			if (result.DidTimeOut)
+			{
+				Logger.WriteEvent("ffmpeg timed out trimming video for publication");
+				return false;
+			}
+
+			var output = result.StandardError;
+			if (string.IsNullOrWhiteSpace(output) || output.Contains("Invalid data found when processing input"))
+			{
+				Logger.WriteEvent("ffmpeg did not return normal output");
+				return false;
+			}
+
+			return true;
+		}
+
+		private static string ConvertSecondsToHhMmSsString(string seconds)
+		{
+			var time = TimeSpan.FromSeconds(double.Parse(seconds));
+			return time.ToString(@"hh\:mm\:ss\.f");
+		}
+
+		private static decimal ConvertHhMmSsStringToSeconds(string hhmmss)
+		{
+			var formatString = hhmmss.Length > 7 ? "HH:mm:ss.f" : "mm:ss.f";
+			var dt = DateTime.ParseExact(hhmmss, formatString, CultureInfo.CurrentUICulture);
+			return dt.Hour * 3600m + dt.Minute * 60m + dt.Second + dt.Millisecond / 1000m;
 		}
 	}
 }

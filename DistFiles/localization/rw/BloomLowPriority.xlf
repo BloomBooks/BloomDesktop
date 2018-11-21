@@ -3,14 +3,29 @@
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="rw">
     <body>
       <trans-unit id="Settings.Enterprise.Community">
-        <source xml:lang="en">Funded by local community only</source>
+        <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
-        <target xml:lang="rw" state="needs-translation">Funded by local community only</target>
+        <target xml:lang="rw" state="needs-translation">Funded by the local community only</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.CheckUpdates">
+        <source xml:lang="en">Check for updates</source>
+        <note>ID: Settings.Enterprise.CheckUpdates</note>
+        <target xml:lang="rw" state="needs-translation">Check for updates</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration">
-        <source xml:lang="en">Expires:</source>
+        <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expiration</note>
+        <target xml:lang="rw" state="needs-translation">That code has expired.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Expired">
+        <source xml:lang="en">Expires:</source>
+        <note>ID: Settings.Enterprise.Expired</note>
         <target xml:lang="rw" state="needs-translation">Expires:</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Incomplete">
+        <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
+        <note>ID: Settings.Enterprise.Incomplete</note>
+        <target xml:lang="rw" state="needs-translation"> The code should look like SOMENAME-123456-7890</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore">
         <source xml:lang="en">Learn More</source>
@@ -18,27 +33,29 @@
         <target xml:lang="rw" state="needs-translation">Learn More</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Overview">
-        <source xml:lang="en">Bloom Enterprise is a paid service offered by SIL International. It adds some additional features and services that are important to publishers, governments, and international organizations. By subscribing to this service, these projects can meet some of their unique needs while also supporting the development and user support of Bloom, which helps everybody.
+        <source xml:lang="en">
+            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
         <note>ID: Settings.Enterprise.Overview</note>
-        <target xml:lang="rw" state="needs-translation">Bloom Enterprise is a paid service offered by SIL International. It adds some additional features and services that are important to publishers, governments, and international organizations. By subscribing to this service, these projects can meet some of their unique needs while also supporting the development and user support of Bloom, which helps everybody.
+        <target xml:lang="rw" state="needs-translation">
+            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None">
-        <source xml:lang="en">None</source>
+        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="rw" state="needs-translation">None</target>
+        <target xml:lang="rw" state="needs-translation">None. Bloom will not show Enterprise features.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode">
-        <source xml:lang="en">This project is configured to use %0 branding. To continue to use this you will need to enter a current subscription code. For SIL brandings, SIL members can find codes at the link below. For other brandings, contact your project administrator.</source>
+        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
         <note>ID: Settings.Enterprise.NeedsCode</note>
-        <note>%0 will be replaced with the name of the branding.</note>
-        <target xml:lang="rw" state="needs-translation">This project is configured to use %0 branding. To continue to use this you will need to enter a current subscription code. For SIL brandings, SIL members can find codes at the link below. For other brandings, contact your project administrator.</target>
+        <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
+        <target xml:lang="rw" state="needs-translation">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid">
-        <source xml:lang="en">Sorry, that code appears incorrect</source>
+        <source xml:lang="en">That code appears to be incorrect.</source>
         <note>ID: Settings.Enterprise.NotValid</note>
-        <target xml:lang="rw" state="needs-translation">Sorry, that code appears incorrect</target>
+        <target xml:lang="rw" state="needs-translation">That code appears to be incorrect.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Status">
         <source xml:lang="en">Bloom Enterprise Status</source>
@@ -56,9 +73,9 @@
         <target xml:lang="rw" state="needs-translation">Subscription Code:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode">
-        <source xml:lang="en">That code looks good, but this version of Bloom does not know about that project</source>
+        <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
         <note>ID: Settings.Enterprise.UnknownCode</note>
-        <target xml:lang="rw" state="needs-translation">That code looks good, but this version of Bloom does not know about that project</target>
+        <target xml:lang="rw" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.WhatsThis">
         <source xml:lang="en">What's This?</source>
