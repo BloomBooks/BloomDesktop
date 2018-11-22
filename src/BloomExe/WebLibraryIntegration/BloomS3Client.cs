@@ -7,11 +7,13 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Bloom.Book;
 using Bloom.Publish;
+using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
 using RestSharp.Extensions.MonoHttp;
@@ -195,7 +197,8 @@ namespace Bloom.WebLibraryIntegration
 		/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
 		/// except the one we want.
 		/// </summary>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null, ISet<string> audioFilesToInclude = null)
+		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
+			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
@@ -229,6 +232,9 @@ namespace Bloom.WebLibraryIntegration
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
 			CopyDirectory(pathToBloomBookDirectory, destDirName);
 
+			RemoveUnwantedVideoFiles(destDirName, videoFilesToInclude);
+			ProcessVideosInTempDirectory(destDirName);
+
 			RemoveUnwantedAudioFiles(destDirName, audioFilesToInclude);
 
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
@@ -242,8 +248,44 @@ namespace Bloom.WebLibraryIntegration
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
 		}
 
-		private void RemoveUnwantedAudioFiles(string destDirName, ISet<string> audioFilesToInclude)
+		private void ProcessVideosInTempDirectory(string destDirName)
 		{
+			var htmlFilePath = BookStorage.FindBookHtmlInFolder(destDirName);
+			if (string.IsNullOrEmpty(htmlFilePath))
+				return;
+			var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFilePath);
+			var domForVideoProcessing = new HtmlDom(xmlDomFromHtmlFile);
+			var videoContainerElements = HtmlDom.SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement).Cast<XmlElement>();
+			if (!videoContainerElements.Any())
+				return;
+			SignLanguageApi.ProcessVideos(videoContainerElements, destDirName);
+			XmlHtmlConverter.SaveDOMAsHtml5(domForVideoProcessing.RawDom, htmlFilePath);
+		}
+
+		private static void RemoveUnwantedVideoFiles(string destDirName, IEnumerable<string> videoFilesToInclude)
+		{
+			// If videoFilesToInclude is null or empty, ALL video files in the video subdirectory will be deleted.
+			// This likely means that they aren't referenced in the Book's .htm file, although someday there could be
+			// other reasons to not include them.
+			var videoDir = BookStorage.GetVideoFolderPath(destDirName);
+			if (!Directory.Exists(videoDir))
+				return;
+
+			foreach (var videoFilePath in Directory.EnumerateFiles(videoDir))
+			{
+				// videoFilesToInclude strings do not include timings, but do include "video/" prefix,
+				// so include the prefix in our Contains() test.
+				var fileName = BookStorage.GetNormalizedPathForOS(Path.GetFileName(videoFilePath));
+				if (videoFilesToInclude == null || !videoFilesToInclude.Contains(BookStorage.GetVideoFolderName + fileName))
+					RobustFile.Delete(videoFilePath);
+			}
+		}
+
+		private static void RemoveUnwantedAudioFiles(string destDirName, ISet<string> audioFilesToInclude)
+		{
+			// If audioFilesToInclude is null or empty, ALL audio files in the audio subdirectory will be deleted.
+			// This could mean that none of them are referenced in the Book's .htm file, but the user can also choose
+			// not to upload audio files.
 			string audioDir = AudioProcessor.GetAudioFolderPath(destDirName);
 			if (!Directory.Exists(audioDir))
 				return;
