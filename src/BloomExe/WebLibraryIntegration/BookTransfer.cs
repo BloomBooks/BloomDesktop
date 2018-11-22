@@ -346,13 +346,16 @@ namespace Bloom.WebLibraryIntegration
 			get { return _parseClient.UserId; }
 		}
 
+		/// <summary>
+		/// Only for use in tests
+		/// </summary>
 		public string UploadBook(string bookFolder, IProgress progress)
 		{
 			string parseId;
 			return UploadBook(bookFolder, progress, out parseId);
 		}
 
-		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, ISet<string> audioFilesToInclude = null)
+		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -409,7 +412,7 @@ namespace Bloom.WebLibraryIntegration
 				parseId = "";
 				try
 				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude);
+					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database."));
@@ -827,7 +830,19 @@ namespace Bloom.WebLibraryIntegration
 			if (progressBox.CancelRequested)
 				return "";
 
-			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath), GetAudioFilesToInclude(book, excludeNarrationAudio, excludeMusic));
+			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath),
+				GetAudioFilesToInclude(book, excludeNarrationAudio, excludeMusic), GetVideoFilesToInclude(book));
+		}
+
+		/// <summary>
+		/// Figure out if any video files are unused in this book, in case we haven't had them stripped out by opening
+		/// the saved book yet (when BookStorage will do it for us).
+		/// </summary>
+		/// <param name="book"></param>
+		/// <returns></returns>
+		private static IEnumerable<string> GetVideoFilesToInclude(Book.Book book)
+		{
+			return BookStorage.GetVideoPathsRelativeToBook(book.RawDom.DocumentElement);
 		}
 
 		/// <summary>
