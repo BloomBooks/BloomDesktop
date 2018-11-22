@@ -17,6 +17,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.web;
+using Bloom.web.controllers;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -34,7 +35,7 @@ namespace Bloom.Book
 	 */
 	public interface IBookStorage
 	{
-		//TODO Covert this most of this section to something like IBookDescriptor, which has enough display in a catalog, do some basic filtering, etc.
+		//TODO Convert most of this section to something like IBookDescriptor, which has enough to display in a catalog, do some basic filtering, etc.
 		string Key { get; }
 		string FileName { get; }
 		string FolderPath { get; }
@@ -669,7 +670,7 @@ namespace Bloom.Book
 			get { return "video/"; }
 		}
 
-		private static string GetVideoFolderPath(string bookFolderPath)
+		internal static string GetVideoFolderPath(string bookFolderPath)
 		{
 			return Path.Combine(bookFolderPath, GetVideoFolderName);
 		}
