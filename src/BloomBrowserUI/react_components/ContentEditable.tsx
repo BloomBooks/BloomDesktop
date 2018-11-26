@@ -15,7 +15,6 @@ export default class ContentEditable extends React.Component<
     {}
 > {
     private lastContent: string;
-    private editDiv: HTMLDivElement;
     private ipPosition: number;
     private ipNode: Node;
 
@@ -39,9 +38,6 @@ export default class ContentEditable extends React.Component<
                     }
                 }}
                 contentEditable={true}
-                ref={div => {
-                    this.editDiv = div;
-                }}
             >
                 {this.props.content}
             </div>

@@ -34,19 +34,18 @@ export default class BloomButton extends LocalizableElement<
         super(props);
     }
 
-    private getButtonImage(): string {
-        let image = null;
+    private getButtonImage(): JSX.Element | null {
         if (this.props.enabled && this.props.enabledImageFile) {
-            image = <img src={this.props.enabledImageFile} />;
+            return <img src={this.props.enabledImageFile} />;
         } else if (!this.props.enabled && this.props.disabledImageFile) {
-            image = <img src={this.props.disabledImageFile} />;
+            return <img src={this.props.disabledImageFile} />;
         }
-        return image;
+        return null;
     }
 
     public render() {
         const image = this.getButtonImage();
-        let tip: string = null;
+        let tip: string = "";
         if (
             this.props.l10nTipEnglishEnabled ||
             this.props.l10nTipEnglishDisabled
@@ -63,12 +62,14 @@ export default class BloomButton extends LocalizableElement<
                 onClick={() => {
                     if (this.props.onClick) {
                         this.props.onClick();
-                    } else if (this.props.mightNavigate) {
-                        BloomApi.postThatMightNavigate(
-                            this.props.clickEndpoint
-                        );
-                    } else {
-                        BloomApi.post(this.props.clickEndpoint);
+                    } else if (this.props.clickEndpoint) {
+                        if (this.props.mightNavigate) {
+                            BloomApi.postThatMightNavigate(
+                                this.props.clickEndpoint
+                            );
+                        } else {
+                            BloomApi.post(this.props.clickEndpoint);
+                        }
                     }
                 }}
                 disabled={!this.props.enabled}

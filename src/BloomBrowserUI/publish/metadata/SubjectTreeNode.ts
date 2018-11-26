@@ -23,9 +23,12 @@ export class SubjectTreeNode {
     // checking all subnodes in the tree when the user checks a branch node instead
     // of a leaf node.
     public static markSelectedSubjectNodes(
-        list: SubjectTreeNode[],
+        list: SubjectTreeNode[] | undefined,
         currentSubjects: SubjectTreeNode[]
     ) {
+        if (!list) {
+            return;
+        }
         list.map(element => {
             if (
                 SubjectTreeNode.matchCurrentSubject(
