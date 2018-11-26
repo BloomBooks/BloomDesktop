@@ -405,6 +405,17 @@ namespace Bloom.web.controllers
 			return true;
 		}
 
+		public static string StripTimingFromVideoUrl(string videoUrl, out string timings)
+		{
+			var baseUri = new Uri("https://bloomlibrary.org"); // only used to get Uri class to function properly.
+			var videoUri = new Uri(baseUri, videoUrl);
+			var fragment = videoUri.Fragment; // timing fragments
+			timings = fragment.Length > 0 ? fragment.Substring(3) : string.Empty; // strip off timing prefix ('#t=')
+			// The next line will strip off the query too (if there is one).
+			// Currently we never want the query here, if we do someday, we should use 'videoUri.PathAndQuery'.
+			return videoUri.LocalPath.Substring(1); // most callers won't want the initial slash '/', LocalPath ensures no encoding
+		}
+
 		private GeckoHtmlElement GetSelectedVideoContainer()
 		{
 			var root = View.Browser.WebBrowser.Document;
