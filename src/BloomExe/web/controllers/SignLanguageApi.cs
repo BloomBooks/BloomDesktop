@@ -798,7 +798,7 @@ namespace Bloom.web.controllers
 				if (successful)
 				{
 					RobustFile.Delete(originalVideoFilePath);
-					var trimmedFileName = "video/" + Path.GetFileName(tempName); // we never want backslash here...
+					var trimmedFileName = BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
 					HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(trimmedFileName, true), false);
 				}
 				else
@@ -814,6 +814,28 @@ namespace Bloom.web.controllers
 			videoElement.SetAttribute("controls", string.Empty);
 			videoElement.SetAttribute("width", "100%");
 			return tempName;
+		}
+
+		/// <summary>
+		/// Loops through all the videoContainers and prepares them for publishing. This includes trimming and
+		/// adding the 'controls' attribute. EpubMaker has different requirements and uses a slightly different
+		/// process [in CopyVideos()], but BookCompressor.CompressDirectory() for Android and BloomS3Client.UploadBook()
+		/// for Upload use this method.
+		/// </summary>
+		/// <param name="videoContainerElements"></param>
+		/// <param name="sourceFolder"></param>
+		public static void ProcessVideos(IEnumerable<XmlElement> videoContainerElements, string sourceFolder)
+		{
+			if (videoContainerElements == null) // probably a test
+				return;
+			// We are counting on this method processing the videos before
+			// the recursive CompressDirectory() method gets to the video subdirectory.
+			// We are also assuming that 'sourceFolder' is a staging folder (so we can delete modified videos).
+			foreach (var videoContainerElement in videoContainerElements)
+			{
+				PrepareVideoForPublishing(videoContainerElement, sourceFolder);
+			}
+
 		}
 
 		private static bool IsVideoMarkedForTrimming(string sourceBookFolder, string videoUrl, string rawTimings)
