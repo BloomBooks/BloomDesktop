@@ -7,7 +7,9 @@
         "lib": ["dom", "es5", "scripthost", "es2017.object"],
         "experimentalDecorators": true,
         "alwaysStrict": true,
-        "noImplicitReturns": true
+        "noImplicitReturns": true,
+        "outDir": "../../output/browser",
+        "resolveJsonModule": true
     },
     "exclude": ["node_modules", "typings"]
 }
