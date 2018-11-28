@@ -663,10 +663,10 @@ namespace Bloom.Workspace
 
 		private void OnAboutBoxClick(object sender, EventArgs e)
 		{
-			string path = FileLocationUtilities.GetFileDistributedWithApplication(true,"infoPages","aboutBox-"+LocalizationManager.UILanguageId+".htm");
+			string path = BloomFileLocator.GetBrowserFile(true,"infoPages","aboutBox-"+LocalizationManager.UILanguageId+".htm");
 			if (String.IsNullOrEmpty(path))
 			{
-				path = FileLocationUtilities.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm");
+				path = BloomFileLocator.GetBrowserFile(false,"infoPages","aboutBox.htm");
 			}
 			using(var dlg = new SIL.Windows.Forms.Miscellaneous.SILAboutBox(path))
 			{
@@ -808,7 +808,8 @@ namespace Bloom.Workspace
 
 		private static void OpenInfoFile(string fileName)
 		{
-			Process.Start(FileLocationUtilities.GetFileDistributedWithApplication("infoPages", fileName));
+			// These are PDF files, but stored under browser/infoPages.
+			Process.Start(BloomFileLocator.GetBrowserFile(false, "infoPages", fileName));
 		}
 
 		private void keyBloomConceptsMenuItem_Click(object sender, EventArgs e)
