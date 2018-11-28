@@ -3,7 +3,10 @@
 // (Subjects from Thema are organized as a hierarchical tree but their JSON file is a flat list).
 // Qualifier subjects were removed (all those with codes starting with a number)
 // The Children related subjects were moved to the top of the list.
-export const themaSubjectData: SubjectTreeNode[] = require("./ThemaData.json");
+import * as themaData from "./ThemaData.json";
+export const themaSubjectData: SubjectTreeNode[] = <SubjectTreeNode[]>(
+    (<unknown>themaData)
+);
 
 // A SubjectTreeNode represents the data from one node of the Thema based subject tree
 // in a form usable by the react-dropdown-tree-select component.
