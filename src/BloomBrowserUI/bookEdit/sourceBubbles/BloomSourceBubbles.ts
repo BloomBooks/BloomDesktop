@@ -30,7 +30,7 @@ export default class BloomSourceBubbles {
     public static ProduceSourceBubbles(
         group: HTMLElement,
         newIso?: string
-    ): JQuery | null {
+    ): JQuery {
         return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
     }
 
@@ -44,7 +44,7 @@ export default class BloomSourceBubbles {
             contentsOfBubble,
             selectIso
         );
-        if (divForBubble == null) return;
+        if (divForBubble.length === 0) return;
 
         // If divForBubble contains more than two languages, create a dropdown menu to contain the
         // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
@@ -68,7 +68,7 @@ export default class BloomSourceBubbles {
     public static MakeSourceTextDivForGroup(
         group: HTMLElement,
         newIso?: string
-    ): JQuery | null {
+    ): JQuery {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         const divForBubble = $(group).clone();
@@ -116,7 +116,7 @@ export default class BloomSourceBubbles {
         StyleEditor.CleanupElement(divForBubble);
 
         //if there are no languages to show in the bubble, bail out now
-        if (divForBubble.find("textarea, div").length == 0) return null;
+        if (divForBubble.find("textarea, div").length === 0) return $();
 
         const vernacularLang = theOneLocalizationManager.getVernacularLang();
 
@@ -255,7 +255,7 @@ export default class BloomSourceBubbles {
     private static CreateTabsFromDiv(
         divForBubble: JQuery,
         selectIso?: string
-    ): JQuery | null {
+    ): JQuery {
         //now turn that new div into a set of tabs
         const opts: any = {
             animate: false,
@@ -292,7 +292,7 @@ export default class BloomSourceBubbles {
             }
         } else {
             divForBubble.remove(); //no tabs, so hide the bubble
-            return null;
+            return $();
         }
         return divForBubble;
     }
@@ -359,7 +359,7 @@ export default class BloomSourceBubbles {
                 group[0],
                 newIso
             );
-            if (divForBubble) {
+            if (divForBubble.length !== 0) {
                 BloomHintBubbles.addHintBubbles(
                     group.get(0),
                     [group.get(0)],
@@ -458,6 +458,7 @@ export default class BloomSourceBubbles {
                                 // This code may run AFTER the code in SetupTooltips that removes passive-bubble
                                 // and max-height from a qtip whose element has focus.
                                 if (
+                                    document.activeElement &&
                                     !$.contains(
                                         $div.get(0),
                                         document.activeElement
@@ -482,7 +483,11 @@ export default class BloomSourceBubbles {
                                     kevent.stopImmediatePropagation();
                                     const bubble = kevent.target;
                                     const obj = $(bubble)[0].firstElementChild;
-                                    if (obj) {
+                                    if (
+                                        obj &&
+                                        obj.ownerDocument &&
+                                        obj.ownerDocument.defaultView
+                                    ) {
                                         const selection = obj.ownerDocument.defaultView.getSelection();
                                         const range = obj.ownerDocument.createRange();
                                         range.selectNodeContents(obj);

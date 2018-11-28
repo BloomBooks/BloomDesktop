@@ -167,7 +167,7 @@ export default class AudioRecording {
     //
     // callback: A function to call after initialization completes (especially if the initialization happens asynchronously). Set to null if not needed.
     //           e.g., this should include anything that has a dependency on this.audioRecordingMode
-    public initializeForMarkup(callback: () => void = null) {
+    public initializeForMarkup(callback?: () => void) {
         const doWhenRecordingModeIsKnown = (audioRecordingModeStr: string) => {
             if (audioRecordingModeStr in AudioRecordingMode) {
                 this.audioRecordingMode = <AudioRecordingMode>(
@@ -250,7 +250,8 @@ export default class AudioRecording {
     // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
     public addAudioLevelListener(): void {
         WebSocketManager.addListener(kWebsocketContext, e => {
-            if (e.id == "peakAudioLevel") this.setStaticPeakLevel(e.message);
+            if (e.id == "peakAudioLevel")
+                this.setStaticPeakLevel(e.message ? e.message : "");
         });
     }
 
@@ -301,16 +302,18 @@ export default class AudioRecording {
         this.changeStateAndSetExpected("record");
     }
 
-    private getNextAudioElement(): HTMLElement {
+    private getNextAudioElement(): HTMLElement | null {
         var current: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
+        if (current.length === 0 || audioElts.length === 0) return null;
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         return next.length === 0 ? null : next[0];
     }
 
-    private getPreviousAudioElement(): HTMLElement {
+    private getPreviousAudioElement(): HTMLElement | null {
         var current: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
+        if (current.length === 0 || audioElts.length === 0) return null;
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return null;
         var prev: JQuery = audioElts.eq(currentIndex - 1);
@@ -371,6 +374,7 @@ export default class AudioRecording {
         toastr.clear();
         var current: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
+        if (current.length === 0 || audioElts.length === 0) return;
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
         var prev = this.getPreviousAudioElement();
@@ -475,6 +479,7 @@ export default class AudioRecording {
     public listen(): void {
         var original: JQuery = this.getPage().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
+        if (original.length === 0 || audioElts.length === 0) return;
         var first = audioElts.eq(0);
         this.setCurrentAudioElement(original, first, true);
         this.playingAll = true;
@@ -493,6 +498,7 @@ export default class AudioRecording {
         if (this.playingAll) {
             var current: JQuery = this.getPage().find(".ui-audioCurrent");
             var audioElts = this.getAudioElements();
+            if (current.length === 0 || audioElts.length === 0) return;
             var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
                 this.setCurrentAudioElement(current, next, true);
@@ -735,7 +741,7 @@ export default class AudioRecording {
     // The body of the editable page, a root for searching for document content.
     public getPage(): JQuery {
         var page = this.getPageFrame();
-        if (!page) return null;
+        if (!page || !page.contentWindow) return $();
         return $(page.contentWindow.document.body);
     }
 
@@ -846,6 +852,7 @@ export default class AudioRecording {
     public setStaticPeakLevel(level: string): void {
         if (!this.levelCanvas) return; // just in case C# calls this unexpectedly
         var ctx = this.levelCanvas.getContext("2d");
+        if (!ctx) return;
         // Erase the whole canvas
         var height = 15;
         var width = 80;
@@ -874,13 +881,13 @@ export default class AudioRecording {
     // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
     private createUuid(): string {
         // http://www.ietf.org/rfc/rfc4122.txt
-        var s = [];
+        var s: string[] = [];
         var hexDigits = "0123456789abcdef";
         for (var i = 0; i < 36; i++) {
             s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
         }
         s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
-        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+        s[19] = hexDigits.substr((s[19].charCodeAt(0) & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
         s[8] = s[13] = s[18] = s[23] = "-";
 
         var uuid = s.join("");
@@ -890,7 +897,7 @@ export default class AudioRecording {
     private md5(message): string {
         var HEX_CHARS = "0123456789abcdef".split("");
         var EXTRA = [128, 32768, 8388608, -2147483648];
-        var blocks = [];
+        var blocks: number[] = [];
 
         var h0,
             h1,
@@ -1271,7 +1278,7 @@ export default class AudioRecording {
         formatButton.remove(); // nothing happens if not found
 
         var markedSentences = elt.find(kAudioSentenceClassSelector);
-        var reuse = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
+        var reuse: any[] = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
         markedSentences.each(function(index) {
             reuse.push({
                 id: $(this).attr("id"),
@@ -1310,7 +1317,7 @@ export default class AudioRecording {
                 // this is inter-sentence space (or white space before first sentence).
                 newHtml += fragment.text;
             } else {
-                var newId: string = null;
+                var newId: string | null = null;
                 var newMd5: string = "";
                 var reuseThis = (<any>fragment).matchingAudioSpan;
                 if (!reuseThis && reuse.length > 0) {
@@ -1394,7 +1401,7 @@ export default class AudioRecording {
             }
             // textContent is the aggregation of the text nodes of all children
             var content = doc.documentElement.textContent;
-            return !this.isWhiteSpace(content);
+            return !this.isWhiteSpace(content ? content : "");
         }
         return false;
     }
@@ -1495,7 +1502,7 @@ export default class AudioRecording {
         }
 
         //set listen button based on whether we have an audio at all for this page
-        var ids = [];
+        var ids: any[] = [];
         this.getAudioElements().each(function() {
             ids.push(this.id);
         });
