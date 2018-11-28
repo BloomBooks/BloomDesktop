@@ -675,7 +675,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             return;
         }
         const page = this.getPage();
-        if (!page) return; // paranoid
+        if (!page || !page.documentElement) return; // paranoid
         const contentWindow = this.getPageFrame().contentWindow;
         if (!contentWindow) return; // paranoid
 

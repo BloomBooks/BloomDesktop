@@ -119,7 +119,7 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
             var page = parent.window.document.getElementById(
                 "page"
             ) as HTMLIFrameElement;
-            if (!page)
+            if (!page || !page.contentWindow)
                 $("body")
                     .find("div.bloom-page")
                     .addClass(cssTooManyWordsOnPage);
@@ -303,7 +303,7 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
         var page = parent.window.document.getElementById(
             "page"
         ) as HTMLIFrameElement;
-        if (!page)
+        if (!page || !page.contentWindow)
             $("body")
                 .find("div." + cssTooManyWordsOnPage)
                 .removeClass(cssTooManyWordsOnPage);

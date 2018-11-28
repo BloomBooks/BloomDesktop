@@ -106,7 +106,7 @@ export class SignLanguageToolControls extends React.Component<
             aspectRatio: ""
         }
     };
-    private videoStream: MediaStream;
+    private videoStream: MediaStream | null;
     private chunks: Blob[];
     private mediaRecorder: MediaRecorder;
     private timerId: number;
@@ -471,23 +471,29 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getSelectedVideoContainer(): Element {
-        return SignLanguageTool.getVideoContainers(true)[0];
+    private getSelectedVideoContainer(): Element | null {
+        const videoContainers = SignLanguageTool.getVideoContainers(true);
+        return videoContainers ? videoContainers[0] : null;
     }
 
     private updateVideo(url: string): void {
         const container = this.getSelectedVideoContainer();
+        if (!container) return;
         let video = container.getElementsByTagName("video")[0];
-        if (!video) {
+        if (!video && container.ownerDocument) {
             video = container.ownerDocument.createElement("video");
             container.appendChild(video);
         }
-        let source = video.getElementsByTagName("source")[0];
-        if (!source) {
-            source = container.ownerDocument.createElement("source");
-            video.appendChild(source);
+        if (video) {
+            let source = video.getElementsByTagName("source")[0];
+            if (!source && container.ownerDocument) {
+                source = container.ownerDocument.createElement("source");
+                video.appendChild(source);
+            }
+            if (source) {
+                source.setAttribute("src", url);
+            }
         }
-        source.setAttribute("src", url);
     }
 
     private importRecording() {
@@ -514,9 +520,12 @@ export class SignLanguageToolControls extends React.Component<
             result => {
                 if (result.data == "deleted") {
                     const elt = this.getSelectedVideoContainer();
-                    elt.classList.add("bloom-noVideoSelected");
-                    const video = elt.getElementsByTagName("video")[0];
-                    video.parentElement.removeChild(video);
+                    if (elt) {
+                        elt.classList.add("bloom-noVideoSelected");
+                        const video = elt.getElementsByTagName("video")[0];
+                        if (video && video.parentElement)
+                            video.parentElement.removeChild(video);
+                    }
                     // Makes sure the page gets saved without a reference to the deleted video,
                     // and incidentally that everything gets updated to be consistent with the
                     // new state of things.
@@ -673,7 +682,10 @@ export class SignLanguageToolControls extends React.Component<
             videoBitsPerSecond: 2500000,
             mimeType: "video/mp4"
         };
-        this.mediaRecorder = new MediaRecorder(this.videoStream, options);
+        this.mediaRecorder = new MediaRecorder(
+            this.videoStream as MediaStream,
+            options
+        );
         this.mediaRecorder.ondataavailable = e => {
             // called periodically during recording and once more with the rest of the data
             // when recording stops. So all the chunks which make up the recording come here.
@@ -774,17 +786,18 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     // Specify 'true' to get only containers marked as selected
     public static getVideoContainers(
         selected?: boolean
-    ): HTMLCollectionOf<Element> {
+    ): HTMLCollectionOf<Element> | null {
         let classes = "bloom-videoContainer";
         if (selected) {
             classes += " bloom-selected";
         }
-        return ToolBox.getPage().getElementsByClassName(classes);
+        const page = ToolBox.getPage();
+        return page ? page.getElementsByClassName(classes) : null;
     }
 
-    public static getSelectedVideoPathAndTiming(): string {
+    public static getSelectedVideoPathAndTiming(): string | null {
         const containers = this.getVideoContainers(true);
-        if (containers.length == 0) {
+        if (!containers || containers.length == 0) {
             return null;
         }
         const container = containers[0];
@@ -799,11 +812,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return sources[0].getAttribute("src");
     }
 
-    public static getSelectedVideoPath(): string {
+    public static getSelectedVideoPath(): string | null {
         // strip off the ?now= param we sometimes use to prevent use of cached old versions,
         // and the #t= fragment used to trim videos.
         return UrlUtils.extractPathComponent(
-            SignLanguageTool.getSelectedVideoPathAndTiming()
+            SignLanguageTool.getSelectedVideoPathAndTiming() as string
         );
     }
 
@@ -834,13 +847,14 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // when we come back to the page. This is especially important when refreshing the
         // page after selecting or recording a video.
         const containers = SignLanguageTool.getVideoContainers(false);
-        for (let i = 0; i < containers.length; i++) {
-            containers[i].removeEventListener(
-                "click",
-                this.containerClickListener
-            );
+        if (containers) {
+            for (let i = 0; i < containers.length; i++) {
+                containers[i].removeEventListener(
+                    "click",
+                    this.containerClickListener
+                );
+            }
         }
-
         this.reactControls.turnOffVideo();
     }
 
@@ -852,8 +866,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private containerClickListener: EventListener = (event: MouseEvent) => {
         // The reason for the listener: to select the current element
         const currentContainers = SignLanguageTool.getVideoContainers(false);
-        for (let i = 0; i < currentContainers.length; i++) {
-            currentContainers[i].classList.remove("bloom-selected");
+        if (currentContainers) {
+            for (let i = 0; i < currentContainers.length; i++) {
+                currentContainers[i].classList.remove("bloom-selected");
+            }
         }
         const container = event.currentTarget as HTMLElement;
         container.classList.add("bloom-selected");
@@ -893,7 +909,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // when the page is refreshed with the new video
         this.reactControls.setState({ stateClass: "idle" });
         const containers = SignLanguageTool.getVideoContainers(false);
-        if (containers.length === 0) {
+        if (!containers || containers.length === 0) {
             if (this.reactControls.state.enabled) {
                 this.reactControls.turnOffVideo();
                 this.reactControls.setState({
@@ -905,7 +921,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             // If one is already marked selected, presumably from a previous use of this page,
             // we'll leave that one active.
             const selectedVideos = SignLanguageTool.getVideoContainers(true);
-            if (selectedVideos.length === 0) {
+            if (!selectedVideos || selectedVideos.length === 0) {
                 containers[0].classList.add("bloom-selected");
                 this.updateStateForSelected(containers[0]);
             } else {
@@ -990,11 +1006,17 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     // Make an overlay and slap it over the selected edit pane video still while we're recording
     public static showOverlayToHideVideo(): void {
-        const container = SignLanguageTool.getVideoContainers(true)[0]; // 'true' gets only the selected video
+        const videoContainers = SignLanguageTool.getVideoContainers(true);
+        if (!videoContainers) return;
+        const container = videoContainers[0]; // 'true' gets only the selected video
         if (
-            !container.previousElementSibling.classList.contains(
-                SignLanguageTool.overlayClass
-            )
+            container &&
+            container.parentElement &&
+            container.ownerDocument &&
+            (!container.previousElementSibling ||
+                !container.previousElementSibling.classList.contains(
+                    SignLanguageTool.overlayClass
+                ))
         ) {
             // bloom-ui class makes sure this div is removed before saving
             const overlayDiv =
@@ -1005,7 +1027,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 SignLanguageTool.createNode(
                     container.ownerDocument,
                     overlayDiv
-                ),
+                ) as Node,
                 container
             );
         }
@@ -1013,35 +1035,37 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     // Grab the "Recording" label in React-land and stick it in the edit pane overlay
     public static addLabelToOverlay(key: string): void {
-        const container = SignLanguageTool.getVideoContainers(true)[0];
+        const videoContainers = SignLanguageTool.getVideoContainers(true);
+        if (!videoContainers) return;
+        const container = videoContainers[0];
         theOneLocalizationManager
             .asyncGetText("EditTab.Toolbox.SignLanguage." + key, key, "")
             .done(recordingLabel => {
-                container.previousElementSibling.firstChild.textContent = recordingLabel;
+                if (
+                    container &&
+                    container.previousElementSibling &&
+                    container.previousElementSibling.firstChild
+                )
+                    container.previousElementSibling.firstChild.textContent = recordingLabel;
             });
     }
 
     // Remove the overlay hiding the video, now that we're done recording
     public static removeVideoOverlay(): void {
-        const container = SignLanguageTool.getVideoContainers(true)[0];
+        const videoContainers = SignLanguageTool.getVideoContainers(true);
+        if (!videoContainers) return;
+        const container = videoContainers[0];
+        if (!container || !container.previousElementSibling) return;
         const overlayElement = container.previousElementSibling;
-        if (
-            overlayElement &&
-            overlayElement.classList.contains(SignLanguageTool.overlayClass)
-        ) {
+        if (overlayElement.classList.contains(SignLanguageTool.overlayClass)) {
             container.previousElementSibling.remove();
         }
     }
 
-    private static createNode(doc: Document, html: string): Node {
+    private static createNode(doc: Document, html: string): Node | null {
         const template = doc.createElement("template");
         template.innerHTML = html.trim();
         return template.content.firstChild;
-    }
-
-    private static getRecordingLabel(doc: Document): string {
-        const labelElement = doc.getElementsByClassName("recordingLabel")[0]; // should only be one
-        return labelElement !== null ? labelElement.textContent.trim() : null;
     }
 
     public static setVideoTimingsInSrcAttr(
@@ -1049,10 +1073,12 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         newEndString: string
     ) {
         const video = this.getSelectedVideoElement();
+        if (!video) return;
         const source = video.getElementsByTagName(
             "source"
         )[0] as HTMLSourceElement;
         let src = source.getAttribute("src");
+        if (!src) src = "";
         const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
         src = urlTimingObj.url;
         source.setAttribute(
@@ -1061,11 +1087,13 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         );
     }
 
-    private static getSelectedVideoElement(): HTMLVideoElement {
+    private static getSelectedVideoElement(): HTMLVideoElement | undefined {
         const selectedContainers = SignLanguageTool.getVideoContainers(true); // s/b only one selected container
-        return selectedContainers[0].getElementsByTagName(
-            "video"
-        )[0] as HTMLVideoElement;
+        if (selectedContainers)
+            return selectedContainers[0].getElementsByTagName(
+                "video"
+            )[0] as HTMLVideoElement;
+        else return undefined;
     }
 
     // Currently only used in bloomVideo.ts
@@ -1078,7 +1106,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         if (!source.hasAttribute("src")) {
             return "";
         }
-        return source.getAttribute("src");
+        const val = source.getAttribute("src");
+        return val ? val : "";
     }
 
     public static setCurrentVideoPoint(
@@ -1088,7 +1117,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         if (!videoElement) {
             videoElement = SignLanguageTool.getSelectedVideoElement();
         }
-        videoElement.currentTime = timeInSeconds;
+        if (videoElement) videoElement.currentTime = timeInSeconds;
     }
 
     // Returns an Object containing the results of executing a regexp on the src attribute of the source element.

@@ -458,6 +458,7 @@ export default class BloomSourceBubbles {
                                 // This code may run AFTER the code in SetupTooltips that removes passive-bubble
                                 // and max-height from a qtip whose element has focus.
                                 if (
+                                    document.activeElement &&
                                     !$.contains(
                                         $div.get(0),
                                         document.activeElement
@@ -482,7 +483,11 @@ export default class BloomSourceBubbles {
                                     kevent.stopImmediatePropagation();
                                     const bubble = kevent.target;
                                     const obj = $(bubble)[0].firstElementChild;
-                                    if (obj) {
+                                    if (
+                                        obj &&
+                                        obj.ownerDocument &&
+                                        obj.ownerDocument.defaultView
+                                    ) {
                                         const selection = obj.ownerDocument.defaultView.getSelection();
                                         const range = obj.ownerDocument.createRange();
                                         range.selectNodeContents(obj);

@@ -50,18 +50,22 @@ describe("SourceBubbles", () => {
         // <div class='bloom-editable' lang='es'>Spanish text</div> (order not important here)
         // <div class='bloom-editable' lang='fr'>French text</div>
         // <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>
-        var listItems = result.find("nav ul li");
-        expect(listItems.length).toBe(3);
-        expect(listItems.first().html()).toBe(
-            '<a class="sourceTextTab" href="#tpi">Tok Pisin</a>'
-        );
-        expect(result.find("li#fr").html()).toBe(
-            '<a class="sourceTextTab" href="#fr">français</a>'
-        );
-        expect(listItems.last().html()).toBe(
-            '<a class="sourceTextTab" href="#es">español</a>'
-        );
-        expect(result.find("div").length).toBe(3);
+        expect(result).toBeDefined();
+        expect(result).toBeTruthy();
+        if (result) {
+            var listItems = result.find("nav ul li");
+            expect(listItems.length).toBe(3);
+            expect(listItems.first().html()).toBe(
+                '<a class="sourceTextTab" href="#tpi">Tok Pisin</a>'
+            );
+            expect(result.find("li#fr").html()).toBe(
+                '<a class="sourceTextTab" href="#fr">français</a>'
+            );
+            expect(listItems.last().html()).toBe(
+                '<a class="sourceTextTab" href="#es">español</a>'
+            );
+            expect(result.find("div").length).toBe(3);
+        }
     });
 
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
