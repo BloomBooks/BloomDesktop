@@ -27,24 +27,6 @@ namespace Bloom.Edit
 			UpdateMetadataAttributesOnImage(imgOrDivWithBackgroundImage, imageInfo);
 		}
 
-		public void ChangeVideo(string bookFolderPath, ElementProxy videoContainer, string videoPath,
-			IProgress progress)
-		{
-			var videoFileName = Path.GetFileName(videoPath);
-			var destPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(bookFolderPath), videoFileName);
-			if (destPath != videoPath && !File.Exists(destPath))
-			{
-				RobustFile.Copy(videoPath, destPath);
-			}
-			// Enhance: if destination exists and content does not match pick a new name and copy to that.
-
-			// BL-5866 To get video to work while storing it in a separate folder we must include the video folder name here.
-			var videoUrlUnencoded = BookStorage.GetVideoFolderName + videoFileName;
-			HtmlDom.SetVideoElementUrl(videoContainer, UrlPathString.CreateFromUnencodedString(videoUrlUnencoded, true));
-			// Enhance: do we need to do something here about metadata, when we figure out how to handle that
-			// for videos?
-		}
-
 		/// <summary>
 		/// Check whether the new image file is the same as the one we already have chosen.
 		/// (or at least the same pathname in the filesystem)

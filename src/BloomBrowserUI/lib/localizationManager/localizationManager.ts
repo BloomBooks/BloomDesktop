@@ -210,7 +210,7 @@ export class LocalizationManager {
     public asyncGetText(
         id: string,
         englishText: string,
-        comment: string,
+        comment: string | undefined,
         ...args
     ): JQueryPromise<any> {
         return this.asyncGetTextInLangCommon(
@@ -226,7 +226,7 @@ export class LocalizationManager {
     public asyncGetTextAndSuccessInfo(
         id: string,
         englishText: string,
-        comment: string,
+        comment: string | undefined,
         ...args
     ): JQueryPromise<any> {
         return this.asyncGetTextInLangCommon(
@@ -244,7 +244,7 @@ export class LocalizationManager {
         id: string,
         englishText: string,
         langId: string,
-        comment: string,
+        comment: string | undefined,
         englishDefault: boolean,
         includeSuccessInfo: boolean,
         args
@@ -262,7 +262,7 @@ export class LocalizationManager {
                     key: id,
                     englishText: englishText,
                     langId: langId,
-                    comment: comment
+                    comment: comment || ""
                 }
             })
             .then(response => {
@@ -392,9 +392,9 @@ function HtmlDecode(text): string {
         //an empty string leads to div.firstChild, below, being null.
         return text;
     }
-    var div = document.createElement("div");
+    const div = document.createElement("div");
     div.innerHTML = text;
-    return div.firstChild.nodeValue;
+    return div.firstChild!.nodeValue!;
 }
 
 var theOneLocalizationManager: LocalizationManager = new LocalizationManager();

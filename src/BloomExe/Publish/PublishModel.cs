@@ -273,15 +273,9 @@ namespace Bloom.Publish
 			set { _pdfMaker.ShowCropMarks = value; }
 		}
 
-		public bool AllowUpload {
-			get { return !PageLayout.IsDeviceLayout
-					&& BookSelection.CurrentSelection.BookInfo.AllowUploading; }
-		}
+		public bool AllowUpload => BookSelection.CurrentSelection.BookInfo.AllowUploading;
 
-		public bool AllowPdf
-		{
-			get { return !PageLayout.IsDeviceLayout; }
-		}
+		public bool AllowPdf => true;
 
 		public bool AllowPdfBooklet
 		{
@@ -290,18 +284,12 @@ namespace Bloom.Publish
 				// Large page sizes can't make booklets.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4155.
 				var size = PageLayout.SizeAndOrientation.PageSizeName;
 				return AllowPdf && BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
-					(size != "A4" && size != "A3" && size != "B5" && size != "Letter");
+					(size != "A4" && size != "A3" && size != "B5" && size != "Letter" && size != "Device16x9");
 			}
 		}
 
-		public bool AllowPdfCover
-		{
-			// currently the only cover option we have is a booklet one
-			get
-			{
-				return AllowPdfBooklet;
-			}
-		}
+		// currently the only cover option we have is a booklet one
+		public bool AllowPdfCover => AllowPdfBooklet;
 
 		public void Save()
 		{

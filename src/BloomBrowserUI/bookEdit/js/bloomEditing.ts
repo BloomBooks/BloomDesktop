@@ -218,36 +218,29 @@ function AddEditKeyHandlers(container) {
             document.execCommand("formatBlock", false, "H2");
         });
 
-    $(document).bind("keydown", "ctrl+space", e => {
-        e.preventDefault();
-        document.execCommand("removeFormat"); //will remove bold, italics, etc. but not things that use elements, like h1
+    $(document).keydown(e => {
+        if (e.keyCode === 32 && e.ctrlKey && !e.shiftKey && !e.altKey) {
+            document.execCommand("removeFormat"); //will remove bold, italics, etc. but not things that use elements, like h1
+        }
     });
 
-    $(document).bind("keydown", "ctrl+u", e => {
-        e.preventDefault();
-        document.execCommand("underline");
-    });
-    $(document).bind("keydown", "ctrl+b", e => {
-        e.preventDefault();
-        document.execCommand("bold");
-    });
-    $(document).bind("keydown", "ctrl+i", e => {
-        e.preventDefault();
-        document.execCommand("italic");
-    });
     //note: these have the effect of introducing a <div> inside of the div.bloom-editable we're in.
+    //note: they aren't currently working. Debugging indicates the events never fire.
+    //I (JohnT) have not been able to find any doc indicating that this syntax...passing a
+    // keycode to match...is even supposed to work. If we want to reinstate them,
+    // adding to the handler for ctrl-space above might work.
     $(document).bind("keydown", "ctrl+r", e => {
         e.preventDefault();
-        document.execCommand("justifyright", false, null);
+        document.execCommand("justifyright", false);
     });
     $(document).bind("keydown", "ctrl+l", e => {
         e.preventDefault();
-        document.execCommand("justifyleft", false, null);
+        document.execCommand("justifyleft", false);
     });
     $(document).bind("keydown", "ctrl+shift+e", e => {
         //ctrl+shiift+e is what google drive uses
         e.preventDefault();
-        document.execCommand("justifycenter", false, null);
+        document.execCommand("justifycenter", false);
     });
 
     // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,

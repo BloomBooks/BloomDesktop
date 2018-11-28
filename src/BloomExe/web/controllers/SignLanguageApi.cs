@@ -10,9 +10,6 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
-using DesktopAnalytics;
-using Gecko;
-using Gecko.DOM;
 using L10NSharp;
 using SIL.Code;
 using SIL.CommandLineProcessing;
@@ -49,9 +46,7 @@ namespace Bloom.web.controllers
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
-			apiHandler.RegisterEndpointHandler("signLanguage/editVideo", HandleEditVideoRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
-			apiHandler.RegisterEndpointHandler("signLanguage/restoreOriginal", HandleRestoreOriginalRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
 			apiHandler.RegisterEndpointHandler("signLanguage/getStats", HandleVideoStatisticsRequest, true);
 		}
@@ -90,38 +85,9 @@ namespace Bloom.web.controllers
 					}
 				}
 
-				var videoContainer = GetSelectedEditableVideoContainer(request, path);
-				if (videoContainer == null)
-					return;
-
-				// Technically this could fail and we might want to report that the post failed.
-				// But currently nothing is using the success/fail status, and we don't expect this to fail.
-				SaveChangedVideo(videoContainer, path, "Bloom had a problem including that video");
-				request.PostSucceeded();
+				var relativePath = BookStorage.GetVideoFolderName + Path.GetFileName(path);
+				request.ReplyWithText(UrlPathString.CreateFromUnencodedString(relativePath).UrlEncodedForHttpPath);
 			}
-		}
-
-		private GeckoHtmlElement GetSelectedEditableVideoContainer(ApiRequest request, string path)
-		{
-			var videoContainer = GetSelectedVideoContainer();
-			if (videoContainer == null)
-			{
-				// Enhance: if we end up needing this it should be localizable. But the current plan is to disable
-				// video recording and importing if there is no container on the page.
-				var msg = "There's nowhere to put a video on this page." +
-					(string.IsNullOrEmpty(path) ? "" : " " + $"You can find it later at {path}");
-				MessageBox.Show(msg);
-				request.Failed("nowhere to put video");
-				return null;
-			}
-
-			if (WarnIfVideoCantChange(videoContainer))
-			{
-				request.Failed("editing not allowed");
-				return null;
-			}
-
-			return videoContainer;
 		}
 
 		/// <summary>
@@ -204,112 +170,9 @@ namespace Bloom.web.controllers
 			return RobustFile.Exists(ffmpeg) ? ffmpeg : string.Empty;
 		}
 
-		// Request from sign language tool to restore the original video.
-		private void HandleRestoreOriginalRequest(ApiRequest request)
-		{
-			lock (request)
-			{
-				var videoContainer = GetSelectedVideoContainer();
-				string videoPath;
-				decimal[] timings;
-				if (!ParseVideoContainerSourceAttribute(request, videoContainer, true, out videoPath, out timings))
-					return; // request.Failed was called inside the above method
-
-				var originalPath = Path.ChangeExtension(videoPath, "orig");
-				if (!RobustFile.Exists(originalPath))
-				{
-					request.Failed("no original video file ("+originalPath+")");
-					return;
-				}
-
-				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
-				var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
-				RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
-				RobustFile.Copy(newOriginalPath, newVideoPath);
-				// I'm not absolutely sure we need to get the Video container again on the UI thread, but have had some problems
-				// with COM interfaces in a similar situation so it seems safest.
-				View.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
-				request.PostSucceeded();
-			}
-		}
-
-		// Request from sign language tool to edit the selected video.
-		private void HandleEditVideoRequest(ApiRequest request)
-		{
-			lock (request)
-			{
-				var videoContainer = GetSelectedVideoContainer();
-				string videoPath;
-				decimal[] timings;
-				if (!ParseVideoContainerSourceAttribute(request, videoContainer, true, out videoPath, out timings))
-					return; // request.Failed was called inside the above method
-
-				var originalPath = Path.ChangeExtension(videoPath, "orig");
-				if (!RobustFile.Exists(videoPath))
-				{
-					if (RobustFile.Exists(originalPath))
-					{
-						RobustFile.Copy(originalPath, videoPath);
-					}
-					else
-					{
-						request.Failed("missing video file ("+videoPath+")");
-						return;
-					}
-				}
-
-				var proc = new Process()
-				{
-					StartInfo = new ProcessStartInfo()
-					{
-						FileName = videoPath,
-						UseShellExecute = true
-					},
-					EnableRaisingEvents = true
-				};
-				var begin = DateTime.Now;
-				_doingEditOutsideBloom = true;
-				proc.Exited += (sender, args) =>
-				{
-					var videoFolderPath = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
-					var lastModifiedFile = new DirectoryInfo(videoFolderPath)
-						.GetFiles("*.mp4")
-						.OrderByDescending(f => GetRealLastModifiedTime(f))
-						.FirstOrDefault();
-					if (lastModifiedFile != null && GetRealLastModifiedTime(lastModifiedFile) > begin)
-					{
-						var newVideoPath = Path.Combine(videoFolderPath, GetNewVideoFileName()); // Use a new name to defeat caching; prefer our standard type of name.
-						RobustFile.Move(Path.Combine(videoFolderPath, lastModifiedFile.Name), newVideoPath);
-						var newOriginalPath = Path.ChangeExtension(newVideoPath, "orig");
-						if (RobustFile.Exists(originalPath))
-						{
-							RobustFile.Move(originalPath, newOriginalPath); // Keep old original associated with new name
-							RobustFile.Delete(videoPath);
-						}
-						else
-						{
-							RobustFile.Move(videoPath, newOriginalPath); // Set up original for the first time.
-						}
-						// I'm not sure why it fails if we use the videoContainer variable we set above,
-						// but somehow QueryInterface on the underlying COM object fails. It's probably something to
-						// do with the COM threading model that forbids using it on a thread other than the
-						// one that created it.
-						View.Invoke((Action)(() => SaveChangedVideo(GetSelectedVideoContainer(), newVideoPath, "Bloom had a problem updating that video")));
-						//_view.Invoke((Action)(()=> RethinkPageAndReloadIt()));
-					}
-					_doingEditOutsideBloom = false;
-				};
-				proc.Start();
-				request.PostSucceeded();
-			}
-		}
-
 		// Request from sign language tool to import a video.
 		private void HandleImportVideoRequest (ApiRequest request)
 		{
-			var videoContainer = GetSelectedEditableVideoContainer(request, null);
-			if (videoContainer == null)
-				return;
 			string path = null;
 			View.Invoke((Action)(() => {
 				var videoFiles = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.FileDialogVideoFiles", "Video files");
@@ -327,8 +190,14 @@ namespace Bloom.web.controllers
 			{
 				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				RobustFile.Copy(path, newVideoPath);
-				SaveChangedVideo(videoContainer, newVideoPath, "Bloom had a problem including that video");
+				var relativePath = BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
+				request.ReplyWithText(UrlPathString.CreateFromUnencodedString(relativePath).UrlEncodedForHttpPath);
 			}
+			else
+			{
+				request.ReplyWithText("");
+			}
+
 			// If the user canceled, we didn't exactly succeed, but having the user cancel is such a normal
 			// event that posting a failure, which is a nuisance to ignore, is not warranted.
 			request.PostSucceeded();
@@ -339,42 +208,20 @@ namespace Bloom.web.controllers
 		{
 			lock (request)
 			{
-				var videoContainer = GetSelectedVideoContainer();
 				string videoPath;
 				decimal[] dummy;
-				if (!ParseVideoContainerSourceAttribute(request, videoContainer, true, out videoPath, out dummy))
+				if (!GetVideoDetailsFromRequest(request, true, out videoPath, out dummy))
 					return; // request.Failed was called inside the above method
 
-				var originalPath = Path.ChangeExtension(videoPath, "orig");
-				var label = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.SelectedVideo", "The selected video", "Appears in the contest \"X will be moved to the recycle bin\"");
+				var label = LocalizationManager.GetString("EditTab.Toolbox.SignLanguage.SelectedVideo", "The selected video", "Appears in the context \"X will be moved to the recycle bin\"");
 				if (!ConfirmRecycleDialog.JustConfirm(label))
 				{
-					// We didn't exactly succeed, but having the user cancel is such a normal
-					// event that posting a failure, which is a nuisance to ignore, is not warranted.
-					request.PostSucceeded();
+					request.ReplyWithText("canceled");
 					return;
 				}
 
-				ConfirmRecycleDialog.Recycle(originalPath);
-				View.Invoke((Action)(() =>
-				{
-					// Other "HandleX" methods have comments here about COM problems re-using the videoContainer variable
-					// above. Hopefully this will make deletion more reliable too.
-					var container = GetSelectedVideoContainer();
-					var video = container.GetElementsByTagName("video").First(); // should be one, since got a path from it above.
-					video.ParentNode.RemoveChild(video);
-					// BL-6136 add back in the class that shows the placeholder
-					container.ClassName += " " + noVideoClass;
-					Model.SaveNow();
-					View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-					View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-				}));
-				// After we refresh the page, breaking any state that has the video locked because it's been played,
-				// we should be actually able to recycle it. Clearing the cache may help (in case it is holding on to
-				// the video somehow).
-				Browser.ClearCache();
 				ConfirmRecycleDialog.Recycle(videoPath);
-				request.PostSucceeded();
+				request.ReplyWithText("deleted");
 			}
 		}
 
@@ -386,7 +233,7 @@ namespace Bloom.web.controllers
 			{
 				string videoFilePath;
 				decimal[] timings;
-				if (!ParseVideoContainerSourceAttribute(request, GetSelectedVideoContainer(), false, out videoFilePath, out timings))
+				if (!GetVideoDetailsFromRequest(request, false, out videoFilePath, out timings))
 					return; // request.Failed was called inside the above method
 
 				if (!RobustFile.Exists(videoFilePath))
@@ -513,7 +360,7 @@ namespace Bloom.web.controllers
 			statistics.Add("fileFormat", match.Value.Substring(7).ToUpper(CultureInfo.CurrentUICulture));
 		}
 
-		internal bool WarnIfVideoCantChange(GeckoHtmlElement videoContainer)
+		internal bool WarnIfVideoCantChange(string videoFilePath)
 		{
 			if (!Model.CanChangeImages())
 			{
@@ -522,54 +369,19 @@ namespace Bloom.web.controllers
 						"Sorry, this book is locked down so that images cannot be changed.")); // Is it worth another LM string so we can say "videos can't be changed?
 				return true;
 			}
-			string currentPath = HtmlDom.GetVideoElementUrl(videoContainer).NotEncoded;
 
-			if (!View.CheckIfLockedAndWarn(currentPath))
+			if (!View.CheckIfLockedAndWarn(videoFilePath))
 				return true;
 			return false;
 		}
 
-		private bool ParseVideoContainerSourceAttribute(ApiRequest request, GeckoHtmlElement videoContainer, bool forEditing,
+		private bool GetVideoDetailsFromRequest(ApiRequest request, bool forEditing,
 			out string videoFilePath, out decimal[] timings)
 		{
-			videoFilePath = null;
+			var fileName = request.Parameters.Get("source");
 			timings = new[] {0.0m, 0.0m};
-			if (videoContainer == null)
-			{
-				// Enhance: if we end up needing this it should be localizable. But the current plan is that the button should be
-				// disabled if we don't have a recording to edit.
-				request?.Failed("no video container");
-				return false;
-			}
 
-			if (forEditing && WarnIfVideoCantChange(videoContainer))
-			{
-				request?.Failed("editing not allowed");
-				return false;
-			}
-
-			var videos = videoContainer.GetElementsByTagName("video");
-			if (videos.Length == 0)
-			{
-				request?.Failed("no existing video to edit");
-				return false;
-			}
-
-			var sources = videos[0].GetElementsByTagName("source");
-			if (sources.Length == 0 || string.IsNullOrWhiteSpace(sources[0].GetAttribute("src")))
-			{
-				request?.Failed("current video has no source");
-				return false;
-			}
-
-			var fileNameWithTimings = sources[0].GetAttribute("src");
-			string rawTimings;
-			var fileName = StripTimingFromVideoUrl(fileNameWithTimings, out rawTimings);
-			var paramIndex = fileName.IndexOf("?");
-			if (paramIndex >= 0)
-			{
-				fileName = fileName.Substring(0, paramIndex);
-			}
+			string rawTimings = UrlPathString.CreateFromUrlEncodedString(request.Parameters.Get("timings")).NotEncoded;
 
 			videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
 			// Some callers need this file to exist, others don't, but decoding is required for all.
@@ -578,6 +390,13 @@ namespace Bloom.web.controllers
 				videoFilePath = Path.Combine(CurrentBook.FolderPath,
 					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);
 			}
+
+			if (forEditing && WarnIfVideoCantChange(videoFilePath))
+			{
+				request?.Failed("editing not allowed");
+				return false;
+			}
+
 			ConvertRawTimingsToDecimalArray(rawTimings, timings);
 			return true;
 		}
@@ -586,6 +405,8 @@ namespace Bloom.web.controllers
 		{
 			if (string.IsNullOrEmpty(rawTimings))
 				return; // do nothing. timings array will hold default values
+			if (rawTimings.StartsWith("t="))
+				rawTimings = rawTimings.Substring(2);
 			var timingArray = rawTimings.Split(',');
 			timings[0] = Convert.ToDecimal(timingArray[0]);
 			if (timingArray.Length > 1)
@@ -605,15 +426,6 @@ namespace Bloom.web.controllers
 			return videoUri.LocalPath.Substring(1); // most callers won't want the initial slash '/', LocalPath ensures no encoding
 		}
 
-		private GeckoHtmlElement GetSelectedVideoContainer()
-		{
-			var root = View.Browser.WebBrowser.Document;
-			var page = root.GetElementById("page") as GeckoIFrameElement;
-			var pageDoc = page.ContentWindow.Document;
-			return
-				pageDoc.GetElementsByClassName("bloom-videoContainer bloom-selected").FirstOrDefault() as GeckoHtmlElement;
-		}
-
 		DateTime GetRealLastModifiedTime(FileInfo info)
 		{
 			if (info.LastWriteTime > info.CreationTime)
@@ -625,57 +437,6 @@ namespace Bloom.web.controllers
 		public static string GetNewVideoFileName()
 		{
 			return Guid.NewGuid().ToString() + ".mp4";
-		}
-
-		internal void SaveChangedVideo(GeckoHtmlElement videoElement, string videoPath, string exceptionMsg)
-		{
-			try
-			{
-				ChangeVideo(videoElement, videoPath, new NullProgress());
-			}
-			catch (System.IO.IOException error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, error.Message);
-			}
-			catch (ApplicationException error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, error.Message);
-			}
-			catch (Exception error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
-			}
-		}
-
-		public void ChangeVideo(GeckoHtmlElement videoContainer, string videoPath, IProgress progress)
-		{
-			try
-			{
-				Logger.WriteMinorEvent("Starting ChangeVideo {0}...", videoPath);
-				var editor = new PageEditingModel();
-				editor.ChangeVideo(CurrentBook.FolderPath, new ElementProxy(videoContainer), videoPath, progress);
-
-				// We need to save so that when asked by the thumbnailer, the book will give the proper image
-				Model.SaveNow();
-
-				// At some point we might clean up unused videos here. If so, be careful about
-				// losing license info if we ever put video information without it in the clipboard.
-				// Compare the parallel situation for images, BL-3717
-
-				// But after saving, we need the non-cleaned version back there
-				View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-
-				View.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-				Analytics.Track("Change Video");
-				Logger.WriteEvent("ChangeVideo {0}...", videoPath);
-
-			}
-			catch (Exception e)
-			{
-				var msg = LocalizationManager.GetString("Errors.ProblemImportingVideo",
-					"Bloom had a problem importing this video.");
-				ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
-			}
 		}
 
 		public DateTime DeactivateTime { get; set; }
@@ -798,7 +559,7 @@ namespace Bloom.web.controllers
 				if (successful)
 				{
 					RobustFile.Delete(originalVideoFilePath);
-					var trimmedFileName = "video/" + Path.GetFileName(tempName); // we never want backslash here...
+					var trimmedFileName = BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
 					HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(trimmedFileName, true), false);
 				}
 				else
@@ -814,6 +575,28 @@ namespace Bloom.web.controllers
 			videoElement.SetAttribute("controls", string.Empty);
 			videoElement.SetAttribute("width", "100%");
 			return tempName;
+		}
+
+		/// <summary>
+		/// Loops through all the videoContainers and prepares them for publishing. This includes trimming and
+		/// adding the 'controls' attribute. EpubMaker has different requirements and uses a slightly different
+		/// process [in CopyVideos()], but BookCompressor.CompressDirectory() for Android and BloomS3Client.UploadBook()
+		/// for Upload use this method.
+		/// </summary>
+		/// <param name="videoContainerElements"></param>
+		/// <param name="sourceFolder"></param>
+		public static void ProcessVideos(IEnumerable<XmlElement> videoContainerElements, string sourceFolder)
+		{
+			if (videoContainerElements == null) // probably a test
+				return;
+			// We are counting on this method processing the videos before
+			// the recursive CompressDirectory() method gets to the video subdirectory.
+			// We are also assuming that 'sourceFolder' is a staging folder (so we can delete modified videos).
+			foreach (var videoContainerElement in videoContainerElements)
+			{
+				PrepareVideoForPublishing(videoContainerElement, sourceFolder);
+			}
+
 		}
 
 		private static bool IsVideoMarkedForTrimming(string sourceBookFolder, string videoUrl, string rawTimings)

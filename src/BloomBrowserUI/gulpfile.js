@@ -43,20 +43,17 @@ if (!semver.satisfies(process.version, version)) {
 //This one is really only used for 'clean';
 var outputDir = "../../output/browser";
 
-const leveledRTInfoPath = "../../DistFiles/leveledRTInfo";
-
 //todo: can remove these output exlusions now that output/ is now 2 levels up with the c# outpuuts
 var paths = {
     help: ["./help/**/*.md"],
     templateReadme: ["./templates/**/ReadMe*.md"],
+    infoPages: ["./infoPages/*.md"],
     distInfo: [
-        "../../DistFiles/**/*.md",
-        "!../../DistFiles/ReleaseNotes.md",
-        "!../../DistFiles/ffmpeg/*.md"
+        "../../DistFiles/license.md",
+        "../../DistFiles/AdobeColorProfileEULA.md"
     ],
     less: ["./**/*.less", "!./node_modules/**/*.less"],
     pug: ["./**/*.pug", "!./node_modules/**/*.pug", "!./**/*mixins.pug"],
-    //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*'],
 
     //files we are *not* running through some compiler that need to make it into the outputDir directory.
     filesThatMightBeNeededInOutput: [
@@ -69,10 +66,7 @@ var paths = {
         "!./**/node_modules/**/*.*"
     ],
     // List all the HTML files created by markdown or pug earlier in this gulp process.
-    htmlFiles: [
-        "../../DistFiles/**/*-en.htm*",
-        "../../output/browser/**/*-en.htm*"
-    ],
+    htmlFiles: ["../../output/browser/**/*-en.htm*"],
     // List all the available translated Xliff files. (omitting original English Xliff files)
     xliff: [
         "../../DistFiles/localization/**/*.xlf",
@@ -117,19 +111,6 @@ gulp.task("pug", function() {
             })
         )
         .pipe(gulp.dest(outputDir)); //drop all html's into the same dirs.
-});
-
-gulp.task("pugLRT", function() {
-    var pug = require("gulp-pug");
-    return gulp
-        .src(leveledRTInfoPath + "/*.pug")
-        .pipe(debug({ title: "pug:" }))
-        .pipe(
-            pug({
-                pretty: true
-            })
-        )
-        .pipe(gulp.dest(leveledRTInfoPath)); // these html's stay in place.
 });
 
 gulp.task("webpack", function() {
@@ -185,12 +166,6 @@ gulp.task("watchInner", function() {
         })
     );
     watch(
-        leveledRTInfoPath + "/*.pug",
-        batch(function(events, done) {
-            gulp.start("pugLRT", done);
-        })
-    );
-    watch(
         paths.help,
         batch(function(events, done) {
             gulp.start("markdownHelp", done);
@@ -203,6 +178,12 @@ gulp.task("watchInner", function() {
         })
     );
     watch(
+        paths.infoPages,
+        batch(function(events, done) {
+            gulp.start("markdownInfoPages", done);
+        })
+    );
+    watch(
         paths.distInfo,
         batch(function(events, done) {
             gulp.start("markdownDistInfo", done);
@@ -211,7 +192,7 @@ gulp.task("watchInner", function() {
 });
 
 gulp.task("watchlp", function() {
-    runSequence(["less", "pug", "pugLRT"], "watchInner");
+    runSequence(["less", "pug"], "watchInner");
 });
 
 gulp.task("watch", function() {
@@ -224,9 +205,9 @@ gulp.task("watch", function() {
         [
             "less",
             "pug",
-            "pugLRT",
             "markdownHelp",
             "markdownTemplateReadme",
+            "markdownInfoPages",
             "markdownDistInfo"
         ],
         "watchInner"
@@ -234,27 +215,12 @@ gulp.task("watch", function() {
 });
 
 gulp.task("markdownHelp", function() {
-    return gulp
-        .src(paths.help)
-        .pipe(debug({ title: "md:" }))
-        .pipe(
-            tap(function(file) {
-                var result = markdownIt.render(file.contents.toString());
-                file.contents = new Buffer(
-                    //here we are assigning an unfortunately named stylesheet that goes with all Bloom help pages
-                    `<html><head><meta charset='utf-8'><link rel='stylesheet' href='help.css' type='text/css'/></head><body>
-` +
-                        result +
-                        `
-</body></html>`
-                );
-                file.path = replaceExt(file.path, ".htm");
-                return;
-            })
-        )
-        .pipe(gulpFlatten({ includeParents: 0 })) // number of parent folders to include
-        .pipe(gulp.dest(outputDir + "/help"))
-        .pipe(debug({ title: " md --> " }));
+    //here we are assigning an unfortunately named stylesheet that goes with all Bloom help pages
+    return basicMarkdown(
+        paths.help,
+        "<link rel='stylesheet' href='help.css' type='text/css'/>",
+        "/help"
+    );
 });
 
 gulp.task("markdownTemplateReadme", function() {
@@ -277,31 +243,16 @@ gulp.task("markdownTemplateReadme", function() {
                 return;
             })
         )
-        .pipe(gulp.dest(outputDir + "/templates")) // we lose this level somewhere
+        .pipe(gulp.dest(outputDir + "/templates")) // we lose this level because it's part of the glob base
         .pipe(debug({ title: " md --> " }));
 });
 
+gulp.task("markdownInfoPages", function() {
+    return basicMarkdown(paths.infoPages, "", "/infoPages");
+});
+
 gulp.task("markdownDistInfo", function() {
-    return gulp
-        .src(paths.distInfo)
-        .pipe(debug({ title: "md:" }))
-        .pipe(
-            tap(function(file) {
-                var result = markdownIt.render(file.contents.toString());
-                // convert to full HTML, ensuring that the file is known to be utf-8.
-                file.contents = new Buffer(
-                    `<html><head><meta charset='utf-8'></head><body>
-` +
-                        result +
-                        `
-</body></html>`
-                );
-                file.path = replaceExt(file.path, ".htm");
-                return;
-            })
-        )
-        .pipe(gulp.dest("../../DistFiles"))
-        .pipe(debug({ title: " md --> " }));
+    return basicMarkdown(paths.distInfo, "", "");
 });
 
 gulp.task("translateHtmlFiles", function() {
@@ -371,9 +322,9 @@ gulp.task("default", function(callback) {
             "brandings",
             "less",
             "pug",
-            "pugLRT",
             "markdownHelp",
             "markdownTemplateReadme",
+            "markdownInfoPages",
             "markdownDistInfo"
         ],
         ["webpack", "translateHtmlFiles", "createXliffFiles"],
@@ -391,9 +342,9 @@ gulp.task("build-prod", function(callback) {
             "brandings",
             "less",
             "pug",
-            "pugLRT",
             "markdownHelp",
             "markdownTemplateReadme",
+            "markdownInfoPages",
             "markdownDistInfo"
         ],
         ["webpack-prod", "translateHtmlFiles", "createXliffFiles"],
@@ -457,4 +408,30 @@ var getXliffFilename = function(htmFile) {
             basename.replace(/-en\.html?$/, ".xlf")
         );
     }
+};
+
+var basicMarkdown = function(files, style, folder) {
+    return gulp
+        .src(files)
+        .pipe(debug({ title: "md:" }))
+        .pipe(
+            tap(function(file) {
+                var result = markdownIt.render(file.contents.toString());
+                // convert to full HTML, ensuring that the file is known to be utf-8.
+                file.contents = new Buffer(
+                    `<html><head><meta charset='utf-8'>` +
+                        style +
+                        `</head><body>
+` +
+                        result +
+                        `
+</body></html>`
+                );
+                file.path = replaceExt(file.path, ".htm");
+                return;
+            })
+        )
+        .pipe(gulpFlatten({ includeParents: 0 })) // number of parent folders to include
+        .pipe(gulp.dest(outputDir + folder))
+        .pipe(debug({ title: " md --> " }));
 };

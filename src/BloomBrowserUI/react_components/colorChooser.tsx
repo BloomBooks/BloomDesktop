@@ -88,7 +88,9 @@ export class ColorChooser extends React.Component<
                                     const newColor = event.currentTarget.getAttribute(
                                         "data-color"
                                     );
-                                    this.props.onColorChanged(newColor);
+                                    if (this.props.onColorChanged) {
+                                        this.props.onColorChanged(newColor);
+                                    }
                                 }}
                             />
                         ))}
@@ -103,9 +105,11 @@ export class ColorChooser extends React.Component<
                                         1
                                     )}
                                     onChange={newContent => {
-                                        this.props.onColorChanged(
-                                            "#" + newContent
-                                        );
+                                        if (this.props.onColorChanged) {
+                                            this.props.onColorChanged(
+                                                "#" + newContent
+                                            );
+                                        }
                                     }}
                                     onEnterKeyPressed={() =>
                                         this.setState({ colorsVisible: false })

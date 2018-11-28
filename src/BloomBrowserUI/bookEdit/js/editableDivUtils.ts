@@ -218,7 +218,8 @@ export class EditableDivUtils {
             // class div element, which in turn is owned by a qtip class element.  The editable
             // div element to which the qtip bubble is attached has an aria-describedby attribute
             // that refers to the div.qtip's id.
-            if (activeElement.parentElement == null) return;
+            if (activeElement == null || activeElement.parentElement == null)
+                return;
             var bubble = activeElement.parentElement.parentElement;
             if (bubble == null) return;
             var query =

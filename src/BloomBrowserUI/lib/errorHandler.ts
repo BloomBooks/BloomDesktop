@@ -30,7 +30,10 @@ export function reportError(message: string, stack: string) {
     });
 }
 
-export function reportPreliminaryError(message: string, stack: string) {
+export function reportPreliminaryError(
+    message: string,
+    stack: string | null | undefined
+) {
     if ((window as any).__karma__) {
         console.log(
             "skipping post to common/error because in unit tests: \r\n" +
@@ -45,7 +48,7 @@ export function reportPreliminaryError(message: string, stack: string) {
     //    BloomApi.postData("common/preliminaryError", {
     Axios.post("/bloom/api/common/preliminaryError", {
         message: message,
-        stack: stack
+        stack: stack || ""
     }).catch(e => {
         console.log("*****Got error trying report preliminaryError");
     });

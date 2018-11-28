@@ -37,7 +37,7 @@ export default class ProgressBox extends React.Component<
                         `<span style='${e.cssStyleRule}'>${e.message}</span>`
                     );
                 } else {
-                    this.writeLine(e.message);
+                    this.writeLine(e.message || "");
                 }
                 this.tryScrollToBottom();
             }

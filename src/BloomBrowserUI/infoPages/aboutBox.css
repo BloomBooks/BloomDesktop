@@ -1,20 +1,18 @@
-BODY
-{
+body {
     font-family: arial;
     font-size: 8pt;
     width: 335px;
 }
-H1
-{
+h1 {
     font-size: 10pt;
 }
-P, LI
-{
+p,
+li {
     text-align: left;
     margin-top: 6px;
 }
-UL, LI
-{
+ul,
+li {
     list-style-type: none;
     padding-left: 0px;
 }

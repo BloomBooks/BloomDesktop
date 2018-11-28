@@ -88,7 +88,7 @@ export default class WebSocketManager {
                 ]
             );
             webSocket.close();
-            WebSocketManager.socketMap[clientContext] = null;
+            delete WebSocketManager.socketMap[clientContext];
         }
     }
     /**

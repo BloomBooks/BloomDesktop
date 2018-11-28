@@ -18,7 +18,10 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
         super(props);
     }
 
-    public static combineClasses(class1: string, class2: string): string {
+    public static combineClasses(
+        class1: string,
+        class2: string | null | undefined
+    ): string {
         if (class2) {
             return class1 + " " + class2;
         }
@@ -40,14 +43,22 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                     )}
                     value={this.props.value}
                     checked={this.props.defaultChecked} // use defaultChecked instead of checked to avoid warning
-                    onClick={() => this.props.onSelected(this.props.value)}
+                    onClick={() => {
+                        if (this.props.onSelected) {
+                            this.props.onSelected(this.props.value);
+                        }
+                    }}
                 />
                 <div
                     className={Radio.combineClasses(
                         "radioLabel",
                         this.props.labelClass
                     )}
-                    onClick={() => this.props.onSelected(this.props.value)}
+                    onClick={() => {
+                        if (this.props.onSelected) {
+                            this.props.onSelected(this.props.value);
+                        }
+                    }}
                 >
                     {this.getLocalizedContent()}
                 </div>
@@ -87,7 +98,11 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
             }
             if (childElt.type === Radio) {
                 return React.cloneElement(childElt, {
-                    onSelected: val => this.props.onChange(val),
+                    onSelected: val => {
+                        if (this.props.onChange) {
+                            this.props.onChange(val);
+                        }
+                    },
                     defaultChecked: childElt.props.value === this.props.value
                 });
             }

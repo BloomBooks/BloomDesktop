@@ -83,12 +83,12 @@ export class LocalizableElement<
 
     public componentDidUpdate() {
         if (this.localizedText && this.props.l10nParam0) {
-            var newText = this.localizedText.replace(
+            let newText = this.localizedText.replace(
                 "%0",
-                this.props.l10nParam0
+                this.props.l10nParam0!
             );
             if (this.props.l10nParam1) {
-                newText = newText.replace("%1", this.props.l10nParam1);
+                newText = newText.replace("%1", this.props.l10nParam1!);
             }
             if (newText != this.state.translation) {
                 this.setState({
@@ -159,7 +159,7 @@ export class LocalizableElement<
             theOneLocalizationManager
                 .asyncGetText(
                     this.tooltipKey,
-                    this.props.l10nTipEnglishEnabled,
+                    this.props.l10nTipEnglishEnabled!,
                     this.props.l10nComment
                 )
                 .done(result => {
@@ -172,7 +172,7 @@ export class LocalizableElement<
             theOneLocalizationManager
                 .asyncGetText(
                     this.disabledTooltipKey,
-                    this.props.l10nTipEnglishDisabled,
+                    this.props.l10nTipEnglishDisabled!,
                     this.props.l10nComment
                 )
                 .done(result => {
@@ -217,11 +217,13 @@ export class LocalizableElement<
     }
 
     public getLocalizedTooltip(controlIsEnabled: boolean): string {
-        return controlIsEnabled
-            ? this.state.tipEnabledTranslation
-            : this.state.tipDisabledTranslation
-                ? this.state.tipDisabledTranslation
-                : this.state.tipEnabledTranslation;
+        return (
+            (controlIsEnabled
+                ? this.state.tipEnabledTranslation
+                : this.state.tipDisabledTranslation
+                    ? this.state.tipDisabledTranslation
+                    : this.state.tipEnabledTranslation) || ""
+        );
     }
 
     public getClassName(): string {
