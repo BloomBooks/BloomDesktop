@@ -164,9 +164,9 @@ export class EditableDivUtils {
     }
 
     // The body of the editable page, a root for searching for document content.
-    public static getPage(): JQuery | null {
+    public static getPage(): JQuery {
         var page = this.getPageFrame();
-        if (!page || !page.contentWindow) return null;
+        if (!page || !page.contentWindow) return $();
         return $(page.contentWindow.document.body);
     }
 
@@ -174,7 +174,7 @@ export class EditableDivUtils {
     public static getPageScale(): number {
         let scale = 1.0;
         const page = this.getPage();
-        if (page == null) return scale;
+        if (page.length === 0) return scale;
         var styleString = page.find("div#page-scaling-container").attr("style");
         var searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
         if (searchData) {

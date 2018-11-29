@@ -139,7 +139,9 @@ export class DecodableReaderToolboxTool implements ITool {
 
     public setTitleOfI(paneDOM: HTMLElement, rootId: string, val: string) {
         // Apparently in some cases asyncGetText may return before the document is ready.
+        if (!paneDOM || !paneDOM.ownerDocument) return;
         $(paneDOM.ownerDocument).ready(() => {
+            if (!paneDOM || !paneDOM.ownerDocument) return;
             $(paneDOM.ownerDocument)
                 .find("#" + rootId)
                 .find("i")

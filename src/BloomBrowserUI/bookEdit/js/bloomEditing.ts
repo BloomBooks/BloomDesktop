@@ -734,7 +734,7 @@ function SetupElements(container) {
                     const bubble = BloomSourceBubbles.ProduceSourceBubbles(
                         this
                     );
-                    if (bubble) {
+                    if (bubble.length !== 0) {
                         divsThatHaveSourceBubbles.push(this);
                         bubbleDivs.push(bubble);
                     }

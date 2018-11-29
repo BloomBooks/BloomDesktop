@@ -128,7 +128,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
 
     public updateSimulations() {
         const page = ToolboxToolReactAdaptor.getPage();
-        if (!page) return;
+        if (!page || !page.ownerDocument) return;
         const body = page.ownerDocument.body;
         if (this.simulatingCataracts) {
             body.classList.add("simulateCataracts");
@@ -158,7 +158,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
     public static removeImpairmentVisualizerMarkup() {
         ImpairmentVisualizerControls.removeColorBlindnessMarkup();
         const page = ToolboxToolReactAdaptor.getPage();
-        if (!page) return;
+        if (!page || !page.ownerDocument) return;
         const body = page.ownerDocument.body;
         body.classList.remove("simulateColorBlindness");
         body.classList.remove("simulateCataracts");
@@ -200,7 +200,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
             return;
         }
         const page = ToolboxToolReactAdaptor.getPage();
-        if (!page) return;
+        if (!page || !page.ownerDocument) return;
         const canvas = page.ownerDocument.createElement("canvas");
         // Make the canvas be the size the image is actually drawn.
         // Typically that means fewer pixels to calculate than doing the whole
@@ -226,9 +226,11 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
         // But then, make it shrink enough to keep its aspect ratio
         canvas.style.objectFit = "contain";
         // And position it within the container the same as the img.
-        img.style.objectPosition = img.ownerDocument.defaultView // the window that the img is in (not ours!)
-            .getComputedStyle(img)
-            .getPropertyValue("object-position");
+        if (img && img.ownerDocument && img.ownerDocument.defaultView) {
+            img.style.objectPosition = img.ownerDocument.defaultView // the window that the img is in (not ours!)
+                .getComputedStyle(img)
+                .getPropertyValue("object-position");
+        }
         canvas.classList.add("ui-cbOverlay"); // used to remove them
         const context = canvas.getContext("2d");
         if (!context) return; // paranoid

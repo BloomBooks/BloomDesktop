@@ -82,7 +82,8 @@ export function showSetupDialog(showWhat) {
                             ),
                             class: "left-button",
                             click: () => {
-                                settingsFrameWindow().postMessage("Help", "*");
+                                const window = settingsFrameWindow();
+                                if (window) window.postMessage("Help", "*");
                             }
                         },
                         OK: {
@@ -91,7 +92,8 @@ export function showSetupDialog(showWhat) {
                                 "OK"
                             ),
                             click: () => {
-                                settingsFrameWindow().postMessage("OK", "*");
+                                const window = settingsFrameWindow();
+                                if (window) window.postMessage("OK", "*");
                             }
                         },
 
@@ -176,8 +178,11 @@ export function initializeReaderSetupDialog() {
     var sourceMsg =
         "Data\n" + JSON.stringify(getTheOneReaderToolsModel().synphony.source);
     var fontMsg = "Font\n" + getTheOneReaderToolsModel().fontName;
-    settingsFrameWindow().postMessage(sourceMsg, "*");
-    settingsFrameWindow().postMessage(fontMsg, "*");
+    var window = settingsFrameWindow();
+    if (window) {
+        window.postMessage(sourceMsg, "*");
+        window.postMessage(fontMsg, "*");
+    }
 }
 
 export function closeSetupDialog() {

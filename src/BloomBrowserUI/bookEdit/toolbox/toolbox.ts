@@ -391,7 +391,7 @@ export function applyToolboxStateToUpdatedPage() {
 
 function doWhenPageReady(action: () => void) {
     const page = getPage();
-    if (!page || page.length === 0) {
+    if (page.length === 0) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
@@ -490,9 +490,9 @@ function getPageFrame(): HTMLIFrameElement {
 }
 
 // The body of the editable page, a root for searching for document content.
-function getPage(): JQuery | null {
+function getPage(): JQuery {
     const page = getPageFrame();
-    if (!page || !page.contentWindow) return null;
+    if (!page || !page.contentWindow) return $();
     return $(page.contentWindow.document.body);
 }
 
