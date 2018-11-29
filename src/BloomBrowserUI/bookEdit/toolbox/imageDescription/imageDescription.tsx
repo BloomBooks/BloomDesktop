@@ -342,6 +342,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                     BloomApi.postThatMightNavigate(
                         "common/saveChangesAndRethinkPageEvent"
                     );
+
+                    this.cleanMarkupForCKEditor(page);
+
                     // This return is currently redundant but it emphasizes that you can't count on anything
                     // more happening in this branch.The page will unload somewhere in the
                     // course of saveChangesAndRethinkPageEvent. Then a new page will load and updateMarkup()
@@ -350,5 +353,37 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 }
             }
         });
+    }
+
+    // After we save the page, CKEditor will have onload() function called.
+    // In issue BL-6721, it was discovered that if there was a text-over-picture element containing two words on a single line (e.g. "a a" or "text box"),
+    // and Image Description had never been set on this page, then when Image Description tool was activated,
+    // the page would be saved/reloaded, CKEditor onload() would fire, and CKEditor would mess up the text box
+    // It would insert extraneous newlines (i.e. <p> elements) before and after the user's actual text.
+    // This could eliminate.
+    // Since modifying the minified CKEditor code sounded very non-ideal...
+    // This code just attempts to strip out some extraneous <br> and prevent the CKEditor bug from triggering.
+    private cleanMarkupForCKEditor(page: HTMLElement): void {
+        const editables = page.getElementsByClassName("bloom-editable");
+        for (let i = 0; i < editables.length; ++i) {
+            const editable = editables[i];
+
+            // This bug only seems to happen if talking book was activated I believe.
+            // Probably because of some bad interaction with the span tag that Talking Book will generate.
+            const audioRecordingModeValue = editable.getAttribute(
+                "data-audioRecordingMode"
+            );
+            if (audioRecordingModeValue) {
+                // Note: actually line feeds by users seem to be denoted using <p>, not in <br>. So <br> is probably only at the end.
+                //       If desired, we could explicitly check for <br> at/near the end.
+                let newInnerHtml: string;
+                newInnerHtml = editable.innerHTML.replace("<br>", "");
+                newInnerHtml = newInnerHtml.replace("<br />", ""); // Note: It is not really expected to contain this form, but rather the <br> form.
+
+                if (newInnerHtml != editable.innerHTML) {
+                    editable.innerHTML = newInnerHtml;
+                }
+            }
+        }
     }
 }
