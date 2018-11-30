@@ -10,6 +10,7 @@ using L10NSharp;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.Progress;
+using SIL.Reflection;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -349,10 +350,27 @@ namespace BloomTests.WebLibraryIntegration
 			}
 		}
 
-		[Test]
-		public void UploadBook_NotLoggedIn_Throws()
+		// I know.... I'm a horrible person for testing a private method.
+		// But I really just want to prove to myself that this works the way it is supposed to.
+		// And the alternatives are super-complex setups or significant refactoring, neither of
+		// which is worth it. It will be okay, really it will...
+		[TestCase("C:\\", "C:\\BookName", "")]
+		[TestCase("C:\\", "C:\\shelf\\BookName", "shelf")]
+		[TestCase("C:\\", "C:\\shelf\\sub\\BookName", "shelf/sub")]
+		[TestCase("C:\\", "C:\\shelf\\sub\\layerWeIgnore\\BookName", "shelf/sub")]
+		[TestCase("C:\\base", "C:\\base\\BookName", "")]
+		[TestCase("C:\\base", "C:\\base\\shelf\\BookName", "shelf")]
+		[TestCase("C:\\base", "C:\\base\\shelf\\sub\\BookName", "shelf/sub")]
+		[TestCase("C:\\base", "C:\\base\\shelf\\sub\\layerWeIgnore\\BookName", "shelf/sub")]
+		[TestCase("C:\\my\\base", "C:\\my\\base\\BookName", "")]
+		[TestCase("C:\\my\\base", "C:\\my\\base\\shelf\\BookName", "shelf")]
+		[TestCase("C:\\my\\base", "C:\\my\\base\\shelf\\sub\\BookName", "shelf/sub")]
+		[TestCase("C:\\my\\base", "C:\\my\\base\\shelf\\sub\\layerWeIgnore\\BookName", "shelf/sub")]
+		public void GetBookshelfName(string baseFolder, string bookFolder, string expected)
 		{
+			ReflectionHelper.SetField(_transfer, "_bulkUploadLogPath", Path.Combine(baseFolder, "log.txt"));
 
+			Assert.AreEqual(expected, ReflectionHelper.GetStrResult(_transfer, "GetBookshelfName", bookFolder));
 		}
 	}
 }
