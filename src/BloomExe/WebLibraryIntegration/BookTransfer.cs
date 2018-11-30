@@ -41,7 +41,7 @@ namespace Bloom.WebLibraryIntegration
 		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 
 		// The full path of the log text file used to restart failed bulk uploads.
-		private string _uploadLogPath;
+		private string _bulkUploadLogPath;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
@@ -633,7 +633,7 @@ namespace Bloom.WebLibraryIntegration
 			var appContext = (ApplicationContainer)args[2];
 			var excludeNarrationAudio = (bool)args[3];
 			var excludeMusic = false; // I (AP) made the executive decision this wasn't worth another option right now
-			var alreadyUploaded = GetUploadLogIfPresent(folder);
+			var alreadyUploaded = GetUploadedPathsFromLogIfPresent(folder);
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
 			{
@@ -650,7 +650,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private string GetUploadFilePath()
 		{
-			return _uploadLogPath ?? string.Empty;
+			return _bulkUploadLogPath ?? string.Empty;
 		}
 
 		private void AppendBookToUploadLogFile(string newBook)
@@ -660,7 +660,7 @@ namespace Bloom.WebLibraryIntegration
 			File.AppendAllLines(path, new []{ newBook });
 		}
 
-		private string[] GetUploadLogIfPresent(string folder)
+		private string[] GetUploadedPathsFromLogIfPresent(string folder)
 		{
 			var results = new string[0];
 			var fullFilepath = Path.Combine(folder, UploadLogFilename);
@@ -668,22 +668,28 @@ namespace Bloom.WebLibraryIntegration
 			{
 				results = RobustFile.ReadAllLines(fullFilepath);
 			}
-			_uploadLogPath = fullFilepath;
+			_bulkUploadLogPath = fullFilepath;
 			return results;
 		}
 
-		private static string GetBookshelfName(string folder)
+		private string GetBookshelfName(string folder)
 		{
-			// We only want our tag to go down one level into the directory structure at this point
-			// (i.e. EnablingWriters has sub-shelves, but the sub-shelves don't have sub-shelves).
-			const string slash = "/";
-			Debug.Assert(Path.IsPathRooted(folder), "path not rooted!?");
-			var splitPathArray = folder.Substring(Path.GetPathRoot(folder).Length).Replace("\\", slash).Split('/');
-			if (splitPathArray.Length == 1)
-			{
+			// Start by excluding the Book folder itself
+			var pathUsedToDetermineBookshelf = Path.GetDirectoryName(folder);
+
+			// Now take off the root (the directory the user gave us)
+			var bulkUploadRoot = Path.GetDirectoryName(GetUploadFilePath());
+			pathUsedToDetermineBookshelf = pathUsedToDetermineBookshelf.Substring(bulkUploadRoot.Length);
+
+			if (pathUsedToDetermineBookshelf == string.Empty)
+				return "";
+
+			// With what remains, the first directory is our shelf and second, if any, is our sub-shelf
+			var splitPathArray = pathUsedToDetermineBookshelf.Replace("\\", "/").Split('/').ToList();
+			splitPathArray.RemoveAll(string.IsNullOrWhiteSpace);
+			if (splitPathArray.Count == 1)
 				return splitPathArray[0];
-			}
-			return splitPathArray[0] + slash + splitPathArray[1];
+			return $"{splitPathArray[0]}/{splitPathArray[1]}";
 		}
 
 		/// <summary>
