@@ -61,6 +61,10 @@ export function reportPreliminaryError(
 // way of dealing with unhandled exceptions, and helps us distinguish thrown
 // from unhandled ones, which some Gecko45 reporting doesn't.
 window.onerror = (msg, url, line, col, error) => {
+    if (!error) {
+        reportError(msg.toString(), "(stack not available)");
+        return true;
+    }
     // Make a preliminary report, which will be discarded if the stack conversion succeeds.
     reportPreliminaryError(msg.toString(), error.stack);
     // Try to make the report using source stack.

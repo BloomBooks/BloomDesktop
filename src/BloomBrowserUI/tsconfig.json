@@ -8,6 +8,7 @@
         "experimentalDecorators": true,
         "alwaysStrict": true,
         "noImplicitReturns": true,
+        "strictNullChecks": true,
         "outDir": "../../output/browser",
         "resolveJsonModule": true
     },
