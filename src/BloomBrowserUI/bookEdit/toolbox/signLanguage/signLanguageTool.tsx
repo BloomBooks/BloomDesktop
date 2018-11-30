@@ -477,6 +477,7 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private updateVideo(url: string): void {
+        if (!url) return;
         const container = this.getSelectedVideoContainer();
         if (!container) return;
         let video = container.getElementsByTagName("video")[0];
