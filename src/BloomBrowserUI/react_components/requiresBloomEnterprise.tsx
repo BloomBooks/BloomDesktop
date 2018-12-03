@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Label } from "./l10n";
 import "./requiresBloomEnterprise.less";
-import { HelpLink } from "./helpLink";
+import { Link } from "./link";
 import { BloomApi } from "../utils/bloomApi";
 
 export interface IComponentState {
@@ -38,20 +38,21 @@ export class RequiresBloomEnterprise extends React.Component<
                 className="requiresBloomEnterprise"
                 style={this.state.visible ? {} : { display: "none" }}
             >
-                <div className="redTriangle">
-                    <span className="triangleContent">!</span>
-                </div>
-                <div className="messageHelpWrapper">
+                <div className="messageSettingsDialogWrapper">
                     <Label l10nKey="EditTab.Toolbox.RequiresEnterprise">
-                        Requires Bloom Enterprise Subscription.
+                        This feature requires
                     </Label>
-                    <div className="requiresEnterpriseHelp">
-                        <HelpLink
-                            helpId="Tasks/Edit_tasks/Enterprise/EnterpriseRequired.htm"
-                            l10nKey="Common.Help"
+                    <div className="requiresEnterpriseSettingsDialog">
+                        <Link
+                            l10nKey="EditTab.Toolbox.BloomEnterprise"
+                            onClick={() =>
+                                BloomApi.post(
+                                    "common/showSettingsDialog?tab=enterprise"
+                                )
+                            }
                         >
-                            Help
-                        </HelpLink>
+                            Bloom Enterprise
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -85,13 +86,16 @@ export class RequiresBloomEnterpriseWrapper extends React.Component<
             <div className={this.props.className}>
                 <div
                     className="enterpriseContentWrapper"
-                    style={{
-                        display: this.state.enterprise ? "block" : "none"
-                    }}
+                    style={{ display: "block" }}
                 >
                     {this.props.children}
                 </div>
-                <RequiresBloomEnterprise />
+                <div
+                    className="requiresEnterpriseOverlay"
+                    style={this.state.enterprise ? { display: "none" } : {}}
+                >
+                    <RequiresBloomEnterprise />
+                </div>
             </div>
         );
     }

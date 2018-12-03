@@ -2,7 +2,7 @@ import * as React from "react";
 import { Label } from "./l10n";
 import { ILocalizationProps, LocalizableElement } from "./l10n";
 import "./expandable.less";
-
+import { enterpriseFeaturesEnabled } from "./requiresBloomEnterprise";
 // Expandable implements an area with a heading (e.g., Advanced in Sign Language tool)
 // and next to it an arrow which can be clicked to display further content.
 // The arrow rotates and gets filled in (per Microsoft guidelines, according to BL-6664)
@@ -24,6 +24,7 @@ interface IExpandableProps extends ILocalizationProps {
     headingText: string;
     expandedHeight: string;
     className?: string;
+    expandIfNoEnterprise?: boolean;
 }
 
 export class Expandable extends React.Component<
@@ -36,6 +37,11 @@ export class Expandable extends React.Component<
 
     constructor(props: IExpandableProps) {
         super(props);
+        if (this.props.expandIfNoEnterprise) {
+            enterpriseFeaturesEnabled().then(enabled => {
+                if (!enabled) this.setState({ expanded: true });
+            });
+        }
     }
 
     public render() {

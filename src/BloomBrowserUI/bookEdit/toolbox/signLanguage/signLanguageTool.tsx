@@ -111,6 +111,9 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
+    constructor(props) {
+        super(props);
+    }
     public render() {
         let videoStats = <div id="videoStatsWrapper" />;
         let trimSlider = <div id="trimWrapper" />;
@@ -219,6 +222,7 @@ export class SignLanguageToolControls extends React.Component<
                             l10nKey="Common.Advanced"
                             headingText="Advanced"
                             expandedHeight="210px"
+                            expandIfNoEnterprise={true}
                         >
                             <div
                                 id="importRecordingWrapper"
@@ -549,12 +553,12 @@ export class SignLanguageToolControls extends React.Component<
     public turnOnVideo() {
         enterpriseFeaturesEnabled().then(enabled => {
             const constraints = { video: true };
-            if (enabled) {
-                navigator.mediaDevices
-                    .getUserMedia(constraints)
-                    .then(stream => this.startMonitoring(stream))
-                    .catch(reason => this.errorCallback(reason));
-            }
+            //if (enabled) {
+            navigator.mediaDevices
+                .getUserMedia(constraints)
+                .then(stream => this.startMonitoring(stream))
+                .catch(reason => this.errorCallback(reason));
+            //}
         });
     }
 

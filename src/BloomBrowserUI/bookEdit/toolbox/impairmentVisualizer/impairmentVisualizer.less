@@ -1,10 +1,19 @@
 @import "../../../bloomUI.less";
 @textColor: @bloom-buff; // #D2D2D2;
 
+.impairmentVisualizerOuterWrapper,
+.enterpriseContentWrapper,
+.impairmentVisualizerBody {
+    height: 100%;
+}
+
 .impairmentVisualizerBody {
     color: @textColor;
     padding-left: 10px;
     padding-right: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
     .checkBox {
         margin-top: 10px;
