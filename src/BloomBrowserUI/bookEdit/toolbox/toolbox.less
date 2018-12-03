@@ -77,6 +77,11 @@ input[type="checkbox"] {
     border-color: white;
 }
 
+div.checkbox-group {
+    display: flex;
+    flex-direction: row;
+}
+
 div.checkbox {
     width: 11px !important;
     height: 11px !important;
@@ -93,10 +98,9 @@ div.checkbox {
 }
 
 div.checkbox-label {
-    position: relative;
-    float: left;
     -moz-user-select: none;
     cursor: default;
+    margin: 2px 0px 0px 0px;
 }
 
 // This makes label that aren't marked appear about the same vertically in

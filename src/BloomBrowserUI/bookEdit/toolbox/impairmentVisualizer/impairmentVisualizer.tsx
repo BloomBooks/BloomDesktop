@@ -34,55 +34,60 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
 
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper>
+            <RequiresBloomEnterpriseWrapper className="impairmentVisualizerOuterWrapper">
                 <div className="impairmentVisualizerBody">
-                    <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
-                        You can use these check boxes to have Bloom simulate how
-                        your images would look with various visual impairments.
-                    </Div>
-                    <ApiBackedCheckbox
-                        className="checkBox"
-                        apiEndpoint="accessibilityCheck/cataracts"
-                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
-                        onCheckChanged={simulate =>
-                            this.updateCataracts(simulate)
-                        }
-                    >
-                        Cataracts
-                    </ApiBackedCheckbox>
-                    <ApiBackedCheckbox
-                        className="checkBox colorBlindCheckBox"
-                        apiEndpoint="accessibilityCheck/colorBlindness"
-                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
-                        onCheckChanged={simulate =>
-                            this.updateColorBlindnessCheck(simulate)
-                        }
-                    >
-                        Color Blindness
-                    </ApiBackedCheckbox>
-                    <RadioGroup
-                        onChange={val => this.updateColorBlindnessRadio(val)}
-                        value={this.state.kindOfColorBlindness}
-                    >
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.RedGreen"
-                            value="RedGreen"
+                    <div className="impairmentVisualizerInnerWrapper">
+                        <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
+                            You can use these check boxes to have Bloom simulate
+                            how your images would look with various visual
+                            impairments.
+                        </Div>
+                        <ApiBackedCheckbox
+                            className="checkBox"
+                            apiEndpoint="accessibilityCheck/cataracts"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
+                            onCheckChanged={simulate =>
+                                this.updateCataracts(simulate)
+                            }
                         >
-                            Red-Green
-                        </Radio>
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow"
-                            value="BlueYellow"
+                            Cataracts
+                        </ApiBackedCheckbox>
+                        <ApiBackedCheckbox
+                            className="checkBox colorBlindCheckBox"
+                            apiEndpoint="accessibilityCheck/colorBlindness"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
+                            onCheckChanged={simulate =>
+                                this.updateColorBlindnessCheck(simulate)
+                            }
                         >
-                            Blue-Yellow
-                        </Radio>
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Complete"
-                            value="Complete"
+                            Color Blindness
+                        </ApiBackedCheckbox>
+                        <RadioGroup
+                            onChange={val =>
+                                this.updateColorBlindnessRadio(val)
+                            }
+                            value={this.state.kindOfColorBlindness}
                         >
-                            Complete
-                        </Radio>
-                    </RadioGroup>
+                            <Radio
+                                l10nKey="EditTab.Toolbox.ImpairmentVisualizer.RedGreen"
+                                value="RedGreen"
+                            >
+                                Red-Green
+                            </Radio>
+                            <Radio
+                                l10nKey="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow"
+                                value="BlueYellow"
+                            >
+                                Blue-Yellow
+                            </Radio>
+                            <Radio
+                                l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Complete"
+                                value="Complete"
+                            >
+                                Complete
+                            </Radio>
+                        </RadioGroup>
+                    </div>
                     <div className="helpLinkWrapper">
                         <HelpLink
                             l10nKey="Common.Help"

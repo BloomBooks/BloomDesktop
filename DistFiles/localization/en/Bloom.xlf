@@ -1649,6 +1649,11 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.BE" sil:dynamic="true">
+        <source xml:lang="en">BE</source>
+        <note>ID: EditTab.Toolbox.BE</note>
+        <note>BE flags that a tool requires Bloom Enterprise.  It is an acronym of Bloom Enterprise.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>
@@ -1962,6 +1967,11 @@
         <source xml:lang="en">This feature requires Bloom Enterprise.</source>
         <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
         <note>Appears in notice obscuring other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.BloomEnterprise" sil:dynamic="true">
+        <source xml:lang="en">Bloom Enterprise</source>
+        <note>ID: EditTab.Toolbox.BloomEnterprise</note>
+        <note>Link to the settings dialog; follows immediately after/below EditTab.Toolbox.RequiresEnterprise</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
