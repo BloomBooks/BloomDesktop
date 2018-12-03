@@ -5,6 +5,12 @@
     color: @textColor;
     padding-left: 10px;
     padding-right: 10px;
+    // All the layers down to .impairmentVisualizerBody have to be 100%
+    // to allow it to stretch and put Help at the bottom
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
     .checkBox {
         margin-top: 10px;

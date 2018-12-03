@@ -47,6 +47,7 @@ interface IComponentState {
         endSeconds: string;
         aspectRatio: string;
     };
+    enterprise: boolean;
 }
 
 // incomplete typescript definitions for MediaRecorder and related types.
@@ -104,13 +105,20 @@ export class SignLanguageToolControls extends React.Component<
             startSeconds: UNTRIMMED_TIMING,
             endSeconds: UNTRIMMED_TIMING,
             aspectRatio: ""
-        }
+        },
+        enterprise: false
     };
     private videoStream: MediaStream | null;
     private chunks: Blob[];
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
+    constructor(props) {
+        super(props);
+        enterpriseFeaturesEnabled().then(enabled => {
+            this.setState({ enterprise: enabled });
+        });
+    }
     public render() {
         let videoStats = <div id="videoStatsWrapper" />;
         let trimSlider = <div id="trimWrapper" />;
@@ -136,7 +144,7 @@ export class SignLanguageToolControls extends React.Component<
             videoStats = this.getVideoStats();
         }
         return (
-            <RequiresBloomEnterpriseWrapper className="signLanguageOuterWrapper">
+            <RequiresBloomEnterpriseWrapper>
                 <div className={"signLanguageFrame " + this.state.stateClass}>
                     <div>
                         {this.getCameraMessageLabel()}
@@ -219,6 +227,7 @@ export class SignLanguageToolControls extends React.Component<
                             l10nKey="Common.Advanced"
                             headingText="Advanced"
                             expandedHeight="210px"
+                            expandInitially={!this.state.enterprise}
                         >
                             <div
                                 id="importRecordingWrapper"
@@ -549,12 +558,12 @@ export class SignLanguageToolControls extends React.Component<
     public turnOnVideo() {
         enterpriseFeaturesEnabled().then(enabled => {
             const constraints = { video: true };
-            if (enabled) {
-                navigator.mediaDevices
-                    .getUserMedia(constraints)
-                    .then(stream => this.startMonitoring(stream))
-                    .catch(reason => this.errorCallback(reason));
-            }
+            //if (enabled) {
+            navigator.mediaDevices
+                .getUserMedia(constraints)
+                .then(stream => this.startMonitoring(stream))
+                .catch(reason => this.errorCallback(reason));
+            //}
         });
     }
 

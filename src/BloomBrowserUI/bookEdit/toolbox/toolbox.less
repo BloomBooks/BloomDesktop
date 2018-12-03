@@ -81,7 +81,7 @@ div.checkbox {
     width: 11px !important;
     height: 11px !important;
     border: 1px solid white;
-    display: inline-block;
+    display: block;
     position: relative;
     float: left;
     margin: 2px 6px 6px;
@@ -97,6 +97,23 @@ div.checkbox-label {
     float: left;
     -moz-user-select: none;
     cursor: default;
+}
+
+// This makes label that aren't marked appear about the same vertically in
+// relation to the checkbox as those that are marked with enterprise-only-flag.
+div.checkbox-label:not(.enterprise-only-flag) {
+    margin-top: 2px;
+}
+
+.enterprise-only-flag::after {
+    content: "BE";
+    cursor: default;
+    color: @bloom-purple;
+    margin-left: 4px;
+    vertical-align: super;
+    font-style: italic;
+    font-weight: bold;
+    font-size: smaller;
 }
 
 .ui-accordion h3 {

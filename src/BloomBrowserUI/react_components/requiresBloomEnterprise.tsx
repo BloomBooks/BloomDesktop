@@ -1,8 +1,6 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { Label } from "./l10n";
 import "./requiresBloomEnterprise.less";
-import { HelpLink } from "./helpLink";
+import { Link } from "./link";
 import { BloomApi } from "../utils/bloomApi";
 
 export interface IComponentState {
@@ -38,20 +36,18 @@ export class RequiresBloomEnterprise extends React.Component<
                 className="requiresBloomEnterprise"
                 style={this.state.visible ? {} : { display: "none" }}
             >
-                <div className="redTriangle">
-                    <span className="triangleContent">!</span>
-                </div>
-                <div className="messageHelpWrapper">
-                    <Label l10nKey="EditTab.Toolbox.RequiresEnterprise">
-                        Requires Bloom Enterprise Subscription.
-                    </Label>
-                    <div className="requiresEnterpriseHelp">
-                        <HelpLink
-                            helpId="Tasks/Edit_tasks/Enterprise/EnterpriseRequired.htm"
-                            l10nKey="Common.Help"
+                <div className="messageSettingsDialogWrapper">
+                    <div className="requiresEnterpriseSettingsDialog">
+                        <Link
+                            l10nKey="EditTab.Toolbox.RequiresEnterprise"
+                            onClick={() =>
+                                BloomApi.post(
+                                    "common/showSettingsDialog?tab=enterprise"
+                                )
+                            }
                         >
-                            Help
-                        </HelpLink>
+                            This feature requires Bloom Enterprise.
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -67,8 +63,9 @@ export interface IRequiresBloomEnterpriseProps {
     className?: string;
 }
 
-// The children of this component will be displayed if an enterprise project has been selected;
-// otherwise, the RequiresBloomEnterprise message will be displayed.
+// The children of this component will be enabled and displayed if an enterprise project has been
+// selected; otherwise, the RequiresBloomEnterprise message will be displayed and the children
+// will be disabled and partially obscured.
 export class RequiresBloomEnterpriseWrapper extends React.Component<
     IRequiresBloomEnterpriseProps,
     IWrapperComponentState
@@ -82,16 +79,15 @@ export class RequiresBloomEnterpriseWrapper extends React.Component<
     }
     public render() {
         return (
-            <div className={this.props.className}>
-                <div
-                    className="enterpriseContentWrapper"
-                    style={{
-                        display: this.state.enterprise ? "block" : "none"
-                    }}
-                >
+            <div style={{ height: "100%" }}>
+                <div style={{ display: "block", height: "100%" }}>
                     {this.props.children}
                 </div>
-                <RequiresBloomEnterprise />
+                {this.state.enterprise || (
+                    <div className="requiresEnterpriseOverlay">
+                        <RequiresBloomEnterprise />
+                    </div>
+                )}
             </div>
         );
     }
