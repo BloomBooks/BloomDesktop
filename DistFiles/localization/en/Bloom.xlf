@@ -1968,11 +1968,6 @@
         <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
         <note>Appears in notice obscuring other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.BloomEnterprise" sil:dynamic="true">
-        <source xml:lang="en">Bloom Enterprise</source>
-        <note>ID: EditTab.Toolbox.BloomEnterprise</note>
-        <note>Link to the settings dialog; follows immediately after/below EditTab.Toolbox.RequiresEnterprise</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>

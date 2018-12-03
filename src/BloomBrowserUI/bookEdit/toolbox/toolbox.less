@@ -120,6 +120,23 @@ div.checkbox-label:not(.enterprise-only-flag) {
     font-size: smaller;
 }
 
+// This makes label that aren't marked appear about the same vertically in
+// relation to the checkbox as those that are marked with enterprise-only-flag.
+div.checkbox-label:not(.enterprise-only-flag) {
+    margin-top: 2px;
+}
+
+.enterprise-only-flag::after {
+    content: "BE";
+    cursor: default;
+    color: @bloom-purple;
+    margin-left: 4px;
+    vertical-align: super;
+    font-style: italic;
+    font-weight: bold;
+    font-size: smaller;
+}
+
 .ui-accordion h3 {
     padding-left: 28px;
 }

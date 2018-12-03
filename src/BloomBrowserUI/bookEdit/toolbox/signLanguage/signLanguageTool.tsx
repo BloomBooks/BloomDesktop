@@ -48,6 +48,7 @@ interface IComponentState {
         endSeconds: string;
         aspectRatio: string;
     };
+    enterprise: boolean;
 }
 
 // incomplete typescript definitions for MediaRecorder and related types.
@@ -105,7 +106,8 @@ export class SignLanguageToolControls extends React.Component<
             startSeconds: UNTRIMMED_TIMING,
             endSeconds: UNTRIMMED_TIMING,
             aspectRatio: ""
-        }
+        },
+        enterprise: false
     };
     private videoStream: MediaStream | null;
     private chunks: Blob[];
