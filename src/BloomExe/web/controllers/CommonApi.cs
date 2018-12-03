@@ -52,6 +52,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
 			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
 			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true);
+			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false);
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
 			apiHandler.RegisterEndpointHandler("common/clipboardText",
@@ -106,6 +107,36 @@ namespace Bloom.web.controllers
 
 				request.PostSucceeded();
 			}
+		}
+
+		/// <summary>
+		/// Handle showing the settings dialog, opening it to the desired tab.
+		/// </summary>
+		/// <remarks>
+		/// This is here instead of CollectionSettingsApi because we have easier access to
+		/// showing the dialog via the WorkspaceView object.  But it's a bit tricky getting
+		/// the dialog to display, and allowing the dialog to display help or to restart
+		/// the program if the user changes the settings.  Starting the dialog after a very
+		/// brief delay, and being sure in WorkSpaceView to Invoke it on the UI thread,
+		/// allows the full functionality without any crashes or annoying yellow dialog boxes.
+		/// </remarks>
+		private void HandleShowSettingsDialog(ApiRequest request)
+		{
+			lock (request)
+			{
+				var tab = request.Parameters["tab"];
+				_timerForOpenSettingsDialog = new System.Threading.Timer(OpenSettingsDialog, tab, 100, System.Threading.Timeout.Infinite);
+				request.PostSucceeded();
+			}
+		}
+
+		System.Threading.Timer _timerForOpenSettingsDialog;
+		private void OpenSettingsDialog(Object state)
+		{
+			_timerForOpenSettingsDialog.Dispose();
+			_timerForOpenSettingsDialog = null;
+			var tab = state as String;
+			WorkspaceView.OpenSettingsDialog(tab);
 		}
 
 		/// <summary>

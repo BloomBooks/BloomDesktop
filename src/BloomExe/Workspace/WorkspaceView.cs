@@ -528,16 +528,27 @@ namespace Bloom.Workspace
 
 		internal void OnSettingsButton_Click(object sender, EventArgs e)
 		{
-			DialogResult result =  _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
-																	{
-																		using (var dlg = _settingsDialogFactory())
-																		{
-																			return dlg.ShowDialog(this);
-																		}
-																	});
-			if(result==DialogResult.Yes)
+			OpenSettingsDialog();
+		}
+
+		public void OpenSettingsDialog(string tab=null)
+		{
+			if (InvokeRequired)
 			{
-				Invoke(ReopenCurrentProject);
+				SafeInvoke.Invoke("OpenSettingsDialog", this, true, false, (() => OpenSettingsDialog(tab)));
+			}
+			else
+			{
+				DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate (() => {
+					using (var dlg = _settingsDialogFactory ()) {
+						dlg.SetDesiredTab(tab);
+						return dlg.ShowDialog (this);
+					}
+				});
+				if(result==DialogResult.Yes)
+				{
+					Invoke(ReopenCurrentProject);
+				}
 			}
 		}
 
