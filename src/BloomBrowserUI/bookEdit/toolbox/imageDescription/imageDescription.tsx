@@ -106,11 +106,11 @@ export class ImageDescriptionToolControls extends React.Component<
                         <div className="wrapPlayVideo disabled invisible">
                             <img id="playBloomTrainingVideo" src="play.svg" />
                             <Link
-                                id="bloomImageDescritionTraining"
+                                id="bloomImageDescriptionTraining"
                                 className="disabled"
                                 href=""
                                 l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
-                                l10nComment="Link that launces the video"
+                                l10nComment="Link that launches the video"
                             >
                                 Bloom training video
                             </Link>

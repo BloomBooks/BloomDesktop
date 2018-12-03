@@ -24,6 +24,7 @@ interface IExpandableProps extends ILocalizationProps {
     headingText: string;
     expandedHeight: string;
     className?: string;
+    expandInitially?: boolean;
 }
 
 export class Expandable extends React.Component<
@@ -36,6 +37,12 @@ export class Expandable extends React.Component<
 
     constructor(props: IExpandableProps) {
         super(props);
+    }
+
+    public componentDidMount() {
+        if (this.props.expandInitially) {
+            this.setState({ expanded: true });
+        }
     }
 
     public render() {

@@ -1,7 +1,7 @@
 @import "../bloomUI.less";
 @noticeColor: #d0ff00;
 .requiresBloomEnterprise {
-    background-color: @noticeColor;
+    background-color: @bloom-purple;
     border-radius: 10px;
     margin: 20px;
     color: black;
@@ -26,19 +26,31 @@
 
 // Rule has to be very specific to override jquery rule
 .ui-widget-content {
-    .requiresEnterpriseHelp {
+    .requiresEnterpriseSettingsDialog {
         a {
             color: black;
         }
     }
 }
 
-.requiresEnterpriseHelp {
+.requiresEnterpriseSettingsDialog {
     text-align: end;
     margin-right: 10px;
     margin-bottom: 5px;
 }
 
-.messageHelpWrapper {
+.messageSettingsDialogWrapper {
     margin-left: 5px;
+}
+
+.requiresEnterpriseOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 25pt; // allow space for the tool's Help link to remain exposed and active
+    background-color: rgba(0, 0, 0, 0.5); // Black background with opacity
+    z-index: 2; // Specify a stack order in case you're using a different order for other elements
+    display: flex;
+    flex-direction: column;
 }
