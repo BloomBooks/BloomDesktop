@@ -9,6 +9,7 @@ using BloomTemp;
 using L10NSharp;
 using NUnit.Framework;
 using SIL.Extensions;
+using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reflection;
 
@@ -368,6 +369,12 @@ namespace BloomTests.WebLibraryIntegration
 		[TestCase("C:\\my\\base", "C:\\my\\base\\shelf\\sub\\layerWeIgnore\\BookName", "shelf/sub")]
 		public void GetBookshelfName(string baseFolder, string bookFolder, string expected)
 		{
+			if (!Platform.IsWindows)
+			{
+				baseFolder = baseFolder.Replace('\\', '/');
+				bookFolder = bookFolder.Replace('\\', '/');
+			}
+
 			ReflectionHelper.SetField(_transfer, "_bulkUploadLogPath", Path.Combine(baseFolder, "log.txt"));
 
 			Assert.AreEqual(expected, ReflectionHelper.GetStrResult(_transfer, "GetBookshelfName", bookFolder));
