@@ -25,7 +25,7 @@ export class RequiresBloomEnterprise extends React.Component<
 
     constructor(props) {
         super(props);
-        enterpriseFeaturesEnabled().then(enabled =>
+        checkIfEnterpriseAvailable().then(enabled =>
             this.setState({ visible: !enabled })
         );
     }
@@ -56,12 +56,15 @@ export class RequiresBloomEnterprise extends React.Component<
 }
 
 export interface IWrapperComponentState {
-    enterprise: boolean;
+    enterpriseAvailable: boolean;
 }
 
 export interface IRequiresBloomEnterpriseProps {
     className?: string;
 }
+
+// A note about the default value (false): this would only be used if a component had a context-consumer but no parent had created a context-provider.
+export const BloomEnterpriseAvailableContext = React.createContext(false);
 
 // The children of this component will be enabled and displayed if an enterprise project has been
 // selected; otherwise, the RequiresBloomEnterprise message will be displayed and the children
@@ -72,28 +75,32 @@ export class RequiresBloomEnterpriseWrapper extends React.Component<
 > {
     constructor(props) {
         super(props);
-        this.state = { enterprise: true };
-        enterpriseFeaturesEnabled().then(enabled =>
-            this.setState({ enterprise: enabled })
+        this.state = { enterpriseAvailable: true };
+        checkIfEnterpriseAvailable().then(enabled =>
+            this.setState({ enterpriseAvailable: enabled })
         );
     }
     public render() {
         return (
-            <div style={{ height: "100%" }}>
-                <div style={{ display: "block", height: "100%" }}>
-                    {this.props.children}
-                </div>
-                {this.state.enterprise || (
-                    <div className="requiresEnterpriseOverlay">
-                        <RequiresBloomEnterprise />
+            <BloomEnterpriseAvailableContext.Provider
+                value={this.state.enterpriseAvailable}
+            >
+                <div style={{ height: "100%" }}>
+                    <div style={{ display: "block", height: "100%" }}>
+                        {this.props.children}
                     </div>
-                )}
-            </div>
+                    {this.state.enterpriseAvailable || (
+                        <div className="requiresEnterpriseOverlay">
+                            <RequiresBloomEnterprise />
+                        </div>
+                    )}
+                </div>
+            </BloomEnterpriseAvailableContext.Provider>
         );
     }
 }
 
-export function enterpriseFeaturesEnabled(): EnterpriseEnabledPromise {
+export function checkIfEnterpriseAvailable(): EnterpriseEnabledPromise {
     return new EnterpriseEnabledPromise();
 }
 

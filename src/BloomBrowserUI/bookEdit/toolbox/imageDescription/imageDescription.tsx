@@ -11,7 +11,7 @@ import Link from "../../../react_components/link";
 import HelpLink from "../../../react_components/helpLink";
 import {
     RequiresBloomEnterpriseWrapper,
-    enterpriseFeaturesEnabled
+    checkIfEnterpriseAvailable
 } from "../../../react_components/requiresBloomEnterprise";
 
 interface IImageDescriptionState {
@@ -290,7 +290,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // Make sure the page has the elements used to store image descriptions,
     // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
-        enterpriseFeaturesEnabled().then(enabled => {
+        checkIfEnterpriseAvailable().then(enabled => {
             if (enabled && this.reactControls) {
                 this.reactControls.setStateForNewPage();
                 const page = ToolBox.getPage();
