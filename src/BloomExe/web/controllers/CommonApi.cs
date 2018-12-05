@@ -51,6 +51,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
 			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
 			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
+			apiHandler.RegisterEndpointHandler("common/requestTranslationGroups", RequestTranslationGroups, true);
 			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true);
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
@@ -153,6 +154,11 @@ namespace Bloom.web.controllers
 		private void RethinkPageAndReloadIt(ApiRequest request)
 		{
 			Model.RethinkPageAndReloadIt(request);
+		}
+
+		private void RequestTranslationGroups(ApiRequest request)
+		{
+			Model.RequestTranslationGroups(request);
 		}
 
 		/// <summary>

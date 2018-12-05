@@ -1088,6 +1088,12 @@ namespace Bloom.Edit
 			}
 		}
 
+		internal void RequestTranslationGroups(ApiRequest request)
+		{
+			string translationGroupHtml = TranslationGroupManager.PrepareDefaultTranslationGroups(_domForCurrentPage.RawDom, CurrentBook); ;
+			request.ReplyWithHtml(translationGroupHtml);
+		}
+		
 		public void ChangePicture(GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
 		{
 			try

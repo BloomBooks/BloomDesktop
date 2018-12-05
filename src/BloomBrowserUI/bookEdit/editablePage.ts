@@ -16,13 +16,17 @@ import {
     pageSelectionChanging,
     pageUnloading,
     disconnectForGarbageCollection,
-    makeElement
+    makeElement,
+    SetupElements,
+    attachToCkEditor
 } from "./js/bloomEditing";
 export {
     pageSelectionChanging,
     pageUnloading,
     disconnectForGarbageCollection,
-    makeElement
+    makeElement,
+    SetupElements,
+    attachToCkEditor
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 export { origamiCanUndo, origamiUndo };

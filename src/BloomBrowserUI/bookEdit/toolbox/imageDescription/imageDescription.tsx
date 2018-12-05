@@ -292,7 +292,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 const imageContainers = page.getElementsByClassName(
                     "bloom-imageContainer"
                 );
-                let addedTranslationGroup = false;
+
                 for (let i = 0; i < imageContainers.length; i++) {
                     const container = imageContainers[i];
                     const imageDescriptions = container.getElementsByClassName(
@@ -316,74 +316,74 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                         );
                     }
                     if (imageDescriptions.length === 0) {
-                        // from somewhere else I copied this as a typical default set of classes for a translation group,
-                        // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
-                        // textOverPicture) which might be nested in image containers.
-                        // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
-                        // anywhere. Image descriptions will get the book's default font and Bloom's default text size
-                        // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
-                        // Using a unique name serves to prevent image description from using the possibly very large
-                        // text set for the main content (normal-style); this style will inherit the defaults independently.
-                        // Including 'edit' in the name of the style is intended to convey that this style is only
-                        // intended for use in editing; we will style it otherwise if we actually make it visible
-                        // in an epub.
-                        const newTg = getPageFrameExports()
-                            .makeElement(
-                                "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement" +
-                                    " ImageDescriptionEdit-style'></div>"
-                            )
-                            .get(0);
-                        container.appendChild(newTg);
-                        addedTranslationGroup = true;
+                        // Adds a new bloom-translationGroup
+                        // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
+                        // Preferable to only send a request for the info we need and not save and refresh the whole page.
+                        //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
+                        BloomApi.post(
+                            "common/requestTranslationGroups",
+                            result => {
+                                if (result) {
+                                    this.postRequestTranslationGroupsFinishedCallback(
+                                        result,
+                                        container
+                                    );
+                                }
+                            }
+                        );
                     }
-                }
-                if (addedTranslationGroup) {
-                    // This inserts all the right bloom-editable divs in whatever languages are needed.
-                    BloomApi.postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent"
-                    );
-
-                    this.cleanMarkupForCKEditor(page);
-
-                    // This return is currently redundant but it emphasizes that you can't count on anything
-                    // more happening in this branch.The page will unload somewhere in the
-                    // course of saveChangesAndRethinkPageEvent. Then a new page will load and updateMarkup()
-                    // will be called again...this time every image container should have a translation group.
-                    return;
                 }
             }
         });
     }
 
-    // After we save the page, CKEditor will have onload() function called.
-    // In issue BL-6721, it was discovered that if there was a text-over-picture element containing two words on a single line (e.g. "a a" or "text box"),
-    // and Image Description had never been set on this page, then when Image Description tool was activated,
-    // the page would be saved/reloaded, CKEditor onload() would fire, and CKEditor would mess up the text box
-    // It would insert extraneous newlines (i.e. <p> elements) before and after the user's actual text.
-    // This could eliminate.
-    // Since modifying the minified CKEditor code sounded very non-ideal...
-    // This code just attempts to strip out some extraneous <br> and prevent the CKEditor bug from triggering.
-    private cleanMarkupForCKEditor(page: HTMLElement): void {
-        const editables = page.getElementsByClassName("bloom-editable");
-        for (let i = 0; i < editables.length; ++i) {
-            const editable = editables[i];
+    // Adds a new bloom-translationGroup
+    // This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
+    private postRequestTranslationGroupsFinishedCallback(
+        result,
+        container: Element
+    ) {
+        // Fill the interior of the new element with the HTML we get back from the API call.
 
-            // This bug only seems to happen if talking book was activated I believe.
-            // Probably because of some bad interaction with the span tag that Talking Book will generate.
-            const audioRecordingModeValue = editable.getAttribute(
-                "data-audioRecordingMode"
-            );
-            if (audioRecordingModeValue) {
-                // Note: actually line feeds by users seem to be denoted using <p>, not in <br>. So <br> is probably only at the end.
-                //       If desired, we could explicitly check for <br> at/near the end.
-                let newInnerHtml: string;
-                newInnerHtml = editable.innerHTML.replace("<br>", "");
-                newInnerHtml = newInnerHtml.replace("<br />", ""); // Note: It is not really expected to contain this form, but rather the <br> form.
+        // from somewhere else I (John Thomson) copied this as a typical default set of classes for a translation group,
+        // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
+        // textOverPicture) which might be nested in image containers.
+        // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
+        // anywhere. Image descriptions will get the book's default font and Bloom's default text size
+        // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
+        // Using a unique name serves to prevent image description from using the possibly very large
+        // text set for the main content (normal-style); this style will inherit the defaults independently.
+        // Including 'edit' in the name of the style is intended to convey that this style is only
+        // intended for use in editing; we will style it otherwise if we actually make it visible
+        // in an epub.
+        const newElementHtmlPrefix =
+            "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement ImageDescriptionEdit-style'>";
+        const newElementHtmlSuffix = "</div>";
 
-                if (newInnerHtml != editable.innerHTML) {
-                    editable.innerHTML = newInnerHtml;
-                }
-            }
+        let newElementHtmlInterior: string = "";
+        if (result && result.data) {
+            newElementHtmlInterior = result.data;
+        }
+        const newElementHtml =
+            newElementHtmlPrefix +
+            newElementHtmlInterior +
+            newElementHtmlSuffix;
+
+        const newTg = getPageFrameExports()
+            .makeElement(newElementHtml)
+            .get(0);
+
+        container.appendChild(newTg);
+
+        // This is necessary for the data-language tooltip to appear, probably among other things.
+        getPageFrameExports().SetupElements(container);
+
+        const newEditables = $(newTg).find(".bloom-editable");
+        for (let i = 0; i < newEditables.length; ++i) {
+            const newEditable = newEditables[i];
+
+            // Attaching CKEditor is necessary for range select formatting to work.
+            getPageFrameExports().attachToCkEditor(newEditable);
         }
     }
 }

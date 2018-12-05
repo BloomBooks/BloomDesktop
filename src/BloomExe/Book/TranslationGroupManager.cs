@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -73,6 +73,33 @@ namespace Bloom.Book
 			}
 		}
 
+		public static string PrepareDefaultTranslationGroups(XmlNode pageOrDocumentNode, Book currentBook)
+		{
+			XmlDocument ownerDocument = pageOrDocumentNode.OwnerDocument;
+			if (ownerDocument == null)
+			{
+				if (pageOrDocumentNode is XmlDocument)
+				{
+					ownerDocument = pageOrDocumentNode as XmlDocument;
+				}
+				else
+				{
+					return "";
+				}
+			}
+
+			var wrapper = ownerDocument.CreateElement("div");
+			var containerElement = ownerDocument.CreateElement("div");
+			containerElement.SetAttribute("class", "bloom-translationGroup");
+			wrapper.AppendChild(containerElement);
+
+			PrepareElementsInPageOrDocument(containerElement, currentBook.CollectionSettings);
+
+			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.CollectionSettings, currentBook.CollectionSettings.Language1Iso639Code,
+				currentBook.MultilingualContentLanguage2, currentBook.MultilingualContentLanguage3);
+
+			return containerElement.InnerXml;			
+		}
 
 		/// <summary>
 		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,

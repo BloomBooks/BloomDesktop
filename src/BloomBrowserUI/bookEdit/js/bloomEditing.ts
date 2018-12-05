@@ -1,4 +1,4 @@
-﻿///<reference path="./jquery.hasAttr.d.ts" />
+///<reference path="./jquery.hasAttr.d.ts" />
 import * as $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
@@ -386,7 +386,7 @@ window.onload = () => {
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
-function SetupElements(container) {
+export function SetupElements(container) {
     SetupImagesInContainer(container);
     SetupVideoEditing(container);
     initializeTextOverPictureManager();
@@ -962,58 +962,7 @@ export function bootstrap() {
     $("div.bloom-page")
         .find(complicatedFind)
         .each(function() {
-            if (
-                $(this).hasClass("bloom-userCannotModifyStyles") ||
-                $(this)
-                    .parentsUntil(".marginBox")
-                    .hasClass("bloom-userCannotModifyStyles")
-            )
-                return; // equivalent to 'continue'
-
-            if ($(this).css("cursor") === "not-allowed") return;
-
-            const ckedit = CKEDITOR.inline(this);
-
-            // Record the div of the edit box for use later in positioning the format bar.
-            mapCkeditDiv[ckedit.id] = this;
-
-            // show or hide the toolbar when the text selection changes
-            ckedit.on("selectionCheck", evt => {
-                const editor = evt["editor"];
-                // Length of selected text is more reliable than comparing
-                // endpoints of the first range.  Mozilla can return multiple
-                // ranges with the first one being empty.
-                const textSelected = editor.getSelection().getSelectedText();
-                const show = textSelected && textSelected.length > 0;
-                const bar = $("body").find("." + editor.id);
-                localizeCkeditorTooltips(bar);
-                show ? bar.show() : bar.hide();
-
-                // Move the format bar on the screen if needed.
-                // (Note that offsets are not defined if it's not visible.)
-                if (show) {
-                    const barTop = bar.offset().top;
-                    const div = mapCkeditDiv[editor.id];
-                    const rect = div.getBoundingClientRect();
-                    const parent = bar.scrollParent();
-                    const scrollTop = parent ? parent.scrollTop() : 0;
-                    const boxTop = rect.top + scrollTop;
-                    if (boxTop - barTop < 5) {
-                        const barLeft = bar.offset().left;
-                        const barHeight = bar.height();
-                        bar.offset({ top: boxTop - barHeight, left: barLeft });
-                    }
-                }
-            });
-
-            // hide the toolbar when ckeditor starts
-            ckedit.on("instanceReady", evt => {
-                const editor = evt["editor"];
-                const bar = $("body").find("." + editor.id);
-                bar.hide();
-            });
-
-            BloomField.WireToCKEditor(this, ckedit);
+            attachToCkEditor(this);
         });
 
     // We want to do this as late in the page setup process as possible because a
@@ -1054,7 +1003,7 @@ function setupWheelZooming() {
     });
 }
 
-function localizeCkeditorTooltips(bar: JQuery) {
+export function localizeCkeditorTooltips(bar: JQuery) {
     // The tooltips for the CKEditor Bold, Italic and Underline buttons need localization.
     const toolGroup = bar.find(".cke_toolgroup");
     theOneLocalizationManager
@@ -1159,4 +1108,69 @@ export function IsPageXMatter($target: JQuery): boolean {
         typeof $target.closest(".bloom-frontMatter")[0] !== "undefined" ||
         typeof $target.closest(".bloom-backMatter")[0] !== "undefined"
     );
+}
+
+export function attachToCkEditor(element) {
+    // Map from ckeditor id strings to the div the ckeditor is wrapping.
+    const mapCkeditDiv = new Object();
+
+    // attach ckeditor to the contenteditable="true" class="bloom-content1"
+    // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
+    // but skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
+    if (
+        $(element).hasClass("bloom-userCannotModifyStyles") ||
+        $(element)
+            .parentsUntil(".marginBox")
+            .hasClass("bloom-userCannotModifyStyles")
+    )
+        return;
+
+    if ($(element).css("cursor") === "not-allowed") return;
+
+    if (!element) {
+        return;
+    }
+
+    const ckedit = CKEDITOR.inline(element);
+
+    // Record the div of the edit box for use later in positioning the format bar.
+    mapCkeditDiv[ckedit.id] = element;
+
+    // show or hide the toolbar when the text selection changes
+    ckedit.on("selectionCheck", evt => {
+        const editor = evt["editor"];
+        // Length of selected text is more reliable than comparing
+        // endpoints of the first range.  Mozilla can return multiple
+        // ranges with the first one being empty.
+        const textSelected = editor.getSelection().getSelectedText();
+        const show = textSelected && textSelected.length > 0;
+        const bar = $("body").find("." + editor.id);
+        localizeCkeditorTooltips(bar);
+        show ? bar.show() : bar.hide();
+
+        // Move the format bar on the screen if needed.
+        // (Note that offsets are not defined if it's not visible.)
+        if (show) {
+            const barTop = bar.offset().top;
+            const div = mapCkeditDiv[editor.id];
+            const rect = div.getBoundingClientRect();
+            const parent = bar.scrollParent();
+            const scrollTop = parent ? parent.scrollTop() : 0;
+            const boxTop = rect.top + scrollTop;
+            if (boxTop - barTop < 5) {
+                const barLeft = bar.offset().left;
+                const barHeight = bar.height();
+                bar.offset({ top: boxTop - barHeight, left: barLeft });
+            }
+        }
+    });
+
+    // hide the toolbar when ckeditor starts
+    ckedit.on("instanceReady", evt => {
+        const editor = evt["editor"];
+        const bar = $("body").find("." + editor.id);
+        bar.hide();
+    });
+
+    BloomField.WireToCKEditor(element, ckedit);
 }
