@@ -98,7 +98,7 @@ namespace Bloom.Book
 			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.CollectionSettings, currentBook.CollectionSettings.Language1Iso639Code,
 				currentBook.MultilingualContentLanguage2, currentBook.MultilingualContentLanguage3);
 
-			return containerElement.InnerXml;			
+			return containerElement.InnerXml;
 		}
 
 		/// <summary>

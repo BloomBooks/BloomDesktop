@@ -378,12 +378,11 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         // This is necessary for the data-language tooltip to appear, probably among other things.
         getPageFrameExports().SetupElements(container);
 
-        const newEditables = $(newTg).find(".bloom-editable");
-        for (let i = 0; i < newEditables.length; ++i) {
-            const newEditable = newEditables[i];
-
-            // Attaching CKEditor is necessary for range select formatting to work.
-            getPageFrameExports().attachToCkEditor(newEditable);
-        }
+        $(newTg)
+            .find(".bloom-editable")
+            .each((index, newEditable) => {
+                // Attaching CKEditor is necessary for range select formatting to work.
+                getPageFrameExports().attachToCkEditor(newEditable);
+            });
     }
 }

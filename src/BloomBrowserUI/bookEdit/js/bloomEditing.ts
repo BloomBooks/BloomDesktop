@@ -949,8 +949,6 @@ export function bootstrap() {
         // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
         return;
     }
-    // Map from ckeditor id strings to the div the ckeditor is wrapping.
-    const mapCkeditDiv = new Object();
 
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
@@ -1114,6 +1112,10 @@ export function attachToCkEditor(element) {
     // Map from ckeditor id strings to the div the ckeditor is wrapping.
     const mapCkeditDiv = new Object();
 
+    if (!element) {
+        return;
+    }
+
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
     // but skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
@@ -1126,10 +1128,6 @@ export function attachToCkEditor(element) {
         return;
 
     if ($(element).css("cursor") === "not-allowed") return;
-
-    if (!element) {
-        return;
-    }
 
     const ckedit = CKEDITOR.inline(element);
 
