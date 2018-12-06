@@ -11,14 +11,9 @@ html
 		link(rel='stylesheet', href='/bloom/lib/pure-drawer.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/lib/long-press/longpress.css', type='text/css')
 		script(src='/bloom/jquery.min.js') //needed by longpress
-		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
-		//script(src='/bloom/bookEdit/js/jquery.hasAttr.js')
-
-		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
 
 		script(src='/bloom/commonBundle.js')
 		script(src='/bloom/editTabRootBundle.js')
-		script.
 		style.
 			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
 			iframe { border: 0 none;} /* apparently Gecko gives this a default 2 px wide. */
@@ -57,3 +52,4 @@ html
 							iframe#page(width='100%', height='100%', src='{simulatedPageFileInBookFolder}') .
 								| Your browser does not support iframes.
 				label.pure-overlay(for="pure-toggle-right" data-overlay="right")
+		div#modalContainer

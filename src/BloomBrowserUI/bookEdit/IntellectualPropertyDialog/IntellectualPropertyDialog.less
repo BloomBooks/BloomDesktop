@@ -1,0 +1,32 @@
+@import "../../bloomUI.less";
+@import "../../bloomModalDialog.less";
+
+.intellectualPropertyDialog {
+    input,
+    textarea {
+        box-sizing: border-box;
+    }
+    textarea {
+        resize: none;
+    }
+
+    .dialogContent {
+        min-height: 600px;
+        min-width: 500px;
+    }
+
+    .formRow {
+        @labelWidth: 130px;
+
+        display: flex;
+        align-items: baseline;
+        margin-bottom: 5px;
+        label {
+            display: inline-block;
+            width: @labelWidth;
+        }
+        label + * {
+            width: calc(100% - @labelWidth);
+        }
+    }
+}

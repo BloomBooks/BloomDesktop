@@ -10,6 +10,7 @@ export interface IRadioProps extends ILocalizationProps {
     labelClass?: string; // class for the label (text next to the radio button), in addition to default "radioLabel"
     defaultChecked?: boolean; // true if button should be checked; usually controlled by containing RadioGroup
     onSelected?: (string) => void; // passed this button's value when it is clicked; usually used by containing RadioGroup.
+    disabled?: boolean;
 }
 
 // A radio button that is localizable.
@@ -28,6 +29,15 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
         return class1;
     }
     public render() {
+        let content = this.getLocalizedContent();
+
+        // We might have a Radio component which has a whole component as its content
+        if (
+            React.Children.count(this.props.children) === 1 &&
+            typeof this.props.children !== "string"
+        )
+            content = React.Children.only(this.props.children);
+
         return (
             <div
                 className={Radio.combineClasses(
@@ -43,11 +53,17 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                     )}
                     value={this.props.value}
                     checked={this.props.defaultChecked} // use defaultChecked instead of checked to avoid warning
+                    onChange={() => {
+                        if (this.props.onSelected) {
+                            this.props.onSelected(this.props.value);
+                        }
+                    }}
                     onClick={() => {
                         if (this.props.onSelected) {
                             this.props.onSelected(this.props.value);
                         }
                     }}
+                    disabled={this.props.disabled}
                 />
                 <div
                     className={Radio.combineClasses(
@@ -60,7 +76,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                         }
                     }}
                 >
-                    {this.getLocalizedContent()}
+                    {content}
                 </div>
             </div>
         );
@@ -71,6 +87,7 @@ export interface IRadioGroupProps {
     value: string;
     className?: string;
     onChange?: (string) => void;
+    disabled?: boolean;
 }
 
 // A group of radio buttons.
@@ -90,6 +107,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
     // replacing <Radio> elements with a clone that has the required
     // onSelected and defaultChecked properties to function in the group.
     private recursiveFixRadio(children: React.ReactNode): React.ReactNode {
+        const isDisabled = this.props.disabled;
         return React.Children.map(children, child => {
             let childProps: any = {};
             const childElt = child as React.ReactElement<any>;
@@ -103,7 +121,8 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
                             this.props.onChange(val);
                         }
                     },
-                    defaultChecked: childElt.props.value === this.props.value
+                    defaultChecked: childElt.props.value === this.props.value,
+                    disabled: isDisabled
                 });
             }
             if (childElt.props) {

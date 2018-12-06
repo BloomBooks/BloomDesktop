@@ -132,7 +132,8 @@ namespace Bloom
 							typeof(BrandingSettings),
 							typeof(FeatureControlApi),
 							typeof(I18NApi),
-							typeof(SignLanguageApi)
+							typeof(SignLanguageApi),
+							typeof(CopyrightAndLicenseApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -317,6 +318,7 @@ namespace Bloom
 			_scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FeatureControlApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<CopyrightAndLicenseApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 

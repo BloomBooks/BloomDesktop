@@ -52,7 +52,8 @@ namespace Bloom.Edit
 
 		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
 			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
-			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, SignLanguageApi signLanguageApi, CommonApi commonApi)
+			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, SignLanguageApi signLanguageApi,
+			CommonApi commonApi, CopyrightAndLicenseApi copyrightAndLicenseApi)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -67,7 +68,7 @@ namespace Bloom.Edit
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it
 			//don't let it grow automatically
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
-			SetupThumnailLists();
+			SetupThumbnailLists();
 			_model.SetView(this);
 			// We will need to handle this in another way if we ever have multiple projects open and thus
 			// multiple models and views.
@@ -75,6 +76,8 @@ namespace Bloom.Edit
 			signLanguageApi.Model = _model;
 			signLanguageApi.View = this;
 			commonApi.Model = _model;
+			copyrightAndLicenseApi.Model = _model;
+			copyrightAndLicenseApi.View = this;
 			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
 			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
@@ -343,57 +346,7 @@ namespace Bloom.Edit
 			//_browser1.WebBrowser.AddMessageEventListener("PreserveHtmlOfElement", elementHtml => _model.PreserveHtmlOfElement(elementHtml));
 		}
 
-		private void OnShowBookMetadataEditor()
-		{
-			try
-			{
-				_model.SaveNow();
-				//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
-
-				var metadata = _model.CurrentBook.GetLicenseMetadata();
-
-				Logger.WriteEvent("Showing Metadata Editor Dialog");
-				using(var dlg = new SIL.Windows.Forms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
-				{
-					dlg.ShowCreator = false;
-					if(DialogResult.OK == dlg.ShowDialog())
-					{
-						Logger.WriteEvent("For BL-3166 Investigation");
-						if(metadata.License == null)
-						{
-							Logger.WriteEvent("old LicenseUrl was null ");
-						}
-						else
-						{
-							Logger.WriteEvent("old LicenseUrl was " + metadata.License.Url);
-						}
-						if(dlg.Metadata.License == null)
-						{
-							Logger.WriteEvent("new LicenseUrl was null ");
-						}
-						else
-						{
-							Logger.WriteEvent("new LicenseUrl: " + dlg.Metadata.License.Url);
-						}
-
-						_model.ChangeBookLicenseMetaData(dlg.Metadata);
-					}
-				}
-				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
-			}
-			catch(Exception error)
-			{
-				// Throwing this exception is causing it to be swallowed.  It results in the web browser just showing a blank white page, but no
-				// message is displayed and no exception is caught by the debugger.
-				//#if DEBUG
-				//				throw;
-				//#endif
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
-					"There was a problem recording your changes to the copyright and license.");
-			}
-		}
-
-		private void SetupThumnailLists()
+		private void SetupThumbnailLists()
 		{
 			_pageListView.Dock = DockStyle.Fill;
 			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
@@ -614,8 +567,14 @@ namespace Bloom.Edit
 				OnCutImage(ge);
 			if(target.ClassName.Contains("copyImageButton"))
 				OnCopyImage(ge);
-			if(target.ClassName.Contains("editMetadataButton"))
-				OnEditImageMetdata(ge);
+			if (target.ClassName.Contains("editMetadataButton"))
+			{
+				OnEditImageMetadata(ge);
+				//// now handled by a react modal
+				//ge.Handled = false;
+				//return;
+			}
+
 
 			var anchor = target as GeckoAnchorElement;
 			if (anchor == null)
@@ -625,13 +584,6 @@ namespace Bloom.Edit
 			}
 			if(anchor != null && anchor.Href != "" && anchor.Href != "#")
 			{
-				if(anchor.Href.Contains("bookMetadataEditor"))
-				{
-					OnShowBookMetadataEditor();
-					ge.Handled = true;
-					return;
-				}
-
 				// Let Gecko handle hrefs that are explicitly tagged "javascript"
 				if(anchor.Href.StartsWith("javascript")) //tied to, for example, data-functionOnHintClick="ShowTopicChooser()"
 				{
@@ -670,83 +622,72 @@ namespace Bloom.Edit
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
-		private void OnEditImageMetdata(DomEventArgs ge)
+		// ImageBeingModified disposed by CopyrightAndLicenseApi
+		internal PalasoImage ImageBeingModified;
+		internal GeckoHtmlElement ImageElementBeingModified;
+		private void OnEditImageMetadata(DomEventArgs ge)
 		{
-			var imageElement = GetImageNode(ge);
-			if(imageElement == null)
+			ImageElementBeingModified = GetImageNode(ge);
+			if(ImageElementBeingModified == null)
 				return;
-			string fileName = HtmlDom.GetImageElementUrl(imageElement).NotEncoded;
+			string fileName = HtmlDom.GetImageElementUrl(ImageElementBeingModified).NotEncoded;
 
-			var imageInfo = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, fileName);
-			if (imageInfo == null)
+			ImageBeingModified = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, fileName);
+			if (ImageBeingModified == null)
 			{
 				return; // exception handled in ImageUpdater
 			}
 
-			using(imageInfo)
+			if(ImageUpdater.ImageHasMetadata(ImageBeingModified))
 			{
-				if(ImageUpdater.ImageHasMetadata(imageInfo))
+				// If we have metadata with an official collectionUri or we are translating a shell
+				// just give a summary of the metadata
+				if(ImageUpdater.ImageIsFromOfficialCollection(ImageBeingModified.Metadata) || !_model.CanEditCopyrightAndLicense)
 				{
-					// If we have metadata with an official collectionUri or we are translating a shell
-					// just give a summary of the metadata
-					if(ImageUpdater.ImageIsFromOfficialCollection(imageInfo.Metadata) || !_model.CanEditCopyrightAndLicense)
-					{
-						MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
-						return;
-					}
-				}
-				else
-				{
-					// If we don't have metadata, but we are translating a shell
-					// don't allow the metadata to be edited
-					if(!_model.CanEditCopyrightAndLicense)
-					{
-						MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright",
-							"Sorry, the copyright and license for this book cannot be changed."));
-						return;
-					}
-				}
-				// Otherwise, bring up the dialog to edit the metadata
-				Logger.WriteEvent("Showing Metadata Editor For Image");
-				using(var dlg = new SIL.Windows.Forms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
-				{
-					if(DialogResult.OK == dlg.ShowDialog())
-					{
-						imageInfo.Metadata = dlg.Metadata;
-						imageInfo.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
-						//update so any overlays on the image are brought up to data
-						PageEditingModel.UpdateMetadataAttributesOnImage(new ElementProxy(imageElement), imageInfo);
-						imageElement.Click(); //wake up javascript to update overlays
-						SaveChangedImage(imageElement, imageInfo, "Bloom had a problem updating the image metadata");
-
-						var answer =
-							MessageBox.Show(
-								LocalizationManager.GetString("EditTab.CopyImageIPMetadataQuestion",
-									"Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"),
-								LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog",
-									"Picture Intellectual Property Information"), MessageBoxButtons.YesNo, MessageBoxIcon.Question,
-								MessageBoxDefaultButton.Button2);
-						if(answer == DialogResult.Yes)
-						{
-							Cursor = Cursors.WaitCursor;
-							try
-							{
-								_model.CopyImageMetadataToWholeBook(dlg.Metadata);
-								// There might be more than one image on this page. Update overlays.
-								_model.RefreshDisplayOfCurrentPage();
-							}
-							catch(Exception e)
-							{
-								ErrorReport.NotifyUserOfProblem(e, "There was a problem copying the metadata to all the images.");
-							}
-							Cursor = Cursors.Default;
-						}
-					}
+					MessageBox.Show(ImageBeingModified.Metadata.GetSummaryParagraph("en"));
+					return;
 				}
 			}
+			else
+			{
+				// If we don't have metadata, but we are translating a shell
+				// don't allow the metadata to be edited
+				if(!_model.CanEditCopyrightAndLicense)
+				{
+					MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright",
+						"Sorry, the copyright and license for this book cannot be changed."));
+					return;
+				}
+			}
+			// Otherwise, bring up the dialog to edit the metadata
+			Logger.WriteEvent("Showing Metadata Editor For Image");
+			RunJavaScript("FrameExports.ShowIntellectualPropertyDialog(true);");
+		}
 
-			//_model.SaveNow();
-			//doesn't work: _browser1.WebBrowser.Reload();
+		public void AskUserToCopyImageMetadataToAllImages(Metadata metadata)
+		{
+			var answer =
+				MessageBox.Show(
+					LocalizationManager.GetString("EditTab.CopyImageIPMetadataQuestion",
+						"Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"),
+					LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog",
+						"Picture Intellectual Property Information"), MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+					MessageBoxDefaultButton.Button2);
+			if (answer == DialogResult.Yes)
+			{
+				Cursor = Cursors.WaitCursor;
+				try
+				{
+					_model.CopyImageMetadataToWholeBook(metadata);
+					// There might be more than one image on this page. Update overlays.
+					_model.RefreshDisplayOfCurrentPage();
+				}
+				catch (Exception e)
+				{
+					ErrorReport.NotifyUserOfProblem(e, "There was a problem copying the metadata to all the images.");
+				}
+				Cursor = Cursors.Default;
+			}
 		}
 
 		private void OnCutImage(DomEventArgs ge)
@@ -1074,7 +1015,7 @@ namespace Bloom.Edit
 			imageInfo.Dispose(); // ensure memory doesn't leak
 		}
 
-		void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
+		internal void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
 		{
 			try
 			{

@@ -1,3 +1,6 @@
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import IntellectualPropertyDialog from "./IntellectualPropertyDialog/IntellectualPropertyDialog";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
@@ -143,3 +146,18 @@ export function canUndo(): string {
 //noinspection JSUnusedGlobalSymbols
 // method called from EditingModel.cs
 // for "templatesJSON", see property EditingModel.GetJsonTemplatePageObject
+$(document).ready(function() {
+    let modalContainer = document.getElementById("modalContainer");
+    if (modalContainer) {
+        ReactDOM.render(
+            React.createElement(IntellectualPropertyDialog, {
+                showCreator: false
+            }),
+            modalContainer
+        );
+    }
+});
+
+export function ShowIntellectualPropertyDialog(showCreator: boolean) {
+    IntellectualPropertyDialog.show(showCreator);
+}

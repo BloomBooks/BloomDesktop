@@ -6084,6 +6084,18 @@ react-infinite-scroll-component@^4.0.2:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/react-infinite-scroll-component/-/react-infinite-scroll-component-4.2.0.tgz#605227dd213987c8d785157a87178acc26d465e1"
 
+react-dropdown-tree-select@^1.12.4:
+  version "1.12.4"
+  resolved "https://registry.yarnpkg.com/react-dropdown-tree-select/-/react-dropdown-tree-select-1.12.4.tgz#79c084611d4320626c7e9e8a090a421c29c10241"
+  dependencies:
+    array.partial "^1.0.4"
+    classnames "^2.2.5"
+    react-infinite-scroll-component "^4.0.2"
+
+react-infinite-scroll-component@^4.0.2:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/react-infinite-scroll-component/-/react-infinite-scroll-component-4.2.0.tgz#605227dd213987c8d785157a87178acc26d465e1"
+
 react-input-autosize@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/react-input-autosize/-/react-input-autosize-2.2.1.tgz#ec428fa15b1592994fb5f9aa15bb1eb6baf420f8"

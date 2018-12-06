@@ -1,6 +1,5 @@
 import { BloomApi } from "../utils/bloomApi";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {
     ILocalizationProps,
     ILocalizationState,

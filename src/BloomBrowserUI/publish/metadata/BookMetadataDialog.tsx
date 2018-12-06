@@ -61,7 +61,9 @@ export default class BookMetadataDialog extends React.Component<{}, IState> {
             >
                 <ReactModal
                     ariaHideApp={false} //we're not trying to make Bloom work with screen readers
-                    className="bookMetadataDialog"
+                    className="reactModal bookMetadataDialog"
+                    portalClassName="reactModalPortal"
+                    overlayClassname="reactModalOverlay"
                     isOpen={this.state.isOpen}
                     shouldCloseOnOverlayClick={false}
                     onRequestClose={() => this.handleCloseModal(false)}

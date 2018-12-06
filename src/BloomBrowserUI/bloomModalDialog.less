@@ -1,8 +1,15 @@
-.ReactModalPortal {
+@import "./bloomUI.less";
+
+@modalPadding: 20px;
+.reactModalPortal {
     z-index: 1000;
 }
-
-.ReactModal__Content {
+.reactModalOverlay,
+.ReactModal__Overlay {
+    position: absolute;
+    z-index: 1000;
+}
+.reactModal {
     z-index: 1000;
     position: absolute;
     border: 1px solid black;
@@ -21,7 +28,13 @@
     transform: translate(-50%, -50%);
     bottom: auto;
     top: 50%;
-
+    font-family: @ui-fonts;
+    font-size: 9pt;
+    input,
+    textarea {
+        font-family: inherit;
+        font-size: inherit;
+    }
     .dialogTitle {
         padding: 10px;
         font-weight: bold;
@@ -29,7 +42,7 @@
     }
     .dialogContent {
         background-color: #f0f0f0;
-        padding: 20px;
+        padding: @modalPadding;
         display: flex;
         flex-direction: column;
         h1 {
@@ -42,7 +55,11 @@
 
     .bottomButtonRow {
         display: flex; // this makes the help button's margin-right:auto work
-        margin-top: 20px;
+        margin-top: @modalPadding;
+
+        //width: calc(100% - (@modalPadding*2));
+        //position: absolute;
+        //bottom: @modalPadding;
 
         //flex-direction: row; // would normally use for mac & Ubuntu.. but is the rest of Bloom like windows?
 
@@ -58,6 +75,19 @@
             font-size: 10pt;
             color: black;
             background-color: white;
+
+            // For some reason, this isn't working, so leaving the #helpButton styling for now
+            // .left {
+            //     margin-right: auto;
+            //     margin-left: 0 !important; //important needed to override first-of-type below
+            // }
+
+            // Need to try to get our buttons to look like metadata dialog which has styling from html.publishTabScreen
+            // background-color: white;
+            // padding: 0.5em;
+        }
+        button:first-of-type {
+            margin-left: auto;
         }
         button:disabled {
             color: gray;

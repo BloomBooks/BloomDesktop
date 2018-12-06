@@ -221,14 +221,15 @@ export class LocalizableElement<
             (controlIsEnabled
                 ? this.state.tipEnabledTranslation
                 : this.state.tipDisabledTranslation
-                    ? this.state.tipDisabledTranslation
-                    : this.state.tipEnabledTranslation) || ""
+                ? this.state.tipDisabledTranslation
+                : this.state.tipEnabledTranslation) || ""
         );
     }
 
     public getClassName(): string {
         return (
-            (this.props.hidden ? "hidden " : "") + this.props.className
+            (this.props.hidden ? "hidden " : "") +
+            (this.props.className ? this.props.className : "")
         ).trim();
     }
 }
@@ -306,13 +307,16 @@ export class String extends LocalizableElement<
 }
 
 export interface ILabelProps extends ILocalizationProps {
+    htmlFor?: string;
     onClick?: () => void; // enhance: possibly promote to LocalizableElement?
+    required?: boolean;
 }
 
 export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
     public render() {
         return (
             <label
+                htmlFor={this.props.htmlFor}
                 className={this.getClassName()}
                 onClick={() => {
                     if (this.props.onClick) {
@@ -321,6 +325,7 @@ export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
                 }}
             >
                 {this.getLocalizedContent()}
+                {this.props.required ? "*" : ""}
             </label>
         );
     }

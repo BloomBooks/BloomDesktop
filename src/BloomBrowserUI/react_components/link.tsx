@@ -12,8 +12,8 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
     public render() {
         // prettier-ignore
         return (<a
-                className={this.props.className}
-                id={"" + this.props.id}
+                className={this.getClassName()}
+                id={this.props.id ? this.props.id : undefined}
                 // href must be defined in order to maintain normal link UI
                 // I tried to do like the 'id' attribute above, but it caused an error.
                 href={this.props.href ? this.props.href : ""}
