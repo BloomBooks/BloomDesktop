@@ -65,6 +65,13 @@ div.bloom-editable {
     height: 300px; // REVIEW What should this be?
 }
 
+// We want videos to stretch across the width of the display, and adjust
+// their heights to match properly.
+video {
+    width: 100%;
+    height: auto;
+}
+
 // Format the End Page properly, as close as we can come to the Edit view
 // without flex display, which readers haven't implemented.  (BL-5495)
 .theEndPage {

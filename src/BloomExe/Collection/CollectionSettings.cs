@@ -488,6 +488,8 @@ namespace Bloom.Collection
 				var sb = new StringBuilder();
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
+				// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
+				// seems counterintuitive even if all the div elements are marked correctly.
 				AddSelectorCssRule(sb, "BODY", GetDefaultFontName(), false, 0, false);
 				// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts
 				// not covered by Andika New Basic.

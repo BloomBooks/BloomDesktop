@@ -748,6 +748,8 @@ namespace Bloom.Publish.Epub
 				rootElt.WriteTo(writer);
 		}
 
+		Dictionary<string, string> _directionSettings = new Dictionary<string, string>();
+
 		private void CopyStyleSheets(HtmlDom pageDom)
 		{
 			foreach(XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
@@ -764,7 +766,15 @@ namespace Bloom.Publish.Epub
 					path = Path.Combine(Path.GetDirectoryName(_originalBook.FolderPath), name);
 					// It's OK not to find these.
 					if (!File.Exists(path))
+					{
 						path = null;
+					}
+					else if (name == "settingsCollectionStyles.css")
+					{
+						_directionSettings.Clear();
+						ProcessSettingsForTextDirectionality(path);
+						continue;
+					}
 				}
 				else
 				{
@@ -773,6 +783,96 @@ namespace Bloom.Publish.Epub
 				}
 				if (path != null)
 					CopyFileToEpub(path, subfolder:kCssFolder);
+			}
+		}
+
+		private void ProcessSettingsForTextDirectionality(string path)
+		{
+			// We have to deal with the direction: settings since EPUB doesn't like them.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6705.
+			var settings = RobustFile.ReadAllLines(path);
+			var newSettings = new List<string>();
+			var key = "";
+			var direction = "";
+			for (int i = 0; i < settings.Length; ++i)
+			{
+				var line = settings[i].Trim();
+				if (line.StartsWith("direction:"))
+				{
+					direction = line.Substring(10).Trim(new[]{ ' ', '\t', ';' });
+					if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(direction))
+					{
+						_directionSettings.Add(key, direction);
+						key = "";
+						direction = "";
+					}
+				}
+				else
+				{
+					newSettings.Add(settings[i]);
+					if (line.ToLowerInvariant () == "body")
+					{
+						key = "body";
+					}
+					else if (line.StartsWith("[lang='"))
+					{
+						key = line.Substring(7);
+						key = key.Substring(0, key.IndexOf('\''));
+					}
+					else if (line.StartsWith("[lang=\""))
+					{
+						key = line.Substring(7);
+						key = key.Substring(0, key.IndexOf ('"'));
+					}
+				}
+			}
+			using (var tmpdir = new BloomTemp.TemporaryFolder("settings"))
+			{
+				var newpath = Path.Combine(tmpdir.FolderPath, Path.GetFileName(path));
+				File.WriteAllLines(newpath, newSettings.ToArray());
+				CopyFileToEpub(newpath, subfolder:kCssFolder);
+			}
+		}
+
+		private void SetDirAttributes(HtmlDom pageDom)
+		{
+			string bodyDir;
+			if (!_directionSettings.TryGetValue("body", out bodyDir))
+				return;
+			bodyDir = bodyDir.ToLowerInvariant();
+			if (bodyDir != "ltr" && bodyDir != "rtl")
+			{
+				Console.WriteLine("DEBUG: bad direction for BODY: \"{0}\"", bodyDir);
+				return;
+			}
+			foreach (XmlElement body in pageDom.SafeSelectNodes("//body"))
+			{
+				body.SetAttribute ("dir", bodyDir);
+				break;	// only one body element anyway
+			}
+			var allSame = true;
+			foreach (var dir in _directionSettings.Values)
+			{
+				if (dir != bodyDir)
+				{
+					allSame = false;
+					break;
+				}
+			}
+			if (allSame)
+				return;
+			foreach (var key in _directionSettings.Keys)
+			{
+				if (key == "body")
+					continue;
+				var dir = _directionSettings[key];
+				if (dir != "ltr" && dir != "rtl")
+				{
+					Console.WriteLine("DEBUG: bad direction for lang='{0}': \"{1}\"", key, bodyDir);
+					continue;
+				}
+				foreach (XmlElement div in pageDom.SafeSelectNodes("//div[@lang='"+key+"']"))
+					div.SetAttribute("dir", dir);
 			}
 		}
 
@@ -890,6 +990,10 @@ namespace Bloom.Publish.Epub
 				link.SetAttribute("href", kCssFolder+"/" + name);
 			}
 			pageDom.AddStyleSheet(kCssFolder+"/" + "fonts.css"); // enhance: could omit if we don't embed any
+
+			// EPUB doesn't like direction: settings in CSS, so we need to explicitly set dir= attributes.
+			if (_directionSettings.Count > 0)
+				SetDirAttributes(pageDom);
 
 			// ePUB validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
