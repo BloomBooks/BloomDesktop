@@ -77,11 +77,6 @@ input[type="checkbox"] {
     border-color: white;
 }
 
-div.checkbox-group {
-    display: flex;
-    flex-direction: row;
-}
-
 div.checkbox {
     width: 11px !important;
     height: 11px !important;
@@ -98,32 +93,17 @@ div.checkbox {
 }
 
 div.checkbox-label {
+    position: relative;
+    float: left;
     -moz-user-select: none;
     cursor: default;
     margin: 2px 0px 0px 0px;
 }
 
-// This makes label that aren't marked appear about the same vertically in
-// relation to the checkbox as those that are marked with enterprise-only-flag.
-div.checkbox-label:not(.enterprise-only-flag) {
-    margin-top: 2px;
-}
-
-.enterprise-only-flag::after {
-    content: "BE";
-    cursor: default;
-    color: @bloom-purple;
-    margin-left: 4px;
-    vertical-align: super;
-    font-style: italic;
-    font-weight: bold;
-    font-size: smaller;
-}
-
-// This makes label that aren't marked appear about the same vertically in
-// relation to the checkbox as those that are marked with enterprise-only-flag.
-div.checkbox-label:not(.enterprise-only-flag) {
-    margin-top: 2px;
+// This makes labels that are marked with enterprise-only-flag appear about the same
+// vertically in relation to the checkbox as those that aren't marked.
+.checkbox-label.enterprise-only-flag {
+    margin-top: -1px;
 }
 
 .enterprise-only-flag::after {

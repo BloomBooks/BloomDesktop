@@ -37,7 +37,7 @@ export class RequiresBloomEnterprise extends React.Component<
                 style={this.state.visible ? {} : { display: "none" }}
             >
                 <div className="messageSettingsDialogWrapper">
-                    <div className="requiresEnterpriseSettingsDialog">
+                    <div className="requiresEnterpriseNotice">
                         <Link
                             l10nKey="EditTab.Toolbox.RequiresEnterprise"
                             onClick={() =>

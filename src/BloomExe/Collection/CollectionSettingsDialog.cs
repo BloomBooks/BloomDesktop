@@ -81,6 +81,9 @@ namespace Bloom.Collection
 		{
 			if (_enterpriseBrowser != null)
 				return; // Seems to help performance.
+			// The Size setting is needed on Linux to keep the browser from coming up as a small
+			// rectangle in the upper left corner when the dialog is initialized to open on the
+			// Enterprise tab.
 			_enterpriseBrowser = new Browser {Dock = DockStyle.Fill, Location=new Point(3,3), Size=new Size(_enterpriseTab.Width-6, _enterpriseTab.Height-6)};
 			_enterpriseBrowser.BackColor = Color.White;
 			

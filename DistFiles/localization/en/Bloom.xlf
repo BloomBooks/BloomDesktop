@@ -1649,11 +1649,6 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.BE" sil:dynamic="true">
-        <source xml:lang="en">BE</source>
-        <note>ID: EditTab.Toolbox.BE</note>
-        <note>BE flags that a tool requires Bloom Enterprise.  It is an acronym of Bloom Enterprise.</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>

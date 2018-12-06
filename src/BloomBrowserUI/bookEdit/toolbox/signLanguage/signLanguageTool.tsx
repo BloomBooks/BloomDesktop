@@ -138,6 +138,9 @@ export class SignLanguageToolControls extends React.Component<
             const valueArray: number[] = [start, end];
             trimSlider = this.getTrimSlider(valueArray, maxDuration);
             videoStats = this.getVideoStats();
+        } else if (!this.state.enterprise) {
+            // Show the slider even without a video when obscured by enterprise being off.
+            trimSlider = this.getTrimSlider([0, 5], 5);
         }
         return (
             <RequiresBloomEnterpriseWrapper>

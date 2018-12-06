@@ -44,14 +44,6 @@ export class Expandable extends React.Component<IProps, IState> {
     }
 
     public render() {
-        if (this.props.alwaysExpanded === undefined) {
-            console.log("REndering Expandable, with expandInitially=undefined");
-        } else {
-            console.log(
-                "REndering Expandable, with expandInitially=" +
-                    this.props.alwaysExpanded.toString()
-            );
-        }
         return (
             <div className={"expandable " + (this.props.className || "")}>
                 <div className="wrapper" onClick={() => this.toggleExpanded()}>
