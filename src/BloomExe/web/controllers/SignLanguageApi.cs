@@ -582,7 +582,6 @@ namespace Bloom.web.controllers
 			// Add attributes needed for videos to work in Readium and possibly other readers.
 			// Existence of the 'controls' attribute is enough to trigger controls
 			videoElement.SetAttribute("controls", string.Empty);
-			videoElement.SetAttribute("width", "100%");
 			return tempName;
 		}
 

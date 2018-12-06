@@ -482,21 +482,27 @@ namespace Bloom.Collection
 		private void SaveSettingsCollectionStylesCss()
 		{
 			string path = FolderPath.CombineForPath("settingsCollectionStyles.css");
+			SaveCollectionStylesCss(path, false);
+		}
 
+		public void SaveCollectionStylesCss(string path, bool omitDirection)
+		{
 			try
 			{
 				var sb = new StringBuilder();
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-				AddSelectorCssRule(sb, "BODY", GetDefaultFontName(), false, 0, false);
+				// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
+				// seems counterintuitive even if all the div elements are marked correctly.
+				AddSelectorCssRule(sb, "BODY", GetDefaultFontName(), false, 0, false, omitDirection);
 				// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts
 				// not covered by Andika New Basic.
-				AddSelectorCssRule(sb, ".numberedPage::after", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces);
-				AddSelectorCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces);
-				AddSelectorCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight, Language2BreaksLinesOnlyAtSpaces);
+				AddSelectorCssRule(sb, ".numberedPage::after", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
+				AddSelectorCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
+				AddSelectorCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight, Language2BreaksLinesOnlyAtSpaces, omitDirection);
 				if (!string.IsNullOrEmpty(Language3Iso639Code))
 				{
-					AddSelectorCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight, Language3BreaksLinesOnlyAtSpaces);
+					AddSelectorCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight, Language3BreaksLinesOnlyAtSpaces, omitDirection);
 				}
 				RobustFile.WriteAllText(path, sb.ToString());
 			}
@@ -506,18 +512,21 @@ namespace Bloom.Collection
 			}
 		}
 
-		private void AddSelectorCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight, bool breakOnlyAtSpaces)
+		private void AddSelectorCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight, bool breakOnlyAtSpaces, bool omitDirection)
 		{
 			sb.AppendLine();
 			sb.AppendLine(selector);
 			sb.AppendLine("{");
 			sb.AppendLine(" font-family: '" + fontName + "';");
 
-			if (isRtl)
-				sb.AppendLine(" direction: rtl;");
-			else	// Ensure proper directionality: see https://silbloom.myjetbrains.com/youtrack/issue/BL-6256.
-				sb.AppendLine(" direction: ltr;");
-
+			// EPUBs don't handle direction: in CSS files.
+			if (!omitDirection)
+			{
+				if (isRtl)
+					sb.AppendLine(" direction: rtl;");
+				else	// Ensure proper directionality: see https://silbloom.myjetbrains.com/youtrack/issue/BL-6256.
+					sb.AppendLine(" direction: ltr;");
+			}
 			if (lineHeight > 0)
 				sb.AppendLine(" line-height: " + lineHeight.ToString(CultureInfo.InvariantCulture) + ";");
 
