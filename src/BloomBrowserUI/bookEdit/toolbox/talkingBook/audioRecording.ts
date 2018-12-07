@@ -43,7 +43,6 @@
 ///<reference path="../../../typings/jquery/jquery.d.ts"/>
 ///<reference path="../../../typings/toastr/toastr.d.ts"/>
 
-import * as JQuery from "jquery";
 import * as $ from "jquery";
 import { theOneLibSynphony } from "../readers/libSynphony/synphony_lib";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -182,7 +181,17 @@ export default class AudioRecording {
             }
 
             // Make the checkbox reflect the state
-            if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
+            if (
+                this.isXmatterPage() &&
+                this.audioRecordingMode == AudioRecordingMode.TextBox
+            ) {
+                this.recordingModeInput.checked = true;
+                this.disableRecordingModeControl();
+                // "disableRecordingModeControl" leaves a click handler that we don't want in this case.
+                $("#" + kRecordingModeClickHandler).off();
+                // we want this to be a temporary thing, for xmatter pages
+                this.audioRecordingMode = AudioRecordingMode.Sentence;
+            } else if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
                 this.recordingModeInput.checked = true;
             } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                 this.recordingModeInput.checked = false;
@@ -194,14 +203,18 @@ export default class AudioRecording {
             }
         };
 
-        if (this.getPage().find("[data-audioRecordingMode]").length > 0) {
+        if (
+            this.getPageDocBody().find("[data-audioRecordingMode]").length > 0
+        ) {
             // We are able to identify and load the mode directly from the HTML
-            const audioRecordingModeStr: string = this.getPage()
+            const audioRecordingModeStr: string = this.getPageDocBody()
                 .find("[data-audioRecordingMode]")
                 .first()
                 .attr("data-audioRecordingMode");
             doWhenRecordingModeIsKnown(audioRecordingModeStr);
-        } else if (this.getPage().find("span.audio-sentence").length > 0) {
+        } else if (
+            this.getPageDocBody().find("span.audio-sentence").length > 0
+        ) {
             // This may happen when loading books from 4.3 or earlier that already have text recorded,
             // and is especially important if the collection default is set to anything other than Sentence.
             doWhenRecordingModeIsKnown(AudioRecordingMode.Sentence);
@@ -229,7 +242,7 @@ export default class AudioRecording {
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
 
-        this.hiddenSourceBubbles = this.getPage().find(
+        this.hiddenSourceBubbles = this.getPageDocBody().find(
             ".uibloomSourceTextsBubble"
         );
         this.hiddenSourceBubbles.hide();
@@ -258,13 +271,27 @@ export default class AudioRecording {
     // or saving (leaving) pages.
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
-        var page = this.getPage();
+        const page = this.getPageDocBody();
         page.find(".ui-audioCurrent")
             .removeClass("ui-audioCurrent")
             .removeClass("disableHighlight");
     }
+
     public stopListeningForLevels() {
         WebSocketManager.closeSocket(kWebsocketContext);
+    }
+
+    private isXmatterPage(): boolean {
+        const body = this.getPageDocBody();
+        if (!body) {
+            return false; // shouldn't happen
+        }
+        const bloomPage = body[0].querySelector(".bloom-page");
+        const classes = bloomPage.getAttribute("class");
+        return (
+            classes.indexOf("bloom-frontMatter") > -1 ||
+            classes.indexOf("bloom-backMatter") > -1
+        );
     }
 
     // We now do recording in all editable divs that are visible.
@@ -273,7 +300,7 @@ export default class AudioRecording {
     // And BL-5457: Check that we actually have recordable text in the divs we return.
     private getRecordableDivs(): JQuery {
         var $this = this;
-        var divs = this.getPage().find(
+        var divs = this.getPageDocBody().find(
             ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
         );
         return divs.filter(":visible").filter(function(idx, elt) {
@@ -296,20 +323,20 @@ export default class AudioRecording {
 
         var next = this.getNextAudioElement();
         if (!next) return;
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         this.setCurrentAudioElement(current, $(next));
         this.changeStateAndSetExpected("record");
     }
 
     private getNextAudioElement(): HTMLElement {
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         return next.length === 0 ? null : next[0];
     }
 
     private getPreviousAudioElement(): HTMLElement {
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return null;
@@ -369,7 +396,7 @@ export default class AudioRecording {
 
     private moveToPrevAudioElement(): void {
         toastr.clear();
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
@@ -400,7 +427,7 @@ export default class AudioRecording {
 
         toastr.clear();
         this.recording = true;
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var id = current.attr("id");
         axios
             .post("/bloom/api/audio/startRecord?id=" + id)
@@ -449,7 +476,7 @@ export default class AudioRecording {
     // or even just stepping through with Next.
     private durationChanged(): void {
         this.awaitingNewRecording = false;
-        var current = this.getPage().find(".ui-audioCurrent");
+        var current = this.getPageDocBody().find(".ui-audioCurrent");
         current.attr(
             "data-duration",
             (<HTMLAudioElement>$("#player").get(0)).duration
@@ -473,7 +500,7 @@ export default class AudioRecording {
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     public listen(): void {
-        var original: JQuery = this.getPage().find(".ui-audioCurrent");
+        var original: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var first = audioElts.eq(0);
         this.setCurrentAudioElement(original, first, true);
@@ -491,7 +518,9 @@ export default class AudioRecording {
 
     private playEnded(): void {
         if (this.playingAll) {
-            var current: JQuery = this.getPage().find(".ui-audioCurrent");
+            var current: JQuery = this.getPageDocBody().find(
+                ".ui-audioCurrent"
+            );
             var audioElts = this.getAudioElements();
             var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
@@ -640,7 +669,7 @@ export default class AudioRecording {
                 // Note: this is not foolproof because the durationchange handler is
                 // being called asynchronously with stale data and sometimes restoring
                 // the deleted attribute.
-                var current = this.getPage().find(
+                var current = this.getPageDocBody().find(
                     "#" + this.idOfCurrentSentence
                 );
                 if (current.length !== 0) {
@@ -733,7 +762,7 @@ export default class AudioRecording {
     }
 
     // The body of the editable page, a root for searching for document content.
-    public getPage(): JQuery {
+    public getPageDocBody(): JQuery {
         var page = this.getPageFrame();
         if (!page) return null;
         return $(page.contentWindow.document.body);
@@ -820,7 +849,7 @@ export default class AudioRecording {
             return;
         }
 
-        const audioCurrentList = this.getPage().find(".ui-audioCurrent");
+        const audioCurrentList = this.getPageDocBody().find(".ui-audioCurrent");
 
         if (isEarlyAbortEnabled && audioCurrentList.length >= 1) {
             // audioCurrent highlight is already working, so don't bother trying to fix anything up.
@@ -829,7 +858,7 @@ export default class AudioRecording {
             return;
         }
 
-        const firstSentence = this.getPage()
+        const firstSentence = this.getPageDocBody()
             .find(kAudioSentenceClassSelector)
             .first();
         if (firstSentence.length === 0) {
@@ -1430,7 +1459,7 @@ export default class AudioRecording {
         // Enhance: Consider whether it'd be a good idea to disable click events on these buttons, but still leave the buttons in their previous visual state.
         //          In theory, there can be a small delay between when we are supposed to change state (right now) and when we actually determine the correct state (after a callback)
 
-        if (this.getPage().find(".ui-audioCurrent").length === 0) {
+        if (this.getPageDocBody().find(".ui-audioCurrent").length === 0) {
             // We have reached an unexpected state :(
             // (It can potentially happen if changes applied to the markup get wiped out and overwritten e.g. by CkEditor Onload())
             if (numRetriesRemaining > 0) {
