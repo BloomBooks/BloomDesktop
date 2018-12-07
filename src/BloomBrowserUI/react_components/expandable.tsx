@@ -16,26 +16,31 @@ import "./expandable.less";
 // be shown when it is expanded. Since overflow is hidden to support the animation,
 // it needs to fit within the expandedHeight.
 
-export interface IComponentState {
+export interface IState {
     expanded: boolean;
 }
 
-interface IExpandableProps extends ILocalizationProps {
+interface IProps extends ILocalizationProps {
     headingText: string;
     expandedHeight: string;
     className?: string;
+    alwaysExpanded?: boolean;
 }
 
-export class Expandable extends React.Component<
-    IExpandableProps,
-    IComponentState
-> {
-    public readonly state: IComponentState = {
+export class Expandable extends React.Component<IProps, IState> {
+    public readonly state: IState = {
         expanded: false
     };
 
-    constructor(props: IExpandableProps) {
+    constructor(props: IProps) {
         super(props);
+    }
+
+    public static getDerivedStateFromProps(
+        nextProps: IProps,
+        prevState: IState
+    ) {
+        return { expanded: prevState.expanded || nextProps.alwaysExpanded };
     }
 
     public render() {

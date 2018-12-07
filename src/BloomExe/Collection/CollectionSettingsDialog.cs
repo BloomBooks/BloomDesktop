@@ -81,7 +81,10 @@ namespace Bloom.Collection
 		{
 			if (_enterpriseBrowser != null)
 				return; // Seems to help performance.
-			_enterpriseBrowser = new Browser {Dock = DockStyle.Fill};
+			// The Size setting is needed on Linux to keep the browser from coming up as a small
+			// rectangle in the upper left corner when the dialog is initialized to open on the
+			// Enterprise tab.
+			_enterpriseBrowser = new Browser {Dock = DockStyle.Fill, Location=new Point(3,3), Size=new Size(_enterpriseTab.Width-6, _enterpriseTab.Height-6)};
 			_enterpriseBrowser.BackColor = Color.White;
 			
 			var rootFile = BloomFileLocator.GetBrowserFile(false, "collection", "enterpriseSettings.html");
@@ -102,6 +105,12 @@ namespace Bloom.Collection
 
 			// BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
 			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
+		}
+
+		public void SetDesiredTab(string tab)
+		{
+			if (tab == "enterprise")
+				_tab.SelectedTab = _enterpriseTab;
 		}
 
 		private void UpdateDisplay()
