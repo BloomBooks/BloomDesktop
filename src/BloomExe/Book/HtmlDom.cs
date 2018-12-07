@@ -1337,7 +1337,7 @@ namespace Bloom.Book
 			var dataBookElements = RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book]");
 			return dataBookElements.Cast<XmlElement>()
 				.Select(node => node.GetOptionalStringAttribute("lang", null))
-				.Where(lang => !String.IsNullOrEmpty(lang) && (lang != "*" || lang != "z"))
+				.Where(lang => !String.IsNullOrEmpty(lang) && (lang != "*" && lang != "z"))
 				.Distinct()
 				.ToList();
 		}

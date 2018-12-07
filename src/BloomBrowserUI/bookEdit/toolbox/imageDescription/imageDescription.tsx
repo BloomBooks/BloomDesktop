@@ -292,7 +292,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 const imageContainers = page.getElementsByClassName(
                     "bloom-imageContainer"
                 );
-                let addedTranslationGroup = false;
+
                 for (let i = 0; i < imageContainers.length; i++) {
                     const container = imageContainers[i];
                     const imageDescriptions = container.getElementsByClassName(
@@ -316,39 +316,71 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                         );
                     }
                     if (imageDescriptions.length === 0) {
-                        // from somewhere else I copied this as a typical default set of classes for a translation group,
-                        // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
-                        // textOverPicture) which might be nested in image containers.
-                        // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
-                        // anywhere. Image descriptions will get the book's default font and Bloom's default text size
-                        // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
-                        // Using a unique name serves to prevent image description from using the possibly very large
-                        // text set for the main content (normal-style); this style will inherit the defaults independently.
-                        // Including 'edit' in the name of the style is intended to convey that this style is only
-                        // intended for use in editing; we will style it otherwise if we actually make it visible
-                        // in an epub.
-                        const newTg = getPageFrameExports()
-                            .makeElement(
-                                "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement" +
-                                    " ImageDescriptionEdit-style'></div>"
-                            )
-                            .get(0);
-                        container.appendChild(newTg);
-                        addedTranslationGroup = true;
+                        // Adds a new bloom-translationGroup
+                        // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
+                        // Preferable to only send a request for the info we need and not save and refresh the whole page.
+                        //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
+                        BloomApi.post(
+                            "common/requestTranslationGroups",
+                            result => {
+                                if (result) {
+                                    this.appendTranslationGroup(
+                                        result.data,
+                                        container
+                                    );
+                                }
+                            }
+                        );
                     }
-                }
-                if (addedTranslationGroup) {
-                    // This inserts all the right bloom-editable divs in whatever languages are needed.
-                    BloomApi.postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent"
-                    );
-                    // This return is currently redundant but it emphasizes that you can't count on anything
-                    // more happening in this branch.The page will unload somewhere in the
-                    // course of saveChangesAndRethinkPageEvent. Then a new page will load and updateMarkup()
-                    // will be called again...this time every image container should have a translation group.
-                    return;
                 }
             }
         });
+    }
+
+    // Adds a new bloom-translationGroup
+    // This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
+    // The container must be inside the (editing) page iFrame (because this relies on getPageFromExports()
+    private appendTranslationGroup(innerHtml, container: Element) {
+        // Fill the interior of the new element with the HTML we get back from the API call.
+
+        // from somewhere else I (John Thomson) copied this as a typical default set of classes for a translation group,
+        // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
+        // textOverPicture) which might be nested in image containers.
+        // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
+        // anywhere. Image descriptions will get the book's default font and Bloom's default text size
+        // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
+        // Using a unique name serves to prevent image description from using the possibly very large
+        // text set for the main content (normal-style); this style will inherit the defaults independently.
+        // Including 'edit' in the name of the style is intended to convey that this style is only
+        // intended for use in editing; we will style it otherwise if we actually make it visible
+        // in an epub.
+        const newElementHtmlPrefix =
+            "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement ImageDescriptionEdit-style'>";
+        const newElementHtmlSuffix = "</div>";
+
+        let newElementHtmlInterior: string = "";
+        if (innerHtml) {
+            newElementHtmlInterior = innerHtml;
+        }
+        const newElementHtml =
+            newElementHtmlPrefix +
+            newElementHtmlInterior +
+            newElementHtmlSuffix;
+
+        const newTg = getPageFrameExports()
+            .makeElement(newElementHtml)
+            .get(0);
+
+        container.appendChild(newTg);
+
+        // This is necessary for the data-language tooltip to appear, probably among other things.
+        getPageFrameExports().SetupElements(container);
+
+        $(newTg)
+            .find(".bloom-editable")
+            .each((index, newEditable) => {
+                // Attaching CKEditor is necessary for range select formatting to work.
+                getPageFrameExports().attachToCkEditor(newEditable);
+            });
     }
 }

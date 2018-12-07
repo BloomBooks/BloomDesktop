@@ -1219,5 +1219,30 @@ p {
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(thirdTextXpath, 1);
 			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(fourthTextXpath, 1);
 		}
+
+		// Tests that "", "*", and "z" are properly filtered.
+		[Test]
+		public void GatherDataBookLanguages_ContainsLangsWildcardAndZ_RemovesUnnecessaryLangs()
+		{
+			var dom = new HtmlDom(
+				@"<html><body><div>
+					<div id='bloomDataDiv'>
+						<div data-book='styleNumberSequence' lang=''>0</div>
+						<div data-book='styleNumberSequence' lang='*'>0</div>
+						<div data-book='styleNumberSequence' lang='z'>0</div>
+						<div data-book='styleNumberSequence' lang='en'>0</div>
+						<div data-book='styleNumberSequence' lang='es'>0</div>
+						<div data-book='styleNumberSequence' lang='zh-CN'>0</div>
+						<div data-book='styleNumberSequence' lang='zh-TW'>0</div>
+					</div>
+				</div></body></html>");
+
+			var result = dom.GatherDataBookLanguages();
+
+			Assert.AreEqual(4, result.Count, "Count");
+			Assert.IsFalse(result.Contains(""), "Unexpected item \"\" found");
+			Assert.IsFalse(result.Contains("*"), "Unexpected item \"*\" found");
+			Assert.IsFalse(result.Contains("z"), "Unexpected item \"z\" found");
+		}
 	}
 }

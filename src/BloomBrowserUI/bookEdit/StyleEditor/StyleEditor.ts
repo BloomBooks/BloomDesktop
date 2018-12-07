@@ -1066,8 +1066,11 @@ export default class StyleEditor {
                             const buttonIds = this.getButtonIds();
                             for (let i = 0; i < buttonIds.length; i++) {
                                 const button = $("#" + buttonIds[i]);
-                                button.click(function() {
-                                    this.buttonClick(this);
+
+                                // Note: Use arrow function so that "this" refers to the right thing.
+                                // Otherwise, clicking on Gear Icon's Bold All/Italics All/etc. will throw exception because "this" doesn't refer to the right thing.
+                                button.click(() => {
+                                    this.buttonClick(button);
                                 });
                                 button.addClass("propButton");
                             }
