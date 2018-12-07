@@ -794,8 +794,9 @@ namespace Bloom.Publish.Epub
 			// seems counterintuitive even if all the div elements are marked correctly.
 			_directionSettings.Add("body", "ltr");
 			_directionSettings.Add(this.Book.CollectionSettings.Language1Iso639Code, this.Book.CollectionSettings.IsLanguage1Rtl ? "rtl" : "ltr");
-			_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.IsLanguage2Rtl ? "rtl" : "ltr");
-			if (!String.IsNullOrEmpty(this.Book.CollectionSettings.Language3Iso639Code))
+			if (!_directionSettings.ContainsKey(this.Book.CollectionSettings.Language2Iso639Code))
+				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.IsLanguage2Rtl ? "rtl" : "ltr");
+			if (!String.IsNullOrEmpty(this.Book.CollectionSettings.Language3Iso639Code) && !_directionSettings.ContainsKey(this.Book.CollectionSettings.Language3Iso639Code))
 				_directionSettings.Add(this.Book.CollectionSettings.Language3Iso639Code, this.Book.CollectionSettings.IsLanguage3Rtl ? "rtl" : "ltr");
 
 			using (var tmpdir = new BloomTemp.TemporaryFolder("settings"))
