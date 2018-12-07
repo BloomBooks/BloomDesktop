@@ -156,9 +156,19 @@ export class ToolBox {
 
     // The body of the editable page, a root for searching for document content.
     public static getPage(): HTMLElement | null {
-        const page = this.getPageFrame();
+        const page = ToolBox.getPageFrame();
         if (!page || !page.contentWindow) return null;
         return page.contentWindow.document.body;
+    }
+
+    public static isXmatterPage(): boolean {
+        const bloomPage = ToolBox.getPage().querySelector(".bloom-page");
+        const classes = bloomPage.getAttribute("class");
+        return (
+            // Enhance: when our typescript "groks" string.include(), it would simplify things.
+            classes.indexOf("bloom-frontMatter") > -1 ||
+            classes.indexOf("bloom-backMatter") > -1
+        );
     }
 
     /**
@@ -325,6 +335,10 @@ export function getTheOneToolbox() {
     return toolbox;
 }
 
+export function isXmatterPage(): boolean {
+    return ToolBox.isXmatterPage();
+}
+
 // Array of ITool objects, typically one for each tool. The code for each tool inserts an appropriate ITool
 // into this array in order to interact with the overall toolbox code.
 const masterToolList: ITool[] = [];
@@ -365,7 +379,7 @@ export function showOrHideTool_click(chkbox) {
 export function restoreToolboxSettings() {
     BloomApi.get("toolbox/settings", result => {
         savedSettings = result.data;
-        const pageFrame = getPageFrame();
+        const pageFrame = ToolBox.getPageFrame();
         const contentWin = pageFrame.contentWindow;
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
@@ -390,7 +404,7 @@ export function applyToolboxStateToUpdatedPage() {
 }
 
 function doWhenPageReady(action: () => void) {
-    const page = getPage();
+    const page = getPageJquery();
     if (!page || page.length === 0) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
@@ -419,9 +433,9 @@ function doWhenCkEditorReadyCore(arg: {
     done: boolean;
     action: () => void;
 }): void {
-    if ((<any>getPageFrame().contentWindow).CKEDITOR) {
-        const editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR
-            .instances;
+    if ((<any>ToolBox.getPageFrame().contentWindow).CKEDITOR) {
+        const editorInstances = (<any>ToolBox.getPageFrame().contentWindow)
+            .CKEDITOR.instances;
         // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
         // This wipes out (at least) our page initialization.
         // To prevent this we hold our initialization until CKEditor has done initializing.
@@ -434,7 +448,7 @@ function doWhenCkEditorReadyCore(arg: {
                 if (i === 0) {
                     // no instance at all...if one is later created, get us invoked.
                     arg.removers.push(
-                        (<any>this.getPageFrame().contentWindow).CKEDITOR.on(
+                        (<any>ToolBox.getPageFrame().contentWindow).CKEDITOR.on(
                             "instanceReady",
                             e => {
                                 doWhenCkEditorReadyCore(arg);
@@ -485,13 +499,9 @@ export function removeToolboxMarkup() {
     }
 }
 
-function getPageFrame(): HTMLIFrameElement {
-    return <HTMLIFrameElement>parent.window.document.getElementById("page");
-}
-
 // The body of the editable page, a root for searching for document content.
-function getPage(): JQuery | null {
-    const page = getPageFrame();
+function getPageJquery(): JQuery | null {
+    const page = ToolBox.getPageFrame();
     if (!page || !page.contentWindow) return null;
     return $(page.contentWindow.document.body);
 }

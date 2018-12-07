@@ -1,7 +1,6 @@
 ﻿import { ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from "./audioRecording";
-import { theOneAudioRecorder } from "./audioRecording";
 
 export default class TalkingBookTool implements ITool {
     public makeRootElement(): HTMLDivElement {
