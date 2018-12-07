@@ -35,15 +35,6 @@ export default class BloomField {
 
         BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
 
-        // Things assume that the editable will definitely contain one paragraph.
-        // If it doesn't, subtle weird things can happen.
-        // 1) For example, if a text-over-picture element does not contain a paragraph, you often can't type directly into the box immediately.
-        //    (you need to switch focus to a different text box then switch focus back to the text-over-picture)
-        // 2) Text-over-picture elements with no paragraph, only a span containing two words on exactly one line will get messed up by CKEditor when the page is saved (including some tool activations may trigger saves)
-        // 3) Some styling rules (e.g. indentation) assume it is in paragraphs and probably won't be applied immediately.
-        // 4) probably others
-        BloomField.ModifyForParagraphMode(bloomEditableDiv);
-
         //For future: this works, but we need more time to think about it. BloomField.MakeTabEnterTabElement(bloomEditableDiv);
 
         /*  The following is assumed to not be needed currently (3.9)... probably not needed
@@ -52,7 +43,7 @@ export default class BloomField {
             kinds of low-level html editor methods working right, so it
             makes sense to leave them here in case we have analogous situations come up.
 
-            BloomField.ModifyForParagraphMode(bloomEditableDiv);
+            BloomField.EnsureParagraphsPresent(bloomEditableDiv);
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
             });
@@ -62,6 +53,17 @@ export default class BloomField {
             BloomField.PrepareNonParagraphField(bloomEditableDiv);
             BloomField.ManageWhatHappensIfTheyDeleteEverythingNonParagraph(bloomEditableDiv);
         */
+
+        // What this does is mostly redundant with things CkEditor does, but in some cases CkEditor inserts more paragraphs than we want when we start out with none. See BL-6721"
+        //
+        // Things assume that the editable will definitely contain one paragraph.
+        // If it doesn't, subtle weird things can happen.
+        // 1) For example, if a text-over-picture element does not contain a paragraph, you often can't type directly into the box immediately.
+        //    (you need to switch focus to a different text box then switch focus back to the text-over-picture)
+        // 2) Text-over-picture elements with no paragraph, only a span containing two words on exactly one line will get messed up by CKEditor when the page is saved (including some tool activations may trigger saves)
+        // 3) Some styling rules (e.g. indentation) assume it is in paragraphs and probably won't be applied immediately.
+        // 4) probably others
+        BloomField.EnsureParagraphsPresent(bloomEditableDiv);
     }
 
     private static MakeTabEnterTabElement(field: HTMLElement) {
@@ -345,7 +347,7 @@ export default class BloomField {
     //      text doesn't get any of the formatting assigned to paragraphs)
     // 2) when this field was already used by the user, and then later switched to paragraph mode.
     // 3) corner cases that aren't handled by as-you-edit events. E.g., pressing "ctrl+a DEL"
-    private static ModifyForParagraphMode(field: HTMLElement) {
+    private static EnsureParagraphsPresent(field: HTMLElement) {
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
         $(field)
             .find("br")
@@ -398,7 +400,7 @@ export default class BloomField {
 
         $(field).keyup(e => {
             if ($(this).find("p").length === 0) {
-                BloomField.ModifyForParagraphMode(field);
+                BloomField.EnsureParagraphsPresent(field);
 
                 // Now put the cursor in the paragraph, *after* the character they may have just typed or the
                 // text they just pasted.
