@@ -248,6 +248,11 @@ export class MeasureText {
         const context = canvas.getContext("2d");
         if (context == null) {
             return null;
+        } else if (canvas.width <= 0 || canvas.height <= 0) {
+            // Sometimes context.getImageData() throws an exception complaining that "IndexSizeError: Index or size is negative or greater than the allowed amount".
+            // Possibly due to some kind of race condition? Maybe the canvas is not set up yet, and returns 0 or -1 for the width, causing the IndexSizeError?
+            // Since we don't have control over context's getImageData function... we just do our best from here in the caller.
+            return null;
         }
         return context.getImageData(0, 0, canvas.width, canvas.height);
     }
