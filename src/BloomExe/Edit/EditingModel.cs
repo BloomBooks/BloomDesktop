@@ -1090,7 +1090,7 @@ namespace Bloom.Edit
 
 		internal void RequestTranslationGroups(ApiRequest request)
 		{
-			string translationGroupHtml = TranslationGroupManager.PrepareDefaultTranslationGroups(_domForCurrentPage.RawDom, CurrentBook);
+			string translationGroupHtml = TranslationGroupManager.GetDefaultTranslationGroupContent(_domForCurrentPage.RawDom, CurrentBook);
 			request.ReplyWithHtml(translationGroupHtml);
 		}
 		

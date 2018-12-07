@@ -959,8 +959,8 @@ export function bootstrap() {
         ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']";
     $("div.bloom-page")
         .find(complicatedFind)
-        .each(function() {
-            attachToCkEditor(this);
+        .each((index: number, element: Element) => {
+            attachToCkEditor(element);
         });
 
     // We want to do this as late in the page setup process as possible because a

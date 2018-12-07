@@ -324,8 +324,8 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                             "common/requestTranslationGroups",
                             result => {
                                 if (result) {
-                                    this.postRequestTranslationGroupsFinishedCallback(
-                                        result,
+                                    this.appendTranslationGroup(
+                                        result.data,
                                         container
                                     );
                                 }
@@ -339,10 +339,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
 
     // Adds a new bloom-translationGroup
     // This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
-    private postRequestTranslationGroupsFinishedCallback(
-        result,
-        container: Element
-    ) {
+    private appendTranslationGroup(innerHtml, container: Element) {
         // Fill the interior of the new element with the HTML we get back from the API call.
 
         // from somewhere else I (John Thomson) copied this as a typical default set of classes for a translation group,
@@ -361,8 +358,8 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         const newElementHtmlSuffix = "</div>";
 
         let newElementHtmlInterior: string = "";
-        if (result && result.data) {
-            newElementHtmlInterior = result.data;
+        if (innerHtml) {
+            newElementHtmlInterior = innerHtml;
         }
         const newElementHtml =
             newElementHtmlPrefix +

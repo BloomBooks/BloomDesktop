@@ -35,7 +35,14 @@ export default class BloomField {
 
         BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
 
-        BloomField.EnsureEditableContainsParagraph(bloomEditableDiv);
+        // Things assume that the editable will definitely contain one paragraph.
+        // If it doesn't, subtle weird things can happen.
+        // 1) For example, if a text-over-picture element does not contain a paragraph, you often can't type directly into the box immediately.
+        //    (you need to switch focus to a different text box then switch focus back to the text-over-picture)
+        // 2) Text-over-picture elements with no paragraph, only a span containing two words on exactly one line will get messed up by CKEditor when the page is saved (including some tool activations may trigger saves)
+        // 3) Some styling rules (e.g. indentation) assume it is in paragraphs and probably won't be applied immediately.
+        // 4) probably others
+        BloomField.ModifyForParagraphMode(bloomEditableDiv);
 
         //For future: this works, but we need more time to think about it. BloomField.MakeTabEnterTabElement(bloomEditableDiv);
 
@@ -537,23 +544,6 @@ export default class BloomField {
                 }
             }
         });
-    }
-
-    // Things assume that the editable will definitely contain one paragraph.
-    // If it doesn't, subtle weird things can happen.
-    // 1) For example, if a text-over-picture element does not contain a paragraph, you often can't type directly into the box immediately.
-    //    (you need to switch focus to a different text box then switch focus back to the text-over-picture)
-    // 2) Text-over-picture elements with no paragraph, only a span containing two words on exactly one line will get messed up by CKEditor when the page is saved (including some tool activations may trigger saves)
-    // 3) Some styling rules (e.g. indentation) assume it is in paragraphs and probably won't be applied immediately.
-    // 4) probably others
-    private static EnsureEditableContainsParagraph(
-        bloomEditableDiv: HTMLElement
-    ) {
-        const paragraphElements = bloomEditableDiv.getElementsByTagName("p");
-        if (!paragraphElements || paragraphElements.length <= 0) {
-            const newParagraphNode = document.createElement("P");
-            bloomEditableDiv.appendChild(newParagraphNode);
-        }
     }
 }
 enum CursorPosition {
