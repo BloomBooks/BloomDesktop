@@ -339,6 +339,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
 
     // Adds a new bloom-translationGroup
     // This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
+    // The container must be inside the (editing) page iFrame (because this relies on getPageFromExports()
     private appendTranslationGroup(innerHtml, container: Element) {
         // Fill the interior of the new element with the HTML we get back from the API call.
 
