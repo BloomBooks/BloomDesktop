@@ -9,6 +9,7 @@ import "./music.less";
 
 interface IMusicState {
     activeRadioValue: string;
+    volume: number; // 0.0..1.0
     volumeSliderPosition: number; // 1..100
     audioEnabled: boolean;
     musicName: string;
@@ -23,8 +24,9 @@ interface IMusicState {
 export class MusicToolControls extends React.Component<{}, IMusicState> {
     public readonly state: IMusicState = {
         activeRadioValue: "continueMusic",
-        volumeSliderPosition: Math.round(
-            MusicToolControls.kDefaultVolumeFraction * 100
+        volume: MusicToolControls.kDefaultVolumeFraction,
+        volumeSliderPosition: MusicToolControls.convertVolumeToSliderPosition(
+            MusicToolControls.kDefaultVolumeFraction
         ),
         audioEnabled: false,
         musicName: "",
@@ -75,11 +77,11 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
             // If we have a non-empty music attr, we're setting new music right here.
             musicState.activeRadioValue = "newMusic";
             musicState.audioEnabled = true;
-            const volume = MusicToolControls.getPlayerVolumeFromAttributeOnPage(
+            musicState.volume = MusicToolControls.getPlayerVolumeFromAttributeOnPage(
                 audioFileName
             );
             musicState.volumeSliderPosition = MusicToolControls.convertVolumeToSliderPosition(
-                volume
+                musicState.volume
             );
             musicState.musicName = this.getDisplayNameOfMusicFile(
                 audioFileName
@@ -177,7 +179,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                                 : "hidden"
                         }}
                     >
-                        {this.state.volumeSliderPosition}%
+                        {Math.round(this.state.volume * 100)}%
                     </div>
                     <div id="musicSetVolume">
                         <img
@@ -367,7 +369,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         );
         this.getPlayer().volume = volume;
         this.setState((prevState, props) => {
-            return { volumeSliderPosition: position1to100 };
+            return { volume: volume, volumeSliderPosition: position1to100 };
         });
     }
 
