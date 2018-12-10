@@ -421,6 +421,40 @@ namespace BloomTests.Book
 			}
 		}
 
+		// This is actually the only REASONABLE way to specify copyrights; these other tests are kinda
+		// bogus in having copyright notices that say things like "Copyright © 2016".... that doesn't
+		// even say the org, and would incorrectly insert 2016 regardless of the actual year of the book.
+		// The following tests a real use.
+		[Test]
+		public void MergeSettings_HasJustCopyrightOrg_GetsFullCopyrightForCurrentYear()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='xyz'>original</div>
+						<div data-book='insideBackCover' lang='xyz'>original back cover</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
+					// First item tests successful setting;
+					// Second tests setting of another language of same property;
+					@"{
+						""presets"": [ {
+							""data-book"": ""copyright"",
+							""lang"": ""*"",
+							""content"": ""Chewtoys International"",
+							""condition"":""ifAllCopyrightEmpty""
+						}]
+					}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+
+				Assert.AreEqual($"Copyright © {DateTime.Now.Year.ToString()} Chewtoys International", metadata.CopyrightNotice);
+			}
+		}
+
 		// we don't want shell books to get this notice
 		[TestCase("copyright", "Copyright © 2012, test")]
 		[TestCase("licenseNotes", "Some extra notes")]
