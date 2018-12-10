@@ -300,7 +300,7 @@ namespace Bloom.Workspace
 
 					if (selected || hovered)
 					{
-						Color fill = (hovered) ? Palette.TextAgainstDarkBackground : Color.FromArgb(64, 64, 64);
+						Color fill = (hovered) ? Palette.LightTextAgainstDarkBackground : Color.FromArgb(64, 64, 64);
 						if (_renderMode == ToolStripRenderMode.Professional)
 						{
 							fill = (hovered) ? ProfessionalColors.ButtonCheckedGradientBegin : ProfessionalColors.ButtonCheckedGradientEnd;

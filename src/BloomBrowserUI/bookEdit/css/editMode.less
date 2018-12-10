@@ -20,7 +20,7 @@
 @imageDescriptionTopBorderWidth: 20px;
 
 body {
-    background-color: @bloom-darkestgray;
+    background-color: @bloom-darkestBackground;
     transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
     transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
 }
@@ -384,7 +384,7 @@ div.bloom-templateMode {
     border: 0 solid #a03c50;
     padding: 0px;
     text-align: right;
-    color: @bloom-darkestgray;
+    color: @bloom-darkestBackground;
     font-size: 8pt;
     margin-top: -8px;
     margin-right: 8px;
