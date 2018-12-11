@@ -24,7 +24,7 @@ html
 			iframe { border: 0 none;} /* apparently Gecko gives this a default 2 px wide. */
 			body, .pure-pusher { overflow:hidden }
 			#left { width:100%;}
-			div#frameWrap { padding-right: 35px;height: 100%;background-color: #333333;}
+			div#pusherContainer { padding-right: 35px;height: 100%;}
 			/* These rules achieve a change in the width of the frame I added just inside the pure-pusher
 			(the main content of the pure-drawer system) when the check-box is checked. The second line
 			gives it more padding (to leave room for the toolbox) when the pure pusher container is
@@ -35,8 +35,8 @@ html
 			Padding works better than margin because it keeps the area 'under' the toolbox dark
 			so it is less noticeable when the two animations are not perfectly in sync.
 			*/
-			[data-effect='pure-effect-slide'] div#frameWrap {transition-duration: 500ms;}
-			.pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container div#frameWrap { padding-right: 200px;}
+			[data-effect='pure-effect-slide'] div#pusherContainer {transition-duration: 500ms;}
+			.pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container div#pusherContainer { padding-right: 200px;}
 	body
 		//.
 			All the pure- stuff here is the required framework for pure-drawer to make the toolbox appear and disappear
@@ -52,7 +52,7 @@ html
 						| Your browser does not support iframes.
 			div.pure-pusher-container
 				div.pure-pusher
-					#frameWrap
+					#pusherContainer
 						#left
 							iframe#page(width='100%', height='100%', src='{simulatedPageFileInBookFolder}') .
 								| Your browser does not support iframes.

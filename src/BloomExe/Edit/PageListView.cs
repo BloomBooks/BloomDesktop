@@ -23,6 +23,7 @@ namespace Bloom.Edit
 			_model = model;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
+			this.BackColor = Palette.SidePanelBackgroundColor;
 
 			_thumbNailList.Thumbnailer = thumbnailProvider;
 			_thumbNailList.CanSelect = true;

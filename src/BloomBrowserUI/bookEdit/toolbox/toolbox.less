@@ -3,7 +3,7 @@
 @import (less) "../../node_modules/toastr/toastr.less";
 @import "../../bloomUI.less";
 
-@toolboxBackgroundColor: @DarkBackgroundColor;
+@toolboxBackgroundColor: @bloom-panelBackground;
 @helpLinkTopMargin: 45px;
 
 div.toolboxRoot {
@@ -178,4 +178,23 @@ div.checkbox-label {
 
 .hideExperimental .experimental {
     display: none;
+}
+
+// override the color in this lib, which isn't under less control
+.pure-drawer,
+.pure-toggle-label {
+    background-color: @bloom-darkestBackground !important;
+    top: 0 !important; // this is just needed for the button (which is the "toggle-label")
+}
+#pusherContainer {
+    background-color: @bloom-darkestBackground !important;
+}
+#toolbox h3 {
+    background: none;
+    background-color: @bloom-unselectedTabBackground;
+    border-color: @bloom-unselectedTabBackground;
+    &.ui-state-hover,
+    &.ui-state-active {
+        background-color: @bloom-blue !important;
+    }
 }

@@ -1,6 +1,8 @@
 
 ## 4.5
 
+⭐ We have adjusted the background colors in order to provide a higher contrast for those with poor screens, lighting, or vision.
+
 ### UI Languages
 
 ⭐ We can now specify "fallback languages" for the Bloom user interface. Previously, the fallback was always English. Now, for example, if we have a UI translation in a Mayan language, we would set the fallback to Spanish. That way, if something on screen has not been translated yet, the user will see the Spanish, rather than the English.

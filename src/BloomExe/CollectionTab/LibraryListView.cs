@@ -76,15 +76,18 @@ namespace Bloom.CollectionTab
 			_sourceBooksFlow.Controls.Clear();
 			_sourceBooksFlow.HorizontalScroll.Visible = false;
 			_sourceBooksFlow.SizeChanged += _sourceBooksFlow_SizeChanged;
-
+			_sourceBooksFlow.BackColor = Palette.GeneralBackground;
+			splitContainer1.BackColor =  Palette.BookListSplitterColor;
 			if (!_model.ShowSourceCollections)
 			{
 				splitContainer1.Panel2Collapsed = true;
 			}
-
+			
 			_headerFont = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0, FontStyle.Bold);
 			_editableBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);//, FontStyle.Bold);
 			_collectionBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);
+
+			this.BackColor =  Palette.GeneralBackground;
 
 			//enhance: move to model
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
@@ -293,7 +296,7 @@ namespace Bloom.CollectionTab
 			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
 			var invisibleHackPartner = new Label() {Text = "", Width = 0};
 			_primaryCollectionFlow.Controls.Add(invisibleHackPartner);
-			var primaryCollectionHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
+			var primaryCollectionHeader = new ListHeader() {ForeColor = Palette.LightTextAgainstDarkBackground};
 			primaryCollectionHeader.Label.Text = _model.VernacularLibraryNamePhrase;
 			primaryCollectionHeader.AdjustWidth();
 			_primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
@@ -315,7 +318,7 @@ namespace Bloom.CollectionTab
 					{
 						Text = lockNotice,
 						Size = new Size(_primaryCollectionFlow.Width - 20, 15),
-						ForeColor = Palette.TextAgainstDarkBackground,
+						ForeColor = Palette.LightTextAgainstDarkBackground,
 						Padding = new Padding(10, 0, 0, 0)
 					};
 				_primaryCollectionFlow.Controls.Add(lockNoticeLabel);
@@ -328,7 +331,7 @@ namespace Bloom.CollectionTab
 
 			_sourceBooksFlow.SuspendLayout();
 			_sourceBooksFlow.Controls.Clear();
-			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground, Width = 450, Anchor = AnchorStyles.None };
+			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.LightTextAgainstDarkBackground, Width = 450, Anchor = AnchorStyles.None };
 
 			string shellSourceHeading = LocalizationManager.GetString("CollectionTab.SourcesForNewShellsHeading",
 																				"Sources For New Shells");
@@ -363,7 +366,7 @@ namespace Bloom.CollectionTab
 					{
 						Text = collectionName,
 						Size = GetSizeForLabel(collectionName, _headerFont),
-						ForeColor = Palette.TextAgainstDarkBackground,
+						ForeColor = Palette.LightTextAgainstDarkBackground,
 						Padding = new Padding(10, 0, 0, 0),
 						Anchor = AnchorStyles.None
 					};
@@ -531,7 +534,7 @@ namespace Bloom.CollectionTab
 																"Get more source books at BloomLibrary.org",
 																"Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
 					Margin = new Padding(17, 0, 0, 0),
-					LinkColor = Palette.TextAgainstDarkBackground
+					LinkColor = Palette.LightTextAgainstDarkBackground
 				};
 				bloomLibrayLink.Size = GetSizeForLabel(bloomLibrayLink.Text, bloomLibrayLink.Font);
 				bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
@@ -671,7 +674,7 @@ namespace Bloom.CollectionTab
 				ImageAlign = ContentAlignment.TopCenter,
 				TextAlign = ContentAlignment.BottomCenter,
 				FlatStyle = FlatStyle.Flat,
-				ForeColor = Palette.TextAgainstDarkBackground,
+				ForeColor = Palette.LightTextAgainstDarkBackground,
 				UseMnemonic = false, //otherwise, it tries to interpret '&' as a shortcut
 				ContextMenuStrip = _bookContextMenu,
 				AutoSize = false,
@@ -862,7 +865,7 @@ namespace Bloom.CollectionTab
 				{
 					// BL-2678 don't display menu triangle if there's no menu to display
 					if(!bookButtonInfo.HasNoContextMenu) btn.Paint += btn_Paint;
-					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
+					btn.FlatAppearance.BorderColor = Palette.LightTextAgainstDarkBackground;
 				}
 				else
 				{

@@ -96,6 +96,7 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
+			_menusToolStrip.BackColor = _layoutChoices.BackColor = tableLayoutPanel1.BackColor = Palette.GeneralBackground;
 			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				BackgroundColorsForLinux();
