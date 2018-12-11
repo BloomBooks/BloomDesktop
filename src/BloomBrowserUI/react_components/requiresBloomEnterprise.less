@@ -1,5 +1,5 @@
 @import "../bloomUI.less";
-@noticeColor: #d0ff00;
+
 .requiresBloomEnterprise {
     background-color: @bloom-purple;
     border-radius: 10px;
@@ -33,7 +33,7 @@
     top: 0;
     left: 0;
     right: 0;
-    bottom: 25pt; // allow space for the tool's Help link to remain exposed and active
+    bottom: 0;
     background-color: fade(
         @bloom-blue,
         50%
@@ -41,4 +41,16 @@
     z-index: 2; // Specify a stack order in case you're using a different order for other elements
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+}
+
+// This is positioned to approximate the position of the Help links of the obscured tools.
+// Those links are not shown when the overly is active, but it makes sense to keep the link
+// in the same place for continuity of user experience.
+.requiresEnterpriseOverlay {
+    .helpLinkWrapper {
+        margin-left: 23px;
+        margin-bottom: 11px;
+        color: white;
+    }
 }

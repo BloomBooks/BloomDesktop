@@ -11,7 +11,8 @@ import Link from "../../../react_components/link";
 import HelpLink from "../../../react_components/helpLink";
 import {
     RequiresBloomEnterpriseWrapper,
-    checkIfEnterpriseAvailable
+    checkIfEnterpriseAvailable,
+    BloomEnterpriseAvailableContext
 } from "../../../react_components/requiresBloomEnterprise";
 
 interface IImageDescriptionState {
@@ -52,6 +53,9 @@ export class ImageDescriptionToolControls extends React.Component<
 
     private activeEditable: Element | null;
 
+    private readonly helpId: string =
+        "Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm";
+
     private createCheckboxes() {
         const checkBoxes: JSX.Element[] = [];
         for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
@@ -82,73 +86,90 @@ export class ImageDescriptionToolControls extends React.Component<
     // to the link destination?)
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper className="imageDescriptionToolOuterWrapper">
-                <div
-                    className={
-                        "imageDescriptionTool" +
-                        (this.state.enabled ? "" : " disabled")
-                    }
-                >
-                    <div className="imageDescriptionToolInternalWrapper">
-                        <div className="imgDescLabelBlock">
-                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
-                                Learn to make effective image descriptions:
-                            </Label>
-                            <div className="indentPoet">
-                                <Link
-                                    id="poetDiagram"
-                                    href="https://poet.diagramcenter.org"
-                                    l10nKey="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram"
-                                    l10nComment="English text is the actual link. May not need translation?"
-                                >
-                                    poet.diagramcenter.org
-                                </Link>
-                            </div>
-                            <div className="wrapPlayVideo disabled invisible">
-                                <img
-                                    id="playBloomTrainingVideo"
-                                    src="play.svg"
-                                />
-                                <Link
-                                    id="bloomImageDescriptionTraining"
-                                    className="disabled"
-                                    href=""
-                                    l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
-                                    l10nComment="Link that launches the video"
-                                >
-                                    Bloom training video
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="wrapPlayVideo disabled invisible">
-                            <img id="playBloomTrainingVideo" src="play.svg" />
-                            <Link
-                                id="bloomImageDescriptionTraining"
-                                className="disabled"
-                                href=""
-                                l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
-                                l10nComment="Link that launches the video"
-                            >
-                                Bloom training video
-                            </Link>
-                        </div>
-                        <div className="imgDescLabelBlock">
-                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckDescription">
-                                Check your image description against each of
-                                these reminders:
-                            </Label>
-                        </div>
-                        {this.createCheckboxes()}
-                    </div>
-                    <div className="helpLinkWrapper imgDescLabelBlock">
-                        <HelpLink
-                            helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
-                            l10nKey="Common.Help"
+            <RequiresBloomEnterpriseWrapper
+                className="imageDescriptionToolOuterWrapper"
+                toolHelpId={this.helpId}
+            >
+                <BloomEnterpriseAvailableContext.Consumer>
+                    {enterpriseAvailable => (
+                        <div
+                            className={
+                                "imageDescriptionTool" +
+                                (this.state.enabled ? "" : " disabled")
+                            }
                         >
-                            Help
-                        </HelpLink>
-                    </div>
-                </div>
+                            <div className="imageDescriptionToolInternalWrapper">
+                                <div className="imgDescLabelBlock">
+                                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
+                                        Learn to make effective image
+                                        descriptions:
+                                    </Label>
+                                    <div className="indentPoet">
+                                        <Link
+                                            id="poetDiagram"
+                                            href="https://poet.diagramcenter.org"
+                                            l10nKey="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram"
+                                            l10nComment="English text is the actual link. May not need translation?"
+                                        >
+                                            poet.diagramcenter.org
+                                        </Link>
+                                    </div>
+                                    <div className="wrapPlayVideo disabled invisible">
+                                        <img
+                                            id="playBloomTrainingVideo"
+                                            src="play.svg"
+                                        />
+                                        <Link
+                                            id="bloomImageDescriptionTraining"
+                                            className="disabled"
+                                            href=""
+                                            l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
+                                            l10nComment="Link that launches the video"
+                                        >
+                                            Bloom training video
+                                        </Link>
+                                    </div>
+                                </div>
+                                <div className="wrapPlayVideo disabled invisible">
+                                    <img
+                                        id="playBloomTrainingVideo"
+                                        src="play.svg"
+                                    />
+                                    <Link
+                                        id="bloomImageDescriptionTraining"
+                                        className="disabled"
+                                        href=""
+                                        l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
+                                        l10nComment="Link that launches the video"
+                                    >
+                                        Bloom training video
+                                    </Link>
+                                </div>
+                                <div className="imgDescLabelBlock">
+                                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckDescription">
+                                        Check your image description against
+                                        each of these reminders:
+                                    </Label>
+                                </div>
+                                {this.createCheckboxes()}
+                            </div>
+                            {enterpriseAvailable ? (
+                                <div className="helpLinkWrapper imgDescLabelBlock">
+                                    <HelpLink
+                                        helpId={this.helpId}
+                                        l10nKey="Common.Help"
+                                    >
+                                        Help
+                                    </HelpLink>
+                                </div>
+                            ) : (
+                                <div>
+                                    {/* When enterprise is not available, the obscuring overlay displays the Help link */}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </BloomEnterpriseAvailableContext.Consumer>
             </RequiresBloomEnterpriseWrapper>
         );
     }

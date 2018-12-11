@@ -100,6 +100,9 @@ export class SignLanguageToolControls extends React.Component<
     private timerId: number;
     private recordingStarted: number;
 
+    private readonly helpId: string =
+        "Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm";
+
     public render() {
         let videoStats = <div id="videoStatsWrapper" />;
         let trimSlider = <div id="trimWrapper" />;
@@ -128,7 +131,7 @@ export class SignLanguageToolControls extends React.Component<
             trimSlider = this.getTrimSlider([0, 5], 5);
         }
         return (
-            <RequiresBloomEnterpriseWrapper>
+            <RequiresBloomEnterpriseWrapper toolHelpId={this.helpId}>
                 <BloomEnterpriseAvailableContext.Consumer>
                     {enterpriseAvailable => (
                         <div
@@ -305,14 +308,20 @@ export class SignLanguageToolControls extends React.Component<
                                     {videoStats}
                                 </Expandable>
                             </div>
-                            <div className="helpLinkWrapper">
-                                <HelpLink
-                                    l10nKey="Common.Help"
-                                    helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm"
-                                >
-                                    Help
-                                </HelpLink>
-                            </div>
+                            {enterpriseAvailable ? (
+                                <div className="helpLinkWrapper">
+                                    <HelpLink
+                                        l10nKey="Common.Help"
+                                        helpId={this.helpId}
+                                    >
+                                        Help
+                                    </HelpLink>
+                                </div>
+                            ) : (
+                                <div>
+                                    {/* When enterprise is not available, the obscuring overlay displays the Help link */}
+                                </div>
+                            )}
                         </div>
                     )}
                 </BloomEnterpriseAvailableContext.Consumer>
