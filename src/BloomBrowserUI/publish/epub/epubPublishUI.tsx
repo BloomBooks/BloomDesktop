@@ -8,6 +8,7 @@ import { Checkbox } from "../../react_components/checkbox";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import { H1, H2, IUILanguageAwareProps } from "../../react_components/l10n";
+import PWithLink from "../../react_components/pWithLink";
 import "./epubPublishUI.less";
 import EpubPreview from "./EpubPreview";
 // import { RadioGroup, Radio } from "../../react_components/radio";
@@ -75,6 +76,14 @@ class EpubPublishUI extends React.Component<
                         <EpubPreview
                             websocketClientContext={kWebSocketClientContext}
                         />
+                        <PWithLink
+                            className="readium-credit"
+                            l10nKey="PublishTab.Epub.ReadiumCredit"
+                            href="https://readium.org/"
+                        >
+                            This ePUB preview is provided by [Readium]. This
+                            book may render differently in various ePUB readers.
+                        </PWithLink>
                     </section>
                     <section className="publish-section">
                         <H1 l10nKey="PublishTab.Publish">Publish</H1>
