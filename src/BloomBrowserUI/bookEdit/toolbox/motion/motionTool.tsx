@@ -675,7 +675,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             return;
         }
         const page = this.getPage();
-        if (!page) return; // paranoid
+        if (!page || !page.documentElement) return; // paranoid
         const contentWindow = this.getPageFrame().contentWindow;
         if (!contentWindow) return; // paranoid
 
@@ -971,7 +971,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (!page) return;
         (page.getElementsByClassName(
             "bloom-page"
-        )[0] as HTMLElement).style.visibility = "";
+        )[0] as HTMLElement).style.visibility =
+            "";
         // stop the animation itself by removing the root elements it adds.
         this.removeElt(this.animationStyleElement);
         this.animationStyleElement = null;

@@ -32,7 +32,7 @@ import { invariant } from "mobx/lib/internal";
 interface IState {
     enterpriseStatus: string; // which radio button is active, controls the radio group
     subscriptionCode: string; // The content of the code box
-    subscriptionExpiry: Date; // displayed if all is well
+    subscriptionExpiry: Date | null; // displayed if all is well
     subscriptionSummary: string; // markdown of the summary of the branding when identified
     controlState: string; // controls which parts of the dialog are visible (see above)
     // Set to the branding stored in the bloomCollection, in the special case
@@ -67,7 +67,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     }
     // I don't understand why this is necessary but without it the selection
     // moves to the end of the subscription code after every keystroke.
-    private oldSelectionPosition: number = 0;
+    private oldSelectionPosition: number | null = 0;
 
     public componentDidUpdate() {
         // somehow this can fail when we are hiding the control. Just ignore it.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -73,6 +73,42 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Returns the sequence of bloom-editable divs that would normally be created as the content of an empty bloom-translationGroup,
+		/// given the current collection and book settings, with the classes that would normally be set on them prior to editing to make the right ones visible etc.
+		/// </summary>
+		public static string GetDefaultTranslationGroupContent(XmlNode pageOrDocumentNode, Book currentBook)
+		{
+			// First get a XMLDocument so that we can start creating elements using it.
+			XmlDocument ownerDocument = pageOrDocumentNode?.OwnerDocument;
+			if (ownerDocument == null)	// the OwnerDocument child can be null if pageOrDocumentNode is a document itself
+			{
+				if (pageOrDocumentNode is XmlDocument)
+				{
+					ownerDocument = pageOrDocumentNode as XmlDocument;
+				}
+				else
+				{
+					return "";
+				}
+			}
+
+			// We want to use the usual routines that insert the required bloom-editables and classes into existing translation groups.
+			// To make this work we make a temporary translation group
+			// Since one of the routines expects the TG to be a descendant of the element passed to it, we make another layer of temporary wrapper around the translation group as well
+			var containerElement = ownerDocument.CreateElement("div");
+			containerElement.SetAttribute("class", "bloom-translationGroup");
+
+			var wrapper = ownerDocument.CreateElement("div");
+			wrapper.AppendChild(containerElement);
+
+			PrepareElementsInPageOrDocument(containerElement, currentBook.CollectionSettings);
+
+			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.CollectionSettings, currentBook.CollectionSettings.Language1Iso639Code,
+				currentBook.MultilingualContentLanguage2, currentBook.MultilingualContentLanguage3);
+
+			return containerElement.InnerXml;
+		}
 
 		/// <summary>
 		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,

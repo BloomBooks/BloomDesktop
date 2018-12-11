@@ -29,6 +29,7 @@ namespace Bloom.web.controllers
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
 		private bool _doingEditOutsideBloom;
+		private bool _importedVideoIntoBloom;
 		private const string noVideoClass = "bloom-noVideoSelected";
 
 		public EditingView View { get; set; }
@@ -188,6 +189,7 @@ namespace Bloom.web.controllers
 			}));
 			if (!string.IsNullOrEmpty(path))
 			{
+				_importedVideoIntoBloom = true;
 				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
 				RobustFile.Copy(path, newVideoPath);
 				var relativePath = BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
@@ -195,12 +197,10 @@ namespace Bloom.web.controllers
 			}
 			else
 			{
+				// If the user canceled, we didn't exactly succeed, but having the user cancel is such a normal
+				// event that posting a failure, which is a nuisance to ignore, is not warranted.
 				request.ReplyWithText("");
 			}
-
-			// If the user canceled, we didn't exactly succeed, but having the user cancel is such a normal
-			// event that posting a failure, which is a nuisance to ignore, is not warranted.
-			request.PostSucceeded();
 		}
 
 		// Request from sign language tool to delete the selected video.
@@ -477,6 +477,15 @@ namespace Bloom.web.controllers
 			// will stay disabled. But I don't see a better answer, at least if we keep both commands.
 			if (_doingEditOutsideBloom)
 				return;
+			// On Linux, this method interferes with successfully referencing a newly imported video file.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6723.  Ignoring just the one call to
+			// this method suffices for things  to work.  (On Windows, the sequence of events differs, but
+			// this change is safe.)
+			if (_importedVideoIntoBloom)
+			{
+				_importedVideoIntoBloom = false;
+				return;
+			}
 			var videoFolderPath = BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath);
 			var filesModifiedSinceDeactivate = new DirectoryInfo(videoFolderPath)
 				.GetFiles("*.mp4")
@@ -573,7 +582,6 @@ namespace Bloom.web.controllers
 			// Add attributes needed for videos to work in Readium and possibly other readers.
 			// Existence of the 'controls' attribute is enough to trigger controls
 			videoElement.SetAttribute("controls", string.Empty);
-			videoElement.SetAttribute("width", "100%");
 			return tempName;
 		}
 

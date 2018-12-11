@@ -24,14 +24,6 @@ ENDLAYOUTS
 .month table {
     padding: 1cm;
 }
-div.calendarMonthTop div.imageHolder {
-    /*+placement:anchor-top-left 42px 45px;*/
-    position: absolute;
-    left: 42px;
-    top: 45px;
-    width: 690px;
-    height: 383px;
-}
 .month thead td {
     font-weight: bold;
     font-size: 14pt;
@@ -97,16 +89,25 @@ div.calendarMonthTop div.imageHolder {
 }
 @Border: 5mm;
 @DayTableWidth: @A5PageWidth - (2 * @Border);
-/*Since this is calendar-fold, we want to defeat the left page vs. right page margin shifting
-	BL-2310 does this in basePage.css, but we need a smaller margin for this particular page
+/*Since this will be calendarFold (when Publishing), we want to defeat the left page vs. right page margin shifting.
+	BL-2310 does this in basePage.css, but we need a smaller margin for these particular pages
 	which makes the 'left' rule here need the '!important' tag (since it is less 'specific';
-	we want it to apply to Edit mode too.) */
-.A5Landscape.calendarMonthBottom .marginBox {
-    top: @Border;
-    left: @Border !important;
-    margin-left: 0;
-    width: @DayTableWidth;
-    height: @A5PageHeight - (2 * @Border);
+    we want it to apply to Edit mode too.)
+*/
+.A5Landscape {
+    &.calendarMonthBottom,
+    &.calendarMonthTop {
+        .marginBox {
+            top: @Border;
+            left: @Border !important;
+            margin-left: 0;
+            width: @DayTableWidth;
+            height: @A5PageHeight - (2 * @Border);
+        }
+        .bloom-imageContainer img {
+            max-width: 100% !important;
+        }
+    }
 }
 
 /* bilingual */

@@ -18,7 +18,7 @@ export class DaisyChecks extends React.Component<
     IUILanguageAwareProps,
     IState
 > {
-    private progressBox: ProgressBox;
+    private progressBox: ProgressBox | null;
     public readonly state: IState = {
         reportUrl: ""
     };
@@ -35,7 +35,7 @@ export class DaisyChecks extends React.Component<
                 this.setState({ reportUrl: result.data });
             })
             .catch(error => {
-                this.progressBox.writeLine("Failed");
+                if (this.progressBox) this.progressBox.writeLine("Failed");
             });
     }
     public render() {

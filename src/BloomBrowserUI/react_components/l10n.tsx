@@ -194,7 +194,10 @@ export class LocalizableElement<
         return <span className={parts.l10nClass}>{parts.text}</span>;
     }
 
-    private getLocalizedContentAndClass(): { text: string; l10nClass: string } {
+    protected getLocalizedContentAndClass(): {
+        text: string;
+        l10nClass: string;
+    } {
         let l10nClass = "untranslated";
         let text = this.getOriginalStringContent();
         if (this.props.alreadyLocalized) {

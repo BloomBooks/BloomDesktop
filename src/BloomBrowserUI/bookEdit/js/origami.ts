@@ -7,22 +7,7 @@ import "split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { BloomApi } from "../../utils/bloomApi";
 
-//I was not able to get css-element-queries to load from here.. I think this should have worked:
-//import {ElementQueries} from 'css-element-queries'; //nb: this in turn loads resizesensor.js from the same module
-//... but ElementQueries was always undefined. The JS that was generated looked suspicious,
-// like css-element-queries.ElementQueries.ElementQueries.init()
-//... maybe the css-element-queries.d.ts I did is wrong? I don't know if the d.ts has any effect on the webpack output.
-// So then I tried this:
-//import CEQ = require('css-element-queries'); //nb: this in turn loads resizesensor.js from the same module
-//... but it faired no better. CEQ was just an object with no methods.
-//... Next I tried this montstrosity to bypass making it a module
-// import '../../node_modules/css-element-queries/css-element-queries/src/ResizeSensor.js';
-// import '../../node_modules/css-element-queries/css-element-queries/src/ElementQueries.js';
-//... and that worked, but I didn't like having that path and bypassing what css-element-quereis/index.js does.
-//... What I think is happening is that the module just isn't loading like a module, but rather putting itself
-//... on window. So let's do the minimum to get that, then just use ElementQueries off of window.
-import dummyToGetElementQueriesLoadedIntoWindow = require("css-element-queries");
-var pretentToUseDummy = dummyToGetElementQueriesLoadedIntoWindow; //without this, something in our build process discards the import
+import { ElementQueries } from "css-element-queries";
 
 $(() => {
     $("div.split-pane").splitPane();
@@ -108,7 +93,7 @@ function setupLayoutMode() {
     });
 
     //have  css-element-queries notice the new elements and track them, adding classes that let rules trigger depending on size
-    (<any>window).ElementQueries.init();
+    ElementQueries.init();
 }
 
 function layoutToggleClickHandler() {
@@ -156,7 +141,7 @@ function splitClickHandler() {
     else if ($(this).hasClass("add-left"))
         performSplit(myInner, "vertical", "right", "left", true);
 
-    (<any>window).ElementQueries.init(); //notice the new elements and track them, adding classes that let rules trigger depending on size
+    ElementQueries.init(); //notice the new elements and track them, adding classes that let rules trigger depending on size
 }
 
 function performSplit(
