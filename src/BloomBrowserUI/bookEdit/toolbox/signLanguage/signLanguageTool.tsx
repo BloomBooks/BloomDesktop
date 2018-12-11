@@ -51,21 +51,6 @@ interface IComponentState {
     enterprise: boolean;
 }
 
-// incomplete typescript definitions for MediaRecorder and related types.
-// Can't find complete ones, so rather than just do without type checking altogether,
-// I've made declarations as accurately as I can figure out for the methods we actually use.
-interface BlobEvent {
-    data: Blob;
-}
-
-interface MediaRecorder {
-    new (source: MediaStream, options: any);
-    start(): void;
-    stop(): void;
-    onDataAvailable: (ev: BlobEvent) => void;
-    onstop: () => void;
-}
-
 declare var MediaRecorder: {
     prototype: MediaRecorder;
     new (s: MediaStream, options: any): MediaRecorder;
@@ -720,7 +705,7 @@ export class SignLanguageToolControls extends React.Component<
             this.videoStream as MediaStream,
             options
         );
-        this.mediaRecorder.onDataAvailable = e => {
+        this.mediaRecorder.ondataavailable = e => {
             // called periodically during recording and once more with the rest of the data
             // when recording stops. So all the chunks which make up the recording come here.
             this.chunks.push(e.data);
