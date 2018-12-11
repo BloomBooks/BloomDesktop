@@ -43,7 +43,6 @@
 ///<reference path="../../../typings/jquery/jquery.d.ts"/>
 ///<reference path="../../../typings/toastr/toastr.d.ts"/>
 
-import * as JQuery from "jquery";
 import * as $ from "jquery";
 import { theOneLibSynphony } from "../readers/libSynphony/synphony_lib";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -52,6 +51,7 @@ import axios from "axios";
 import { BloomApi } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
+import { ToolBox } from "../toolbox";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -181,12 +181,7 @@ export default class AudioRecording {
                 this.audioRecordingMode = AudioRecordingMode.Sentence;
             }
 
-            // Make the checkbox reflect the state
-            if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
-                this.recordingModeInput.checked = true;
-            } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-                this.recordingModeInput.checked = false;
-            }
+            this.setRecordingModeInput();
 
             // Execute anything that depends on the initialization
             if (callback) {
@@ -194,14 +189,18 @@ export default class AudioRecording {
             }
         };
 
-        if (this.getPage().find("[data-audioRecordingMode]").length > 0) {
+        if (
+            this.getPageDocBody().find("[data-audioRecordingMode]").length > 0
+        ) {
             // We are able to identify and load the mode directly from the HTML
-            const audioRecordingModeStr: string = this.getPage()
+            const audioRecordingModeStr: string = this.getPageDocBody()
                 .find("[data-audioRecordingMode]")
                 .first()
                 .attr("data-audioRecordingMode");
             doWhenRecordingModeIsKnown(audioRecordingModeStr);
-        } else if (this.getPage().find("span.audio-sentence").length > 0) {
+        } else if (
+            this.getPageDocBody().find("span.audio-sentence").length > 0
+        ) {
             // This may happen when loading books from 4.3 or earlier that already have text recorded,
             // and is especially important if the collection default is set to anything other than Sentence.
             doWhenRecordingModeIsKnown(AudioRecordingMode.Sentence);
@@ -217,6 +216,27 @@ export default class AudioRecording {
         }
     }
 
+    private setRecordingModeInput() {
+        // We initialize the checkbox based on our state and whether this is an xMatter
+        // page or not. We ran into a problem (BL-6737) where audio was lost if it was
+        // recorded in TextBox mode, because the xMatter replacement code (using DataDiv)
+        // didn't handle that case. We decided it was best to only allow Sentence mode on
+        // xMatter pages.
+        if (ToolBox.isXmatterPage()) {
+            this.recordingModeInput.checked = true;
+            this.disableRecordingModeControl(false);
+            // We want this setting change to be a temporary thing, in the sense that
+            // when we move to a non-xMatter (normal content) page, the UI will still be
+            // in whatever mode the user had it in. Since the mode input is disabled, it
+            // won't get set to anything else until we select a non-xMatter page.
+            this.audioRecordingMode = AudioRecordingMode.Sentence;
+        } else if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
+            this.recordingModeInput.checked = true;
+        } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+            this.recordingModeInput.checked = false;
+        }
+    }
+
     public setupForListen() {
         $("#player").bind("ended", e => this.playEnded());
         $("#player").bind("error", e => {
@@ -229,7 +249,7 @@ export default class AudioRecording {
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
 
-        this.hiddenSourceBubbles = this.getPage().find(
+        this.hiddenSourceBubbles = this.getPageDocBody().find(
             ".uibloomSourceTextsBubble"
         );
         this.hiddenSourceBubbles.hide();
@@ -258,11 +278,12 @@ export default class AudioRecording {
     // or saving (leaving) pages.
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
-        var page = this.getPage();
+        const page = this.getPageDocBody();
         page.find(".ui-audioCurrent")
             .removeClass("ui-audioCurrent")
             .removeClass("disableHighlight");
     }
+
     public stopListeningForLevels() {
         WebSocketManager.closeSocket(kWebsocketContext);
     }
@@ -273,7 +294,7 @@ export default class AudioRecording {
     // And BL-5457: Check that we actually have recordable text in the divs we return.
     private getRecordableDivs(): JQuery {
         var $this = this;
-        var divs = this.getPage().find(
+        var divs = this.getPageDocBody().find(
             ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
         );
         return divs.filter(":visible").filter(function(idx, elt) {
@@ -296,20 +317,20 @@ export default class AudioRecording {
 
         var next = this.getNextAudioElement();
         if (!next) return;
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         this.setCurrentAudioElement(current, $(next));
         this.changeStateAndSetExpected("record");
     }
 
     private getNextAudioElement(): HTMLElement {
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         return next.length === 0 ? null : next[0];
     }
 
     private getPreviousAudioElement(): HTMLElement {
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return null;
@@ -369,7 +390,7 @@ export default class AudioRecording {
 
     private moveToPrevAudioElement(): void {
         toastr.clear();
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
@@ -400,7 +421,7 @@ export default class AudioRecording {
 
         toastr.clear();
         this.recording = true;
-        var current: JQuery = this.getPage().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var id = current.attr("id");
         axios
             .post("/bloom/api/audio/startRecord?id=" + id)
@@ -449,7 +470,7 @@ export default class AudioRecording {
     // or even just stepping through with Next.
     private durationChanged(): void {
         this.awaitingNewRecording = false;
-        var current = this.getPage().find(".ui-audioCurrent");
+        var current = this.getPageDocBody().find(".ui-audioCurrent");
         current.attr(
             "data-duration",
             (<HTMLAudioElement>$("#player").get(0)).duration
@@ -473,7 +494,7 @@ export default class AudioRecording {
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     public listen(): void {
-        var original: JQuery = this.getPage().find(".ui-audioCurrent");
+        var original: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
         var audioElts = this.getAudioElements();
         var first = audioElts.eq(0);
         this.setCurrentAudioElement(original, first, true);
@@ -491,7 +512,9 @@ export default class AudioRecording {
 
     private playEnded(): void {
         if (this.playingAll) {
-            var current: JQuery = this.getPage().find(".ui-audioCurrent");
+            var current: JQuery = this.getPageDocBody().find(
+                ".ui-audioCurrent"
+            );
             var audioElts = this.getAudioElements();
             var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
@@ -640,7 +663,7 @@ export default class AudioRecording {
                 // Note: this is not foolproof because the durationchange handler is
                 // being called asynchronously with stale data and sometimes restoring
                 // the deleted attribute.
-                var current = this.getPage().find(
+                var current = this.getPageDocBody().find(
                     "#" + this.idOfCurrentSentence
                 );
                 if (current.length !== 0) {
@@ -700,15 +723,17 @@ export default class AudioRecording {
         }
     }
 
-    private disableRecordingModeControl() {
+    private disableRecordingModeControl(
+        addNotificationHandler: boolean = true
+    ) {
         // Note: Possibly could be neat to check if all the audio is re-usable before disabling.
         //       (But then what happens if they modify the text box?  Well, it's kinda awkward, but it's already awkward if they modify the text in by-sentence mode)
-        if (!this.recordingModeInput.disabled) {
-            this.recordingModeInput.disabled = true;
+        this.recordingModeInput.disabled = true;
+        const handlerJquery = $("#" + kRecordingModeClickHandler);
+        handlerJquery.off();
+        if (addNotificationHandler) {
             // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
-            $("#" + kRecordingModeClickHandler)
-                .off()
-                .click(e => this.notifyRecordingModeControlDisabled());
+            handlerJquery.click(e => this.notifyRecordingModeControlDisabled());
         }
     }
 
@@ -733,7 +758,7 @@ export default class AudioRecording {
     }
 
     // The body of the editable page, a root for searching for document content.
-    public getPage(): JQuery {
+    public getPageDocBody(): JQuery {
         var page = this.getPageFrame();
         if (!page) return null;
         return $(page.contentWindow.document.body);
@@ -820,7 +845,7 @@ export default class AudioRecording {
             return;
         }
 
-        const audioCurrentList = this.getPage().find(".ui-audioCurrent");
+        const audioCurrentList = this.getPageDocBody().find(".ui-audioCurrent");
 
         if (isEarlyAbortEnabled && audioCurrentList.length >= 1) {
             // audioCurrent highlight is already working, so don't bother trying to fix anything up.
@@ -829,7 +854,7 @@ export default class AudioRecording {
             return;
         }
 
-        const firstSentence = this.getPage()
+        const firstSentence = this.getPageDocBody()
             .find(kAudioSentenceClassSelector)
             .first();
         if (firstSentence.length === 0) {
@@ -1430,7 +1455,7 @@ export default class AudioRecording {
         // Enhance: Consider whether it'd be a good idea to disable click events on these buttons, but still leave the buttons in their previous visual state.
         //          In theory, there can be a small delay between when we are supposed to change state (right now) and when we actually determine the correct state (after a callback)
 
-        if (this.getPage().find(".ui-audioCurrent").length === 0) {
+        if (this.getPageDocBody().find(".ui-audioCurrent").length === 0) {
             // We have reached an unexpected state :(
             // (It can potentially happen if changes applied to the markup get wiped out and overwritten e.g. by CkEditor Onload())
             if (numRetriesRemaining > 0) {
@@ -1495,7 +1520,7 @@ export default class AudioRecording {
         }
 
         //set listen button based on whether we have an audio at all for this page
-        var ids = [];
+        const ids = [];
         this.getAudioElements().each(function() {
             ids.push(this.id);
         });
@@ -1514,7 +1539,14 @@ export default class AudioRecording {
                 // This handles the case where AudioRecording.HandleEnableListenButton() (in C#)
                 // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
                 this.setStatus("listen", Status.Disabled);
-                this.enableRecordingModeControl();
+                // In this case (no audio), we don't want to enable the checkbox if we are on
+                // an xMatter page (BL-6737). It is probably already disabled at this point, but
+                // we might as well play it safe.
+                if (ToolBox.isXmatterPage()) {
+                    this.disableRecordingModeControl();
+                } else {
+                    this.enableRecordingModeControl();
+                }
             });
     }
 
