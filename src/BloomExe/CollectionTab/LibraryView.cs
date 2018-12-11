@@ -25,7 +25,7 @@ namespace Bloom.CollectionTab
 		{
 			_model = model;
 			InitializeComponent();
-
+			splitContainer1.BackColor = Palette.BookListSplitterColor; // controls the left vs. right splitter
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			_collectionListView = libraryListViewFactory();

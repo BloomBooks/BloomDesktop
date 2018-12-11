@@ -300,7 +300,7 @@ namespace Bloom.Workspace
 
 					if (selected || hovered)
 					{
-						Color fill = (hovered) ? Palette.LightTextAgainstDarkBackground : Color.FromArgb(64, 64, 64);
+						Color fill = (hovered) ? Color.WhiteSmoke : Palette.SelectedTabBackground;
 						if (_renderMode == ToolStripRenderMode.Professional)
 						{
 							fill = (hovered) ? ProfessionalColors.ButtonCheckedGradientBegin : ProfessionalColors.ButtonCheckedGradientEnd;
@@ -313,7 +313,7 @@ namespace Bloom.Workspace
 					}
 					else
 					{
-						using (SolidBrush br = new SolidBrush(e.Item.BackColor))
+						using (SolidBrush br = new SolidBrush(Palette.UnselectedTabBackground))
 							g.FillPath(br, gp);
 					}
 
@@ -388,6 +388,8 @@ namespace Bloom.Workspace
 					e.TextColor = btn.HotTextColor;
 				else if (btn.Checked)
 					e.TextColor = btn.SelectedTextColor;
+				else
+					e.TextColor = Palette.LightTextAgainstDarkBackground;
 			}
 
 			e.TextRectangle = rect;

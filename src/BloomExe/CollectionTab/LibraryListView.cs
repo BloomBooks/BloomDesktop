@@ -76,15 +76,18 @@ namespace Bloom.CollectionTab
 			_sourceBooksFlow.Controls.Clear();
 			_sourceBooksFlow.HorizontalScroll.Visible = false;
 			_sourceBooksFlow.SizeChanged += _sourceBooksFlow_SizeChanged;
-
+			_sourceBooksFlow.BackColor = Palette.GeneralBackground;
+			splitContainer1.BackColor =  Palette.BookListSplitterColor;
 			if (!_model.ShowSourceCollections)
 			{
 				splitContainer1.Panel2Collapsed = true;
 			}
-
+			
 			_headerFont = new Font(SystemFonts.DialogFont.FontFamily, (float)10.0, FontStyle.Bold);
 			_editableBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);//, FontStyle.Bold);
 			_collectionBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);
+
+			this.BackColor =  Palette.GeneralBackground;
 
 			//enhance: move to model
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
