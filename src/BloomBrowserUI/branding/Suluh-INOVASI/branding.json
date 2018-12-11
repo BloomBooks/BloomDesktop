@@ -1,0 +1,22 @@
+{
+    "presets": [
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "Yayasan Suluh Insan Lestari",
+            "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<div class='titlePageBrandingNotice'>Program ini didukung oleh INOVASI bekerjasama dengan SULUH INSAN LESTARI</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img src='back.png'/>",
+            "condition": "always"
+        }
+    ]
+}

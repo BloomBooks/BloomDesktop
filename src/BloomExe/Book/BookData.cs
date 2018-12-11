@@ -11,6 +11,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
+using SIL.Extensions;
 using SIL.Linq;
 using SIL.Text;
 using SIL.Xml;
@@ -1324,6 +1325,21 @@ namespace Bloom.Book
 							break;
 						default: // any condition we don't recognize, don't do it.
 							continue;
+					}
+
+					if (item.DataBook == "copyright")
+					{
+						var presetContainsMoreThanPublisher = item.Content.SplitTrimmed(' ').Any(word =>
+							word == "©" || word.ToLowerInvariant() == "copyright" || word.StartsWith("20"));
+						if (!presetContainsMoreThanPublisher)
+						{
+							// if there is nothing in the copyright field
+							if (string.IsNullOrWhiteSpace(GetVariableOrNull("copyright", "*")))
+							{
+								item.Content = "Copyright © " + DateTime.Now.Year.ToString() + " " + item.Content;
+							}
+							else continue;
+						}
 					}
 					Set(item.DataBook, item.Content, item.Lang);
 				}
