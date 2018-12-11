@@ -221,8 +221,8 @@ export class LocalizableElement<
             (controlIsEnabled
                 ? this.state.tipEnabledTranslation
                 : this.state.tipDisabledTranslation
-                    ? this.state.tipDisabledTranslation
-                    : this.state.tipEnabledTranslation) || ""
+                ? this.state.tipDisabledTranslation
+                : this.state.tipEnabledTranslation) || ""
         );
     }
 
@@ -302,6 +302,47 @@ export class String extends LocalizableElement<
 > {
     public render() {
         return this.getLocalizedContent();
+    }
+}
+
+export interface ILocalizationPropsWithLink extends ILocalizationProps {
+    l10nKey: string;
+    l10nComment?: string;
+    l10nTipEnglishEnabled?: string;
+    l10nTipEnglishDisabled?: string;
+    alreadyLocalized?: boolean; // true if translated by C#-land
+    l10nParam0?: string;
+    l10nParam1?: string;
+    href: string;
+}
+
+export class PWithLink extends LocalizableElement<
+    ILocalizationPropsWithLink,
+    ILocalizationState
+> {
+    public render() {
+        // Text within [] is for the link.
+        const text = this.getPlainLocalizedContent();
+        const idxOpen = text.indexOf("[");
+        const idxClose = text.indexOf("]", idxOpen + 1);
+        if (idxOpen >= 0 && idxClose > idxOpen) {
+            // We found the link text, piece together the desired output
+            return (
+                <p className={this.getClassName()}>
+                    {text.substring(0, idxOpen)}
+                    <a href={this.props.href}>
+                        {text.substring(idxOpen + 1, idxClose)}
+                    </a>
+                    {text.substring(idxClose + 1)}
+                </p>
+            );
+        }
+        // We couldn't find the link text, return everything as a link.
+        return (
+            <p className={this.getClassName()}>
+                <a href={this.props.href}>{text}</a>
+            </p>
+        );
     }
 }
 
