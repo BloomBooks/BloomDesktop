@@ -1,6 +1,7 @@
 import * as React from "react";
 import "./requiresBloomEnterprise.less";
 import { Link } from "./link";
+import { HelpLink } from "./helpLink";
 import { BloomApi } from "../utils/bloomApi";
 
 export interface IComponentState {
@@ -61,6 +62,7 @@ export interface IWrapperComponentState {
 
 export interface IRequiresBloomEnterpriseProps {
     className?: string;
+    toolHelpId?: string;
 }
 
 // A note about the default value (false): this would only be used if a component had a context-consumer but no parent had created a context-provider.
@@ -92,6 +94,16 @@ export class RequiresBloomEnterpriseWrapper extends React.Component<
                     {this.state.enterpriseAvailable || (
                         <div className="requiresEnterpriseOverlay">
                             <RequiresBloomEnterprise />
+                            {this.props.toolHelpId && (
+                                <div className="helpLinkWrapper">
+                                    <HelpLink
+                                        l10nKey="Common.Help"
+                                        helpId={this.props.toolHelpId}
+                                    >
+                                        Help
+                                    </HelpLink>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

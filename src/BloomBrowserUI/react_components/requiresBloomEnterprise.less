@@ -1,5 +1,5 @@
 @import "../bloomUI.less";
-@noticeColor: #d0ff00;
+
 .requiresBloomEnterprise {
     background-color: @bloom-purple;
     border-radius: 10px;
@@ -7,21 +7,6 @@
     color: black;
     padding: 5px;
     display: flex;
-}
-@triangleSize: 18px;
-.redTriangle {
-    width: 0;
-    height: 0;
-    border-left: @triangleSize * 0.666 solid transparent;
-    border-right: @triangleSize * 0.666 solid transparent;
-    border-bottom: @triangleSize solid @bloom-red;
-    color: @noticeColor;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.triangleContent {
-    margin-left: -2px;
 }
 
 // Rule has to be very specific to override jquery rule
@@ -48,9 +33,19 @@
     top: 0;
     left: 0;
     right: 0;
-    bottom: 25pt; // allow space for the tool's Help link to remain exposed and active
+    bottom: 0;
     background-color: rgba(0, 0, 0, 0.5); // Black background with opacity
     z-index: 2; // Specify a stack order in case you're using a different order for other elements
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+}
+
+// This is carefully positioned to overlay the Help links of the obscured tools.
+.requiresEnterpriseOverlay {
+    .helpLinkWrapper {
+        margin-left: 23px;
+        margin-bottom: 11px;
+        color: white;
+    }
 }

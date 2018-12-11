@@ -32,9 +32,15 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
     private simulatingCataracts: boolean;
     private simulatingColorBlindness: boolean;
 
+    private readonly helpId: string =
+        "Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm";
+
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper className="impairmentVisualizerOuterWrapper">
+            <RequiresBloomEnterpriseWrapper
+                className="impairmentVisualizerOuterWrapper"
+                toolHelpId={this.helpId}
+            >
                 <div className="impairmentVisualizerBody">
                     <div className="impairmentVisualizerInnerWrapper">
                         <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
@@ -89,10 +95,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
                         </RadioGroup>
                     </div>
                     <div className="helpLinkWrapper">
-                        <HelpLink
-                            l10nKey="Common.Help"
-                            helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm"
-                        >
+                        <HelpLink l10nKey="Common.Help" helpId={this.helpId}>
                             Help
                         </HelpLink>
                     </div>{" "}

@@ -52,6 +52,9 @@ export class ImageDescriptionToolControls extends React.Component<
 
     private activeEditable: Element | null;
 
+    private readonly helpId: string =
+        "Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm";
+
     private createCheckboxes() {
         const checkBoxes: JSX.Element[] = [];
         for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
@@ -82,7 +85,10 @@ export class ImageDescriptionToolControls extends React.Component<
     // to the link destination?)
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper className="imageDescriptionToolOuterWrapper">
+            <RequiresBloomEnterpriseWrapper
+                className="imageDescriptionToolOuterWrapper"
+                toolHelpId={this.helpId}
+            >
                 <div
                     className={
                         "imageDescriptionTool" +
@@ -141,10 +147,7 @@ export class ImageDescriptionToolControls extends React.Component<
                         {this.createCheckboxes()}
                     </div>
                     <div className="helpLinkWrapper imgDescLabelBlock">
-                        <HelpLink
-                            helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
-                            l10nKey="Common.Help"
-                        >
+                        <HelpLink helpId={this.helpId} l10nKey="Common.Help">
                             Help
                         </HelpLink>
                     </div>
