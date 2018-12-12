@@ -881,8 +881,11 @@ export default class AudioRecording {
         // Erase the whole canvas
         var height = 15;
         var width = 80;
-        var toolboxBackgroundColor = "#404040"; // should match value in audioRecording.less
-        ctx.fillStyle = toolboxBackgroundColor;
+
+        ctx.fillStyle = window.getComputedStyle(
+            this.levelCanvas.parentElement!
+        ).backgroundColor!;
+
         ctx.fillRect(0, 0, width, height);
 
         // Draw the appropriate number and color of bars
