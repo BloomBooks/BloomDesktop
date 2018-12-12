@@ -1,6 +1,5 @@
 using System.Drawing;
 
-
 namespace Bloom
 {
 	class Palette
@@ -20,8 +19,8 @@ namespace Bloom
 
 		private static Color GetColor(string hexColor)
 		{
-			var c = (System.Windows.Media.Color )System.Windows.Media.ColorConverter.ConvertFromString(hexColor);
-			return Color.FromArgb(c.A, c.R, c.B, c.G);
+			// Note that Mono doesn't have System.Windows.Media.
+			return ColorTranslator.FromHtml(hexColor);
 		}
 	}
 }
