@@ -110,7 +110,7 @@ override_dh_clideps:
 		--exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll \
 		--exclude-moduleref=libtidy.dll --exclude-moduleref=msdelta.dll \
 		--exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
-		--exclude-moduleref=libdl.so \
+		--exclude-moduleref=libdl.so --exclude-moduleref=ntdll \
 		--exclude-moduleref=MAPI32.DLL --exclude-moduleref=__Internal \
 		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll && \
 	rm -rf debian/tmp/usr && \
