@@ -1536,7 +1536,7 @@ export default class AudioRecording {
             .then(response => {
                 if (response.statusText == "OK") {
                     this.setStatus("listen", Status.Enabled);
-                    this.disableRecordingModeControl();
+                    this.disableRecordingModeControl(!ToolBox.isXmatterPage());
                 } else {
                     this.setStatus("listen", Status.Disabled);
                     this.enableRecordingModeControl();
@@ -1550,7 +1550,7 @@ export default class AudioRecording {
                 // an xMatter page (BL-6737). It is probably already disabled at this point, but
                 // we might as well play it safe.
                 if (ToolBox.isXmatterPage()) {
-                    this.disableRecordingModeControl();
+                    this.disableRecordingModeControl(false);
                 } else {
                     this.enableRecordingModeControl();
                 }
