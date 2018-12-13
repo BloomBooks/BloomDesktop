@@ -169,8 +169,20 @@ export default class OverflowChecker {
         }
         // A zoom on the body affects offset but not outerHeight, which messes things up if we don't account for it.
         // It's better to correct offset so we don't need to also adjust the fudge factors.
-        const scaleY =
-            element.getBoundingClientRect().height / element.offsetHeight;
+        // Computing scale from the element can be a problem if it is a small element near the bottom
+        // of the page, since rounding errors in the element's scale can have a considerable effect
+        // when applied to its top. The biggest scaled div from which we can compute the most
+        // accurate scaling factor is the one child of the div that does the scaling.
+        let scaleY = 1.0;
+        const scaleContainer = document.getElementById(
+            "page-scaling-container"
+        );
+        if (scaleContainer) {
+            const scaledElt = scaleContainer.firstElementChild as HTMLElement;
+            scaleY =
+                scaledElt.getBoundingClientRect().height /
+                scaledElt.offsetHeight;
+        }
         for (let i = 0; i < parents.length; i++) {
             // search ancestors starting with nearest
             const currentAncestor = $(parents[i]);
