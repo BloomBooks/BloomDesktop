@@ -8,7 +8,7 @@ import "./impairmentVisualizer.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
-import HelpLink from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -88,14 +88,8 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
                             </Radio>
                         </RadioGroup>
                     </div>
-                    <div className="helpLinkWrapper">
-                        <HelpLink
-                            l10nKey="Common.Help"
-                            helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm"
-                        >
-                            Help
-                        </HelpLink>
-                    </div>{" "}
+
+                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
                 </div>
             </RequiresBloomEnterpriseWrapper>
         );

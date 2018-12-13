@@ -8,7 +8,7 @@ import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10n";
 import { Checkbox } from "../../../react_components/checkbox";
 import Link from "../../../react_components/link";
-import HelpLink from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import {
     RequiresBloomEnterpriseWrapper,
     checkIfEnterpriseAvailable
@@ -89,7 +89,7 @@ export class ImageDescriptionToolControls extends React.Component<
                         (this.state.enabled ? "" : " disabled")
                     }
                 >
-                    <div className="imageDescriptionToolInternalWrapper">
+                    <div className="topGroup">
                         <div className="imgDescLabelBlock">
                             <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
                                 Learn to make effective image descriptions:
@@ -140,14 +140,8 @@ export class ImageDescriptionToolControls extends React.Component<
                         </div>
                         {this.createCheckboxes()}
                     </div>
-                    <div className="helpLinkWrapper imgDescLabelBlock">
-                        <HelpLink
-                            helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
-                            l10nKey="Common.Help"
-                        >
-                            Help
-                        </HelpLink>
-                    </div>
+                    {/* the flex box will then push this to the bottom */}
+                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm" />
                 </div>
             </RequiresBloomEnterpriseWrapper>
         );
