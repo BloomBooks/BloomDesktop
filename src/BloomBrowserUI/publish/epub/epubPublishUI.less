@@ -86,3 +86,27 @@ iframe {
         }
     }
 }
+
+// Quoting from the react-modal documentation, "By default, the modal portal will be appended to
+// the document's body."  The automatically inserted div.ReactModalPortal is normally empty and
+// thus invisible.  If it weren't for the "height: 100%;" setting given in sectionScreen.less for
+// html.publishTabScreen body > div, it may well have zero height and no effect on anything.  But
+// since it is assigned the same height as the main div for the epub preview tool, it's covering
+// a large area (disabling any active elements in the tool that fall under it) and increasing the
+// height of the epub preview tool to twice the original window height.  Moving it to the upper
+// left corner of the preview tool and reducing its width to a narrow slice puts it where it won't
+// interfere with any active controls, and shouldn't add to the height of the tool.  The size and
+// location of the modal portal div do not seem to matter when it comes time to display the modal
+// dialog: it just needs a parent div to work with.  A div.ReactModal__Overlay is created as a
+// child of the div.ReactModalPortal, and uses "position: fixed" and the top, left, bottom and
+// right values to cover the entire window.  A partially transparent background color  obscures
+// the epub preview tool and disable all of its active elements.  A div.ReactModal__Content is
+// created as a child of the div.ReactModal__Overlay and the dialog content is inserted inside
+// that div.
+// See the later comments in https://issues.bloomlibrary.org/youtrack/issue/BL-6729.
+.ReactModalPortal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+}
