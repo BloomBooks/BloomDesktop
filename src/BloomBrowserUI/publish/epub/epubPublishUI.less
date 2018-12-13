@@ -1,6 +1,8 @@
 @import "../sectionScreen.less";
 
 @LightGrey: @bloom-gray;
+@device-height: 800px;
+@vertical-fudge-factor: 110px;
 
 * {
     box-sizing: border-box;
@@ -16,6 +18,12 @@
 }
 
 #epubPublishUI {
+    // We need to specify a real height here, not one based off "100%", which
+    // depends of the actual window size, not the required display size (which
+    // will scroll in any case if needed).  This allows the div.ReactModalPortal
+    // to be positioned properly below all of the display so that it doesn't
+    // interfere with the link in the React credits blurb.
+    height: calc(@header-height + @device-height + @vertical-fudge-factor);
     .radioButton {
         display: flex;
         flex-direction: row;
@@ -27,7 +35,7 @@
 
 // the wrapper around the preview that looks like a phone's shell.
 #device {
-    height: 800px;
+    height: @device-height;
     width: 400px;
     padding-left: 30px;
     padding-top: 72px;
@@ -85,4 +93,10 @@ iframe {
             display: inline;
         }
     }
+}
+
+html.publishTabScreen body .ReactModalPortal {
+    // We limit this height so it doesn't add needless (empty) height to the display.
+    // Being limited like this does not affect the behavior of the modal dialog.
+    height: 10px;
 }
