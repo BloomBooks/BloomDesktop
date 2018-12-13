@@ -57,7 +57,9 @@ namespace BloomTests.Book
 				"previewMode.css",
 				"meta.json", // should be left alone
 				"readerStyles.css", // gets added
-				"Device-XMatter.css" // added when we apply this xmatter
+				"Device-XMatter.css", // added when we apply this xmatter
+				"customCollectionStyles.css", // should be moved from parent directory
+				"settingsCollectionStyles.css" // should be moved from parent directory
 			};
 
 			TestHtmlAfterCompression(kMinimumValidBookHtml,
@@ -68,6 +70,16 @@ namespace BloomTests.Book
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"),
 						Path.Combine(folderPath, "thumbnail.png"));
 					File.WriteAllText(Path.Combine(folderPath, "previewMode.css"), @"This is wanted");
+					File.WriteAllText(Path.Combine(Path.GetDirectoryName(folderPath), "customCollectionStyles.css"), @"This is wanted");
+					File.WriteAllText(Path.Combine(Path.GetDirectoryName(folderPath), "settingsCollectionStyles.css"), @"This is wanted");
+				},
+				assertionsOnResultingHtmlString: html =>
+				{
+					// These two files get moved into the book folder, the links must get fixed
+					Assert.That(html, Does.Contain("href=\"customCollectionStyles.css\""));
+					Assert.That(html, Does.Contain("href=\"settingsCollectionStyles.css\""));
+					// The parent folder doesn't go with the book, so we shouldn't be referencing anything there
+					Assert.That(html, Does.Not.Contain("href=\"../"));
 				},
 				assertionsOnZipArchive: paramObj =>
 				{

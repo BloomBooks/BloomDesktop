@@ -1512,20 +1512,39 @@ namespace Bloom.Book
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
-			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
-			// where it should definitely be forward slash. And it works fine in a Windows path too.
-			string autocssFilePath = "../"+"settingsCollectionStyles.css";
-			if (RobustFile.Exists(Path.Combine(_folderPath,autocssFilePath)))
-				EnsureHasLinkToStyleSheet(dom, autocssFilePath);
+			EnsureHasLocalOrParentLink(dom, "settingsCollectionStyles.css");
 
-			var customCssFilePath = "../" + "customCollectionStyles.css";
-			if (RobustFile.Exists(Path.Combine(_folderPath, customCssFilePath)))
-				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
+			EnsureHasLocalOrParentLink(dom, "customCollectionStyles.css");
 
 			if (RobustFile.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+		}
+
+		/// <summary>
+		/// Files like CustomCollectionStyles or settingsCollectionStyles are usually found
+		/// in the parent directory, and we want a link with href like ../CustomCollectionStyles.css.
+		/// But when publishing (e.g., to Android or Epub), we put those files in the book folder,
+		/// and the link needs to point there. In that case the file is typically found in both
+		/// places, so we preferentially link to the local one if found, though usually it isn't.
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="fileName"></param>
+		private void EnsureHasLocalOrParentLink(HtmlDom dom, string fileName)
+		{
+			var localPath = Path.Combine(_folderPath, fileName);
+			if (RobustFile.Exists(localPath))
+			{
+				EnsureHasLinkToStyleSheet(dom, fileName);
+				return;
+			}
+
+			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
+			// where it should definitely be forward slash. And it works fine in a Windows path too.
+			var parentRelativePath = "../" + fileName;
+			if (RobustFile.Exists(Path.Combine(_folderPath, parentRelativePath)))
+				EnsureHasLinkToStyleSheet(dom, parentRelativePath);
 		}
 
 		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
