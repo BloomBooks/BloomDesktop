@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -32,33 +33,44 @@ namespace BloomTests.Book
 		protected HtmlDom _bookDom;
 		protected BookInfo _metadata;
 
+		protected Mock<IBookStorage> MakeMockStorage(string tempFolderPath, Func<HtmlDom> domGetter)
+		{
+			var storage = new Moq.Mock<IBookStorage>();
+			storage.Setup(x => x.GetLooksOk()).Returns(true);
+			
+			storage.SetupGet(x => x.Dom).Returns(domGetter);
+			storage.SetupGet(x => x.Key).Returns("testkey");
+			storage.SetupGet(x => x.FileName).Returns("testTitle");
+			storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns(() => storage.Object.Dom.Clone());// review: the real thing does more than just clone
+			storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>())).Returns(
+				(HtmlDom x) => { return x.Clone(); });// review: the real thing does more than just clone
+
+			storage.Setup(x => x.GetFileLocator()).Returns(() => _fileLocator.Object);
+
+			MakeSamplePngImageWithMetadata(Path.Combine(tempFolderPath, "original.png"));
+			storage.SetupGet(x => x.FolderPath).Returns(tempFolderPath);// review: the real thing does more than just clone
+			var metadata = new BookInfo(tempFolderPath, true);
+			storage.SetupGet(x => x.BookInfo).Returns(metadata);
+			storage.Setup(x => x.HandleRetiredXMatterPacks(It.IsAny<HtmlDom>(), It.IsAny<string>()))
+				.Returns((HtmlDom dom, string y) => { return y == "BigBook" ? "Factory" : y; });
+			return storage;
+		}
+
 		[SetUp]
 		public virtual void Setup()
 		{
-			_storage = new Moq.Mock<IBookStorage>();
-			_storage.Setup(x => x.GetLooksOk()).Returns(true);
-			_bookDom = new HtmlDom(GetThreePageDom());
-			_storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
-			_storage.SetupGet(x => x.Key).Returns("testkey");
-			_storage.SetupGet(x => x.FileName).Returns("testTitle");
-			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns(() =>
-			{
-				return
-					_bookDom.Clone();
-			});// review: the real thing does more than just clone
-			_storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>())).Returns(
-				(HtmlDom x) => { return x.Clone(); });// review: the real thing does more than just clone
-
-			_storage.Setup(x => x.GetFileLocator()).Returns(() => _fileLocator.Object);
-
 			_testFolder = new TemporaryFolder("BookTests");
 			_tempFolder = new TemporaryFolder(_testFolder, "book");
-			MakeSamplePngImageWithMetadata(Path.Combine(_tempFolder.Path, "original.png"));
-			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
-			_metadata = new BookInfo(_tempFolder.Path, true);
-			_storage.SetupGet(x => x.BookInfo).Returns(_metadata);
-			_storage.Setup(x => x.HandleRetiredXMatterPacks(It.IsAny<HtmlDom>(), It.IsAny<string>()))
-				.Returns((HtmlDom dom, string y) => { return y == "BigBook" ? "Factory" : y; });
+
+			_bookDom = new HtmlDom(GetThreePageDom()); // a default, many tests replace this
+			// Note that we're passing a function which returns the _bookDom member variable. By the time we return it,
+			// it may have a different value than the _bookDom created on the previous line.
+			// Thus, we are making a mock storage which, unlike a real one, doesn't itself
+			// store a DOM set at creation; many tests update _bookDom to something else AFTER
+			// this setup routine makes the Storage they use in their books.
+			_storage = MakeMockStorage(_tempFolder.Path, () => _bookDom );
+			_bookDom = _storage.Object.Dom;
+			_metadata = _storage.Object.BookInfo;
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
