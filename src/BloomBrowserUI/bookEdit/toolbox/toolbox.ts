@@ -524,8 +524,11 @@ function switchTool(newToolName: string): void {
         }
         if (newTool) {
             activateTool(newTool);
-            currentTool = newTool;
         }
+        // Without recording that currentTool isn't defined, then returning from
+        // More... to the same tool doesn't activate that tool.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
+        currentTool = newTool ? newTool : undefined;
     }
 }
 
