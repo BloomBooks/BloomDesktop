@@ -30,6 +30,7 @@ namespace Bloom.Edit
 		public HtmlThumbNailer Thumbnailer;
 		public event EventHandler PageSelectedChanged;
 		private Bloom.Browser _browser;
+		internal EditingModel Model;
 		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
 		private string _baseForRelativePaths;
@@ -469,7 +470,31 @@ namespace Bloom.Edit
 				menuItem.Enabled = item.EnableFunction(page);
 				menu.Items.Add(menuItem);
 			}
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				// The LostFocus event is never received by the ContextMenuStrip on Linux/Mono, and the menu
+				// stays open when the user clicks elsewhere in the Edit tool area of the Bloom window.
+				// To minimize user frustration, we hook up the local browser and the EditingView browser
+				// mouse click handlers to explicitly close the menu.  Perhaps fixing the Mono bug would
+				// be better, but I'd rather not go there if I don't have to.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-6753.
+				_browser.OnBrowserClick += Browser_Click;
+				Model.GetEditingBrowser().OnBrowserClick += Browser_Click;
+				_popupPageMenu = menu;
+			}
 			menu.Show(MousePosition);
+		}
+
+		ContextMenuStrip _popupPageMenu;
+		private void Browser_Click(object sender, EventArgs e)
+		{
+			if (_popupPageMenu != null)
+			{
+				_popupPageMenu.Close(ToolStripDropDownCloseReason.CloseCalled);
+				_popupPageMenu = null;
+				_browser.OnBrowserClick -= Browser_Click;
+				Model.GetEditingBrowser().OnBrowserClick -= Browser_Click;
+			}
 		}
 
 		/// <summary>

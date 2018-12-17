@@ -32,6 +32,7 @@ namespace Bloom.Edit
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
 			_thumbNailList.ControlKeyEvent = controlKeyEvent;
+			_thumbNailList.Model = model;
 			_thumbNailList.BringToFront(); // needed to get DockStyle.Fill to work right.
 			// First action determines whether the menu item is enabled, second performs it.
 			var menuItems = new List<WebThumbNailList.MenuItemSpec>();
