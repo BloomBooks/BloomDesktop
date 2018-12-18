@@ -11,7 +11,7 @@ import {
     BloomEnterpriseAvailableContext
 } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
-import { HelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { UrlUtils } from "../../../utils/urlUtils";
 import { Expandable } from "../../../react_components/expandable";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -305,14 +305,7 @@ export class SignLanguageToolControls extends React.Component<
                                     {videoStats}
                                 </Expandable>
                             </div>
-                            <div className="helpLinkWrapper">
-                                <HelpLink
-                                    l10nKey="Common.Help"
-                                    helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm"
-                                >
-                                    Help
-                                </HelpLink>
-                            </div>
+                            <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm" />
                         </div>
                     )}
                 </BloomEnterpriseAvailableContext.Consumer>
