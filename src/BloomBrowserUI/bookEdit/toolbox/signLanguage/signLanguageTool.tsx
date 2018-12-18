@@ -920,6 +920,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // among other things, this clears us out of "processing"
         // when the page is refreshed with the new video
         this.reactControls.setState({ stateClass: "idle" });
+        // clear out stale video statistics from any previous page
+        this.resetVideoStatistics();
         const containers = SignLanguageTool.getVideoContainers(false);
         if (!containers || containers.length === 0) {
             if (this.reactControls.state.enabled) {
@@ -962,6 +964,19 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
     }
 
+    private resetVideoStatistics() {
+        // duration may be the most critical to clear here, but the startSeconds and
+        // endSeconds may also be important.  Resetting everything seems safest.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
+        this.reactControls.state.videoStatistics.duration = "";
+        this.reactControls.state.videoStatistics.fileSize = "";
+        this.reactControls.state.videoStatistics.frameSize = "";
+        this.reactControls.state.videoStatistics.framesPerSecond = "";
+        this.reactControls.state.videoStatistics.fileFormat = "";
+        this.reactControls.state.videoStatistics.startSeconds = UNTRIMMED_TIMING;
+        this.reactControls.state.videoStatistics.endSeconds = UNTRIMMED_TIMING;
+        this.reactControls.state.videoStatistics.aspectRatio = "";
+    }
     private updateStateForSelected(container: Element) {
         const videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
