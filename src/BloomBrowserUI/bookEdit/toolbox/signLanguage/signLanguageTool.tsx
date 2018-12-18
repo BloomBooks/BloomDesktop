@@ -62,6 +62,17 @@ declare var MediaRecorder: {
 const UNTRIMMED_TIMING: string = "0.0";
 const UNTRIMMED_TIMING_NUM: number = 0.0;
 
+const emptyVideoStatistics = {
+    duration: "",
+    fileSize: "",
+    frameSize: "",
+    framesPerSecond: "",
+    fileFormat: "",
+    startSeconds: UNTRIMMED_TIMING,
+    endSeconds: UNTRIMMED_TIMING,
+    aspectRatio: ""
+};
+
 // This react class implements the UI for the sign language (video) toolbox.
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
 // tsx files in bookEdit/toolbox.
@@ -82,16 +93,7 @@ export class SignLanguageToolControls extends React.Component<
         cameraUnavailable: false,
         minutesRecorded: "",
         secondsRecorded: "",
-        videoStatistics: {
-            duration: "",
-            fileSize: "",
-            frameSize: "",
-            framesPerSecond: "",
-            fileFormat: "",
-            startSeconds: UNTRIMMED_TIMING,
-            endSeconds: UNTRIMMED_TIMING,
-            aspectRatio: ""
-        },
+        videoStatistics: emptyVideoStatistics,
         enterprise: false
     };
     private videoStream: MediaStream | null;
@@ -452,16 +454,7 @@ export class SignLanguageToolControls extends React.Component<
             result => {
                 if (result.statusText != "OK") {
                     this.setState({
-                        videoStatistics: {
-                            duration: "",
-                            fileSize: "",
-                            frameSize: "",
-                            framesPerSecond: "",
-                            fileFormat: "",
-                            startSeconds: UNTRIMMED_TIMING,
-                            endSeconds: UNTRIMMED_TIMING,
-                            aspectRatio: ""
-                        }
+                        videoStatistics: emptyVideoStatistics
                     });
                 } else {
                     const frameSize: string = result.data.frameSize;
@@ -919,7 +912,12 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     public newPageReady() {
         // among other things, this clears us out of "processing"
         // when the page is refreshed with the new video
-        this.reactControls.setState({ stateClass: "idle" });
+        this.reactControls.setState({
+            stateClass: "idle",
+            // Clear out stale video statistics from any page previously shown.
+            // See https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
+            videoStatistics: emptyVideoStatistics
+        });
         const containers = SignLanguageTool.getVideoContainers(false);
         if (!containers || containers.length === 0) {
             if (this.reactControls.state.enabled) {
