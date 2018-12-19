@@ -2417,10 +2417,10 @@
         <target xml:lang="te" state="translated">మరింత</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">Requires Bloom Enterprise Subscription.</source>
+        <source xml:lang="en">This feature requires Bloom Enterprise.</source>
         <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
-        <note>Appears in place of other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
-        <target xml:lang="te" state="needs-translation">Requires Bloom Enterprise Subscription.</target>
+        <note>Appears in notice obscuring other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
+        <target xml:lang="te" state="needs-translation">This feature requires Bloom Enterprise.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
@@ -3628,6 +3628,12 @@
         <source xml:lang="en">Preparing preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
         <target xml:lang="te" state="needs-translation">Preparing preview</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.ReadiumCredit">
+        <source xml:lang="en">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</source>
+        <note>ID: PublishTab.Epub.ReadiumCredit</note>
+        <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
+        <target xml:lang="te" state="needs-translation">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
         <source xml:lang="en">Use ePUB reader's text size</source>

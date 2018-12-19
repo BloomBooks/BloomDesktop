@@ -226,7 +226,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">None</source>
         <note>ID: BookMetadata.a11yLevelNone</note>
         <note>indicates that no level of accessibility conformance is claimed</note>
-        <target xml:lang="fr" state="needs-translation">None</target>
+        <target xml:lang="fr" state="translated">Aucun</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
         <source xml:lang="en">Level A conformance</source>
@@ -251,7 +251,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="BookMetadata.author" sil:dynamic="true">
         <source xml:lang="en">Author</source>
         <note>ID: BookMetadata.author</note>
-        <target xml:lang="fr" state="needs-translation">Author</target>
+        <target xml:lang="fr" state="translated">Auteur</target>
       </trans-unit>
       <trans-unit id="BookMetadata.flashingHazard" sil:dynamic="true">
         <source xml:lang="en">Flashing Hazard</source>
@@ -276,12 +276,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="BookMetadata.License" sil:dynamic="true">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
-        <target xml:lang="fr" state="needs-translation">License</target>
+        <target xml:lang="fr" state="translated">Licence</target>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture" sil:dynamic="true">
         <source xml:lang="en">Picture</source>
         <note>ID: BookMetadata.metapicture</note>
-        <target xml:lang="fr" state="needs-translation">Picture</target>
+        <target xml:lang="fr" state="translated">Image</target>
       </trans-unit>
       <trans-unit id="BookMetadata.motionSimulationHazard" sil:dynamic="true">
         <source xml:lang="en">Motion Simulation Hazard</source>
@@ -291,7 +291,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="BookMetadata.name" sil:dynamic="true">
         <source xml:lang="en">Name</source>
         <note>ID: BookMetadata.name</note>
-        <target xml:lang="fr" state="needs-translation">Name</target>
+        <target xml:lang="fr" state="translated">Nom</target>
       </trans-unit>
       <trans-unit id="BookMetadata.numberOfPages" sil:dynamic="true">
         <source xml:lang="en">Number of pages</source>
@@ -322,7 +322,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">What's this?</source>
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
-        <target xml:lang="fr" state="needs-translation">What's this?</target>
+        <target xml:lang="fr" state="translated">Qu'est-ce que c'est?</target>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
@@ -1058,7 +1058,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
-        <target xml:lang="fr" state="needs-translation">Advanced</target>
+        <target xml:lang="fr" state="translated">Avancés</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1086,7 +1086,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Info</source>
         <note>ID: Common.Info</note>
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-        <target xml:lang="fr" state="needs-translation">Info</target>
+        <target xml:lang="fr" state="translated">Informations</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
@@ -1134,12 +1134,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
         <note>ID: Common.Preview</note>
-        <target xml:lang="fr" state="needs-translation">Preview</target>
+        <target xml:lang="fr" state="translated">Aperçu</target>
       </trans-unit>
       <trans-unit id="Common.Progress">
         <source xml:lang="en">Progress</source>
         <note>ID: Common.Progress</note>
-        <target xml:lang="fr" state="needs-translation">Progress</target>
+        <target xml:lang="fr" state="translated">Progression</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
@@ -2274,7 +2274,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Complete" sil:dynamic="true">
         <source xml:lang="en">Complete</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Complete</note>
-        <target xml:lang="fr" state="needs-translation">Complete</target>
+        <target xml:lang="fr" state="translated">Complet</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Overview" sil:dynamic="true">
         <source xml:lang="en">You can use these check boxes to have Bloom simulate how your images would look with various visual impairments.</source>
@@ -2651,10 +2651,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <target xml:lang="fr" state="translated">Plus...</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">Requires Bloom Enterprise Subscription.</source>
+        <source xml:lang="en">This feature requires Bloom Enterprise.</source>
         <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
-        <note>Appears in place of other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
-        <target xml:lang="fr" state="needs-translation">Requires Bloom Enterprise Subscription.</target>
+        <note>Appears in notice obscuring other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
+        <target xml:lang="fr" state="needs-translation">This feature requires Bloom Enterprise.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allow changes to this shellbook</source>
@@ -2684,22 +2684,22 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles">
         <source xml:lang="en">Video Files</source>
         <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
-        <target xml:lang="fr" state="needs-translation">Video Files</target>
+        <target xml:lang="fr" state="translated">Fichiers vidéo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
         <source xml:lang="en">Import</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
-        <target xml:lang="fr" state="needs-translation">Import</target>
+        <target xml:lang="fr" state="translated">Importer</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true">
         <source xml:lang="en">Show In Folder</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ShowInFolder</note>
-        <target xml:lang="fr" state="needs-translation">Show In Folder</target>
+        <target xml:lang="fr" state="translated">Afficher le dossier de destination</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.NoCameraFound" sil:dynamic="true">
         <source xml:lang="en">No camera found</source>
         <note>ID: EditTab.Toolbox.SignLanguage.NoCameraFound</note>
-        <target xml:lang="fr" state="needs-translation">No camera found</target>
+        <target xml:lang="fr" state="translated">Aucune caméra trouvée</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
         <source xml:lang="en">Press any key to cancel</source>
@@ -2715,7 +2715,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Processing</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Processing</note>
         <note>Displayed while video just recorded is processed into a more compressed form</note>
-        <target xml:lang="fr" state="needs-translation">Processing</target>
+        <target xml:lang="fr" state="translated">En cours</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
         <source xml:lang="en">Recording</source>
@@ -4005,17 +4005,17 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Accessibility</source>
         <note>ID: PublishTab.Epub.Accessibility</note>
         <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
-        <target xml:lang="fr" state="needs-translation">Accessibility</target>
+        <target xml:lang="fr" state="translated">Accessibilité</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Done">
         <source xml:lang="en">Done</source>
         <note>ID: PublishTab.Epub.Done</note>
-        <target xml:lang="fr" state="needs-translation">Done</target>
+        <target xml:lang="fr" state="translated">Terminé</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
         <source xml:lang="en">About ePUBs</source>
         <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
-        <target xml:lang="fr" state="needs-translation">About ePUBs</target>
+        <target xml:lang="fr" state="translated">A propos des ePUBs</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Help.EReaders">
         <source xml:lang="en">Compatible ePUB Readers</source>
@@ -4043,7 +4043,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Content</source>
         <note>ID: PublishTab.Epub.PageLabel.Content</note>
         <note>label for the book content in the ePUB's Table of Contents</note>
-        <target xml:lang="fr" state="needs-translation">Content</target>
+        <target xml:lang="fr" state="translated">Contenu</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PreparingDoc">
         <source xml:lang="en">Preparing document</source>
@@ -4054,6 +4054,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Preparing preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
         <target xml:lang="fr" state="translated">Préparation de l'aperçu</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.ReadiumCredit">
+        <source xml:lang="en">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</source>
+        <note>ID: PublishTab.Epub.ReadiumCredit</note>
+        <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
+        <target xml:lang="fr" state="needs-translation">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
         <source xml:lang="en">Use ePUB reader's text size</source>
@@ -4625,7 +4631,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadAudio">
         <source xml:lang="en">Upload Audio</source>
         <note>ID: PublishTab.Upload.UploadAudio</note>
-        <target xml:lang="fr" state="needs-translation">Upload Audio</target>
+        <target xml:lang="fr" state="translated">Télécharger un fichier son</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton" approved="yes">
         <source xml:lang="en">Upload Book</source>
@@ -5653,7 +5659,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Translation Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
         <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
-        <target xml:lang="fr" state="needs-translation">Translation Instructions</target>
+        <target xml:lang="fr" state="translated">Instructions de traduction</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>
