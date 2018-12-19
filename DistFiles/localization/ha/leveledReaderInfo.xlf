@@ -43,6 +43,7 @@
           
           
           
+          
           <g id="genid-1" ctype="x-html-em">Hasashe</g>A cikin matani wannan na nufin mai karatu na iya hasashen abin da zai biyo baya. Za ka iya ƙara taimakawa wajen sanin mai zai faru ta hanyar maimata abubuwa. Ga wasu abubuwan da za ka iya amfani da su:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
@@ -54,6 +55,18 @@
           
           
           
+          
+          <g id="genid-1" ctype="x-html-em">Hasashe</g>A cikin matani wannan na nufin mai karatu na iya hasashen abin da zai biyo baya. Za ka iya ƙara taimakawa wajen sanin mai zai faru ta hanyar maimata abubuwa. Ga wasu abubuwan da za ka iya amfani da su:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-1" ctype="x-html-em">Hasashe</g>A cikin matani wannan na nufin mai karatu na iya hasashen abin da zai biyo baya. Za ka iya ƙara taimakawa wajen sanin mai zai faru ta hanyar maimata abubuwa. Ga wasu abubuwan da za ka iya amfani da su:</target>
         </alt-trans>
         <alt-trans>
@@ -78,13 +91,6 @@
         <alt-trans>
           <target xml:lang="ha">
           
-          
-          
-          
-          <g id="genid-1" ctype="x-html-em">Hasashe</g>A cikin matani wannan na nufin mai karatu na iya hasashen abin da zai biyo baya. Za ka iya ƙara taimakawa wajen sanin mai zai faru ta hanyar maimata abubuwa. Ga wasu abubuwan da za ka iya amfani da su:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">
           
           
           
@@ -131,6 +137,7 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
@@ -150,6 +157,26 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">Bin Tsarin - Labarin da aka tsara wanda kuma ya ƙunshi 'yar waƙa a tsare. Misali:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">Babbar dabba mai ruwan ƙasa, Me ka gani?
+Na ga wani jan tsuntsu yana kallo na
+Jan Tsuntsu ne, Jan Tsuntsu ne, Me ka gani?
+Naga rawayar agwagwa na kallo na.
+Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. da Eric Carle</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -198,21 +225,6 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. da Eric Carle</g>
         </g>
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">Bin Tsarin - Labarin da aka tsara wanda kuma ya ƙunshi 'yar waƙa a tsare. Misali:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Babbar dabba mai ruwan ƙasa, Me ka gani?
-Na ga wani jan tsuntsu yana kallo na
-Jan Tsuntsu ne, Jan Tsuntsu ne, Me ka gani?
-Naga rawayar agwagwa na kallo na.
-Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. da Eric Carle</g>
-        </g>
       
       
       
@@ -236,6 +248,7 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
     
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
@@ -247,6 +260,18 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">Zayyana na taimakawa don gane labari. Bayani da kwatanci na da alaƙa da labari ta hanyoyi daban-daban a kowane <g id="genid-5" ctype="x-html-em">mataki</g>kuma don amfanin masu karatu ir-daban (duba ƙasa). Ka tuna akwai al'adu da yawa da ba su da rubutatttun abubuwa, hotuna masu sarƙaƙiya na iya zama da wuyar fahimta.
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -271,13 +296,6 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <alt-trans>
           <target xml:lang="ha">Zayyana na taimakawa don gane labari. Bayani da kwatanci na da alaƙa da labari ta hanyoyi daban-daban a kowane <g id="genid-5" ctype="x-html-em">mataki</g>kuma don amfanin masu karatu ir-daban (duba ƙasa). Ka tuna akwai al'adu da yawa da ba su da rubutatttun abubuwa, hotuna masu sarƙaƙiya na iya zama da wuyar fahimta.
     
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">Zayyana na taimakawa don gane labari. Bayani da kwatanci na da alaƙa da labari ta hanyoyi daban-daban a kowane <g id="genid-5" ctype="x-html-em">mataki</g>kuma don amfanin masu karatu ir-daban (duba ƙasa). Ka tuna akwai al'adu da yawa da ba su da rubutatttun abubuwa, hotuna masu sarƙaƙiya na iya zama da wuyar fahimta.
     
     
     
@@ -288,6 +306,7 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <target xml:lang="ha" state="translated">Domin <g id="genid-6" ctype="x-html-strong">Masu karatu da ke tasowa</g>Ya kasance hotunan sun yi daidai da labarin. Ya zamanto cewa mai karatun zai sanin inda labarin ya nufa daga hotunan. Zayyanannun misalai a wannan matakin su kasance masu sauƙi.
+      
       
       
       
@@ -307,6 +326,18 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">Domin <g id="genid-6" ctype="x-html-strong">Masu karatu da ke tasowa</g>Ya kasance hotunan sun yi daidai da labarin. Ya zamanto cewa mai karatun zai sanin inda labarin ya nufa daga hotunan. Zayyanannun misalai a wannan matakin su kasance masu sauƙi.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -331,13 +362,6 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <alt-trans>
           <target xml:lang="ha">Domin <g id="genid-6" ctype="x-html-strong">Masu karatu da ke tasowa</g>Ya kasance hotunan sun yi daidai da labarin. Ya zamanto cewa mai karatun zai sanin inda labarin ya nufa daga hotunan. Zayyanannun misalai a wannan matakin su kasance masu sauƙi.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">Domin <g id="genid-6" ctype="x-html-strong">Masu karatu da ke tasowa</g>Ya kasance hotunan sun yi daidai da labarin. Ya zamanto cewa mai karatun zai sanin inda labarin ya nufa daga hotunan. Zayyanannun misalai a wannan matakin su kasance masu sauƙi.
       
       
       
@@ -348,6 +372,7 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <target xml:lang="ha" state="translated">Domin <g id="genid-7" ctype="x-html-strong">Masu karatu a mataki na fari</g>hotunan su kasance masu goyon bayan labarin. A lokacin da yawan matani ke ƙaruwa, mai karatu zai rage dogaro ga hotuna kuma ya samu ma'ana da dama daga matanin. Zayyanannun misalai na iya zama sun sarƙaƙe
+      
       
       
       
@@ -367,6 +392,18 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">Domin <g id="genid-7" ctype="x-html-strong">Masu karatu a mataki na fari</g>hotunan su kasance masu goyon bayan labarin. A lokacin da yawan matani ke ƙaruwa, mai karatu zai rage dogaro ga hotuna kuma ya samu ma'ana da dama daga matanin. Zayyanannun misalai na iya zama sun sarƙaƙe
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -391,13 +428,6 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <alt-trans>
           <target xml:lang="ha">Domin <g id="genid-7" ctype="x-html-strong">Masu karatu a mataki na fari</g>hotunan su kasance masu goyon bayan labarin. A lokacin da yawan matani ke ƙaruwa, mai karatu zai rage dogaro ga hotuna kuma ya samu ma'ana da dama daga matanin. Zayyanannun misalai na iya zama sun sarƙaƙe
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">Domin <g id="genid-7" ctype="x-html-strong">Masu karatu a mataki na fari</g>hotunan su kasance masu goyon bayan labarin. A lokacin da yawan matani ke ƙaruwa, mai karatu zai rage dogaro ga hotuna kuma ya samu ma'ana da dama daga matanin. Zayyanannun misalai na iya zama sun sarƙaƙe
       
       
       
@@ -408,6 +438,7 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
         <target xml:lang="ha" state="translated">Domin <g id="genid-8" ctype="x-html-strong">Ƙwararrun masu karatu</g>a nan hotunan na iya kasancewa suna taimakawa kaɗan yadda ko basu za'a iya gane inda labarin ya nufa. Ya kasance maikaratu ya dogara ga matani fiye da hotuna a wurin samun ma'ana. Zayyanannun misalai na iya zama sarƙaƙƙu.
+      
       
       
       
@@ -427,6 +458,18 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">Domin <g id="genid-8" ctype="x-html-strong">Ƙwararrun masu karatu</g>a nan hotunan na iya kasancewa suna taimakawa kaɗan yadda ko basu za'a iya gane inda labarin ya nufa. Ya kasance maikaratu ya dogara ga matani fiye da hotuna a wurin samun ma'ana. Zayyanannun misalai na iya zama sarƙaƙƙu.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -451,13 +494,6 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <alt-trans>
           <target xml:lang="ha">Domin <g id="genid-8" ctype="x-html-strong">Ƙwararrun masu karatu</g>a nan hotunan na iya kasancewa suna taimakawa kaɗan yadda ko basu za'a iya gane inda labarin ya nufa. Ya kasance maikaratu ya dogara ga matani fiye da hotuna a wurin samun ma'ana. Zayyanannun misalai na iya zama sarƙaƙƙu.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">Domin <g id="genid-8" ctype="x-html-strong">Ƙwararrun masu karatu</g>a nan hotunan na iya kasancewa suna taimakawa kaɗan yadda ko basu za'a iya gane inda labarin ya nufa. Ya kasance maikaratu ya dogara ga matani fiye da hotuna a wurin samun ma'ana. Zayyanannun misalai na iya zama sarƙaƙƙu.
       
       
       
@@ -486,6 +522,7 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
@@ -497,6 +534,18 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">Domin <g id="genid-9" ctype="x-html-strong">Masu Karatu da ke ɓullowa</g>litattafan su kasance masu inganci, su kasance suna cikin manufa/take ɗaya, kuma su kasance sanannu masu sauƙin fahimta.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -521,13 +570,6 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <alt-trans>
           <target xml:lang="ha">Domin <g id="genid-9" ctype="x-html-strong">Masu Karatu da ke ɓullowa</g>litattafan su kasance masu inganci, su kasance suna cikin manufa/take ɗaya, kuma su kasance sanannu masu sauƙin fahimta.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">Domin <g id="genid-9" ctype="x-html-strong">Masu Karatu da ke ɓullowa</g>litattafan su kasance masu inganci, su kasance suna cikin manufa/take ɗaya, kuma su kasance sanannu masu sauƙin fahimta.
       
       
       
@@ -538,6 +580,7 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
         <target xml:lang="ha" state="translated">Domin <g id="genid-10" ctype="x-html-strong">Masu Karatu da fari-fari</g>a haɗa labari akan sanannen abu amma mai zurfi.
+      
       
       
       
@@ -557,6 +600,18 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">Domin <g id="genid-10" ctype="x-html-strong">Masu Karatu da fari-fari</g>a haɗa labari akan sanannen abu amma mai zurfi.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -581,13 +636,6 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <alt-trans>
           <target xml:lang="ha">Domin <g id="genid-10" ctype="x-html-strong">Masu Karatu da fari-fari</g>a haɗa labari akan sanannen abu amma mai zurfi.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">Domin <g id="genid-10" ctype="x-html-strong">Masu Karatu da fari-fari</g>a haɗa labari akan sanannen abu amma mai zurfi.
       
       
       
@@ -598,6 +646,7 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
         <target xml:lang="ha" state="translated">Domin <g id="genid-11" ctype="x-html-strong">Waɗanda suka karatu sosai</g>abubuwan da aka gina littafi da su na iya zurfafawa fiye da yadda aka sansu, su bambanta kuma su kasance game gari.
+      
       
       
       
@@ -617,6 +666,18 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ha">Domin <g id="genid-11" ctype="x-html-strong">Waɗanda suka karatu sosai</g>abubuwan da aka gina littafi da su na iya zurfafawa fiye da yadda aka sansu, su bambanta kuma su kasance game gari.
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -641,13 +702,6 @@ Rawayar Agwagwa, Rawayar Agwagwa, Me Kike gani?</g>
         <alt-trans>
           <target xml:lang="ha">Domin <g id="genid-11" ctype="x-html-strong">Waɗanda suka karatu sosai</g>abubuwan da aka gina littafi da su na iya zurfafawa fiye da yadda aka sansu, su bambanta kuma su kasance game gari.
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ha">Domin <g id="genid-11" ctype="x-html-strong">Waɗanda suka karatu sosai</g>abubuwan da aka gina littafi da su na iya zurfafawa fiye da yadda aka sansu, su bambanta kuma su kasance game gari.
       
       
       

@@ -43,6 +43,7 @@
           
           
           
+          
           <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> पाठमा हुनुको मतलब पाठकले त्यसपछि आउने शब्द अन्दाज लगाउन सक्छ भनिएको हो। तपाईंले एकै किसिमका शैलीहरू दोहोर्‍याएर  पूर्वानुमान क्षमता बढाउन सक्नुहुन्छ। तपाईंले प्रयोग गर्न सक्नुहुने केही शैलीहरू यहाँ दिइएका छन्:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
@@ -54,6 +55,18 @@
           
           
           
+          
+          <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> पाठमा हुनुको मतलब पाठकले त्यसपछि आउने शब्द अन्दाज लगाउन सक्छ भनिएको हो। तपाईंले एकै किसिमका शैलीहरू दोहोर्‍याएर  पूर्वानुमान क्षमता बढाउन सक्नुहुन्छ। तपाईंले प्रयोग गर्न सक्नुहुने केही शैलीहरू यहाँ दिइएका छन्:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> पाठमा हुनुको मतलब पाठकले त्यसपछि आउने शब्द अन्दाज लगाउन सक्छ भनिएको हो। तपाईंले एकै किसिमका शैलीहरू दोहोर्‍याएर  पूर्वानुमान क्षमता बढाउन सक्नुहुन्छ। तपाईंले प्रयोग गर्न सक्नुहुने केही शैलीहरू यहाँ दिइएका छन्:</target>
         </alt-trans>
         <alt-trans>
@@ -78,13 +91,6 @@
         <alt-trans>
           <target xml:lang="ne-NP">
           
-          
-          
-          
-          <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> पाठमा हुनुको मतलब पाठकले त्यसपछि आउने शब्द अन्दाज लगाउन सक्छ भनिएको हो। तपाईंले एकै किसिमका शैलीहरू दोहोर्‍याएर  पूर्वानुमान क्षमता बढाउन सक्नुहुन्छ। तपाईंले प्रयोग गर्न सक्नुहुने केही शैलीहरू यहाँ दिइएका छन्:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">
           
           
           
@@ -131,6 +137,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
@@ -150,6 +157,26 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">अनुप्रास - ढाँचा वा अनुक्रम भएको कथा जसमा अनुप्रास पनि समावेश छ।
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">तारा बाजी लै लै
+मामा आए घोडा
+माइजु आइन डोली
+पापा ल्याइन् सोली
+खाने होला भोली</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- अज्ञात</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -198,21 +225,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <g id="genid-4" ctype="x-html-div" html:class="author">- अज्ञात</g>
         </g>
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">अनुप्रास - ढाँचा वा अनुक्रम भएको कथा जसमा अनुप्रास पनि समावेश छ।
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">तारा बाजी लै लै
-मामा आए घोडा
-माइजु आइन डोली
-पापा ल्याइन् सोली
-खाने होला भोली</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- अज्ञात</g>
-        </g>
       
       
       
@@ -236,6 +248,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
@@ -247,6 +260,18 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">चित्रहरूले कथा बुझ्न सजिलो बनाउँछन्। कथामा प्रयेाग भएका चित्रहरूले स्‍तर अनुसार अर्थ दिन्छ। <g id="genid-5" ctype="x-html-em">स्तरमा</g> विभिन्न किसिमका पाठकहरूको लागि कथाले विभिन्न खाले अर्थ प्रदान गर्दछ (तल हेर्नुहोस्)। प्रायः खासै धेरै छापिएका सामग्रीहरू नभएका  संस्कृतिहरूमा जटिल तस्बिरहरूलाई बुझ्न गाह्रो हुन्छ भन्ने कुरा याद राख्नुहोस्।
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -271,13 +296,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="ne-NP">चित्रहरूले कथा बुझ्न सजिलो बनाउँछन्। कथामा प्रयेाग भएका चित्रहरूले स्‍तर अनुसार अर्थ दिन्छ। <g id="genid-5" ctype="x-html-em">स्तरमा</g> विभिन्न किसिमका पाठकहरूको लागि कथाले विभिन्न खाले अर्थ प्रदान गर्दछ (तल हेर्नुहोस्)। प्रायः खासै धेरै छापिएका सामग्रीहरू नभएका  संस्कृतिहरूमा जटिल तस्बिरहरूलाई बुझ्न गाह्रो हुन्छ भन्ने कुरा याद राख्नुहोस्।
     
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">चित्रहरूले कथा बुझ्न सजिलो बनाउँछन्। कथामा प्रयेाग भएका चित्रहरूले स्‍तर अनुसार अर्थ दिन्छ। <g id="genid-5" ctype="x-html-em">स्तरमा</g> विभिन्न किसिमका पाठकहरूको लागि कथाले विभिन्न खाले अर्थ प्रदान गर्दछ (तल हेर्नुहोस्)। प्रायः खासै धेरै छापिएका सामग्रीहरू नभएका  संस्कृतिहरूमा जटिल तस्बिरहरूलाई बुझ्न गाह्रो हुन्छ भन्ने कुरा याद राख्नुहोस्।
     
     
     
@@ -296,6 +314,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
         <alt-trans>
@@ -307,6 +326,18 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">
+          <g id="genid-6" ctype="x-html-strong">उदगामी पाठकहरूका लागि</g>  तस्बिरहरू कथावस्तुसँग निकट रूपमा सम्बन्धित हुनुपर्छ। पाठकले तस्बिरलाई हेरेर मात्र पनि कथावस्‍तु ठम्याउन सक्नुपर्छ। यस स्तरमा चित्रहरू सरल हुनुपर्छ।
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -332,13 +363,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="ne-NP">
           <g id="genid-6" ctype="x-html-strong">उदगामी पाठकहरूका लागि</g>  तस्बिरहरू कथावस्तुसँग निकट रूपमा सम्बन्धित हुनुपर्छ। पाठकले तस्बिरलाई हेरेर मात्र पनि कथावस्‍तु ठम्याउन सक्नुपर्छ। यस स्तरमा चित्रहरू सरल हुनुपर्छ।
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">
-          <g id="genid-6" ctype="x-html-strong">उदगामी पाठकहरूका लागि</g>  तस्बिरहरू कथावस्तुसँग निकट रूपमा सम्बन्धित हुनुपर्छ। पाठकले तस्बिरलाई हेरेर मात्र पनि कथावस्‍तु ठम्याउन सक्नुपर्छ। यस स्तरमा चित्रहरू सरल हुनुपर्छ।
       
       
       </target>
@@ -349,6 +373,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="ne-NP" state="translated">
           <g id="genid-7" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा केही सहायता प्रदान गरेको हुनुपर्छ। पाठको मात्रा बढ्दै जाँदा, पाठकले तस्बिरहरूको सहायता लिने क्रम घट्दै जान्छ र उनीहरूले पाठबाटै बढी अर्थ पाउँछन्। यो स्तरमा चित्रहरू बढी जटिल हुन सक्छन्।
+      
       
       
       
@@ -367,6 +392,18 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">
+          <g id="genid-7" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा केही सहायता प्रदान गरेको हुनुपर्छ। पाठको मात्रा बढ्दै जाँदा, पाठकले तस्बिरहरूको सहायता लिने क्रम घट्दै जान्छ र उनीहरूले पाठबाटै बढी अर्थ पाउँछन्। यो स्तरमा चित्रहरू बढी जटिल हुन सक्छन्।
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -392,13 +429,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="ne-NP">
           <g id="genid-7" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा केही सहायता प्रदान गरेको हुनुपर्छ। पाठको मात्रा बढ्दै जाँदा, पाठकले तस्बिरहरूको सहायता लिने क्रम घट्दै जान्छ र उनीहरूले पाठबाटै बढी अर्थ पाउँछन्। यो स्तरमा चित्रहरू बढी जटिल हुन सक्छन्।
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">
-          <g id="genid-7" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा केही सहायता प्रदान गरेको हुनुपर्छ। पाठको मात्रा बढ्दै जाँदा, पाठकले तस्बिरहरूको सहायता लिने क्रम घट्दै जान्छ र उनीहरूले पाठबाटै बढी अर्थ पाउँछन्। यो स्तरमा चित्रहरू बढी जटिल हुन सक्छन्।
       
       
       </target>
@@ -409,6 +439,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="ne-NP" state="translated">
           <g id="genid-8" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा थोरै वा कुनै सहायता प्रदान गर्नु हुँदैन। अर्थ बुझ्नको लागि पाठक तस्बिरमा भन्दा बढी पाठमा निर्भर हुन्छ। यो स्तरमा चित्रहरू झनै बढी जटिल हुन सक्छन्।
+      
       
       
       
@@ -427,6 +458,18 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">
+          <g id="genid-8" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा थोरै वा कुनै सहायता प्रदान गर्नु हुँदैन। अर्थ बुझ्नको लागि पाठक तस्बिरमा भन्दा बढी पाठमा निर्भर हुन्छ। यो स्तरमा चित्रहरू झनै बढी जटिल हुन सक्छन्।
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -452,13 +495,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="ne-NP">
           <g id="genid-8" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा थोरै वा कुनै सहायता प्रदान गर्नु हुँदैन। अर्थ बुझ्नको लागि पाठक तस्बिरमा भन्दा बढी पाठमा निर्भर हुन्छ। यो स्तरमा चित्रहरू झनै बढी जटिल हुन सक्छन्।
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">
-          <g id="genid-8" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा थोरै वा कुनै सहायता प्रदान गर्नु हुँदैन। अर्थ बुझ्नको लागि पाठक तस्बिरमा भन्दा बढी पाठमा निर्भर हुन्छ। यो स्तरमा चित्रहरू झनै बढी जटिल हुन सक्छन्।
       
       
       </target>
@@ -486,6 +522,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
@@ -497,6 +534,18 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">
+          <g id="genid-9" ctype="x-html-strong">उदगामी पाठकहरूका लागि</g> पुस्तक यथार्थपूर्ण अथवा ठोस हुनुपर्छ, एउटा विचार/विषयवस्तुमा केन्द्रित हुनुपर्छ र परिचित तथा सजिलै बुझ्न सकिने हुनुपर्छ।
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -522,13 +571,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="ne-NP">
           <g id="genid-9" ctype="x-html-strong">उदगामी पाठकहरूका लागि</g> पुस्तक यथार्थपूर्ण अथवा ठोस हुनुपर्छ, एउटा विचार/विषयवस्तुमा केन्द्रित हुनुपर्छ र परिचित तथा सजिलै बुझ्न सकिने हुनुपर्छ।
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">
-          <g id="genid-9" ctype="x-html-strong">उदगामी पाठकहरूका लागि</g> पुस्तक यथार्थपूर्ण अथवा ठोस हुनुपर्छ, एउटा विचार/विषयवस्तुमा केन्द्रित हुनुपर्छ र परिचित तथा सजिलै बुझ्न सकिने हुनुपर्छ।
       
       
       </target>
@@ -539,6 +581,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="ne-NP" state="translated">
           <g id="genid-10" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g>, कुनै परिचित अवधारणामा केन्द्रित रहेर तर अलि गहिकिलो कथा विकास गर्नुहोस्।
+      
       
       
       
@@ -557,6 +600,18 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">
+          <g id="genid-10" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g>, कुनै परिचित अवधारणामा केन्द्रित रहेर तर अलि गहिकिलो कथा विकास गर्नुहोस्।
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -582,13 +637,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="ne-NP">
           <g id="genid-10" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g>, कुनै परिचित अवधारणामा केन्द्रित रहेर तर अलि गहिकिलो कथा विकास गर्नुहोस्।
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">
-          <g id="genid-10" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g>, कुनै परिचित अवधारणामा केन्द्रित रहेर तर अलि गहिकिलो कथा विकास गर्नुहोस्।
       
       
       </target>
@@ -599,6 +647,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="ne-NP" state="translated">
           <g id="genid-11" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> परिचित विषयवस्तुभन्दा बाहिरका, बढी  विविध र काल्पनिक अवधारणाहरू पनि समावेश गर्न सकिन्छ।
+      
       
       
       
@@ -617,6 +666,18 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ne-NP">
+          <g id="genid-11" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> परिचित विषयवस्तुभन्दा बाहिरका, बढी  विविध र काल्पनिक अवधारणाहरू पनि समावेश गर्न सकिन्छ।
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -642,13 +703,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <target xml:lang="ne-NP">
           <g id="genid-11" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> परिचित विषयवस्तुभन्दा बाहिरका, बढी  विविध र काल्पनिक अवधारणाहरू पनि समावेश गर्न सकिन्छ।
       
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ne-NP">
-          <g id="genid-11" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> परिचित विषयवस्तुभन्दा बाहिरका, बढी  विविध र काल्पनिक अवधारणाहरू पनि समावेश गर्न सकिन्छ।
       
       
       </target>
