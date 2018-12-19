@@ -33,7 +33,14 @@ html.publishTabScreen {
         .screen-root {
             height: 100%;
         }
-        & > div {
+        // Quoting from the react-modal documentation, "By default, the modal portal will be appended to
+        // the document's body."  The automatically inserted div.ReactModalPortal is normally empty and
+        // thus invisible.  We have to be careful not to make its height 100%!  This would have two
+        // unfortunate consequences: adding a lot of empty space at the bottom of the tool, and (worse)
+        // disabling any active elements unfortunate enough to be covered by the div.ReactModalPortal.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6729.
+        // So, we need to mark the actual tool root div with this class.
+        & > div.react-tool-root {
             // the react root
             height: 100%;
         }
