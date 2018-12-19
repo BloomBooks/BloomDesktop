@@ -59,6 +59,7 @@ var paths = {
     filesThatMightBeNeededInOutput: [
         "./**/*.*",
         "!./**/*.ts",
+        "!./**/*.tsx",
         "!./**/*.pug",
         "!./**/*.md",
         "!./**/*.less",
