@@ -89,6 +89,15 @@ namespace Bloom.web.controllers
 				{
 					request.ReplyWithText(ApplicationUpdateSupport.ChannelName);
 				}, false);
+			// This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
+			// to see it used anywhere in code that gets submitted and merged.
+			apiHandler.RegisterEndpointHandler ("common/debugMessage",
+				request =>
+				{
+					var message = request.RequiredPostString();
+					Debug.WriteLine("FROM JS: " + message);
+					request.PostSucceeded();
+				}, false);
 		}
 
 		// Request from javascript to open the folder containing the specified file,
