@@ -226,6 +226,12 @@ export class BloomApi {
             successCallback
         );
     }
+
+    public static postDebugMessage(message: string): void {
+        BloomApi.postDataWithConfig("common/debugMessage", message, {
+            headers: { "Content-Type": "text/plain" }
+        });
+    }
 }
 
 window.addEventListener("beforeunload", () => BloomApi.NotifyPageClosing());

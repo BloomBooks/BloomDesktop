@@ -78,6 +78,11 @@ namespace Bloom.web.controllers
 						request.PostSucceeded();
 					}
 				}, false);
+			apiHandler.RegisterEndpointHandler ("common/debugMessage", request => {
+				var message = request.RequiredPostString();
+				Debug.WriteLine("FROM JS: " + message);
+				request.PostSucceeded();
+			}, false);
 			apiHandler.RegisterEndpointHandler("common/checkForUpdates",
 				request =>
 				{
