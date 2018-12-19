@@ -13,14 +13,14 @@
         <target xml:lang="ne-NP" state="needs-translation">Check for updates</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration">
-        <source xml:lang="en">That code has expired.</source>
+        <source xml:lang="en">Expires:</source>
         <note>ID: Settings.Enterprise.Expiration</note>
-        <target xml:lang="ne-NP" state="needs-translation">That code has expired.</target>
+        <target xml:lang="ne-NP" state="needs-translation">Expires:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expired">
-        <source xml:lang="en">Expires:</source>
+        <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expired</note>
-        <target xml:lang="ne-NP" state="needs-translation">Expires:</target>
+        <target xml:lang="ne-NP" state="needs-translation">That code has expired.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Incomplete">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>

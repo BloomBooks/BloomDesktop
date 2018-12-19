@@ -56,6 +56,7 @@
           
           
           
+          
 La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
@@ -71,6 +72,22 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
           
           
           
+          
+La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
         </alt-trans>
         <alt-trans>
@@ -103,17 +120,6 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
         <alt-trans>
           <target xml:lang="fr">
           
-          
-          
-          
-          
-          
-          
-          
-La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           
@@ -180,6 +186,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
@@ -200,6 +207,27 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">Ourson, ourson, qu'est-ce que tu vois ?
+Je vois un rouge-gorge tout près de moi.
+Rouge-gorge, rouge-gorge, qu'est-ce que tu vois ?
+Je vois un canard tout près de moi.
+Canard, canard, qu'est-ce que tu vois ?</g>
+           <g id="genid-4" ctype="x-html-div" html:class="author">-adaptation d'un texte de Bill Martin, Jr. and Eric Carle</g>
+         </g>
+       
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -251,22 +279,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
          </g>
        
       
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les poésie : histoire dont la structure comporte des rimes, par exemple :
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Ourson, ourson, qu'est-ce que tu vois ?
-Je vois un rouge-gorge tout près de moi.
-Rouge-gorge, rouge-gorge, qu'est-ce que tu vois ?
-Je vois un canard tout près de moi.
-Canard, canard, qu'est-ce que tu vois ?</g>
-           <g id="genid-4" ctype="x-html-div" html:class="author">-adaptation d'un texte de Bill Martin, Jr. and Eric Carle</g>
-         </g>
-       
       
       
       
@@ -288,6 +300,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
         <target xml:lang="fr" state="translated">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
+    
     
     
     
@@ -335,6 +348,32 @@ Canard, canard, qu'est-ce que tu vois ?</g>
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -387,27 +426,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
     
     
     
@@ -432,6 +450,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <target xml:lang="fr" state="translated">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
+      
       
       
       
@@ -479,6 +498,32 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -531,27 +576,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
       
       
       
@@ -576,6 +600,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <target xml:lang="fr" state="translated">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
+      
       
       
       
@@ -632,6 +657,29 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -658,25 +706,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-7" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent aider à comprendre l'histoire. À mesure que la longueur des textes augmente, les lecteurs dépendent moins des illustrations et comprennent de plus en plus le texte lu. Les illustrations peuvent être plus complexes.
       
       
       
@@ -710,6 +739,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.fluent.reader</note>
         <alt-trans>
@@ -724,6 +754,21 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -754,16 +799,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       
       
       
@@ -804,6 +839,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
@@ -818,6 +854,21 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -848,16 +899,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
       
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-9" ctype="x-html-strong">les lecteurs grands débutants</g> le livre doit parler d'un sujet concret et ne comporter qu'une seule idée ou qu'un seul thème. Le sujet doit être connu du lecteur et facile à comprendre.      
       
       
       
@@ -871,6 +912,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
         <target xml:lang="fr" state="translated">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
+      
       
       
       
@@ -930,6 +972,30 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -957,26 +1023,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
       
       
       
@@ -1000,6 +1046,7 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
         <target xml:lang="fr" state="translated">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
+      
       
       
       
@@ -1056,6 +1103,29 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -1082,25 +1152,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-11" ctype="x-html-strong">les lecteurs avancés</g> les concepts peuvent dépasser ce qui est familier, être plus variés et être abstraits.
       
       
       
