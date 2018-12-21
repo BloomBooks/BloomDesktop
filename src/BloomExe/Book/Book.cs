@@ -1715,7 +1715,7 @@ namespace Bloom.Book
 				HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement)
 					.Cast<XmlElement>()
 					.Any(
-						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"]?.Value));
+						span => AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, span.Attributes["id"]?.Value));
 		}
 
 		/// <summary>
@@ -1746,7 +1746,7 @@ namespace Bloom.Book
 					foreach (var audioSentenceChildNode in HtmlDom.SelectAudioSentenceElements(div).Cast<XmlElement>())
 					{
 						var id = audioSentenceChildNode.GetOptionalStringAttribute("id", "");
-						if (string.IsNullOrEmpty(id) || !AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, audioSentenceChildNode.Attributes["id"].Value))
+						if (string.IsNullOrEmpty(id) || !AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, audioSentenceChildNode.Attributes["id"].Value))
 							return false;   // missing audio file
 						if (!textOfDiv.StartsWith(audioSentenceChildNode.InnerText))
 							return false;   // missing audio span?

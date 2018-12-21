@@ -39,13 +39,16 @@ namespace Bloom.Edit
 		BloomWebSocketServer _webSocketServer;
 		private const string kWebsocketContext = "audio-recording"; // must match that found in audioRecording.tsx
 
+		public const string kPublishableExtension = "mp3";
+		public const string kRecordableExtension = "wav";
+
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
 		public string PathToTemporaryWav;
 
 		//the ultimate destination, after we've cleaned up the recording
-		public string PathToCurrentAudioSegment;
+		public string PathToRecordableAudioForCurrentSegment;
 
 		private string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
 		private DateTime _startRecording; // For tracking recording length.
@@ -101,7 +104,12 @@ namespace Bloom.Edit
 			var ids = request.RequiredParam("ids");
 			foreach (var id in ids.Split(','))
 			{
-				if (RobustFile.Exists(GetPathToSegment(id)))
+				if (RobustFile.Exists(GetPathToRecordableAudioForSegment(id)))
+				{
+					request.PostSucceeded();
+					return;
+				}
+				if (RobustFile.Exists(GetPathToPublishableAudioForSegment(id)))
 				{
 					request.PostSucceeded();
 					return;
@@ -220,11 +228,11 @@ namespace Bloom.Edit
 			// Try to delete the file we were writing to.
 			try
 			{
-				RobustFile.Delete(PathToCurrentAudioSegment);
+				RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
 			}
 			catch (Exception error)
 			{
-				Logger.WriteError("Audio Recording trying to delete "+PathToCurrentAudioSegment, error);
+				Logger.WriteError("Audio Recording trying to delete "+PathToRecordableAudioForCurrentSegment, error);
 			}
 			// The recorder may well be in a bad state.  Throw it away and get a new one.
 			// But maintain the assigned recording device.
@@ -237,31 +245,26 @@ namespace Bloom.Edit
 		private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)
 		{
 			Recorder.Stopped -= Recorder_Stopped;
-			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToCurrentAudioSegment)); // make sure audio directory exists
+			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment)); // make sure audio directory exists
 			int millisecondsToTrimFromEndForMouseClick =100;
 			try
 			{
 				var minimum = TimeSpan.FromMilliseconds(300); // this is arbitrary
-				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToCurrentAudioSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick), minimum);
+				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToRecordableAudioForCurrentSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick), minimum);
 				RobustFile.Delete(PathToTemporaryWav);	// Otherwise, these continue to clutter up the temp directory.
 			}
 			catch (Exception error)
 			{
 				Logger.WriteEvent(error.Message);
-				RobustFile.Copy(PathToTemporaryWav,PathToCurrentAudioSegment, true);
+				RobustFile.Copy(PathToTemporaryWav,PathToRecordableAudioForCurrentSegment, true);
 			}
 
-			//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
 			//We could put this off entirely until we make the ePUB.
 			//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
 			//That's fine so long as it doesn't make the UI unresponsive on slow machines.
-			if (LameEncoder.IsAvailable())
-			{
-				_mp3Encoder.Encode(PathToCurrentAudioSegment, PathToCurrentAudioSegment.Substring(0, PathToCurrentAudioSegment.Length - 4), new NullProgress());
-				// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format (or alternative mp4)
-				// is required for ePUB. The wav file is a better permanent record of the recording; also,
-				// it is used for playback.
-			}
+			_mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment);
+			// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format
+			// is required for ePUB. The wav file is a better permanent record of the recording.
 		}
 
 		private bool TestForTooShortAndSendFailIfSo(ApiRequest request)
@@ -278,7 +281,6 @@ namespace Bloom.Edit
 			return false;
 		}
 
-		/// <returns>true if the recording started successfully</returns>
 		public void HandleStartRecording(ApiRequest request)
 		{
 			if(Recording)
@@ -288,7 +290,7 @@ namespace Bloom.Edit
 			}
 
 			string segmentId = request.RequiredParam("id");
-			PathToCurrentAudioSegment = GetPathToSegment(segmentId);
+			PathToRecordableAudioForCurrentSegment = GetPathToRecordableAudioForSegment(segmentId);
 			PathToTemporaryWav = Path.GetTempFileName();
 
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
@@ -316,9 +318,9 @@ namespace Bloom.Edit
 				return;
 			}
 
-			if (RobustFile.Exists(PathToCurrentAudioSegment))
+			if (RobustFile.Exists(PathToRecordableAudioForCurrentSegment))
 			{
-				//Try to deal with _backPath getting locked (BL-3160)
+				//Try to deal with _backupPath getting locked (BL-3160)
 				try
 				{
 					RobustFile.Delete(_backupPath);
@@ -329,23 +331,23 @@ namespace Bloom.Edit
 				}
 				try
 				{
-					RobustFile.Copy(PathToCurrentAudioSegment, _backupPath, true);
+					RobustFile.Copy(PathToRecordableAudioForCurrentSegment, _backupPath, true);
 				}
 				catch (Exception err)
 				{
 					ErrorReport.NotifyUserOfProblem(err,
-						"Bloom cold not copy "+PathToCurrentAudioSegment+" to "+_backupPath+" If things remains stuck, you may need to restart your computer.");
+						"Bloom cold not copy "+PathToRecordableAudioForCurrentSegment+" to "+_backupPath+" If things remains stuck, you may need to restart your computer.");
 					request.Failed( "Problem with backup file");
 					return;
 				}
 				try
 				{
-					RobustFile.Delete(PathToCurrentAudioSegment);
+					RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
 				}
 				catch (Exception err)
 				{
 					ErrorReport.NotifyUserOfProblem(err,
-						"The old copy of the recording at " + PathToCurrentAudioSegment + " is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
+						"The old copy of the recording at " + PathToRecordableAudioForCurrentSegment + " is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
 					request.Failed( "Audio file locked");
 					return;
 				}
@@ -360,11 +362,14 @@ namespace Bloom.Edit
 			return;
 		}
 
-
-
-		private string GetPathToSegment(string segmentId)
+		private string GetPathToPublishableAudioForSegment(string segmentId)
 		{
-			return System.IO.Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", segmentId + ".wav");
+			return Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", $"{segmentId}.{kPublishableExtension}");
+		}
+
+		private string GetPathToRecordableAudioForSegment(string segmentId)
+		{
+			return Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", $"{segmentId}.{kRecordableExtension}");
 		}
 
 		public bool Recording
@@ -406,12 +411,12 @@ namespace Bloom.Edit
 			{
 				// Delete doesn't throw if the FILE doesn't exist, but if the Directory doesn't, you're toast.
 				// And the very first time a user tries this, the audio directory probably doesn't exist...
-				if (Directory.Exists(Path.GetDirectoryName(PathToCurrentAudioSegment)))
-					RobustFile.Delete(PathToCurrentAudioSegment);
+				if (Directory.Exists(Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment)))
+					RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
 			}
 			catch (Exception error)
 			{
-				Logger.WriteError("Audio Recording trying to delete "+PathToCurrentAudioSegment, error);
+				Logger.WriteError("Audio Recording trying to delete "+PathToRecordableAudioForCurrentSegment, error);
 				Debug.Fail("can't delete the recording even after we stopped:"+error.Message);
 			}
 
@@ -420,7 +425,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					RobustFile.Copy(_backupPath, PathToCurrentAudioSegment, true);
+					RobustFile.Copy(_backupPath, PathToRecordableAudioForCurrentSegment, true);
 				}
 				catch (IOException e)
 				{
@@ -471,8 +476,15 @@ namespace Bloom.Edit
 
 		private void HandleCheckForSegment(ApiRequest request)
 		{
-			var path = GetPathToSegment(request.RequiredParam("id"));
-			request.ReplyWithText(RobustFile.Exists(path) ? "exists" : "not found");
+			var segmentId = request.RequiredParam("id");
+			var path = GetPathToRecordableAudioForSegment(segmentId);
+			if (RobustFile.Exists(path))
+				request.ReplyWithText("exists");
+			else
+			{
+				path = GetPathToPublishableAudioForSegment(segmentId);
+				request.ReplyWithText(RobustFile.Exists(path) ? "exists" : "not found");
+			}
 		}
 
 
@@ -483,13 +495,14 @@ namespace Bloom.Edit
 		/// <param name="fileUrl"></param>
 		private void HandleDeleteSegment(ApiRequest request)
 		{
-			var path = GetPathToSegment(request.RequiredParam("id"));
-			var mp3Path = Path.ChangeExtension(path, "mp3");
+			var segmentId = request.RequiredParam("id");
+			var recordablePath = GetPathToRecordableAudioForSegment(segmentId);
+			var publishablePath = GetPathToPublishableAudioForSegment(segmentId);
 			var success = true;
-			if(RobustFile.Exists(path))
-				success = DeleteFileReportingAnyProblem(path);
-			if (RobustFile.Exists(mp3Path))
-				success &= DeleteFileReportingAnyProblem(mp3Path);
+			if(RobustFile.Exists(recordablePath))
+				success = DeleteFileReportingAnyProblem(recordablePath);
+			if (RobustFile.Exists(publishablePath))
+				success &= DeleteFileReportingAnyProblem(publishablePath);
 
 			if (success)
 			{

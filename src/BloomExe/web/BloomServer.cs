@@ -19,6 +19,7 @@ using BloomTemp;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Collection;
+using Bloom.Edit;
 using Bloom.Publish.Epub;
 using Bloom.Properties;
 using Bloom.web;
@@ -586,6 +587,16 @@ namespace Bloom.Api
 				}
 			}
 
+			if (!RobustFile.Exists(path) && IsAudioFileWhichCanHaveCompressedCounterpart(path))
+			{
+				var possiblePublishableAudioPath = Path.ChangeExtension(path, AudioRecording.kPublishableExtension);
+				if (RobustFile.Exists(possiblePublishableAudioPath))
+				{
+					path = possiblePublishableAudioPath;
+					modPath = Path.ChangeExtension(modPath, AudioRecording.kPublishableExtension);
+				}
+			}
+
 			if (!RobustFile.Exists(path))
 			{
 				// On developer machines, we can lose part of path earlier.  Try one more thing.
@@ -602,6 +613,11 @@ namespace Bloom.Api
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		private bool IsAudioFileWhichCanHaveCompressedCounterpart(string path)
+		{
+			return path.EndsWith($".{AudioRecording.kRecordableExtension}");
 		}
 
 		private static void ReportMissingFile(string localPath, string path)
@@ -706,7 +722,7 @@ namespace Bloom.Api
 			{
 				// When developing brandings, it's convenient to just use the very-latest build
 				// which will be sitting in the output/browser/branding/<branding name>/ folder,
-				// rather than the one that is already in the book. 
+				// rather than the one that is already in the book.
 				if (fileName == "branding.css")
 				{
 					path = _fileLocator.GetBrandingFile(false, "branding.css");

@@ -23,7 +23,7 @@ Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
  wmctrl, lame, ghostscript,
- sox, ffmpeg
+ ffmpeg
 Suggests: art-of-reading3
 Replaces: bloom-desktop, bloom-desktop-betainternal, bloom-desktop-alpha
 Conflicts: bloom-desktop-unstable
