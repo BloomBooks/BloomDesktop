@@ -8,7 +8,6 @@ using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
 using BloomBook = Bloom.Book.Book;
-using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using ICSharpCode.SharpZipLib.Zip;
@@ -270,7 +269,7 @@ namespace BloomTests.Publish
 					break;
 			}
 			MakeImageFiles(book, "my image");
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3"));
 			// But don't make a fake audio file for the second span
 			MakeEpub("output", $"Missing_Audio_Ignored_{audioRecordingMode}", book);	// Note: need to ensure they that multiple test cases do not use the same file
 			CheckBasicsInManifest("my_image");
@@ -293,10 +292,10 @@ namespace BloomTests.Publish
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", mgr);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", mgr);
 			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", mgr);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", mgr);
 			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"i0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
 
-			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
+			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
 			VerifyEpubItemDoesNotExist("content/"+EpubMaker.kAudioFolder+"/i0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
 		}
 
@@ -436,7 +435,7 @@ namespace BloomTests.Publish
 			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
 			VerifyEpubItemDoesNotExist("content/"+EpubMaker.kAudioFolder+"/i0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
 		}
-		
+
 		/// <summary>
 		/// Motivated by "El Nino" from bloom library, which (to defeat caching?) has such a query param in one of its src attrs.
 		/// </summary>
@@ -1131,8 +1130,8 @@ namespace BloomTests.Publish
 			}
 			else
 			{
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.672']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.672']", _ns);
 			}
 
 			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
@@ -1148,9 +1147,11 @@ namespace BloomTests.Publish
 			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/a23.mp3");
 		}
 
-		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
-		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
-		public void BookWithAudio_OneAudioPerPage_ProducesOneMp3(TalkingBookApi.AudioRecordingMode audioRecordingMode)
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence, true)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence, false)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox, true)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox, false)]
+		public void BookWithAudio_OneAudioPerPage_ProducesOneMp3(TalkingBookApi.AudioRecordingMode audioRecordingMode, bool startWithWav)
 		{
 			BloomBook book;
 			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
@@ -1172,9 +1173,9 @@ namespace BloomTests.Publish
 				Assert.Fail("Invalid test input");
 			}
 
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
-			MakeEpub("output", $"BookWithAudio_MergeAudio_ProducesOneMp3_{audioRecordingMode}", book,
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp3"), startWithWav);
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"), startWithWav);
+			MakeEpub("output", $"BookWithAudio_MergeAudio_ProducesOneMp3_{audioRecordingMode}_{startWithWav}", book,
 				extraInit: maker => maker.OneAudioPerPage = true);
 
 			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
@@ -1196,8 +1197,8 @@ namespace BloomTests.Publish
 			}
 			else
 			{
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.700']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:01.700' and @clipEnd='0:00:03.400']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.672']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:01.672' and @clipEnd='0:00:03.344']", _ns);
 			}
 
 			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
@@ -1212,9 +1213,11 @@ namespace BloomTests.Publish
 		/// There's some special-case code for Ids that start with digits that we test here.
 		/// This test has been extended to verify that we get media:duration metadata
 		/// </summary>
-		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
-		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
-		public void AudioWithParagraphsAndRealGuids_ProducesOverlay(TalkingBookApi.AudioRecordingMode audioRecordingMode)
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence, true)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence, false)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox, true)]
+		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox, false)]
+		public void AudioWithParagraphsAndRealGuids_ProducesOverlay(TalkingBookApi.AudioRecordingMode audioRecordingMode, bool startWithWav)
 		{
 			BloomBook book;
 			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
@@ -1237,10 +1240,10 @@ namespace BloomTests.Publish
 				book = null;
 				Assert.Fail("Invalid test input");
 			}
-			
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4"));
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b763.mp3"));
-			MakeEpub("output", $"AudioWithParagraphsAndRealGuids_ProducesOverlay_{audioRecordingMode}", book);
+
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3"), startWithWav);
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b763.mp3"), startWithWav);
+			MakeEpub("output", $"AudioWithParagraphsAndRealGuids_ProducesOverlay_{audioRecordingMode}_{startWithWav}", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckPageBreakMarker(_page1Data);
@@ -1259,36 +1262,39 @@ namespace BloomTests.Publish
 			}
 			else
 			{
-				// We don't much care how many decimals follow the 03.4 but this is what the default TimeSpan.ToString currently does.
-				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.4000000']");
-				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.4000000']");
+				// We don't much care how many decimals follow the 3.344 but this is what the default TimeSpan.ToString currently does.
+				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.3440000']");
+				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.3440000']");
 			}
 			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", _ns);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", _ns);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4']", _ns);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", _ns);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"i0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", _ns);
 
-			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
+			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
 			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/i0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
 		}
 
 		// Sometimes the tests were failing on TeamCity because the file was in use by another process
 		// (I'm assuming that was another test since a few use the same path).
 		private static readonly object s_thisLock = new object();
-		protected void MakeFakeAudio(string path)
+		protected void MakeFakeAudio(string path, bool alsoProduceWav = true)
 		{
 			lock (s_thisLock)
 			{
 				Directory.CreateDirectory(Path.GetDirectoryName(path));
 				// Bloom is going to try to figure its duration, so put a real audio file there.
-				// Some of the paths are for mp4s, but it doesn't hurt to use an mp3.
 				var src = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication("src/BloomTests/Publish/sample_audio.mp3");
 				File.Copy(src, path);
-				var wavSrc = Path.ChangeExtension(src, ".wav");
-				File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
+
+				if (alsoProduceWav)
+				{
+					var wavSrc = Path.ChangeExtension(src, ".wav");
+					File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
+				}
 			}
 		}
 
@@ -1462,7 +1468,7 @@ namespace BloomTests.Publish
 				book = null;
 				Assert.Fail("Invalid test input");
 			}
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2d.mp4"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2d.mp3"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b764.mp3"));
 			var hasFullAudio = book.HasFullAudioCoverage();
 			Assert.IsTrue(hasFullAudio, "HasFullAudioCoverage should return true when appropriate");
@@ -1618,8 +1624,7 @@ namespace BloomTests.Publish
 		public EpubMakerAdjusted(BloomBook book, BookThumbNailer thumbNailer, BookServer bookServer) :
 			base(thumbNailer, string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
 		{
-			this.Book = book;
-			AudioProcessor._compressorMethod = EpubMakerAdjusted.PretendMakeCompressedAudio;
+			Book = book;
 		}
 
 		internal override void CopyFile(string srcPath, string dstPath, bool reduceImageIfPossible=false, bool needsTransparentBackground=false)
@@ -1630,15 +1635,6 @@ namespace BloomTests.Publish
 				return;
 			}
 			base.CopyFile(srcPath, dstPath, reduceImageIfPossible, needsTransparentBackground);
-		}
-
-		// We can't test real compression because (a) the wave file is fake to begin with
-		// and (b) we can't assume the machine running the tests has LAME installed.
-		internal static string PretendMakeCompressedAudio(string wavPath)
-		{
-			var output = Path.ChangeExtension(wavPath, "mp3");
-			File.Copy(wavPath, output);
-			return output;
 		}
 	}
 }
