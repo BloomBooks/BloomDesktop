@@ -4,32 +4,14 @@
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
 // in this file. That code breaks the
 // page's text into sentence-length spans (if not already done), makes sure each
-// has an id (preserving existing ones, and using guids for new ones). Then it
-// displays  a popup 'bubble' with controls for moving between sentences,
-// recording the current sentence, and playing it back. The audio files
+// has an id (preserving existing ones, and using guids for new ones). The audio files
 // are placed in a folder called 'audio' in the main book folder. Currently we
 // save both uncompressed .wav files and compressed .mp3 files for each segment.
-// One reason to keep the .wav files is that I don't think FF can play mp3s.
 // Currently the actual recording is done in C#, since I can't get audio
 // recording to work reliably in HTML using Gecko29. In JohnT's fork of Bloom,
 // there is a branch RecordAudioInBrowserSpike in which I attempted to do this.
 // It works sometimes, but often part or all of the recording is silence.
-// Things that still need doing:
-// - Modify TeamCity build (make a new channel if we need an installer
-//   with this feature and are not merging yet) to add the naudio.dll
-//   dependency
-// - Do something about the Lame dependency...either bundle it somehow, or
-//   somewhere provide a link for downloading it. We have to pay a fee
-//   (see  http://www.mp3-tech.org/ in the games tab) if we distribute more
-//   5000 copies of a product that does MP3 encoding. Are we doing so if we
-//   just tell people to get the thing that LAME is distributing and use it?
-//   It may be necessary for us to track the number of installs that are
-//   mp3-encoding-capable, and pay the fee if we reach the limit. May also
-//   need legal advice on whether we meet the definition of interactive
-//   educational software. Do we have to get a license even if we aren't
-//   paying because we haven't distributed enough copies?
-// - Hide recording controls until LAME installed, or warn that it is not.
-// Other possible improvements:
+// Possible improvements:
 // - Notice when a new input device is connected and automatically select it
 //   (cf Palaso.Media.NAudio.RecordingDeviceIndicator)
 // - Update the input device display when the current device is unplugged and a new choice made.
@@ -380,6 +362,7 @@ export default class AudioRecording {
         this.changeStateAndSetExpected("record");
     }
 
+    // If we have an mp3 file but not a wav file, the file server will return that instead.
     private currentAudioUrl(id: string): string {
         return this.urlPrefix() + id + ".wav";
     }

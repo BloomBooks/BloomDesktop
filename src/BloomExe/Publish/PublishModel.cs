@@ -552,11 +552,6 @@ namespace Bloom.Publish
 			}
 		}
 
-		internal bool DoAnyNeededAudioCompression()
-		{
-			return AudioProcessor.TryCompressingAudioAsNeeded(BookSelection.CurrentSelection.FolderPath, LoadBookIfNeeded().RawDom);
-		}
-
 		public void ReportAnalytics(string eventName)
 		{
 			Analytics.Track(eventName, new Dictionary<string, string>()

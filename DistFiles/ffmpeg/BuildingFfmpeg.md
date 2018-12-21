@@ -99,7 +99,7 @@ libvorbis
 <pre>
 git clone https://github.com/xiph/vorbis
 cd vorbis
-./autoget.sh && ./configure --prefix=/mingw
+./autogen.sh && ./configure --prefix=/mingw
 make install
 cd ..
 </pre>
@@ -128,6 +128,21 @@ cd build
 make install
 cd ../..
 </pre>
+Note, when I (Andrew) was trying to follow these instructions, I was getting errors during this build because it wanted to use nasm rather than yasm.
+I ended up installing nasm. Unfortunately, I didn't take notes on what I did.
+
+lame
+------
+Note that this repository originally came from https://sourceforge.net/projects/lame/, version 3.100, as a .tar (it is a SVN repository).
+We had to edit one file to get it to compile with MinGW on Windows.
+<pre>
+git clone https://github.com/BloomBooks/lame
+cd lame
+git checkout Bloom
+./configure --prefix=/mingw --disable-shared --enable-expopt=full
+make install
+cd ..
+</pre>
 
 ffmpeg
 ------
@@ -139,7 +154,7 @@ cd ffmpeg
 git checkout Bloom
 mkdir build
 cd build
-../configure --disable-all --disable-alsa --disable-appkit --disable-avfoundation --disable-bzlib --disable-coreimage --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-lzma --disable-sndio --disable-sdl2 --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-ffnvcodec --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-ffmpeg --enable-avcodec --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264,vp8 --enable-protocol=file --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-gpl --enable-libx264 --enable-libvorbis --enable-libvpx --prefix=/mingw --extra-ldflags=-static --pkg-config-flags=--static
+../configure --disable-all --disable-alsa --disable-appkit --disable-avfoundation --disable-bzlib --disable-coreimage --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-lzma --disable-sndio --disable-sdl2 --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-ffnvcodec --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-ffmpeg --enable-avcodec --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264,vp8 --enable-protocol=file --enable-protocol=concat --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-gpl --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame --enable-parser=mpegaudio --enable-demuxer=mp3 --enable-muxer=mp3 --enable-decoder=mp3* --enable-encoder=libmp3lame --prefix=/mingw --extra-ldflags=-static --pkg-config-flags=--static
 make install
 cd ../..
 </pre>
@@ -147,4 +162,4 @@ cd ../..
 After building, the desired ffmpeg.exe is found in .../ffmpeg/build and in C:\mingw\bin.
 
 The current full static ffmpeg.exe is about 60MB in size.  The reduced static ffmpeg.exe
-built through the process above is about 4.5MB in size.
+built through the process above is about 6.8MB in size.
