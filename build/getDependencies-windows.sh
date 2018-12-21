@@ -77,7 +77,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: bloom-4.4.tcbuildtag
-#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "Sox.zip!**"=>"DistFiles/sox"}
+#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame"}
 # [1] build: BloomPlayer-Master-Continuous (BPContinuous)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
@@ -174,7 +174,6 @@ mkdir -p ../DistFiles
 mkdir -p ../DistFiles/
 mkdir -p ../DistFiles/ghostscript
 mkdir -p ../DistFiles/pdf
-mkdir -p ../DistFiles/sox
 mkdir -p ../Downloads
 mkdir -p ../build
 mkdir -p ../lib/dotnet
@@ -188,7 +187,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.4.
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.4.tcbuildtag/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.4.tcbuildtag/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.4.tcbuildtag/Lame.zip ../Downloads/Lame.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.4.tcbuildtag/Sox.zip ../Downloads/Sox.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/bloom-4.4.tcbuildtag/bloomPagePlayer.js ../DistFiles/bloomPagePlayer.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/bloom-4.4.tcbuildtag/bloomPlayer.js ../DistFiles/bloomPlayer.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/bloom-4.4.tcbuildtag/PodcastUtilities.PortableDevices.dll ../lib/dotnet/PodcastUtilities.PortableDevices.dll
@@ -257,6 +255,5 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_Palaso
 # extract downloaded zip files
 unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
-unzip -uqo ../Downloads/Sox.zip -d "../DistFiles/sox"
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script
