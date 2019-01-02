@@ -101,33 +101,47 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
+    public PageAttached: boolean = false; // set by SignLanguageTools.newPageReady()/detachFromPage()
 
     public render() {
         let videoStats = <div id="videoStatsWrapper" />;
         let trimSlider = <div id="trimWrapper" />;
-        if (
-            // Protects against showing slider and stats when
-            // the video info hasn't yet been loaded from the file.
-            this.state.haveRecording &&
-            this.state.videoStatistics.duration != ""
-        ) {
-            const start = parseFloat(this.state.videoStatistics.startSeconds);
-            let end = parseFloat(this.state.videoStatistics.endSeconds);
-            const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
-                this.state.videoStatistics.duration
-            );
-            if (end == UNTRIMMED_TIMING_NUM) {
-                // if the video has not been "end-trimmed", set the end slider to the equivalent of the
-                // untrimmed video's duration, since the end of the video in seconds is equal to its duration
-                // in seconds.
-                end = maxDuration;
+        // Protect against Slider.Range onChange malfunctions on Windows when changing
+        // pages.  Spurious onChange requests were happening that affected the wrong
+        // video elements.  Not creating an actual Slider.Range (with its attached
+        // onChange handler) after the old page starts to be detached and before the
+        // new page is finally ready appears to fix the problem.  This problem never
+        // appeared on Linux, and this fix should be harmless there.  For details, see
+        // https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
+        // Note that this render method is called quite frequently, even when the user
+        // is just sitting quietly staring at the wall.
+        if (this.PageAttached) {
+            if (
+                // Protects against showing slider and stats when
+                // the video info hasn't yet been loaded from the file.
+                this.state.haveRecording &&
+                this.state.videoStatistics.duration != ""
+            ) {
+                const start = parseFloat(
+                    this.state.videoStatistics.startSeconds
+                );
+                let end = parseFloat(this.state.videoStatistics.endSeconds);
+                const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
+                    this.state.videoStatistics.duration
+                );
+                if (end == UNTRIMMED_TIMING_NUM) {
+                    // if the video has not been "end-trimmed", set the end slider to the equivalent of the
+                    // untrimmed video's duration, since the end of the video in seconds is equal to its duration
+                    // in seconds.
+                    end = maxDuration;
+                }
+                const valueArray: number[] = [start, end];
+                trimSlider = this.getTrimSlider(valueArray, maxDuration);
+                videoStats = this.getVideoStats();
+            } else if (!this.state.enterprise) {
+                // Show the slider even without a video when obscured by enterprise being off.
+                trimSlider = this.getTrimSlider([0, 5], 5);
             }
-            const valueArray: number[] = [start, end];
-            trimSlider = this.getTrimSlider(valueArray, maxDuration);
-            videoStats = this.getVideoStats();
-        } else if (!this.state.enterprise) {
-            // Show the slider even without a video when obscured by enterprise being off.
-            trimSlider = this.getTrimSlider([0, 5], 5);
         }
         return (
             <RequiresBloomEnterpriseWrapper>
@@ -322,10 +336,10 @@ export class SignLanguageToolControls extends React.Component<
                     className="videoTrimSlider"
                     count={1}
                     value={valueArray}
-                    onChange={v => this.setTrimPoints(v[0], v[1])}
+                    onChange={v => this.handleSliderRangeChange(v[0], v[1])}
                     onAfterChange={
                         // set video back to start point in case we were viewing the end point
-                        v => SignLanguageTool.setCurrentVideoPoint(v[0])
+                        v => this.handleSliderRangeAfterChange(v[0])
                     }
                     step={0.1}
                     min={UNTRIMMED_TIMING_NUM}
@@ -371,7 +385,10 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private setTrimPoints(newStartSeconds: number, newEndSeconds: number) {
+    private handleSliderRangeChange(
+        newStartSeconds: number,
+        newEndSeconds: number
+    ) {
         const newStartString = newStartSeconds.toFixed(1);
         const newEndString = newEndSeconds.toFixed(1);
         SignLanguageTool.setVideoTimingsInSrcAttr(newStartString, newEndString);
@@ -387,6 +404,10 @@ export class SignLanguageToolControls extends React.Component<
             SignLanguageTool.setCurrentVideoPoint(newEndSeconds); // we're changing the end point, so show it.
         }
         this.setState({ videoStatistics: stats });
+    }
+
+    private handleSliderRangeAfterChange(newStartSeconds: number) {
+        SignLanguageTool.setCurrentVideoPoint(newStartSeconds);
     }
 
     public getCameraMessageLabel() {
@@ -847,6 +868,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
+        this.reactControls.PageAttached = false;
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -958,6 +980,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 this.reactControls.setState({ enabled: true });
             }
         }
+        this.reactControls.PageAttached = true;
     }
 
     private updateStateForSelected(container: Element) {
@@ -1099,7 +1122,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     private static getSelectedVideoElement(): HTMLVideoElement | undefined {
         const selectedContainers = SignLanguageTool.getVideoContainers(true); // s/b only one selected container
-        if (selectedContainers)
+        if (selectedContainers && selectedContainers.length > 0)
             return selectedContainers[0].getElementsByTagName(
                 "video"
             )[0] as HTMLVideoElement;
