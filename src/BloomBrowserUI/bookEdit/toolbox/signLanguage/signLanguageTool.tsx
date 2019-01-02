@@ -101,6 +101,7 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
+    private newTrimSlider: boolean;
 
     public render() {
         let videoStats = <div id="videoStatsWrapper" />;
@@ -316,6 +317,7 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private getTrimSlider(valueArray: number[], maxDuration: number) {
+        this.newTrimSlider = true;
         return (
             <div id="trimWrapper">
                 <Range
@@ -372,6 +374,16 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private setTrimPoints(newStartSeconds: number, newEndSeconds: number) {
+        // On Windows, the first onChange request that comes in for a new Slider.Range element is bogus:
+        // the values either belong to the previous (now defunct) Slider.Range element or may be some sort
+        // of standard initial value.  (0, 4.9) is what I've seen in the latter case.  I tried to use the
+        // current video/source/@src attribute value to detect this problem, but that doesn't prevent the
+        // latter problem.  So, I'm left with adding this state machine variable which is overkill for the
+        // very first Slider.Range element created.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
+        if (this.newTrimSlider) {
+            this.newTrimSlider = false;
+            return;
+        }
         const newStartString = newStartSeconds.toFixed(1);
         const newEndString = newEndSeconds.toFixed(1);
         SignLanguageTool.setVideoTimingsInSrcAttr(newStartString, newEndString);
@@ -1099,7 +1111,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     private static getSelectedVideoElement(): HTMLVideoElement | undefined {
         const selectedContainers = SignLanguageTool.getVideoContainers(true); // s/b only one selected container
-        if (selectedContainers)
+        if (selectedContainers && selectedContainers.length > 0)
             return selectedContainers[0].getElementsByTagName(
                 "video"
             )[0] as HTMLVideoElement;
