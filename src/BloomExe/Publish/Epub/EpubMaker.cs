@@ -17,7 +17,9 @@ using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
-#if !__MonoCS__
+#if __MonoCS__
+using SIL.CommandLineProcessing;
+#else
 using NAudio.Wave;
 #endif
 using SIL.IO;
@@ -646,10 +648,22 @@ namespace Bloom.Publish.Epub
 #if __MonoCS__
 						// ffmpeg can provide the length of the audio, but you have to strip it out of the command line output
 						// See https://stackoverflow.com/a/33115316/7442826 or https://stackoverflow.com/a/53648234/7442826
-
-						// /usr/bin/soxi -D file.(mp3|wav) returns the time in seconds to stdout
-						// or /usr/bin/sox --info -D file.(mp3|wav)  [soxi is a symbolic link to sox on Linux]
-						clipTimeSpan = new TimeSpan(new FileInfo(path).Length*7*10000000/61000);	// TODO: this needs to be fixed for Linux/Mono
+						// The output (which is sent to stderr, not stdout) looks something like this:
+						// "size=N/A time=00:03:36.13 bitrate=N/A speed= 432x    \rsize=N/A time=00:07:13.16 bitrate=N/A speed= 433x    \rsize=N/A time=00:08:42.97 bitrate=N/A speed= 434x"
+						// When seen on the console screen interactively, it looks like a single line that is updated frequently.
+						// A short file may have only one carriage-return separated section of output, while a very long file may
+						// have more sections than this.
+						var args = String.Format("-v quiet -stats -i \"{0}\" -f null -", path);
+						var result = CommandLineRunner.Run("/usr/bin/ffmpeg", args, "", 20 * 10, new SIL.Progress.NullProgress());
+						var output = result.ExitCode == 0 ? result.StandardError : null;
+						string timeString = null;
+						if (!string.IsNullOrEmpty(output))
+						{
+							var idxTime = output.LastIndexOf("time=");
+							if (idxTime > 0)
+								timeString = output.Substring(idxTime + 5, 11);
+						}
+						clipTimeSpan = TimeSpan.Parse(timeString, CultureInfo.InvariantCulture);
 #else
 						using (var reader = new Mp3FileReader(path))
 							clipTimeSpan = reader.TotalTime;
