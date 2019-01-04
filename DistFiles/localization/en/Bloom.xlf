@@ -2068,6 +2068,26 @@
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegment">
+        <source xml:lang="en">Auto Segment</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegment</note>
+        <note>This text appears on the button the user can press to trigger automatic segmentation of audio. An audio file corresponding to an entire text box will be segmented into one audio file per sentence instead. (Also known as "Forced Alignment" in technical terms)</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusComplete">
+        <source xml:lang="en">Segmenting... Done</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusComplete</note>
+        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") completed successfully.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError">
+        <source xml:lang="en">Segmenting... Error</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError</note>
+        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") failed with an errror.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress">
+        <source xml:lang="en">Segmenting...</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress</note>
+        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") is in progress.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>

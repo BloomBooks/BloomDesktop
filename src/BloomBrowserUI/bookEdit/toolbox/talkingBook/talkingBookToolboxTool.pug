@@ -39,5 +39,10 @@ html
 				+buttonGroup('clear', 'enabled', 'Clear', 'Clear')
 				+buttonGroup('listen', 'disabled', 'Listen to the whole page', 'Listen')
 				+checkboxWithHiddenClickHandler('recordingModeControl', 'EditTab.Toolbox.TalkingBookTool.RecordBySentences','Record by sentences', true, 'padding-top:22px')
+				div(id='audio-autoSegmentWrapper')
+					button(id='audio-autoSegment' data-i18n='EditTab.Toolbox.TalkingBookTool.AutoSegment') Auto Segment
+					button(id='audio-autoSegmentSettings')
+					br
+					div.autoSegmentStatus Segmenting...
 				div.audio-about(data-i18n='EditTab.Toolbox.TalkingBookTool.ToolPurpose') Make an e-book that can play audio recordings while highlighting text.
 				a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Talking_Book_Tool_overview.htm', data-i18n='Common.Help') Help

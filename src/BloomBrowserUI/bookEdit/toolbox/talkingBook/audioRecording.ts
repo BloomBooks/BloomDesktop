@@ -56,6 +56,10 @@ const kBloomEditableTextBoxSelector = "div.bloom-editable";
 const kRecordingModeControl: string = "audio-recordingModeControl";
 const kRecordingModeClickHandler: string =
     "audio-recordingModeControl-clickHandler";
+const kAutoSegmentButtonId = "audio-autoSegment";
+const kAutoSegmentButtonIdSelector = "#" + kAutoSegmentButtonId;
+const kAutoSegmentWrapperIdSelector = "#audio-autoSegmentWrapper";
+const kAutoSegmentEnabledClass = "autoSegmentEnabled";
 
 // TODO: We would actually like this to have (conceptually) different state for each text box, not a single one per page.
 // This would allow us to set a separate audio-recording mode for each state.
@@ -72,6 +76,9 @@ export default class AudioRecording {
     private audioRecordingMode: AudioRecordingMode;
     private recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
     private isShowing: boolean;
+
+    private stringToSentencesCache = {};
+    private sentenceToId = {}; // Wonder if we should just pass this around as a parameter between functions instead of maintaining state in the object?
 
     private listenerFunction: (MessageEvent) => void;
 
@@ -91,7 +98,7 @@ export default class AudioRecording {
     // Only called the first time the Toolbox is opened for this book during this Editing session.
     public initializeTalkingBookTool() {
         // I've sometimes observed events like click being handled repeatedly for a single click.
-        // Adding thse .off calls seems to help...it's as if something causes this show event to happen
+        // Adding these .off calls seems to help...it's as if something causes this show event to happen
         // more than once so the event handlers were being added repeatedly, but I haven't caught
         // that actually happening. However, the off() calls seem to prevent it.
         $("#audio-next")
@@ -113,6 +120,9 @@ export default class AudioRecording {
         $("#audio-clear")
             .off()
             .click(e => this.clearRecording());
+        $(kAutoSegmentButtonIdSelector)
+            .off()
+            .click(e => this.autoSegment());
 
         $("#player").off();
         $("#player").attr("preload", "auto"); // speeds playback, ensures we get the durationchange event
@@ -212,11 +222,51 @@ export default class AudioRecording {
             // in whatever mode the user had it in. Since the mode input is disabled, it
             // won't get set to anything else until we select a non-xMatter page.
             this.audioRecordingMode = AudioRecordingMode.Sentence;
-        } else if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
-            this.recordingModeInput.checked = true;
-        } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-            this.recordingModeInput.checked = false;
+        } else {
+            if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
+                this.recordingModeInput.checked = true;
+            } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+                this.recordingModeInput.checked = false;
+            }
+
+            this.setupForAutoSegment();
         }
+    }
+
+    // Initialize the initial state of the autoSegment controls
+    private setupForAutoSegment() {
+        if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+            $(kAutoSegmentWrapperIdSelector).addClass(kAutoSegmentEnabledClass);
+            const statusElement: JQuery = $(".autoSegmentStatus");
+            statusElement.get(0).innerText = "";
+        } else {
+            $(kAutoSegmentWrapperIdSelector).removeClass(
+                kAutoSegmentEnabledClass
+            );
+        }
+
+        // Note: Just letting these happen asynchronously. It doesn't take long, but it should get called right when the tool gets called.
+        //   It may also get called again later on, when the user actually expands the tool.
+        //   We should already have the correct state but no big deal to check it again at that time.
+        BloomApi.get(
+            "audioSegmentation/checkAutoSegmentDependencies",
+            result => {
+                if (result.data.startsWith("FALSE")) {
+                    const errorMessage: string = result.data.substring(
+                        "FALSE ".length
+                    );
+                    $(kAutoSegmentButtonIdSelector)
+                        .off()
+                        .click(e => toastr.info(errorMessage));
+                    $(kAutoSegmentButtonIdSelector).attr("title", errorMessage); // Sets the hover
+                } else {
+                    $(kAutoSegmentButtonIdSelector)
+                        .off()
+                        .click(e => this.autoSegment());
+                    $(kAutoSegmentButtonIdSelector).attr("title", ""); // Clears the hover
+                }
+            }
+        );
     }
 
     public setupForListen() {
@@ -281,11 +331,9 @@ export default class AudioRecording {
             ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
         );
         return divs.filter(":visible").filter((idx, elt) => {
-            return theOneLibSynphony
-                .stringToSentences(elt.innerHTML)
-                .some(frag => {
-                    return $this.isRecordable(frag);
-                });
+            return this.stringToSentences(elt.innerHTML).some(frag => {
+                return $this.isRecordable(frag);
+            });
         });
     }
 
@@ -668,12 +716,12 @@ export default class AudioRecording {
 
     // For now, we know this is a checkbox, so we just need to toggle the value.
     // In the future, there may be more than two values and we will need to pass in a parameter to let us know which mode to switch to
-    private updateRecordingMode() {
+    private updateRecordingMode(forceOverwrite: boolean = false) {
         // Check if there are any audio recordings present.
         //   If so, these would become invalidated (and deleted down the road when the book's unnecessary files gets cleaned up)
         //   Warn the user if this deletion could happen
         //   We detect this state by relying on the same logic that turns on the Listen button when an audio recording is present
-        if (this.isEnabledOrExpected("listen")) {
+        if (!forceOverwrite && this.isEnabledOrExpected("listen")) {
             this.notifyRecordingModeControlDisabled();
             return;
         }
@@ -689,6 +737,8 @@ export default class AudioRecording {
             this.audioRecordingMode = AudioRecordingMode.Sentence;
             checkbox.checked = true;
         }
+
+        this.setupForAutoSegment();
 
         // Update the collection's default recording span mode to the new value
         BloomApi.postJson(
@@ -1285,11 +1335,12 @@ export default class AudioRecording {
         // will do weird things with it (wrap it in a sentence span, for example) so the easiest thing is to remove
         // it at the start and reinstate it at the end. Fortunately its position is predictable. But I wish this
         // otherwise fairly generic code didn't have to know about it.
-        var formatButton = elt.find("#formatButton");
+        const formatButton = elt.find("#formatButton");
         formatButton.remove(); // nothing happens if not found
 
-        var markedSentences = elt.find(kAudioSentenceClassSelector);
-        var reuse: any[] = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
+        const markedSentences = elt.find(kAudioSentenceClassSelector);
+        const reuse: any[] = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
+        // If caller has manually specified a custom ID list, then let's say (for now) that we won't allow IDs to be re-used
         markedSentences.each(function(index) {
             reuse.push({
                 id: $(this).attr("id"),
@@ -1298,16 +1349,14 @@ export default class AudioRecording {
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        const fragments: TextFragment[] = theOneLibSynphony.stringToSentences(
-            elt.html()
-        );
+        const fragments: TextFragment[] = this.stringToSentences(elt.html());
 
         // If any new sentence has an md5 that matches a saved one, attach that id/md5 pair to that fragment.
-        for (var i = 0; i < fragments.length; i++) {
-            var fragment = fragments[i];
+        for (let i = 0; i < fragments.length; i++) {
+            const fragment = fragments[i];
             if (this.isRecordable(fragment)) {
-                var currentMd5 = this.md5(fragment.text);
-                for (var j = 0; j < reuse.length; j++) {
+                const currentMd5 = this.md5(fragment.text);
+                for (let j = 0; j < reuse.length; j++) {
                     if (currentMd5 === reuse[j].md5) {
                         // It's convenient here (very locally) to add a field to fragment which is not part
                         // of its spec in theOneLibSynphony.
@@ -1320,17 +1369,17 @@ export default class AudioRecording {
         }
 
         // Assemble the new HTML, reusing old IDs where possible and generating new ones where needed.
-        var newHtml = "";
-        for (var i = 0; i < fragments.length; i++) {
-            var fragment = fragments[i];
+        let newHtml = "";
+        for (let i = 0; i < fragments.length; i++) {
+            const fragment = fragments[i];
 
             if (!this.isRecordable(fragment)) {
                 // this is inter-sentence space (or white space before first sentence).
                 newHtml += fragment.text;
             } else {
-                var newId: string | null = null;
-                var newMd5: string = "";
-                var reuseThis = (<any>fragment).matchingAudioSpan;
+                let newId: string | null = null;
+                let newMd5: string = "";
+                let reuseThis = (<any>fragment).matchingAudioSpan;
                 if (!reuseThis && reuse.length > 0) {
                     reuseThis = reuse[0]; // use first if none matches (preserves order at least)
                     reuse.splice(0, 1);
@@ -1341,7 +1390,11 @@ export default class AudioRecording {
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
                 if (!newId) {
-                    newId = this.createValidXhtmlUniqueId();
+                    if (fragment.text in this.sentenceToId) {
+                        newId = this.sentenceToId[fragment.text];
+                    } else {
+                        newId = this.createValidXhtmlUniqueId();
+                    }
                 }
                 newHtml +=
                     '<span id= "' +
@@ -1566,6 +1619,161 @@ export default class AudioRecording {
             $("#audio-" + which + "-label").addClass("expected");
         } else {
             $("#audio-" + which + "-label").removeClass("expected");
+        }
+    }
+
+    private autoSegment(): void {
+        // First, check if there's even an audio recorded yet.
+        if ($("#audio-play").hasClass("disabled")) {
+            // TODO: Do toast strings, status message strings need to be localized?
+            toastr.warning(
+                "Please record audio first before running Auto Segment"
+            );
+            return;
+        }
+        const currentDivId = this.getCurrentElement().id;
+
+        const fragmentIdTuples = this.extractFragmentsForAudioSegmentation();
+
+        if (fragmentIdTuples.length > 0) {
+            const statusElement: JQuery = $(".autoSegmentStatus");
+            theOneLocalizationManager
+                .asyncGetText(
+                    "EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress",
+                    "Segmenting...",
+                    ""
+                )
+                .done(localizedNotification => {
+                    statusElement.get(0).innerText = localizedNotification;
+                    statusElement.css("display", "block");
+                });
+
+            const inputParameters = {
+                audioFilenameBase: currentDivId,
+                fragmentIdTuples: fragmentIdTuples,
+                lang: this.getAutoSegmentLanguageCode()
+            };
+
+            BloomApi.postJson(
+                "audioSegmentation/autoSegmentAudio",
+                JSON.stringify(inputParameters),
+                result => {
+                    const isSuccess = result && result.data.startsWith("TRUE");
+
+                    if (isSuccess) {
+                        // FYI: if it's successful, the status message will get immediately hidden.
+                        theOneLocalizationManager
+                            .asyncGetText(
+                                "EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusComplete",
+                                "Segmenting... Done",
+                                ""
+                            )
+                            .done(localizedNotification => {
+                                statusElement.get(
+                                    0
+                                ).innerText = localizedNotification;
+                            });
+
+                        // Now that we know the Auto Segmentation succeeded, finally convert into by-sentence mode.
+                        this.updateRecordingMode(true);
+                    } else {
+                        // TODO: possibly change the color?
+                        theOneLocalizationManager
+                            .asyncGetText(
+                                "EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError",
+                                "Segmenting... Error",
+                                ""
+                            )
+                            .done(localizedNotification => {
+                                statusElement.get(
+                                    0
+                                ).innerText = localizedNotification;
+                            });
+
+                        toastr.error(
+                            "AutoSegment did not succeed: " + result.data
+                        );
+                    }
+                }
+            );
+
+            // TODO: Probably disable some controls while this is going on. Especially the Clear() one. Record by sentences echeckbox wouldn't hurt either.
+            // TODO: If there are multiple text boxes per page, it always resets focus to the first  thing.
+            //       Doesn't it do that even if you use the checkbox instead?
+            // TODO: If there are multiple text boxes on a page, maybe it shouldnt segment all of them.
+            //       But the setting is for all of them on the page.  Ugh. Awkward.
+
+            // TODO: Unittest what you can
+        }
+    }
+
+    // Finds the current text box, gets its text, split into sentences, then return each sentence with a UUID.
+    private extractFragmentsForAudioSegmentation(): string[][] {
+        const currentText = this.getCurrentText();
+
+        const textFragments: TextFragment[] = this.stringToSentences(
+            currentText
+        );
+
+        // Note: We will just create all new IDs for this. Which I think is reasonable.
+        // If splitting the audio file, reusing audio recorded from by-sentence mode is probably less smooth.
+
+        const fragmentIdTuples: string[][] = [];
+        for (let i = 0; i < textFragments.length; ++i) {
+            const fragment = textFragments[i];
+            if (this.isRecordable(fragment)) {
+                const newId = this.createValidXhtmlUniqueId();
+                fragmentIdTuples.push([fragment.text, newId]);
+                this.sentenceToId[fragment.text] = newId; // This is saved so MakeSentenceAudioElementsLeaf can recover it
+            }
+        }
+
+        return fragmentIdTuples;
+    }
+
+    private getAutoSegmentLanguageCode(): string {
+        const langCodeFromAutoSegmentSettings = ""; // TODO: IMPLEMENT ME
+        let langCode = langCodeFromAutoSegmentSettings;
+        if (!langCode) {
+            const currentDiv = this.getCurrent();
+            langCode = currentDiv.attr("lang");
+        }
+
+        // Remove the suffix for strings like "es-BRAI"  (Spanish - Brazil)
+        const countryCodeSeparatorIndex = langCode.indexOf("-");
+        if (countryCodeSeparatorIndex >= 0) {
+            langCode = langCode.substr(0, countryCodeSeparatorIndex);
+        }
+
+        return langCode;
+    }
+
+    private getCurrentText(): string {
+        const currentElement = this.getCurrentElement();
+        if (currentElement) {
+            return currentElement.innerText;
+        }
+        return "";
+    }
+
+    private getCurrentElement(): HTMLElement {
+        const currentJQuery = this.getCurrent();
+        return currentJQuery.get(0);
+    }
+
+    private getCurrent(): JQuery {
+        const page = this.getPageDocBody();
+        return page.find(".ui-audioCurrent");
+    }
+
+    // I add a cached version so that it is more verifiable that two calls with the same inputs will definitely return the same outputs.
+    public stringToSentences(text: string): TextFragment[] {
+        if (text in this.stringToSentencesCache) {
+            return this.stringToSentencesCache[text];
+        } else {
+            const retVal = theOneLibSynphony.stringToSentences(text);
+            this.stringToSentencesCache[text] = retVal;
+            return retVal;
         }
     }
 }

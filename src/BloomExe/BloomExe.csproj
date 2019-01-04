@@ -619,6 +619,7 @@
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
+    <Compile Include="web\controllers\AudioSegmentationApi.cs" />
     <Compile Include="web\controllers\CollectionSettingsApi.cs" />
     <Compile Include="web\controllers\AccessibilityCheckApi.cs" />
     <Compile Include="Book\AccessibilityCheckers.cs" />
