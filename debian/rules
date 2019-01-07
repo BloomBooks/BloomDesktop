@@ -33,6 +33,7 @@ override_dh_auto_build:
 	    tar xf node-v8.10.0-linux-x86.tar.xz && \
 	    export PATH="`pwd`/node-v8.10.0-linux-x86/bin:$$PATH"; \
 	fi && \
+	npm install -g yarn && \
 	export HOME=/tmp && \
 	. ./environ && \
 		xbuild /t:RestoreBuildTasks build/Bloom.proj && \
