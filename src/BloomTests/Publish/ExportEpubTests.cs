@@ -1124,9 +1124,9 @@ namespace BloomTests.Publish
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", _ns);
 			if (Platform.IsLinux)
 			{
-				// Approximate audio time calculations on Linux don't work very well, but are at least consistent.
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
+				// Ffmpeg based audio time calculations on Linux don't quite match what NAudio produces on Windows.
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.600']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.600']", _ns);
 			}
 			else
 			{
@@ -1191,9 +1191,9 @@ namespace BloomTests.Publish
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", _ns);
 			if (Platform.IsLinux)
 			{
-				// Approximate audio time calculations on Linux don't work very well, but are at least consistent.
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.534']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:01.534' and @clipEnd='0:00:03.069']", _ns);
+				// Ffmpeg based audio time calculations on Linux don't quite match what NAudio produces on Windows.
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.600']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:01.600' and @clipEnd='0:00:03.200']", _ns);
 			}
 			else
 			{
@@ -1256,9 +1256,9 @@ namespace BloomTests.Publish
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
 			if (Platform.IsLinux)
 			{
-				// Approximate audio time calculations on Linux don't work very well, but are at least consistent.
-				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.0692130']");
-				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.0692130']");
+				// Ffmpeg based audio time calculations on Linux don't quite match what NAudio produces on Windows.
+				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.2000000']");
+				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.2000000']");
 			}
 			else
 			{
