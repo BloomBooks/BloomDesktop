@@ -1,5 +1,5 @@
 import * as React from "react";
-import BloomPlayer from "./bloom-player";
+import BloomPlayerCore from "./bloom-player-core";
 
 // This component is designed to wrap a BloomPlayer with some controls
 // for things like pausing audio and motion, hiding and showing
@@ -30,7 +30,7 @@ export default class BloomPlayerControls extends React.Component<
                 <button onClick={() => this.setState({ paused: true })}>
                     Pause
                 </button>
-                <BloomPlayer
+                <BloomPlayerCore
                     url={this.props.url}
                     showContext={this.props.showContext}
                     paused={this.state.paused}

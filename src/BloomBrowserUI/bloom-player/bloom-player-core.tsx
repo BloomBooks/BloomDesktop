@@ -4,7 +4,7 @@ import { AxiosPromise } from "axios";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import "../node_modules/style-scoped/scoped.js"; // maybe use .min.js after debugging?
+import "style-scoped/scoped"; // maybe use .min.js after debugging?
 import "./bloom-player.css";
 import Narration from "./narration";
 
@@ -34,7 +34,7 @@ interface IState {
     // mode it's the index of the left context page, not the main page.
     currentIndex: number;
 }
-export default class BloomPlayer extends React.Component<
+export default class BloomPlayerCore extends React.Component<
     IBloomPlayerProps,
     IState
 > {
