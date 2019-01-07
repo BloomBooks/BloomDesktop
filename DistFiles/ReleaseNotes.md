@@ -17,6 +17,7 @@
 
 ⭐ The Sign Language tool now has a tool for trimming the beginning and end of a video. Currently the trims are not permanent until you publish the book to epub, Bloom Reader, or a Bloom Pack.
 
+Note: Some "2-in-1" laptops (like Microsoft Surface) have both a front and rear-facing camera. Bloom does not yet have a way to switch between these cameras. If the user doesn't normally use the rear-facing camera, then a fix is to go into Windows Device Settings and disable the driver for the rear-facing camera.
 
 ## 4.4
 
