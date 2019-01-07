@@ -598,7 +598,7 @@ namespace Bloom.Api
 				}
 			}
 
-			if (!RobustFile.Exists(path))
+			if (!RobustFile.Exists(path) && path.Length > 7)
 			{
 				// On developer machines, we can lose part of path earlier.  Try one more thing.
 				path = info.LocalPathWithoutQuery.Substring(7); // skip leading "/bloom/");

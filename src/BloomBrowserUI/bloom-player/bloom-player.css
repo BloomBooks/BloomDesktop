@@ -1,0 +1,63 @@
+/* These rules mostly tweak fixed print layouts, currently enforcing 16x9 layout,
+like Bloom Reader, and overriding rules, mainly from previewMode.css, that we don't
+want in this control.
+Much of it could go away if we exclude previewMode.css, or if we end up with a server
+process which produces an htm file in the Bloom Reader state, or if we re-architect so
+there is some simple way like a root class to toggle a book's appearance to BR mode.*/
+
+/* The rules in the book reset this counter at the body level, but since we scope our
+rules to apply at a lower level, that rule doesn't work. We need to reset at a level
+above the page so that page numbers will increment.*/
+.pageSlider {
+    counter-reset: pageNumber;
+}
+
+/* makes context pages smaller and dimmer than regular ones */
+.bloomPlayer.bloomPlayer1 .pageSlider .contextPage .bloom-page {
+    margin-left: 10%;
+    width: 80%;
+    margin-top: 10%;
+    padding-top: calc(80% * 16 / 9); /* of width! */
+    opacity: 0.6;
+    background-color: darkgray;
+}
+
+.ui-audioCurrent {
+    background-color: yellow;
+}
+
+/* the default positioning of these dots is inside the page area, but our pages overlap them.
+Also, if there are more than will fit on a line, some drop outside the control altogether.
+We just make them follow the main content normally. */
+.bloomPlayer .slick-dots {
+    position: relative;
+    bottom: initial;
+}
+
+/* override the rule in bloom-preview that puts a border at the bottom of each page
+to separate the pages in a continuous scrolling view. Unfortunately that rule is
+!important so the only way to beat it is to be !important too. */
+.bloomPlayer.bloomPlayer1 div.bloom-page {
+    border-bottom: initial !important;
+}
+
+/* we're giving pages in this control less margin than in regular previews,
+so we need the page number further down to reduce the chance of overlap. */
+.bloomPlayer.bloomPlayer1 .numberedPage::after {
+    bottom: 2px;
+}
+
+/* the reduced margin means we need to adjust the horizontal position to
+align the page number with the margin, too. */
+.bloomPlayer.bloomPlayer1 .numberedPage:nth-of-type(2n + 1)::after {
+    left: 5%;
+}
+
+/* logically we would need this to override the rule for right pages,
+but actually in this control the pages don't have a common direct parent,
+so nth-of-type doesn't do what we want and all the pages come out as left.
+Not trying to solve this for now as we want an architectural solution
+that makes available to the control files more like Bloom Reader uses */
+.bloomPlayer.bloomPlayer1 .numberedPage:nth-of-type(2n)::after {
+    right: 5%;
+}

@@ -40,6 +40,7 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     alreadyLocalized?: boolean; // true if translated by C#-land
     l10nParam0?: string;
     l10nParam1?: string;
+    onClick?: () => void; // not yet implemented by String subclass and maybe others outside this file
 }
 
 export interface ILocalizationState {
@@ -224,8 +225,8 @@ export class LocalizableElement<
             (controlIsEnabled
                 ? this.state.tipEnabledTranslation
                 : this.state.tipDisabledTranslation
-                ? this.state.tipDisabledTranslation
-                : this.state.tipEnabledTranslation) || ""
+                    ? this.state.tipDisabledTranslation
+                    : this.state.tipEnabledTranslation) || ""
         );
     }
 
@@ -242,7 +243,14 @@ export class H1 extends LocalizableElement<
 > {
     public render() {
         return (
-            <h1 className={this.getClassName()}>
+            <h1
+                className={this.getClassName()}
+                onClick={() => {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    }
+                }}
+            >
                 {this.getLocalizedContent()}
             </h1>
         );
@@ -255,7 +263,14 @@ export class H2 extends LocalizableElement<
 > {
     public render() {
         return (
-            <h2 className={this.getClassName()}>
+            <h2
+                className={this.getClassName()}
+                onClick={() => {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    }
+                }}
+            >
                 {this.getLocalizedContent()}
             </h2>
         );
@@ -268,7 +283,14 @@ export class H3 extends LocalizableElement<
 > {
     public render() {
         return (
-            <h3 className={this.getClassName()}>
+            <h3
+                className={this.getClassName()}
+                onClick={() => {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    }
+                }}
+            >
                 {this.getLocalizedContent()}
             </h3>
         );
@@ -281,7 +303,16 @@ export class P extends LocalizableElement<
 > {
     public render() {
         return (
-            <p className={this.getClassName()}>{this.getLocalizedContent()}</p>
+            <p
+                className={this.getClassName()}
+                onClick={() => {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    }
+                }}
+            >
+                {this.getLocalizedContent()}
+            </p>
         );
     }
 }
@@ -292,7 +323,14 @@ export class Div extends LocalizableElement<
 > {
     public render() {
         return (
-            <div className={this.getClassName()}>
+            <div
+                className={this.getClassName()}
+                onClick={() => {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    }
+                }}
+            >
                 {this.getLocalizedContent()}
             </div>
         );
@@ -308,9 +346,7 @@ export class String extends LocalizableElement<
     }
 }
 
-export interface ILabelProps extends ILocalizationProps {
-    onClick?: () => void; // enhance: possibly promote to LocalizableElement?
-}
+export interface ILabelProps extends ILocalizationProps {}
 
 export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
     public render() {

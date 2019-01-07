@@ -6,8 +6,7 @@ having various sections, including settings and help on the right */
 @header-height: 40px;
 
 html.publishTabScreen {
-    height: 100%;
-    margin: 1em;
+    height: 100%; // Do NOT put margin; will cause scroll bar
     padding: @screen-padding;
 
     body {
@@ -55,20 +54,40 @@ html.publishTabScreen {
             .column {
                 display: block;
             }
+            &.in-rows {
+                flex-direction: column;
+                width: 100%;
+            }
+            .section-row {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+            }
             section {
                 // section labels
                 & > h1 {
                     background-color: @bloom-lightgray;
                     text-align: center;
-                    margin-bottom: 2em;
+                    margin-bottom: 1em;
                     margin-top: 0;
                 }
+            }
+            publish-section {
+                display: flex;
+                flex-direction: column;
+                flex: 1 0 auto;
+            }
+            #progress-section {
+                height: 100%;
+            }
+            .expandable {
+                flex-grow: 1;
             }
         }
     }
 
     .preview-section {
-        width: 400px;
+        width: 500px;
         flex: 0 0 auto; // fixed size
         margin-right: 25px;
     }
