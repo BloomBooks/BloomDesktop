@@ -1,9 +1,14 @@
+/*
+bloom-player-core is responsible for all the behavior of working through a book, but without any UI controls
+(other than page turning).
+*/
 import * as React from "react";
 import axios from "axios";
 import { AxiosPromise } from "axios";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+// This loads some JS right here that is a polyfill for the (otherwise discontinued) scoped-styles html feature
 import "style-scoped/scoped"; // maybe use .min.js after debugging?
 import "./bloom-player.css";
 import Narration from "./narration";
@@ -15,42 +20,39 @@ import Narration from "./narration";
 // On a wide screen, an option may be used to show the next and previous pages
 // beside the current one.
 
-interface IBloomPlayerProps {
+interface IProps {
     url: string; // of the bloom book (folder)
-    showContext?: string; // currently may be "no" or "yes"
-    paused?: boolean; // allows the parent to control pausing of audio
-    // called when book loaded enough to determine these properties.
+    showContextPages?: boolean;
+    // ``paused`` allows the parent to control pausing of audio. We expect we may supply
+    // a click/touch event callback if needed to support pause-on-touch.
+    paused?: boolean;
+
+    // reportBookProperties is called when book loaded enough to determine these properties.
     // Not sure this is the best design, but it saves the client doing a lot
     // of duplicate work retrieving and processing the HTML to figure out these things.
-    reportBookProps?: (
-        props: { landscape: boolean; canRotate: boolean }
+    reportBookProperties?: (
+        properties: { landscape: boolean; canRotate: boolean }
     ) => void;
 }
 interface IState {
     pages: Array<string>; // of the book. First and last are empty in context mode.
-    styles: string; // concatenated stylesheets the book references or embeds.
+    styleRules: string; // concatenated stylesheets the book references or embeds.
     // indicates current page, though typically not corresponding to the page
     // numbers actually on the page. This is an index into pages, and in context
     // mode it's the index of the left context page, not the main page.
-    currentIndex: number;
+    currentSliderIndex: number;
 }
-export default class BloomPlayerCore extends React.Component<
-    IBloomPlayerProps,
-    IState
-> {
+export default class BloomPlayerCore extends React.Component<IProps, IState> {
     public readonly state: IState = {
         pages: ["loading..."],
-        styles: "",
-        currentIndex: 0
+        styleRules: "",
+        currentSliderIndex: 0
     };
 
     private sourceUrl: string;
 
-    private shouldShow3Pages(): boolean {
-        // enhance: this may acquire a third state in which it responds to width.
-        return this.props.showContext === "yes";
-    }
-
+    // We expect it to show some kind of loading indicator on initial render, then
+    // we do this work. For now, won't get a loading indicator if you change the url prop.
     public componentDidUpdate() {
         let newSourceUrl = this.props.url;
         // Folder urls often (but not always) end in /. If so, remove it, so we don't get
@@ -63,43 +65,34 @@ export default class BloomPlayerCore extends React.Component<
         if (newSourceUrl != this.sourceUrl && newSourceUrl) {
             this.sourceUrl = newSourceUrl;
             Narration.urlPrefix = this.sourceUrl;
-            var index = this.sourceUrl.lastIndexOf("/");
-            var filename = this.sourceUrl.substring(index + 1);
-            var htmUrl = this.sourceUrl + "/" + filename + ".htm"; // enhance: search directory if name doesn't match?
-            axios.get(htmUrl).then(result => {
-                const doc = document.createElement("html");
+            const index = this.sourceUrl.lastIndexOf("/");
+            const filename = this.sourceUrl.substring(index + 1);
+            // TODO: right now, this takes a url to the folder. Change to a url to the file.
+            // Note: In the future, we are thinking of limiting to
+            // a few domains (localhost, dev.blorg, blorg).
+            const urlOfBookHtmlFile = this.sourceUrl + "/" + filename + ".htm"; // enhance: search directory if name doesn't match?
+            axios.get(urlOfBookHtmlFile).then(result => {
+                // we *think* this gets garbage collected
+                const doc = document.createElement("html"); // TODO: would this work if it was "holderForBook"? JH was tripped up by html, thinking we were going to replace ourselves
                 doc.innerHTML = result.data;
 
                 const body = doc.getElementsByTagName("body")[0];
                 const canRotate = body.hasAttribute("data-bfcanrotate"); // expect value allOrientations;bloomReader, should we check?
 
-                // This is a preview, it's distracting to have it be editable.
-                // (Should not occur in .bloomd, but might in books direct from BL.)
-                const editable = document.evaluate(
-                    ".//*[@contenteditable]",
-                    doc,
-                    null,
-                    XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
-                    null
-                );
-                for (let iedit = 0; iedit < editable.snapshotLength; iedit++) {
-                    (editable.snapshotItem(
-                        iedit
-                    ) as HTMLElement).removeAttribute("contenteditable");
-                }
+                this.makeNonEditable(body);
 
                 // assemble the page content list
                 const pages = doc.getElementsByClassName("bloom-page");
                 const sliderContent: string[] = [];
-                if (this.shouldShow3Pages()) {
+                if (this.props.showContextPages) {
                     sliderContent.push(""); // blank page to fill the space left of first.
                 }
                 for (let i = 0; i < pages.length; i++) {
                     const page = pages[i];
                     const landscape = this.forceDevicePageSize(page);
                     // Now we have all the information we need to call reportBookProps if it is set.
-                    if (i == 0 && this.props.reportBookProps) {
-                        this.props.reportBookProps({
+                    if (i === 0 && this.props.reportBookProperties) {
+                        this.props.reportBookProperties({
                             landscape: landscape,
                             canRotate: canRotate
                         });
@@ -109,7 +102,7 @@ export default class BloomPlayerCore extends React.Component<
 
                     sliderContent.push(page.outerHTML);
                 }
-                if (this.shouldShow3Pages()) {
+                if (this.props.showContextPages) {
                     sliderContent.push(""); // blank page to fill the space right of last.
                 }
 
@@ -128,6 +121,23 @@ export default class BloomPlayerCore extends React.Component<
             Narration.pause();
         } else {
             Narration.play();
+        }
+    }
+
+    private makeNonEditable(body: HTMLBodyElement): void {
+        // This is a preview, it's distracting to have it be editable.
+        // (Should not occur in .bloomd, but might in books direct from BL.)
+        const editable = document.evaluate(
+            ".//*[@contenteditable]",
+            body,
+            null,
+            XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
+            null
+        );
+        for (let iedit = 0; iedit < editable.snapshotLength; iedit++) {
+            (editable.snapshotItem(iedit) as HTMLElement).removeAttribute(
+                "contenteditable"
+            );
         }
     }
 
@@ -161,7 +171,8 @@ export default class BloomPlayerCore extends React.Component<
             XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
             null
         );
-        for (var j = 0; j < srcElts.snapshotLength; j++) {
+
+        for (let j = 0; j < srcElts.snapshotLength; j++) {
             const item = srcElts.snapshotItem(j) as HTMLElement;
             if (!item) {
                 continue;
@@ -190,32 +201,39 @@ export default class BloomPlayerCore extends React.Component<
             const fullHref = this.fullUrl(href);
             promises.push(axios.get(fullHref));
         }
-        // The map trick here causes us to ignore errors and just use the stylesheets
-        // we can get.
-        axios.all(promises.map(p => p.catch(() => undefined))).then(results => {
-            let combinedStyle = "";
+        axios
+            .all(
+                promises.map(p =>
+                    p.catch(
+                        // if one stylesheet doesn't exist or whatever, keep going
+                        () => undefined
+                    )
+                )
+            )
+            .then(results => {
+                let combinedStyle = "";
 
-            // start with embedded styles (typically before links in a bloom doc...)
-            const styleElts = document.evaluate(
-                ".//style[@type='text/css']",
-                doc,
-                null,
-                XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
-                null
-            );
-            for (let k = 0; k < styleElts.snapshotLength; k++) {
-                const styleElt = styleElts.snapshotItem(k) as HTMLElement;
-                combinedStyle += styleElt.innerText;
-            }
-
-            // then add the stylesheet contents we just retrieved
-            results.forEach(result => {
-                if (result && result.data) {
-                    combinedStyle += result.data;
+                // start with embedded styles (typically before links in a bloom doc...)
+                const styleElts = document.evaluate(
+                    ".//style[@type='text/css']",
+                    doc,
+                    null,
+                    XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
+                    null
+                );
+                for (let k = 0; k < styleElts.snapshotLength; k++) {
+                    const styleElt = styleElts.snapshotItem(k) as HTMLElement;
+                    combinedStyle += styleElt.innerText;
                 }
+
+                // then add the stylesheet contents we just retrieved
+                results.forEach(result => {
+                    if (result && result.data) {
+                        combinedStyle += result.data;
+                    }
+                });
+                this.setState({ styleRules: combinedStyle });
             });
-            this.setState({ styles: combinedStyle });
-        });
     }
 
     private fullUrl(url: string | null): string {
@@ -236,9 +254,9 @@ export default class BloomPlayerCore extends React.Component<
                 <Slider
                     className="pageSlider"
                     ref={slider => (this.slider = slider)}
-                    slidesToShow={this.shouldShow3Pages() ? 3 : 1}
+                    slidesToShow={this.props.showContextPages ? 3 : 1}
                     infinite={false}
-                    dots={this.shouldShow3Pages()}
+                    dots={this.props.showContextPages}
                     beforeChange={(current, next) => this.setIndex(next)}
                     afterChange={current => this.showingPage(current)}
                 >
@@ -251,7 +269,9 @@ export default class BloomPlayerCore extends React.Component<
                                     this.getSlideClass(index)
                                 }
                             >
-                                <style scoped={true}>{this.state.styles}</style>
+                                <style scoped={true}>
+                                    {this.state.styleRules}
+                                </style>
                                 <div
                                     className="actual-page-preview"
                                     dangerouslySetInnerHTML={{ __html: slide }}
@@ -270,12 +290,12 @@ export default class BloomPlayerCore extends React.Component<
     // Get a class to apply to a particular slide. This is used to apply the
     // contextPage class to the slides before and after the current one.
     private getSlideClass(itemIndex: number): string {
-        if (!this.shouldShow3Pages()) {
+        if (!this.props.showContextPages) {
             return "";
         }
         if (
-            itemIndex === this.state.currentIndex ||
-            itemIndex === this.state.currentIndex + 2
+            itemIndex === this.state.currentSliderIndex ||
+            itemIndex === this.state.currentSliderIndex + 2
         ) {
             return "contextPage";
         }
@@ -284,20 +304,20 @@ export default class BloomPlayerCore extends React.Component<
 
     // Called from beforeChange, sets up context classes
     private setIndex(index: number) {
-        this.setState({ currentIndex: index });
+        this.setState({ currentSliderIndex: index });
     }
 
     // Called from afterChange, starts narration, etc.
     private showingPage(index: number): void {
-        var sliderPage = document.querySelectorAll(
+        const sliderPage = document.querySelectorAll(
             ".slick-slide[data-index='" +
-                (index + (this.shouldShow3Pages() ? 1 : 0)) +
+                (index + (this.props.showContextPages ? 1 : 0)) +
                 "'"
         )[0] as HTMLElement;
         if (!sliderPage) {
             return; // unexpected
         }
-        var bloomPage = sliderPage.getElementsByClassName(
+        const bloomPage = sliderPage.getElementsByClassName(
             "bloom-page"
         )[0] as HTMLElement;
         if (!bloomPage) {

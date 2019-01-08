@@ -1,3 +1,7 @@
+/* 
+bloom-player-preview wraps bloom-player-core and adds just enough controls to preview the 
+book inside of the Bloom:Publish:Android screen.
+*/
 import * as React from "react";
 import BloomPlayerCore from "./bloom-player-core";
 
@@ -6,15 +10,15 @@ import BloomPlayerCore from "./bloom-player-core";
 // image descriptions. The current version is pretty crude, just enough
 // for testing the BloomPlayer narration functions.
 
-interface IBloomControlsProps {
+interface IProps {
     url: string; // of the bloom book (folder)
-    showContext?: string; // currently may be "no" or "yes"
+    showContextPages?: boolean;
 }
 interface IState {
     paused: boolean;
 }
 export default class BloomPlayerControls extends React.Component<
-    IBloomControlsProps,
+    IProps & React.HTMLProps<HTMLDivElement>,
     IState
 > {
     public readonly state: IState = {
@@ -23,7 +27,9 @@ export default class BloomPlayerControls extends React.Component<
 
     public render() {
         return (
-            <div>
+            <div
+                {...this.props} // Allow all standard div props
+            >
                 <button onClick={() => this.setState({ paused: false })}>
                     Play
                 </button>
@@ -32,7 +38,7 @@ export default class BloomPlayerControls extends React.Component<
                 </button>
                 <BloomPlayerCore
                     url={this.props.url}
-                    showContext={this.props.showContext}
+                    showContextPages={this.props.showContextPages}
                     paused={this.state.paused}
                 />
             </div>

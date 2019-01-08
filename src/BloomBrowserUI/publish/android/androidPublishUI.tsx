@@ -25,7 +25,7 @@ import Option from "../../react_components/option";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import BloomPlayer from "../../bloom-player/bloom-player";
+import BloomPlayer from "../../bloom-player/bloom-player-core";
 import {
     H1,
     H2,
@@ -186,7 +186,7 @@ class AndroidPublishUI extends React.Component<
                                         <div className="preview-content">
                                             <BloomPlayer
                                                 url={this.state.previewUrl}
-                                                showContext="no"
+                                                showContextPages="no"
                                                 paused={
                                                     this.state.previewPaused
                                                 }
