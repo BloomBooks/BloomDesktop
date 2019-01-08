@@ -122,22 +122,8 @@ export class SignLanguageToolControls extends React.Component<
                 this.state.haveRecording &&
                 this.state.videoStatistics.duration != ""
             ) {
-                const start = parseFloat(
-                    this.state.videoStatistics.startSeconds
-                );
-                let end = parseFloat(this.state.videoStatistics.endSeconds);
-                const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
-                    this.state.videoStatistics.duration
-                );
-                if (end == UNTRIMMED_TIMING_NUM) {
-                    // if the video has not been "end-trimmed", set the end slider to the equivalent of the
-                    // untrimmed video's duration, since the end of the video in seconds is equal to its duration
-                    // in seconds.
-                    end = maxDuration;
-                }
-                const valueArray: number[] = [start, end];
-                trimSlider = this.getTrimSlider(valueArray, maxDuration);
-                videoStats = this.getVideoStats();
+                trimSlider = this.getTrimSlider();
+                videoStats = this.getVideoStatsDisplay();
             } else if (!this.state.enterprise) {
                 // Show the slider even without a video when obscured by enterprise being off.
                 trimSlider = this.getTrimSlider([0, 5], 5);
@@ -329,13 +315,49 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getTrimSlider(valueArray: number[], maxDuration: number) {
+    private getMaxDurationFromState(): number {
+        return SignLanguageTool.convertTimeStringToSecondsNumber(
+            this.state.videoStatistics.duration
+        );
+    }
+
+    private getStartSliderFromState(): number {
+        return parseFloat(this.state.videoStatistics.startSeconds);
+    }
+
+    private getEndSliderFromState(): number {
+        let end = parseFloat(this.state.videoStatistics.endSeconds);
+        if (end == UNTRIMMED_TIMING_NUM) {
+            // if the video has not been "end-trimmed", set the end slider to the equivalent of the
+            // untrimmed video's duration, since the end of the video in seconds is equal to its duration
+            // in seconds.
+            end = this.getMaxDurationFromState();
+        }
+        return end;
+    }
+
+    private getCurrentTrimHandlePositionsFromState(): number[] {
+        // Show the slider even without a video when obscured by enterprise being off.
+        return [this.getStartSliderFromState(), this.getEndSliderFromState()];
+    }
+
+    // These optional parameters are only used in the case where we don't actually have
+    // a video, but we want to show the slider behind the "You don't have Enterprise"
+    // notification. Otherwise, we figure out the slider's parts inside this method.
+    private getTrimSlider(
+        handleRange?: number[],
+        maximumDuration?: number
+    ): JSX.Element {
         return (
             <div id="trimWrapper">
                 <Range
                     className="videoTrimSlider"
                     count={1}
-                    value={valueArray}
+                    value={
+                        handleRange
+                            ? handleRange
+                            : this.getCurrentTrimHandlePositionsFromState()
+                    }
                     onChange={v => this.handleSliderRangeChange(v[0], v[1])}
                     onAfterChange={
                         // set video back to start point in case we were viewing the end point
@@ -345,7 +367,11 @@ export class SignLanguageToolControls extends React.Component<
                     min={UNTRIMMED_TIMING_NUM}
                     allowCross={false}
                     pushable={false}
-                    max={maxDuration}
+                    max={
+                        maximumDuration
+                            ? maximumDuration
+                            : this.getMaxDurationFromState()
+                    }
                 />
                 <div id="trimLabelWrapper">
                     <Label
@@ -359,7 +385,7 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getVideoStats() {
+    private getVideoStatsDisplay(): JSX.Element {
         return (
             <div id="videoStatsWrapper">
                 <Label l10nKey="Common.Info">Info</Label>
@@ -487,7 +513,7 @@ export class SignLanguageToolControls extends React.Component<
                             result.data.aspectRatio = calculateAspectRatio(
                                 x,
                                 y
-                            );
+                            ) as string;
                         }
                     }
                     this.setState({ videoStatistics: result.data });
@@ -846,27 +872,6 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         );
     }
 
-    // src may have ? followed by fake params to defeat caching.
-    // src may have # followed by timings.
-    // strip them off.
-    public static stripExtrasFromVideoFile(combined: string) {
-        if (!combined) {
-            return null;
-        }
-        // tried  return new URL(combined).pathname;, but URL is 'unavailable' according to debugger.
-        // src may have # followed by timings.
-        const hashIndex = combined.indexOf("#");
-        if (hashIndex > 0) {
-            combined = combined.substring(0, hashIndex);
-        }
-        // src may have ? followed by fake params to defeat caching.
-        const paramIndex = combined.indexOf("?");
-        if (paramIndex > 0) {
-            combined = combined.substring(0, paramIndex);
-        }
-        return combined;
-    }
-
     public detachFromPage() {
         this.reactControls.PageAttached = false;
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
@@ -983,6 +988,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         this.reactControls.PageAttached = true;
     }
 
+    // This (param) container has just been selected as the current one by either:
+    // newPageReady() or the user's click (containerClickListener).
     private updateStateForSelected(container: Element) {
         const videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
@@ -1143,6 +1150,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return val ? val : "";
     }
 
+    // Seeks the video in 'videoElement' to 'timeInSeconds'.
     public static setCurrentVideoPoint(
         timeInSeconds: number,
         videoElement?: HTMLVideoElement
