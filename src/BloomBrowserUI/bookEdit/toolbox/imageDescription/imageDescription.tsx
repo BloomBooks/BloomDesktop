@@ -285,8 +285,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
         checkIfEnterpriseAvailable().then(enabled => {
-            if (enabled && this.reactControls) {
-                this.reactControls.setStateForNewPage();
+            const imageDescControls = this.reactControls;
+            if (enabled && imageDescControls) {
+                imageDescControls.setStateForNewPage();
                 const page = ToolBox.getPage();
                 if (!page) {
                     return;
@@ -333,6 +334,10 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                                         result.data,
                                         container
                                     );
+                                    // BL-6775 if we just added image description
+                                    // translationGroups to a page that didn't have them before,
+                                    // we need to reset our state.
+                                    imageDescControls.setStateForNewPage();
                                 }
                             }
                         );
