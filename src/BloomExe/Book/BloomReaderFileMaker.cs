@@ -61,7 +61,7 @@ namespace Bloom.Book
 			EmbedFonts(modifiedBook, progress, new FontFileFinder());
 
 			var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
-			StripImgWithFilesWeCannotFind(modifiedBook.RawDom, bookFile);
+			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
 			StripContentEditable(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
 			ConvertImagesToBackground(modifiedBook.RawDom);
@@ -72,7 +72,7 @@ namespace Bloom.Book
 		}
 
 
-		private static void StripImgWithFilesWeCannotFind(XmlDocument dom, string bookFile)
+		private static void StripImgIfWeCannotFindFile(XmlDocument dom, string bookFile)
 		{
 			var folderPath = Path.GetDirectoryName(bookFile);
 			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())

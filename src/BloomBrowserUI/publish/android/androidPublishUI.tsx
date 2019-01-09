@@ -1,18 +1,25 @@
 ﻿// Mostly updated to https://www.figma.com/file/Lq8CwuPq7GDfolDkI7y0OuWJ/Publish---Android?node-id=0%3A1.
-// Todo:
+// Todo (future cards):
 // - implement motion book preview
 // - implement Refresh button
-// - Probably hide Bloom Reader Bookshelf
 // - link i "Choose landscape to activate motion book mode" & implement (& restrict to when book has that)
 // - add About Bloom Reader help link
 // - "Get Bloom Reader" add icon
+// - one day: longer rounded rectangles for page turner buttons?
 // - Can we clean up styles any more before changing epub window to match?
-// Review: is preview large enough to work?
-// Review: did JohnH really mean the preview title not to stretch?
-// Question: really remove "Copy to Clipboard" link?
-// Review: do something about focus rectangle in portrait/landscape buttons?
-// Design/review: audio and other controls?
-
+// - Design & implement audio and other controls such as pause, volume, font size (& choice?), auto-play, show image descriptions, play image descriptions,...
+// - further UI review, some areas may not match mockup, especially the right column
+// Todo (before merge)
+// - Hide Bloom Reader Bookshelf
+// - preview title should stretch
+// - do something about focus rectangle in portrait/landscape buttons
+// - move page turners inside page;
+// - take out bookshelf
+// - rename publishCommon previewCommon; limit it to things related to the actual box containing the preview
+// - make a separate file for the rules that actually define the frame outline.
+// - change Narration from static methods to instance; give player an instance.
+// - improve appearance of preview buttons; try for an automatically-shrunk actual copy of the phone.
+// - Change title from Thumbnail color to just thumbnail
 import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
 import * as React from "react";
@@ -38,17 +45,18 @@ import "errorHandler";
 
 const kWebSocketLifetime = "publish-android";
 
-interface IComponentState {
+interface IState {
     method: string;
     stateId: string;
-    backColor: string;
-    colorsVisible: boolean;
+    bookCoverColor: string;
     motionBookMode: boolean;
-    landscape: boolean; // landscape preview mode active
+    landscapePreviewMode: boolean;
     // Url (local, through our file server) of the folder where we put the
     // files which are ready to assemble into a .bloomd.
     previewUrl: string;
     previewPaused: boolean;
+    // For motion books, this will always be false. It is only true when
+    // a fixed orientation book is displayed in the wrong orientation.
     rotateBook: boolean; // book needs to be rotated to match preview orientation
     bookIsLandscape: boolean; // book is naturally landscape
     bookCanRotate: boolean; // book can reformat itself to match preview orientation
@@ -56,18 +64,14 @@ interface IComponentState {
 
 // This is a screen of controls that gives the user instructions and controls
 // for pushing a book to a connected Android device running Bloom Reader.
-class AndroidPublishUI extends React.Component<
-    IUILanguageAwareProps,
-    IComponentState
-> {
+class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     private isLinux: boolean;
-    public readonly state: IComponentState = {
+    public readonly state: IState = {
         stateId: "stopped",
         method: "wifi",
-        backColor: "#FFFFFF",
-        colorsVisible: false,
+        bookCoverColor: "#FFFFFF",
         motionBookMode: false,
-        landscape: false,
+        landscapePreviewMode: false,
         previewUrl: "",
         previewPaused: false,
         rotateBook: false,
@@ -75,15 +79,16 @@ class AndroidPublishUI extends React.Component<
         bookCanRotate: false
     };
 
-    constructor(props) {
+    public constructor(props: IUILanguageAwareProps) {
         super(props);
 
         this.isLinux = this.getIsLinuxFromUrl();
+        //Todo: remove this comment or reinstate the code (test)
         // enhance: For some reason setting the callback to "this.handleUpdate" calls handleUpdate()
         // with "this" set to the button, not this overall control.
         // I don't quite have my head around this problem yet, but this oddity fixes it.
         // See https://medium.com/@rjun07a/binding-callbacks-in-react-components-9133c0b396c6
-        this.handleUpdateState = this.handleUpdateState.bind(this);
+        //this.handleUpdateState = this.handleUpdateState.bind(this);
 
         WebSocketManager.addListener(kWebSocketLifetime, e => {
             if (e.id === "publish/android/state") {
@@ -95,7 +100,7 @@ class AndroidPublishUI extends React.Component<
             this.setState({ method: result.data });
         });
         BloomApi.get("publish/android/backColor", result =>
-            this.setState({ backColor: result.data })
+            this.setState({ bookCoverColor: result.data })
         );
         BloomApi.get("publish/android/motionBookMode", result =>
             this.setState({ motionBookMode: result.data })
@@ -173,7 +178,9 @@ class AndroidPublishUI extends React.Component<
                         <section
                             className={
                                 "preview-section" +
-                                (this.state.landscape ? " landscape" : "") +
+                                (this.state.landscapePreviewMode
+                                    ? " landscape"
+                                    : "") +
                                 (this.state.rotateBook ? " rotated" : "")
                             }
                         >
@@ -186,11 +193,11 @@ class AndroidPublishUI extends React.Component<
                                         <div className="preview-content">
                                             <BloomPlayer
                                                 url={this.state.previewUrl}
-                                                showContextPages="no"
+                                                showContextPages={false}
                                                 paused={
                                                     this.state.previewPaused
                                                 }
-                                                reportBookProps={arg =>
+                                                reportBookProperties={arg =>
                                                     this.gotBookProps(arg)
                                                 }
                                             />
@@ -202,13 +209,13 @@ class AndroidPublishUI extends React.Component<
                                         <button
                                             className={
                                                 "orientation-button portrait-button" +
-                                                (this.state.landscape
+                                                (this.state.landscapePreviewMode
                                                     ? ""
                                                     : " active")
                                             }
                                             onClick={() =>
                                                 this.setState({
-                                                    landscape: false,
+                                                    landscapePreviewMode: false,
                                                     rotateBook:
                                                         !this.state
                                                             .bookCanRotate &&
@@ -220,13 +227,13 @@ class AndroidPublishUI extends React.Component<
                                         <button
                                             className={
                                                 "orientation-button landscape-button" +
-                                                (this.state.landscape
+                                                (this.state.landscapePreviewMode
                                                     ? " active"
                                                     : "")
                                             }
                                             onClick={() =>
                                                 this.setState({
-                                                    landscape: true,
+                                                    landscapePreviewMode: true,
                                                     rotateBook:
                                                         !this.state
                                                             .bookCanRotate &&
@@ -265,7 +272,7 @@ class AndroidPublishUI extends React.Component<
                             <ColorChooser
                                 menuLeft={true}
                                 imagePath="/bloom/api/publish/android/thumbnail?color="
-                                backColorSetting={this.state.backColor}
+                                backColorSetting={this.state.bookCoverColor}
                                 onColorChanged={colorChoice => {
                                     BloomApi.postDataWithConfig(
                                         "publish/android/backColor",
@@ -280,7 +287,7 @@ class AndroidPublishUI extends React.Component<
                                         // only after the server has registered this change.
                                         () =>
                                             this.setState({
-                                                backColor: colorChoice
+                                                bookCoverColor: colorChoice
                                             })
                                     );
                                 }}
@@ -560,7 +567,7 @@ class AndroidPublishUI extends React.Component<
         // preview into the natural orientation for the book, which means it
         // is NOT now rotated to the other orientation (so rotateBook is always false).
         this.setState({
-            landscape: props.landscape,
+            landscapePreviewMode: props.landscape,
             bookIsLandscape: props.landscape,
             rotateBook: false,
             bookCanRotate: props.canRotate
