@@ -11,11 +11,11 @@
         <note>ID: Settings.Enterprise.CheckUpdates</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration">
-        <source xml:lang="en">That code has expired.</source>
+        <source xml:lang="en">Expires:</source>
         <note>ID: Settings.Enterprise.Expiration</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expired">
-        <source xml:lang="en">Expires:</source>
+        <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expired</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Incomplete">
