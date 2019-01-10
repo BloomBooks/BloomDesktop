@@ -64,6 +64,7 @@ const kAutoSegmentEnabledClass = "autoSegmentEnabled";
 // TODO: We would actually like this to have (conceptually) different state for each text box, not a single one per page.
 // This would allow us to set a separate audio-recording mode for each state.
 // However, currently this code has a lot of reliance on GetPage(), which just shows that the structure is not conceptually set up to handle per-text-box. So we will leave this for later.
+// TODO: Maybe a lot of this code should move to TalkingBook.ts (regarding the tool) instead of AudioRecording.ts (regarding recording/playing the audio files)
 export default class AudioRecording {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
@@ -1625,7 +1626,7 @@ export default class AudioRecording {
     private autoSegment(): void {
         // First, check if there's even an audio recorded yet.
         if ($("#audio-play").hasClass("disabled")) {
-            // TODO: Do toast strings, status message strings need to be localized?
+            // TODO: Do toast strings need to be localized?
             toastr.warning(
                 "Please record audio first before running Auto Segment"
             );
@@ -1654,10 +1655,13 @@ export default class AudioRecording {
                 lang: this.getAutoSegmentLanguageCode()
             };
 
+            this.disableInteraction();
+
             BloomApi.postJson(
                 "audioSegmentation/autoSegmentAudio",
                 JSON.stringify(inputParameters),
                 result => {
+                    this.enableInteraction();
                     const isSuccess = result && result.data.startsWith("TRUE");
 
                     if (isSuccess) {
@@ -1698,8 +1702,9 @@ export default class AudioRecording {
             );
 
             // TODO: Probably disable some controls while this is going on. Especially the Clear() one. Record by sentences echeckbox wouldn't hurt either.
-            // TODO: If there are multiple text boxes per page, it always resets focus to the first  thing.
-            //       Doesn't it do that even if you use the checkbox instead?
+            // TODO: If there are multiple text boxes per page, it always resets focus to the first box.
+            //       But it does that even with the checkbox, so I don't know what I can do about it.
+            //       Well, if you saved some state, you could probalby code it up. And that switch modes functionality is new, not set in stone.
             // TODO: If there are multiple text boxes on a page, maybe it shouldnt segment all of them.
             //       But the setting is for all of them on the page.  Ugh. Awkward.
 
@@ -1775,6 +1780,26 @@ export default class AudioRecording {
             this.stringToSentencesCache[text] = retVal;
             return retVal;
         }
+    }
+
+    private disableInteraction(): void {
+        this.setStatus("record", Status.Disabled);
+        this.setStatus("play", Status.Disabled);
+        this.setStatus("next", Status.Disabled);
+        this.setStatus("prev", Status.Disabled);
+        this.setStatus("clear", Status.Disabled);
+        this.setStatus("listen", Status.Disabled);
+        this.disableRecordingModeControl();
+    }
+
+    private enableInteraction(): void {
+        this.setStatus("record", Status.Enabled);
+        this.setStatus("play", Status.Enabled);
+        this.setStatus("next", Status.Enabled);
+        this.setStatus("prev", Status.Enabled);
+        this.setStatus("clear", Status.Enabled);
+        this.setStatus("listen", Status.Enabled);
+        this.enableRecordingModeControl();
     }
 }
 
