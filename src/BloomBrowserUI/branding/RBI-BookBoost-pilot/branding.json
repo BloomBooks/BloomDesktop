@@ -1,0 +1,11 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content":
+                "<p>This product is made possible through the generous support of the All Children Reading: A Grand Challenge for Development (ACR GCD) Partners (the United States Agency for International Development (USAID), World Vision, and the Australian Government) and Pearson. It was prepared by Resources for the Blind, Inc. and does not necessarily reflect the views of Pearson and the ACR GCD Partners.</p><p/><img src='RBI-BookBoost-pilot-back.png'/>",
+            "condition": "always"
+        }
+    ]
+}
