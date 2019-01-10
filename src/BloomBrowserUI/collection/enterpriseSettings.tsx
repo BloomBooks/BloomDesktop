@@ -8,7 +8,6 @@ import { RadioGroup, Radio } from "../react_components/radio";
 import { BloomApi } from "../utils/bloomApi";
 import "./enterpriseSettings.less";
 import { FontAwesomeIcon } from "../bloomIcons";
-import { invariant } from "mobx/lib/internal";
 
 // values of controlState:
 // None: the None button is selected.
@@ -118,24 +117,21 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                         >
                             Enterprise Subscription
                         </Radio>
-                        <Markdown
-                            l10nKey="Settings.Enterprise.NeedsCode"
-                            l10nParam0={this.state.legacyBrandingName}
-                            l10nParam1={this.codesUrl}
-                            className={
-                                "legacyBrandingName" +
-                                (this.state.controlState ===
-                                "SubscriptionLegacy"
-                                    ? ""
-                                    : " hidden")
-                            }
-                        >
-                            In an older version of Bloom, this project used
-                            **%0**. To continue to use this you will need to
-                            enter a current subscription code. Codes for SIL
-                            brandings can be found [here](%1). For other
-                            subscriptions, contact your project administrator.
-                        </Markdown>
+                        {this.state.controlState === "SubscriptionLegacy" && (
+                            <Markdown
+                                l10nKey="Settings.Enterprise.NeedsCode"
+                                l10nParam0={this.state.legacyBrandingName}
+                                l10nParam1={this.codesUrl}
+                                className={"legacyBrandingName"}
+                            >
+                                In an older version of Bloom, this project used
+                                **%0**. To continue to use this you will need to
+                                enter a current subscription code. Codes for SIL
+                                brandings can be found [here](%1). For other
+                                subscriptions, contact your project
+                                administrator.
+                            </Markdown>
+                        )}
                         <div
                             id="enterpriseMain"
                             className={
@@ -163,38 +159,22 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                     this.handleSubscriptionCodeChanged(e)
                                 }
                             />
-                            <span
-                                className={
-                                    "evaluationCode" +
-                                    (this.state.controlState ==
-                                    "SubscriptionGood"
-                                        ? ""
-                                        : " hidden")
-                                }
-                            >
-                                <FontAwesomeIcon icon="check" />
-                            </span>
-                            <span
-                                className={
-                                    "evaluationCode" +
-                                    (this.state.controlState ==
-                                    "SubscriptionIncomplete"
-                                        ? ""
-                                        : " hidden")
-                                }
-                            >
-                                <FontAwesomeIcon icon="question" />
-                            </span>
-                            <span
-                                className={
-                                    "evaluationCode" +
-                                    (this.shouldShowRedExclamation()
-                                        ? ""
-                                        : " hidden")
-                                }
-                            >
-                                <FontAwesomeIcon icon="exclamation-circle" />
-                            </span>
+                            {this.state.controlState === "SubscriptionGood" && (
+                                <span className={"evaluationCode"}>
+                                    <FontAwesomeIcon icon="check" />
+                                </span>
+                            )}
+                            {this.state.controlState ===
+                                "SubscriptionIncomplete" && (
+                                <span className={"evaluationCode"}>
+                                    <FontAwesomeIcon icon="question" />
+                                </span>
+                            )}
+                            {this.shouldShowRedExclamation() && (
+                                <span className={"evaluationCode"}>
+                                    <FontAwesomeIcon icon="exclamation-circle" />
+                                </span>
+                            )}
                             <div
                                 className="editButton"
                                 onClick={() => this.onCopy()}
@@ -229,90 +209,74 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                     </Label>
                                 </div>
                             </div>
-                            <Label
-                                l10nKey="Settings.Enterprise.NotValid"
-                                className={
-                                    "error" +
-                                    (this.state.controlState ===
-                                    "SubscriptionIncorrect"
-                                        ? ""
-                                        : " hidden")
-                                }
-                            >
-                                That code appears to be incorrect.
-                            </Label>
-                            <Label
-                                l10nKey="Settings.Enterprise.Incomplete"
-                                className={
-                                    "incomplete" +
-                                    (this.state.controlState ===
-                                    "SubscriptionIncomplete"
-                                        ? ""
-                                        : " hidden")
-                                }
-                            >
-                                The code should look like SOMENAME-123456-7890
-                            </Label>
-                            <div
-                                className={
-                                    this.state.controlState ===
-                                    "SubscriptionUnknown"
-                                        ? ""
-                                        : " hidden"
-                                }
-                            >
+                            {this.state.controlState ===
+                                "SubscriptionIncorrect" && (
                                 <Label
-                                    l10nKey="Settings.Enterprise.UnknownCode"
-                                    className="error"
+                                    l10nKey="Settings.Enterprise.NotValid"
+                                    className={"error"}
                                 >
-                                    This version of Bloom does not have the
-                                    artwork that goes with that subscription.
+                                    That code appears to be incorrect.
                                 </Label>
-                                <Link
-                                    className="error"
-                                    l10nKey="Settings.Enterprise.CheckUpdates"
-                                    onClick={() => this.checkForUpdates()}
+                            )}
+                            {this.state.controlState ===
+                                "SubscriptionIncomplete" && (
+                                <Label
+                                    l10nKey="Settings.Enterprise.Incomplete"
+                                    className={"incomplete"}
                                 >
-                                    Check for updates
-                                </Link>
-                            </div>
-                            <Label
-                                l10nKey="Settings.Enterprise.Expired"
-                                className={
-                                    "error" +
-                                    (this.state.controlState ===
-                                    "SubscriptionExpired"
-                                        ? ""
-                                        : " hidden")
-                                }
-                            >
-                                That code has expired.
-                            </Label>
-                            <div
-                                className={
-                                    "expiration" +
-                                    (this.state.controlState ===
-                                    "SubscriptionGood"
-                                        ? ""
-                                        : " hidden")
-                                }
-                            >
-                                <Label l10nKey="Settings.Enterprise.Expiration">
-                                    Expires:
+                                    The code should look like
+                                    SOMENAME-123456-7890
                                 </Label>
-                                <span>
-                                    {this.state.subscriptionExpiry
-                                        ? this.state.subscriptionExpiry.toLocaleDateString(
-                                              undefined,
-                                              {
-                                                  year: "numeric",
-                                                  day: "numeric",
-                                                  month: "long"
-                                              }
-                                          )
-                                        : ""}
-                                </span>
-                            </div>
+                            )}
+                            {this.state.controlState ===
+                                "SubscriptionUnknown" && (
+                                <div>
+                                    <Label
+                                        l10nKey="Settings.Enterprise.UnknownCode"
+                                        className="error"
+                                    >
+                                        This version of Bloom does not have the
+                                        artwork that goes with that
+                                        subscription.
+                                    </Label>
+                                    <Link
+                                        className="error"
+                                        l10nKey="Settings.Enterprise.CheckUpdates"
+                                        onClick={() => this.checkForUpdates()}
+                                    >
+                                        Check for updates
+                                    </Link>
+                                </div>
+                            )}
+                            {this.state.controlState ===
+                                "SubscriptionExpired" && (
+                                <Label
+                                    l10nKey="Settings.Enterprise.Expired"
+                                    className={"error"}
+                                >
+                                    That code has expired.
+                                </Label>
+                            )}
+
+                            {this.state.controlState === "SubscriptionGood" && (
+                                <div className={"expiration"}>
+                                    <Label l10nKey="Settings.Enterprise.Expiration">
+                                        Expires:
+                                    </Label>
+                                    <span>
+                                        {this.state.subscriptionExpiry &&
+                                            this.state.subscriptionExpiry.toLocaleDateString(
+                                                undefined,
+                                                {
+                                                    year: "numeric",
+                                                    day: "numeric",
+                                                    month: "long"
+                                                }
+                                            )}
+                                    </span>
+                                </div>
+                            )}
+
                             <div
                                 className={
                                     "summary" +
@@ -459,7 +423,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 });
                 return;
             }
-            var expiry = result.data === null ? null : new Date(result.data);
+            const expiry = result.data === null ? null : new Date(result.data);
             this.setState({
                 subscriptionCode: code,
                 subscriptionExpiry: expiry
