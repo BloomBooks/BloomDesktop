@@ -236,7 +236,10 @@ export default class AudioRecording {
 
     // Initialize the initial state of the autoSegment controls
     private setupForAutoSegment() {
-        if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+        if (
+            ToolBox.getShowExperimentalTools() &&
+            this.audioRecordingMode == AudioRecordingMode.TextBox
+        ) {
             $(kAutoSegmentWrapperIdSelector).addClass(kAutoSegmentEnabledClass);
             const statusElement: JQuery = $(".autoSegmentStatus");
             statusElement.get(0).innerText = "";
@@ -1340,6 +1343,7 @@ export default class AudioRecording {
         formatButton.remove(); // nothing happens if not found
 
         const markedSentences = elt.find(kAudioSentenceClassSelector);
+        //  TODO: Shouldn't re-use audio if the text box has a different lang associated. "Jesus" pronounced differently in differently langs.
         const reuse: any[] = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
         // If caller has manually specified a custom ID list, then let's say (for now) that we won't allow IDs to be re-used
         markedSentences.each(function(index) {
