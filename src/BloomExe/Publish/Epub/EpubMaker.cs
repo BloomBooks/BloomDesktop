@@ -1059,14 +1059,74 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
+		private static bool IsBranding(XmlElement element)
+		{
+			if (element == null)
+			{
+				return false;
+			}
+
+			if (HasClass(element, "branding"))
+			{
+				return true;
+			}
+
+			// For example: <div data-book="credits-page-branding-bottom-html" lang="*"></div>
+			while (element != null)
+			{
+				string value = element.GetAttribute("data-book");
+				if (value.Contains("branding"))
+				{
+					return true;
+				}
+				else
+				{
+					XmlNode parentNode = element.ParentNode;	// Might be an XmlDocument up the chain
+					if (parentNode is XmlElement)
+					{
+						element = (XmlElement)parentNode;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+
+			return false;
+		}
 		private void HandleImageDescriptions(HtmlDom bookDom)
 		{
 			// Set img alt attributes to the description, or erase them if no description (BL-6035)
 			foreach (var img in bookDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
 			{
-				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
+				bool isLicense = HasClass(img, "licenseImage");
+				bool isBranding = IsBranding(img);
+				if (isLicense || isBranding)
 				{
-					img.SetAttribute("alt", "");   // signal no accessibility need
+					string newAltText = "";
+
+					if (isLicense)
+					{
+						newAltText = "Image representing the license of this book";
+					}
+					else if (isBranding)
+					{
+						// Check if it's using the placeholder alt text... which isn't actually meaningful and we don't want in the ePub version for accessibility.
+						string currentAltText = img.GetAttribute("alt");
+						if (!HtmlDom.IsPlaceholderImageAltText(img))
+						{
+							// It is using a custom-specified one. Go ahead and keep it.
+							newAltText = currentAltText;
+						}
+						else
+						{
+							// Placeholder or missing alt text.  Replace it with the ePub version of the placeholder alt text
+							newAltText = "Logo of the book sponsors"; // Alternatively, it's OK to also put in "" to signal no accessibility need
+						}
+					}
+
+					img.SetAttribute("alt", newAltText);
 					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes daisy checker happy
 					continue;
 				}

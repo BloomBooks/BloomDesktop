@@ -178,6 +178,7 @@
     <Compile Include="Collection\CollectionSettingsTests.cs" />
     <Compile Include="MiscellaneousTests.cs" />
     <Compile Include="Publish\AudioProcessorTests.cs" />
+    <Compile Include="Publish\EPubMakerTests.cs" />
     <Compile Include="Publish\ExportEpubTests.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
     <Compile Include="Book\BookTests.cs" />
