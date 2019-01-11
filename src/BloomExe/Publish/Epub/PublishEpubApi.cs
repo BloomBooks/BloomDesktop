@@ -209,8 +209,26 @@ namespace Bloom.Publish.Epub
 
 		private void RefreshPreview(EpubPublishUiSettings newSettings)
 		{
-			if (UpdatePreview(newSettings, true))
-				_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Preview, _previewSrc);
+			// We have seen some exceptions thrown during refresh that cause a pretty yellow
+			// dialog box pop up informing the user, e.g., that the program couldn't find
+			// "api/publish/epub/updatePreview".  Rather than confuse the user, we catch such
+			// exceptions here and retry a limited number of times.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
+			for (int i = 0; i < 3; ++i)
+			{
+				try
+				{
+					if (UpdatePreview(newSettings, true))
+						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Preview, _previewSrc);
+					return;
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("Try {0} to refresh ePUB preview failed: {1}", i + 1, e.Message);
+				}
+			}
+			// REVIEW: should we notify the user that updating the ePUB preview failed?  If so, what should
+			// we tell them to do about it?
 		}
 
 		public void ReportAnalytics(string eventName)
