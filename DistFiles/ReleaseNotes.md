@@ -11,9 +11,11 @@
 
 ⭐ Allow "Choose Different Layout..." to change all pages in the book. This is particularly useful when adapting a book as a Sign Language diglot.
 
+⭐ The Sign Language tool sometimes has problems, particularly with memory use, so for now it is only available if you set Settings:Advanced:Show Experimental Features and set up Settings:Bloom Enterprise. But it's certainly usable if you're ready to start experimenting!
+
 ⭐ The Sign Language tool has been simplified.
 
-⭐ The Sign Language tool now displaying information about the video, including length, aspect ratio, and codec.
+⭐ The Sign Language tool now displays information about the video, including length, aspect ratio, and codec.
 
 ⭐ The Sign Language tool now has a tool for trimming the beginning and end of a video. Currently the trims are not permanent until you publish the book to epub, Bloom Reader, or a Bloom Pack.
 
