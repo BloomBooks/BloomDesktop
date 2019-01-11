@@ -491,8 +491,9 @@ namespace Bloom.Api
 				var possibleFullImagePath = localPath;
 				// "OriginalImages/" at the beginning means we're generating a pdf and want full images,
 				// but it has nothing to do with the actual file location.
-				if (localPath.StartsWith(OriginalImageMarker + "/"))
-					possibleFullImagePath = localPath.Substring(15);
+				string OriginalImageMarkerWithSuffix = OriginalImageMarker + "/";
+				if (localPath.StartsWith(OriginalImageMarkerWithSuffix))
+					possibleFullImagePath = localPath.Substring(OriginalImageMarkerWithSuffix.Length);
 				if(RobustFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
 					path = possibleFullImagePath;
