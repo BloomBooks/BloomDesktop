@@ -982,7 +982,7 @@ namespace Bloom.Publish.Epub
 				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
 				{
 					img.SetAttribute("alt", "");   // signal no accessibility need
-					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes daisy checker happy
+					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes DAISY checker happy
 					continue;
 				}
 				var desc = img.SelectSingleNode("following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]") as XmlElement;
@@ -1478,7 +1478,7 @@ namespace Bloom.Publish.Epub
 						++descCount;
 						asideNode.SetAttribute("id", figDescId);
 						var ariaAttr = img.GetAttribute("aria-describedby");
-						// ACE by Daisy cannot handle multiple ID values in the aria-describedby attribute even
+						// Ace by DAISY cannot handle multiple ID values in the aria-describedby attribute even
 						// though the ARIA specification clearly allows this.  So for now, use only the first one.
 						// I'd prefer to use specifically the vernacular language aside if we have to choose only
 						// one, but the aside elements don't have a lang attribute (yet?).  Perhaps the aside

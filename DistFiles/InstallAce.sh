@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script installs the Ace by Daisy ePUB checker in a place where
+# This script installs the Ace by DAISY ePUB checker in a place where
 # Bloom can find it and users can easily use it from the command line.
 # (This is obviously for use on debian based Linux systems such as
 # ubuntu.)
