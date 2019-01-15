@@ -98,7 +98,7 @@ namespace BloomTests.Publish
 			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns, 1);
-			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@class='branding' and @alt='' and @role='presentation']", _ns, 1);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@class='branding' and (@alt='' or @alt='Logo of the book sponsors') and @role='presentation']", _ns, 1);
 		}
 
 		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]

@@ -1059,7 +1059,7 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
-		private static bool IsBranding(XmlElement element)
+		public static bool IsBranding(XmlElement element)
 		{
 			if (element == null)
 			{
