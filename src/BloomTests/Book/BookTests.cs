@@ -131,6 +131,12 @@ namespace BloomTests.Book
 							<img class='licenseImage' src='license.png' data-derived='licenseImage' alt='License image'></img>
 						</div>
 					</div>
+					<div data-book='title-page-branding-bottom-html'>
+						<div class='marginBox'>
+							<img src='imageWithCustomAlt.svg' type='image/svg' alt='Custom Alt'></img>
+							<img src='title-page.svg' type='image/svg' alt='This picture, title-page.svg,  is missing or was loading too slowly'></img>
+						</div>
+					</div>
 					<div class='bloom-page numberedPage customPage A5Portrait'>
 						<div class='marginBox'>
 							<img src='junk' alt = 'more junk'></img>
@@ -150,7 +156,13 @@ namespace BloomTests.Book
 			foreach (XmlElement img in images)
 			{
 				Assert.That(img.Attributes["alt"], Is.Not.Null);
-				Assert.That(img.Attributes["alt"].Value, Is.EqualTo(""));
+
+				string expectedAltText = "";
+				if (img.Attributes["src"].Value == "imageWithCustomAlt.svg")
+				{
+					expectedAltText = "Custom Alt";
+				}
+				Assert.That(img.Attributes["alt"].Value, Is.EqualTo(expectedAltText));
 			}
 		}
 

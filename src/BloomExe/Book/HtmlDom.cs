@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
+using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
@@ -2143,7 +2144,7 @@ namespace Bloom.Book
 		}
 
 		// Make the image's alt attr match the image description for the specified language.
-		// If we don't have one, make the alt attr exactly an empty string.
+		// If we don't have one, make the alt attr exactly an empty string (except branding images may be allowed to have custom alt text).
 		private static void SetImageAltAttrFromDescription(XmlElement img, string descriptionLang)
 		{
 			var parent = img.ParentNode as XmlElement;
@@ -2176,7 +2177,7 @@ namespace Bloom.Book
 				}
 			}
 
-			if (IsPlaceholderImageAltText(img))
+			if (!EpubMaker.IsBranding(img) || IsPlaceholderImageAltText(img))
 			{
 				// Images in accessible epubs should have explicit empty alt attr if no useful description
 				img.SetAttribute("alt", "");
