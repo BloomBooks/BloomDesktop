@@ -87,6 +87,12 @@ namespace Bloom.Api
 			_requestInfo.WriteCompleteOutput(text);
 		}
 
+		public void ReplyWithAudioFileContents(string path)
+		{
+			_requestInfo.ContentType = path.EndsWith(".mp3") ? "audio/mpeg" : "audio/wav";
+			_requestInfo.ReplyWithFileContent(path);
+		}
+
 		public void ReplyWithHtml(string html)
 		{
 			_requestInfo.ContentType = "text/html";
