@@ -304,23 +304,6 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                     const imageDescriptions = container.getElementsByClassName(
                         "bloom-imageDescription"
                     );
-
-                    // Arrange to change which image the check boxes refer to when an image's description
-                    // gets focus. Note that we do not change this or disable them if something other
-                    // than an image description gets focus; this potentially allows the user to do things like
-                    // moving the focus and selecting a check box using the keyboard.
-                    for (let i = 0; i < imageDescriptions.length; i++) {
-                        imageDescriptions[i].removeEventListener(
-                            "focus",
-                            this.descriptionGotFocus
-                        ); // prevent duplicates
-                        // look for it in capture phase so we see child elements getting focus
-                        imageDescriptions[i].addEventListener(
-                            "focus",
-                            this.descriptionGotFocus,
-                            true
-                        );
-                    }
                     if (imageDescriptions.length === 0) {
                         // Adds a new bloom-translationGroup
                         // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
@@ -329,7 +312,16 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                         BloomApi.post(
                             "common/requestTranslationGroups",
                             result => {
-                                if (result) {
+                                // newPageReady() can be called twice, which can result in this code
+                                // being run twice.  We want to add the bloom-translationGroup only
+                                // once, so check whether that has been done by the other call to this
+                                // asynchonous return handler before proceeding.
+                                // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
+                                // confusing behavior that can result without this check.
+                                const currentDescriptions = container.getElementsByClassName(
+                                    "bloom-imageDescription"
+                                );
+                                if (result && currentDescriptions.length == 0) {
                                     this.appendTranslationGroup(
                                         result.data,
                                         container
@@ -338,13 +330,40 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                                     // translationGroups to a page that didn't have them before,
                                     // we need to reset our state.
                                     imageDescControls.setStateForNewPage();
+                                    // BL-6798 - we need to add focus listeners to these new description
+                                    // elements.
+                                    const newDescriptions = container.getElementsByClassName(
+                                        "bloom-imageDescription"
+                                    );
+                                    this.addFocusListeners(newDescriptions);
                                 }
                             }
                         );
+                    } else {
+                        this.addFocusListeners(imageDescriptions);
                     }
                 }
             }
         });
+    }
+
+    private addFocusListeners(imageDescriptions: HTMLCollectionOf<Element>) {
+        // Arrange to change which image the check boxes refer to when an image's description
+        // gets focus. Note that we do not change this or disable them if something other
+        // than an image description gets focus; this potentially allows the user to do things like
+        // moving the focus and selecting a check box using the keyboard.
+        for (let i = 0; i < imageDescriptions.length; i++) {
+            imageDescriptions[i].removeEventListener(
+                "focus",
+                this.descriptionGotFocus
+            ); // prevent duplicates
+            // look for it in capture phase so we see child elements getting focus
+            imageDescriptions[i].addEventListener(
+                "focus",
+                this.descriptionGotFocus,
+                true
+            );
+        }
     }
 
     // Adds a new bloom-translationGroup
