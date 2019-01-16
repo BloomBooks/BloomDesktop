@@ -1815,7 +1815,9 @@ namespace Bloom.Book
 
 		public static XmlNodeList SelectAudioSentenceElements(XmlElement element)
 		{
-			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence')]");
+			// It's unexpected for a book to have nodes with class audio-sentence and no id to link them to a file, but
+			// if they do occur, it's better to ignore them than for other code to crash when looking for the ID.
+			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]");
 		}
 
 		public static XmlNodeList SelectAudioSentenceElementsWithDataDuration(XmlElement element)
