@@ -72,7 +72,7 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
                                 l10nKey="AccessibilityCheck.ACEByDaisy"
                                 l10nComment="Used as the name on a tab of the Accessibility Checks screen."
                             >
-                                ACE by Daisy Automated Checks
+                                Ace by DAISY Automated Checks
                             </String>
                         </Tab>
                     </TabList>
