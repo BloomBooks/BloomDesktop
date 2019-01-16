@@ -41,6 +41,10 @@
     left: -@cc-arrow-height;
     background-color: white;
     z-index: 1; // pop-up above surrounding stuff
+    .cc-pulldown-left & {
+        left: initial;
+        right: -@cc-arrow-height;
+    }
     &:after {
         content: "";
         position: absolute;
@@ -51,6 +55,10 @@
         border-color: white transparent;
         display: block;
         width: 0;
+    }
+    .cc-pulldown-left &:after {
+        left: initial;
+        right: 0;
     }
 }
 

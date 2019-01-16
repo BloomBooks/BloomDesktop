@@ -26,7 +26,9 @@ namespace Bloom.Book
 			IWebSocketProgress progress)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
-			var bookFolderPath = Path.Combine(temp.FolderPath, "PlaceForBook");
+			// And bloom-player expects folder name to match html file name.
+			var htmPath = BookStorage.FindBookHtmlInFolder(book.FolderPath);
+			var bookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
 			Directory.CreateDirectory(bookFolderPath);
 			var modifiedBook = BookCompressor.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
 
@@ -58,9 +60,79 @@ namespace Bloom.Book
 			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
 			EmbedFonts(modifiedBook, progress, new FontFileFinder());
 
+			var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
+			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
+			StripContentEditable(modifiedBook.RawDom);
+			InsertReaderStylesheet(modifiedBook.RawDom);
+			ConvertImagesToBackground(modifiedBook.RawDom);
+
 			modifiedBook.Save();
 
 			return modifiedBook;
+		}
+
+
+		private static void StripImgIfWeCannotFindFile(XmlDocument dom, string bookFile)
+		{
+			var folderPath = Path.GetDirectoryName(bookFile);
+			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
+			{
+				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).NotEncoded.Split('?')[0];
+				if (!File.Exists(Path.Combine(folderPath, file)))
+				{
+					imgElt.ParentNode.RemoveChild(imgElt);
+				}
+			}
+		}
+
+		private static void StripContentEditable(XmlDocument dom)
+		{
+			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>().ToArray())
+			{
+				editableElt.RemoveAttribute("contenteditable");
+			}
+		}
+
+		/// <summary>
+		/// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer.
+		/// Convert the img into a background image of the image container div.
+		/// Specifically, make the following changes:
+		/// - Copy any data-x attributes from the img element to the div
+		/// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the div
+		///    (any pre-existing style attribute on the div is lost)
+		/// - Add the class bloom-backgroundImage to the div
+		/// - delete the img element
+		/// (See oldImg and newImg in unit test CompressBookForDevice_ImgInImgContainer_ConvertedToBackground for an example).
+		/// </summary>
+		/// <param name="wholeBookHtml"></param>
+		/// <returns></returns>
+		private static void ConvertImagesToBackground(XmlDocument dom)
+		{
+			foreach (var imgContainer in dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]").Cast<XmlElement>().ToArray())
+			{
+				var img = imgContainer.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n is XmlElement && n.Name == "img");
+				if (img == null || img.Attributes["src"] == null)
+					continue;
+				// The filename should be already urlencoded since src is a url.
+				var src = img.Attributes["src"].Value;
+				HtmlDom.SetImageElementUrl(new ElementProxy(imgContainer), UrlPathString.CreateFromUrlEncodedString(src));
+				foreach (XmlAttribute attr in img.Attributes)
+				{
+					if (attr.Name.StartsWith("data-"))
+						imgContainer.SetAttribute(attr.Name, attr.Value);
+				}
+				imgContainer.SetAttribute("class", imgContainer.Attributes["class"].Value + " bloom-backgroundImage");
+				imgContainer.RemoveChild(img);
+			}
+		}
+
+		private static void InsertReaderStylesheet(XmlDocument dom)
+		{
+			var link = dom.CreateElement("link");
+			XmlUtils.GetOrCreateElement(dom, "html", "head").AppendChild(link);
+			link.SetAttribute("rel", "stylesheet");
+			link.SetAttribute("href", "readerStyles.css");
+			link.SetAttribute("type", "text/css");
 		}
 
 		/// <summary>
@@ -161,7 +233,7 @@ namespace Bloom.Book
 			foreach (XmlElement source in page.SafeSelectNodes(".//div[contains(@class, 'bloom-editable')]"))
 			{
 				var lang = source.Attributes["lang"]?.Value??"";
-				if (string.IsNullOrEmpty(lang) || lang == "z")
+				if (String.IsNullOrEmpty(lang) || lang == "z")
 					continue;
 				var group = new QuestionGroup() {lang = lang};
 				// this looks weird, but it's just driven by the test cases which are in turn collected
@@ -185,7 +257,7 @@ namespace Bloom.Book
 					//(separate start vs. end br elements might not occur in real FF tests, see note above).
 					cleanLine = cleanLine.Replace("<br>", "");
 					cleanLine = cleanLine.Replace("\u200c", "");
-					if (string.IsNullOrWhiteSpace(cleanLine))
+					if (String.IsNullOrWhiteSpace(cleanLine))
 					{
 						// If we've accumulated an actual question and answers, put it in the output.
 						// otherwise, we're probably just dealing with leading white space before the first question.

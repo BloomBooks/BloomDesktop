@@ -10,6 +10,7 @@ import HelpLink from "../../react_components/helpLink";
 import { H1, H2, IUILanguageAwareProps } from "../../react_components/l10n";
 import PWithLink from "../../react_components/pWithLink";
 import "./epubPublishUI.less";
+import "../publishCommon.less";
 import EpubPreview from "./EpubPreview";
 // import { RadioGroup, Radio } from "../../react_components/radio";
 import WebSocketManager from "../../utils/WebSocketManager";

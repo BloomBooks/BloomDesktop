@@ -7,6 +7,10 @@
     position: relative;
 }
 
+.intro {
+    font-weight: bold;
+}
+
 .save-button {
     width: 150px;
 }
@@ -23,47 +27,6 @@
     a {
         margin-bottom: 1em;
     }
-}
-
-// the wrapper around the preview that looks like a phone's shell.
-#device {
-    height: 800px;
-    width: 400px;
-    padding-left: 30px;
-    padding-top: 72px;
-    padding-bottom: 18px;
-    //border: 5px solid white;
-    border-radius: 38px;
-    background-color: @bloom-panelBackground;
-    box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
-}
-
-//The 'speaker' (grey bar at top that looks like a phone speaker) is a "before" rule
-@speakerlength : 80px;
-#device:before {
-    width: @speakerlength;
-    height: 10px;
-    top: 35px;
-    left: calc(~"50% - " @speakerlength / 2);
-    border-radius: 10px;
-    background-color: @LightGrey;
-}
-@CircleDiameter: 40px;
-
-//the bottom 'button' (looks like phone home button) is the "after" rule
-#device:after {
-    width: @CircleDiameter;
-    height: @CircleDiameter;
-    border-radius: 50%;
-    border: solid 5px @LightGrey;
-    left: calc(~"50% - " @CircleDiameter / 2);
-    bottom: 10px;
-}
-#device:before,
-#device:after {
-    content: "";
-    position: absolute;
-    z-index: 2;
 }
 
 iframe {

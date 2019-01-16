@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -15,6 +16,7 @@ using Bloom.Publish.Android.usb;
 #endif
 using Bloom.Publish.Android.wifi;
 using Bloom.web;
+using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 
@@ -34,11 +36,16 @@ namespace Bloom.Publish.Android
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookServer _bookServer;
 		private readonly WebSocketProgress _progress;
-		private const string kWebSocketContext = "publish-android"; // must match what is in AndroidPublish.tsx
+		private const string kWebSocketContext = "publish-android"; // must match what is in AndroidPublishUI.tsx
 		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
 		private Book.Book _coverColorSourceBook;
 
 		private RuntimeImageProcessor _imageProcessor;
+
+		// This constant must match the ID that is used for the listener set up in the React component AndroidPublishUI
+		private const string kWebsocketEventId_Preview = "androidPreview";
+
+		public static string PreviewUrl { get; set; }
 
 		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, RuntimeImageProcessor imageProcessor)
 		{
@@ -129,7 +136,21 @@ namespace Bloom.Publish.Android
 					request.PostSucceeded();
 				}
 			}, true);
-			
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Post)
+				{
+					// This is already running on a server thread, so there doesn't seem to be any need to kick off
+					// another background one and return before the preview is ready. But in case something in C#
+					// might one day kick of a new preview, or we find we do need a background thread,
+					// I've made it a websocket broadcast when it is ready.
+					PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor);
+					_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
+					request.PostSucceeded();
+				}
+			}, true);
+
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>
 			{
@@ -209,6 +230,7 @@ namespace Bloom.Publish.Android
 #endif
 			_wifiPublisher.Stop();
 			SetState("stopped");
+			_stagingFolder?.Dispose();
 		}
 
 		private void SetState(string state)
@@ -277,6 +299,24 @@ namespace Bloom.Publish.Android
 				progress.Message("PublishTab.Epub.Done", "Done", false);	// share message string with epub publishing
 			}
 
+		}
+
+		private static TemporaryFolder _stagingFolder;
+
+		public static string StageBloomD(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor)
+		{
+			progress.Message("PreparingPreview", "Preparing preview");
+			_stagingFolder?.Dispose();
+			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
+			{
+				progress.Message("CompressingAudio", "Compressing audio files");
+				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
+			}
+			var htmPath = BookStorage.FindBookHtmlInFolder(book.FolderPath);
+			var fileName = Path.GetFileNameWithoutExtension(htmPath);
+			_stagingFolder = new TemporaryFolder("PlaceForStagingBook");
+			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, _stagingFolder, backColor, progress);
+			return modifiedBook.FolderPath.ToLocalhost();
 		}
 
 		/// <summary>

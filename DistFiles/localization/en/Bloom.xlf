@@ -856,6 +856,11 @@
         <source xml:lang="en">Progress</source>
         <note>ID: Common.Progress</note>
       </trans-unit>
+      <trans-unit id="Common.Refresh">
+        <source xml:lang="en">Refresh</source>
+        <note>ID: Common.Refresh</note>
+        <note>Sense of refreshing a web page.</note>
+      </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -2656,7 +2661,7 @@
         <note>ID: PublishTab.Android.ChooseWifi</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
-        <source xml:lang="en">Control</source>
+        <source xml:lang="en">Send or Save</source>
         <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
       </trans-unit>
@@ -2665,7 +2670,7 @@
         <note>ID: PublishTab.Android.CopyToClipboard</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Here you can send your book to the Bloom Reader Android app.</source>
+        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
         <note>ID: PublishTab.Android.Intro</note>
         <note>This is displayed at the top of the Android screen.</note>
       </trans-unit>
@@ -2704,15 +2709,15 @@
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} and {1} are font names</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
+        <source xml:lang="en">Bloom Reader Bookshelf</source>
+        <note>ID: PublishTab.Android.BookShelf</note>
+        <note>A heading in the Publish to Android screen.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Media" sil:dynamic="true">
-        <source xml:lang="en">Media</source>
-        <note>ID: PublishTab.Android.Media</note>
-        <note>A heading in the Publish to Android screen.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
         <source xml:lang="en">Method Choices</source>
@@ -2723,6 +2728,18 @@
         <source xml:lang="en">Motion Book</source>
         <note>ID: PublishTab.Android.MotionBookMode</note>
         <note>Motion Book checkbox label</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: PublishTab.Android.Preview</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true">
+        <source xml:lang="en">Publish</source>
+        <note>ID: PublishTab.Android.Publish</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
+        <source xml:lang="en">Settings</source>
+        <note>ID: PublishTab.Android.Settings</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ThumbnailColor" sil:dynamic="true">
         <source xml:lang="en">Thumbnail Color</source>
