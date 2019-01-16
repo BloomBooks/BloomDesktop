@@ -15,7 +15,7 @@ namespace Bloom.web.controllers
 	public class AudioSegmentationApi
 	{
 		public const string kApiUrlPart = "audioSegmentation/";
-		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%";
+		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%";	// TODO: Linux compatability
 		private const string kTimingsOutputFormat = "tsv";
 
 		BookSelection _bookSelection;
@@ -32,7 +32,7 @@ namespace Bloom.web.controllers
 
 		/// <summary>
 		/// API Handler which
-		/// Returns "TRUE" if success, otherwiese "FALSE" followed by an error message if not.
+		/// Returns "TRUE" if success, otherwiese "FALSE" followed by an error message if not successful.
 		/// </summary>
 		/// <param name="request"></param>
 		public void CheckAutoSegmentDependenciesMet(ApiRequest request)
@@ -62,24 +62,26 @@ namespace Bloom.web.controllers
 
 		public bool AreAutoSegmentDependenciesMet(out string message)
 		{
-			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))
+			string formatStringDependencyMissing = L10NSharp.LocalizationManager.GetString("Common.ItemNotFound", "{0} not found.");
+
+			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Maybe use "locate" command on Linux?
 			{
-				message = "Python not found.";
+				message = String.Format(formatStringDependencyMissing, "Python");
 				return false;
 			}
 			else if (DoesCommandCauseError("WHERE espeak", kWorkingDirectory))
 			{
-				message = "FALSE espeak not found.";
+				message = String.Format(formatStringDependencyMissing, "espeak");
 				return false;
 			}
 			else if (DoesCommandCauseError("WHERE ffmpeg", kWorkingDirectory))
 			{
-				message = "FFMPEG not found.";
+				message = String.Format(formatStringDependencyMissing, "FFMPEG");
 				return false;
 			}
 			else if (DoesCommandCauseError("python -m aeneas.tools.execute_task", kWorkingDirectory, 2))    // Expected to list usage. Error Code 0 = Success, 1 = Error, 2 = Help shown.
 			{
-				message = "Aeneas not found in Python environment.";
+				message = String.Format(formatStringDependencyMissing, "Aeneas for Python"); 
 				return false;
 			}
 
@@ -107,7 +109,7 @@ namespace Bloom.web.controllers
 			{
 				StartInfo = new ProcessStartInfo()
 				{
-					FileName = "CMD",
+					FileName = "CMD",	// TODO: Linux compatability
 					Arguments = arguments,
 					UseShellExecute = false,
 					CreateNoWindow = true,
@@ -128,7 +130,7 @@ namespace Bloom.web.controllers
 			{
 				return false;	// No error
 			}
-			else if (errorCodesToIgnore.Length > 0 && errorCodesToIgnore.Contains(process.ExitCode))
+			else if (errorCodesToIgnore != null && errorCodesToIgnore.Contains(process.ExitCode))
 			{
 				// It seemed to return an error, but the caller has actually specified that this error is nothing to worry about, so return no error
 				return false;
@@ -192,10 +194,10 @@ namespace Bloom.web.controllers
 			var fragmentList = fragmentIdTuples.Select(subarray => subarray[0]);
 			var idList = fragmentIdTuples.Select(subarray => subarray[1]).ToList();
 
-			File.WriteAllLines(textFragmentsFilename, fragmentList);
-
 			try
 			{
+				File.WriteAllLines(textFragmentsFilename, fragmentList);
+
 				var timingStartEndRangeList = GetSplitStartEndTimings(inputAudioFilename, textFragmentsFilename, audioTimingsFilename, langCode);
 
 				ExtractAudioSegments(idList, timingStartEndRangeList, directoryName, inputAudioFilename);
@@ -239,7 +241,7 @@ namespace Bloom.web.controllers
 
 			// Note: The version of FFMPEG in output/Debug or output/Release is probably not compatible with the version required by Aeneas.
 			// Thus, change the working path to something that hopefully doesn't contain our FFMPEG version.
-			string changeDirectoryCommand = "cd %HOMEDRIVE%\\%HOMEPATH% && ";
+			string changeDirectoryCommand = $"cd {kWorkingDirectory} && ";
 
 			// I think this sets the boundary to the midpoint between the end of the previous sentence and the start of the next one.
 			// This is good because by default, it would align it such that the subsequent audio started as close as possible to the beginning of it. Since there is a subtle pause when switching between two audio files, this left very little margin for error.
@@ -251,7 +253,7 @@ namespace Bloom.web.controllers
 
 			var processStartInfo = new ProcessStartInfo()
 			{
-				FileName = "CMD.EXE",
+				FileName = "CMD.EXE",	// TODO: Linux compatability
 
 				// DEBUG NOTE: you can use "/K" instead of "/C" to keep the window open (if needed for debugging)
 				Arguments = $"/C {commandString}"
@@ -286,7 +288,7 @@ namespace Bloom.web.controllers
 		/// <summary>
 		/// Parses the contents of a timing file and returns the start and end timing fields as a list of tuples.
 		/// </summary>
-		/// <param name="segmentationResults">The contents (line-by-line) of a .tsv timing file</param>
+		/// <param name="segmentationResults">The contents (line-by-line) of a .tsv timing file. Example: "1.000\t4.980\tf000001"</param>
 		private List<Tuple<string, string>> ParseTimingFileTSV(IEnumerable<string> segmentationResults)
 		{
 			var timings = new List<Tuple<string, string>>();
@@ -309,8 +311,9 @@ namespace Bloom.web.controllers
 					}
 				}
 
-				// If timing end is messed up, we'll continue to pass the record. In theory, it is valid for the timings to be defined solely by the start times (as long as you don't need the highlight to disappear for a time)
-				// so don't remove records where the end time is missing
+				// If timingEnd is messed up, we'll continue to pass the record. In theory, it is valid for the timings to be defined solely by timingStart without specifying an explicit timingEnd (as long as you don't need the highlight to disappear for a time)
+				// timingEnd is easily inferred as the next timingStart
+				// so don't remove records if timingEnd is missing
 				timings.Add(Tuple.Create(timingStart, timingEnd));
 			}
 
@@ -331,7 +334,7 @@ namespace Bloom.web.controllers
 			for (int lineNumber = 1; lineNumber <= segmentationResults.Count; lineNumber += 4)
 			{
 				string line = segmentationResults[lineNumber];
-				string timingRange = line.Replace(',', '.');    // Convert from SRT's/Aeneas's HH:MM::SS,mmm format to FFMPEG's "HH:MM:SS.mmm" format. (aka European decimal points to American decimal points)
+				string timingRange = line.Replace(',', '.');    // Convert from SRT's/Aeneas's HH:MM::SS,mmm format to FFMPEG's "HH:MM:SS.mmm" format. (aka European decimal points to American decimal points). This SRT format seems independent of system locale.
 				var fields = timingRange.Split(new string[] { "-->" }, StringSplitOptions.None);
 				string timingStart = fields[0].Trim();
 				string timingEnd = fields[1].Trim();
@@ -348,8 +351,9 @@ namespace Bloom.web.controllers
 					}
 				}
 
-				// If timing end is messed up, we'll continue to pass the record. In theory, it is valid for the timings to be defined solely by the start times (as long as you don't need the highlight to disappear for a time)
-				// so don't remove records where the end time is missing
+				// If timingEnd is messed up, we'll continue to pass the record. In theory, it is valid for the timings to be defined solely by timingStart without specifying an explicit timingEnd (as long as you don't need the highlight to disappear for a time)
+				// timingEnd is easily inferred as the next timingStart
+				// so don't remove records if timingEnd is missing
 				timings.Add(Tuple.Create(timingStart, timingEnd));
 			}
 
@@ -367,6 +371,11 @@ namespace Bloom.web.controllers
 		{
 			Debug.Assert(idList.Count == timingStartEndRangeList.Count, $"Number of text fragments ({idList.Count}) does not match number of extracted timings ({timingStartEndRangeList.Count}). The parsed timing ranges might be completely incorrect. The last parsed timing is: ({timingStartEndRangeList.Last()?.Item1 ?? "null"}, {timingStartEndRangeList.Last()?.Item2 ?? "null"}).");
 
+			string extension = Path.GetExtension(inputAudioFilename);	// Will include the "." e.g. ".mp3"
+			if (string.IsNullOrWhiteSpace(extension))
+			{
+				extension = ".mp3";
+			}
 			// Allow each ffmpeg to run in parallel
 			var tasksToWait = new Task[timingStartEndRangeList.Count];
 			for (int i = 0; i < timingStartEndRangeList.Count; ++i)
@@ -375,10 +384,12 @@ namespace Bloom.web.controllers
 				var timingStartString = timingRange.Item1;
 				var timingEndString = timingRange.Item2;
 
-				string splitFilename = $"{directoryName}/{idList[i]}.mp3";
+				string splitFilename = $"{directoryName}/{idList[i]}{extension}";
 
 				tasksToWait[i] = ExtractAudioSegmentAsync(inputAudioFilename, timingStartString, timingEndString, splitFilename);
 			}
+
+			// TODO: Need to report an error or exception or do a retry if a task fails.
 
 			// Wait for them all so that the UI knows all the files are there before it starts mucking with the HTML structure.
 			Task.WaitAll(tasksToWait.ToArray());
@@ -394,8 +405,8 @@ namespace Bloom.web.controllers
 		/// <returns></returns>
 		public Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
 		{
-			string commandString = $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
-			var startInfo = new ProcessStartInfo(fileName: "CMD", arguments: $"/C {commandString}");
+			string commandString = $"cd {kWorkingDirectory} && ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
+			var startInfo = new ProcessStartInfo(fileName: "CMD", arguments: $"/C {commandString}");	// TODO: Linux compatability
 
 			return RunProcessAsync(startInfo);
 		}

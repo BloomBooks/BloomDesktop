@@ -821,6 +821,11 @@
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
       </trans-unit>
+      <trans-unit id="Common.ItemNotFound">
+        <source xml:lang="en">{0} not found.</source>
+        <note>ID: Common.ItemNotFound</note>
+        <note>The {0} will be replaced by the name of an item which was not found</note>
+      </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
@@ -2072,11 +2077,6 @@
         <source xml:lang="en">Auto Segment</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegment</note>
         <note>This text appears on the button the user can press to trigger automatic segmentation of audio. An audio file corresponding to an entire text box will be segmented into one audio file per sentence instead. (Also known as "Forced Alignment" in technical terms)</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusComplete">
-        <source xml:lang="en">Segmenting... Done</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusComplete</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") completed successfully.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError">
         <source xml:lang="en">Segmenting... Error</source>

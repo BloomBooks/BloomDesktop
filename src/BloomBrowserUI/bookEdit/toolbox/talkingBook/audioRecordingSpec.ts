@@ -1,4 +1,5 @@
 import AudioRecording, { AudioRecordingMode } from "./audioRecording";
+import { AxiosResponse } from "axios";
 
 describe("audio recording tests", () => {
     it("inserts sentence spans with ids and class when none exist", () => {
@@ -729,12 +730,12 @@ describe("audio recording tests", () => {
             nonAudioRun2Html +
             audioRun2Html +
             "</div>";
-        let div = $(originalHtml);
-        let recording = new AudioRecording();
+        const div = $(originalHtml);
+        const recording = new AudioRecording();
         recording.audioRecordingMode = AudioRecordingMode.TextBox;
         recording.makeAudioSentenceElements(div);
 
-        let parent = $("<div>")
+        const parent = $("<div>")
             .append(div)
             .clone();
         const expectedAudioRun1Html =
@@ -752,6 +753,97 @@ describe("audio recording tests", () => {
             expectedHtml,
             "Parent HTML"
         );
+    });
+
+    it("getCurrentText works", () => {
+        SetupIFrameFromHtml("<div class='ui-audioCurrent'>Hello world</div>");
+
+        const recording = new AudioRecording();
+        expect(recording.getCurrent().length).toBe(1);
+        const returnedText = recording.getCurrentText();
+
+        expect(returnedText).toBe("Hello world");
+    });
+
+    it("getAutoSegmentLanguageCode works", () => {
+        SetupIFrameFromHtml(
+            "<div class='ui-audioCurrent' lang='es'>Hello world</div>"
+        );
+
+        const recording = new AudioRecording();
+        const returnedText = recording.getAutoSegmentLanguageCode();
+
+        expect(returnedText).toBe("es");
+    });
+
+    it("extractFragmentsForAudioSegmentation works", () => {
+        SetupIFrameFromHtml(
+            "<div class='ui-audioCurrent' lang='es'>Sentence 1. Sentence 2.</div>"
+        );
+
+        const recording = new AudioRecording();
+        const returnedFragmentIds = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+
+        expect(returnedFragmentIds.length).toBe(2);
+        for (let i = 0; i < returnedFragmentIds.length; ++i) {
+            expect(returnedFragmentIds[i][0]).toBe(`Sentence ${i + 1}.`);
+        }
+    });
+
+    // it("processAutoSegmentResponse works", () => {
+    //     SetupIFrameFromHtml("<div class='ui-audioCurrent' lang='es'>Sentence 1. Sentence 2.</div>");
+    //     const statusElement = document.createElement("div");
+    //     statusElement.classList.add("autoSegmentStatus");
+    //     document.body.appendChild(statusElement);
+
+    //     const recordingModeInputElement = document.createElement("input");
+    //     recordingModeInputElement.type = "checkbox";
+    //     recordingModeInputElement.id = "audio-recordingModeControl";
+    //     document.body.appendChild(recordingModeInputElement);
+
+    //     const recording = new AudioRecording();
+    //     const result = {};
+    //     result["data"] = "TRUE";
+    //     recording.processAutoSegmentResponse(<AxiosResponse>result, statusElement);
+
+    //     expect(statusElement.innerText).toBe("Done");
+    // });
+});
+
+describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {
+    // Note: If the function under test does asynchronous stuff, then you can't use synchronous test code to test the final result.
+    // Instead, you should put the unit under test in a beforeEach() or beforeAll()
+    // The unit test framework will provide a callback which I guess indicates that the setup is done and then starts running your synchronous test code
+    // Then your normal test code can verify the results
+    //
+    // Keep in mind that the tests may be run simultaneously and if your async functionality messes with the state then things may get horribly confusing
+    beforeEach(doneCallback => {
+        SetupIFrameFromHtml(
+            "<div class='ui-audioCurrent' lang='es'>Sentence 1. Sentence 2.</div>"
+        );
+        const statusElement = document.createElement("div");
+        statusElement.classList.add("autoSegmentStatus");
+        statusElement.id = "status2";
+        document.body.appendChild(statusElement);
+
+        const recordingModeInputElement = document.createElement("input");
+        recordingModeInputElement.type = "checkbox";
+        recordingModeInputElement.id = "audio-recordingModeControl";
+        document.body.appendChild(recordingModeInputElement);
+
+        const recording = new AudioRecording();
+        const result = {};
+        result["data"] = "FALSE blah blah error message";
+        recording.processAutoSegmentResponse(
+            <AxiosResponse>result,
+            statusElement,
+            doneCallback
+        );
+    });
+
+    it("processAutoSegmentResponse async failure indicates failure message", () => {
+        const statusElement: HTMLElement = $("#status2").get(0);
+        expect(statusElement.innerText).toBe("Segmenting... Error");
     });
 });
 
@@ -775,3 +867,68 @@ function StripAudioCurrent(html) {
         .replace(/ ui-audioCurrent/g, "")
         .replace(/ class="ui-audioCurrent"/g, "");
 }
+
+// bodyContentHtml should not contain HTML or Body tags. It should be the innerHtml of the body
+// It might look something like this: <div class='ui-audioCurrent'>Hello world</div>
+function SetupIFrameFromHtml(
+    bodyContentHtml,
+    id = "page",
+    shouldClearFirst = true
+) {
+    if (shouldClearFirst) {
+        // Wipe out their contents first
+        CleanupIframe(id);
+    }
+    const dummyDiv = parent.window.document.body.appendChild(
+        document.createElement("div")
+    );
+    dummyDiv.insertAdjacentHTML(
+        "afterend",
+        `<iframe id='${id}'><html><body>${bodyContentHtml}</body></html></iframe>`
+    );
+    dummyDiv.remove();
+
+    // Dunno how contentWindow.document.body is supposed to get initialized, but inserting stuff into parent.window.document.body does not do it.
+    // So insert the same thing again here.
+    //
+    // (audioRecording references both page.window.document.body and parent.contentWindow.document.body so need to setup both)
+    const pageElement = <HTMLIFrameElement>(
+        parent.window.document.getElementById(id)
+    );
+    if (pageElement && pageElement.contentWindow) {
+        const dummyDiv2 = pageElement.contentWindow.document.body.appendChild(
+            document.createElement("div")
+        );
+        dummyDiv2.insertAdjacentHTML("afterend", bodyContentHtml);
+        dummyDiv2.remove();
+    }
+}
+
+function CleanupIframe(id = "page") {
+    const elem = <HTMLIFrameElement>parent.window.document.getElementById(id);
+    if (elem) {
+        if (elem.contentWindow) {
+            const elem2 = <HTMLIFrameElement>(
+                elem.contentWindow.document.getElementById(id)
+            );
+            if (elem2) {
+                elem2.remove();
+            }
+        }
+
+        elem.remove();
+    }
+}
+
+// TODO: Delete me, probably
+// // Blocking wait for a certain amount of time
+// function blockingWaitSeconds(secondsToWait: number) {
+//     let counter = 0;
+//     const start = new Date().getTime();
+//     let end = 0;
+//     const millisecondsToWait = secondsToWait * 1000;
+//     while (counter < millisecondsToWait) {
+//         end = new Date().getTime();
+//         counter = end - start;
+//     }
+// }
