@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Api;
@@ -13,7 +14,6 @@ using SIL.IO;
 using SIL.Media.AlsaAudio;
 #endif
 using SIL.Media.Naudio;
-using SIL.Progress;
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
 
@@ -72,6 +72,8 @@ namespace Bloom.Edit
 		// of the one most recently created and uses it in the AudioDevicesJson method, which the server can therefore
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
+		private bool _beganHandleEndRecord;
+		private bool _finishedRecordStopped;
 
 		public AudioRecording(BookSelection bookSelection, BloomWebSocketServer bloomWebSocketServer)
 		{
@@ -94,6 +96,7 @@ namespace Bloom.Edit
 			apiHandler.RegisterEndpointHandler("audio/currentRecordingDevice", HandleCurrentRecordingDevice, true);
 			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, true);
 			apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
+			apiHandler.RegisterEndpointHandler("audio/wavFile", HandleAudioFileRequest, false);
 
 			Debug.Assert(BloomServer.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
 		}
@@ -188,6 +191,9 @@ namespace Bloom.Edit
 				request.Failed("Got endRecording, but was not recording");
 				return;
 			}
+
+			_finishedRecordStopped = false;
+			_beganHandleEndRecord = true;
 			Exception exceptionCaught = null;
 			try
 			{
@@ -205,14 +211,17 @@ namespace Bloom.Edit
 				exceptionCaught = ex;
 				Recorder.Stopped -= Recorder_Stopped;
 				Debug.WriteLine("Error stopping recording: " + ex.Message);
+				_beganHandleEndRecord = false;
 			}
 			if (TestForTooShortAndSendFailIfSo(request))
 			{
+				_beganHandleEndRecord = false;
 				return;
 			}
 			else if (exceptionCaught != null)
 			{
 				ResetRecorderOnError();
+				_beganHandleEndRecord = false;
 				request.Failed("Stopping the recording caught an exception: " + exceptionCaught.Message);
 			}
 			else
@@ -265,6 +274,7 @@ namespace Bloom.Edit
 			_mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment);
 			// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format
 			// is required for ePUB. The wav file is a better permanent record of the recording.
+			_finishedRecordStopped = true;
 		}
 
 		private bool TestForTooShortAndSendFailIfSo(ApiRequest request)
@@ -487,12 +497,64 @@ namespace Bloom.Edit
 			}
 		}
 
+		/// <summary>
+		/// Returns the content of the requested file (or the corresponding .mp3, if asking for
+		/// a .wav, but that is not found.
+		/// </summary>
+		/// <param name="request"></param>
+		private void HandleAudioFileRequest(ApiRequest request)
+		{
+			// I (gjm) believe, after experimentation, that HandleEndRecord() and Recorder_Stopped() both run
+			// on the same thread, but the actual audio file save method runs on a different thread
+			// which then triggers Recorder_Stopped(). I tried an AutomaticResetEvent and it just hung,
+			// because the 2 methods I care about were on the same thread. I ended up using 2 booleans in the class
+			// as you will see below: _beganHandleEndRecord and _finishedRecordStopped.
+			const string Api_Prefix = "bloom/";
+			while (true)
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					var id = request.RequiredParam("id");
+					var bloomIndex = id.IndexOf(Api_Prefix);
+					var idWithParam = id.Substring(bloomIndex + Api_Prefix.Length);
+					var url = UrlPathString.CreateFromUnencodedString(idWithParam);
+					var pathUrl = url.PathOnly; // strip off any "?nocache" param
+					var segmentId = Path.GetFileNameWithoutExtension(pathUrl.NotEncoded);
+					var recordablePath = GetPathToRecordableAudioForSegment(segmentId);
+					if (recordablePath == PathToRecordableAudioForCurrentSegment && _beganHandleEndRecord && !_finishedRecordStopped)
+					{
+						Thread.Sleep(100); // not done saving the audio recording yet
+						continue;
+					}
+					_beganHandleEndRecord = _finishedRecordStopped = false;
+
+					// return the audio file contents, try .mp3 first, then .wav
+					var mp3File = GetPathToPublishableAudioForSegment(segmentId);
+					if (RobustFile.Exists(mp3File))
+					{
+						request.ReplyWithAudioFileContents(mp3File);
+						return;
+					}
+
+					if (RobustFile.Exists(recordablePath))
+					{
+						request.ReplyWithAudioFileContents(recordablePath);
+						return;
+					}
+
+					request.Failed("Somehow we don't have the audio file.");
+				}
+				else
+					request.Failed("Only Get is currently supported");
+
+				break;
+			}
+		}
 
 		/// <summary>
 		/// Delete a recording segment, as requested by the Clear button in the talking book tool.
 		/// The corresponding mp3 should also be deleted.
 		/// </summary>
-		/// <param name="fileUrl"></param>
 		private void HandleDeleteSegment(ApiRequest request)
 		{
 			var segmentId = request.RequiredParam("id");
