@@ -115,7 +115,8 @@ export default class AudioRecording {
             .click(e => this.clearRecording());
 
         $("#player").off();
-        $("#player").attr("preload", "auto"); // speeds playback, ensures we get the durationchange event
+        // The following speeds playback, ensures we get the durationchange event.
+        $("#player").attr("preload", "auto");
         $("#player").bind("error", e => {
             if (this.playingAll) {
                 // during a "listen", we walk through each segment, but some (or all) may not have audio
@@ -368,10 +369,10 @@ export default class AudioRecording {
     }
 
     private urlPrefix(): string {
-        var bookSrc = this.getPageFrame().src;
-        var index = bookSrc.lastIndexOf("/");
-        var bookFolderUrl = bookSrc.substring(0, index + 1);
-        return bookFolderUrl + "audio/";
+        const bookSrc = this.getPageFrame().src;
+        const index = bookSrc.lastIndexOf("/");
+        const bookFolderUrl = bookSrc.substring(0, index + 1);
+        return "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/";
     }
 
     private moveToPrevAudioElement(): void {
