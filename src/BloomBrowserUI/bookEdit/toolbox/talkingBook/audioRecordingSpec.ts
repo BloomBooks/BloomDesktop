@@ -1,4 +1,4 @@
-import AudioRecording from "./audioRecording";
+import AudioRecording, { AudioRecordingMode } from "./audioRecording";
 
 describe("audio recording tests", function() {
     it("inserts sentence spans with ids and class when none exist", function() {
@@ -264,7 +264,7 @@ describe("audio recording tests", function() {
             "</div>";
         var div = $(originalHtml);
         var recording = new AudioRecording();
-        recording.audioRecordingMode = "TextBox";
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
         recording.makeAudioSentenceElements(div);
 
         expect(div.text()).toBe(
@@ -290,14 +290,11 @@ describe("audio recording tests", function() {
 
         expect($(divs[0]).is(".audio-sentence")).toBe(true, "textbox's class");
         expect($(divs[0]).attr("id")).not.toBe(undefined, "textbox's id");
-        expect($(divs[0]).attr("id").length).toBeGreaterThanOrEqual(
-            32,
+        expect($(divs[0]).attr("id").length).toBeGreaterThan(
+            31,
             "textbox's id"
         ); // GUID without hyphens is 32 chars longs
-        expect($(divs[0]).attr("id").length).toBeLessThanOrEqual(
-            37,
-            "textbox's id"
-        ); // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
+        expect($(divs[0]).attr("id").length).toBeLessThan(38, "textbox's id"); // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
 
         expect($(divs[1]).is(".audio-sentence")).toBe(
             false,
@@ -331,7 +328,7 @@ describe("audio recording tests", function() {
             "Parent HTML"
         );
 
-        recording.audioRecordingMode = "Sentence";
+        recording.audioRecordingMode = AudioRecordingMode.Sentence;
         recording.makeAudioSentenceElements(div);
         expect(div.text).toBe($(originalHtml).text, "Swap back test");
         // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
@@ -350,7 +347,7 @@ describe("audio recording tests", function() {
             "</div>";
         var div = $(originalHtml);
         var recording = new AudioRecording();
-        recording.audioRecordingMode = "TextBox";
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
         recording.makeAudioSentenceElements(div);
 
         expect(div.text()).toBe("Hello world", "div text");
@@ -372,14 +369,8 @@ describe("audio recording tests", function() {
         expect(divs.length).toBe(2, "number of divs");
 
         expect($(divs[0]).is(".audio-sentence")).toBe(true, "textbox's class");
-        expect(divs[0].id.length).toBeGreaterThanOrEqual(
-            32,
-            "textbox's id length"
-        );
-        expect(divs[0].id.length).toBeLessThanOrEqual(
-            37,
-            "textbox's id length"
-        );
+        expect(divs[0].id.length).toBeGreaterThan(31, "textbox's id length");
+        expect(divs[0].id.length).toBeLessThan(38, "textbox's id length");
 
         expect($(divs[1]).is(".audio-sentence")).toBe(
             false,
@@ -406,7 +397,7 @@ describe("audio recording tests", function() {
             "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)"
         );
 
-        recording.audioRecordingMode = "Sentence";
+        recording.audioRecordingMode = AudioRecordingMode.Sentence;
         recording.makeAudioSentenceElements(div);
         expect(div.text).toBe($(originalHtml).text, "Swap back test");
         // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
@@ -425,7 +416,7 @@ describe("audio recording tests", function() {
             "</div>";
         var div = $(originalHtml);
         var recording = new AudioRecording();
-        recording.audioRecordingMode = "TextBox";
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
         recording.makeAudioSentenceElements(div);
 
         expect(div.text()).toBe("Hello world", "div text");
@@ -445,10 +436,7 @@ describe("audio recording tests", function() {
 
         expect($(divs[0]).is(".audio-sentence")).toBe(true, "textbox's class");
         expect($(divs[0]).attr("id")).not.toBe(undefined), "textbox's id";
-        expect(divs[0].id.length).toBeGreaterThanOrEqual(
-            32,
-            "textbox's id length"
-        );
+        expect(divs[0].id.length).toBeGreaterThan(31, "textbox's id length");
         // Enhance: It would be great if it preserve the original one
         //expect(divs[0].id).toBe("ef142986-373a-4353-808f-a05d9478c0ed", "textbox's id");
 
@@ -470,7 +458,7 @@ describe("audio recording tests", function() {
             "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)"
         );
 
-        recording.audioRecordingMode = "Sentence";
+        recording.audioRecordingMode = AudioRecordingMode.Sentence;
         recording.makeAudioSentenceElements(div);
         expect(div.text).toBe($(originalHtml).text, "Swap back test");
         // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
@@ -481,7 +469,7 @@ describe("audio recording tests", function() {
             '<div id="ba497822-afe7-4e16-90e8-91a795242720" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on cke_editable cke_editable_inline cke_contents_ltr normal-style audio-sentence" data-languagetipcontent="English" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" data-audiorecordingmode="TextBox" lang="en" contenteditable="true"><p>hi<br></p><div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div></div>';
         let div = $(originalHtml);
         let recording = new AudioRecording();
-        recording.audioRecordingMode = "Sentence";
+        recording.audioRecordingMode = AudioRecordingMode.Sentence;
         recording.makeAudioSentenceElements(div);
 
         let parent = $("<div>")
@@ -516,7 +504,7 @@ describe("audio recording tests", function() {
         let div = $(originalHtml);
 
         let recording = new AudioRecording();
-        recording.audioRecordingMode = "TextBox";
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
         recording.makeAudioSentenceElements(div);
 
         let parent = $("<div>")
@@ -529,10 +517,9 @@ describe("audio recording tests", function() {
         var divs = parent.find("div");
         expect(divs.length).toBe(2, "number of divs");
         expect($(divs[0]).is(".audio-sentence")).toBe(true, "textbox's class");
-        expect($(divs[0]).attr("id").length).toBeGreaterThanOrEqual(32),
+        expect($(divs[0]).attr("id").length).toBeGreaterThan(31),
             "textbox's id"; // GUID without hyphens is 32 chars longs
-        expect($(divs[0]).attr("id").length).toBeLessThanOrEqual(37),
-            "textbox's id"; // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
+        expect($(divs[0]).attr("id").length).toBeLessThan(38), "textbox's id"; // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
         expect($(divs[1]).attr("id")).toBe("formatButton"), "formatButton's id";
 
         var paragraphs = parent.find("p");
@@ -568,7 +555,7 @@ describe("audio recording tests", function() {
             "Parent HTML"
         );
 
-        recording.audioRecordingMode = "Sentence";
+        recording.audioRecordingMode = AudioRecordingMode.Sentence;
         recording.makeAudioSentenceElements(div);
         parent = $("<div>")
             .append(div)
@@ -594,7 +581,7 @@ describe("audio recording tests", function() {
         let div = $(originalHtml);
 
         let recording = new AudioRecording();
-        recording.audioRecordingMode = "Sentence";
+        recording.audioRecordingMode = AudioRecordingMode.Sentence;
         recording.makeAudioSentenceElements(div);
 
         // TODO: Ideally we would be able to call updateaudioRecordingMode() or UpdateMarkupAndCurrentText() instead of makeAudioSentenceElements().
@@ -611,10 +598,7 @@ describe("audio recording tests", function() {
         var spans = div.find("span");
         expect(spans.length).toBe(4, "number of spans");
         spans.each((index, span) => {
-            expect(span.id.length).toBeGreaterThanOrEqual(
-                32,
-                "span " + index + " id"
-            );
+            expect(span.id.length).toBeGreaterThan(31, "span " + index + " id");
             expect($(span).hasClass("audio-sentence")).toBe(
                 true,
                 "span " + index + " class"
@@ -663,8 +647,8 @@ describe("audio recording tests", function() {
 
         // Test that you can switch back and recover more-or-less the original
         recording = new AudioRecording();
-        recording.audioRecordingMode = "TextBox";
-        recording.makeAudioSentenceElements(div, true);
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
+        recording.makeAudioSentenceElements(div);
         parent = $("<div>")
             .append(div)
             .clone();
@@ -689,7 +673,7 @@ describe("audio recording tests", function() {
         let div = $(originalHtml);
 
         let recording = new AudioRecording();
-        recording.audioRecordingMode = "TextBox";
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
         recording.makeAudioSentenceElements(div);
 
         let parent = $("<div>")
@@ -709,7 +693,7 @@ describe("audio recording tests", function() {
             '<div class="bloom-editable">' + textBoxInnerHtml + "</div>";
         var div = $(originalHtml);
         var recording = new AudioRecording();
-        recording.audioRecordingMode = "TextBox";
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
         recording.makeAudioSentenceElements(div);
 
         expect(div.text()).toBe(
@@ -747,7 +731,7 @@ describe("audio recording tests", function() {
             "</div>";
         var div = $(originalHtml);
         var recording = new AudioRecording();
-        recording.audioRecordingMode = "TextBox";
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
         recording.makeAudioSentenceElements(div);
 
         let parent = $("<div>")

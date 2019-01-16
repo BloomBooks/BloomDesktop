@@ -74,7 +74,7 @@ export default class AudioRecording {
     private playingAll: boolean; // true during listen.
     private idOfCurrentSentence: string;
     private awaitingNewRecording: boolean;
-    private audioRecordingMode: AudioRecordingMode;
+    public audioRecordingMode: AudioRecordingMode;
     private recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
     private isShowing: boolean;
 
