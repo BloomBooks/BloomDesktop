@@ -10,7 +10,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 // This loads some JS right here that is a polyfill for the (otherwise discontinued) scoped-styles html feature
 import "style-scoped/scoped"; // maybe use .min.js after debugging?
-import "./bloom-player.css";
+import "./bloom-player.less";
 import Narration from "./narration";
 
 // BloomPlayer takes the URL of a folder containing a Bloom book. The file name
