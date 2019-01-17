@@ -19,6 +19,7 @@ Package: bloom-desktop-alpha
 Architecture: any
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  mono4-sil, libgdiplus4-sil, gtk-sharp4-sil, gtklp,
+ libgtk3.0-cil, libglib3.0-cil,
  chmsee, libtidy-sil,
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
