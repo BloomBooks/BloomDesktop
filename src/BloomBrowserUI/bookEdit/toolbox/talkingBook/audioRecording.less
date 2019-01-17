@@ -249,6 +249,12 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         transition: all 300ms;
     }
 
+    .autoSegmentEnabled #audio-autoSegment {
+        height: auto;
+        line-height: 1em; // The text size is independent of the button height, so need to set this. line-height better than font-size because font-size affects width too.
+        transition: all 300ms;
+    }
+
     #audio-autoSegment {
         background-color: transparent;
 
@@ -258,7 +264,16 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         margin-right: 6px;
 
         // TODO: The height of this button does not grow during the animation. Maybe see if you can make it happen later. I think it's easier said than done, so leave this till to the end.
+        height: 0px;
+        line-height: 0em;
+        transition: height 300ms, line-height 300ms;
     }
+
+    .autoSegmentEnabled #audio-autoSegmentSettings {
+        height: 15px;
+        transition: height 300ms;
+    }
+
     #audio-autoSegmentSettings {
         background-color: @toolboxBackgroundColor;
         background-image: url("../../img/cogWhite.svg");
@@ -268,9 +283,12 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         padding: 0px;
 
         width: 15px;
-        height: 15px;
         vertical-align: top;
         margin-top: 14px;
+
+        // Grows via transition
+        height: 0px;
+        transition: height 300ms;
     }
 
     .autoSegmentStatus {
