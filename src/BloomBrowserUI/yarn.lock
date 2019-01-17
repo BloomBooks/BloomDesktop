@@ -2460,10 +2460,10 @@ css-animation@^1.3.2:
     babel-runtime "6.x"
     component-classes "^1.2.5"
 
-css-element-queries@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/css-element-queries/-/css-element-queries-1.0.5.tgz#4f032f017693a2d410872db46a4caa932c62c71a"
-  integrity sha512-CtSZISHGWI7DT0ee+f1XJs0qvYn72XptLCrUx6RNvghpBEzjeBdAK6sQ2byiukosr6aNwQvoF9y7LXGbWB5DLQ==
+css-element-queries@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/css-element-queries/-/css-element-queries-0.3.2.tgz#535d80891b3af21395d005f19905fe5154b5ccff"
+  integrity sha1-U12AiRs68hOV0AXxmQX+UVS1zP8=
 
 css-loader@^1.0.1:
   version "1.0.1"
