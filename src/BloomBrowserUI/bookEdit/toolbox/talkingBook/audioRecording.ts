@@ -1,4 +1,4 @@
-﻿// This class supports creating audio recordings for talking books.
+// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -273,13 +273,30 @@ export default class AudioRecording {
             "audioSegmentation/checkAutoSegmentDependencies",
             result => {
                 if (result.data.startsWith("FALSE")) {
-                    const errorMessage: string = result.data.substring(
+                    const missingDependency: string = result.data.substring(
                         "FALSE ".length
                     );
-                    $(kAutoSegmentButtonIdSelector)
-                        .off()
-                        .click(e => toastr.info(errorMessage));
-                    $(kAutoSegmentButtonIdSelector).attr("title", errorMessage); // Sets the hover
+
+                    theOneLocalizationManager
+                        .asyncGetText(
+                            "Common.MissingDependency",
+                            "Missing Dependency: {0} not found.",
+                            ""
+                        )
+                        .done(localizedText => {
+                            const errorMessage: string = theOneLocalizationManager.simpleDotNetFormat(
+                                localizedText,
+                                [missingDependency]
+                            );
+
+                            $(kAutoSegmentButtonIdSelector)
+                                .off()
+                                .click(e => toastr.error(errorMessage));
+                            $(kAutoSegmentButtonIdSelector).attr(
+                                "title",
+                                errorMessage
+                            ); // Sets the hover
+                        });
                 } else {
                     $(kAutoSegmentButtonIdSelector)
                         .off()
@@ -1682,6 +1699,7 @@ export default class AudioRecording {
             toastr.warning(
                 "Please record audio first before running Auto Segment"
             );
+
             return;
         }
         const currentDivId = this.getCurrentElement().id;
@@ -1689,8 +1707,6 @@ export default class AudioRecording {
         const fragmentIdTuples = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
         if (fragmentIdTuples.length > 0) {
-            // TODO: Cleanup
-            //const statusElement: JQuery = $(".autoSegmentStatus");
             const statusElements = document.getElementsByClassName(
                 kAutoSegmentStatusClass
             );
@@ -1709,11 +1725,13 @@ export default class AudioRecording {
 
             const inputParameters = {
                 audioFilenameBase: currentDivId,
-                fragmentIdTuples: fragmentIdTuples,
+                audioTextFragments: fragmentIdTuples,
                 lang: this.getAutoSegmentLanguageCode()
             };
 
             this.disableInteraction();
+            // TODO: The autosegment button should be disabled / have a more accurate error message.
+            // (Right now it reports that there is no audio because the Play ("Check") button is disabled, which does succeed in averting disaster I guess...)
 
             BloomApi.postJson(
                 "audioSegmentation/autoSegmentAudio",
@@ -1732,7 +1750,7 @@ export default class AudioRecording {
     }
 
     // Finds the current text box, gets its text, split into sentences, then return each sentence with a UUID.
-    public extractFragmentsAndSetSpanIdsForAudioSegmentation(): string[][] {
+    public extractFragmentsAndSetSpanIdsForAudioSegmentation(): AudioTextFragment[] {
         const currentText = this.getCurrentText();
 
         const textFragments: TextFragment[] = this.stringToSentences(
@@ -1742,17 +1760,19 @@ export default class AudioRecording {
         // Note: We will just create all new IDs for this. Which I think is reasonable.
         // If splitting the audio file, reusing audio recorded from by-sentence mode is probably less smooth.
 
-        const fragmentIdTuples: string[][] = [];
+        const fragmentObjects: AudioTextFragment[] = [];
         for (let i = 0; i < textFragments.length; ++i) {
             const fragment = textFragments[i];
             if (this.isRecordable(fragment)) {
                 const newId = this.createValidXhtmlUniqueId();
-                fragmentIdTuples.push([fragment.text, newId]);
+                fragmentObjects.push(
+                    new AudioTextFragment(fragment.text, newId)
+                );
                 this.sentenceToIdMap[fragment.text] = newId; // This is saved so MakeSentenceAudioElementsLeaf can recover it
             }
         }
 
-        return fragmentIdTuples;
+        return fragmentObjects;
     }
 
     // I add a cached version so that it is more verifiable that two calls with the same inputs will definitely return the same outputs.
@@ -1798,7 +1818,7 @@ export default class AudioRecording {
         statusElement: HTMLElement,
         doneCallback = () => {}
     ): void {
-        const isSuccess = result && result.data.startsWith("TRUE");
+        const isSuccess = result && result.data == true;
 
         if (isSuccess) {
             // Now that we know the Auto Segmentation succeeded, finally convert into by-sentence mode.
@@ -1807,11 +1827,12 @@ export default class AudioRecording {
             const forceOverwrite: boolean = true;
             this.updateRecordingMode(forceOverwrite); // Needs to call changeStateAndSetExpected() at some point.
 
-            // Maybe we should clear out this.sentenceToIdMap() at this point? How long do we want to keep it around?
+            // Now that we're all done with use sentenceToIdMap, clear it out so that there's no potential for accidental re-use
+            this.sentenceToIdMap = {};
         } else {
             this.changeStateAndSetExpected("record");
 
-            // TODO: possibly change the color?
+            // TODO: change to red. And change back to yellow
             theOneLocalizationManager
                 .asyncGetText(
                     "EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError",
@@ -1824,8 +1845,20 @@ export default class AudioRecording {
                     doneCallback();
                 });
 
-            toastr.error("AutoSegment did not succeed: " + result.data);
+            // TODO: Localize
+            // If there is a more detailed error from C#, it should be reported via ErrorReport.ReportNonFatal[...]
+            toastr.error("AutoSegment did not succeed.");
         }
+    }
+}
+
+export class AudioTextFragment {
+    public fragmentText: string;
+    public id: string;
+
+    public constructor(fragmentText: string, id: string) {
+        this.fragmentText = fragmentText;
+        this.id = id;
     }
 }
 

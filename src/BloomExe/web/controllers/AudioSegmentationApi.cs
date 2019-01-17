@@ -8,15 +8,31 @@ using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Book;
 using Newtonsoft.Json;
+using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
+	internal class AutoSegmentRequest
+	{
+		public string audioFilenameBase;
+		public AudioTextFragment[] audioTextFragments;
+		public string lang;
+	}
+
+	internal class AudioTextFragment
+	{
+		public string fragmentText;
+		public string id;
+	}
+
+
 	// API Handler to process audio segmentation (forced alignment)
 	public class AudioSegmentationApi
 	{
 		public const string kApiUrlPart = "audioSegmentation/";
 		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%";	// TODO: Linux compatability
 		private const string kTimingsOutputFormat = "tsv";
+		private const float maxAudioHeadDurationSec = 0;	// maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
 
 		BookSelection _bookSelection;
 		public AudioSegmentationApi(BookSelection bookSelection)
@@ -62,26 +78,24 @@ namespace Bloom.web.controllers
 
 		public bool AreAutoSegmentDependenciesMet(out string message)
 		{
-			string formatStringDependencyMissing = L10NSharp.LocalizationManager.GetString("Common.ItemNotFound", "{0} not found.");
-
 			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Maybe use "locate" command on Linux?
 			{
-				message = String.Format(formatStringDependencyMissing, "Python");
+				message = "Python";
 				return false;
 			}
 			else if (DoesCommandCauseError("WHERE espeak", kWorkingDirectory))
 			{
-				message = String.Format(formatStringDependencyMissing, "espeak");
+				message = "espeak";
 				return false;
 			}
 			else if (DoesCommandCauseError("WHERE ffmpeg", kWorkingDirectory))
 			{
-				message = String.Format(formatStringDependencyMissing, "FFMPEG");
+				message = "FFMPEG";
 				return false;
 			}
 			else if (DoesCommandCauseError("python -m aeneas.tools.execute_task", kWorkingDirectory, 2))    // Expected to list usage. Error Code 0 = Success, 1 = Error, 2 = Help shown.
 			{
-				message = String.Format(formatStringDependencyMissing, "Aeneas for Python"); 
+				message = "Aeneas for Python"; 
 				return false;
 			}
 
@@ -142,27 +156,43 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		// e.g. {"audioFilenameBase":"i7e1bb1ee-515e-4105-9873-9ba882b09713","audioTextFragments":[{"fragmentText":"Sentence 1.","id":"i0012e528-97d6-4d82-a862-c7c2d07c8c40"},{"fragmentText":"Sentence 2.","id":"b0bfe4a7-470c-4442-aaba-9a248e0a476d"},{"fragmentText":"Sentence 3.","id":"dfd20683-aea3-47af-8686-7714c0b354c5"}],"lang":"en"}
+		internal static AutoSegmentRequest ParseJson(string json)
+		{
+			var request = JsonConvert.DeserializeObject<AutoSegmentRequest>(json);
+			return request;
+		}
+
+		/// <summary>
+		/// API Handler when the Auto Segment button is clicked
+		///
+		/// Replies with true if AutoSegment completed successfully, or false if there was an error. In addition, a NonFatal message/exception may be reported with the error
+		/// </summary>
+		/// <param name="request"></param>
 		public void AutoSegment(ApiRequest request)
 		{
 			// Parse the JSON containing the text segmentation data.
-			var dynamicParsedObj = DynamicJson.Parse(request.RequiredPostJson());
-			string filenameBase = dynamicParsedObj.audioFilenameBase;
+			string json = request.RequiredPostJson();
+			AutoSegmentRequest requestParameters = ParseJson(json);
 			string directoryName = _bookSelection.CurrentSelection.FolderPath + "\\audio";
 			 
-			string inputAudioFilename = GetFileNameToSegment(directoryName, filenameBase);
+			string inputAudioFilename = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
 			if (String.IsNullOrEmpty(inputAudioFilename))
 			{
-				request.ReplyWithText("No audio file found. Please record audio first.");
+				ErrorReport.ReportNonFatalMessageWithStackTrace("No audio file found. Please record audio first.");
+				request.ReplyWithBoolean(false);
 				return;
 			}
 
-			IEnumerable<IList<string>> fragmentIdTuples = (string[][])(dynamicParsedObj.fragmentIdTuples);
-			string requestedLangCode = dynamicParsedObj.lang;
+			IEnumerable<AudioTextFragment> audioTextFragments = (AudioTextFragment[])(requestParameters.audioTextFragments);
+			string requestedLangCode = requestParameters.lang;
 
 			string message;
 			if (!AreAutoSegmentDependenciesMet(out message))
 			{
-				request.ReplyWithText($"Missing dependency: {message}");
+				string localizedFormatString = L10NSharp.LocalizationManager.GetString("Common.MissingDependency", "Missing Dependency: {0} not found.");
+				ErrorReport.ReportNonFatalMessageWithStackTrace(String.Format(localizedFormatString, message));
+				request.ReplyWithBoolean(false);
 				return;
 			}
 
@@ -183,16 +213,17 @@ namespace Bloom.web.controllers
 			if (String.IsNullOrEmpty(langCode))
 			{
 				// FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
-				request.ReplyWithText($"eSpeak error: {stdOut}\n{stdErr}");
+				ErrorReport.ReportNonFatalMessageWithStackTrace($"eSpeak error: {stdOut}\n{stdErr}");
+				request.ReplyWithBoolean(false);
 				return;
 			}
 
-			string textFragmentsFilename =  $"{directoryName}/{filenameBase}_fragments.txt";
-			string audioTimingsFilename = $"{directoryName}/{filenameBase}_timings.{kTimingsOutputFormat}";
+			string textFragmentsFilename =  $"{directoryName}/{requestParameters.audioFilenameBase}_fragments.txt";
+			string audioTimingsFilename = $"{directoryName}/{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}";
 
-			fragmentIdTuples = fragmentIdTuples.Where(subarray => !String.IsNullOrWhiteSpace(subarray[0]));	// Remove entries containing only whitespace
-			var fragmentList = fragmentIdTuples.Select(subarray => subarray[0]);
-			var idList = fragmentIdTuples.Select(subarray => subarray[1]).ToList();
+			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText));	// Remove entries containing only whitespace
+			var fragmentList = audioTextFragments.Select(obj => obj.fragmentText);
+			var idList = audioTextFragments.Select(obj => obj.id).ToList();
 
 			try
 			{
@@ -204,10 +235,12 @@ namespace Bloom.web.controllers
 			}
 			catch (Exception e)
 			{
-				request.ReplyWithText("AutoSegment failed: " + e.Message + "\n" + e.StackTrace);
+				ErrorReport.ReportNonFatalExceptionWithMessage(e, $"AutoSegment failed: {e.Message}");
+				request.ReplyWithBoolean(false);
+				return;
 			}
 
-			request.ReplyWithText("TRUE"); // Success
+			request.ReplyWithBoolean(true); // Success
 		}
 
 		/// <summary>
@@ -247,8 +280,10 @@ namespace Bloom.web.controllers
 			// This is good because by default, it would align it such that the subsequent audio started as close as possible to the beginning of it. Since there is a subtle pause when switching between two audio files, this left very little margin for error.
 			string boundaryAdjustmentParams = "|task_adjust_boundary_algorithm=percent|task_adjust_boundary_percent_value=50";
 
-			// This identifies a "head" region of 0-12 seconds of silence/non-intelligible, which will prevent it from being included in the first sentence's audio. (FYI, the hidden format will suppress it from the output timings file).
-			string audioHeadParams = "|os_task_file_head_tail_format=hidden|is_audio_file_detect_head_min=0.00|is_audio_file_detect_head_max=12.00";
+			// This identifies a "head" region of between 0 seconds or up to the max-specified duration (e.g. 5 seconds or 12 seconds) of silence/non-intelligible.
+			// This would prevent it from being included in the first sentence's audio. (FYI, the hidden format will suppress it from the output timings file).
+			// Specify 0 to turn this off.
+			string audioHeadParams = $"|os_task_file_head_tail_format=hidden|is_audio_file_detect_head_min=0.00|is_audio_file_detect_head_max={maxAudioHeadDurationSec}";
 			string commandString = $"{changeDirectoryCommand} python -m aeneas.tools.execute_task \"{inputAudioFilename}\" \"{inputTextFragmentsFilename}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputTimingsFilename}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
 
 			var processStartInfo = new ProcessStartInfo()
@@ -289,7 +324,7 @@ namespace Bloom.web.controllers
 		/// Parses the contents of a timing file and returns the start and end timing fields as a list of tuples.
 		/// </summary>
 		/// <param name="segmentationResults">The contents (line-by-line) of a .tsv timing file. Example: "1.000\t4.980\tf000001"</param>
-		private List<Tuple<string, string>> ParseTimingFileTSV(IEnumerable<string> segmentationResults)
+		public static List<Tuple<string, string>> ParseTimingFileTSV(IEnumerable<string> segmentationResults)
 		{
 			var timings = new List<Tuple<string, string>>();
 
@@ -324,7 +359,7 @@ namespace Bloom.web.controllers
 		/// Parses the contents of a timing file and returns the start and end timing fields as a list of tuples.
 		/// </summary>
 		/// <param name="segmentationResults">The contents (line-by-line) of a .srt timing file</param>
-		private List<Tuple<string, string>> ParseTimingFileSRT(IList<string> segmentationResults)
+		public static List<Tuple<string, string>> ParseTimingFileSRT(IList<string> segmentationResults)
 		{
 			var timings = new List<Tuple<string, string>>();
 
@@ -403,7 +438,7 @@ namespace Bloom.web.controllers
 		/// <param name="timingEndString"></param>
 		/// <param name="outputSplitFilename"></param>
 		/// <returns></returns>
-		public Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
+		private Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
 		{
 			string commandString = $"cd {kWorkingDirectory} && ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
 			var startInfo = new ProcessStartInfo(fileName: "CMD", arguments: $"/C {commandString}");	// TODO: Linux compatability

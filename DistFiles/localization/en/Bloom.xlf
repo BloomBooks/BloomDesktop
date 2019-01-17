@@ -821,9 +821,9 @@
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
       </trans-unit>
-      <trans-unit id="Common.ItemNotFound">
-        <source xml:lang="en">{0} not found.</source>
-        <note>ID: Common.ItemNotFound</note>
+      <trans-unit id="Common.MissingDependency">
+        <source xml:lang="en">Missing Dependency: {0} not found.</source>
+        <note>ID: Common.MissingDependency</note>
         <note>The {0} will be replaced by the name of an item which was not found</note>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">

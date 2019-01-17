@@ -1,4 +1,7 @@
-import AudioRecording, { AudioRecordingMode } from "./audioRecording";
+import AudioRecording, {
+    AudioRecordingMode,
+    AudioTextFragment
+} from "./audioRecording";
 import { AxiosResponse } from "axios";
 
 describe("audio recording tests", () => {
@@ -782,32 +785,16 @@ describe("audio recording tests", () => {
         );
 
         const recording = new AudioRecording();
-        const returnedFragmentIds = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        const returnedFragmentIds: AudioTextFragment[] = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
         expect(returnedFragmentIds.length).toBe(2);
         for (let i = 0; i < returnedFragmentIds.length; ++i) {
-            expect(returnedFragmentIds[i][0]).toBe(`Sentence ${i + 1}.`);
+            expect(returnedFragmentIds[i].fragmentText).toBe(
+                `Sentence ${i + 1}.`
+            );
+            expect(returnedFragmentIds[i].id).toBeTruthy();
         }
     });
-
-    // it("processAutoSegmentResponse works", () => {
-    //     SetupIFrameFromHtml("<div class='ui-audioCurrent' lang='es'>Sentence 1. Sentence 2.</div>");
-    //     const statusElement = document.createElement("div");
-    //     statusElement.classList.add("autoSegmentStatus");
-    //     document.body.appendChild(statusElement);
-
-    //     const recordingModeInputElement = document.createElement("input");
-    //     recordingModeInputElement.type = "checkbox";
-    //     recordingModeInputElement.id = "audio-recordingModeControl";
-    //     document.body.appendChild(recordingModeInputElement);
-
-    //     const recording = new AudioRecording();
-    //     const result = {};
-    //     result["data"] = "TRUE";
-    //     recording.processAutoSegmentResponse(<AxiosResponse>result, statusElement);
-
-    //     expect(statusElement.innerText).toBe("Done");
-    // });
 });
 
 describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {
@@ -879,6 +866,7 @@ function SetupIFrameFromHtml(
         // Wipe out their contents first
         CleanupIframe(id);
     }
+
     const dummyDiv = parent.window.document.body.appendChild(
         document.createElement("div")
     );
@@ -919,16 +907,3 @@ function CleanupIframe(id = "page") {
         elem.remove();
     }
 }
-
-// TODO: Delete me, probably
-// // Blocking wait for a certain amount of time
-// function blockingWaitSeconds(secondsToWait: number) {
-//     let counter = 0;
-//     const start = new Date().getTime();
-//     let end = 0;
-//     const millisecondsToWait = secondsToWait * 1000;
-//     while (counter < millisecondsToWait) {
-//         end = new Date().getTime();
-//         counter = end - start;
-//     }
-// }
