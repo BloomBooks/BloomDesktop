@@ -762,7 +762,7 @@ describe("audio recording tests", () => {
         SetupIFrameFromHtml("<div class='ui-audioCurrent'>Hello world</div>");
 
         const recording = new AudioRecording();
-        expect(recording.getCurrent().length).toBe(1);
+        expect(recording.getCurrentElement()).toBeTruthy();
         const returnedText = recording.getCurrentText();
 
         expect(returnedText).toBe("Hello world");
@@ -810,7 +810,7 @@ describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {
         );
         const statusElement = document.createElement("div");
         statusElement.classList.add("autoSegmentStatus");
-        statusElement.id = "status2";
+        statusElement.id = "status";
         document.body.appendChild(statusElement);
 
         const recordingModeInputElement = document.createElement("input");
@@ -820,7 +820,7 @@ describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {
 
         const recording = new AudioRecording();
         const result = {};
-        result["data"] = "FALSE blah blah error message";
+        result["data"] = false;
         recording.processAutoSegmentResponse(
             <AxiosResponse>result,
             statusElement,
@@ -829,7 +829,7 @@ describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {
     });
 
     it("processAutoSegmentResponse async failure indicates failure message", () => {
-        const statusElement: HTMLElement = $("#status2").get(0);
+        const statusElement: HTMLElement = document.getElementById("status")!;
         expect(statusElement.innerText).toBe("Segmenting... Error");
     });
 });

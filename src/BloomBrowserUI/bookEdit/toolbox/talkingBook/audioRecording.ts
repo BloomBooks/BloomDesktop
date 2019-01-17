@@ -841,15 +841,20 @@ export default class AudioRecording {
         return $(page.contentWindow.document.body);
     }
 
-    public getCurrent(): JQuery {
-        const page = this.getPageDocBody();
-        return page.find(".ui-audioCurrent");
-    }
+    public getCurrentElement(): HTMLElement | null {
+        let page = this.getPageDocBody();
 
-    private getCurrentElement(): HTMLElement {
-        const currentJQuery = this.getCurrent();
-        // TODO: Try to set current if it's missing.
-        return currentJQuery.get(0);
+        if (page.length <= 0) {
+            // The first one is probably the right one when this case is triggered, but even if not, it's better than nothing.
+            this.setCurrentAudioElementToFirstAudioElement();
+            page = this.getPageDocBody();
+        }
+
+        const current = page.find(".ui-audioCurrent");
+        if (current && current.length > 0) {
+            return current.get(0);
+        }
+        return null;
     }
 
     public getCurrentText(): string {
@@ -1695,14 +1700,21 @@ export default class AudioRecording {
             playButtonElement &&
             playButtonElement.classList.contains("disabled")
         ) {
-            // TODO: Do toast strings need to be localized?
+            // TODO: Localize after UI finalized
             toastr.warning(
                 "Please record audio first before running Auto Segment"
             );
 
             return;
         }
-        const currentDivId = this.getCurrentElement().id;
+
+        const currentDiv = this.getCurrentElement();
+        if (!currentDiv) {
+            // At this point, not going to be able to get the ID of the div so we can't figure out how to get the filename...
+            // So just give up.
+            toastr.error("AutoSegment did not succeed.");
+            return;
+        }
 
         const fragmentIdTuples = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
@@ -1724,14 +1736,20 @@ export default class AudioRecording {
                 });
 
             const inputParameters = {
-                audioFilenameBase: currentDivId,
+                audioFilenameBase: currentDiv.id,
                 audioTextFragments: fragmentIdTuples,
                 lang: this.getAutoSegmentLanguageCode()
             };
 
             this.disableInteraction();
-            // TODO: The autosegment button should be disabled / have a more accurate error message.
-            // (Right now it reports that there is no audio because the Play ("Check") button is disabled, which does succeed in averting disaster I guess...)
+
+            // Prevent the user from spam-clicking this button while work is in progress and getting in trouble or getting misleading notifications.
+            const autoSegmentButton: HTMLButtonElement | null = <
+                HTMLButtonElement | null
+            >document.getElementById(kAutoSegmentButtonId);
+            if (autoSegmentButton) {
+                autoSegmentButton.disabled = true;
+            }
 
             BloomApi.postJson(
                 "audioSegmentation/autoSegmentAudio",
@@ -1787,14 +1805,20 @@ export default class AudioRecording {
     }
 
     public getAutoSegmentLanguageCode(): string {
-        const langCodeFromAutoSegmentSettings = ""; // TODO: IMPLEMENT ME
+        const langCodeFromAutoSegmentSettings = ""; // TODO: IMPLEMENT ME after we convert to having the recording mode setting only apply to the current text box. It'll make this set of settings easier to figure out.
         let langCode = langCodeFromAutoSegmentSettings;
         if (!langCode) {
-            const currentDiv = this.getCurrent();
-            langCode = currentDiv.attr("lang");
+            const currentDiv = this.getCurrentElement();
+            if (currentDiv) {
+                const langAttributeValue = currentDiv.getAttribute("lang");
+                if (langAttributeValue) {
+                    langCode = langAttributeValue;
+                }
+            }
         }
 
-        // Remove the suffix for strings like "es-BRAI"  (Spanish - Brazil)
+        // Remove the suffix for strings like "es-BRAI"  (Spanish - Brazil) or "zh-CN"
+        // (This language code will be passed into eSpeak eventually, so it should be ones that eSpeak can work with)
         const countryCodeSeparatorIndex = langCode.indexOf("-");
         if (countryCodeSeparatorIndex >= 0) {
             langCode = langCode.substr(0, countryCodeSeparatorIndex);
@@ -1818,6 +1842,13 @@ export default class AudioRecording {
         statusElement: HTMLElement,
         doneCallback = () => {}
     ): void {
+        const autoSegmentButton: HTMLButtonElement | null = <
+            HTMLButtonElement | null
+        >document.getElementById(kAutoSegmentButtonId);
+        if (autoSegmentButton) {
+            autoSegmentButton.disabled = false;
+        }
+
         const isSuccess = result && result.data == true;
 
         if (isSuccess) {
