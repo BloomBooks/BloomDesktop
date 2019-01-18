@@ -16,7 +16,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='grn-reach-logos.png'/>",
+            "content": "<img class='branding' src='grn-reach-logos.png'/>",
             "condition": "always"
         }
     ]

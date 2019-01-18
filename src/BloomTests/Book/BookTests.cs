@@ -2512,6 +2512,25 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(hashTimingsXpath, 1);
 		}
 
+		[Test]
+		public void SelectAudioSentenceElements_SentenceWithNoId_SkipsIt()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var audioSpans = HtmlDom.SelectAudioSentenceElements(dom.Body);
+			Assert.That(audioSpans, Has.Count.EqualTo(1));
+			Assert.That(audioSpans[0].InnerText, Is.EqualTo("Page 1 Paragraph 2 Sentence 1"));
+		}
+
 
 #if UserControlledTemplate
 		[Test]

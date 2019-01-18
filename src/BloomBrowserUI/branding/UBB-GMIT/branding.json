@@ -3,13 +3,13 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='ubb-gmit.png'/>",
+            "content": "<img class='branding' src='ubb-gmit.png'/>",
             "condition": "always"
         },
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='back-cover-outside.svg'/>",
+            "content": "<img class='branding' src='back-cover-outside.svg'/>",
             "condition": "always"
         }
     ]
