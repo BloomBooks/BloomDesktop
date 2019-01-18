@@ -228,6 +228,7 @@
     <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="Book\AccessibilityCheckersTests.cs" />
+    <Compile Include="web\controllers\AudioSegmentationApiTests.cs" />
     <Compile Include="web\controllers\ImageApiTests.cs" />
     <Compile Include="web\controllers\PageTemplatesApiTests.cs" />
     <Compile Include="web\controllers\CollectionSettingsApiTests.cs" />
