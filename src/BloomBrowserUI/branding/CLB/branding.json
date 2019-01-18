@@ -3,7 +3,8 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='clb.png' alt='Logo of CLB'/><img class='branding' src='BloomWithTaglineAgainstLight.svg' alt='Logo of Bloom'/>",
+            "content":
+                "<img class='branding' src='clb.png' alt='Logo of CLB'/><img class='branding' src='BloomWithTaglineAgainstLight.svg' alt='Logo of Bloom'/>",
             "condition": "always"
         }
     ]

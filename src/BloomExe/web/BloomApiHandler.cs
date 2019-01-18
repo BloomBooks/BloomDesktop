@@ -150,13 +150,21 @@ namespace Bloom.Api
 							syncOn = I18NLock;
 						lock (syncOn)
 						{
-							return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
+							ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
+							// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
+							// is no further need for the caller to continue trying to process the request as a filename.
+							// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
+							return true;
 						}
 					}
 					else
 					{
 						// Up to api's that request no sync to do things right!
-						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
+						ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
+						// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
+						// is no further need for the caller to continue trying to process the request as a filename.
+						// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
+						return true;
 					}
 				}
 			}

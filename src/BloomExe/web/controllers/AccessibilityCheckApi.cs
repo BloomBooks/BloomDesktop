@@ -160,7 +160,7 @@ namespace Bloom.web.controllers
 		{
 			if (!UrlLookup.CheckGeneralInternetAvailability(true))
 			{
-				_webSocketProgress.ErrorWithoutLocalizing("Sorry, you must have an internet connection in order to view the Ace by Daisy report.");
+				_webSocketProgress.ErrorWithoutLocalizing("Sorry, you must have an internet connection in order to view the Ace by DAISY report.");
 				request.Failed();
 				return;
 			}
@@ -191,7 +191,7 @@ namespace Bloom.web.controllers
 					var arguments = $"ace.js --verbose -o \"{reportDirectory}\" \"{epubPath}\"";
 					const int kSecondsBeforeTimeout = 60;
 					var progress = new NullProgress();
-					_webSocketProgress.MessageWithoutLocalizing("Running Ace by Daisy");
+					_webSocketProgress.MessageWithoutLocalizing("Running Ace by DAISY");
 
 					ExecutionResult res = null;
 					string ldpath = null;
@@ -256,7 +256,7 @@ namespace Bloom.web.controllers
 
 		private string FindAceByDaisyOrTellUser(ApiRequest request)
 		{
-			_webSocketProgress.MessageWithoutLocalizing("Finding Ace by Daisy on this computer...");
+			_webSocketProgress.MessageWithoutLocalizing("Finding Ace by DAISY on this computer...");
 			var whereProgram = Platform.IsWindows ? "where" : "which";
 			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
 			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
@@ -336,7 +336,7 @@ namespace Bloom.web.controllers
 			_webSocketProgress.ErrorWithoutLocalizing(error);
 			if (Platform.IsWindows)
 			{
-				_webSocketProgress.MessageWithoutLocalizing("Please follow <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >these instructions</a> to install the Ace By Daisy system on this computer.");
+				_webSocketProgress.MessageWithoutLocalizing("Please follow <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >these instructions</a> to install the Ace by DAISY system on this computer.");
 			}
 			else
 			{
@@ -345,7 +345,7 @@ namespace Bloom.web.controllers
 				if (folder.EndsWith("/output/Debug") || folder.EndsWith("/output/Release"))
 					folder = "";
 				var scriptPath = Path.Combine(folder, "DistFiles", "InstallAce.sh");
-				_webSocketProgress.MessageWithoutLocalizing("Please run the "+ scriptPath + " script to install the Ace by Daisy system on this Linux computer.  Do not use sudo to run this script: it already contains any needed sudo commands internally.");
+				_webSocketProgress.MessageWithoutLocalizing("Please run the "+ scriptPath + " script to install the Ace by DAISY system on this Linux computer.  Do not use sudo to run this script: it already contains any needed sudo commands internally.");
 			}
 			request.Failed();
 		}
