@@ -844,7 +844,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             // Play the audio during animation
             this.narrationPlayer = new AudioRecording();
             this.narrationPlayer.setupForListen();
-            this.narrationPlayer.listen();
+            this.narrationPlayer.listen(true); // listen for Motion
         }
         if (this.rootControl.state.previewMusic) {
             MusicToolControls.previewBackgroundMusic(
