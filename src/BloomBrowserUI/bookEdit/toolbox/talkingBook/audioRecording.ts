@@ -1,4 +1,4 @@
-// This class supports creating audio recordings for talking books.
+﻿// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -85,14 +85,17 @@ export default class AudioRecording {
     private listenerFunction: (MessageEvent) => void;
 
     constructor() {
-        // Initialize to Unknown (as opposed to setting to the default Sentence) so we can identify when we need to fetch from Collection Settings vs. when it's already set.
+        // Initialize to Unknown (as opposed to setting to the default Sentence) so we can identify
+        // when we need to fetch from Collection Settings vs. when it's already set.
         this.audioRecordingMode = AudioRecordingMode.Unknown;
         this.recordingModeInput = <HTMLInputElement>(
             document.getElementById(kRecordingModeControl)
         );
         if (this.recordingModeInput != null) {
             // Only expected to be null in the unit tests.
-            this.recordingModeInput.disabled = true; // Initial state should be disabled so that enableRecordingMode will recognize it needs to initialize things on startup
+            // Initial state should be disabled so that enableRecordingMode will recognize it needs
+            // to initialize things on startup.
+            this.recordingModeInput.disabled = true;
         }
     }
 
@@ -324,7 +327,7 @@ export default class AudioRecording {
             ".uibloomSourceTextsBubble"
         );
         this.hiddenSourceBubbles.hide();
-        var editable = this.getRecordableDivs();
+        const editable = this.getRecordableDivs();
         if (editable.length === 0) {
             // no editable text on this page.
             this.changeStateAndSetExpected("");
@@ -364,12 +367,15 @@ export default class AudioRecording {
     // This should NOT restrict to ones that already contain audio-sentence spans.
     // BL-5575 But we don't (at this time) want to record comprehension questions.
     // And BL-5457: Check that we actually have recordable text in the divs we return.
-    private getRecordableDivs(): JQuery {
-        var $this = this;
-        var divs = this.getPageDocBody().find(
+    private getRecordableDivs(includeCheckForText: boolean = true): JQuery {
+        const $this = this;
+        const divs = this.getPageDocBody().find(
             ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
         );
         return divs.filter(":visible").filter((idx, elt) => {
+            if (!includeCheckForText) {
+                return true;
+            }
             return this.stringToSentences(elt.innerHTML).some(frag => {
                 return $this.isRecordable(frag);
             });
@@ -833,7 +839,7 @@ export default class AudioRecording {
 
     // The body of the editable page, a root for searching for document content.
     public getPageDocBody(): JQuery {
-        var page = this.getPageFrame();
+        const page = this.getPageFrame();
         if (!page || !page.contentWindow) return $();
         return $(page.contentWindow.document.body);
     }
@@ -863,8 +869,12 @@ export default class AudioRecording {
     }
 
     public newPageReady() {
-        // FYI, it is possible for newPageReady to be called without updateMarkup() being called. (e.g. when opening the toolbox with an empty text box)
-        this.initializeForMarkup();
+        // FYI, it is possible for newPageReady to be called without updateMarkup() being called
+        // (e.g. when opening the toolbox with an empty text box).
+        // The callback (among other things) detects if we have no recordable text on the page.
+        this.initializeForMarkup(
+            () => this.updateMarkupAndControlsToCurrentText
+        );
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
@@ -1536,18 +1546,6 @@ export default class AudioRecording {
         return false;
     }
 
-    private fireCSharpEvent(eventName, eventData): void {
-        // Note: other implementations of fireCSharpEvent have 'view':'window', but the TS compiler does
-        // not like this. It seems to work fine without it, and I don't know why we had it, so I am just
-        // leaving it out.
-        var event = new MessageEvent(eventName, {
-            bubbles: true,
-            cancelable: true,
-            data: eventData
-        });
-        top.document.dispatchEvent(event);
-    }
-
     // ------------ State Machine ----------------
 
     private changeStateAndSetExpected(
@@ -1556,35 +1554,45 @@ export default class AudioRecording {
     ) {
         console.log("changeState(" + expectedVerb + ")");
 
+        // We call this method in (at least) two places with expectedVerb = "" when we have found
+        // that the current page has no recordable divs, so we want to disable the audio recording
+        // controls.
+        if (expectedVerb == "") {
+            this.disableInteraction(false);
+            return;
+        }
+
         // Note: It's best not to modify the Enabled/Disabled state more than once if possible.
-        //       It is subtle but it is possible to notice the flash of an element going from enabled -> disabled -> enabled.
-        //       (and it is extremely noticeable if this function gets called several times in quick succession)
-        // Enhance: Consider whether it'd be a good idea to disable click events on these buttons, but still leave the buttons in their previous visual state.
-        //          In theory, there can be a small delay between when we are supposed to change state (right now) and when we actually determine the correct state (after a callback)
+        //       It is subtle but it is possible to notice the flash of an element going from
+        //       enabled -> disabled -> enabled. (And it is extremely noticeable if this function gets
+        //       called several times in quick succession.)
+        // Enhance: Consider whether it'd be a good idea to disable click events on these buttons,
+        //       but still leave the buttons in their previous visual state.
+        //       In theory, there can be a small delay between when we are supposed to change state
+        //       (right now) and when we actually determine the correct state (after a callback).
 
         if (this.getPageDocBody().find(".ui-audioCurrent").length === 0) {
             // We have reached an unexpected state :(
-            // (It can potentially happen if changes applied to the markup get wiped out and overwritten e.g. by CkEditor Onload())
+            // (It can potentially happen if changes applied to the markup get wiped out and
+            // overwritten e.g. by CkEditor Onload())
             if (numRetriesRemaining > 0) {
-                // It's best not to leave everything disabled. The user will be kinda stuck without any navigation.
+                // It's best not to leave everything disabled.
+                // The user will be kinda stuck without any navigation.
                 // Attempt to set the markup to the first element
-                //  Practically speaking, it's most likely to get into this errornous state when loading which will be on the first element.
-                //  Even if the first element is "wrong"... the alternative is it points to nothing and you are stuck.
-                //  IMO pointing to the first element is less wrong than disabled the whole toolbox.
+                // Practically speaking, it's most likely to get into this erroneous state when
+                // loading which will be on the first element. Even if the first element is
+                // "wrong"... the alternative is it points to nothing and you are stuck.
+                // IMO pointing to the first element is less wrong than disabling the whole toolbox.
                 this.setCurrentAudioElementToFirstAudioElement(false);
                 this.changeStateAndSetExpected(
                     expectedVerb,
                     numRetriesRemaining - 1
                 );
+                return;
             } else {
-                // We have reached an error state and attempts to self-correct it haven't succeeded either. :(
-                this.setStatus("record", Status.Disabled);
-                this.setStatus("play", Status.Disabled);
-                this.setStatus("next", Status.Disabled);
-                this.setStatus("prev", Status.Disabled);
-                this.setStatus("clear", Status.Disabled);
-                this.setStatus("listen", Status.Disabled);
-
+                // We have reached an error state and attempts to self-correct it haven't
+                // succeeded either. :(
+                this.disableInteraction(false);
                 return;
             }
         }
@@ -1828,14 +1836,33 @@ export default class AudioRecording {
         return langCode;
     }
 
-    private disableInteraction(): void {
+    private disableInteraction(autoSegmenting: boolean = true): void {
+        // We call this method in two cases (so far):
+        // 1- When calling changeStateAndSetExpected() with expectedVerb = ""
+        // 2- While doing auto segmenting
+        // The two cases have different requirements for the recording mode checkbox control
         this.setStatus("record", Status.Disabled);
         this.setStatus("play", Status.Disabled);
         this.setStatus("next", Status.Disabled);
         this.setStatus("prev", Status.Disabled);
         this.setStatus("clear", Status.Disabled);
         this.setStatus("listen", Status.Disabled);
-        this.disableRecordingModeControl();
+        if (autoSegmenting) {
+            this.disableRecordingModeControl();
+        } else {
+            // Whether we disable the Recording Mode control depends on whether we COULD have text
+            // on this page (i.e. is there a textbox).
+            // The 'false' parameter here checks for visible text divs, but doesn't check
+            // for actual text in them.
+            if (this.getRecordableDivs(false).length > 0) {
+                // Enable the control, although we don't currently have any text on this page, because
+                // we could add text at some point.
+                this.enableRecordingModeControl();
+            } else {
+                // Disable the control and its notification, since we can't have text on this page.
+                this.disableRecordingModeControl(false);
+            }
+        }
     }
 
     public processAutoSegmentResponse(
@@ -1894,11 +1921,10 @@ export class AudioTextFragment {
     }
 }
 
-export var theOneAudioRecorder: AudioRecording;
+export let theOneAudioRecorder: AudioRecording;
 
 export function initializeTalkingBookTool() {
     if (theOneAudioRecorder) return;
     theOneAudioRecorder = new AudioRecording();
-    //reviewslog: not allowed    theOneLibSynphony = new LibSynphony();
     theOneAudioRecorder.initializeTalkingBookTool();
 }
