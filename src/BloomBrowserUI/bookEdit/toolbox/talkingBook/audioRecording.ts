@@ -481,10 +481,10 @@ export default class AudioRecording {
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     public listen(): void {
-        var original: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
-        var audioElts = this.getAudioElements();
-        if (original.length === 0 || audioElts.length === 0) return;
-        var first = audioElts.eq(0);
+        const original: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
+        const audioElts = this.getAudioElements();
+        if (audioElts.length === 0) return;
+        const first = audioElts.eq(0);
         this.setCurrentAudioElement(original, first, true);
         this.playingAll = true;
         this.setStatus("listen", Status.Active);
