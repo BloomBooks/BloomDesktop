@@ -1747,6 +1747,10 @@ export default class AudioRecording {
             const autoSegmentButton: HTMLButtonElement | null = <
                 HTMLButtonElement | null
             >document.getElementById(kAutoSegmentButtonId);
+            console.assert(
+                <any>autoSegmentButton,
+                "AutoSegmentButton is always expected but strangely could not be found"
+            );
             if (autoSegmentButton) {
                 autoSegmentButton.disabled = true;
             }

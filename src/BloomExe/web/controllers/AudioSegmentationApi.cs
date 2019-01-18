@@ -242,7 +242,22 @@ namespace Bloom.web.controllers
 				return;
 			}
 
+			try
+			{
+				File.Delete(textFragmentsFilename);
+			}
+			catch (Exception e)
+			{
+				// These exceptions are unfortunate but not bad enough that we need to inform the user
+				Debug.Assert(false, $"Attempted to delete {textFragmentsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
+			}
+
 			request.ReplyWithBoolean(true); // Success
+
+
+			// TODO: Think about our cleanup policy for the timings file
+			// While fragments is pretty useless and safe to delete sooner...
+			// The timings file seems hypothetically useful (fine-tuning? for playing a whole mp3 file?) so it's less clear when to delete it.
 		}
 
 		/// <summary>
