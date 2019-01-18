@@ -73,6 +73,7 @@ namespace Bloom.Edit
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
 		private AutoResetEvent _completingRecording;
+		private int _collectionAudioTrimEndMilliseconds;
 
 		public AudioRecording(BookSelection bookSelection, BloomWebSocketServer bloomWebSocketServer)
 		{
@@ -257,11 +258,10 @@ namespace Bloom.Edit
 		{
 			Recorder.Stopped -= Recorder_Stopped;
 			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment)); // make sure audio directory exists
-			int millisecondsToTrimFromEndForMouseClick =100;
 			try
 			{
 				var minimum = TimeSpan.FromMilliseconds(300); // this is arbitrary
-				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToRecordableAudioForCurrentSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick), minimum);
+				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToRecordableAudioForCurrentSegment, new TimeSpan(), TimeSpan.FromMilliseconds(_collectionAudioTrimEndMilliseconds), minimum);
 				RobustFile.Delete(PathToTemporaryWav);	// Otherwise, these continue to clutter up the temp directory.
 			}
 			catch (Exception error)
@@ -330,6 +330,9 @@ namespace Bloom.Edit
 				return;
 			}
 
+			// It is unfortunate that we have to do this RobustFile.Delete stuff before starting the recording.
+			// Sometimes the length of time until the recording actually starts is noticeable to the user and can
+			// cut off the initial speech of the recording.
 			if (RobustFile.Exists(PathToRecordableAudioForCurrentSegment))
 			{
 				//Try to deal with _backupPath getting locked (BL-3160)
@@ -371,7 +374,6 @@ namespace Bloom.Edit
 			_startRecording = DateTime.Now;
 			_startRecordingTimer.Start();
 			request.ReplyWithText("starting record soon");
-			return;
 		}
 
 		private string GetPathToPublishableAudioForSegment(string segmentId)
@@ -609,6 +611,8 @@ namespace Bloom.Edit
 
 		private void CreateRecorder()
 		{
+			_collectionAudioTrimEndMilliseconds =
+				_bookSelection.CurrentSelection.CollectionSettings.AudioRecordingTrimEndMilliseconds;
 			_recorder = new AudioRecorder(1);
 			_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
 			BeginMonitoring();	// could get here recursively _recorder isn't set by now!
