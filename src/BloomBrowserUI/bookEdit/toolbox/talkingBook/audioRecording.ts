@@ -115,7 +115,8 @@ export default class AudioRecording {
             .click(e => this.clearRecording());
 
         $("#player").off();
-        $("#player").attr("preload", "auto"); // speeds playback, ensures we get the durationchange event
+        // The following speeds playback, ensures we get the durationchange event.
+        $("#player").attr("preload", "auto");
         $("#player").bind("error", e => {
             if (this.playingAll) {
                 // during a "listen", we walk through each segment, but some (or all) may not have audio
@@ -368,10 +369,10 @@ export default class AudioRecording {
     }
 
     private urlPrefix(): string {
-        var bookSrc = this.getPageFrame().src;
-        var index = bookSrc.lastIndexOf("/");
-        var bookFolderUrl = bookSrc.substring(0, index + 1);
-        return bookFolderUrl + "audio/";
+        const bookSrc = this.getPageFrame().src;
+        const index = bookSrc.lastIndexOf("/");
+        const bookFolderUrl = bookSrc.substring(0, index + 1);
+        return "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/";
     }
 
     private moveToPrevAudioElement(): void {
@@ -396,7 +397,7 @@ export default class AudioRecording {
         player.attr(
             "src",
             this.currentAudioUrl(this.idOfCurrentSentence) +
-                "?nocache=" +
+                "&nocache=" +
                 new Date().getTime()
         );
     }
@@ -425,24 +426,20 @@ export default class AudioRecording {
     }
 
     private endRecordCurrent(): void {
-        if (!this.recording) return; // will trigger if the button wasn't enabled, so the recording never started
+        if (!this.recording) {
+            // will trigger if the button wasn't enabled, so the recording never started
+            return;
+        }
 
         this.recording = false;
         this.awaitingNewRecording = true;
-
-        //this.updatePlayerStatus();
 
         axios
             .post("/bloom/api/audio/endRecord")
             .then(response => {
                 this.updatePlayerStatus();
                 this.setStatus("record", Status.Disabled);
-                //at the moment, the bakcend is returning when it asks the recorder to stop.
-                //But the actual file isn't available for a few moments after that.
-                //So we delay looking for it.
-                window.setTimeout(() => {
-                    this.changeStateAndSetExpected("play");
-                }, 1000); // Enhance: Maybe it makes sense to disable any buttons that make notable changes to the state (especially the Recording Mode Control) until this returns.
+                this.changeStateAndSetExpected("play");
             })
             .catch(error => {
                 this.changeStateAndSetExpected("record"); //record failed, so we expect them to try again
