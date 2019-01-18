@@ -40,5 +40,31 @@ namespace BloomTests.web.controllers
 			Assert.That(timingRanges[0].Item1, Is.EqualTo("1.000"), "Start timing");
 			Assert.That(timingRanges[0].Item2, Is.EqualTo("4.980"), "End timing");
 		}
+
+		[Test]
+		public void ParseTimingFileTSV_MultiLineInputWithMissingStart_ParsedSuccessfully()
+		{
+			string[] inputs = new string[] { "1.000\t4.980\tf000001", "\t10.000\tf000002" };
+			var timingRanges = AudioSegmentationApi.ParseTimingFileTSV(inputs);
+
+			Assert.That(timingRanges.Count, Is.EqualTo(2));
+			Assert.That(timingRanges[0].Item1, Is.EqualTo("1.000"), "Start timing 1");
+			Assert.That(timingRanges[0].Item2, Is.EqualTo("4.980"), "End timing 1");
+			Assert.That(timingRanges[1].Item1, Is.EqualTo("4.980"), "Start timing 2");
+			Assert.That(timingRanges[1].Item2, Is.EqualTo("10.000"), "End timing 2");
+		}
+
+		[Test]
+		public void ParseTimingFileTSV_MultiLineInputWithMissingEnd_ParsedSuccessfully()
+		{
+			string[] inputs = new string[] { "1.000\t\tf000001", "4.980\t10.000\tf000002" };
+			var timingRanges = AudioSegmentationApi.ParseTimingFileTSV(inputs);
+
+			Assert.That(timingRanges.Count, Is.EqualTo(2));
+			Assert.That(timingRanges[0].Item1, Is.EqualTo("1.000"), "Start timing 1");
+			Assert.That(timingRanges[0].Item2, Is.EqualTo("4.980"), "End timing 1");
+			Assert.That(timingRanges[1].Item1, Is.EqualTo("4.980"), "Start timing 2");
+			Assert.That(timingRanges[1].Item2, Is.EqualTo("10.000"), "End timing 2");
+		}
 	}
 }

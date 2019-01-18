@@ -175,7 +175,8 @@ namespace Bloom.web.controllers
 			string json = request.RequiredPostJson();
 			AutoSegmentRequest requestParameters = ParseJson(json);
 			string directoryName = _bookSelection.CurrentSelection.FolderPath + "\\audio";
-			 
+
+			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string inputAudioFilename = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
 			if (String.IsNullOrEmpty(inputAudioFilename))
 			{
@@ -187,6 +188,7 @@ namespace Bloom.web.controllers
 			IEnumerable<AudioTextFragment> audioTextFragments = (AudioTextFragment[])(requestParameters.audioTextFragments);
 			string requestedLangCode = requestParameters.lang;
 
+			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string message;
 			if (!AreAutoSegmentDependenciesMet(out message))
 			{
@@ -350,6 +352,16 @@ namespace Bloom.web.controllers
 				// timingEnd is easily inferred as the next timingStart
 				// so don't remove records if timingEnd is missing
 				timings.Add(Tuple.Create(timingStart, timingEnd));
+			}
+
+			// Fix up any missing timingEnd values that we can trivially fix
+			for (int i = 0; i < timings.Count - 1; ++i)
+			{
+				if (String.IsNullOrWhiteSpace(timings[i].Item2))
+				{
+					var inferredTimingEnd = timings[i + 1].Item1;   // Get the new timingEnd from the next timingStart
+					timings[i] = Tuple.Create(timings[i].Item1, inferredTimingEnd);
+				}
 			}
 
 			return timings;
