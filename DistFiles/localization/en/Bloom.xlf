@@ -2757,13 +2757,18 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Android.Publish</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
+        <source xml:lang="en">About Bloom Reader</source>
+        <note>ID: PublishTab.Android.AboutBloomReader</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ThumbnailColor" sil:dynamic="true">
-        <source xml:lang="en">Thumbnail Color</source>
-        <note>ID: PublishTab.Android.ThumbnailColor</note>
+      <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true">
+        <source xml:lang="en">Thumbnail</source>
+        <note>ID: PublishTab.Android.Thumbnail</note>
+		<note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
         <source xml:lang="en">Troubleshooting Tips</source>
