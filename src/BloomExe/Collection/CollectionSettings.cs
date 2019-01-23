@@ -40,6 +40,7 @@ namespace Bloom.Collection
 		private string _language2Iso639Code;
 		private string _language3Iso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
+		private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
 
 		/// <summary>
 		/// The branding the user wanted, but not confirmed by current SubscriptionCode, if any.
@@ -103,6 +104,7 @@ namespace Bloom.Collection
 			AllowNewBooks = true;
 			CollectionName = "dummy collection";
 			AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
+			AudioRecordingTrimEndMilliseconds = kDefaultAudioRecordingTrimEndMilliseconds;
 		}
 
 		public static void CreateNewCollection(NewCollectionSettings collectionInfo)
@@ -139,6 +141,7 @@ namespace Bloom.Collection
 			}
 
 			AudioRecordingMode = collectionInfo.AudioRecordingMode;
+			AudioRecordingTrimEndMilliseconds = collectionInfo.AudioRecordingTrimEndMilliseconds;
 
 			Save();
 		}
@@ -474,6 +477,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("District", District));
 			library.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
 			library.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
+			library.Add(new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds));
 			SIL.IO.RobustIO.SaveXElement(library, SettingsFilePath);
 
 			SaveSettingsCollectionStylesCss();
@@ -611,6 +615,8 @@ namespace Bloom.Collection
 					parsedAudioRecordingMode = TalkingBookApi.AudioRecordingMode.Unknown;
 				}
 				AudioRecordingMode = parsedAudioRecordingMode;
+				AudioRecordingTrimEndMilliseconds = GetIntegerValue(library, "AudioRecordingTrimEndMilliseconds",
+					kDefaultAudioRecordingTrimEndMilliseconds);
 			}
 			catch (Exception e)
 			{
@@ -814,6 +820,10 @@ namespace Bloom.Collection
 		public bool AllowNewBooks { get; set; }
 
 		public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
+
+		private int _audioRecordingTrimEndMilliseconds = -1;
+
+		public int AudioRecordingTrimEndMilliseconds { get; set; }
 
 		public bool AllowDeleteBooks
 		{
