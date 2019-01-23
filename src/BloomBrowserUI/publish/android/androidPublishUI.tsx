@@ -19,7 +19,6 @@
 // - make a separate file for the rules that actually define the frame outline.
 // - change Narration from static methods to instance; give player an instance.
 // - improve appearance of preview buttons; try for an automatically-shrunk actual copy of the phone.
-// - Change title from Thumbnail color to just thumbnail
 import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
 import * as React from "react";
@@ -265,8 +264,8 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                 Settings
                             </H1>
                             <div className="settings-subheading">
-                                <Div l10nKey="PublishTab.Android.ThumbnailColor">
-                                    Thumbnail Color
+                                <Div l10nKey="PublishTab.Android.Thumbnail">
+                                    Thumbnail
                                 </Div>
                             </div>
                             <ColorChooser
@@ -526,6 +525,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                             </div>
                         </section>
                         <div className="shelfHelpColumn">
+                            {/*
                             <section className="publishSection right-column">
                                 <H1 l10nKey="PublishTab.Android.Bookshelf">
                                     Bloom Reader Bookshelf
@@ -534,22 +534,37 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                     Coming soon we hope...
                                 </div>
                             </section>
+                        */}
                             <section className="help-section">
                                 <H1 l10nKey="Common.Help">Help</H1>
-                                <Link
-                                    id="getBloomReaderLink"
-                                    href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
-                                    l10nKey="PublishTab.Android.GetBloomReader"
-                                    l10nComment="Link to find Bloom Reader on Google Play Store"
+                                <HelpLink
+                                    l10nKey="PublishTab.Android.AboutBloomReader"
+                                    helpId="Concepts/Bloom_Reader_App.htm"
                                 >
-                                    Get Bloom Reader App
-                                </Link>
+                                    About Bloom Reader
+                                </HelpLink>
                                 <HtmlHelpLink
                                     l10nKey="PublishTab.Android.Troubleshooting"
                                     fileid="Publish-Android-Troubleshooting"
                                 >
                                     Troubleshooting Tips
-                                </HtmlHelpLink>{" "}
+                                </HtmlHelpLink>
+                                <div className="icon-link-row get-bloom-reader">
+                                    <a href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps">
+                                        <img
+                                            className="playIcon"
+                                            src="Google_Play_symbol_2016.svg"
+                                        />
+                                    </a>
+                                    <Link
+                                        id="getBloomReaderLink"
+                                        href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
+                                        l10nKey="PublishTab.Android.GetBloomReader"
+                                        l10nComment="Link to find Bloom Reader on Google Play Store"
+                                    >
+                                        Get Bloom Reader App
+                                    </Link>
+                                </div>
                             </section>
                         </div>
                     </div>
