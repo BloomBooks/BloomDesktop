@@ -202,6 +202,10 @@ export class ToolBox {
         return axios.get("/bloom/api/toolbox/enabledTools");
     }
 
+    public static getShowExperimentalTools(): boolean {
+        return showExperimentalTools;
+    }
+
     // Called from document.ready, initializes the whole toolbox.
     public initialize(): void {
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the

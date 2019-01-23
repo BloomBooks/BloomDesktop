@@ -178,6 +178,7 @@
     <Compile Include="Collection\CollectionSettingsTests.cs" />
     <Compile Include="MiscellaneousTests.cs" />
     <Compile Include="Publish\AudioProcessorTests.cs" />
+    <Compile Include="Publish\EPubMakerTests.cs" />
     <Compile Include="Publish\ExportEpubTests.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
     <Compile Include="Book\BookTests.cs" />
@@ -227,6 +228,7 @@
     <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="Book\AccessibilityCheckersTests.cs" />
+    <Compile Include="web\controllers\AudioSegmentationApiTests.cs" />
     <Compile Include="web\controllers\ImageApiTests.cs" />
     <Compile Include="web\controllers\PageTemplatesApiTests.cs" />
     <Compile Include="web\controllers\CollectionSettingsApiTests.cs" />

@@ -9,13 +9,13 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='SILLEAD.svg'/>",
+            "content": "<img class='branding' src='SILLEAD.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='back.svg'/>",
+            "content": "<img class='branding' src='back.svg'/>",
             "condition": "always"
         }
     ]

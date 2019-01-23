@@ -101,48 +101,10 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
-    public PageAttached: boolean = false; // set by SignLanguageTools.newPageReady()/detachFromPage()
+    // set by SignLanguageTools.newPageReady()/detachFromPage()
+    public PageAttached: boolean = false;
 
     public render() {
-        let videoStats = <div id="videoStatsWrapper" />;
-        let trimSlider = <div id="trimWrapper" />;
-        // Protect against Slider.Range onChange malfunctions on Windows when changing
-        // pages.  Spurious onChange requests were happening that affected the wrong
-        // video elements.  Not creating an actual Slider.Range (with its attached
-        // onChange handler) after the old page starts to be detached and before the
-        // new page is finally ready appears to fix the problem.  This problem never
-        // appeared on Linux, and this fix should be harmless there.  For details, see
-        // https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
-        // Note that this render method is called quite frequently, even when the user
-        // is just sitting quietly staring at the wall.
-        if (this.PageAttached) {
-            if (
-                // Protects against showing slider and stats when
-                // the video info hasn't yet been loaded from the file.
-                this.state.haveRecording &&
-                this.state.videoStatistics.duration != ""
-            ) {
-                const start = parseFloat(
-                    this.state.videoStatistics.startSeconds
-                );
-                let end = parseFloat(this.state.videoStatistics.endSeconds);
-                const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
-                    this.state.videoStatistics.duration
-                );
-                if (end == UNTRIMMED_TIMING_NUM) {
-                    // if the video has not been "end-trimmed", set the end slider to the equivalent of the
-                    // untrimmed video's duration, since the end of the video in seconds is equal to its duration
-                    // in seconds.
-                    end = maxDuration;
-                }
-                const valueArray: number[] = [start, end];
-                trimSlider = this.getTrimSlider(valueArray, maxDuration);
-                videoStats = this.getVideoStats();
-            } else if (!this.state.enterprise) {
-                // Show the slider even without a video when obscured by enterprise being off.
-                trimSlider = this.getTrimSlider([0, 5], 5);
-            }
-        }
         return (
             <RequiresBloomEnterpriseWrapper>
                 <BloomEnterpriseAvailableContext.Consumer>
@@ -234,7 +196,7 @@ export class SignLanguageToolControls extends React.Component<
                                             Press any key to stop
                                         </Label>
                                     </div>
-                                    {trimSlider}
+                                    {this.getTrimSlider()}
                                 </div>
                             </div>
                             <div style={{ height: "210px" }}>
@@ -318,7 +280,7 @@ export class SignLanguageToolControls extends React.Component<
                                             Delete
                                         </Label>
                                     </div>
-                                    {videoStats}
+                                    {this.getVideoStatsDisplay()}
                                 </Expandable>
                             </div>
                             <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm" />
@@ -329,13 +291,72 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getTrimSlider(valueArray: number[], maxDuration: number) {
+    private getMaxDurationFromState(): number {
+        return this.showDefaultSlider()
+            ? 5
+            : SignLanguageTool.convertTimeStringToSecondsNumber(
+                  this.state.videoStatistics.duration
+              );
+    }
+
+    private getStartSliderFromState(): number {
+        return parseFloat(this.state.videoStatistics.startSeconds);
+    }
+
+    private getEndSliderFromState(): number {
+        let end = parseFloat(this.state.videoStatistics.endSeconds);
+        if (end == UNTRIMMED_TIMING_NUM) {
+            // if the video has not been "end-trimmed", set the end slider to the equivalent of the
+            // untrimmed video's duration, since the end of the video in seconds is equal to its duration
+            // in seconds.
+            end = this.getMaxDurationFromState();
+        }
+        return end;
+    }
+
+    private getCurrentTrimHandlePositionsFromState(): number[] {
+        return this.showDefaultSlider()
+            ? [0, 5]
+            : [this.getStartSliderFromState(), this.getEndSliderFromState()];
+    }
+
+    private doesVideoExist(): boolean {
+        // Protects against showing slider and stats when
+        // the video info hasn't yet been loaded from the file.
+        return (
+            this.state.haveRecording &&
+            this.state.videoStatistics.duration != ""
+        );
+    }
+
+    // Used to determine the case where there is no video, but we want to show
+    // the slider behind the "You don't have Enterprise" notification.
+    private showDefaultSlider(): boolean {
+        return !this.doesVideoExist() && !this.state.enterprise;
+    }
+
+    private getTrimSlider(): JSX.Element {
+        // Protect against Slider.Range onChange malfunctions on Windows when changing
+        // pages.  Spurious onChange requests were happening that affected the wrong
+        // video elements.  Not creating an actual Slider.Range (with its attached
+        // onChange handler) after the old page starts to be detached and before the
+        // new page is finally ready appears to fix the problem.  This problem never
+        // appeared on Linux, and this fix should be harmless there.  For details, see
+        // https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
+        // Note that the render method (which calls this method) is called quite frequently,
+        // even when the user is just sitting quietly staring at the wall.
+        if (
+            !this.PageAttached ||
+            (!this.doesVideoExist() && this.state.enterprise)
+        ) {
+            return <div id="trimWrapper" />;
+        }
         return (
             <div id="trimWrapper">
                 <Range
                     className="videoTrimSlider"
                     count={1}
-                    value={valueArray}
+                    value={this.getCurrentTrimHandlePositionsFromState()}
                     onChange={v => this.handleSliderRangeChange(v[0], v[1])}
                     onAfterChange={
                         // set video back to start point in case we were viewing the end point
@@ -345,7 +366,7 @@ export class SignLanguageToolControls extends React.Component<
                     min={UNTRIMMED_TIMING_NUM}
                     allowCross={false}
                     pushable={false}
-                    max={maxDuration}
+                    max={this.getMaxDurationFromState()}
                 />
                 <div id="trimLabelWrapper">
                     <Label
@@ -359,7 +380,10 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getVideoStats() {
+    private getVideoStatsDisplay(): JSX.Element {
+        if (!this.PageAttached || !this.doesVideoExist()) {
+            return <div id="videoStatsWrapper" />;
+        }
         return (
             <div id="videoStatsWrapper">
                 <Label l10nKey="Common.Info">Info</Label>
@@ -487,7 +511,7 @@ export class SignLanguageToolControls extends React.Component<
                             result.data.aspectRatio = calculateAspectRatio(
                                 x,
                                 y
-                            );
+                            ) as string;
                         }
                     }
                     this.setState({ videoStatistics: result.data });
@@ -846,27 +870,6 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         );
     }
 
-    // src may have ? followed by fake params to defeat caching.
-    // src may have # followed by timings.
-    // strip them off.
-    public static stripExtrasFromVideoFile(combined: string) {
-        if (!combined) {
-            return null;
-        }
-        // tried  return new URL(combined).pathname;, but URL is 'unavailable' according to debugger.
-        // src may have # followed by timings.
-        const hashIndex = combined.indexOf("#");
-        if (hashIndex > 0) {
-            combined = combined.substring(0, hashIndex);
-        }
-        // src may have ? followed by fake params to defeat caching.
-        const paramIndex = combined.indexOf("?");
-        if (paramIndex > 0) {
-            combined = combined.substring(0, paramIndex);
-        }
-        return combined;
-    }
-
     public detachFromPage() {
         this.reactControls.PageAttached = false;
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
@@ -983,6 +986,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         this.reactControls.PageAttached = true;
     }
 
+    // This (param) container has just been selected as the current one by either:
+    // newPageReady() or the user's click (containerClickListener).
     private updateStateForSelected(container: Element) {
         const videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
@@ -1143,6 +1148,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return val ? val : "";
     }
 
+    // Seeks the video in 'videoElement' to 'timeInSeconds'.
     public static setCurrentVideoPoint(
         timeInSeconds: number,
         videoElement?: HTMLVideoElement

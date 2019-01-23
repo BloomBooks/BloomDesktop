@@ -104,6 +104,10 @@ namespace Bloom.Publish.Epub
 			get { return _book.Storage; }
 		}
 
+		// The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
+		// remove any elements that the style rules would hide, becuase epub readers ignore visibility settings.
+		private string kSelectThingsThatCanBeHidden = ".//div | .//img";
+
 		// Keeps track of IDs that have been used in the manifest. These are generated to roughly match file
 		// names, but the algorithm could pathologically produce duplicates, so we guard against this.
 		private HashSet<string> _idsUsed = new HashSet<string>();
@@ -1059,15 +1063,75 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
+		public static bool IsBranding(XmlElement element)
+		{
+			if (element == null)
+			{
+				return false;
+			}
+
+			if (HasClass(element, "branding"))
+			{
+				return true;
+			}
+
+			// For example: <div data-book="credits-page-branding-bottom-html" lang="*"></div>
+			while (element != null)
+			{
+				string value = element.GetAttribute("data-book");
+				if (value.Contains("branding"))
+				{
+					return true;
+				}
+				else
+				{
+					XmlNode parentNode = element.ParentNode;	// Might be an XmlDocument up the chain
+					if (parentNode is XmlElement)
+					{
+						element = (XmlElement)parentNode;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+
+			return false;
+		}
 		private void HandleImageDescriptions(HtmlDom bookDom)
 		{
 			// Set img alt attributes to the description, or erase them if no description (BL-6035)
 			foreach (var img in bookDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
 			{
-				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
+				bool isLicense = HasClass(img, "licenseImage");
+				bool isBranding = IsBranding(img);
+				if (isLicense || isBranding)
 				{
-					img.SetAttribute("alt", "");   // signal no accessibility need
-					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes daisy checker happy
+					string newAltText = "";
+
+					if (isLicense)
+					{
+						newAltText = "Image representing the license of this book";
+					}
+					else if (isBranding)
+					{
+						// Check if it's using the placeholder alt text... which isn't actually meaningful and we don't want in the ePub version for accessibility.
+						string currentAltText = img.GetAttribute("alt");
+						if (!HtmlDom.IsPlaceholderImageAltText(img))
+						{
+							// It is using a custom-specified one. Go ahead and keep it.
+							newAltText = currentAltText;
+						}
+						else
+						{
+							// Placeholder or missing alt text.  Replace it with the ePub version of the placeholder alt text
+							newAltText = "Logo of the book sponsors"; // Alternatively, it's OK to also put in "" to signal no accessibility need
+						}
+					}
+
+					img.SetAttribute("alt", newAltText);
+					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes DAISY checker happy
 					continue;
 				}
 				var desc = img.SelectSingleNode("following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]") as XmlElement;
@@ -1555,7 +1619,7 @@ namespace Bloom.Publish.Epub
 						++descCount;
 						asideNode.SetAttribute("id", figDescId);
 						var ariaAttr = img.GetAttribute("aria-describedby");
-						// ACE by Daisy cannot handle multiple ID values in the aria-describedby attribute even
+						// Ace by DAISY cannot handle multiple ID values in the aria-describedby attribute even
 						// though the ARIA specification clearly allows this.  So for now, use only the first one.
 						// I'd prefer to use specifically the vernacular language aside if we have to choose only
 						// one, but the aside elements don't have a lang attribute (yet?).  Perhaps the aside
@@ -1957,7 +2021,7 @@ namespace Bloom.Publish.Epub
 			// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
 			// browser figure out what is visible. So we can easily match elements in the browser DOM
 			// with the one we are manipulating, make sure they ALL have IDs.
-			EnsureAllDivsHaveIds (pageElt);
+			EnsureAllThingsThatCanBeHiddenHaveIds (pageElt);
 			var normalDom = Book.GetHtmlDomWithJustOnePage (pageElt);
 			AddEpubVisibilityStylesheetAndClass (normalDom);
 
@@ -1966,13 +2030,15 @@ namespace Bloom.Publish.Epub
 			var toBeDeleted = new List<XmlElement> ();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-			foreach (XmlElement elt in pageElt.SafeSelectNodes (".//div")) {
+			foreach (XmlElement elt in pageElt.SafeSelectNodes (kSelectThingsThatCanBeHidden)) {
 				if (!IsDisplayed (elt))
 					toBeDeleted.Add (elt);
 			}
 			foreach (var elt in toBeDeleted) {
 				elt.ParentNode.RemoveChild (elt);
 			}
+
+
 
 			// Remove any left-over bubbles
 			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes ("//label")) {
@@ -2134,10 +2200,10 @@ namespace Bloom.Publish.Epub
 		}
 
 		internal const string kTempIdMarker = "EpubTempIdXXYY";
-		private void EnsureAllDivsHaveIds (XmlElement pageElt)
+		private void EnsureAllThingsThatCanBeHiddenHaveIds (XmlElement pageElt)
 		{
 			int count = 1;
-			foreach (XmlElement elt in pageElt.SafeSelectNodes (".//div")) {
+			foreach (XmlElement elt in pageElt.SafeSelectNodes (kSelectThingsThatCanBeHidden)) {
 				if (elt.Attributes ["id"] != null)
 					continue;
 				elt.SetAttribute ("id", kTempIdMarker + count++);

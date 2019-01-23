@@ -131,6 +131,12 @@ namespace BloomTests.Book
 							<img class='licenseImage' src='license.png' data-derived='licenseImage' alt='License image'></img>
 						</div>
 					</div>
+					<div data-book='title-page-branding-bottom-html'>
+						<div class='marginBox'>
+							<img src='imageWithCustomAlt.svg' type='image/svg' alt='Custom Alt'></img>
+							<img src='title-page.svg' type='image/svg' alt='This picture, title-page.svg,  is missing or was loading too slowly'></img>
+						</div>
+					</div>
 					<div class='bloom-page numberedPage customPage A5Portrait'>
 						<div class='marginBox'>
 							<img src='junk' alt = 'more junk'></img>
@@ -150,7 +156,13 @@ namespace BloomTests.Book
 			foreach (XmlElement img in images)
 			{
 				Assert.That(img.Attributes["alt"], Is.Not.Null);
-				Assert.That(img.Attributes["alt"].Value, Is.EqualTo(""));
+
+				string expectedAltText = "";
+				if (img.Attributes["src"].Value == "imageWithCustomAlt.svg")
+				{
+					expectedAltText = "Custom Alt";
+				}
+				Assert.That(img.Attributes["alt"].Value, Is.EqualTo(expectedAltText));
 			}
 		}
 
@@ -2498,6 +2510,25 @@ namespace BloomTests.Book
 			// This can happen if the user set timings on a video at some point and then went back and
 			// moved the sliders back to their maximum settings.
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(hashTimingsXpath, 1);
+		}
+
+		[Test]
+		public void SelectAudioSentenceElements_SentenceWithNoId_SkipsIt()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var audioSpans = HtmlDom.SelectAudioSentenceElements(dom.Body);
+			Assert.That(audioSpans, Has.Count.EqualTo(1));
+			Assert.That(audioSpans[0].InnerText, Is.EqualTo("Page 1 Paragraph 2 Sentence 1"));
 		}
 
 

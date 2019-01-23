@@ -3,13 +3,13 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='silpng.svg'/>",
+            "content": "<img class='branding' src='silpng.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='back-cover-outside.svg'/>",
+            "content": "<img class='branding' src='back-cover-outside.svg'/>",
             "condition": "always"
         }
     ]

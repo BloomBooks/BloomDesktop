@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text.RegularExpressions;
 using Bloom.Collection;
 using NUnit.Framework;
 using SIL.IO;

@@ -350,9 +350,9 @@ function UpdateOverlay(container, img) {
 function SetAlternateTextOnImages(element) {
     if (GetRawImageUrl(element).length > 0) {
         //don't show this on the empty license image when we don't know the license yet
-        var englishText =
-            "This picture, {0}, is missing or was loading too slowly.";
-        var nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
+        const englishText =
+            "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
+        const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Image.AltMsg",

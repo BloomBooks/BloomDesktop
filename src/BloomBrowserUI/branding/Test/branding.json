@@ -3,32 +3,32 @@
         {
             "data-book": "credits-page-branding-top-html",
             "lang": "*",
-            "content": "<img src='butterfly.png'/><div class='standout'>This should show at the top of the credits page underneath a butterfly.</div>",
+            "content": "<img class='branding' src='butterfly.png'/><div class='standout'>This should show at the top of the credits page underneath a butterfly.</div>",
             "condition": "always"
         },
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "*",
-            "content": "<div  class='standout'>This should show at the bottom of the credits page. The image below should be a caterpillar in a5landscape, but butterfly in a5portrait, switched by styles in branding.css</div><img class='portrait' src='butterfly.png'/><img class='landscape' src='caterpillar.png'/>",
+            "content": "<div  class='standout'>This should show at the bottom of the credits page. The image below should be a caterpillar in a5landscape, but butterfly in a5portrait, switched by styles in branding.css</div><img class='portrait branding' src='butterfly.png'/><img class='landscape branding' src='caterpillar.png'/>",
             "condition": "always"
         },
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='butterfly.png'/><div class='standout'>This should show at the bottom of the title page, underneath a butterfly. This is a hyperlink but it should not be underlined: <a href='https://bloomlibrary.org'>https://bloomlibrary.org</a></div>",
+            "content": "<img class='branding' src='butterfly.png'/><div class='standout'>This should show at the bottom of the title page, underneath a butterfly. This is a hyperlink but it should not be underlined: <a href='https://bloomlibrary.org'>https://bloomlibrary.org</a></div>",
             "condition": "always"
         },
 
         {
             "data-book": "outside-back-cover-branding-top-html",
             "lang": "*",
-            "content": "<img src='butterfly.png'/><div class='standout'>This text should show at the top of the outer back cover, underneath a butterfly.</div>",
+            "content": "<img class='branding' src='butterfly.png'/><div class='standout'>This text should show at the top of the outer back cover, underneath a butterfly.</div>",
             "condition": "always"
         },
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<div class='standout'>This should show at the bottom of the outside back cover page, above some soccer balls...<img src='WideSoccerBalls.png'/>.. and then the Bloom logo:<img src='Bloom Against Light HD.png'/></div>",
+            "content": "<div class='standout'>This should show at the bottom of the outside back cover page, above some soccer balls...<img class='branding' src='WideSoccerBalls.png'/>.. and then the Bloom logo:<img class='branding' src='Bloom Against Light HD.png'/></div>",
             "condition": "always"
         }
     ]
