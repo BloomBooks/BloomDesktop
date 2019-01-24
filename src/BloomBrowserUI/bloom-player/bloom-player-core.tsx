@@ -51,9 +51,14 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
 
     private sourceUrl: string;
 
+    private narration: Narration;
+
     // We expect it to show some kind of loading indicator on initial render, then
     // we do this work. For now, won't get a loading indicator if you change the url prop.
     public componentDidUpdate() {
+        if (!this.narration) {
+            this.narration = new Narration();
+        }
         let newSourceUrl = this.props.url;
         // Folder urls often (but not always) end in /. If so, remove it, so we don't get
         // an empty filename or double-slashes in derived URLs.
@@ -64,7 +69,7 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
         }
         if (newSourceUrl != this.sourceUrl && newSourceUrl) {
             this.sourceUrl = newSourceUrl;
-            Narration.urlPrefix = this.sourceUrl;
+            this.narration.urlPrefix = this.sourceUrl;
             const index = this.sourceUrl.lastIndexOf("/");
             const filename = this.sourceUrl.substring(index + 1);
             // TODO: right now, this takes a url to the folder. Change to a url to the file.
@@ -118,9 +123,9 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
             });
         }
         if (this.props.paused) {
-            Narration.pause();
+            this.narration.pause();
         } else {
-            Narration.play();
+            this.narration.play();
         }
     }
 
@@ -323,7 +328,7 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
         if (!bloomPage) {
             return; // blank initial or final page?
         }
-        Narration.computeDuration(bloomPage);
-        Narration.playAllSentences(bloomPage);
+        this.narration.computeDuration(bloomPage);
+        this.narration.playAllSentences(bloomPage);
     }
 }

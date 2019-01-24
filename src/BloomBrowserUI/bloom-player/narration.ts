@@ -9,24 +9,24 @@ import LiteEvent from "./event";
 // notify the container if we are paused forcibly by Chrome refusing to
 // let us play until the user interacts with the page.
 export default class Narration {
-    private static playerPage: HTMLElement;
-    private static idOfCurrentSentence: string;
-    private static playingAll: boolean;
-    private static paused: boolean = false;
-    public static urlPrefix: string;
+    private playerPage: HTMLElement;
+    private idOfCurrentSentence: string;
+    private playingAll: boolean;
+    private paused: boolean = false;
+    public urlPrefix: string;
     // The time we started to play the current page (set in computeDuration, adjusted for pauses)
-    private static startPlay: Date;
-    private static startPause: Date;
-    private static fakeNarrationAborted: boolean = false;
-    private static segmentIndex: number;
+    private startPlay: Date;
+    private startPause: Date;
+    private fakeNarrationAborted: boolean = false;
+    private segmentIndex: number;
 
-    private static segments: HTMLElement[];
+    private segments: HTMLElement[];
 
-    public static PageNarrationComplete: LiteEvent<HTMLElement>;
-    public static PageDurationAvailable: LiteEvent<HTMLElement>;
-    public static PageDuration: number;
+    public PageNarrationComplete: LiteEvent<HTMLElement>;
+    public PageDurationAvailable: LiteEvent<HTMLElement>;
+    public PageDuration: number;
 
-    public static playAllSentences(page: HTMLElement): void {
+    public playAllSentences(page: HTMLElement): void {
         this.playerPage = page;
         const audioElts = this.getPageAudioElements();
         const original: Element | null = page.querySelector(".ui-audioCurrent");
@@ -47,7 +47,7 @@ export default class Narration {
         }
     }
 
-    private static playCurrentInternal() {
+    private playCurrentInternal() {
         if (!this.paused && this.getPlayer()) {
             var promise = <any>this.getPlayer().play();
             // In newer browsers, play() returns a promise which fails
@@ -68,14 +68,14 @@ export default class Narration {
         }
     }
 
-    private static removeAudioCurrent() {
+    private removeAudioCurrent() {
         const elts = document.getElementsByClassName("ui-audioCurrent");
         for (let i = 0; i < elts.length; i++) {
             elts[i].classList.remove("ui-audioCurrent");
         }
     }
 
-    private static setCurrentSpan(
+    private setCurrentSpan(
         current: Element | null,
         changeTo: HTMLElement | null
     ): void {
@@ -88,7 +88,7 @@ export default class Narration {
         //this.changeStateAndSetExpected("record");
     }
 
-    private static updatePlayerStatus() {
+    private updatePlayerStatus() {
         const player = this.getPlayer();
         if (!player) {
             return;
@@ -101,11 +101,11 @@ export default class Narration {
         );
     }
 
-    private static currentAudioUrl(id: string): string {
+    private currentAudioUrl(id: string): string {
         return this.urlPrefix + "/audio/" + id + ".mp3";
     }
 
-    private static getPlayer(): HTMLMediaElement {
+    private getPlayer(): HTMLMediaElement {
         return this.getAudio("bloom-audio-player", audio => {
             // if we just pass the function, it has the wrong "this"
             audio.addEventListener("ended", () => this.playEnded());
@@ -113,7 +113,7 @@ export default class Narration {
         });
     }
 
-    public static playEnded(): void {
+    public playEnded(): void {
         if (this.playingAll) {
             const current: Element | null = this.playerPage.querySelector(
                 ".ui-audioCurrent"
@@ -142,10 +142,7 @@ export default class Narration {
         //this.changeStateAndSetExpected("next");
     }
 
-    private static getAudio(
-        id: string,
-        init: (audio: HTMLAudioElement) => void
-    ) {
+    private getAudio(id: string, init: (audio: HTMLAudioElement) => void) {
         let player: HTMLAudioElement | null = document.querySelector(
             "#" + id
         ) as HTMLAudioElement;
@@ -162,7 +159,7 @@ export default class Narration {
         return <HTMLMediaElement>player;
     }
 
-    public static canPlayAudio(current: Element): boolean {
+    public canPlayAudio(current: Element): boolean {
         return true; // currently no way to check
     }
 
@@ -170,7 +167,7 @@ export default class Narration {
     // Querying can optionally be restricted to {container}’s descendants
     // If includeSelf is true, it includes both itself as well as its descendants.
     // Otherwise, it only includes descendants.
-    private static findAll(
+    private findAll(
         expr: string,
         container: HTMLElement,
         includeSelf: boolean = false
@@ -188,19 +185,19 @@ export default class Narration {
         return allMatches;
     }
 
-    private static getRecordableDivs(container: HTMLElement) {
+    private getRecordableDivs(container: HTMLElement) {
         return this.findAll("div.bloom-editable.bloom-content1", container);
     }
 
     // Optional param is for use when 'playerPage' has NOT been initialized.
     // Not using the optional param assumes 'playerPage' has been initialized
-    private static getPageRecordableDivs(page?: HTMLElement): HTMLElement[] {
+    private getPageRecordableDivs(page?: HTMLElement): HTMLElement[] {
         return this.getRecordableDivs(page ? page : this.playerPage);
     }
 
     // Optional param is for use when 'playerPage' has NOT been initialized.
     // Not using the optional param assumes 'playerPage' has been initialized
-    private static getPageAudioElements(page?: HTMLElement): HTMLElement[] {
+    private getPageAudioElements(page?: HTMLElement): HTMLElement[] {
         return [].concat.apply(
             [],
             this.getPageRecordableDivs(page).map(x =>
@@ -209,14 +206,14 @@ export default class Narration {
         );
     }
 
-    public static play() {
+    public play() {
         if (!this.paused) {
             return; // no change.
         }
         // I'm not sure how getPlayer() can return null/undefined, but have seen it happen
         // typically when doing something odd like trying to go back from the first page.
-        if (this.segments.length && Narration.getPlayer()) {
-            Narration.getPlayer().play();
+        if (this.segments.length && this.getPlayer()) {
+            this.getPlayer().play();
         }
         this.paused = false;
         // adjust startPlay by the elapsed pause. This will cause fakePageNarrationTimedOut to
@@ -236,18 +233,18 @@ export default class Narration {
         }
     }
 
-    public static pause() {
+    public pause() {
         if (this.paused) {
             return;
         }
-        if (this.segments.length && Narration.getPlayer()) {
-            Narration.getPlayer().pause();
+        if (this.segments.length && this.getPlayer()) {
+            this.getPlayer().pause();
         }
         this.paused = true;
         this.startPause = new Date();
     }
 
-    public static computeDuration(page: HTMLElement): void {
+    public computeDuration(page: HTMLElement): void {
         this.playerPage = page;
         this.segments = this.getPageAudioElements();
         this.PageDuration = 0.0;
@@ -279,7 +276,7 @@ export default class Narration {
         //this.getDurationPlayer().setAttribute("src", this.currentAudioUrl(this.segments[0].getAttribute("id")));
     }
 
-    private static getNextSegment() {
+    private getNextSegment() {
         this.segmentIndex++;
         if (this.segmentIndex < this.segments.length) {
             const attrDuration = this.segments[this.segmentIndex].getAttribute(
@@ -307,7 +304,7 @@ export default class Narration {
         }
     }
 
-    private static fakePageNarrationTimedOut(page: HTMLElement) {
+    private fakePageNarrationTimedOut(page: HTMLElement) {
         if (this.paused) {
             this.fakeNarrationAborted = true;
             return;
