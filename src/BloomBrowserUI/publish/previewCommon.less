@@ -1,0 +1,141 @@
+// Styles used for the various components of the preview panel
+@import "android/androidFrame.less"; // brings bloomUI.less with it
+
+@LightGrey: @bloom-gray;
+
+@preview-button-size: 10mm;
+@preview-button-phone-height: 8mm;
+@preview-button-phone-width: @preview-button-phone-height / 2;
+@preview-button-border-width: 0.5mm;
+@preview-button-extra-top-border: 0.3mm;
+@preview-button-small-pad: (@preview-button-size - @preview-button-phone-height) /
+    2;
+@preview-button-large-pad: (@preview-button-size - @preview-button-phone-width) /
+    2;
+
+// This is the normal appearance of the slick next and previous buttons,
+// but we need to make the rule
+// more specific to beat another rule in this control.
+html.publishTabScreen button {
+    &.slick-next,
+    &.slick-prev {
+        background-color: transparent;
+    }
+}
+
+// a square space in which the device can switch orientations without
+// disturbing the rest of the page.
+.device-square {
+    height: @small-device-size;
+    width: @small-device-size;
+}
+.preview-row {
+    margin-bottom: 1em;
+    display: flex;
+}
+
+.icon-link-row {
+    display: flex;
+    flex-direction: row;
+}
+
+// First two conditions added for specificity
+html.publishTabScreen .preview-section {
+    // these buttons are positioned relative to the slider, our preview.
+    // Usually the buttons are outside the slider, just touching it; but this
+    // takes them outside our phone. This puts them just inside it.
+    // Review: or do we want zero, so they would appear entirely on the
+    // simulated phone screen?
+    .slick-next {
+        right: -@preview-margin;
+    }
+    .slick-prev {
+        left: -@preview-margin;
+        // Not quite sure why this is needed on the left button and not the right;
+        // possibly the scroller has it before the actual page where the right button
+        // is after it, and by default this puts it behind. Anyway, this allows all
+        // of it to be seen, even when partly over the preview.
+        z-index: 1;
+    }
+    .orientation-button {
+        // These two suppress the dotted rectangle Gecko draws on focused buttons.
+        // Bloom is not (yet) trying to be accessible, and they look very odd with the
+        // images we're using.
+        // Note: Can probably remove in Gecko60; current FF is smart enough not to
+        // show these after clicking, only after tabbing.
+        &:focus {
+            outline: none;
+        }
+        &::-moz-focus-inner {
+            border: 0;
+        }
+
+        height: @preview-button-size;
+        width: @preview-button-size;
+        border: 1px solid transparent;
+        background-color: transparent;
+        &.active {
+            border: 1px solid lightblue;
+            border-radius: 2px;
+        }
+        &:after {
+            border: @preview-button-border-width solid @preview-border;
+        }
+        &.landscape-button:after {
+            padding-top: @preview-button-phone-width -
+                @preview-button-border-width * 2;
+            padding-left: @preview-button-phone-height -
+                @preview-button-border-width * 2 -
+                @preview-button-extra-top-border - 1;
+            border-left-width: @preview-button-border-width +
+                @preview-button-extra-top-border;
+            left: @preview-button-small-pad;
+            top: @preview-button-large-pad;
+        }
+        &.portrait-button:after {
+            padding-left: @preview-button-phone-width -
+                @preview-button-border-width * 2;
+            padding-top: @preview-button-phone-height -
+                @preview-button-border-width * 2 -
+                @preview-button-extra-top-border - 1;
+            border-top-width: @preview-button-border-width +
+                @preview-button-extra-top-border;
+            top: @preview-button-small-pad;
+            left: @preview-button-large-pad;
+        }
+    }
+}
+
+.image-text-row {
+    display: flex;
+}
+.inline-text-icon {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.preview-refresh {
+    margin-left: @preview-button-large-pad;
+    padding-bottom: 5px;
+    .landscape & {
+        padding-bottom: @small-preview-margin + 2px;
+    }
+}
+.preview-orientation-row {
+    padding-top: 80px;
+}
+
+.preview-button-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.preview-button-row {
+    display: flex;
+}
+
+.orientation-button:after {
+    content: "";
+    position: absolute;
+}
