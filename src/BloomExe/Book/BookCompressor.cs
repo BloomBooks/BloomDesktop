@@ -17,6 +17,7 @@ using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using System.Collections.Generic;
+using Bloom.Publish.Android;
 using Bloom.web.controllers;
 
 namespace Bloom.Book
@@ -32,22 +33,7 @@ namespace Bloom.Book
 		// these files (if encountered) won't be included in the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder" };
 
-		public static void CompressBookForDevice(string outputPath, Book book, BookServer bookServer, Color backColor, IWebSocketProgress progress)
-		{
-			using(var temp = new TemporaryFolder())
-			{
-				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp, backColor, progress);
-				// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
-				// 64dp in Bloom Reader.
-
-				MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
-
-				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
-					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
-			}
-		}
-
-		private static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
+		internal static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
 		{
 			var coverImagePath = book.GetCoverImagePath();
 			if(coverImagePath != null)
@@ -56,38 +42,6 @@ namespace Bloom.Book
 				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, backColor);
 			}
 			// else, BR shows a default thumbnail for the book
-		}
-
-		/// <summary>
-		/// tempFolderPath is where to put the book. Note that a few files (e.g., customCollectionStyles.css)
-		/// are copied into its parent in order to be in the expected location relative to the book,
-		/// so that needs to be a folder we can write in.
-		/// </summary>
-		/// <param name="book"></param>
-		/// <param name="bookServer"></param>
-		/// <param name="tempFolderPath"></param>
-		/// <returns></returns>
-		public static Book MakeDeviceXmatterTempBook(Book book, BookServer bookServer, string tempFolderPath)
-		{
-			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
-			// We will later copy these into the book's own folder and adjust the style sheet refs.
-			// But in some cases (at least, where the book's primary stylesheet does not provide
-			// the information SizeAndOrientation.GetLayoutChoices() is looking for), we need them
-			// to exist in the originally expected lcoation: the book's parent directory for
-			// BringBookUpToDate to succeed.
-			BookStorage.CopyCollectionStyles(book.FolderPath, Path.GetDirectoryName(tempFolderPath));
-			var bookInfo = new BookInfo(tempFolderPath, true);
-			bookInfo.XMatterNameOverride = "Device";
-			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-			modifiedBook.BringBookUpToDate(new NullProgress(), true);
-			modifiedBook.AdjustCollectionStylesToBookFolder();
-			modifiedBook.RemoveNonPublishablePages();
-			modifiedBook.Save();
-			modifiedBook.Storage.UpdateSupportFiles();
-			// Copy the possibly modified stylesheets after UpdateSupportFiles so that they don't
-			// get replaced by the factory versions.
-			BookStorage.CopyCollectionStyles(book.FolderPath, tempFolderPath);
-			return modifiedBook;
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
@@ -216,7 +170,7 @@ namespace Bloom.Book
 					modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent);
 					newEntry.Size = modifiedContent.Length;
 				}
-				// CompressBookForDevice is always called with reduceImages set.
+				// CreateBloomReaderBook is always called with reduceImages set.
 				else if (reduceImages && bookFile == filePath)
 				{
 					SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(dom.DocumentElement).Cast<XmlElement>(), directoryToCompress);
@@ -232,8 +186,6 @@ namespace Bloom.Book
 						MakeExtraEntry(zipStream, name, sha);
 						LastVersionCode = sha;
 					}
-					MakeExtraEntry(zipStream, "readerStyles.css",
-						File.ReadAllText(FileLocationUtilities.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"))));
 				}
 				else
 				{

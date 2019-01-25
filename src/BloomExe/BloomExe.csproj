@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -305,7 +305,7 @@
     <Compile Include="BloomWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Book\BloomReaderFileMaker.cs" />
+    <Compile Include="Publish\Android\BloomReaderFileMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
     <Compile Include="Book\VersionRequirements.cs" />
@@ -357,6 +357,7 @@
     <Compile Include="Publish\HtmlPublishPanel.Designer.cs">
       <DependentUpon>HtmlPublishPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\PublishHelper.cs" />
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
