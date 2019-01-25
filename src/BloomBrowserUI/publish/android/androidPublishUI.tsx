@@ -174,21 +174,23 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                 </header>
                 <div className="sections in-rows">
                     <div className="section-row top-row">
-                        <section
-                            className={
-                                "preview-section" +
-                                (this.state.landscapePreviewMode
-                                    ? " landscape"
-                                    : "") +
-                                (this.state.rotateBook ? " rotated" : "")
-                            }
-                        >
+                        <section className="preview-section">
                             <H1 l10nKey="PublishTab.Android.Preview">
                                 Preview
                             </H1>
                             <div className="preview-row">
                                 <div className="device-square">
-                                    <div id="device">
+                                    <div
+                                        className={
+                                            "device" +
+                                            (this.state.landscapePreviewMode
+                                                ? " landscape"
+                                                : "") +
+                                            (this.state.rotateBook
+                                                ? " rotated"
+                                                : "")
+                                        }
+                                    >
                                         <div className="preview-content">
                                             <BloomPlayer
                                                 url={this.state.previewUrl}
@@ -199,50 +201,99 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                                 reportBookProperties={arg =>
                                                     this.gotBookProps(arg)
                                                 }
+                                                pageSelected={page =>
+                                                    this.pageSelected(page)
+                                                }
                                             />
                                         </div>
                                     </div>
                                 </div>
                                 <div className="preview-button-column">
-                                    <div className="preview-orientation-row">
-                                        <button
+                                    <div className="preview-orientation-row device-square">
+                                        <div
                                             className={
-                                                "orientation-button portrait-button" +
+                                                "device-sizer" +
                                                 (this.state.landscapePreviewMode
                                                     ? ""
                                                     : " active")
                                             }
-                                            onClick={() =>
-                                                this.setState({
-                                                    landscapePreviewMode: false,
-                                                    rotateBook:
-                                                        !this.state
-                                                            .bookCanRotate &&
-                                                        this.state
-                                                            .bookIsLandscape
-                                                })
-                                            }
-                                        />
-                                        <button
+                                        >
+                                            <div
+                                                className={
+                                                    "device portrait-device" +
+                                                    // We need to rotate the preview in a portrait button
+                                                    // if the book is landscape, unless it can re-arrange its own
+                                                    // contents.
+                                                    (this.state
+                                                        .bookIsLandscape &&
+                                                    !this.state.bookCanRotate
+                                                        ? " rotated"
+                                                        : "")
+                                                }
+                                            >
+                                                <div
+                                                    id="portrait-button"
+                                                    className={
+                                                        "orientation-button portrait-button preview-content"
+                                                    }
+                                                    onClick={() =>
+                                                        this.setState({
+                                                            landscapePreviewMode: false,
+                                                            rotateBook:
+                                                                !this.state
+                                                                    .bookCanRotate &&
+                                                                this.state
+                                                                    .bookIsLandscape
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                        <div
                                             className={
-                                                "orientation-button landscape-button" +
+                                                "device-sizer" +
                                                 (this.state.landscapePreviewMode
                                                     ? " active"
                                                     : "")
                                             }
-                                            onClick={() =>
-                                                this.setState({
-                                                    landscapePreviewMode: true,
-                                                    rotateBook:
-                                                        !this.state
-                                                            .bookCanRotate &&
-                                                        !this.state
-                                                            .bookIsLandscape
-                                                })
-                                            }
-                                        />
+                                        >
+                                            <div
+                                                className={
+                                                    "device landscape-device landscape" +
+                                                    // in the landscape button we need to rotate the preview
+                                                    // if the book is a portrait one (that can't rotate itself)
+                                                    (!this.state
+                                                        .bookIsLandscape &&
+                                                    !this.state.bookCanRotate
+                                                        ? " rotated"
+                                                        : "")
+                                                }
+                                            >
+                                                <div
+                                                    id="landscape-button"
+                                                    className="orientation-button landscape-button preview-content"
+                                                    onClick={() =>
+                                                        this.setState({
+                                                            landscapePreviewMode: true,
+                                                            rotateBook:
+                                                                !this.state
+                                                                    .bookCanRotate &&
+                                                                !this.state
+                                                                    .bookIsLandscape
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="image-text-row preview-refresh">
+                                    <div
+                                        className={
+                                            "image-text-row preview-refresh" +
+                                            (this.state.landscapePreviewMode
+                                                ? " landscape"
+                                                : "")
+                                        }
+                                    >
                                         <img
                                             className="inline-text-icon"
                                             src="Ic_refresh_48px.svg"
@@ -591,6 +642,25 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
 
     private refreshPreview(): void {
         // todo: implement.
+    }
+
+    // Whenever we change pages, update the orientation buttons to match.
+    private pageSelected(page: HTMLElement): void {
+        const copy = page.cloneNode(true);
+        const button: HTMLElement = document.getElementById("portrait-button")!;
+        if (button.firstElementChild) {
+            button.removeChild(button.firstElementChild);
+        }
+        button.appendChild(copy);
+
+        const copyL = page.cloneNode(true);
+        const buttonL: HTMLElement = document.getElementById(
+            "landscape-button"
+        )!;
+        if (buttonL.firstElementChild) {
+            buttonL.removeChild(buttonL.firstElementChild);
+        }
+        buttonL.appendChild(copyL);
     }
 }
 
