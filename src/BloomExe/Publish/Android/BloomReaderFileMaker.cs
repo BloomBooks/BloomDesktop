@@ -4,14 +4,16 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml;
+using Bloom.Book;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using BloomTemp;
 using SIL.IO;
 using SIL.Xml;
 
-namespace Bloom.Book
+namespace Bloom.Publish.Android
 {
 	/// <summary>
 	/// This class is the beginnings of a separate place to put code for creating .bloomd files.
@@ -22,7 +24,24 @@ namespace Bloom.Book
 	{
 		public const string QuestionFileName = "questions.json";
 
-		public static Book PrepareBookForBloomReader(Book book, BookServer bookServer, TemporaryFolder temp, Color backColor,
+		public static Control ControlForInvoke { get; set; }
+
+		public static void CreateBloomReaderBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, IWebSocketProgress progress)
+		{
+			using (var temp = new TemporaryFolder("BloomReaderExport"))
+			{
+				var modifiedBook = PrepareBookForBloomReader(book, bookServer, temp, backColor, progress);
+				// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
+				// 64dp in Bloom Reader.
+
+				BookCompressor.MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
+
+				BookCompressor.CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
+					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
+			}
+		}
+
+		public static Book.Book PrepareBookForBloomReader(Book.Book book, BookServer bookServer, TemporaryFolder temp, Color backColor,
 			IWebSocketProgress progress)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
@@ -30,7 +49,7 @@ namespace Bloom.Book
 			var htmPath = BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			var bookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
 			Directory.CreateDirectory(bookFolderPath);
-			var modifiedBook = BookCompressor.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
+			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
 
 			var jsonPath = Path.Combine(bookFolderPath, QuestionFileName);
 			var questionPages = modifiedBook.RawDom.SafeSelectNodes(
@@ -53,6 +72,11 @@ namespace Bloom.Book
 			File.WriteAllText(jsonPath, builder.ToString());
 
 			// Do this after making questions, as they satisfy the criteria for being 'blank'
+			using (var helper = new PublishHelper())
+			{
+				helper.ControlForInvoke = ControlForInvoke;
+				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook);
+			}
 			modifiedBook.RemoveBlankPages();
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
@@ -62,8 +86,9 @@ namespace Bloom.Book
 
 			var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
-			StripContentEditable(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"),
+				Path.Combine(bookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
 			modifiedBook.Save();
@@ -82,14 +107,6 @@ namespace Bloom.Book
 				{
 					imgElt.ParentNode.RemoveChild(imgElt);
 				}
-			}
-		}
-
-		private static void StripContentEditable(XmlDocument dom)
-		{
-			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>().ToArray())
-			{
-				editableElt.RemoveAttribute("contenteditable");
 			}
 		}
 
@@ -147,7 +164,7 @@ namespace Bloom.Book
 		/// <param name="book"></param>
 		/// <param name="progress"></param>
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
-		public static void EmbedFonts(Book book, IWebSocketProgress progress, IFontFinder fontFileFinder)
+		public static void EmbedFonts(Book.Book book, IWebSocketProgress progress, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
 			// The 'false' here says to ignore all but the first font face in CSS's ordered lists of desired font faces.

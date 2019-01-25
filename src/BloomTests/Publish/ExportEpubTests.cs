@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
+using Bloom.Publish;
 using BloomBook = Bloom.Book.Book;
 using Bloom.Publish.Epub;
 using Bloom.web.controllers;
@@ -884,7 +885,7 @@ namespace BloomTests.Publish
 			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'licenseDescription')]", 1);
 			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//img[@class='licenseImage']", 1);
 			// These temp Ids are added and removed during the creation process
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[contains(@id, '" + EpubMaker.kTempIdMarker + "')]", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[contains(@id, '" + PublishHelper.kTempIdMarker + "')]", _ns);
 		}
 
 		[Test]
