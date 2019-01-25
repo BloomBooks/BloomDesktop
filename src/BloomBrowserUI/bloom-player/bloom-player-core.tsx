@@ -33,6 +33,10 @@ interface IProps {
     reportBookProperties?: (
         properties: { landscape: boolean; canRotate: boolean }
     ) => void;
+    // called for initial page and subsequent page changes, passed the slider page
+    // (the parent of the .bloom-page, including also the special element that carries
+    // all the page styles)
+    pageSelected?: (sliderPage: HTMLElement) => void;
 }
 interface IState {
     pages: Array<string>; // of the book. First and last are empty in context mode.
@@ -330,5 +334,8 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
         }
         this.narration.computeDuration(bloomPage);
         this.narration.playAllSentences(bloomPage);
+        if (this.props.pageSelected) {
+            this.props.pageSelected(sliderPage);
+        }
     }
 }

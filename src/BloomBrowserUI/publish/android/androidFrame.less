@@ -67,7 +67,7 @@
 // the wrapper around the preview that looks like a phone's shell.
 // The first group of settings (not inside .device-square) are for the
 // old ePUB preview, the others for the new android one.
-#device {
+.device {
     height: 800px;
     width: 400px;
     padding-left: 30px;
@@ -85,14 +85,14 @@
         padding-top: @space-for-speaker;
         padding-bottom: 0;
         border-radius: 4.7mm;
-        .landscape & {
-            height: @small-device-width;
-            width: @small-device-size;
-            margin-top: @small-preview-margin;
-            margin-left: 0;
-            padding-top: 0;
-            padding-left: @space-for-speaker;
-        }
+    }
+    .device-square &.landscape {
+        height: @small-device-width;
+        width: @small-device-size;
+        margin-top: @small-preview-margin;
+        margin-left: 0;
+        padding-top: 0;
+        padding-left: @space-for-speaker;
     }
 }
 
@@ -102,7 +102,7 @@
 // again we have legacy version for ePUB and the new versions below in .device-square.
 @speakerlength : 80px;
 @speakerwidth: 10px;
-#device:before {
+.device:before {
     width: @speakerlength;
     height: @speakerwidth;
     top: 35px;
@@ -113,7 +113,7 @@
 
 //the bottom 'button' (looks like phone home button) is the "after" rule
 // This is only for the legacy ePUB version.
-#device:after {
+.device:after {
     width: @CircleDiameter;
     height: @CircleDiameter;
     border-radius: 50%;
@@ -123,7 +123,7 @@
 }
 
 .device-square {
-    #device:before {
+    .device:before {
         width: @speakerlength / 2;
         height: @speakerwidth / 2;
         top: 7px;
@@ -131,7 +131,7 @@
         border-radius: @speakerwidth / 2;
         background-color: @small-speaker-color;
     }
-    .landscape & #device:before {
+    .device.landscape:before {
         height: @speakerlength / 2;
         width: @speakerwidth / 2;
         left: 7px;
@@ -140,7 +140,7 @@
     }
     // in the new preview 'after' is used for a small dot at the top.
     // (I think it's meant to emulate a phone's camera.)
-    #device:after {
+    .device:after {
         width: @speakerwidth / 2;
         height: @speakerwidth / 2;
         color: @small-speaker-color;
@@ -150,7 +150,7 @@
         border: solid 1px @small-speaker-color;
         background-color: @small-speaker-color;
     }
-    .landscape & #device:after {
+    .device.landscape:after {
         left: @dot-top;
         bottom: @dot-left;
         top: initial;
@@ -171,8 +171,8 @@
     }
 }
 
-#device:before,
-#device:after {
+.device:before,
+.device:after {
     content: "";
     position: absolute;
 }
@@ -187,14 +187,14 @@
 }
 
 // This rotates a portrait page sideways to give the required effect for
-// the lanscape device orientation in non-motion books.
+// the landscape device orientation in non-motion books.
 // The best way to understand it is that the book is scaled to the
 // usual size (which requires the transform origin to be the top left).
 // then we rotate it anti-clockwise 90deg around that point, which puts it
 // above where we want it by its own width. Then we translate it down.
 // However, the rotate changes the effect of the translate, so it works
 // better to do that first.
-.preview-section.landscape.rotated .actual-page-preview {
+.preview-section .landscape.rotated .actual-page-preview {
     transform: translateY(@preview-width) scale(@preview-scale-factor)
         rotate(-90deg);
 }
@@ -202,7 +202,7 @@
 // Similar rotation for landscape book in portrait mode. After scaling,
 // we rotate it clockwise around the top left, which puts it to the
 // left of what we want, so we move it right.
-.preview-section.rotated:not(.landscape) .actual-page-preview {
+.preview-section .rotated:not(.landscape) .actual-page-preview {
     transform: translateX(@preview-width) scale(@preview-scale-factor)
         rotate(90deg);
 }

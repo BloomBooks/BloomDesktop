@@ -10,6 +10,28 @@
     2;
 @preview-button-large-pad: (@preview-button-size - @preview-button-phone-width) /
     2;
+// device is 106mm high; we want button to be 10mm
+
+@preview-button-scale-factor: 10 / 106;
+
+.preview-orientation-row.device-square .device {
+    transform: scale(@preview-button-scale-factor);
+    transform-origin: left top 0;
+    margin-left: 0;
+    margin-top: 0;
+    &.landscape-device {
+        margin-top: @preview-button-size * 7 / 32; // half of 1-9/16; roughly centers it
+    }
+    &.portrait-device {
+        margin-left: @preview-button-size * 7 / 32;
+    }
+}
+
+// I haven't figured out all the things that add up to achieve this, but it leaves a decent
+// gap between the preview and the buttons, and lines the RH button up with the header.
+.preview-button-column {
+    margin-left: 11px;
+}
 
 // This is the normal appearance of the slick next and previous buttons,
 // but we need to make the rule
@@ -26,7 +48,14 @@ html.publishTabScreen button {
 .device-square {
     height: @small-device-size;
     width: @small-device-size;
+    // I'm not sure why this is needed but without it they take up too much space
+    // and mess up the parent divs.
+    &.preview-orientation-row {
+        height: @preview-button-size;
+        width: @preview-button-size;
+    }
 }
+
 .preview-row {
     margin-bottom: 1em;
     display: flex;
@@ -55,30 +84,29 @@ html.publishTabScreen .preview-section {
         // of it to be seen, even when partly over the preview.
         z-index: 1;
     }
-    .orientation-button {
-        // These two suppress the dotted rectangle Gecko draws on focused buttons.
-        // Bloom is not (yet) trying to be accessible, and they look very odd with the
-        // images we're using.
-        // Note: Can probably remove in Gecko60; current FF is smart enough not to
-        // show these after clicking, only after tabbing.
-        &:focus {
-            outline: none;
-        }
-        &::-moz-focus-inner {
-            border: 0;
+    .preview-orientation-row.device-square .orientation-button {
+        // override the rule in bloom-preview that puts a border at the bottom of each page
+        // to separate the pages in a continuous scrolling view. Unfortunately that rule is
+        // !important so the only way to beat it is to be !important too.
+        div.bloom-page {
+            border-bottom: initial !important;
         }
 
-        height: @preview-button-size;
-        width: @preview-button-size;
-        border: 1px solid transparent;
-        background-color: transparent;
-        &.active {
-            border: 1px solid lightblue;
-            border-radius: 2px;
+        .slick-slide {
+            display: inherit; // overrides rule hiding slick-slides
         }
+
+        &.landscape {
+            height: @preview-button-size;
+            width: @preview-button-size;
+        }
+
+        background-color: transparent;
+
         &:after {
             border: @preview-button-border-width solid @preview-border;
         }
+
         &.landscape-button:after {
             padding-top: @preview-button-phone-width -
                 @preview-button-border-width * 2;
@@ -91,15 +119,7 @@ html.publishTabScreen .preview-section {
             top: @preview-button-large-pad;
         }
         &.portrait-button:after {
-            padding-left: @preview-button-phone-width -
-                @preview-button-border-width * 2;
-            padding-top: @preview-button-phone-height -
-                @preview-button-border-width * 2 -
-                @preview-button-extra-top-border - 1;
-            border-top-width: @preview-button-border-width +
-                @preview-button-extra-top-border;
-            top: @preview-button-small-pad;
-            left: @preview-button-large-pad;
+            padding-left: @preview-button-phone-width;
         }
     }
 }
@@ -113,14 +133,32 @@ html.publishTabScreen .preview-section {
 }
 
 .preview-refresh {
-    margin-left: @preview-button-large-pad;
+    // Experimentally, these adjustments seem to make it line up nicely
+    // with the bottom of the preview and the left of the portrait button.
     padding-bottom: 5px;
-    .landscape & {
+    margin-left: 10px;
+    &.landscape {
         padding-bottom: @small-preview-margin + 2px;
     }
 }
 .preview-orientation-row {
-    padding-top: 80px;
+    padding-top: 130px;
+    display: flex; // default makes it a row.
+    // This wrapper serves two purposes: it carries the active-button border,
+    // and also, by having an explicit size, it suppresses the original
+    // (pre-transform) size of the child .device element. For some reason,
+    // HTML treats an element as occupying its pre-transform size, and that
+    // throws off the layout of elements further out if we don't hide it.
+    .device-sizer {
+        height: @preview-button-size + 2mm + 2px;
+        width: @preview-button-size + 2mm + 2px;
+        padding: 1mm;
+        border: 1px solid transparent;
+        &.active {
+            border: 1px solid lightblue;
+            border-radius: 2px;
+        }
+    }
 }
 
 .preview-button-column {
