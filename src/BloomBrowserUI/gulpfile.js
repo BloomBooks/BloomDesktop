@@ -268,14 +268,23 @@ gulp.task("translateHtmlFiles", function() {
                     var cmd = "";
                     if (IsLinux)
                         cmd =
-                            "/opt/mono4-sil/bin/mono ../../lib/dotnet/HtmlXliff.exe --inject";
+                            "/opt/mono4-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --inject";
                     else cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --inject";
                     cmd = cmd + ' -x "' + xliffFiles[i] + '"';
                     cmd = cmd + ' -o "' + outfile + '"';
                     cmd = cmd + ' "' + file.path + '"';
                     child_process.exec(cmd, function(err, stdout, stderr) {
                         if (err) {
-                            console.error("\n" + stderr);
+                            console.error(
+                                "TRANSLATE " +
+                                    file.path +
+                                    " WITH " +
+                                    xliffFiles[i] +
+                                    "\n" +
+                                    stdout +
+                                    "\n\n" +
+                                    stderr
+                            );
                         }
                     });
                 }
@@ -294,7 +303,7 @@ gulp.task("createXliffFiles", function() {
                 var cmd = "";
                 if (IsLinux)
                     cmd =
-                        "/opt/mono4-sil/bin/mono ../../lib/dotnet/HtmlXliff.exe --extract --preserve";
+                        "/opt/mono4-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --extract --preserve";
                 else
                     cmd =
                         "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract --preserve";
@@ -302,7 +311,16 @@ gulp.task("createXliffFiles", function() {
                 cmd = cmd + ' "' + file.path + '"';
                 child_process.exec(cmd, function(err, stdout, stderr) {
                     if (err) {
-                        console.error("\n" + stderr);
+                        console.error(
+                            "CREATE " +
+                                xliffFile +
+                                " FROM " +
+                                file.path +
+                                "\n" +
+                                stdout +
+                                "\n\n" +
+                                stderr
+                        );
                     }
                 });
                 return;
