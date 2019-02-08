@@ -72,7 +72,7 @@ namespace Bloom.Edit
 		// of the one most recently created and uses it in the AudioDevicesJson method, which the server can therefore
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
-		private ManualResetEvent _completingRecording;
+		private ManualResetEvent _completingRecording;	// Note: For simplicity, recommend that any function needing this lock should just check it regardless of the file path. The file paths get tricky with the multiple extensions possible, sequencing, etc., so for now, we recommend avoiding pre-mature optimization until needed.
 		private int _collectionAudioTrimEndMilliseconds;
 
 		public AudioRecording(BookSelection bookSelection, BloomWebSocketServer bloomWebSocketServer)
@@ -85,7 +85,7 @@ namespace Bloom.Edit
 			CurrentRecording = this;
 			_webSocketServer = bloomWebSocketServer;
 			// We create the ManualResetEvent in the "set" (non-blocking) state initially. The idea is to allow HandleEndRecord() to run,
-			// but then block HandleAudioFileRequest() until Recorder_Stopped() has reported finishing saving the audio file.
+			// but then block functions like HandleAudioFileRequest() which deal with the files until Recorder_Stopped() has reported finishing saving the audio file.
 			_completingRecording = new ManualResetEvent(true);
 		}
 
@@ -112,19 +112,22 @@ namespace Bloom.Edit
 		private void HandleEnableListenButton(ApiRequest request)
 		{
 			var ids = request.RequiredParam("ids");
-			foreach (var id in ids.Split(','))
+			var idList = ids.Split(',');
+
+			if (idList.Any())
 			{
-				string recordablePath = GetPathToRecordableAudioForSegment(id);
-				WaitForPathsRecordingToComplete(recordablePath);	// Wait for recordings for this file to flush to disk for better accuracy regarding whether any file exists.
-				if (RobustFile.Exists(recordablePath))
+				WaitForRecordingToComplete();	// More straightforward to test for the existence of the files by waiting until all the files have been written.
+			}
+
+			foreach (var id in idList)
+			{
+				if (RobustFile.Exists(GetPathToRecordableAudioForSegment(id)))
 				{
 					request.PostSucceeded();
 					return;
 				}
 
-				string publishablePath = GetPathToPublishableAudioForSegment(id);
-				WaitForPathsRecordingToComplete(publishablePath);
-				if (RobustFile.Exists(publishablePath))
+				if (RobustFile.Exists(GetPathToPublishableAudioForSegment(id)))
 				{
 					request.PostSucceeded();
 					return;
@@ -506,7 +509,8 @@ namespace Bloom.Edit
 		{
 			var segmentId = request.RequiredParam("id");
 			var path = GetPathToRecordableAudioForSegment(segmentId);
-			WaitForPathsRecordingToComplete(path);	// Wait until the recording is flushed to disk
+
+			WaitForRecordingToComplete();	// Wait until the recording is flushed to disk before testing file existence
 
 			if (RobustFile.Exists(path))
 				request.ReplyWithText("exists");
@@ -532,7 +536,8 @@ namespace Bloom.Edit
 				var id = idWithPrefix.Substring(bloomIndex + Api_Prefix.Length);
 				var segmentId = Path.GetFileNameWithoutExtension(id);
 				var recordablePath = GetPathToRecordableAudioForSegment(segmentId);
-				WaitForPathsRecordingToComplete(recordablePath);
+
+				WaitForRecordingToComplete();
 
 				// return the audio file contents
 				var mp3File = GetPathToPublishableAudioForSegment(segmentId);
@@ -559,11 +564,11 @@ namespace Bloom.Edit
 			var publishablePath = GetPathToPublishableAudioForSegment(segmentId);
 			var success = true;
 
-			WaitForPathsRecordingToComplete(recordablePath);	// Wait for the current file to flush to disk before deleting it.
+			WaitForRecordingToComplete();	// Wait for any files to (potentially) flush to disk before trying to deleting them.
+
 			if(RobustFile.Exists(recordablePath))
 				success = DeleteFileReportingAnyProblem(recordablePath);
 
-			WaitForPathsRecordingToComplete(publishablePath);
 			if (RobustFile.Exists(publishablePath))
 				success &= DeleteFileReportingAnyProblem(publishablePath);
 
@@ -600,18 +605,6 @@ namespace Bloom.Edit
 		private void WaitForRecordingToComplete()
 		{
 			_completingRecording.WaitOne();    // This will block if we ran HandleEndRecord, but haven't finished saving.
-		}
-
-		/// <summary>
-		///  Waits (if necessary) for any recordings to complete (only if the save location matches the specified file path)
-		/// </summary>
-		/// <param name="path">The file location to check</param>
-		private void WaitForPathsRecordingToComplete(string path)
-		{
-			if (path == PathToRecordableAudioForCurrentSegment)
-			{				
-				_completingRecording.WaitOne();    // This will block if we ran HandleEndRecord, but haven't finished saving.
-			}
 		}
 
 		// Palaso component to do the actual recording.
