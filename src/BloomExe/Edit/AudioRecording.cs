@@ -13,7 +13,6 @@ using SIL.IO;
 using SIL.Media.AlsaAudio;
 #endif
 using SIL.Media.Naudio;
-using SIL.Progress;
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
 
@@ -50,7 +49,8 @@ namespace Bloom.Edit
 		//the ultimate destination, after we've cleaned up the recording
 		public string PathToRecordableAudioForCurrentSegment;
 
-		private string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
+		private string _backupPathForRecordableAudio; // If we are about to replace a recording, save the old one here; a temp file.
+		private string _backupPathForPublishableAudio;
 		private DateTime _startRecording; // For tracking recording length.
 		LameEncoder _mp3Encoder = new LameEncoder();
 		/// <summary>
@@ -79,7 +79,8 @@ namespace Bloom.Edit
 			_startRecordingTimer = new Timer();
 			_startRecordingTimer.Interval = 300; //  ms from click to actual recording
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
-			_backupPath = System.IO.Path.GetTempFileName();
+			_backupPathForRecordableAudio = Path.GetTempFileName();
+			_backupPathForPublishableAudio = Path.GetTempFileName();
 			CurrentRecording = this;
 			_webSocketServer = bloomWebSocketServer;
 		}
@@ -318,48 +319,66 @@ namespace Bloom.Edit
 				return;
 			}
 
-			if (RobustFile.Exists(PathToRecordableAudioForCurrentSegment))
+			if (!PrepareBackupFile(PathToRecordableAudioForCurrentSegment, ref _backupPathForRecordableAudio, request)) return;
+
+			// There are two possible scenarios when starting to record.
+			//  1. We have a recordable file and corresponding publishable file.
+			//     In that case, we need to make sure to restore the publishable file if we restore the recordable one so they stay in sync.
+			//  2. We have an publishable file with no corresponding recordable file.
+			//     In that case, we need to restore it if there is any problem creating a new recordable file.
+			if (!PrepareBackupFile(GetPathToPublishableAudioForSegment(segmentId), ref _backupPathForPublishableAudio, request)) return;
+
+			_startRecording = DateTime.Now;
+			_startRecordingTimer.Start();
+			request.ReplyWithText("starting record soon");
+		}
+
+		private static bool PrepareBackupFile(string path, ref string backupPath, ApiRequest request)
+		{
+			if (RobustFile.Exists(path))
 			{
-				//Try to deal with _backupPath getting locked (BL-3160)
+				//Try to deal with backupPath getting locked (BL-3160)
 				try
 				{
-					RobustFile.Delete(_backupPath);
+					RobustFile.Delete(backupPath);
 				}
-				catch(IOException)
+				catch (IOException)
 				{
-					_backupPath = System.IO.Path.GetTempFileName();
+					backupPath = Path.GetTempFileName();
 				}
+
 				try
 				{
-					RobustFile.Copy(PathToRecordableAudioForCurrentSegment, _backupPath, true);
+					RobustFile.Copy(path, backupPath, true);
 				}
 				catch (Exception err)
 				{
 					ErrorReport.NotifyUserOfProblem(err,
-						"Bloom cold not copy "+PathToRecordableAudioForCurrentSegment+" to "+_backupPath+" If things remains stuck, you may need to restart your computer.");
-					request.Failed( "Problem with backup file");
-					return;
+						"Bloom cold not copy " + path + " to " +
+						backupPath + " If things remains stuck, you may need to restart your computer.");
+					request.Failed("Problem with backup file");
+					return false;
 				}
+
 				try
 				{
-					RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
+					RobustFile.Delete(path);
 				}
 				catch (Exception err)
 				{
 					ErrorReport.NotifyUserOfProblem(err,
-						"The old copy of the recording at " + PathToRecordableAudioForCurrentSegment + " is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
-					request.Failed( "Audio file locked");
-					return;
+						"The old copy of the recording at " + path +
+						" is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
+					request.Failed("Audio file locked");
+					return false;
 				}
 			}
 			else
 			{
-				RobustFile.Delete(_backupPath);
+				RobustFile.Delete(backupPath);
 			}
-			_startRecording = DateTime.Now;
-			_startRecordingTimer.Start();
-			request.ReplyWithText("starting record soon");
-			return;
+
+			return true;
 		}
 
 		private string GetPathToPublishableAudioForSegment(string segmentId)
@@ -421,16 +440,27 @@ namespace Bloom.Edit
 			}
 
 			// If we had a prior recording, restore it...button press may have been a mistake.
-			if (RobustFile.Exists(_backupPath))
+			if (RobustFile.Exists(_backupPathForRecordableAudio))
 			{
 				try
 				{
-					RobustFile.Copy(_backupPath, PathToRecordableAudioForCurrentSegment, true);
+					RobustFile.Copy(_backupPathForRecordableAudio, PathToRecordableAudioForCurrentSegment, true);
 				}
 				catch (IOException e)
 				{
-					Logger.WriteError("Audio Recording could not restore backup " + _backupPath, e);
+					Logger.WriteError("Audio Recording could not restore backup " + _backupPathForRecordableAudio, e);
 					// if we can't restore it we can't. Review: are there other exception types we should ignore? Should we bother the user?
+				}
+			}
+			if (RobustFile.Exists(_backupPathForPublishableAudio))
+			{
+				try
+				{
+					RobustFile.Copy(_backupPathForPublishableAudio, Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension), true);
+				}
+				catch (IOException e)
+				{
+					Logger.WriteError("Audio Recording could not restore backup " + _backupPathForPublishableAudio, e);
 				}
 			}
 		}
