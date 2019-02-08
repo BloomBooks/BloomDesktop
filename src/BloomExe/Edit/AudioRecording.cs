@@ -72,7 +72,7 @@ namespace Bloom.Edit
 		// of the one most recently created and uses it in the AudioDevicesJson method, which the server can therefore
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
-		private AutoResetEvent _completingRecording;
+		private ManualResetEvent _completingRecording;
 		private int _collectionAudioTrimEndMilliseconds;
 
 		public AudioRecording(BookSelection bookSelection, BloomWebSocketServer bloomWebSocketServer)
@@ -84,20 +84,24 @@ namespace Bloom.Edit
 			_backupPath = System.IO.Path.GetTempFileName();
 			CurrentRecording = this;
 			_webSocketServer = bloomWebSocketServer;
-			// We create the AutoResetEvent in the "set" state initially. The idea is to allow HandleEndRecord() to run,
+			// We create the ManualResetEvent in the "set" (non-blocking) state initially. The idea is to allow HandleEndRecord() to run,
 			// but then block HandleAudioFileRequest() until Recorder_Stopped() has reported finishing saving the audio file.
-			_completingRecording = new AutoResetEvent(true);
+			_completingRecording = new ManualResetEvent(true);
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// I don't know for sure that these need to be on the UI thread, but that was the old default so keeping it for safety.
+			// jeffrey_su: HandleStartRecording seems to need to be on the UI thread in order for HandleEndRecord() to detect the correct state.
 			apiHandler.RegisterEndpointHandler("audio/startRecord", HandleStartRecording, true);
-			apiHandler.RegisterEndpointHandler("audio/endRecord", HandleEndRecord, true);
-			apiHandler.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton, true);
-			apiHandler.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, true);
+
+			// Note: This handler locks and unlocks a shared resource (_completeRecording lock).
+			// Any other handlers depending on this resource should not wait on the same thread (e.g. the UI thread) or deadlock can occur.
+			apiHandler.RegisterEndpointHandler("audio/endRecord", HandleEndRecord, true);	
+			apiHandler.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton, false);
+			apiHandler.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, false);
 			apiHandler.RegisterEndpointHandler("audio/currentRecordingDevice", HandleCurrentRecordingDevice, true);
-			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, true);
+			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, false);
 			apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
 			apiHandler.RegisterEndpointHandler("audio/wavFile", HandleAudioFileRequest, false);
 
@@ -110,12 +114,17 @@ namespace Bloom.Edit
 			var ids = request.RequiredParam("ids");
 			foreach (var id in ids.Split(','))
 			{
-				if (RobustFile.Exists(GetPathToRecordableAudioForSegment(id)))
+				string recordablePath = GetPathToRecordableAudioForSegment(id);
+				WaitForPathsRecordingToComplete(recordablePath);	// Wait for recordings for this file to flush to disk for better accuracy regarding whether any file exists.
+				if (RobustFile.Exists(recordablePath))
 				{
 					request.PostSucceeded();
 					return;
 				}
-				if (RobustFile.Exists(GetPathToPublishableAudioForSegment(id)))
+
+				string publishablePath = GetPathToPublishableAudioForSegment(id);
+				WaitForPathsRecordingToComplete(publishablePath);
+				if (RobustFile.Exists(publishablePath))
 				{
 					request.PostSucceeded();
 					return;
@@ -295,14 +304,19 @@ namespace Bloom.Edit
 
 		public void HandleStartRecording(ApiRequest request)
 		{
-			if(Recording)
+			// Precondition: HandleStartRecording shouldn't run until the previous HandleEndRecord() is completely done with PathToRecordableAudioForCurrentSegment
+			//   Unfortunately this is not as easy to ensure on the code side due to HandleStartRecord() not being able to be moved off the UI thread, and deadlock potential
+			//   I found it too difficult to actually violate this precondition from the user side.
+			//   Therefore, I just assume this to be true.
+
+			if (Recording)
 			{
 				request.Failed("Already recording");
 				return;
 			}
 
 			string segmentId = request.RequiredParam("id");
-			PathToRecordableAudioForCurrentSegment = GetPathToRecordableAudioForSegment(segmentId);
+			PathToRecordableAudioForCurrentSegment = GetPathToRecordableAudioForSegment(segmentId);	// Careful! Overwrites the previous value of the member variable.
 			PathToTemporaryWav = Path.GetTempFileName();
 
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
@@ -492,6 +506,8 @@ namespace Bloom.Edit
 		{
 			var segmentId = request.RequiredParam("id");
 			var path = GetPathToRecordableAudioForSegment(segmentId);
+			WaitForPathsRecordingToComplete(path);	// Wait until the recording is flushed to disk
+
 			if (RobustFile.Exists(path))
 				request.ReplyWithText("exists");
 			else
@@ -516,12 +532,7 @@ namespace Bloom.Edit
 				var id = idWithPrefix.Substring(bloomIndex + Api_Prefix.Length);
 				var segmentId = Path.GetFileNameWithoutExtension(id);
 				var recordablePath = GetPathToRecordableAudioForSegment(segmentId);
-				if (recordablePath == PathToRecordableAudioForCurrentSegment)
-				{
-					// This will block if we ran HandleEndRecord, but haven't finished saving.
-					_completingRecording.WaitOne();
-					_completingRecording.Set(); // don't block the next HandleAudioFileRequest
-				}
+				WaitForPathsRecordingToComplete(recordablePath);
 
 				// return the audio file contents
 				var mp3File = GetPathToPublishableAudioForSegment(segmentId);
@@ -547,8 +558,12 @@ namespace Bloom.Edit
 			var recordablePath = GetPathToRecordableAudioForSegment(segmentId);
 			var publishablePath = GetPathToPublishableAudioForSegment(segmentId);
 			var success = true;
+
+			WaitForPathsRecordingToComplete(recordablePath);	// Wait for the current file to flush to disk before deleting it.
 			if(RobustFile.Exists(recordablePath))
 				success = DeleteFileReportingAnyProblem(recordablePath);
+
+			WaitForPathsRecordingToComplete(publishablePath);
 			if (RobustFile.Exists(publishablePath))
 				success &= DeleteFileReportingAnyProblem(publishablePath);
 
@@ -579,6 +594,25 @@ namespace Bloom.Edit
 			return false;
 		}
 
+		/// <summary>
+		///  Waits (if necessary) for any recordings to complete (regardless of where it is trying to save the recording)
+		/// </summary>
+		private void WaitForRecordingToComplete()
+		{
+			_completingRecording.WaitOne();    // This will block if we ran HandleEndRecord, but haven't finished saving.
+		}
+
+		/// <summary>
+		///  Waits (if necessary) for any recordings to complete (only if the save location matches the specified file path)
+		/// </summary>
+		/// <param name="path">The file location to check</param>
+		private void WaitForPathsRecordingToComplete(string path)
+		{
+			if (path == PathToRecordableAudioForCurrentSegment)
+			{				
+				_completingRecording.WaitOne();    // This will block if we ran HandleEndRecord, but haven't finished saving.
+			}
+		}
 
 		// Palaso component to do the actual recording.
 		private AudioRecorder Recorder
