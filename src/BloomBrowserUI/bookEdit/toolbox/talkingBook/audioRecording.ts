@@ -1809,6 +1809,14 @@ export default class AudioRecording {
             const fragment = textFragments[i];
             if (this.isRecordable(fragment)) {
                 const newId = this.createValidXhtmlUniqueId();
+
+                // Sometimes extraneous newlines can be injected (by CKEditor?). They may get removed later (maybe after the CKEditor reloads when the text box's underlying HTML is modified???)
+                // However, some processing needs the text immediately, and others are after the text is cleaned.
+                // In order to reconcile the two, just fix the text immediately.
+                fragment.text = fragment.text
+                    .replace(/\r/g, "")
+                    .replace(/\n/g, "");
+
                 fragmentObjects.push(
                     new AudioTextFragment(fragment.text, newId)
                 );
