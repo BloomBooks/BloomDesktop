@@ -38,6 +38,7 @@ export default class BloomPlayerControls extends React.Component<
                 </button>
                 <BloomPlayerCore
                     url={this.props.url}
+                    landscape={false}
                     showContextPages={this.props.showContextPages}
                     paused={this.state.paused}
                 />

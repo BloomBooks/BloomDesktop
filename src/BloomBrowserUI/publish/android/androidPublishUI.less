@@ -190,3 +190,19 @@ button + button {
 .get-bloom-reader {
     margin-top: 1em;
 }
+
+// div that is a clone of a bloom-imageContainer, inserted into the page to
+// hide it completely. The animation happens inside it.
+// Added a lot of classes for specificity but STILL need one !important
+// because of what appears to be a bug in FF45.
+.preview-content
+    .bloom-page.Device16x9Landscape
+    div.bloom-imageContainer.hidePage {
+    height: 100%;
+    width: 100%;
+    position: absolute !important; // !important should not be needed, but there's a bug in FF45.
+    left: 0;
+    top: 0;
+    z-index: 2000;
+    background-color: black; // hide anything not covered by image
+}
