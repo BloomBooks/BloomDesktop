@@ -425,7 +425,8 @@ namespace Bloom.Publish.BloomLibrary
 					{
 						var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
 						string congratsMessage = LocalizationManager.GetString("PublishTab.Upload.UploadCompleteNotice",
-							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
+							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})",
+							"{0} is the book title; {1} is a clickable url which will display the book on the website");
 						_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _model.Title, url);
 					}
 				}
