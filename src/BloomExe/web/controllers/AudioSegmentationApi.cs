@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.Reporting;
 
@@ -223,8 +224,8 @@ namespace Bloom.web.controllers
 			string textFragmentsFilename =  $"{directoryName}/{requestParameters.audioFilenameBase}_fragments.txt";
 			string audioTimingsFilename = $"{directoryName}/{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}";
 
-			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText));	// Remove entries containing only whitespace
-			var fragmentList = audioTextFragments.Select(obj => obj.fragmentText);
+			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText)); // Remove entries containing only whitespace
+			var fragmentList = audioTextFragments.Select(obj => TextUtils.TrimEndNewlines(obj.fragmentText));
 			var idList = audioTextFragments.Select(obj => obj.id).ToList();
 
 			try
