@@ -3400,6 +3400,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
+        <note>{0} is the book title; {1} is a clickable url which will display the book on the website</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadNotAllowed">
         <source xml:lang="en">Upload Not Allowed</source>
