@@ -1214,6 +1214,34 @@ describe("audio recording tests", () => {
             expect(returnedFragmentIds[i].id).toBeTruthy();
         }
     });
+
+    it("extractFragmentsForAudioSegmentation handles duplicate sentences separately", () => {
+        SetupIFrameFromHtml(
+            "<div class='ui-audioCurrent' lang='en'>What color is the sky? Blue. What color is the ocean? Blue.</p></div>"
+        );
+
+        const recording = new AudioRecording();
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
+        const returnedFragmentIds: AudioTextFragment[] = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+
+        expect(
+            Object.keys(recording.__testonly__sentenceToIdListMap).length
+        ).toBe(3);
+
+        // Check that the stored map actually maps back to the correct ID (even if there are duplicate sentences)
+        expect(returnedFragmentIds.length).toBe(4);
+        for (let i = 0; i < returnedFragmentIds.length; ++i) {
+            const fragmentText = returnedFragmentIds[i].fragmentText;
+            const expectedId = returnedFragmentIds[i].id;
+            const idList =
+                recording.__testonly__sentenceToIdListMap[fragmentText];
+            expect(idList[0]).toBe(
+                expectedId,
+                `Fragment ${i} (${fragmentText})`
+            );
+            idList.shift();
+        }
+    });
 });
 
 describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {
