@@ -128,11 +128,12 @@ namespace BloomTests.Edit
 			Assert.AreEqual("blue", j.library.color);
 		}
 
+		// Also covers case of string value containing colon
 		[Test]
 		public void CollectJsonData_HasArrayValue_DataMerged()
 		{
 			var firstData = "{\"library\":{\"days\":[\"1\",\"2\"]}}";
-			var secondData = "{\"library\":{\"days\":[\"one\",\"two\"]}}";
+			var secondData = "{\"library\":{\"days\":[\"o:e\",\"two\"]}}";
 
 			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			first.CollectJsonData(firstData.ToString());
@@ -140,7 +141,7 @@ namespace BloomTests.Edit
 
 			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
-			Assert.AreEqual("one", j.library.days[0]);
+			Assert.AreEqual("o:e", j.library.days[0]);
 			Assert.AreEqual("two", j.library.days[1]);
 		}
 

@@ -279,7 +279,14 @@ namespace Bloom.Edit
 
 		private bool IsComplexObject(string value)
 		{
-			//TODO this is just pretend
+			//TODO this is pretty simplistic
+			// The complex merger can't cope with lists, so treat them as atomic.
+			// (For one thing, it leads to trying to call JObject.Parse and passing the list,
+			// which throws.)
+			// This has a fringe benefit: a simple list of strings is not considered complex,
+			// even if one of them contains a colon.
+			if (value.Trim().StartsWith("["))
+				return false;
 			return value.Contains(":");
 		}
 		private bool IsArray(string value)
