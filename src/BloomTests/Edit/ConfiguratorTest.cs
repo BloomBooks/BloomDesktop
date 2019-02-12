@@ -128,7 +128,7 @@ namespace BloomTests.Edit
 			Assert.AreEqual("blue", j.library.color);
 		}
 
-		// Also covers case of string value containing colon
+		// Also covers case of string value in list containing colon
 		[Test]
 		public void CollectJsonData_HasArrayValue_DataMerged()
 		{
@@ -146,16 +146,18 @@ namespace BloomTests.Edit
 		}
 
 
+		// Also tests edge case of value containing a colon, starting with a { (so it sort of looks like an object),
+		// and containing quotes and backslashes.
 		[Test]
 		public void CollectJsonData_NewArrayItems_DataMerged()
 		{
 			var firstData = DynamicJson.Serialize(new
 													{
-														library = new {food = new {veg="v", fruit = "f"}}
+														library = new {food = new {veg="v", fruit = "f", nuts="n"}}
 													});
 			var secondData = DynamicJson.Serialize(new
 			{
-				library = new { food = new { bread = "b", fruit = "f" } }
+				library = new { food = new { bread = "b", fruit = "{f\\:", nuts = "\"nut\"" } }
 			});
 
 			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
@@ -165,8 +167,9 @@ namespace BloomTests.Edit
 			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
 			Assert.AreEqual("v", j.library.food.veg);
-			Assert.AreEqual("f", j.library.food.fruit);
+			Assert.AreEqual("{f\\:", j.library.food.fruit);
 			Assert.AreEqual("b", j.library.food.bread);
+			Assert.AreEqual("\"nut\"", j.library.food.nuts);
 		}
 
 		private void AssertEqual(string a, string b)
