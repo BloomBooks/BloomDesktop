@@ -194,6 +194,10 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                         <div className="preview-content">
                                             <BloomPlayer
                                                 url={this.state.previewUrl}
+                                                landscape={
+                                                    this.state
+                                                        .landscapePreviewMode
+                                                }
                                                 showContextPages={false}
                                                 paused={
                                                     this.state.previewPaused
@@ -644,23 +648,39 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
         // todo: implement.
     }
 
-    // Whenever we change pages, update the orientation buttons to match.
-    private pageSelected(page: HTMLElement): void {
-        const copy = page.cloneNode(true);
-        const button: HTMLElement = document.getElementById("portrait-button")!;
+    private setButtonContents(
+        page: HTMLElement,
+        id: string,
+        landscape: boolean
+    ): void {
+        const copy = page.cloneNode(true) as HTMLElement;
+        const button: HTMLElement = document.getElementById(id)!;
         if (button.firstElementChild) {
             button.removeChild(button.firstElementChild);
         }
-        button.appendChild(copy);
-
-        const copyL = page.cloneNode(true);
-        const buttonL: HTMLElement = document.getElementById(
-            "landscape-button"
-        )!;
-        if (buttonL.firstElementChild) {
-            buttonL.removeChild(buttonL.firstElementChild);
+        // The preview may have elements marked up as being the audio element
+        // currently playing. We don't want this in the button. For one thing,
+        // it wouldn't update as the audio changes. For another, at one stage
+        // it was playing with an echo...probably from trying to play BOTH
+        // current audio elements.
+        const currentAudio = copy.getElementsByClassName("ui-audioCurrent");
+        for (let i = 0; i < currentAudio.length; i++) {
+            currentAudio[i].classList.remove("ui-audioCurrent");
         }
-        buttonL.appendChild(copyL);
+        if (this.state.bookCanRotate) {
+            BloomPlayer.forceDevicePageSize(
+                copy.getElementsByClassName("bloom-page")[0] as HTMLElement,
+                true,
+                landscape
+            );
+        }
+        button.appendChild(copy);
+    }
+
+    // Whenever we change pages, update the orientation buttons to match.
+    private pageSelected(page: HTMLElement): void {
+        this.setButtonContents(page, "portrait-button", false);
+        this.setButtonContents(page, "landscape-button", true);
     }
 }
 

@@ -12,6 +12,8 @@ import "slick-carousel/slick/slick-theme.css";
 import "style-scoped/scoped"; // maybe use .min.js after debugging?
 import "./bloom-player.less";
 import Narration from "./narration";
+import LiteEvent from "./event";
+import Animation from "./animation";
 
 // BloomPlayer takes the URL of a folder containing a Bloom book. The file name
 // is expected to match the folder name. (Enhance: might be better to just take
@@ -22,6 +24,7 @@ import Narration from "./narration";
 
 interface IProps {
     url: string; // of the bloom book (folder)
+    landscape: boolean; // whether viewing as landscape or portrait
     showContextPages?: boolean;
     // ``paused`` allows the parent to control pausing of audio. We expect we may supply
     // a click/touch event callback if needed to support pause-on-touch.
@@ -56,12 +59,23 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
     private sourceUrl: string;
 
     private narration: Narration;
+    private animation: Animation;
+    private canRotate: boolean;
 
     // We expect it to show some kind of loading indicator on initial render, then
     // we do this work. For now, won't get a loading indicator if you change the url prop.
-    public componentDidUpdate() {
+    public componentDidUpdate(prevProps: IProps) {
         if (!this.narration) {
             this.narration = new Narration();
+            this.narration.PageDurationAvailable = new LiteEvent<HTMLElement>();
+            this.animation = new Animation();
+            //this.narration.PageNarrationComplete.subscribe();
+            this.narration.PageDurationAvailable.subscribe(pageElement => {
+                this.animation.HandlePageDurationAvailable(
+                    pageElement!,
+                    this.narration.PageDuration
+                );
+            });
         }
         let newSourceUrl = this.props.url;
         // Folder urls often (but not always) end in /. If so, remove it, so we don't get
@@ -86,7 +100,7 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
                 doc.innerHTML = result.data;
 
                 const body = doc.getElementsByTagName("body")[0];
-                const canRotate = body.hasAttribute("data-bfcanrotate"); // expect value allOrientations;bloomReader, should we check?
+                this.canRotate = body.hasAttribute("data-bfcanrotate"); // expect value allOrientations;bloomReader, should we check?
 
                 this.makeNonEditable(body);
 
@@ -103,7 +117,7 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
                     if (i === 0 && this.props.reportBookProperties) {
                         this.props.reportBookProperties({
                             landscape: landscape,
-                            canRotate: canRotate
+                            canRotate: this.canRotate
                         });
                     }
 
@@ -123,8 +137,16 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
                 // element to actually get created in the document.
                 // Note: typically in Chrome we won't actually start playing, because
                 // of a rule that the user must interact with the document first.
-                window.setTimeout(() => this.showingPage(0), 500);
+                window.setTimeout(() => {
+                    this.setIndex(0);
+                    this.showingPage(0);
+                }, 500);
             });
+        }
+        if (prevProps.landscape != this.props.landscape) {
+            // may need to show or hide animation
+            this.setIndex(this.state.currentSliderIndex);
+            this.showingPage(this.state.currentSliderIndex);
         }
         if (this.props.paused) {
             this.narration.pause();
@@ -150,15 +172,29 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
         }
     }
 
+    private forceDevicePageSize(page: Element): boolean {
+        return BloomPlayerCore.forceDevicePageSize(
+            page,
+            this.canRotate,
+            this.props.landscape
+        );
+    }
+
     // Force size class to be one of the device classes
     // return true if we determine that the book is landscape
-    private forceDevicePageSize(page: Element): boolean {
+    public static forceDevicePageSize(
+        page: Element,
+        bookCanRotate: boolean,
+        showLandscape: boolean
+    ): boolean {
         let landscape = false;
         const classAttr = page.getAttribute("class") || "";
         const matches = classAttr.match(/\b\S*?(Portrait|Landscape)\b/);
         if (matches && matches.length) {
             const sizeClass = matches[0];
-            landscape = (sizeClass as any).endsWith("Landscape");
+            landscape = bookCanRotate
+                ? showLandscape
+                : (sizeClass as any).endsWith("Landscape");
             const desiredClass = landscape
                 ? "Device16x9Landscape"
                 : "Device16x9Portrait";
@@ -311,31 +347,68 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
         return "";
     }
 
-    // Called from beforeChange, sets up context classes
+    // Called from beforeChange
+    // - makes an early change to state.currentSliderIndex, which triggers some
+    // class changes to animate the page sizing/shading in 3-page mode
+    // - may need to force the page layout class to match the current button
+    // setting, before we start to slide it into view
+    // - if we're animating motion, need to get the page into the start state
+    // before we slide it in
     private setIndex(index: number) {
         this.setState({ currentSliderIndex: index });
+        const { slider: _, page: bloomPage } = this.getPageAtSliderIndex(index);
+        if (bloomPage) {
+            // If the book can rotate, the page size class in the preview
+            // may not match the one we need for the current state of the orientation buttons.
+            if (this.canRotate) {
+                this.forceDevicePageSize(bloomPage);
+            }
+            this.animation.HandlePageBeforeVisible(bloomPage);
+        }
     }
 
-    // Called from afterChange, starts narration, etc.
-    private showingPage(index: number): void {
+    private getPageAtSliderIndex(
+        index: number
+    ): { slider: HTMLElement; page: HTMLElement | null } {
         const sliderPage = document.querySelectorAll(
             ".slick-slide[data-index='" +
                 (index + (this.props.showContextPages ? 1 : 0)) +
                 "'"
         )[0] as HTMLElement;
         if (!sliderPage) {
-            return; // unexpected
+            return { slider: sliderPage, page: null }; // unexpected
         }
         const bloomPage = sliderPage.getElementsByClassName(
             "bloom-page"
         )[0] as HTMLElement;
+        return { slider: sliderPage, page: bloomPage };
+    }
+
+    // Called from afterChange, starts narration, etc.
+    private showingPage(index: number): void {
+        const {
+            slider: sliderPage,
+            page: bloomPage
+        } = this.getPageAtSliderIndex(index);
         if (!bloomPage) {
             return; // blank initial or final page?
         }
+        if (this.canRotate) {
+            this.forceDevicePageSize(bloomPage);
+        }
+        // When we have computed it, this will raise PageDurationComplete,
+        // which calls an animation method to start the image animation.
         this.narration.computeDuration(bloomPage);
         this.narration.playAllSentences(bloomPage);
         if (this.props.pageSelected) {
             this.props.pageSelected(sliderPage);
         }
+        if (
+            bloomPage &&
+            Animation.pageHasAnimation(bloomPage as HTMLDivElement)
+        ) {
+            this.animation.HandlePageBeforeVisible(bloomPage);
+        }
+        this.animation.HandlePageVisible(bloomPage);
     }
 }
