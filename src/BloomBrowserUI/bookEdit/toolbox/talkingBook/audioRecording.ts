@@ -321,26 +321,7 @@ export default class AudioRecording {
                         "FALSE ".length
                     );
 
-                    theOneLocalizationManager
-                        .asyncGetText(
-                            "Common.MissingDependency",
-                            "Missing Dependency: {0} not found.",
-                            ""
-                        )
-                        .done(localizedText => {
-                            const errorMessage: string = theOneLocalizationManager.simpleDotNetFormat(
-                                localizedText,
-                                [missingDependency]
-                            );
-
-                            $(kAutoSegmentButtonIdSelector)
-                                .off()
-                                .click(e => toastr.error(errorMessage));
-                            $(kAutoSegmentButtonIdSelector).attr(
-                                "title",
-                                errorMessage
-                            ); // Sets the hover
-                        });
+                    this.handleMissingDependency(missingDependency);
                 } else {
                     $(kAutoSegmentButtonIdSelector)
                         .off()
@@ -349,6 +330,38 @@ export default class AudioRecording {
                 }
             }
         );
+    }
+
+    // Parameter 'missingDependency' comes from AudioSegmentationApi.AreAutoSegmentDependenciesMet(),
+    // but we don't want to depend on handling the individual strings. At this point we are handling
+    // all missing dependencies one way.
+    private handleMissingDependency(missingDependency: string): void {
+        console.log("Missing dependency: " + missingDependency);
+        const aeneasName = "Aeneas";
+        // For now at least, we only report Aeneas as missing and point the user to pages
+        // where installing Aeneas will also install all of its dependencies.
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.TalkingBook.MissingDependency",
+                "To use Auto Segment, first install this Aeneas system.",
+                "Do not translate the word 'Aeneas', please leave it literal intact."
+            )
+            .done(errorMessage => {
+                let url: string = "";
+                if (window.navigator.platform.startsWith("Win")) {
+                    url =
+                        "https://github.com/sillsdev/aeneas-installer/releases";
+                } else {
+                    url =
+                        "https://github.com/readbeyond/aeneas/blob/master/wiki/INSTALL.md";
+                }
+                const anchor = '<a href="' + url + '">Aeneas</a>';
+                const messageWithLink = errorMessage.replace("Aeneas", anchor);
+                $(kAutoSegmentButtonIdSelector)
+                    .off()
+                    .click(e => toastr.error(messageWithLink));
+                $(kAutoSegmentButtonIdSelector).attr("title", errorMessage); // Sets the hover
+            });
     }
 
     public setupForListen() {
