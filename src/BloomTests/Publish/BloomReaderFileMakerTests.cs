@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
 using Bloom.Book;
+using Bloom.Publish.Android;
 using NUnit.Framework;
-namespace BloomTests.Book
+
+namespace BloomTests.Publish
 {
 	[TestFixture]
-	public class BookReaderFileMakerTests
+	public class BloomReaderFileMakerTests
 	{
 		// Got this pasting from notepad and word with the extra line in between the Qs already, into Bloom 4.2.
 		[TestCase("<p>first<br>one<br>*two<br><br>second<br>*aa<br>bb<br></p>")]
@@ -52,7 +54,7 @@ namespace BloomTests.Book
 		}
 
 		// note: as far as I can tell, this test case uses <br> in a way that will not actually be found in the editor.
-		// It is copied from BookCompressorTests where it was in a kind of way-above-unit test.
+		// It is copied from BloomReaderPublishTests where it was in a kind of way-above-unit test.
 		[TestCase(@" <p>Where is the USA?<br></br>
                                 South America<br></br>
                                 *North America<br></br>

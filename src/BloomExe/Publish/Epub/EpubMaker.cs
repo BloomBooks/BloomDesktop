@@ -155,7 +155,7 @@ namespace Bloom.Publish.Epub
 		public string BookInStagingFolder { get; private set; }
 		private BookThumbNailer _thumbNailer;
 		public bool PublishWithoutAudio { get; set; }
-		Browser _browser = new Browser();
+		private PublishHelper _publishHelper = new PublishHelper();
 		private BookServer _bookServer;
 		// Ordered list of Table of Content entries.
 		List<string> _tocList = new List<string>();
@@ -165,7 +165,19 @@ namespace Bloom.Publish.Epub
 		private bool _firstNumberedPageSeen;
 		// image counter for creating id values
 		private int _imgCount;
-		public Control ControlForInvoke { get; set; }
+
+		/// <summary>
+		/// Preparing a book for publication involves displaying it in a browser in order
+		/// to accurately determine which elements are invisible and can be pruned from the
+		/// published book.  This requires being on the UI thread, which may require having
+		/// a Control available for calling Invoke() which will move execution to the UI
+		/// thread.
+		/// </summary>
+		public Control ControlForInvoke
+		{
+			get { return _publishHelper.ControlForInvoke; }
+			set { _publishHelper.ControlForInvoke = value; }
+		}
 		public bool AbortRequested { get; set; }
 		// Only make one audio file per page. This means if there are multiple recorded sentences on a page,
 		// Epubmaker will squash them into one, compress it, and make smil entries with appropriate offsets.
@@ -245,7 +257,7 @@ namespace Bloom.Publish.Epub
 				// It should only be null while running unit tests.
 				// Eventually, we want a unit test that checks this device xmatter behavior.
 				// But don't have time for now.
-				_book = BookCompressor.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
+				_book = PublishHelper.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
 			}
 
 			// The readium control remembers the current page for each book.
@@ -864,7 +876,7 @@ namespace Bloom.Publish.Epub
 
 			// Note, the following stylsheet stuff can be quite bewildering...
 			// Testing shows that these stylesheets are not actually used
-			// in RemoveUnwantedContent(), which falls back to the stylsheets in place for the book, which in turn,
+			// in PublishHelper.RemoveUnwantedContent(), which falls back to the stylesheets in place for the book, which in turn,
 			// in unit tests, is backed by a simple mocked BookStorage which doesn't have the stylesheet smarts. Sigh.
 
 			pageDom.RemoveModeStyleSheets();
@@ -890,18 +902,8 @@ namespace Bloom.Publish.Epub
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
 			}
 
-			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
-			// but things freeze up if we don't do it on the uI thread.
-			if (ControlForInvoke != null)
-			{
-				// Linux/Mono can choose a toast as the ActiveForm.  When it closes, bad things can happen
-				// trying to use it to Invoke.
-				if (ControlForInvoke.IsDisposed)
-					ControlForInvoke = Form.ActiveForm;
-				ControlForInvoke.Invoke((Action)(() => RemoveUnwantedContent(pageDom)));
-			}
-			else
-				RemoveUnwantedContent(pageDom);
+			// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
+			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, this);
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
@@ -1070,7 +1072,7 @@ namespace Bloom.Publish.Epub
 				return false;
 			}
 
-			if (HasClass(element, "branding"))
+			if (PublishHelper.HasClass(element, "branding"))
 			{
 				return true;
 			}
@@ -1099,12 +1101,13 @@ namespace Bloom.Publish.Epub
 
 			return false;
 		}
+
 		private void HandleImageDescriptions(HtmlDom bookDom)
 		{
 			// Set img alt attributes to the description, or erase them if no description (BL-6035)
 			foreach (var img in bookDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
 			{
-				bool isLicense = HasClass(img, "licenseImage");
+				bool isLicense = PublishHelper.HasClass(img, "licenseImage");
 				bool isBranding = IsBranding(img);
 				if (isLicense || isBranding)
 				{
@@ -1529,7 +1532,7 @@ namespace Bloom.Publish.Epub
 			var div = body.SelectSingleNode("div[@class]") as XmlElement;
 			if (div.GetOptionalStringAttribute("data-page", "") == "required singleton")
 			{
-				if (HasClass(div, "titlePage"))
+				if (PublishHelper.HasClass(div, "titlePage"))
 				{
 					div.SetAttribute ("type", kEpubNamespace, "titlepage");
 				}
@@ -1587,7 +1590,7 @@ namespace Bloom.Publish.Epub
 			{
 				// tests at least don't always start content on page 1
 				div = pageDom.Body.SelectSingleNode("//div[@data-page-number]") as XmlElement;
-				if (div != null && HasClass(div, "numberedPage") && !_firstNumberedPageSeen)
+				if (div != null && PublishHelper.HasClass(div, "numberedPage") && !_firstNumberedPageSeen)
 				{
 					div.SetAttribute ("role", "main");
 					string languageIdUsed;
@@ -1600,7 +1603,7 @@ namespace Bloom.Publish.Epub
 			// Note that the alt attribute is handled in HandleImageDescriptions().
 			foreach (var img in pageDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
 			{
-				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
+				if (PublishHelper.HasClass(img, "licenseImage") || PublishHelper.HasClass(img, "branding"))
 					continue;
 				div = img.SelectSingleNode("parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]") as XmlElement;
 				// Typically by this point we've converted the image descriptions into asides whose container is the next
@@ -1653,7 +1656,7 @@ namespace Bloom.Publish.Epub
 
 		private bool SetRoleAndLabelForClass(XmlElement div, string desiredClass, string labelId, string labelEnglish)
 		{
-			if (HasClass(div, desiredClass))
+			if (PublishHelper.HasClass(div, desiredClass))
 			{
 				string languageIdUsed;
 				div.SetAttribute("role", "contentinfo");
@@ -1842,7 +1845,7 @@ namespace Bloom.Publish.Epub
 				// For now we only attempt to adjust pictures contained in the marginBox.
 				// To do better than this we will probably need to actually load the HTML into
 				// a browser; even then it will be complex.
-				while (parent != null && !HasClass (parent, "marginBox")) {
+				while (parent != null && !PublishHelper.HasClass (parent, "marginBox")) {
 					// 'marginBox' is not yet the margin box...it is some parent div.
 					// If it has an explicit percent width style, adjust for this.
 					var styleAttr = parent.Attributes ["style"];
@@ -1861,7 +1864,7 @@ namespace Bloom.Publish.Epub
 				if (parent == null)
 					continue;
 				var page = parent.ParentNode as XmlElement;
-				if (!HasClass (page, "bloom-page"))
+				if (!PublishHelper.HasClass (page, "bloom-page"))
 					continue; // or return? marginBox should be child of page!
 				if (firstTime) {
 					var pageClass =
@@ -2009,110 +2012,6 @@ namespace Bloom.Publish.Epub
 		}
 
 		/// <summary>
-		/// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
-		/// </summary>
-		/// <param name="pageDom"></param>
-		private void RemoveUnwantedContent (HtmlDom pageDom)
-		{
-			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
-			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
-			var pageElt = (XmlElement)pageDom.Body.FirstChild;
-
-			// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
-			// browser figure out what is visible. So we can easily match elements in the browser DOM
-			// with the one we are manipulating, make sure they ALL have IDs.
-			EnsureAllThingsThatCanBeHiddenHaveIds (pageElt);
-			var normalDom = Book.GetHtmlDomWithJustOnePage (pageElt);
-			AddEpubVisibilityStylesheetAndClass (normalDom);
-
-			_browser.NavigateAndWaitTillDone(normalDom, 10000, "epub");
-
-			var toBeDeleted = new List<XmlElement> ();
-			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
-			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-			foreach (XmlElement elt in pageElt.SafeSelectNodes (kSelectThingsThatCanBeHidden)) {
-				if (!IsDisplayed (elt))
-					toBeDeleted.Add (elt);
-			}
-			foreach (var elt in toBeDeleted) {
-				elt.ParentNode.RemoveChild (elt);
-			}
-
-
-
-			// Remove any left-over bubbles
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes ("//label")) {
-				if (HasClass (elt, "bubble"))
-					elt.ParentNode.RemoveChild (elt);
-			}
-			// Remove page labels and descriptions.  Also remove pages (or other div elements) that users have
-			// marked invisible.  (The last mimics the effect of bookLayout/languageDisplay.less for editing
-			// or PDF published books.)
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes ("//div")) {
-				if (HasClass (elt, "pageLabel"))
-					elt.ParentNode.RemoveChild (elt);
-				if (HasClass (elt, "pageDescription"))
-					elt.ParentNode.RemoveChild (elt);
-				// REVIEW: is this needed now with the new strategy?
-				if (HasClass (elt, "bloom-editable") && HasClass (elt, "bloom-visibility-user-off"))
-					elt.ParentNode.RemoveChild (elt);
-			}
-			// Our recordingmd5 attribute is not allowed
-			foreach (XmlElement elt in HtmlDom.SelectAudioSentenceElementsWithRecordingMd5(pageDom.RawDom.DocumentElement))
-			{
-				elt.RemoveAttribute ("recordingmd5");
-			}
-			// Users should not be able to edit content of published books
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes ("//div[@contenteditable]")) {
-				elt.RemoveAttribute ("contenteditable");
-			}
-			RemoveTempIds (pageElt); // don't need temporary IDs any more.
-
-			foreach (var div in pageDom.Body.SelectNodes("//div[@role='textbox']").Cast<XmlElement>())
-			{
-				div.RemoveAttribute("role");				// this isn't an editable textbox in an ebook
-				div.RemoveAttribute("aria-label");			// don't want this without a role
-				div.RemoveAttribute("spellcheck");			// too late for spell checking in an ebook
-				div.RemoveAttribute("content-editable");	// too late for editing in an ebook
-			}
-
-			// Clean up img elements (BL-6035/BL-6036)
-			foreach (var img in pageDom.Body.SelectNodes("//img").Cast<XmlElement>())
-			{
-				// Ensuring a proper alt attribute is handled elsewhere
-				var src = img.GetOptionalStringAttribute("src", null);
-				if (String.IsNullOrEmpty(src))
-				{
-					// If the image file doesn't exist, we want to find out about it.  But if there is no
-					// image file, epubcheck complains and it doesn't do any good anyway.
-					img.ParentNode.RemoveChild(img);
-				}
-				else
-				{
-					var parent = img.ParentNode as XmlElement;
-					parent.RemoveAttribute("title");	// We don't want this in published books.
-					img.RemoveAttribute("title");	// We don't want this in published books.  (probably doesn't exist)
-					img.RemoveAttribute("type");	// This is invalid, but has appeared for svg branding images.
-				}
-			}
-			// epub-check doesn't like these attributes (BL-6036)
-			foreach (var div in pageDom.Body.SelectNodes("//div[contains(@class, 'split-pane-component-inner')]").Cast<XmlElement>())
-			{
-				div.RemoveAttribute("min-height");
-				div.RemoveAttribute("min-width");
-			}
-
-			// These elements are inserted and supposedly removed by the ckeditor javascript code.
-			// But at least one book created by our test team still has one output to an epub.  If it
-			// exists, it probably has a style attribute (position:fixed) that epubcheck won't like.
-			// (fixed position way off the screen to hide it)
-			foreach (var div in pageDom.Body.SelectNodes("//*[@data-cke-hidden-sel]").Cast<XmlElement>())
-			{
-				div.ParentNode.RemoveChild(div);
-			}
-		}
-
-		/// <summary>
 		/// Inkscape adds a lot of custom attributes and elements that the epubcheck program
 		/// objects to.  These may make life easier for editing with inkscape, but aren't needed
 		/// to display the image.  So we remove those elements and attributes from the .svg
@@ -2175,7 +2074,7 @@ namespace Bloom.Publish.Epub
 		/// many eReaders do not properly handle display:none.
 		/// </summary>
 		/// <param name="dom"></param>
-		private void AddEpubVisibilityStylesheetAndClass (HtmlDom dom)
+		internal void AddEpubVisibilityStylesheetAndClass(HtmlDom dom)
 		{
 			var headNode = dom.SelectSingleNodeHonoringDefaultNS ("/html/head");
 			var epubVisibilityStylesheet = dom.RawDom.CreateElement ("link");
@@ -2190,43 +2089,6 @@ namespace Bloom.Publish.Epub
 				bodyNode.SetAttribute ("class", classAttribute.Value + " epub-visibility");
 			else
 				bodyNode.SetAttribute ("class", "epub-visibility");
-		}
-
-		private bool IsDisplayed (XmlElement elt)
-		{
-			var id = elt.Attributes ["id"].Value;
-			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
-			return display != "none";
-		}
-
-		internal const string kTempIdMarker = "EpubTempIdXXYY";
-		private void EnsureAllThingsThatCanBeHiddenHaveIds (XmlElement pageElt)
-		{
-			int count = 1;
-			foreach (XmlElement elt in pageElt.SafeSelectNodes (kSelectThingsThatCanBeHidden)) {
-				if (elt.Attributes ["id"] != null)
-					continue;
-				elt.SetAttribute ("id", kTempIdMarker + count++);
-			}
-		}
-
-		void RemoveTempIds (XmlElement pageElt)
-		{
-			foreach (XmlElement elt in pageElt.SafeSelectNodes (".//div")) {
-				if (!elt.Attributes ["id"].Value.StartsWith (kTempIdMarker))
-					continue;
-				elt.RemoveAttribute ("id");
-			}
-		}
-
-		static bool HasClass(XmlElement elt, string className)
-		{
-			if (elt == null)
-				return false;
-			var classAttr = elt.Attributes ["class"];
-			if (classAttr == null)
-				return false;
-			return ((" " + classAttr.Value + " ").Contains (" " + className + " "));
 		}
 
 		private void RemoveRegularStylesheets (HtmlDom pageDom)
@@ -2545,7 +2407,11 @@ namespace Bloom.Publish.Epub
 		public void Dispose()
 		{
 			if (_outerStagingFolder != null)
-				_outerStagingFolder.Dispose ();
+				_outerStagingFolder.Dispose();
+			_outerStagingFolder = null;
+			if (_publishHelper != null)
+				_publishHelper.Dispose();
+			_publishHelper = null;
 		}
 	}
 }

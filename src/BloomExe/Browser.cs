@@ -1203,13 +1203,13 @@ namespace Bloom
 				}
 				catch (GeckoJavaScriptException ex)
 				{
-					ReportJavaScriptError(ex);
+					ReportJavaScriptError(ex, script);
 				}
 			}
 			return null;
 		}
 
-		private static void ReportJavaScriptError(GeckoJavaScriptException ex)
+		private static void ReportJavaScriptError(GeckoJavaScriptException ex, string script = null)
 		{
 			// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
 			// more than a toast, even for developers. But they should now be reported through CommonApi.HandleJavascriptError.
@@ -1220,7 +1220,10 @@ namespace Bloom
 			// so decided not to clutter the log with them.)
 			if (ex.Message.Contains("file: \"chrome://global/content/bindings/videocontrols.xml\""))
 				return;
-			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", ex.Message, ex);
+			var longMsg = ex.Message;
+			if (script != null)
+				longMsg = string.Format("Script=\"{0}\"{1}Exception message = {2}", script, Environment.NewLine, ex.Message);
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", longMsg, ex);
 		}
 
 		HashSet<string> _knownEvents = new HashSet<string>();

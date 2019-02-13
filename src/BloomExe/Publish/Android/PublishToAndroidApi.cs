@@ -285,17 +285,18 @@ namespace Bloom.Publish.Android
 				// wifi or usb...make the .bloomd in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
-					BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, bookServer, backColor, progress);
+					BloomReaderFileMaker.CreateBloomReaderBook(bloomdTempFile.Path, book, bookServer, backColor, progress);
 					sendAction(publishedFileName, bloomdTempFile.Path);
 					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
 					progress.MessageUsingTitle("BookSent", "You can now read \"{0}\" in Bloom Reader!", bookTitle);
 				}
-			} else
+			}
+			else
 			{
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
-				BookCompressor.CompressBookForDevice(destFileName, book, bookServer, backColor, progress);
+				BloomReaderFileMaker.CreateBloomReaderBook(destFileName, book, bookServer, backColor, progress);
 				progress.Message("PublishTab.Epub.Done", "Done", false);	// share message string with epub publishing
 			}
 
