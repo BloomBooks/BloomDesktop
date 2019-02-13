@@ -282,26 +282,7 @@ export default class AudioRecording {
                         "FALSE ".length
                     );
 
-                    theOneLocalizationManager
-                        .asyncGetText(
-                            "Common.MissingDependency",
-                            "Missing Dependency: {0} not found.",
-                            ""
-                        )
-                        .done(localizedText => {
-                            const errorMessage: string = theOneLocalizationManager.simpleDotNetFormat(
-                                localizedText,
-                                [missingDependency]
-                            );
-
-                            $(kAutoSegmentButtonIdSelector)
-                                .off()
-                                .click(e => toastr.error(errorMessage));
-                            $(kAutoSegmentButtonIdSelector).attr(
-                                "title",
-                                errorMessage
-                            ); // Sets the hover
-                        });
+                    this.handleMissingDependency(missingDependency);
                 } else {
                     $(kAutoSegmentButtonIdSelector)
                         .off()
@@ -310,6 +291,76 @@ export default class AudioRecording {
                 }
             }
         );
+    }
+
+    private handleMissingDependency(missingDependency: string): void {
+        const aeneasName = "Aeneas";
+        const dependencyIndex = [
+            aeneasName,
+            "Python",
+            "espeak",
+            "FFMPEG"
+        ].indexOf(missingDependency);
+        if (dependencyIndex < 0) {
+            const msg = "Unknown missing dependency";
+            toastr.error(msg);
+            console.log(msg);
+        }
+        // For now at least, we only report Aeneas as missing and point the user to pages
+        // where installing Aeneas will also install all of its dependencies.
+        missingDependency = aeneasName;
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.TalkingBook.MissingDependencyMsg",
+                "this {0} system",
+                "The {0} will be replaced by the name of a software package which was not found."
+            )
+            .done(localizedDependency => {
+                // We'll strip out these hashes later, but they allow us to turn this into a link for the toast.
+                const depWithHashes = "#" + missingDependency + "#";
+                const localizedDependencySystem = theOneLocalizationManager.simpleDotNetFormat(
+                    localizedDependency,
+                    [depWithHashes]
+                );
+                theOneLocalizationManager
+                    .asyncGetText(
+                        "EditTab.Toolbox.TalkingBook.MissingDependency",
+                        "To use Auto Segment, first install {0}.",
+                        "The {0} will be replaced by the name of an item which was not found."
+                    )
+                    .done(localizedText => {
+                        const errorMessage: string = theOneLocalizationManager.simpleDotNetFormat(
+                            localizedText,
+                            [localizedDependencySystem]
+                        );
+                        let url: string = "";
+                        if (window.navigator.platform.startsWith("Win")) {
+                            url =
+                                "https://github.com/sillsdev/aeneas-installer/releases";
+                        } else {
+                            url =
+                                "https://github.com/readbeyond/aeneas/blob/master/wiki/INSTALL.md";
+                        }
+                        const anchor =
+                            '<a href="' +
+                            url +
+                            '">' +
+                            missingDependency +
+                            "</a>";
+                        const messageWithLink = errorMessage.replace(
+                            depWithHashes,
+                            anchor
+                        );
+                        $(kAutoSegmentButtonIdSelector)
+                            .off()
+                            .click(e => toastr.error(messageWithLink));
+                        const regex: RegExp = /#/g;
+                        $(kAutoSegmentButtonIdSelector).attr(
+                            "title",
+                            errorMessage.replace(regex, "") // strip out the hashmarks
+                        ); // Sets the hover
+                    });
+            });
     }
 
     public setupForListen() {
