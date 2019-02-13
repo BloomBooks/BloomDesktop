@@ -1,4 +1,4 @@
-﻿// This class supports creating audio recordings for talking books.
+// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -63,6 +63,16 @@ const kAutoSegmentButtonId = "audio-autoSegment";
 const kAutoSegmentButtonIdSelector = "#" + kAutoSegmentButtonId;
 const kAutoSegmentStatusClass = "autoSegmentStatus";
 const kAutoSegmentEnabledClass = "autoSegmentEnabled";
+
+// Terminology //
+// CurrentTextBox: The text box (div) which is either currently highlighted itself or contains the currently highlighted element. CurrentTextBox never points to a audio-sentence span.
+// CurrentDiv: synonymous with CurrentTextBox
+// CurrentHighlight: The element which is currently highlighted. It could be either a div or a sentence (or etc., in the future)
+// CurrentElement: synonymous with CurrentHighlight
+// Actively focused: Means that it has the UI focus e.g. the mouse has selected it
+// Active: See "actively focused."
+// Focused: See "actively focused."
+// Selected: Means that the element is selected, e.g. it will be highlighted during the next stable state. However, it might not be currently highlighted YET.
 
 // TODO: Maybe a lot of this code should move to TalkingBook.ts (regarding the tool) instead of AudioRecording.ts (regarding recording/playing the audio files)
 export default class AudioRecording {
@@ -186,8 +196,8 @@ export default class AudioRecording {
             }
         };
 
-        const currentDiv = this.getCurrentDiv();
-        this.getRecordingModeAsync(currentDiv, doWhenRecordingModeIsKnown);
+        const currentTextBox = this.getCurrentTextBox();
+        this.getRecordingModeAsync(currentTextBox, doWhenRecordingModeIsKnown);
     }
 
     private getRecordingModeAsync(
@@ -946,7 +956,8 @@ export default class AudioRecording {
         return $(body);
     }
 
-    public getCurrentElement(): HTMLElement | null {
+    // Returns the element (could be either div, span, etc.) which is currently highlighted.
+    public getCurrentHighlight(): HTMLElement | null {
         let page = this.getPageDocBodyJQuery();
 
         if (page.length <= 0) {
@@ -962,23 +973,25 @@ export default class AudioRecording {
         return null;
     }
 
+    // Returns the text of the currently highlighted element
     public getCurrentText(): string {
-        const currentElement = this.getCurrentElement();
-        if (currentElement) {
-            return currentElement.innerText;
+        const currentHighlight = this.getCurrentHighlight();
+        if (currentHighlight) {
+            return currentHighlight.innerText;
         }
         return "";
     }
 
-    public getAudioSentencesInCurrentDiv(): HTMLElement[] {
+    // Returns a list of the audio-sentences in the text box (definitely a div) corresponding to the currently highlighted element (not necessariliy a div)
+    public getAudioSentencesInCurrentTextBox(): HTMLElement[] {
         const elements: HTMLElement[] = [];
-        const currentDiv = this.getCurrentDiv();
+        const currentTextBox = this.getCurrentTextBox();
 
-        if (currentDiv) {
-            if (currentDiv.classList.contains(kAudioSentence)) {
-                elements.push(currentDiv);
+        if (currentTextBox) {
+            if (currentTextBox.classList.contains(kAudioSentence)) {
+                elements.push(currentTextBox);
             } else {
-                const collection = currentDiv.getElementsByClassName(
+                const collection = currentTextBox.getElementsByClassName(
                     kAudioSentence
                 );
                 for (let i = 0; i < collection.length; ++i) {
@@ -993,10 +1006,10 @@ export default class AudioRecording {
         return elements;
     }
 
-    // Returns the div with the Current Highlight on it (that is, the one with .ui-audioCurrent class applied)
-    // One difference between this function and getCurrentElement is that if the currently-highlighted element is not a div, then getCurrentDiv() walks up the tree to find its most recent ancestor div. (whereas getCurrentElement can return non-div elements)
+    // Returns the Text Box div with the Current Highlight on it (that is, the one with .ui-audioCurrent class applied)
+    // One difference between this function and getCurrentHighlight is that if the currently-highlighted element is not a div, then getCurrentTextBox() walks up the tree to find its most recent ancestor div. (whereas getCurrentHighlight can return non-div elements)
     // This function will also attempt to set it in case no such Current Highlight exists (which is often an erroneous state arrived at by race condition)
-    public getCurrentDiv(): HTMLElement | null {
+    public getCurrentTextBox(): HTMLElement | null {
         const pageBody = this.getPageDocBody();
         if (!pageBody) return pageBody;
 
@@ -1043,10 +1056,14 @@ export default class AudioRecording {
             // If the cursor is within a span within a div, it is the div that is the activeElement.  This is both a good thing (when we want to know what div the user is in) and a bad thing (in by sentence mode, we'd really prefer to know what span they're in but this is not trivial)
             return pageFrame.contentDocument.activeElement;
         } else {
-            return this.getCurrentDiv();
+            return this.getCurrentTextBox();
         }
     }
 
+    // Moves the currently highlighted element to specified text box
+    // Note: as name promises, this moves it to a text box (a div) not an element (either an audio-sentence div or audio-sentence span).
+    // This happens even if audioRecordingMode=Sentence. It is caller's responsibility to either ensure that this operation is valid,
+    // or to be able to handle the resulting state (possibly in Sentence mode but a div is selected), for example by calling updateMarkupForCurrentText() to re-update the state.
     private moveCurrentHighlightToTextBox(newSelectedTextBox): void {
         const pageBody = this.getPageDocBody();
         if (!pageBody) return; // Just give up, not much we can do from here.
@@ -1082,35 +1099,30 @@ export default class AudioRecording {
         // * Adjust the Current Highlight appropriately.
         // * (keep adjusting the current highlight to) fight with timing issues
 
+        const currentTextBox = this.getCurrentTextBox();
+
         // Enhance: it would be nice/significantly more intuitive if this (or a stripped-down version that just moves the highlight/audio recording mode) could run when the mouse focus changes.
         if (allowUpdateOfCurrent) {
-            // TODO: It's not even clear which mode the new one is in.
-
-            // If this text box (currentDiv) is in sentence mode, this will temporarily put things
-            // in a strange state where the audio-highlight is on the whole div though it should be
-            // on one of its sentences. The doneCallback needs to fix this.
-
-            const oldCurrentTextBox = this.getCurrentDiv();
             const selectedTextBox = this.getWhichTextBoxShouldReceiveHighlight();
 
-            if (oldCurrentTextBox != selectedTextBox) {
+            if (currentTextBox != selectedTextBox) {
                 // Note: This may temporarily put things into a funny state. We ask to move the highlight to the whole div regardless of what the recording mode is.
                 // We have a bit of a chicken and egg problem here. The new recording mode still needs to be determined, and the audio-sentence markup is not applied yet either,
                 // but it's easier to determine the recording mode and apply the audio-sentence markup if we move the current highlight first than vice-versa.
                 // Calling InitializeForMarkupAsync (called by updateMarkupForCurrentText) and updateMarkupForCurrentText should get us back into a 100% valid state.
                 this.moveCurrentHighlightToTextBox(selectedTextBox);
                 this.audioRecordingMode = AudioRecordingMode.Unknown; // Clear the mode to signal that re-doing initialization is necessary.
-            }
 
-            this.updateMarkupForCurrentText(false);
+                this.updateMarkupForCurrentText(false);
+                return;
+            }
+        }
+
+        if (!currentTextBox) {
             return;
         }
 
         this.isShowing = true;
-        const currentDiv = this.getCurrentDiv();
-        if (!currentDiv) {
-            return;
-        }
 
         if (!this.isFullyInitialized()) {
             this.initializeForMarkupAsync(() => {
@@ -1119,12 +1131,12 @@ export default class AudioRecording {
             return;
         }
 
-        // In addition to us processing currentDiv, also add any unprocessed divs
+        // In addition to us processing currentTextBox, also add any unprocessed divs
         const recordableDivs = this.getRecordableDivs();
         const unprocessedRecordables = recordableDivs.filter(
             ":not([data-audioRecordingMode])"
         );
-        let unionedElementsToProcess = $(currentDiv).add(
+        let unionedElementsToProcess = $(currentTextBox).add(
             unprocessedRecordables
         );
 
@@ -1143,7 +1155,7 @@ export default class AudioRecording {
 
         // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
         this.setCurrentAudioElementToFirstAudioSentenceWithinElement(
-            currentDiv,
+            currentTextBox,
             false
         );
 
@@ -1169,7 +1181,7 @@ export default class AudioRecording {
             // Keep setting the current highlight for an additional roughly 1 second
             setTimeout(() => {
                 this.setCurrentAudioElementToFirstAudioSentenceWithinElement(
-                    currentDiv,
+                    currentTextBox,
                     true
                 );
             }, delayInMilliseconds);
@@ -1207,11 +1219,11 @@ export default class AudioRecording {
             // The element itself is already an audio-sentence. Easy, just use itself.
             changeTo = element;
         } else {
-            const sentencesInCurrentDiv = element.getElementsByClassName(
+            const sentencesWithinCurrentElement = element.getElementsByClassName(
                 kAudioSentence
             );
-            if (sentencesInCurrentDiv.length > 0) {
-                changeTo = sentencesInCurrentDiv.item(0);
+            if (sentencesWithinCurrentElement.length > 0) {
+                changeTo = sentencesWithinCurrentElement.item(0);
             } else {
                 // Confused, not supposed to be here, just try to set it to the first audio-sentence in any text box as a last resort
                 const firstSentence = this.getPageDocBodyJQuery()
@@ -1939,7 +1951,7 @@ export default class AudioRecording {
         // Determine whether the recording mode checkbox should be enabled or not, based on whether any audio files are present
         // for anything in the current text box
         const currentTextBoxIds: string[] = [];
-        const audioSentenceCollection = this.getAudioSentencesInCurrentDiv();
+        const audioSentenceCollection = this.getAudioSentencesInCurrentTextBox();
         for (let i = 0; i < audioSentenceCollection.length; ++i) {
             const audioSentenceElement = audioSentenceCollection[i];
             if (audioSentenceElement) {
@@ -2045,8 +2057,8 @@ export default class AudioRecording {
             return;
         }
 
-        const currentDiv = this.getCurrentElement();
-        if (!currentDiv) {
+        const currentTextBox = this.getCurrentHighlight();
+        if (!currentTextBox) {
             // At this point, not going to be able to get the ID of the div so we can't figure out how to get the filename...
             // So just give up.
             toastr.error("AutoSegment did not succeed.");
@@ -2073,7 +2085,7 @@ export default class AudioRecording {
                 });
 
             const inputParameters = {
-                audioFilenameBase: currentDiv.id,
+                audioFilenameBase: currentTextBox.id,
                 audioTextFragments: fragmentIdTuples,
                 lang: this.getAutoSegmentLanguageCode()
             };
@@ -2151,9 +2163,9 @@ export default class AudioRecording {
         const langCodeFromAutoSegmentSettings = ""; // TODO: IMPLEMENT ME after we convert to having the recording mode setting only apply to the current text box. It'll make this set of settings easier to figure out.
         let langCode = langCodeFromAutoSegmentSettings;
         if (!langCode) {
-            const currentDiv = this.getCurrentElement();
-            if (currentDiv) {
-                const langAttributeValue = currentDiv.getAttribute("lang");
+            const currentTextBox = this.getCurrentHighlight();
+            if (currentTextBox) {
+                const langAttributeValue = currentTextBox.getAttribute("lang");
                 if (langAttributeValue) {
                     langCode = langAttributeValue;
                 }

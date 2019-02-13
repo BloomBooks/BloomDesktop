@@ -982,8 +982,8 @@ describe("audio recording tests", () => {
             recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
-            const currentDiv = recording.getCurrentDiv();
-            expect(currentDiv).toBeTruthy(
+            const currentTextBox = recording.getCurrentTextBox();
+            expect(currentTextBox).toBeTruthy(
                 "Could not find currentDiv. Possible test setup problem?"
             );
 
@@ -1010,7 +1010,7 @@ describe("audio recording tests", () => {
             recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
-            const currentDiv = recording.getCurrentDiv();
+            const currentDiv = recording.getCurrentTextBox();
             expect(currentDiv).toBeTruthy(
                 "Could not find currentDiv. Possible test setup problem?"
             );
@@ -1038,7 +1038,7 @@ describe("audio recording tests", () => {
             recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
-            const currentDiv = recording.getCurrentDiv();
+            const currentDiv = recording.getCurrentTextBox();
             expect(currentDiv).toBeTruthy(
                 "Could not find currentDiv. Possible test setup problem?"
             );
@@ -1068,7 +1068,7 @@ describe("audio recording tests", () => {
             recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
-            const currentDiv = recording.getCurrentDiv();
+            const currentDiv = recording.getCurrentTextBox();
             expect(currentDiv).toBeTruthy(
                 "Could not find currentDiv. Possible test setup problem?"
             );
@@ -1096,7 +1096,7 @@ describe("audio recording tests", () => {
             recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
-            const currentDiv = recording.getCurrentDiv();
+            const currentDiv = recording.getCurrentTextBox();
             expect(currentDiv).toBeTruthy(
                 "Could not find currentDiv. Possible test setup problem?"
             );
@@ -1181,7 +1181,7 @@ describe("audio recording tests", () => {
         SetupIFrameFromHtml("<div class='ui-audioCurrent'>Hello world</div>");
 
         const recording = new AudioRecording();
-        expect(recording.getCurrentElement()).toBeTruthy();
+        expect(recording.getCurrentHighlight()).toBeTruthy();
         const returnedText = recording.getCurrentText();
 
         expect(returnedText).toBe("Hello world");
