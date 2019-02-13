@@ -282,26 +282,7 @@ export default class AudioRecording {
                         "FALSE ".length
                     );
 
-                    theOneLocalizationManager
-                        .asyncGetText(
-                            "Common.MissingDependency",
-                            "Missing Dependency: {0} not found.",
-                            ""
-                        )
-                        .done(localizedText => {
-                            const errorMessage: string = theOneLocalizationManager.simpleDotNetFormat(
-                                localizedText,
-                                [missingDependency]
-                            );
-
-                            $(kAutoSegmentButtonIdSelector)
-                                .off()
-                                .click(e => toastr.error(errorMessage));
-                            $(kAutoSegmentButtonIdSelector).attr(
-                                "title",
-                                errorMessage
-                            ); // Sets the hover
-                        });
+                    this.handleMissingDependency(missingDependency);
                 } else {
                     $(kAutoSegmentButtonIdSelector)
                         .off()
@@ -310,6 +291,86 @@ export default class AudioRecording {
                 }
             }
         );
+    }
+
+    private handleMissingDependency(missingDependency: string): void {
+        const dependencyIndex = [
+            "Python",
+            "espeak",
+            "FFMPEG",
+            "Aeneas for Python"
+        ].indexOf(missingDependency);
+        if (dependencyIndex < 0) {
+            const msg = "Unknown missing dependency";
+            toastr.error(msg);
+            console.log(msg);
+        }
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.TalkingBook.MissingDependencyMsg",
+                "this {0} system",
+                "The {0} will be replaced by the name of a software package which was not found."
+            )
+            .done(localizedDependency => {
+                // We'll strip out these hashes later, but they allow us to turn this into a link for the toast.
+                const depWithHashes = "#" + missingDependency + "#";
+                const localizedDependencySystem = theOneLocalizationManager.simpleDotNetFormat(
+                    localizedDependency,
+                    [depWithHashes]
+                );
+                theOneLocalizationManager
+                    .asyncGetText(
+                        "EditTab.Toolbox.TalkingBook.MissingDependency",
+                        "To use Auto Segment, first install {0}.",
+                        "The {0} will be replaced by the name of an item which was not found."
+                    )
+                    .done(localizedText => {
+                        const errorMessage: string = theOneLocalizationManager.simpleDotNetFormat(
+                            localizedText,
+                            [localizedDependencySystem]
+                        );
+                        const isWin = window.navigator.platform.startsWith(
+                            "Win"
+                        );
+                        // In the following array of arrays, [x, 0] is for Windows and [x, 1] is for Linux.
+                        const urls = [
+                            [
+                                "https://www.python.org/downloads/windows/", // Python
+                                "https://www.python.org/downloads/source/"
+                            ],
+                            [
+                                "http://espeak.sourceforge.net/download.html", // eSpeak
+                                "http://espeak.sourceforge.net/download.html"
+                            ],
+                            [
+                                "https://www.ffmpeg.org/download.html", // FFMPEG
+                                "https://www.ffmpeg.org/download.html"
+                            ],
+                            [
+                                "https://github.com/sillsdev/aeneas-installer/releases", // Aeneas
+                                "https://github.com/readbeyond/aeneas/blob/master/wiki/INSTALL.md"
+                            ]
+                        ];
+                        const url = urls[dependencyIndex][isWin ? 0 : 1];
+                        const anchor =
+                            '<a href="' +
+                            url +
+                            '">' +
+                            missingDependency +
+                            "</a>";
+                        const messageWithLink = errorMessage.replace(
+                            depWithHashes,
+                            anchor
+                        );
+                        $(kAutoSegmentButtonIdSelector)
+                            .off()
+                            .click(e => toastr.error(messageWithLink));
+                        $(kAutoSegmentButtonIdSelector).attr(
+                            "title",
+                            errorMessage.replace("#", "") // strip out the hashtags
+                        ); // Sets the hover
+                    });
+            });
     }
 
     public setupForListen() {

@@ -79,6 +79,8 @@ namespace Bloom.web.controllers
 
 		public bool AreAutoSegmentDependenciesMet(out string message)
 		{
+			// N.B. Don't change the messages here (even capitalization!) with also changing them in
+			// audioRecording.ts handleMissingDependency().
 			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Maybe use "locate" command on Linux?
 			{
 				message = "Python";
@@ -179,22 +181,25 @@ namespace Bloom.web.controllers
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string inputAudioFilename = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
-			if (String.IsNullOrEmpty(inputAudioFilename))
+			if (string.IsNullOrEmpty(inputAudioFilename))
 			{
 				ErrorReport.ReportNonFatalMessageWithStackTrace("No audio file found. Please record audio first.");
 				request.ReplyWithBoolean(false);
 				return;
 			}
 
-			IEnumerable<AudioTextFragment> audioTextFragments = (AudioTextFragment[])(requestParameters.audioTextFragments);
-			string requestedLangCode = requestParameters.lang;
+			IEnumerable<AudioTextFragment> audioTextFragments = requestParameters.audioTextFragments;
+			var requestedLangCode = requestParameters.lang;
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string message;
 			if (!AreAutoSegmentDependenciesMet(out message))
 			{
-				string localizedFormatString = L10NSharp.LocalizationManager.GetString("Common.MissingDependency", "Missing Dependency: {0} not found.");
-				ErrorReport.ReportNonFatalMessageWithStackTrace(String.Format(localizedFormatString, message));
+				var localizedFormatString = L10NSharp.LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MissingDependency",
+					"To use Auto Segment, first install {0}.");
+				var localizedPackageString = string.Format(L10NSharp.LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MissingDependencyMsg",
+					"this {0} system"), message);
+				ErrorReport.ReportNonFatalMessageWithStackTrace(string.Format(localizedFormatString, localizedPackageString));
 				request.ReplyWithBoolean(false);
 				return;
 			}
@@ -202,9 +207,9 @@ namespace Bloom.web.controllers
 			// When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
 			// Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
 			string langCode = null;
-			var langCodesToTry = new string[] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
-			string stdOut = "";
-			string stdErr = "";
+			var langCodesToTry = new [] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
+			var stdOut = "";
+			var stdErr = "";
 			foreach (var langCodeToTry in langCodesToTry)
 			{
 				if (!DoesCommandCauseError($"espeak -v {langCodeToTry} -q \"hello world\"", kWorkingDirectory, out stdOut, out stdErr))
@@ -213,7 +218,7 @@ namespace Bloom.web.controllers
 					break;
 				}
 			}
-			if (String.IsNullOrEmpty(langCode))
+			if (string.IsNullOrEmpty(langCode))
 			{
 				// FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
 				ErrorReport.ReportNonFatalMessageWithStackTrace($"eSpeak error: {stdOut}\n{stdErr}");
