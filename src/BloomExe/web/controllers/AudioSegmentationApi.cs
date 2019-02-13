@@ -65,15 +65,13 @@ namespace Bloom.web.controllers
 			string message;
 			if (!AreAutoSegmentDependenciesMet(out message))
 			{
-				request.ReplyWithText($"FALSE {message}");
-				return;
+				request.ReplyWithText("FALSE");
 			}
 			else
 			{
 				// Note: We could also check if an audio file exists. But I think it's best to delay that check until absolutely needed.
 				// It makes the state updates when the user records or deletes audio more complicated for little gain I think.
 				request.ReplyWithText("TRUE");
-				return;
 			}
 		}
 
@@ -82,21 +80,25 @@ namespace Bloom.web.controllers
 			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Maybe use "locate" command on Linux?
 			{
 				message = "Python";
+				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
 			else if (DoesCommandCauseError("WHERE espeak", kWorkingDirectory))
 			{
 				message = "espeak";
+				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
 			else if (DoesCommandCauseError("WHERE ffmpeg", kWorkingDirectory))
 			{
 				message = "FFMPEG";
+				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
 			else if (DoesCommandCauseError("python -m aeneas.tools.execute_task", kWorkingDirectory, 2))    // Expected to list usage. Error Code 0 = Success, 1 = Error, 2 = Help shown.
 			{
-				message = "Aeneas for Python"; 
+				message = "Aeneas for Python";
+				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
 
@@ -179,22 +181,26 @@ namespace Bloom.web.controllers
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string inputAudioFilename = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
-			if (String.IsNullOrEmpty(inputAudioFilename))
+			if (string.IsNullOrEmpty(inputAudioFilename))
 			{
 				ErrorReport.ReportNonFatalMessageWithStackTrace("No audio file found. Please record audio first.");
 				request.ReplyWithBoolean(false);
 				return;
 			}
 
-			IEnumerable<AudioTextFragment> audioTextFragments = (AudioTextFragment[])(requestParameters.audioTextFragments);
+			IEnumerable<AudioTextFragment> audioTextFragments = requestParameters.audioTextFragments;
 			string requestedLangCode = requestParameters.lang;
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
+			// Since this is basically a desperate fallback that shouldn't ever happen we won't try to make the message
+			// contain a hot link here. That code is in Typescript.
 			string message;
 			if (!AreAutoSegmentDependenciesMet(out message))
 			{
-				string localizedFormatString = L10NSharp.LocalizationManager.GetString("Common.MissingDependency", "Missing Dependency: {0} not found.");
-				ErrorReport.ReportNonFatalMessageWithStackTrace(String.Format(localizedFormatString, message));
+				var localizedFormatString = L10NSharp.LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MissingDependency",
+					"To use Auto Segment, first install this {0} system.",
+					"The placeholder {0} will be replaced with the dependency that needs to be installed.");
+				ErrorReport.ReportNonFatalMessageWithStackTrace(string.Format(localizedFormatString, message));
 				request.ReplyWithBoolean(false);
 				return;
 			}
@@ -202,9 +208,9 @@ namespace Bloom.web.controllers
 			// When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
 			// Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
 			string langCode = null;
-			var langCodesToTry = new string[] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
-			string stdOut = "";
-			string stdErr = "";
+			var langCodesToTry = new [] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
+			var stdOut = "";
+			var stdErr = "";
 			foreach (var langCodeToTry in langCodesToTry)
 			{
 				if (!DoesCommandCauseError($"espeak -v {langCodeToTry} -q \"hello world\"", kWorkingDirectory, out stdOut, out stdErr))
@@ -213,7 +219,7 @@ namespace Bloom.web.controllers
 					break;
 				}
 			}
-			if (String.IsNullOrEmpty(langCode))
+			if (string.IsNullOrEmpty(langCode))
 			{
 				// FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
 				ErrorReport.ReportNonFatalMessageWithStackTrace($"eSpeak error: {stdOut}\n{stdErr}");
