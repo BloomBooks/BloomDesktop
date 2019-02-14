@@ -618,6 +618,7 @@
     </Compile>
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
+    <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
     <Compile Include="web\controllers\AudioSegmentationApi.cs" />
