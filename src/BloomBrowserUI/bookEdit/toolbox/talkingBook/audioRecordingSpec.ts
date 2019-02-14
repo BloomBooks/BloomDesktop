@@ -1214,6 +1214,61 @@ describe("audio recording tests", () => {
             expect(returnedFragmentIds[i].id).toBeTruthy();
         }
     });
+
+    it("extractFragmentsForAudioSegmentation handles duplicate sentences separately", () => {
+        SetupIFrameFromHtml(
+            "<div class='ui-audioCurrent' lang='en'>What color is the sky? Blue. What color is the ocean? Blue. Hello. Hello.</p></div>"
+        );
+
+        const recording = new AudioRecording();
+        recording.audioRecordingMode = AudioRecordingMode.TextBox;
+        const returnedFragmentIds: AudioTextFragment[] = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+
+        expect(
+            Object.keys(recording.__testonly__sentenceToIdListMap).length
+        ).toBe(4); // the number of distinct sentences
+
+        // Check that the stored map actually maps back to the correct ID (even if there are duplicate sentences)
+        expect(returnedFragmentIds.length).toBe(6); // the number of sentences
+        for (let i = 0; i < returnedFragmentIds.length; ++i) {
+            const fragmentText = returnedFragmentIds[i].fragmentText;
+            const expectedId = returnedFragmentIds[i].id;
+            const idList =
+                recording.__testonly__sentenceToIdListMap[fragmentText];
+            expect(idList[0]).toBe(
+                expectedId,
+                `Fragment ${i} (${fragmentText})`
+            );
+
+            idList.shift(); // The existing one is all done, move on to next one.
+        }
+    });
+
+    it("normalizeText() works", () => {
+        function testAllFormsMatch(
+            rawForm: string,
+            processingForm: string,
+            savedForm
+        ) {
+            expect(AudioRecording.normalizeText(rawForm)).toBe(
+                AudioRecording.normalizeText(processingForm)
+            );
+            expect(AudioRecording.normalizeText(rawForm)).toBe(
+                AudioRecording.normalizeText(savedForm)
+            );
+            // 3rd check is unnecessary because transitive property
+        }
+        testAllFormsMatch(
+            "John 3:16 (NIV)\n\n\n",
+            "John 3:16 (NIV)<br />",
+            "John 3:16 (NIV)"
+        );
+        testAllFormsMatch(
+            "\u00a0\u00a0\u00a0 In the beginning...",
+            "\u00a0\u00a0\u00a0 In the beginning...",
+            "&nbsp;&nbsp;&nbsp; In the beginning..."
+        );
+    });
 });
 
 describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {

@@ -1,4 +1,4 @@
-// This class supports creating audio recordings for talking books.
+﻿// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -88,7 +88,11 @@ export default class AudioRecording {
     public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
     private isShowing: boolean;
 
-    private sentenceToIdMap: object = {}; // map<string, string> from a sentence to the desired ID for that span (instead of using a new, dynamically generated one)
+    // map<string, string[]> from a sentence to the desired IDs for that span (instead of using a new, dynamically generated one)
+    // We have a string[] representing the IdList instead of just a string ID because a text box could potentially contain the same sentence multiple times.
+    private sentenceToIdListMap: object = {};
+    public __testonly__sentenceToIdListMap = this.sentenceToIdListMap; // Exposing it for unit tests. Not meant for public use.
+
     private stringToSentencesCache: object = {};
 
     private listenerFunction: (MessageEvent) => void;
@@ -1712,7 +1716,7 @@ export default class AudioRecording {
     // current sentence, we want to preserve the association between that content and ID (and possibly recording).
     // Where there aren't exact matches, but there are existing audio-sentence spans, we keep the ids as far as possible,
     // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
-    // We also attempt to use any sentence IDs specified by this.sentenceToIDMap
+    // We also attempt to use any sentence IDs specified by this.sentenceToIdListMap
     private makeAudioSentenceElementsLeaf(elt: JQuery): void {
         // When all text is deleted, we get in a temporary state with no paragraph elements, so the root editable div
         // may be processed...and if this happens during editing the format button may be present. The body of this function
@@ -1775,9 +1779,22 @@ export default class AudioRecording {
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
                 if (!newId) {
-                    if (fragment.text in this.sentenceToIdMap) {
-                        newId = this.sentenceToIdMap[fragment.text];
-                    } else {
+                    const normalizedText = AudioRecording.normalizeText(
+                        fragment.text
+                    );
+                    if (normalizedText in this.sentenceToIdListMap) {
+                        const idList = this.sentenceToIdListMap[normalizedText];
+
+                        if (idList.length >= 1) {
+                            newId = idList[0];
+
+                            // We're done processing this id, so get rid of it.
+                            // This allows us to use the next ID if there are multiple sentences with the same fragment text.
+                            idList.shift();
+                        }
+                    }
+
+                    if (!newId) {
                         newId = this.createValidXhtmlUniqueId();
                     }
                 }
@@ -1797,6 +1814,24 @@ export default class AudioRecording {
         // set the html
         elt.html(newHtml);
         elt.append(formatButton);
+    }
+
+    // Normalization rules for text which has already been processed by CKEditor
+    // Note that the text seems to have 3 variations when running AutoSegment, which may represent extraneous whitespace differently:
+    // 1) Raw Form - Directly after typing text, immediately upon clicking AutoSegment, before anything is modified
+    // 2) Processing Form - After clicking AutoSegment and the response is being proc, during MakeAudioSentenceElementsLeaf
+    // 3) Saved Form - After saving the page.
+    // We want all 3 forms to be able to map to the same string after normalizing.
+    public static normalizeText(text: string): string {
+        if (!text) {
+            return text;
+        }
+
+        text = text.replace(/\r/g, "").replace(/\n/g, ""); // Raw form may inject extraneous newlines upon inserting punctuation like '('
+        text = text.replace(/<br \/>/g, ""); // Processing form will contain <br />.
+        text = text.replace(/&nbsp;/g, String.fromCharCode(160)); // Saved form will store multiple spaces as Unicode decimal 160 = non-breaking space
+
+        return text;
     }
 
     private createValidXhtmlUniqueId(): string {
@@ -2156,15 +2191,19 @@ export default class AudioRecording {
 
                 // Sometimes extraneous newlines can be injected (by CKEditor?). They may get removed later (maybe after the CKEditor reloads when the text box's underlying HTML is modified???)
                 // However, some processing needs the text immediately, and others are after the text is cleaned.
-                // In order to reconcile the two, just fix the text immediately.
-                fragment.text = fragment.text
-                    .replace(/\r/g, "")
-                    .replace(/\n/g, "");
+                // In order to reconcile the two, just normalize the text immediately.
+                fragment.text = AudioRecording.normalizeText(fragment.text);
 
                 fragmentObjects.push(
                     new AudioTextFragment(fragment.text, newId)
                 );
-                this.sentenceToIdMap[fragment.text] = newId; // This is saved so MakeSentenceAudioElementsLeaf can recover it
+
+                let idList: string[] = [];
+                if (fragment.text in this.sentenceToIdListMap) {
+                    idList = this.sentenceToIdListMap[fragment.text];
+                }
+                idList.push(newId); // This is saved so MakeSentenceAudioElementsLeaf can recover it
+                this.sentenceToIdListMap[fragment.text] = idList;
             }
         }
 
@@ -2235,12 +2274,12 @@ export default class AudioRecording {
         if (isSuccess) {
             // Now that we know the Auto Segmentation succeeded, finally convert into by-sentence mode.
 
-            // Note that this will want to use the sentenceToIdMap member variable to inform it to re-use the IDs used to create the split audio files
+            // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
             const forceOverwrite: boolean = true;
             this.updateRecordingMode(forceOverwrite); // Needs to call changeStateAndSetExpected() at some point.
 
-            // Now that we're all done with use sentenceToIdMap, clear it out so that there's no potential for accidental re-use
-            this.sentenceToIdMap = {};
+            // Now that we're all done with use sentenceToIdListMap, clear it out so that there's no potential for accidental re-use
+            this.sentenceToIdListMap = {};
         } else {
             this.changeStateAndSetExpected("record");
 
