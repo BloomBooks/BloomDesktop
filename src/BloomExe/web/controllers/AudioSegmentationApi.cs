@@ -433,6 +433,7 @@ namespace Bloom.web.controllers
 		private void ExtractAudioSegments(IList<string> idList, IList<Tuple<string, string>> timingStartEndRangeList, string directoryName, string inputAudioFilename)
 		{
 			Debug.Assert(idList.Count == timingStartEndRangeList.Count, $"Number of text fragments ({idList.Count}) does not match number of extracted timings ({timingStartEndRangeList.Count}). The parsed timing ranges might be completely incorrect. The last parsed timing is: ({timingStartEndRangeList.Last()?.Item1 ?? "null"}, {timingStartEndRangeList.Last()?.Item2 ?? "null"}).");
+			int size = Math.Min(timingStartEndRangeList.Count, idList.Count);	// Note: it could differ if there is some discrepancy in line endings in the fragments file. This doesn't seem like it should happen but occasionally I see it.
 
 			string extension = Path.GetExtension(inputAudioFilename);	// Will include the "." e.g. ".mp3"
 			if (string.IsNullOrWhiteSpace(extension))
@@ -440,8 +441,8 @@ namespace Bloom.web.controllers
 				extension = ".mp3";
 			}
 			// Allow each ffmpeg to run in parallel
-			var tasksToWait = new Task[timingStartEndRangeList.Count];
-			for (int i = 0; i < timingStartEndRangeList.Count; ++i)
+			var tasksToWait = new Task[size];
+			for (int i = 0; i < size; ++i)
 			{
 				var timingRange = timingStartEndRangeList[i];
 				var timingStartString = timingRange.Item1;

@@ -103,7 +103,7 @@ namespace Bloom.Edit
 			// Any handler which retrieves information from the audio folder SHOULD wait on the _completeRecording lock (call WaitForRecordingToComplete()) to ensure that it sees
 			// a consistent state of the audio folder, and therefore should NOT run on the UI thread.
 			// Also, explicitly setting requiresSync to true (even tho that's default anyway) to make concurrency less complicated to think about
-			apiHandler.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton, false, true);
+			apiHandler.RegisterEndpointHandler("audio/checkForAnyRecording", HandleCheckForAnyRecording, false, true);
 			apiHandler.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, false, true);
 			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, false, true);
 			apiHandler.RegisterEndpointHandler("audio/wavFile", HandleAudioFileRequest, false, true);
@@ -116,7 +116,7 @@ namespace Bloom.Edit
 		}
 
 		// Does this page have any audio at all? Used to enable 'Listen to the whole page'.
-		private void HandleEnableListenButton(ApiRequest request)
+		private void HandleCheckForAnyRecording(ApiRequest request)
 		{
 			var ids = request.RequiredParam("ids");
 			var idList = ids.Split(',');
