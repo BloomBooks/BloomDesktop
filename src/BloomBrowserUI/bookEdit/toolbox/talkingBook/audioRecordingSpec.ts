@@ -1242,6 +1242,32 @@ describe("audio recording tests", () => {
             idList.shift();
         }
     });
+
+    it("normalizeText() works", () => {
+        function testAllFormsMatch(
+            rawForm: string,
+            processingForm: string,
+            savedForm
+        ) {
+            expect(AudioRecording.normalizeText(rawForm)).toBe(
+                AudioRecording.normalizeText(processingForm)
+            );
+            expect(AudioRecording.normalizeText(rawForm)).toBe(
+                AudioRecording.normalizeText(savedForm)
+            );
+            // 3rd check is unnecessary because transitive property
+        }
+        testAllFormsMatch(
+            "John 3:16 (NIV)\n\n\n",
+            "John 3:16 (NIV)<br />",
+            "John 3:16 (NIV)"
+        );
+        testAllFormsMatch(
+            "\u00a0\u00a0\u00a0 In the beginning...",
+            "\u00a0\u00a0\u00a0 In the beginning...",
+            "&nbsp;&nbsp;&nbsp; In the beginning..."
+        );
+    });
 });
 
 describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {

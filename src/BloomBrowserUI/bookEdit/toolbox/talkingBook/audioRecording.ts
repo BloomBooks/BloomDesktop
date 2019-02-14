@@ -1,4 +1,4 @@
-// This class supports creating audio recordings for talking books.
+﻿// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -1779,8 +1779,11 @@ export default class AudioRecording {
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
                 if (!newId) {
-                    if (fragment.text in this.sentenceToIdListMap) {
-                        const idList = this.sentenceToIdListMap[fragment.text];
+                    const normalizedText = AudioRecording.normalizeText(
+                        fragment.text
+                    );
+                    if (normalizedText in this.sentenceToIdListMap) {
+                        const idList = this.sentenceToIdListMap[normalizedText];
 
                         if (idList.length >= 1) {
                             newId = idList[0];
@@ -1811,6 +1814,24 @@ export default class AudioRecording {
         // set the html
         elt.html(newHtml);
         elt.append(formatButton);
+    }
+
+    // Normalization rules for text which has already been processed by CKEditor
+    // Note that the text seems to have 3 variations when running AutoSegment, which may represent extraneous whitespace differently:
+    // 1) Raw Form - Directly after typing text, immediately upon clicking AutoSegment, before anything is modified
+    // 2) Processing Form - After clicking AutoSegment and the response is being proc, during MakeAudioSentenceElementsLeaf
+    // 3) Saved Form - After saving the page.
+    // We want all 3 forms to be able to map to the same string after normalizing.
+    public static normalizeText(text: string): string {
+        if (!text) {
+            return text;
+        }
+
+        text = text.replace(/\r/g, "").replace(/\n/g, ""); // Raw form may inject extraneous newlines upon inserting punctuation like '('
+        text = text.replace(/<br \/>/g, ""); // Processing form will contain <br />.
+        text = text.replace(/&nbsp;/g, String.fromCharCode(160)); // Saved form will store multiple spaces as Unicode decimal 160 = non-breaking space
+
+        return text;
     }
 
     private createValidXhtmlUniqueId(): string {
@@ -2170,10 +2191,8 @@ export default class AudioRecording {
 
                 // Sometimes extraneous newlines can be injected (by CKEditor?). They may get removed later (maybe after the CKEditor reloads when the text box's underlying HTML is modified???)
                 // However, some processing needs the text immediately, and others are after the text is cleaned.
-                // In order to reconcile the two, just fix the text immediately.
-                fragment.text = fragment.text
-                    .replace(/\r/g, "")
-                    .replace(/\n/g, "");
+                // In order to reconcile the two, just normalize the text immediately.
+                fragment.text = AudioRecording.normalizeText(fragment.text);
 
                 fragmentObjects.push(
                     new AudioTextFragment(fragment.text, newId)
