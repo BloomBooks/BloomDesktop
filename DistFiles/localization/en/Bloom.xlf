@@ -3100,6 +3100,14 @@
         <source xml:lang="en">&amp;Save ePUB...</source>
         <note>ID: PublishTab.SaveEpub</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
+        <source xml:lang="en">Accessible to the Visually Impaired</source>
+        <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AccessibleToBlind">
+        <source xml:lang="en">Accessible to the Blind</source>
+        <note>ID: PublishTab.Upload.AccessibleToBlind</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Acknowledgments">
         <source xml:lang="en">Acknowledgments</source>
         <note>ID: PublishTab.Upload.Acknowledgments</note>
@@ -3140,6 +3148,10 @@
       <trans-unit id="PublishTab.Upload.ErrorUploading">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
         <note>ID: PublishTab.Upload.ErrorUploading</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Features">
+        <source xml:lang="en">Features</source>
+        <note>ID: PublishTab.Upload.Features</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
@@ -3288,6 +3300,10 @@
         <source xml:lang="en">Please set this from the edit tab</source>
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignLanguage">
+        <source xml:lang="en">Sign Language</source>
+        <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignupLink">
         <source xml:lang="en">Sign up for BloomLibrary.org</source>
