@@ -849,6 +849,13 @@ export default class AudioRecording {
 
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
     public updateRecordingMode(forceOverwrite: boolean = false) {
+        // These two checks are here for paranoia. Normally if the function is disabled
+        // we don't install this click handler at all.
+        if (ToolBox.isXmatterPage()) {
+            this.notifyRecordingModeControlDisabledXMatter();
+            return;
+        }
+
         // Check if there are any audio recordings present.
         //   If so, these would become invalidated (and deleted down the road when the book's unnecessary files gets cleaned up)
         //   Warn the user if this deletion could happen
@@ -908,16 +915,20 @@ export default class AudioRecording {
     }
 
     private disableRecordingModeControl(
-        addNotificationHandler: boolean = true
+        useClearRecordingsNotification: boolean = true
     ) {
         // Note: Possibly could be neat to check if all the audio is re-usable before disabling.
         //       (But then what happens if they modify the text box?  Well, it's kinda awkward, but it's already awkward if they modify the text in by-sentence mode)
         this.recordingModeInput.disabled = true;
         const handlerJquery = $("#" + kRecordingModeClickHandler);
         handlerJquery.off();
-        if (addNotificationHandler) {
+        if (useClearRecordingsNotification) {
             // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
             handlerJquery.click(e => this.notifyRecordingModeControlDisabled());
+        } else {
+            handlerJquery.click(e =>
+                this.notifyRecordingModeControlDisabledXMatter()
+            );
         }
     }
 
@@ -935,6 +946,18 @@ export default class AudioRecording {
                     toastr.warning(localizedNotification);
                 });
         }
+    }
+
+    private notifyRecordingModeControlDisabledXMatter() {
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter",
+                "Sorry, front and back-matter pages must be recorded by sentences.",
+                ""
+            )
+            .done(localizedNotification => {
+                toastr.warning(localizedNotification);
+            });
     }
 
     public getPageFrame(): HTMLIFrameElement {

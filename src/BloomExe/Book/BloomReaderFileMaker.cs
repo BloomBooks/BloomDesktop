@@ -53,6 +53,12 @@ namespace Bloom.Book
 			// Do this after making questions, as they satisfy the criteria for being 'blank'
 			modifiedBook.RemoveBlankPages();
 
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
+			RemoveInvisibleImageElements(modifiedBook);
+			modifiedBook.Storage.CleanupUnusedImageFiles(false);
+			modifiedBook.Storage.CleanupUnusedAudioFiles();
+			modifiedBook.Storage.CleanupUnusedVideoFiles();
+
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
 			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
@@ -61,6 +67,34 @@ namespace Bloom.Book
 			modifiedBook.Save();
 
 			return modifiedBook;
+		}
+
+		/// <summary>
+		/// Remove image elements that are invisible due to the book's layout orientation.
+		/// </summary>
+		/// <remarks>
+		/// This code is temporary for Version4.5.  Version4.6 extensively refactors the
+		/// electronic publishing code to combine ePUB and BloomReader preparation as much
+		/// as possible.
+		/// </remarks>
+		private static void RemoveInvisibleImageElements(Book book)
+		{
+			var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
+			foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
+			{
+				var src = img.Attributes["src"]?.Value;
+				if (string.IsNullOrEmpty(src))
+					continue;
+				var classes = img.Attributes["class"]?.Value;
+				if (string.IsNullOrEmpty(classes))
+					continue;
+				if (isLandscape && classes.Contains("portraitOnly") ||
+					!isLandscape && classes.Contains("landscapeOnly"))
+				{
+					// Remove this img element since it shouldn't be displayed.
+					img.ParentNode.RemoveChild(img);
+				}
+			}
 		}
 
 		/// <summary>

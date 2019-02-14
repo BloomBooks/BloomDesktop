@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
 using Gecko;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Xml;
@@ -274,13 +275,35 @@ namespace Bloom.Edit
 					}
 				}
 			}
-			return existing.ToString().Replace("\r\n", "").Replace("\n", "").Replace("\\", "");
+			// I don't know why an earlier version of this code wanted to drop backslashes.
+			// But keeping them is essential to handling strings containing a double-quote
+			// (e.g., for names in wall calendar)
+			return existing.ToString().Replace("\r\n", "").Replace("\n", ""); //.Replace("\\", "");
 		}
 
 		private bool IsComplexObject(string value)
 		{
-			//TODO this is just pretend
-			return value.Contains(":");
+			// This is actually a bit tricky. The value of a field in a Json string could be a list.
+			// The objects in the list could be quite complex, but nevertheless, we don't know how
+			// to merge lists as complex objects. Or, the value could be a simple string, but it
+			// might look like a JSON object; for example, an early version of this method looked for
+			// a colon in the value, but some orthographies use colons. Looking for a leading {
+			// eliminates most of the non-complex things quickly, but that character could be in
+			// an orthography, too. So if it initially looks complex, we actually verify that we
+			// can parse it as an object. If not, we take it as non-complex.
+			if (!value.Trim().StartsWith("{"))
+				return false;
+			try
+			{
+				JObject.Parse(value);
+			}
+			catch (JsonReaderException)
+			{
+				// However complex it may look, we can't handle digging deeper into it
+				return false;
+			}
+
+			return true;
 		}
 		private bool IsArray(string value)
 		{

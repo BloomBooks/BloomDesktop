@@ -61,7 +61,7 @@ namespace Bloom.Book
 		string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
-		void CleanupUnusedImageFiles();
+		void CleanupUnusedImageFiles(bool keepFilesForEditing=true);
 		void CleanupUnusedAudioFiles();
 		void CleanupUnusedVideoFiles();
         BookInfo BookInfo { get; set; }
@@ -439,7 +439,7 @@ namespace Bloom.Book
 		/// Compare the images we find in the top level of the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
-		public void CleanupUnusedImageFiles()
+		public void CleanupUnusedImageFiles(bool keepFilesForEditing = true)
 		{
 			if (IsStaticContent(_folderPath))
 				return;
@@ -459,12 +459,17 @@ namespace Bloom.Book
 			var element = Dom.RawDom.DocumentElement;
 			var pathsToNotDelete = GetImagePathsRelativeToBook(element);
 
-			//also, remove from the doomed list anything referenced in the datadiv that looks like an image
-			//This saves us from deleting, for example, cover page images if this is called before the front-matter
-			//has been applied to the document.
-			pathsToNotDelete.AddRange(from XmlElement dataDivImage in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
-							  select UrlPathString.CreateFromUrlEncodedString(dataDivImage.InnerText.Trim()).PathOnly.NotEncoded);
-			pathsToNotDelete.AddRange(this._brandingImageNames);
+			if (keepFilesForEditing)
+			{
+				//also, remove from the doomed list anything referenced in the datadiv that looks like an image
+				//This saves us from deleting, for example, cover page images if this is called before the front-matter
+				//has been applied to the document.
+				pathsToNotDelete.AddRange (from XmlElement dataDivImage
+											in Dom.RawDom.SelectNodes ("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
+											select UrlPathString.CreateFromUrlEncodedString (dataDivImage.InnerText.Trim ()).PathOnly.NotEncoded);
+				pathsToNotDelete.AddRange (this._brandingImageNames);
+			}
+
 			foreach (var path in pathsToNotDelete)
 			{
 				imageFiles.Remove(GetNormalizedPathForOS(path));   //Remove just returns false if it's not in there, which is fine

@@ -823,7 +823,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public isExperimental(): boolean {
-        return false;
+        return true;
     }
 
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
