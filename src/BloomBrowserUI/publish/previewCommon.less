@@ -126,10 +126,34 @@ html.publishTabScreen .preview-section {
 
 .image-text-row {
     display: flex;
+    align-items: center;
 }
 .inline-text-icon {
     width: 1.5em;
     height: 1.5em;
+}
+.choose-landscape {
+    margin-left: 10px;
+    // This puts it just below the buttons, which for some reason stick out
+    // below the div they are supposed to be inside.
+    margin-top: 4em;
+    color: @bloom-red;
+}
+.inline-text-icon.info-icon {
+    color: white;
+    background-color: @bloom-red;
+    height: 1.2em;
+    width: 1.2em;
+    min-width: 1.2em; // stops flex shrinking it?
+    border-radius: 0.6em;
+    padding-left: 0.5em;
+    font-family: serif;
+    margin-right: 5px;
+    span {
+        font-weight: bold;
+        font-size: 0.9em;
+        display: block;
+    }
 }
 
 .preview-refresh {
