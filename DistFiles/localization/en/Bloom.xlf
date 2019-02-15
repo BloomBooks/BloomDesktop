@@ -1869,10 +1869,6 @@
         <source xml:lang="en">poet.diagramcenter.org</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ToneLanguage" sil:dynamic="true">
-        <source xml:lang="en">Tone and Language</source>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ToneLanguage</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
         <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
