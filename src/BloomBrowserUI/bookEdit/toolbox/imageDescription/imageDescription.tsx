@@ -6,7 +6,6 @@ import { getPageFrameExports } from "../../js/bloomFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10n";
-import { Checkbox } from "../../../react_components/checkbox";
 import Link from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import {
@@ -40,41 +39,41 @@ export class ImageDescriptionToolControls extends React.Component<
         "ConsiderAudience",
         "BeConcise",
         "BeObjective",
-        "GeneralSpecific"
+        "GeneralSpecific",
+        "ToneLanguage"
     ];
     private static defaultText = [
         "Context is Key",
         "Consider your Audience",
         "Be Concise",
         "Be Objective",
-        "General to Specific"
+        "General to Specific",
+        "Tone and Language"
     ];
 
     private activeEditable: Element | null;
 
-    private createCheckboxes() {
-        const checkBoxes: JSX.Element[] = [];
+    private createReminderLinks() {
+        const reminderLinks: JSX.Element[] = [];
         for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
-            const index = i; // in case 'i' changing affects earlier checkboxes
-            checkBoxes.push(
-                <Checkbox
-                    key={i}
-                    l10nKey={
-                        "EditTab.Toolbox.ImageDescriptionTool." +
-                        ImageDescriptionToolControls.i18ids[i]
-                    }
-                    className="imageDescriptionCheck"
-                    name=""
-                    checked={this.state.checkBoxes[index]}
-                    onCheckChanged={checked =>
-                        this.onCheckChanged(checked, index)
-                    }
-                >
-                    {ImageDescriptionToolControls.defaultText[index]}
-                </Checkbox>
+            const index = i; // in case 'i' changing affects earlier links
+            reminderLinks.push(
+                <li>
+                    <Link
+                        key={i}
+                        href="https://poet.diagramcenter.org/how.html"
+                        l10nKey={
+                            "EditTab.Toolbox.ImageDescriptionTool." +
+                            ImageDescriptionToolControls.i18ids[i]
+                        }
+                        className="imageDescriptionReminder"
+                    >
+                        {ImageDescriptionToolControls.defaultText[index]}
+                    </Link>
+                </li>
             );
         }
-        return checkBoxes;
+        return reminderLinks;
     }
 
     // Todo: when we have a training video for image description, set the relevant link href, remove
@@ -138,7 +137,9 @@ export class ImageDescriptionToolControls extends React.Component<
                                 these reminders:
                             </Label>
                         </div>
-                        {this.createCheckboxes()}
+                        <ul className="imgDescReminderLinkBlock">
+                            {this.createReminderLinks()}
+                        </ul>
                     </div>
                     {/* the flex box will then push this to the bottom */}
                     <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm" />
