@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -1308,7 +1308,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
-    <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || npm install) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || npm run build)" />
+    <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
     <!-- copy the appropriate Geckofx45 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />
