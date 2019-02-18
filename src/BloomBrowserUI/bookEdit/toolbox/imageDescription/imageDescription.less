@@ -1,8 +1,5 @@
 @import "../../../bloomUI.less";
 
-@toolLeftPadding: 20px;
-@bulletIndent: 10px;
-
 .ui-accordion
     h3[data-toolId="imageDescriptionTool"]
     span.ui-accordion-header-icon {
@@ -12,14 +9,11 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding-left: @toolLeftPadding;
+    padding-left: 20px;
     height: 100%; // push the help link to the bottom
     *,
     a {
         color: @bloom-toolboxWhite;
-    }
-    .imgDescReminderLinkBlock {
-        padding-left: @toolLeftPadding - @bulletIndent; // bullets don't need as much padding
     }
 }
 
