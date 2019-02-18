@@ -220,7 +220,7 @@ namespace Bloom.Book
 				else if (reduceImages && bookFile == filePath)
 				{
 					StripImgWithFilesWeCannotFind(dom, bookFile);
-					StripContentEditable(dom);
+					StripContentEditableAndTabIndex(dom);
 					InsertReaderStylesheet(dom);
 					ConvertImagesToBackground(dom);
 					SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(dom.DocumentElement).Cast<XmlElement>(), directoryToCompress);
@@ -314,12 +314,13 @@ namespace Bloom.Book
 			}
 		}
 
-		private static void StripContentEditable(XmlDocument dom)
+		private static void StripContentEditableAndTabIndex(XmlDocument dom)
 		{
-			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>().ToArray())
-			{
+			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>())
 				editableElt.RemoveAttribute("contenteditable");
-			}
+
+			foreach (var tabIndexDiv in dom.SafeSelectNodes("//div[@tabindex]").Cast<XmlElement>())
+				tabIndexDiv.RemoveAttribute("tabindex");
 		}
 
 		/// <summary>
