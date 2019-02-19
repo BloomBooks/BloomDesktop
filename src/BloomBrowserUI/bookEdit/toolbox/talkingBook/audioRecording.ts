@@ -463,6 +463,10 @@ export default class AudioRecording {
         }
     }
 
+    private containsAnyAudioElements(): boolean {
+        return this.getAudioElements().length > 0;
+    }
+
     private getAudioElements(): JQuery {
         return this.getRecordableDivs()
             .find(kAudioSentenceClassSelector) // Looks only in the descendants, but won't check any of the elements themselves in getRecordableDivs()
@@ -907,6 +911,7 @@ export default class AudioRecording {
     }
 
     private enableRecordingModeControl() {
+        toastr.clear();
         if (this.recordingModeInput.disabled) {
             this.recordingModeInput.disabled = false;
 
@@ -926,13 +931,15 @@ export default class AudioRecording {
         this.recordingModeInput.disabled = true;
         const handlerJquery = $("#" + kRecordingModeClickHandler);
         handlerJquery.off();
+        toastr.clear();
         if (useClearRecordingsNotification) {
             // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
             handlerJquery.click(e => this.notifyRecordingModeControlDisabled());
         } else {
-            handlerJquery.click(e =>
-                this.notifyRecordingModeControlDisabledXMatter()
-            );
+            handlerJquery.click(e => {
+                if (ToolBox.isXmatterPage)
+                    this.notifyRecordingModeControlDisabledXMatter();
+            });
         }
     }
 
@@ -1102,7 +1109,7 @@ export default class AudioRecording {
     public newPageReady() {
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
-        this.initializeForMarkupAsync();
+        this.initializeForMarkupAsync(() => this.changeStateAndSetExpected(""));
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
@@ -1903,9 +1910,9 @@ export default class AudioRecording {
     ) {
         console.log("changeState(" + expectedVerb + ")");
 
-        // We call this method in (at least) two places with expectedVerb = "" when we have found
-        // that the current page has no divs with recordable content, so we want to disable
-        // the audio recording controls.
+        // Call with "" verb if there's nothing specific to highlight, just need to check if these controls should be disabled.
+        // (e.g. when we have found that the current page has no divs with recording content, and we may possible want to disable
+        // the audio recording controls.)
         if (expectedVerb == "") {
             this.disableInteraction();
             // Whether we disable the Recording Mode control depends on whether we COULD have text
@@ -1923,7 +1930,11 @@ export default class AudioRecording {
         //       In theory, there can be a small delay between when we are supposed to change state
         //       (right now) and when we actually determine the correct state (after a callback).
 
-        if (this.getPageDocBodyJQuery().find(".ui-audioCurrent").length === 0) {
+        // Finding no audioCurrent is only unexpected if there are non-zero number of audio elements
+        if (
+            this.getPageDocBodyJQuery().find(".ui-audioCurrent").length === 0 &&
+            this.containsAnyAudioElements()
+        ) {
             // We have reached an unexpected state :(
             // (It can potentially happen if changes applied to the markup get wiped out and
             // overwritten e.g. by CkEditor Onload())
@@ -2245,9 +2256,10 @@ export default class AudioRecording {
     }
 
     private disableInteraction(): void {
-        // We call this method in two cases (so far):
+        // We call this method in three cases (so far):
         // 1- When calling changeStateAndSetExpected() with expectedVerb = ""
         // 2- While doing auto segmenting
+        // 3- An unrecoverable error has occurred
         this.setStatus("record", Status.Disabled);
         this.setStatus("play", Status.Disabled);
         this.setStatus("next", Status.Disabled);
