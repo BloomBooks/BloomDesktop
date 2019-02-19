@@ -79,7 +79,7 @@ namespace Bloom.web.controllers
 
 		public bool AreAutoSegmentDependenciesMet(out string message)
 		{
-			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Maybe use "locate" command on Linux?
+			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Probably use "which" command on Linux.
 			{
 				message = "Python";
 				return false;
@@ -114,6 +114,12 @@ namespace Bloom.web.controllers
 		// Returns true if the command returned with an error
 		protected bool DoesCommandCauseError(string commandString, string workingDirectory, out string standardOutput, out string standardError, params int[] errorCodesToIgnore)
 		{
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				standardOutput = "";
+				standardError = "";
+				return true;	// TODO: Linux compatibility.
+			}
 			if (!String.IsNullOrEmpty(workingDirectory))
 			{
 				commandString = $"cd \"{workingDirectory}\" && {commandString}";
