@@ -309,7 +309,9 @@ namespace Bloom.web.controllers
 				FileName = "CMD.EXE",	// TODO: Linux compatability
 
 				// DEBUG NOTE: you can use "/K" instead of "/C" to keep the window open (if needed for debugging)
-				Arguments = $"/C {commandString}"
+				Arguments = $"/C {commandString}",
+				UseShellExecute = false,
+				CreateNoWindow = true
 			};
 
 			var process = Process.Start(processStartInfo);
@@ -470,7 +472,13 @@ namespace Bloom.web.controllers
 		private Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
 		{
 			string commandString = $"cd {kWorkingDirectory} && ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
-			var startInfo = new ProcessStartInfo(fileName: "CMD", arguments: $"/C {commandString}");	// TODO: Linux compatability
+			var startInfo = new ProcessStartInfo()
+			{
+				FileName = "CMD",    // TODO: Linux compatability
+				Arguments = $"/C {commandString}",
+				UseShellExecute = false,
+				CreateNoWindow = true
+			};	
 
 			return RunProcessAsync(startInfo);
 		}
