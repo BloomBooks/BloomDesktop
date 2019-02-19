@@ -1328,12 +1328,12 @@ namespace Bloom.Book
 			_brandingImageNames.Clear();
 			try
 			{
-				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6516.
-				// On Linux installations, files can never be copied to the "FactoryTemplateBookDirectory".
-				// If Bloom is installed "for all users" on Windows, it may also be impossible to copy files there.
-				// Copying files there allows Bloom to show branding for the template preview, which seems rather
-				// unimportant.
-				if (FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal))
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6516 and https://issues.bloomlibrary.org/youtrack/issue/BL-6852.
+				// On Linux installations, files can never be copied to the "FactoryCollectionsDirectory" or any of its subfolders
+				// (like "FactoryTemplateBookDirectory" or "SampleShellsDirectory").  If Bloom is installed "for all users" on Windows,
+				// it is also impossible to copy files there.  Copying files to those locations would allow Bloom to show branding for
+				// a template preview or a sample shell preview, which seems rather unimportant.
+				if (FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory, StringComparison.Ordinal))
 					return;
 				if (!string.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
 				{
