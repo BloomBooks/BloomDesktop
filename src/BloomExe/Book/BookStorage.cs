@@ -1330,10 +1330,12 @@ namespace Bloom.Book
 			{
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6516.
 				// On Linux installations, files can never be copied to the "FactoryTemplateBookDirectory".
-				// If Bloom is installed "for all users" on Windows, it may also be impossible to copy files there.
+				// If Bloom is installed "for all users" on Windows, it is also impossible to copy files there.
 				// Copying files there allows Bloom to show branding for the template preview, which seems rather
-				// unimportant.
-				if (FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal))
+				// unimportant.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6852.  Copying to
+				// "SampleShellsDirectory" also fails for the same cases.  Note that "FactoryCollectionsDirectory"
+				// covers both of those directories in this check.
+				if (FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory, StringComparison.Ordinal))
 					return;
 				if (!string.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
 				{
