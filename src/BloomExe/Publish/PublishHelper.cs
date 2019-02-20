@@ -251,7 +251,10 @@ namespace Bloom.Publish
 				if (disposing)
 				{
 					if (_browser != null)
-						_browser.Dispose();
+					{
+						_browser.Invoke((Action) (() => _browser.Dispose()));
+					}
+
 					_browser = null;
 				}
 				_isDisposed = true;

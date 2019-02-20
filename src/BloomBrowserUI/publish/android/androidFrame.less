@@ -67,7 +67,8 @@
 // the wrapper around the preview that looks like a phone's shell.
 // The first group of settings (not inside .device-square) are for the
 // old ePUB preview, the others for the new android one.
-.device {
+.device,
+#device {
     height: 800px;
     width: 400px;
     padding-left: 30px;
@@ -76,6 +77,10 @@
     //border: 5px solid white;
     border-radius: 38px;
     background-color: @preview-border;
+    #epubPublishUI & {
+        // temporary override for old preview
+        background-color: #404040;
+    }
     box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
     .device-square & {
         height: @small-device-size;
@@ -102,7 +107,8 @@
 // again we have legacy version for ePUB and the new versions below in .device-square.
 @speakerlength : 80px;
 @speakerwidth: 10px;
-.device:before {
+.device:before,
+#device:before {
     width: @speakerlength;
     height: @speakerwidth;
     top: 35px;
@@ -113,7 +119,8 @@
 
 //the bottom 'button' (looks like phone home button) is the "after" rule
 // This is only for the legacy ePUB version.
-.device:after {
+.device:after,
+#device:after {
     width: @CircleDiameter;
     height: @CircleDiameter;
     border-radius: 50%;
@@ -172,7 +179,9 @@
 }
 
 .device:before,
-.device:after {
+.device:after,
+#device:before,
+#device:after {
     content: "";
     position: absolute;
 }
