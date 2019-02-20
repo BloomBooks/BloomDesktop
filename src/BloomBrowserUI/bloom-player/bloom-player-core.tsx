@@ -40,6 +40,7 @@ interface IProps {
     // (the parent of the .bloom-page, including also the special element that carries
     // all the page styles)
     pageSelected?: (sliderPage: HTMLElement) => void;
+    hideNextPrevButtons?: boolean;
 }
 interface IState {
     pages: Array<string>; // of the book. First and last are empty in context mode.
@@ -295,7 +296,14 @@ export default class BloomPlayerCore extends React.Component<IProps, IState> {
         // It would be nice to use an ID but we don't want to assume there is
         // only one of these components on a page.
         return (
-            <div className="bloomPlayer bloomPlayer1">
+            <div
+                className={
+                    "bloomPlayer bloomPlayer1" +
+                    (this.props.hideNextPrevButtons
+                        ? " hideNextPrevButtons"
+                        : "")
+                }
+            >
                 <Slider
                     className="pageSlider"
                     ref={slider => (this.slider = slider)}
