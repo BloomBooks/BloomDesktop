@@ -141,8 +141,8 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     }
 
     private getIsLinuxFromUrl(): boolean {
-        let searchString = window.location.search;
-        let i = searchString.indexOf("isLinux=");
+        const searchString = window.location.search;
+        const i = searchString.indexOf("isLinux=");
         if (i >= 0) {
             return searchString.substr(i + "isLinux=".length, 4) === "true";
         }
@@ -204,9 +204,6 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                                 }
                                                 reportBookProperties={arg =>
                                                     this.gotBookProps(arg)
-                                                }
-                                                pageSelected={page =>
-                                                    this.pageSelected(page)
                                                 }
                                             />
                                         </div>
@@ -683,41 +680,6 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
 
     private refreshPreview(): void {
         // todo: implement.
-    }
-
-    private setButtonContents(
-        page: HTMLElement,
-        id: string,
-        landscape: boolean
-    ): void {
-        const copy = page.cloneNode(true) as HTMLElement;
-        const button: HTMLElement = document.getElementById(id)!;
-        if (button.firstElementChild) {
-            button.removeChild(button.firstElementChild);
-        }
-        // The preview may have elements marked up as being the audio element
-        // currently playing. We don't want this in the button. For one thing,
-        // it wouldn't update as the audio changes. For another, at one stage
-        // it was playing with an echo...probably from trying to play BOTH
-        // current audio elements.
-        const currentAudio = copy.getElementsByClassName("ui-audioCurrent");
-        for (let i = 0; i < currentAudio.length; i++) {
-            currentAudio[i].classList.remove("ui-audioCurrent");
-        }
-        if (this.state.bookCanRotate) {
-            BloomPlayer.forceDevicePageSize(
-                copy.getElementsByClassName("bloom-page")[0] as HTMLElement,
-                true,
-                landscape
-            );
-        }
-        button.appendChild(copy);
-    }
-
-    // Whenever we change pages, update the orientation buttons to match.
-    private pageSelected(page: HTMLElement): void {
-        this.setButtonContents(page, "portrait-button", false);
-        this.setButtonContents(page, "landscape-button", true);
     }
 }
 
