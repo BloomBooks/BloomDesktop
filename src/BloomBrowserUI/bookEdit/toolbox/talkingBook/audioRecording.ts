@@ -320,31 +320,9 @@ export default class AudioRecording {
         BloomApi.get(
             "audioSegmentation/checkAutoSegmentDependencies",
             result => {
-                if (result.data.startsWith("FALSE")) {
-                    const missingDependency: string = result.data.substring(
-                        "FALSE ".length
-                    );
-
-                    theOneLocalizationManager
-                        .asyncGetText(
-                            "Common.MissingDependency",
-                            "Missing Dependency: {0} not found.",
-                            ""
-                        )
-                        .done(localizedText => {
-                            const errorMessage: string = theOneLocalizationManager.simpleDotNetFormat(
-                                localizedText,
-                                [missingDependency]
-                            );
-
-                            $(kAutoSegmentButtonIdSelector)
-                                .off()
-                                .click(e => toastr.error(errorMessage));
-                            $(kAutoSegmentButtonIdSelector).attr(
-                                "title",
-                                errorMessage
-                            ); // Sets the hover
-                        });
+                if (result.data === "FALSE") {
+                    // The specific missing dependency is only reported in the error log on the C# side.
+                    this.handleMissingDependency();
                 } else {
                     $(kAutoSegmentButtonIdSelector)
                         .off()
@@ -353,6 +331,44 @@ export default class AudioRecording {
                 }
             }
         );
+    }
+
+    // At this point we are handling all missing dependencies the same.
+    private handleMissingDependency(): void {
+        const aeneasName = "Aeneas";
+        const blAeneasUrl = "https://bloomlibrary.org/aeneas";
+        // For now at least, we only report Aeneas as missing and point the user to pages
+        // where installing Aeneas will also install all of its dependencies.
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.TalkingBook.MissingDependency",
+                "To use Auto Segment, first install this {0} system.",
+                "The placeholder {0} will be replaced with the dependency that needs to be installed."
+            )
+            .done(localizedMessage => {
+                let url: string = "";
+                if (window.navigator.platform.startsWith("Win")) {
+                    url = blAeneasUrl;
+                } else {
+                    url = blAeneasUrl + "/linux";
+                }
+                const anchor = '<a href="' + url + '">' + aeneasName + "</a>";
+                const missingDependencyHoverTip = theOneLocalizationManager.simpleDotNetFormat(
+                    localizedMessage,
+                    [aeneasName]
+                );
+                const missingDependencyMsgWithLink = theOneLocalizationManager.simpleDotNetFormat(
+                    localizedMessage,
+                    [anchor]
+                );
+                $(kAutoSegmentButtonIdSelector)
+                    .off()
+                    .click(e => toastr.error(missingDependencyMsgWithLink));
+                $(kAutoSegmentButtonIdSelector).attr(
+                    "title",
+                    missingDependencyHoverTip
+                ); // Sets the hover
+            });
     }
 
     public setupForListen() {
