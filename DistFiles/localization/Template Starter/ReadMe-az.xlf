@@ -51,7 +51,7 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.document">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="az" state="needs-translation">Document Your Template</target>
+        <target xml:lang="az" state="translated">Sizin Şablonınızı Sənədləşdirmək</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours">
@@ -81,7 +81,7 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.notes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="az" state="needs-translation">Notes</target>
+        <target xml:lang="az" state="translated">Qeydlər</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic">
