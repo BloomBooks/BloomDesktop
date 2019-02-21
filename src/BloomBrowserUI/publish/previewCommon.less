@@ -21,9 +21,15 @@
     margin-top: 0;
     &.landscape-device {
         margin-top: @preview-button-size * 7 / 32; // half of 1-9/16; roughly centers it
+        &:before {
+            width: 10px; // otherwise it's too small to show up in the transformed image
+        }
     }
     &.portrait-device {
         margin-left: @preview-button-size * 7 / 32;
+        &:before {
+            height: 10px; // otherwise it's too small to show up in the transformed image
+        }
     }
 }
 
@@ -85,26 +91,9 @@ html.publishTabScreen .preview-section {
         z-index: 1;
     }
     .preview-orientation-row.device-square .orientation-button {
-        // override the rule in bloom-preview that puts a border at the bottom of each page
-        // to separate the pages in a continuous scrolling view. Unfortunately that rule is
-        // !important so the only way to beat it is to be !important too.
-        div.bloom-page {
-            border-bottom: initial !important;
-        }
-
-        .slick-slide {
-            display: inherit; // overrides rule hiding slick-slides
-        }
-
         &.landscape {
             height: @preview-button-size;
             width: @preview-button-size;
-        }
-
-        background-color: transparent;
-
-        &:after {
-            border: @preview-button-border-width solid @preview-border;
         }
 
         &.landscape-button:after {
@@ -193,9 +182,4 @@ html.publishTabScreen .preview-section {
 
 .preview-button-row {
     display: flex;
-}
-
-.orientation-button:after {
-    content: "";
-    position: absolute;
 }
