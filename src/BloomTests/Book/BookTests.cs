@@ -2531,6 +2531,113 @@ namespace BloomTests.Book
 			Assert.That(audioSpans[0].InnerText, Is.EqualTo("Page 1 Paragraph 2 Sentence 1"));
 		}
 
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesEmptyId()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.True);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesDivEmptyId()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable audio-sentence' id=''>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='id3' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.True);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesMissingId()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.True);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesDivMissingId()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable audio-sentence'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='id3' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.True);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesIdsAllThere()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='id3' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.False);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesDivIdsAllThere()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable audio-sentence' id='id0'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='id3' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.False);
+		}
 
 #if UserControlledTemplate
 		[Test]
