@@ -5,32 +5,38 @@
       <trans-unit id="Settings.Enterprise.Community">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
-        <target xml:lang="bn" state="needs-translation">Funded by the local community only</target>
+        <target xml:lang="bn" state="translated">শুধুমাত্র স্থানীয় সম্প্রদায়ের মাধ্যমে অর্থের সংস্থান</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.CheckUpdates">
         <source xml:lang="en">Check for updates</source>
         <note>ID: Settings.Enterprise.CheckUpdates</note>
-        <target xml:lang="bn" state="needs-translation">Check for updates</target>
+        <target xml:lang="bn" state="translated">আপডেটের জন্য চেক করুন</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration">
         <source xml:lang="en">Expires:</source>
         <note>ID: Settings.Enterprise.Expiration</note>
-        <target xml:lang="bn" state="needs-translation">Expires:</target>
+        <target xml:lang="bn" state="translated">মেয়াদোত্তীর্ণ হবে:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expired">
         <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expired</note>
-        <target xml:lang="bn" state="needs-translation">That code has expired.</target>
+        <target xml:lang="bn" state="translated">কোডগুলোর মেয়াদ শেষ হয়ে গেছে।</target>
+        <alt-trans>
+          <target xml:lang="bn">কোডগুলোর মেয়াদ উত্তীর্ণ হয়ে গেছে।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Incomplete">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
         <note>ID: Settings.Enterprise.Incomplete</note>
-        <target xml:lang="bn" state="needs-translation"> The code should look like SOMENAME-123456-7890</target>
+        <target xml:lang="bn" state="translated"> এই কোডটি এমন দেখানো উচিত যেমন কোনোনাম-123456-7890</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore">
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>
-        <target xml:lang="bn" state="needs-translation">Learn More</target>
+        <target xml:lang="bn" state="translated">অধিক জানুন</target>
+        <alt-trans>
+          <target xml:lang="bn">আরও শিখুন</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Overview">
         <source xml:lang="en">
@@ -44,7 +50,7 @@
       <trans-unit id="Settings.Enterprise.None">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="bn" state="needs-translation">None. Bloom will not show Enterprise features.</target>
+        <target xml:lang="bn" state="translated">কোনোটিও নয়। ব্লুম এন্টারপ্রাইজ বৈশিষ্ট্য দেখাবে না।</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
@@ -55,33 +61,33 @@
       <trans-unit id="Settings.Enterprise.NotValid">
         <source xml:lang="en">That code appears to be incorrect.</source>
         <note>ID: Settings.Enterprise.NotValid</note>
-        <target xml:lang="bn" state="needs-translation">That code appears to be incorrect.</target>
+        <target xml:lang="bn" state="translated">কোডটি ভুল বলে মনে হচ্ছে।</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Status">
         <source xml:lang="en">Bloom Enterprise Status</source>
         <note>ID: Settings.Enterprise.Status</note>
-        <target xml:lang="bn" state="needs-translation">Bloom Enterprise Status</target>
+        <target xml:lang="bn" state="translated">ব্লুম এন্টারপ্রাইজ অবস্থা</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Subscription">
         <source xml:lang="en">Enterprise Subscription</source>
         <note>ID: Settings.Enterprise.Subscription</note>
-        <target xml:lang="bn" state="needs-translation">Enterprise Subscription</target>
+        <target xml:lang="bn" state="translated">এন্টারপ্রাইজ সদস্যতা</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.SubscriptionCode">
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
-        <target xml:lang="bn" state="needs-translation">Subscription Code:</target>
+        <target xml:lang="bn" state="translated">সদস্যতা কোড:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
         <note>ID: Settings.Enterprise.UnknownCode</note>
-        <target xml:lang="bn" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+        <target xml:lang="bn" state="translated">সদস্যতার সাথে চলে এমন কোন শিল্পকর্ম ব্লুমের এই সংস্করণে নেই।</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.WhatsThis">
         <source xml:lang="en">What's This?</source>
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
-        <target xml:lang="bn" state="needs-translation">What's This?</target>
+        <target xml:lang="bn" state="translated">এটি কি?</target>
       </trans-unit>
     </body>
   </file>
