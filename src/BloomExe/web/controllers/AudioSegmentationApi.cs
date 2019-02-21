@@ -65,38 +65,41 @@ namespace Bloom.web.controllers
 			string message;
 			if (!AreAutoSegmentDependenciesMet(out message))
 			{
-				request.ReplyWithText($"FALSE {message}");
-				return;
+				request.ReplyWithText("FALSE");
 			}
 			else
 			{
 				// Note: We could also check if an audio file exists. But I think it's best to delay that check until absolutely needed.
 				// It makes the state updates when the user records or deletes audio more complicated for little gain I think.
+				Logger.WriteMinorEvent("AudioSegmentationApi.CheckAutoSegmentDependenciesMet: All dependencies met.");
 				request.ReplyWithText("TRUE");
-				return;
 			}
 		}
 
 		public bool AreAutoSegmentDependenciesMet(out string message)
 		{
-			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Maybe use "locate" command on Linux?
+			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Probably use "which" command on Linux.
 			{
 				message = "Python";
+				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
 			else if (DoesCommandCauseError("WHERE espeak", kWorkingDirectory))
 			{
 				message = "espeak";
+				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
 			else if (DoesCommandCauseError("WHERE ffmpeg", kWorkingDirectory))
 			{
 				message = "FFMPEG";
+				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
 			else if (DoesCommandCauseError("python -m aeneas.tools.execute_task", kWorkingDirectory, 2))    // Expected to list usage. Error Code 0 = Success, 1 = Error, 2 = Help shown.
 			{
-				message = "Aeneas for Python"; 
+				message = "Aeneas for Python";
+				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
 
@@ -114,6 +117,12 @@ namespace Bloom.web.controllers
 		// Returns true if the command returned with an error
 		protected bool DoesCommandCauseError(string commandString, string workingDirectory, out string standardOutput, out string standardError, params int[] errorCodesToIgnore)
 		{
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				standardOutput = "";
+				standardError = "";
+				return true;	// TODO: Linux compatibility.
+			}
 			if (!String.IsNullOrEmpty(workingDirectory))
 			{
 				commandString = $"cd \"{workingDirectory}\" && {commandString}";
@@ -172,6 +181,8 @@ namespace Bloom.web.controllers
 		/// <param name="request"></param>
 		public void AutoSegment(ApiRequest request)
 		{
+			Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): AutoSegment started.");
+
 			// Parse the JSON containing the text segmentation data.
 			string json = request.RequiredPostJson();
 			AutoSegmentRequest requestParameters = ParseJson(json);
@@ -179,22 +190,27 @@ namespace Bloom.web.controllers
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string inputAudioFilename = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
-			if (String.IsNullOrEmpty(inputAudioFilename))
+			if (string.IsNullOrEmpty(inputAudioFilename))
 			{
+				Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): No input audio file found.");
 				ErrorReport.ReportNonFatalMessageWithStackTrace("No audio file found. Please record audio first.");
 				request.ReplyWithBoolean(false);
 				return;
 			}
 
-			IEnumerable<AudioTextFragment> audioTextFragments = (AudioTextFragment[])(requestParameters.audioTextFragments);
+			IEnumerable<AudioTextFragment> audioTextFragments = requestParameters.audioTextFragments;
 			string requestedLangCode = requestParameters.lang;
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
+			// Since this is basically a desperate fallback that shouldn't ever happen we won't try to make the message
+			// contain a hot link here. That code is in Typescript.
 			string message;
 			if (!AreAutoSegmentDependenciesMet(out message))
 			{
-				string localizedFormatString = L10NSharp.LocalizationManager.GetString("Common.MissingDependency", "Missing Dependency: {0} not found.");
-				ErrorReport.ReportNonFatalMessageWithStackTrace(String.Format(localizedFormatString, message));
+				var localizedFormatString = L10NSharp.LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MissingDependency",
+					"To use Auto Segment, first install this {0} system.",
+					"The placeholder {0} will be replaced with the dependency that needs to be installed.");
+				ErrorReport.ReportNonFatalMessageWithStackTrace(string.Format(localizedFormatString, message));
 				request.ReplyWithBoolean(false);
 				return;
 			}
@@ -202,9 +218,9 @@ namespace Bloom.web.controllers
 			// When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
 			// Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
 			string langCode = null;
-			var langCodesToTry = new string[] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
-			string stdOut = "";
-			string stdErr = "";
+			var langCodesToTry = new [] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
+			var stdOut = "";
+			var stdErr = "";
 			foreach (var langCodeToTry in langCodesToTry)
 			{
 				if (!DoesCommandCauseError($"espeak -v {langCodeToTry} -q \"hello world\"", kWorkingDirectory, out stdOut, out stdErr))
@@ -213,13 +229,15 @@ namespace Bloom.web.controllers
 					break;
 				}
 			}
-			if (String.IsNullOrEmpty(langCode))
+			if (string.IsNullOrEmpty(langCode))
 			{
 				// FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
+				Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): eSpeak error.");
 				ErrorReport.ReportNonFatalMessageWithStackTrace($"eSpeak error: {stdOut}\n{stdErr}");
 				request.ReplyWithBoolean(false);
 				return;
 			}
+			Logger.WriteMinorEvent($"AudioSegmentationApi.AutoSegment(): Attempting to segment with langCode={langCode}");
 
 			string textFragmentsFilename =  $"{directoryName}/{requestParameters.audioFilenameBase}_fragments.txt";
 			string audioTimingsFilename = $"{directoryName}/{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}";
@@ -238,6 +256,7 @@ namespace Bloom.web.controllers
 			}
 			catch (Exception e)
 			{
+				Logger.WriteError("AudioSegmentationApi.AutoSegment(): Exception thrown during split/extract stage", e);
 				ErrorReport.ReportNonFatalExceptionWithMessage(e, $"AutoSegment failed: {e.Message}");
 				request.ReplyWithBoolean(false);
 				return;
@@ -253,6 +272,7 @@ namespace Bloom.web.controllers
 				Debug.Assert(false, $"Attempted to delete {textFragmentsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
 			}
 
+			Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): Completed successfully.");
 			request.ReplyWithBoolean(true); // Success
 
 
@@ -309,13 +329,16 @@ namespace Bloom.web.controllers
 				FileName = "CMD.EXE",	// TODO: Linux compatability
 
 				// DEBUG NOTE: you can use "/K" instead of "/C" to keep the window open (if needed for debugging)
-				Arguments = $"/C {commandString}"
+				Arguments = $"/C {commandString}",
+				UseShellExecute = false,
+				CreateNoWindow = true
 			};
 
 			var process = Process.Start(processStartInfo);
 
 			// TODO: Should I set a timeout?  In general Aeneas is reasonably fast but it doesn't really seem like I could guarantee that it would return within a certain time..
 			// Block the current thread of execution until aeneas has completed, so that we can read the correct results from the output file.
+			Logger.WriteMinorEvent("AudioSegmentationApi.GetSplitStartEndTimings(): Command started, preparing to wait...");
 			process.WaitForExit();
 
 			// Note: we could also request Aeneas write the standard output/error, or a log (or verbose log... or very verbose log) if desired
@@ -333,7 +356,8 @@ namespace Bloom.web.controllers
 			{
 				timingStartEndRangeList = ParseTimingFileTSV(segmentationResults);
 			}
-			
+
+			Logger.WriteMinorEvent($"AudioSegmentationApi.GetSplitStartEndTimings(): Returning with count={timingStartEndRangeList.Count}.");
 			return timingStartEndRangeList;
 		}
 
@@ -433,15 +457,19 @@ namespace Bloom.web.controllers
 		private void ExtractAudioSegments(IList<string> idList, IList<Tuple<string, string>> timingStartEndRangeList, string directoryName, string inputAudioFilename)
 		{
 			Debug.Assert(idList.Count == timingStartEndRangeList.Count, $"Number of text fragments ({idList.Count}) does not match number of extracted timings ({timingStartEndRangeList.Count}). The parsed timing ranges might be completely incorrect. The last parsed timing is: ({timingStartEndRangeList.Last()?.Item1 ?? "null"}, {timingStartEndRangeList.Last()?.Item2 ?? "null"}).");
+			int size = Math.Min(timingStartEndRangeList.Count, idList.Count);	// Note: it could differ if there is some discrepancy in line endings in the fragments file. This doesn't seem like it should happen but occasionally I see it.
 
 			string extension = Path.GetExtension(inputAudioFilename);	// Will include the "." e.g. ".mp3"
 			if (string.IsNullOrWhiteSpace(extension))
 			{
 				extension = ".mp3";
 			}
+
+			Logger.WriteMinorEvent($"AudioSegmentationApi.ExtractAudioSegments(): Starting off count={size} tasks in parallel.");
+
 			// Allow each ffmpeg to run in parallel
-			var tasksToWait = new Task[timingStartEndRangeList.Count];
-			for (int i = 0; i < timingStartEndRangeList.Count; ++i)
+			var tasksToWait = new Task[size];
+			for (int i = 0; i < size; ++i)
 			{
 				var timingRange = timingStartEndRangeList[i];
 				var timingStartString = timingRange.Item1;
@@ -456,6 +484,7 @@ namespace Bloom.web.controllers
 
 			// Wait for them all so that the UI knows all the files are there before it starts mucking with the HTML structure.
 			Task.WaitAll(tasksToWait.ToArray());
+			Logger.WriteMinorEvent($"AudioSegmentationApi.ExtractAudioSegments(): All tasks completed");
 		}
 
 		/// <summary>
@@ -469,12 +498,18 @@ namespace Bloom.web.controllers
 		private Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
 		{
 			string commandString = $"cd {kWorkingDirectory} && ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
-			var startInfo = new ProcessStartInfo(fileName: "CMD", arguments: $"/C {commandString}");	// TODO: Linux compatability
+			var startInfo = new ProcessStartInfo()
+			{
+				FileName = "CMD",    // TODO: Linux compatability
+				Arguments = $"/C {commandString}",
+				UseShellExecute = false,
+				CreateNoWindow = true
+			};	
 
 			return RunProcessAsync(startInfo);
 		}
 
-		// Starts a process and returns a task (that you can use to wait/await for the completion of the process0
+		// Starts a process and returns a task (that you can use to wait/await for the completion of the process)
 		public static Task<int> RunProcessAsync(ProcessStartInfo startInfo)
 		{
 			var tcs = new TaskCompletionSource<int>();

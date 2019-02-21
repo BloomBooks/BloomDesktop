@@ -66,7 +66,7 @@ export default class TalkingBookTool implements ITool {
         if (this.enterpriseEnabled) {
             this.showImageDescriptionsIfAny();
         }
-        AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
+        AudioRecorder.theOneAudioRecorder.updateMarkupForCurrentText();
     }
 
     private showImageDescriptionsIfAny() {

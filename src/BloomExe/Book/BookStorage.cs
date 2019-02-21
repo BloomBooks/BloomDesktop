@@ -61,7 +61,7 @@ namespace Bloom.Book
 		string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
-		void CleanupUnusedImageFiles();
+		void CleanupUnusedImageFiles(bool keepFilesForEditing=true);
 		void CleanupUnusedAudioFiles();
 		void CleanupUnusedVideoFiles();
         BookInfo BookInfo { get; set; }
@@ -439,7 +439,7 @@ namespace Bloom.Book
 		/// Compare the images we find in the top level of the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
-		public void CleanupUnusedImageFiles()
+		public void CleanupUnusedImageFiles(bool keepFilesForEditing = true)
 		{
 			if (IsStaticContent(_folderPath))
 				return;
@@ -459,12 +459,17 @@ namespace Bloom.Book
 			var element = Dom.RawDom.DocumentElement;
 			var pathsToNotDelete = GetImagePathsRelativeToBook(element);
 
-			//also, remove from the doomed list anything referenced in the datadiv that looks like an image
-			//This saves us from deleting, for example, cover page images if this is called before the front-matter
-			//has been applied to the document.
-			pathsToNotDelete.AddRange(from XmlElement dataDivImage in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
-							  select UrlPathString.CreateFromUrlEncodedString(dataDivImage.InnerText.Trim()).PathOnly.NotEncoded);
-			pathsToNotDelete.AddRange(this._brandingImageNames);
+			if (keepFilesForEditing)
+			{
+				//also, remove from the doomed list anything referenced in the datadiv that looks like an image
+				//This saves us from deleting, for example, cover page images if this is called before the front-matter
+				//has been applied to the document.
+				pathsToNotDelete.AddRange (from XmlElement dataDivImage
+											in Dom.RawDom.SelectNodes ("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
+											select UrlPathString.CreateFromUrlEncodedString (dataDivImage.InnerText.Trim ()).PathOnly.NotEncoded);
+				pathsToNotDelete.AddRange (this._brandingImageNames);
+			}
+
 			foreach (var path in pathsToNotDelete)
 			{
 				imageFiles.Remove(GetNormalizedPathForOS(path));   //Remove just returns false if it's not in there, which is fine
@@ -1323,12 +1328,12 @@ namespace Bloom.Book
 			_brandingImageNames.Clear();
 			try
 			{
-				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6516.
-				// On Linux installations, files can never be copied to the "FactoryTemplateBookDirectory".
-				// If Bloom is installed "for all users" on Windows, it may also be impossible to copy files there.
-				// Copying files there allows Bloom to show branding for the template preview, which seems rather
-				// unimportant.
-				if (FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal))
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6516 and https://issues.bloomlibrary.org/youtrack/issue/BL-6852.
+				// On Linux installations, files can never be copied to the "FactoryCollectionsDirectory" or any of its subfolders
+				// (like "FactoryTemplateBookDirectory" or "SampleShellsDirectory").  If Bloom is installed "for all users" on Windows,
+				// it is also impossible to copy files there.  Copying files to those locations would allow Bloom to show branding for
+				// a template preview or a sample shell preview, which seems rather unimportant.
+				if (FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory, StringComparison.Ordinal))
 					return;
 				if (!string.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
 				{

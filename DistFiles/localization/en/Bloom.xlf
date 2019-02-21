@@ -821,11 +821,6 @@
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
       </trans-unit>
-      <trans-unit id="Common.MissingDependency">
-        <source xml:lang="en">Missing Dependency: {0} not found.</source>
-        <note>ID: Common.MissingDependency</note>
-        <note>The {0} will be replaced by the name of an item which was not found</note>
-      </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
@@ -2061,6 +2056,11 @@
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
         <note>This is very low priority for translation.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
+        <source xml:lang="en">To use Auto Segment, first install this {0} system.</source>
+        <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
+        <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput">
         <source xml:lang="en">No input device</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoInput</note>
@@ -2129,6 +2129,12 @@
         <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
         <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordingsTextBox" sil:dynamic="true">
+        <source xml:lang="en">Please clear all existing recordings in this text box before changing modes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordingsTextBox</note>
+        <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
+        <note>Please also consult ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>

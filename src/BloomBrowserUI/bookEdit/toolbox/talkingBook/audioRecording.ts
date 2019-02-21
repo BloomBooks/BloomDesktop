@@ -51,7 +51,9 @@ export enum AudioRecordingMode {
 
 const kWebsocketContext = "audio-recording";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
+const kAudioCurrent = "ui-audioCurrent";
 const kAudioSentenceClassSelector = "." + kAudioSentence;
+const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
 const kRecordingModeControl: string = "audio-recordingModeControl";
 const kRecordingModeClickHandler: string =
@@ -62,9 +64,16 @@ const kAutoSegmentButtonIdSelector = "#" + kAutoSegmentButtonId;
 const kAutoSegmentStatusClass = "autoSegmentStatus";
 const kAutoSegmentEnabledClass = "autoSegmentEnabled";
 
-// TODO: We would actually like this to have (conceptually) different state for each text box, not a single one per page.
-// This would allow us to set a separate audio-recording mode for each state.
-// However, currently this code has a lot of reliance on GetPage(), which just shows that the structure is not conceptually set up to handle per-text-box. So we will leave this for later.
+// Terminology //
+// CurrentTextBox: The text box (div) which is either currently highlighted itself or contains the currently highlighted element. CurrentTextBox never points to a audio-sentence span.
+// CurrentDiv: synonymous with CurrentTextBox
+// CurrentHighlight: The element which is currently highlighted. It could be either a div or a sentence (or etc., in the future)
+// CurrentElement: synonymous with CurrentHighlight
+// Actively focused: Means that it has the UI focus e.g. the mouse has selected it
+// Active: See "actively focused."
+// Focused: See "actively focused."
+// Selected: Means that the element is selected, e.g. it will be highlighted during the next stable state. However, it might not be currently highlighted YET.
+
 // TODO: Maybe a lot of this code should move to TalkingBook.ts (regarding the tool) instead of AudioRecording.ts (regarding recording/playing the audio files)
 export default class AudioRecording {
     private recording: boolean;
@@ -76,10 +85,14 @@ export default class AudioRecording {
     private idOfCurrentSentence: string;
     private awaitingNewRecording: boolean;
     public audioRecordingMode: AudioRecordingMode;
-    private recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
+    public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
     private isShowing: boolean;
 
-    private sentenceToIdMap: object = {}; // map<string, string> from a sentence to the desired ID for that span (instead of using a new, dynamically generated one)
+    // map<string, string[]> from a sentence to the desired IDs for that span (instead of using a new, dynamically generated one)
+    // We have a string[] representing the IdList instead of just a string ID because a text box could potentially contain the same sentence multiple times.
+    private sentenceToIdListMap: object = {};
+    public __testonly__sentenceToIdListMap = this.sentenceToIdListMap; // Exposing it for unit tests. Not meant for public use.
+
     private stringToSentencesCache: object = {};
 
     private listenerFunction: (MessageEvent) => void;
@@ -165,7 +178,7 @@ export default class AudioRecording {
     //
     // callback: A function to call after initialization completes (especially if the initialization happens asynchronously). Set to null if not needed.
     //           e.g., this should include anything that has a dependency on this.audioRecordingMode
-    public initializeForMarkup(callback?: () => void) {
+    public initializeForMarkupAsync(callback?: () => void) {
         const doWhenRecordingModeIsKnown = (audioRecordingModeStr: string) => {
             if (audioRecordingModeStr in AudioRecordingMode) {
                 this.audioRecordingMode = <AudioRecordingMode>(
@@ -187,34 +200,64 @@ export default class AudioRecording {
             }
         };
 
+        const currentTextBox = this.getCurrentTextBox();
+        this.getRecordingModeAsync(currentTextBox, doWhenRecordingModeIsKnown);
+    }
+
+    private getRecordingModeAsync(
+        textBoxDiv: Element | null,
+        doWhenRecordingModeIsKnownCallback: (recordingMode: string) => void
+    ) {
+        if (textBoxDiv) {
+            // First, attempt to assign it from the text box's explicitly specified value if possible.
+            let audioRecordingModeStr = textBoxDiv.getAttribute(
+                "data-audioRecordingMode"
+            );
+            if (audioRecordingModeStr) {
+                doWhenRecordingModeIsKnownCallback(audioRecordingModeStr);
+                return;
+            }
+        }
+
         if (
-            this.getPageDocBody().find("[data-audioRecordingMode]").length > 0
+            this.getPageDocBodyJQuery().find("[data-audioRecordingMode]")
+                .length > 0
         ) {
-            // We are able to identify and load the mode directly from the HTML
-            const audioRecordingModeStr: string = this.getPageDocBody()
+            // For a text box that doesn't already have mode specified, first fallback is to make it the same as another text box on the page that does have it
+            const audioRecordingModeStr: string = this.getPageDocBodyJQuery()
                 .find("[data-audioRecordingMode]")
                 .first()
                 .attr("data-audioRecordingMode");
-            doWhenRecordingModeIsKnown(audioRecordingModeStr);
-        } else if (
-            this.getPageDocBody().find("span.audio-sentence").length > 0
+
+            if (audioRecordingModeStr) {
+                doWhenRecordingModeIsKnownCallback(audioRecordingModeStr);
+                return;
+            }
+        }
+
+        if (
+            this.getPageDocBodyJQuery().find("span.audio-sentence").length > 0
         ) {
             // This may happen when loading books from 4.3 or earlier that already have text recorded,
             // and is especially important if the collection default is set to anything other than Sentence.
-            doWhenRecordingModeIsKnown(AudioRecordingMode.Sentence);
-        } else {
-            // We are not sure what it should be.
-            // So, check what the collection default has to say
-
-            BloomApi.get("talkingBook/defaultAudioRecordingMode", result => {
-                doWhenRecordingModeIsKnown(result.data);
-            });
-
-            // Note: Any code after here will not necessarily (in fact, probably not) run sequentially after the code in your Get() callback
+            doWhenRecordingModeIsKnownCallback(AudioRecordingMode.Sentence);
+            return;
         }
+        // We are not sure what it should be.
+        // So, check what the collection default has to say
+
+        BloomApi.get("talkingBook/defaultAudioRecordingMode", result => {
+            doWhenRecordingModeIsKnownCallback(result.data);
+        });
+        // Note: Any code after here will not necessarily (in fact, probably not) run sequentially after the code in your Get() callback
     }
 
     private setRecordingModeInput() {
+        if (!this.recordingModeInput) {
+            // Button is null for some reason, no need to update its checked status. And don't bother doing anything else either.
+            return;
+        }
+
         // We initialize the checkbox based on our state and whether this is an xMatter
         // page or not. We ran into a problem (BL-6737) where audio was lost if it was
         // recorded in TextBox mode, because the xMatter replacement code (using DataDiv)
@@ -277,31 +320,9 @@ export default class AudioRecording {
         BloomApi.get(
             "audioSegmentation/checkAutoSegmentDependencies",
             result => {
-                if (result.data.startsWith("FALSE")) {
-                    const missingDependency: string = result.data.substring(
-                        "FALSE ".length
-                    );
-
-                    theOneLocalizationManager
-                        .asyncGetText(
-                            "Common.MissingDependency",
-                            "Missing Dependency: {0} not found.",
-                            ""
-                        )
-                        .done(localizedText => {
-                            const errorMessage: string = theOneLocalizationManager.simpleDotNetFormat(
-                                localizedText,
-                                [missingDependency]
-                            );
-
-                            $(kAutoSegmentButtonIdSelector)
-                                .off()
-                                .click(e => toastr.error(errorMessage));
-                            $(kAutoSegmentButtonIdSelector).attr(
-                                "title",
-                                errorMessage
-                            ); // Sets the hover
-                        });
+                if (result.data === "FALSE") {
+                    // The specific missing dependency is only reported in the error log on the C# side.
+                    this.handleMissingDependency();
                 } else {
                     $(kAutoSegmentButtonIdSelector)
                         .off()
@@ -310,6 +331,44 @@ export default class AudioRecording {
                 }
             }
         );
+    }
+
+    // At this point we are handling all missing dependencies the same.
+    private handleMissingDependency(): void {
+        const aeneasName = "Aeneas";
+        const blAeneasUrl = "https://bloomlibrary.org/aeneas";
+        // For now at least, we only report Aeneas as missing and point the user to pages
+        // where installing Aeneas will also install all of its dependencies.
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.TalkingBook.MissingDependency",
+                "To use Auto Segment, first install this {0} system.",
+                "The placeholder {0} will be replaced with the dependency that needs to be installed."
+            )
+            .done(localizedMessage => {
+                let url: string = "";
+                if (window.navigator.platform.startsWith("Win")) {
+                    url = blAeneasUrl;
+                } else {
+                    url = blAeneasUrl + "/linux";
+                }
+                const anchor = '<a href="' + url + '">' + aeneasName + "</a>";
+                const missingDependencyHoverTip = theOneLocalizationManager.simpleDotNetFormat(
+                    localizedMessage,
+                    [aeneasName]
+                );
+                const missingDependencyMsgWithLink = theOneLocalizationManager.simpleDotNetFormat(
+                    localizedMessage,
+                    [anchor]
+                );
+                $(kAutoSegmentButtonIdSelector)
+                    .off()
+                    .click(e => toastr.error(missingDependencyMsgWithLink));
+                $(kAutoSegmentButtonIdSelector).attr(
+                    "title",
+                    missingDependencyHoverTip
+                ); // Sets the hover
+            });
     }
 
     public setupForListen() {
@@ -324,7 +383,7 @@ export default class AudioRecording {
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
 
-        this.hiddenSourceBubbles = this.getPageDocBody().find(
+        this.hiddenSourceBubbles = this.getPageDocBodyJQuery().find(
             ".uibloomSourceTextsBubble"
         );
         this.hiddenSourceBubbles.hide();
@@ -335,7 +394,7 @@ export default class AudioRecording {
             return;
         }
 
-        this.updateMarkupAndControlsToCurrentText();
+        this.updateMarkupForCurrentText();
 
         this.changeStateAndSetExpected("record");
 
@@ -354,7 +413,7 @@ export default class AudioRecording {
     // or saving (leaving) pages.
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
-        const page = this.getPageDocBody();
+        const page = this.getPageDocBodyJQuery();
         page.find(".ui-audioCurrent")
             .removeClass("ui-audioCurrent")
             .removeClass("disableHighlight");
@@ -370,7 +429,7 @@ export default class AudioRecording {
     // And BL-5457: Check that we actually have recordable text in the divs we return.
     private getRecordableDivs(includeCheckForText: boolean = true): JQuery {
         const $this = this;
-        const divs = this.getPageDocBody().find(
+        const divs = this.getPageDocBodyJQuery().find(
             ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
         );
         return divs.filter(":visible").filter((idx, elt) => {
@@ -381,6 +440,47 @@ export default class AudioRecording {
                 return $this.isRecordable(frag);
             });
         });
+    }
+
+    // Corresponds to getRecordableDivs() but only applies the check to the current element
+    public isRecordableDiv(
+        element: Element | null,
+        includeCheckForText: boolean = true,
+        includeCheckForVisibility: boolean = true
+    ): boolean {
+        if (!element) {
+            return false;
+        }
+
+        if (
+            element.nodeName == "DIV" &&
+            element.classList.contains(kBloomEditableTextBoxClass)
+        ) {
+            if (
+                element.parentElement &&
+                element.parentElement.classList.contains("bloom-noAudio")
+            ) {
+                return false;
+            }
+
+            if (includeCheckForVisibility && !$(element).is(":visible")) {
+                // Enhance: Create a non-JQuery equivalent isVisible function
+                return false;
+            }
+
+            if (!includeCheckForText) {
+                return true;
+            }
+            return this.stringToSentences(element!.innerHTML).some(frag => {
+                return this.isRecordable(frag);
+            });
+        } else {
+            return false;
+        }
+    }
+
+    private containsAnyAudioElements(): boolean {
+        return this.getAudioElements().length > 0;
     }
 
     private getAudioElements(): JQuery {
@@ -394,21 +494,41 @@ export default class AudioRecording {
 
         var next = this.getNextAudioElement();
         if (!next) return;
-        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBodyJQuery().find(
+            ".ui-audioCurrent"
+        );
         this.setCurrentAudioElement(current, $(next));
         this.changeStateAndSetExpected("record");
     }
 
     private getNextAudioElement(): HTMLElement | null {
-        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBodyJQuery().find(
+            ".ui-audioCurrent"
+        );
         var audioElts = this.getAudioElements();
         if (current.length === 0 || audioElts.length === 0) return null;
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         return next.length === 0 ? null : next[0];
     }
 
+    private moveToPrevAudioElement(): void {
+        toastr.clear();
+        var current: JQuery = this.getPageDocBodyJQuery().find(
+            ".ui-audioCurrent"
+        );
+        var audioElts = this.getAudioElements();
+        if (current.length === 0 || audioElts.length === 0) return;
+        var currentIndex = audioElts.index(current);
+        if (currentIndex === 0) return;
+        var prev = this.getPreviousAudioElement();
+        if (prev == null) return;
+        this.setCurrentAudioElement(current, $(prev));
+    }
+
     private getPreviousAudioElement(): HTMLElement | null {
-        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBodyJQuery().find(
+            ".ui-audioCurrent"
+        );
         var audioElts = this.getAudioElements();
         if (current.length === 0 || audioElts.length === 0) return null;
         var currentIndex = audioElts.index(current);
@@ -454,6 +574,9 @@ export default class AudioRecording {
         this.idOfCurrentSentence = changeTo.attr("id");
         this.updatePlayerStatus();
         this.changeStateAndSetExpected("record");
+
+        // Update the audioRecordingMode. It might've changed.
+        this.initializeForMarkupAsync();
     }
 
     // If we have an mp3 file but not a wav file, the file server will return that instead.
@@ -466,18 +589,6 @@ export default class AudioRecording {
         const index = bookSrc.lastIndexOf("/");
         const bookFolderUrl = bookSrc.substring(0, index + 1);
         return "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/";
-    }
-
-    private moveToPrevAudioElement(): void {
-        toastr.clear();
-        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
-        var audioElts = this.getAudioElements();
-        if (current.length === 0 || audioElts.length === 0) return;
-        var currentIndex = audioElts.index(current);
-        if (currentIndex === 0) return;
-        var prev = this.getPreviousAudioElement();
-        if (prev == null) return;
-        this.setCurrentAudioElement(current, $(prev));
     }
 
     // Gecko has no way of knowing that we've created or modified the audio file,
@@ -502,7 +613,9 @@ export default class AudioRecording {
 
         toastr.clear();
         this.recording = true;
-        var current: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
+        var current: JQuery = this.getPageDocBodyJQuery().find(
+            ".ui-audioCurrent"
+        );
         var id = current.attr("id");
         axios
             .post("/bloom/api/audio/startRecord?id=" + id)
@@ -547,7 +660,7 @@ export default class AudioRecording {
     // or even just stepping through with Next.
     private durationChanged(): void {
         this.awaitingNewRecording = false;
-        var current = this.getPageDocBody().find(".ui-audioCurrent");
+        var current = this.getPageDocBodyJQuery().find(".ui-audioCurrent");
         current.attr(
             "data-duration",
             (<HTMLAudioElement>$("#player").get(0)).duration
@@ -571,7 +684,9 @@ export default class AudioRecording {
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     public listen(): void {
-        const original: JQuery = this.getPageDocBody().find(".ui-audioCurrent");
+        const original: JQuery = this.getPageDocBodyJQuery().find(
+            ".ui-audioCurrent"
+        );
         const audioElts = this.getAudioElements();
         if (audioElts.length === 0) return;
         const first = audioElts.eq(0);
@@ -590,7 +705,7 @@ export default class AudioRecording {
 
     private playEnded(): void {
         if (this.playingAll) {
-            var current: JQuery = this.getPageDocBody().find(
+            var current: JQuery = this.getPageDocBodyJQuery().find(
                 ".ui-audioCurrent"
             );
             var audioElts = this.getAudioElements();
@@ -742,7 +857,7 @@ export default class AudioRecording {
                 // Note: this is not foolproof because the durationchange handler is
                 // being called asynchronously with stale data and sometimes restoring
                 // the deleted attribute.
-                var current = this.getPageDocBody().find(
+                var current = this.getPageDocBodyJQuery().find(
                     "#" + this.idOfCurrentSentence
                 );
                 if (current.length !== 0) {
@@ -756,20 +871,23 @@ export default class AudioRecording {
         this.changeStateAndSetExpected("record");
     }
 
-    // For now, we know this is a checkbox, so we just need to toggle the value.
-    // In the future, there may be more than two values and we will need to pass in a parameter to let us know which mode to switch to
-    private updateRecordingMode(forceOverwrite: boolean = false) {
+    // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
+    public updateRecordingMode(forceOverwrite: boolean = false) {
         // These two checks are here for paranoia. Normally if the function is disabled
         // we don't install this click handler at all.
         if (ToolBox.isXmatterPage()) {
             this.notifyRecordingModeControlDisabledXMatter();
             return;
         }
+
         // Check if there are any audio recordings present.
         //   If so, these would become invalidated (and deleted down the road when the book's unnecessary files gets cleaned up)
         //   Warn the user if this deletion could happen
         //   We detect this state by relying on the same logic that turns on the Listen button when an audio recording is present
-        if (!forceOverwrite && this.isEnabledOrExpected("listen")) {
+        if (
+            !forceOverwrite &&
+            document.getElementById("audio-play")!.classList.contains("enabled")
+        ) {
             this.notifyRecordingModeControlDisabled();
             return;
         }
@@ -794,11 +912,22 @@ export default class AudioRecording {
             this.audioRecordingMode
         );
 
-        // Update the UI
-        this.updateMarkupAndControlsToCurrentText();
+        // Update the UI after clicking the checkbox
+        // We can't allowUpdateOfCurrent = true at this point (while updating checkbox state and recording mode) because moving the highlight would also imply updating the state of the checkbox.
+        // We don't want to change which box the checkbox applies to right in the middle of the user modifying the value of the checkbox.
+        // (If the two text boxes were in different modes to start with, this sequence would end in a really unintuitive checkbox state to the user)
+        // to a box that has the focus but doesn't currently have the audio highlight.
+        //
+        // Although it is debatable whether the user really meant to adjust the Highlighted Box or the focused Box, we use the principle that the checkbox always
+        // applies to the Highlighted box. (Assuming the other would lead us to a more visually confusing state)
+        //
+        // Actually, the better solution would be to also have the Current Highlight change on mouse click not just on typing.
+        const allowUpdateOfCurrent = false;
+        this.updateMarkupForCurrentText(allowUpdateOfCurrent);
     }
 
     private enableRecordingModeControl() {
+        toastr.clear();
         if (this.recordingModeInput.disabled) {
             this.recordingModeInput.disabled = false;
 
@@ -818,13 +947,15 @@ export default class AudioRecording {
         this.recordingModeInput.disabled = true;
         const handlerJquery = $("#" + kRecordingModeClickHandler);
         handlerJquery.off();
+        toastr.clear();
         if (useClearRecordingsNotification) {
             // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
             handlerJquery.click(e => this.notifyRecordingModeControlDisabled());
         } else {
-            handlerJquery.click(e =>
-                this.notifyRecordingModeControlDisabledXMatter()
-            );
+            handlerJquery.click(e => {
+                if (ToolBox.isXmatterPage)
+                    this.notifyRecordingModeControlDisabledXMatter();
+            });
         }
     }
 
@@ -834,8 +965,8 @@ export default class AudioRecording {
         if (this.recordingModeInput.disabled) {
             theOneLocalizationManager
                 .asyncGetText(
-                    "EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings",
-                    "Please clear all existing recordings on this page before changing modes.",
+                    "EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordingsTextBox",
+                    "Please clear all existing recordings in this text box before changing modes.",
                     ""
                 )
                 .done(localizedNotification => {
@@ -861,19 +992,28 @@ export default class AudioRecording {
     }
 
     // The body of the editable page, a root for searching for document content.
-    public getPageDocBody(): JQuery {
+    public getPageDocBody(): HTMLElement | null {
         const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return $();
-        return $(page.contentWindow.document.body);
+        if (!page || !page.contentWindow) return null;
+        return page.contentWindow.document.body;
     }
 
-    public getCurrentElement(): HTMLElement | null {
-        let page = this.getPageDocBody();
+    // The body of the editable page, a root for searching for document content.
+    public getPageDocBodyJQuery(): JQuery {
+        // Enhance: Delete all references one day
+        const body = this.getPageDocBody();
+        if (!body) return $();
+        return $(body);
+    }
+
+    // Returns the element (could be either div, span, etc.) which is currently highlighted.
+    public getCurrentHighlight(): HTMLElement | null {
+        let page = this.getPageDocBodyJQuery();
 
         if (page.length <= 0) {
             // The first one is probably the right one when this case is triggered, but even if not, it's better than nothing.
             this.setCurrentAudioElementToFirstAudioElement();
-            page = this.getPageDocBody();
+            page = this.getPageDocBodyJQuery();
         }
 
         const current = page.find(".ui-audioCurrent");
@@ -883,19 +1023,109 @@ export default class AudioRecording {
         return null;
     }
 
+    // Returns the text of the currently highlighted element
     public getCurrentText(): string {
-        const currentElement = this.getCurrentElement();
-        if (currentElement) {
-            return currentElement.innerText;
+        const currentHighlight = this.getCurrentHighlight();
+        if (currentHighlight) {
+            return currentHighlight.innerText;
         }
         return "";
+    }
+
+    // Returns a list of the audio-sentences in the text box (definitely a div) corresponding to the currently highlighted element (not necessariliy a div)
+    public getAudioSentencesInCurrentTextBox(): HTMLElement[] {
+        const elements: HTMLElement[] = [];
+        const currentTextBox = this.getCurrentTextBox();
+
+        if (currentTextBox) {
+            if (currentTextBox.classList.contains(kAudioSentence)) {
+                elements.push(currentTextBox);
+            } else {
+                const collection = currentTextBox.getElementsByClassName(
+                    kAudioSentence
+                );
+                for (let i = 0; i < collection.length; ++i) {
+                    const element = collection.item(i);
+                    if (element) {
+                        elements.push(<HTMLElement>element);
+                    }
+                }
+            }
+        }
+
+        return elements;
+    }
+
+    // Returns the Text Box div with the Current Highlight on it (that is, the one with .ui-audioCurrent class applied)
+    // One difference between this function and getCurrentHighlight is that if the currently-highlighted element is not a div, then getCurrentTextBox() walks up the tree to find its most recent ancestor div. (whereas getCurrentHighlight can return non-div elements)
+    // This function will also attempt to set it in case no such Current Highlight exists (which is often an erroneous state arrived at by race condition)
+    public getCurrentTextBox(): HTMLElement | null {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) return pageBody;
+
+        let audioCurrentElements = pageBody.getElementsByClassName(
+            kAudioCurrent
+        );
+
+        if (audioCurrentElements.length == 0) {
+            // Oops, ui-audioCurrent not set on anything. Just going to have to stick it onto the first element.
+            this.setCurrentAudioElementToFirstAudioElement();
+            audioCurrentElements = pageBody.getElementsByClassName(
+                kAudioCurrent
+            );
+
+            if (audioCurrentElements.length <= 0) {
+                return null;
+            }
+        }
+
+        let currToExamine: HTMLElement | null = <HTMLElement | null>(
+            audioCurrentElements.item(0)
+        );
+        while (currToExamine && !this.isRecordableDiv(currToExamine)) {
+            // Recursively go up the tree to find the enclosing div, if necessary
+            currToExamine = currToExamine.parentElement; // Will return null if no parent
+        }
+
+        return currToExamine;
+    }
+
+    // Determines which element should receive the Current Highlight
+    //   (Notably, checks to see if we should move from the existing Current Highlight (determined via CSS classes) to the actively focused element instead.)
+    private getWhichTextBoxShouldReceiveHighlight() {
+        const pageFrame = this.getPageFrame();
+
+        // Determine which element should receive the current highlight
+        if (
+            pageFrame &&
+            pageFrame.contentDocument &&
+            pageFrame.contentDocument.activeElement &&
+            this.isRecordableDiv(pageFrame.contentDocument.activeElement)
+        ) {
+            // FYI: The active element is the one that has "focus."  It may be a lot of other elements on the page, so definitely make sure to check that it is valid first (e.g. check IsRecordableDiv())
+            // If the cursor is within a span within a div, it is the div that is the activeElement.  This is both a good thing (when we want to know what div the user is in) and a bad thing (in by sentence mode, we'd really prefer to know what span they're in but this is not trivial)
+            return pageFrame.contentDocument.activeElement;
+        } else {
+            return this.getCurrentTextBox();
+        }
+    }
+
+    // Moves the currently highlighted element to specified text box
+    // Note: as name promises, this moves it to a text box (a div) not an element (either an audio-sentence div or audio-sentence span).
+    // This happens even if audioRecordingMode=Sentence. It is caller's responsibility to either ensure that this operation is valid,
+    // or to be able to handle the resulting state (possibly in Sentence mode but a div is selected), for example by calling updateMarkupForCurrentText() to re-update the state.
+    private moveCurrentHighlightToTextBox(newSelectedTextBox): void {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) return; // Just give up, not much we can do from here.
+
+        const audioCurrentList = pageBody.getElementsByClassName(kAudioCurrent);
+        this.setCurrentAudioElement($(audioCurrentList), $(newSelectedTextBox));
     }
 
     public newPageReady() {
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
-        // The callback (among other things) detects if we have no recordable text on the page.
-        this.initializeForMarkup();
+        this.initializeForMarkupAsync(() => this.changeStateAndSetExpected(""));
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
@@ -908,33 +1138,76 @@ export default class AudioRecording {
     }
 
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
-    public updateMarkupAndControlsToCurrentText() {
+    public updateMarkupForCurrentText(
+        allowUpdateOfCurrent: boolean = true
+    ): void {
+        // Basic outline:
+        // * This function gets called when the user types something, and upon initialization of the talking book tool too if there is a non-empty recordable text box
+        // * First, see if we should update the Current Highlight to the element with the active focus instead.
+        // * Then, ensure all the state is initialized.
+        // * Now that we're finally ready, change the HTML markup with the audio-sentence classes, ids, etc.
+        // * Adjust the Current Highlight appropriately.
+        // * (keep adjusting the current highlight to) fight with timing issues
+
+        const currentTextBox = this.getCurrentTextBox();
+
+        // Enhance: it would be nice/significantly more intuitive if this (or a stripped-down version that just moves the highlight/audio recording mode) could run when the mouse focus changes.
+        if (allowUpdateOfCurrent) {
+            const selectedTextBox = this.getWhichTextBoxShouldReceiveHighlight();
+
+            if (currentTextBox != selectedTextBox) {
+                // Note: This may temporarily put things into a funny state. We ask to move the highlight to the whole div regardless of what the recording mode is.
+                // We have a bit of a chicken and egg problem here. The new recording mode still needs to be determined, and the audio-sentence markup is not applied yet either,
+                // but it's easier to determine the recording mode and apply the audio-sentence markup if we move the current highlight first than vice-versa.
+                // Calling InitializeForMarkupAsync (called by updateMarkupForCurrentText) and updateMarkupForCurrentText should get us back into a 100% valid state.
+                this.moveCurrentHighlightToTextBox(selectedTextBox);
+                this.audioRecordingMode = AudioRecordingMode.Unknown; // Clear the mode to signal that re-doing initialization is necessary.
+
+                this.updateMarkupForCurrentText(false);
+                return;
+            }
+        }
+
+        if (!currentTextBox) {
+            return;
+        }
+
         this.isShowing = true;
 
         if (!this.isFullyInitialized()) {
-            this.initializeForMarkup(() => {
-                this.updateMarkupAndControlsToCurrentText();
+            this.initializeForMarkupAsync(() => {
+                this.updateMarkupForCurrentText(false);
             });
             return;
         }
 
-        let editable = this.getRecordableDivs();
-        if (editable.length === 0) {
+        // In addition to us processing currentTextBox, also add any unprocessed divs
+        const recordableDivs = this.getRecordableDivs();
+        const unprocessedRecordables = recordableDivs.filter(
+            ":not([data-audioRecordingMode])"
+        );
+        let unionedElementsToProcess = $(currentTextBox).add(
+            unprocessedRecordables
+        );
+
+        if (unionedElementsToProcess.length === 0) {
             // no editable text on this page.
             this.changeStateAndSetExpected("");
             return;
         }
 
-        this.makeAudioSentenceElements(editable);
-        // For displaying the qtip, restrict the editable divs to the ones that have
-        // audio sentences.
-        editable = editable.has(kAudioSentenceClassSelector);
+        this.makeAudioSentenceElements(unionedElementsToProcess);
+
         const thisClass = this;
 
         //thisClass.setStatus('record', Status.Expected);
         thisClass.levelCanvas = $("#audio-meter").get()[0];
 
-        this.setCurrentAudioElementToFirstAudioElement(false); // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
+        // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
+        this.setCurrentAudioElementToFirstAudioSentenceWithinElement(
+            currentTextBox,
+            false
+        );
 
         // Note: Marking up the Current Element needs to happen after CKEditor's onload() fully finishes.  (onload sets the HTML of the bloom-editable to its original value, so it can wipe out any changes made to the original value).
         //   There is a race condition as to which one finishes first.  We need to  finish AFTER Ckeditor's onload()
@@ -957,7 +1230,10 @@ export default class AudioRecording {
         while (delayInMilliseconds < 1000) {
             // Keep setting the current highlight for an additional roughly 1 second
             setTimeout(() => {
-                this.setCurrentAudioElementToFirstAudioElement(true);
+                this.setCurrentAudioElementToFirstAudioSentenceWithinElement(
+                    currentTextBox,
+                    true
+                );
             }, delayInMilliseconds);
 
             delayInMilliseconds *= 2;
@@ -968,7 +1244,8 @@ export default class AudioRecording {
         return this.audioRecordingMode != AudioRecordingMode.Unknown;
     }
 
-    public setCurrentAudioElementToFirstAudioElement(
+    public setCurrentAudioElementToFirstAudioSentenceWithinElement(
+        element: Element,
         isEarlyAbortEnabled: boolean = false
     ) {
         if (isEarlyAbortEnabled && !this.isShowing) {
@@ -976,7 +1253,9 @@ export default class AudioRecording {
             return;
         }
 
-        const audioCurrentList = this.getPageDocBody().find(".ui-audioCurrent");
+        const audioCurrentList = this.getPageDocBodyJQuery().find(
+            ".ui-audioCurrent"
+        );
 
         if (isEarlyAbortEnabled && audioCurrentList.length >= 1) {
             // audioCurrent highlight is already working, so don't bother trying to fix anything up.
@@ -985,7 +1264,39 @@ export default class AudioRecording {
             return;
         }
 
-        const firstSentence = this.getPageDocBody()
+        let changeTo: Element | null;
+        if (element.classList.contains(kAudioSentence)) {
+            // The element itself is already an audio-sentence. Easy, just use itself.
+            changeTo = element;
+        } else {
+            const sentencesWithinCurrentElement = element.getElementsByClassName(
+                kAudioSentence
+            );
+            if (sentencesWithinCurrentElement.length > 0) {
+                changeTo = sentencesWithinCurrentElement.item(0);
+            } else {
+                // Confused, not supposed to be here, just try to set it to the first audio-sentence in any text box as a last resort
+                const firstSentence = this.getPageDocBodyJQuery()
+                    .find(kAudioSentenceClassSelector)
+                    .first();
+                if (firstSentence.length === 0) {
+                    // no recordable sentence found.
+                    return;
+                }
+
+                changeTo = firstSentence.get(0);
+            }
+        }
+
+        this.setCurrentAudioElement(audioCurrentList, $(<any>changeTo));
+    }
+
+    public setCurrentAudioElementToFirstAudioElement() {
+        const audioCurrentList = this.getPageDocBodyJQuery().find(
+            ".ui-audioCurrent"
+        );
+
+        const firstSentence = this.getPageDocBodyJQuery()
             .find(kAudioSentenceClassSelector)
             .first();
         if (firstSentence.length === 0) {
@@ -994,6 +1305,13 @@ export default class AudioRecording {
         }
 
         this.setCurrentAudioElement(audioCurrentList, firstSentence); // typically first arg matches nothing.
+
+        // This possibly moved the highlight to a different text box, so we need to re-compute settings.
+        if (this.getAudioFilePresent()) {
+            this.disableRecordingModeControl();
+        } else {
+            this.enableRecordingModeControl();
+        }
     }
 
     // This gets invoked via websocket message. It draws a series of bars
@@ -1421,7 +1739,7 @@ export default class AudioRecording {
     // current sentence, we want to preserve the association between that content and ID (and possibly recording).
     // Where there aren't exact matches, but there are existing audio-sentence spans, we keep the ids as far as possible,
     // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
-    // We also attempt to use any sentence IDs specified by this.sentenceToIDMap
+    // We also attempt to use any sentence IDs specified by this.sentenceToIdListMap
     private makeAudioSentenceElementsLeaf(elt: JQuery): void {
         // When all text is deleted, we get in a temporary state with no paragraph elements, so the root editable div
         // may be processed...and if this happens during editing the format button may be present. The body of this function
@@ -1484,9 +1802,22 @@ export default class AudioRecording {
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
                 if (!newId) {
-                    if (fragment.text in this.sentenceToIdMap) {
-                        newId = this.sentenceToIdMap[fragment.text];
-                    } else {
+                    const normalizedText = AudioRecording.normalizeText(
+                        fragment.text
+                    );
+                    if (normalizedText in this.sentenceToIdListMap) {
+                        const idList = this.sentenceToIdListMap[normalizedText];
+
+                        if (idList.length >= 1) {
+                            newId = idList[0];
+
+                            // We're done processing this id, so get rid of it.
+                            // This allows us to use the next ID if there are multiple sentences with the same fragment text.
+                            idList.shift();
+                        }
+                    }
+
+                    if (!newId) {
                         newId = this.createValidXhtmlUniqueId();
                     }
                 }
@@ -1506,6 +1837,24 @@ export default class AudioRecording {
         // set the html
         elt.html(newHtml);
         elt.append(formatButton);
+    }
+
+    // Normalization rules for text which has already been processed by CKEditor
+    // Note that the text seems to have 3 variations when running AutoSegment, which may represent extraneous whitespace differently:
+    // 1) Raw Form - Directly after typing text, immediately upon clicking AutoSegment, before anything is modified
+    // 2) Processing Form - After clicking AutoSegment and the response is being proc, during MakeAudioSentenceElementsLeaf
+    // 3) Saved Form - After saving the page.
+    // We want all 3 forms to be able to map to the same string after normalizing.
+    public static normalizeText(text: string): string {
+        if (!text) {
+            return text;
+        }
+
+        text = text.replace(/\r/g, "").replace(/\n/g, ""); // Raw form may inject extraneous newlines upon inserting punctuation like '('
+        text = text.replace(/<br \/>/g, ""); // Processing form will contain <br />.
+        text = text.replace(/&nbsp;/g, String.fromCharCode(160)); // Saved form will store multiple spaces as Unicode decimal 160 = non-breaking space
+
+        return text;
     }
 
     private createValidXhtmlUniqueId(): string {
@@ -1577,14 +1926,16 @@ export default class AudioRecording {
     ) {
         console.log("changeState(" + expectedVerb + ")");
 
-        // We call this method in (at least) two places with expectedVerb = "" when we have found
-        // that the current page has no divs with recordable content, so we want to disable
-        // the audio recording controls.
+        // Call with "" verb if there's nothing specific to highlight, just need to check if these controls should be disabled.
+        // (e.g. when we have found that the current page has no divs with recording content, and we may possible want to disable
+        // the audio recording controls.)
         if (expectedVerb == "") {
             this.disableInteraction();
             // Whether we disable the Recording Mode control depends on whether we COULD have text
-            // on this page (i.e. is there a textbox).
-            this.enableRecordingModeIfTextBoxes();
+            // on this page (i.e. is there a textbox) and on whether this is an xMatter page.  (We
+            // require sentence-by-sentence recording on xMatter pages due to the nature of their
+            // content.)
+            this.enableRecordingModeIfAppropriate();
             return;
         }
 
@@ -1597,7 +1948,11 @@ export default class AudioRecording {
         //       In theory, there can be a small delay between when we are supposed to change state
         //       (right now) and when we actually determine the correct state (after a callback).
 
-        if (this.getPageDocBody().find(".ui-audioCurrent").length === 0) {
+        // Finding no audioCurrent is only unexpected if there are non-zero number of audio elements
+        if (
+            this.getPageDocBodyJQuery().find(".ui-audioCurrent").length === 0 &&
+            this.containsAnyAudioElements()
+        ) {
             // We have reached an unexpected state :(
             // (It can potentially happen if changes applied to the markup get wiped out and
             // overwritten e.g. by CkEditor Onload())
@@ -1609,7 +1964,7 @@ export default class AudioRecording {
                 // loading which will be on the first element. Even if the first element is
                 // "wrong"... the alternative is it points to nothing and you are stuck.
                 // IMO pointing to the first element is less wrong than disabling the whole toolbox.
-                this.setCurrentAudioElementToFirstAudioElement(false);
+                this.setCurrentAudioElementToFirstAudioElement();
                 this.changeStateAndSetExpected(
                     expectedVerb,
                     numRetriesRemaining - 1
@@ -1641,12 +1996,12 @@ export default class AudioRecording {
                 }
             })
             .catch(error => {
+                //server couldn't find it, so just leave these buttons disabled
                 this.setStatus("clear", Status.Disabled);
                 this.setStatus("play", Status.Disabled);
                 toastr.error(
                     "Error checking on audio file " + error.statusText
                 );
-                //server couldn't find it, so just leave these buttons disabled
             });
 
         if (this.getNextAudioElement()) {
@@ -1666,23 +2021,52 @@ export default class AudioRecording {
             ids.push(this.id);
         });
         axios
-            .get("/bloom/api/audio/enableListenButton?ids=" + ids)
+            .get("/bloom/api/audio/checkForAnyRecording?ids=" + ids)
             .then(response => {
                 if (response.statusText == "OK") {
                     this.setStatus("listen", Status.Enabled);
-                    this.disableRecordingModeControl(!ToolBox.isXmatterPage());
                 } else {
                     this.setStatus("listen", Status.Disabled);
+                }
+            })
+            .catch(response => {
+                // This handles the case where AudioRecording.HandleCheckForAnyRecording() (in C#)
+                // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
+                this.setStatus("listen", Status.Disabled);
+            });
+
+        // Determine whether the recording mode checkbox should be enabled or not, based on whether any audio files are present
+        // for anything in the current text box
+        const currentTextBoxIds: string[] = [];
+        const audioSentenceCollection = this.getAudioSentencesInCurrentTextBox();
+        for (let i = 0; i < audioSentenceCollection.length; ++i) {
+            const audioSentenceElement = audioSentenceCollection[i];
+            if (audioSentenceElement) {
+                const id = audioSentenceElement.getAttribute("id");
+                if (id) {
+                    currentTextBoxIds.push(id);
+                }
+            }
+        }
+
+        axios
+            .get(
+                "/bloom/api/audio/checkForAnyRecording?ids=" +
+                    currentTextBoxIds.toString()
+            )
+            .then(response => {
+                if (response.statusText == "OK") {
+                    // There is some audio in this text box. Disable the control so that the user can't accidentally lose data.
+                    this.disableRecordingModeControl(!ToolBox.isXmatterPage());
+                } else {
                     this.enableRecordingModeControl();
                 }
             })
             .catch(response => {
-                // This handles the case where AudioRecording.HandleEnableListenButton() (in C#)
-                // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
-                this.setStatus("listen", Status.Disabled);
-                // In this case (no audio), we don't want to enable the checkbox if we are on
-                // an xMatter page (BL-6737). It is probably already disabled at this point, but
-                // we might as well play it safe.
+                // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
+
+                // We don't want to enable the checkbox if we are on an xMatter page (BL-6737).
+                // It is probably already disabled at this point, but might as well play it safe.
                 if (ToolBox.isXmatterPage()) {
                     this.disableRecordingModeControl(false);
                 } else {
@@ -1691,10 +2075,15 @@ export default class AudioRecording {
             });
     }
 
-    private enableRecordingModeIfTextBoxes() {
+    // Enable the recording mode checkbox only for non-xMatter pages that have visible text divs.
+    // It doesn't matter whether any of the text divs actually contain text.
+    private enableRecordingModeIfAppropriate() {
         // The 'false' parameter here checks for visible text divs, but doesn't check
         // for actual text in them. We already know there aren't any WITH text.
-        if (this.getRecordableDivs(false).length > 0) {
+        if (
+            !ToolBox.isXmatterPage() &&
+            this.getRecordableDivs(false).length > 0
+        ) {
             // Enable the control, although we don't currently have any text on this page, because
             // we could add text at some point.
             this.enableRecordingModeControl();
@@ -1730,6 +2119,14 @@ export default class AudioRecording {
         }
     }
 
+    public getAudioFilePresent(): boolean {
+        const playElement = document.getElementById("#audio-play");
+        if (playElement && playElement.classList.contains("enabled")) {
+            return true;
+        }
+        return false;
+    }
+
     // Callback for when the user clicks on the "Auto Segment" button.
     // This will automatically segment the audio to synchronize with the text (a.k.a. forced alignment)
     // The basic steps are:
@@ -1752,8 +2149,8 @@ export default class AudioRecording {
             return;
         }
 
-        const currentDiv = this.getCurrentElement();
-        if (!currentDiv) {
+        const currentTextBox = this.getCurrentHighlight();
+        if (!currentTextBox) {
             // At this point, not going to be able to get the ID of the div so we can't figure out how to get the filename...
             // So just give up.
             toastr.error("AutoSegment did not succeed.");
@@ -1780,7 +2177,7 @@ export default class AudioRecording {
                 });
 
             const inputParameters = {
-                audioFilenameBase: currentDiv.id,
+                audioFilenameBase: currentTextBox.id,
                 audioTextFragments: fragmentIdTuples,
                 lang: this.getAutoSegmentLanguageCode()
             };
@@ -1806,12 +2203,6 @@ export default class AudioRecording {
                     this.processAutoSegmentResponse(result, statusElement);
                 }
             );
-
-            // TODO: If there are multiple text boxes per page, it always resets focus to the first box.
-            //       But it does that even with the checkbox, so I don't know what I can do about it.
-            //       Well, if you saved some state, you could probalby code it up. And that switch modes functionality is new, not set in stone.
-            // TODO: If there are multiple text boxes on a page, maybe it shouldnt segment all of them.
-            //       But the setting is for all of them on the page.  Ugh. Awkward.
         }
     }
 
@@ -1834,15 +2225,19 @@ export default class AudioRecording {
 
                 // Sometimes extraneous newlines can be injected (by CKEditor?). They may get removed later (maybe after the CKEditor reloads when the text box's underlying HTML is modified???)
                 // However, some processing needs the text immediately, and others are after the text is cleaned.
-                // In order to reconcile the two, just fix the text immediately.
-                fragment.text = fragment.text
-                    .replace(/\r/g, "")
-                    .replace(/\n/g, "");
+                // In order to reconcile the two, just normalize the text immediately.
+                fragment.text = AudioRecording.normalizeText(fragment.text);
 
                 fragmentObjects.push(
                     new AudioTextFragment(fragment.text, newId)
                 );
-                this.sentenceToIdMap[fragment.text] = newId; // This is saved so MakeSentenceAudioElementsLeaf can recover it
+
+                let idList: string[] = [];
+                if (fragment.text in this.sentenceToIdListMap) {
+                    idList = this.sentenceToIdListMap[fragment.text];
+                }
+                idList.push(newId); // This is saved so MakeSentenceAudioElementsLeaf can recover it
+                this.sentenceToIdListMap[fragment.text] = idList;
             }
         }
 
@@ -1864,9 +2259,9 @@ export default class AudioRecording {
         const langCodeFromAutoSegmentSettings = ""; // TODO: IMPLEMENT ME after we convert to having the recording mode setting only apply to the current text box. It'll make this set of settings easier to figure out.
         let langCode = langCodeFromAutoSegmentSettings;
         if (!langCode) {
-            const currentDiv = this.getCurrentElement();
-            if (currentDiv) {
-                const langAttributeValue = currentDiv.getAttribute("lang");
+            const currentTextBox = this.getCurrentHighlight();
+            if (currentTextBox) {
+                const langAttributeValue = currentTextBox.getAttribute("lang");
                 if (langAttributeValue) {
                     langCode = langAttributeValue;
                 }
@@ -1884,9 +2279,10 @@ export default class AudioRecording {
     }
 
     private disableInteraction(): void {
-        // We call this method in two cases (so far):
+        // We call this method in three cases (so far):
         // 1- When calling changeStateAndSetExpected() with expectedVerb = ""
         // 2- While doing auto segmenting
+        // 3- An unrecoverable error has occurred
         this.setStatus("record", Status.Disabled);
         this.setStatus("play", Status.Disabled);
         this.setStatus("next", Status.Disabled);
@@ -1913,12 +2309,12 @@ export default class AudioRecording {
         if (isSuccess) {
             // Now that we know the Auto Segmentation succeeded, finally convert into by-sentence mode.
 
-            // Note that this will want to use the sentenceToIdMap member variable to inform it to re-use the IDs used to create the split audio files
+            // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
             const forceOverwrite: boolean = true;
             this.updateRecordingMode(forceOverwrite); // Needs to call changeStateAndSetExpected() at some point.
 
-            // Now that we're all done with use sentenceToIdMap, clear it out so that there's no potential for accidental re-use
-            this.sentenceToIdMap = {};
+            // Now that we're all done with use sentenceToIdListMap, clear it out so that there's no potential for accidental re-use
+            this.sentenceToIdListMap = {};
         } else {
             this.changeStateAndSetExpected("record");
 
