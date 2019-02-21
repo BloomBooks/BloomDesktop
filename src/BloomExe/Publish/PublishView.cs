@@ -454,8 +454,6 @@ namespace Bloom.Publish
 			switch (displayMode)
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
-					// _pdfViewer.Visible must be set true at least once momentarily for other display controls to get the right size.  (BL-6006)
-					_pdfViewer.Visible = true;
 					_printButton.Enabled = _saveButton.Enabled = false;
 					Cursor = Cursors.Default;
 					_workingIndicator.Visible = false;
@@ -541,14 +539,11 @@ namespace Bloom.Publish
 			_pdfViewer.Visible = false;
 			Cursor = Cursors.WaitCursor;
 			_htmlControl = new HtmlPublishPanel(pathToHtml);
-			_htmlControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
-				_pdfViewer.Width, _pdfViewer.Height);
-			_htmlControl.Dock = _pdfViewer.Dock;
-			_htmlControl.Anchor = _pdfViewer.Anchor;
+			_htmlControl.Dock = DockStyle.Fill;
 			var saveBackGround = _htmlControl.BackColor; // changed to match parent during next statement
 			Controls.Add(_htmlControl);
 			_htmlControl.BackColor = saveBackGround; // keep own color.
-			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+			// This control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
 			_htmlControl.BringToFront();
 			Cursor = Cursors.Default;
 		}
@@ -569,14 +564,11 @@ namespace Bloom.Publish
 
 			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection);
 			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _loginDialog);
-			_uploadControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
-				_pdfViewer.Width, _pdfViewer.Height);
-			_uploadControl.Dock = _pdfViewer.Dock;
-			_uploadControl.Anchor = System.Windows.Forms.AnchorStyles.Left|System.Windows.Forms.AnchorStyles.Top|System.Windows.Forms.AnchorStyles.Right|System.Windows.Forms.AnchorStyles.Bottom;
+			_uploadControl.Dock = DockStyle.Fill;
 			var saveBackColor = _uploadControl.BackColor;
 			Controls.Add(_uploadControl); // somehow this changes the backcolor
 			_uploadControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
-			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+			// This control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
 			_uploadControl.BringToFront();
 		}
 

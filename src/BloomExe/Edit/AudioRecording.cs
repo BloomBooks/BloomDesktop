@@ -103,7 +103,7 @@ namespace Bloom.Edit
 			// Any handler which retrieves information from the audio folder SHOULD wait on the _completeRecording lock (call WaitForRecordingToComplete()) to ensure that it sees
 			// a consistent state of the audio folder, and therefore should NOT run on the UI thread.
 			// Also, explicitly setting requiresSync to true (even tho that's default anyway) to make concurrency less complicated to think about
-			apiHandler.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton, false, true);
+			apiHandler.RegisterEndpointHandler("audio/checkForAnyRecording", HandleCheckForAnyRecording, false, true);
 			apiHandler.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, false, true);
 			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, false, true);
 			apiHandler.RegisterEndpointHandler("audio/wavFile", HandleAudioFileRequest, false, true);
@@ -116,7 +116,7 @@ namespace Bloom.Edit
 		}
 
 		// Does this page have any audio at all? Used to enable 'Listen to the whole page'.
-		private void HandleEnableListenButton(ApiRequest request)
+		private void HandleCheckForAnyRecording(ApiRequest request)
 		{
 			var ids = request.RequiredParam("ids");
 			var idList = ids.Split(',');
@@ -293,6 +293,14 @@ namespace Bloom.Edit
 			//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
 			//That's fine so long as it doesn't make the UI unresponsive on slow machines.
 			_mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment);
+			// Got a good new recording, can safely clean up all backups related to old one.
+			foreach (var path in Directory.EnumerateFiles(
+				Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment),
+				Path.GetFileNameWithoutExtension(PathToRecordableAudioForCurrentSegment)+ "*"+ ".bak"))
+			{ 
+				RobustFile.Delete(path);
+			}
+			
 			// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format
 			// is required for ePUB. The wav file is a better permanent record of the recording.
 			_completingRecording.Set(); // will release HandleAudioFileRequest if it is waiting.
@@ -368,39 +376,37 @@ namespace Bloom.Edit
 			request.ReplyWithText("starting record soon");
 		}
 
+		// We want to move the file specified in the first path to a new location to use
+		// as a backup while we typically replace it.
+		// A previous backup, possibly of the same or another file, is no longer needed (if it exists)
+		// and should be deleted, if possible, on a background thread.
+		// The path to the backup will be updated to the new backup.
+		// Typically the new name matches the original with the extension changed to .bak.
+		// If necessary (because the desired backup file already exists), we will add a counter
+		// to get the a name that is not in use.
+		// A goal is (for performance reasons) not to have to wait while a file is deleted
+		// (and definitely not while one is copied).
 		private static bool PrepareBackupFile(string path, ref string backupPath, ApiRequest request)
 		{
-			// It is unfortunate that we have to do this RobustFile.Delete stuff before starting the recording.
-			// Sometimes the length of time until the recording actually starts is noticeable to the user and can
-			// cut off the initial speech of the recording.
+			int counter = 0;
+			backupPath = path + ".bak";
+			var originalExtension = Path.GetExtension(path);
+			var pathWithNoExtension = Path.GetFileNameWithoutExtension(path);
+			while (File.Exists(backupPath))
+			{
+				counter++;
+				backupPath = pathWithNoExtension + counter + originalExtension + ".bak";
+			}
+			// An earlier version copied the file to a temp file. We can't MOVE to a file in the system temp
+			// directory, though, because we're not sure it is on the same volume. And sometimes the time
+			// required to copy the file was noticeable and resulted in the user starting to speak before
+			// the system started recording. So we pay the price of a small chance of backups being left
+			// around the book directory to avoid that danger.
 			if (RobustFile.Exists(path))
 			{
-				//Try to deal with backupPath getting locked (BL-3160)
 				try
 				{
-					RobustFile.Delete(backupPath);
-				}
-				catch (IOException)
-				{
-					backupPath = Path.GetTempFileName();
-				}
-
-				try
-				{
-					RobustFile.Copy(path, backupPath, true);
-				}
-				catch (Exception err)
-				{
-					ErrorReport.NotifyUserOfProblem(err,
-						"Bloom cold not copy " + path + " to " +
-						backupPath + " If things remains stuck, you may need to restart your computer.");
-					request.Failed("Problem with backup file");
-					return false;
-				}
-
-				try
-				{
-					RobustFile.Delete(path);
+					RobustFile.Move(path, backupPath);
 				}
 				catch (Exception err)
 				{
@@ -410,10 +416,6 @@ namespace Bloom.Edit
 					request.Failed("Audio file locked");
 					return false;
 				}
-			}
-			else
-			{
-				RobustFile.Delete(backupPath);
 			}
 
 			return true;
@@ -482,7 +484,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					RobustFile.Copy(_backupPathForRecordableAudio, PathToRecordableAudioForCurrentSegment, true);
+					RobustFile.Move(_backupPathForRecordableAudio, PathToRecordableAudioForCurrentSegment);
 				}
 				catch (IOException e)
 				{
@@ -494,7 +496,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					RobustFile.Copy(_backupPathForPublishableAudio, Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension), true);
+					RobustFile.Move(_backupPathForPublishableAudio, Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension));
 				}
 				catch (IOException e)
 				{

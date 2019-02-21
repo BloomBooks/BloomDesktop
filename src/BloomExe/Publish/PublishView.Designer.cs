@@ -35,18 +35,18 @@ namespace Bloom.Publish
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper8 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo8 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper9 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo9 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper10 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo10 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper11 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo11 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper12 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo12 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper3 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo3 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
@@ -68,8 +68,8 @@ namespace Bloom.Publish
 			this._epubRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletsMessage = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
+			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -151,6 +151,7 @@ namespace Bloom.Publish
 			// 
 			// tableLayoutPanel1
 			// 
+			this.tableLayoutPanel1.AutoScroll = true;
 			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -226,15 +227,15 @@ namespace Bloom.Publish
 			this._androidRadio.Location = new System.Drawing.Point(3, 448);
 			this._androidRadio.Name = "_androidRadio";
 			this._androidRadio.Size = new System.Drawing.Size(105, 71);
-			superToolTipInfo7.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo7.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo7.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo7.BodyText = "Publish to an Android device.";
-			superToolTipInfo7.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo7.ShowHeader = false;
-			superToolTipInfoWrapper7.SuperToolTipInfo = superToolTipInfo7;
-			superToolTipInfoWrapper7.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._androidRadio, superToolTipInfoWrapper7);
+			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo1.BodyText = "Publish to an Android device.";
+			superToolTipInfo1.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo1.ShowHeader = false;
+			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
+			superToolTipInfoWrapper1.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._androidRadio, superToolTipInfoWrapper1);
 			this._androidRadio.TabIndex = 22;
 			this._androidRadio.TabStop = true;
 			this._androidRadio.Text = "Android";
@@ -253,16 +254,16 @@ namespace Bloom.Publish
 			this._uploadRadio.Location = new System.Drawing.Point(3, 525);
 			this._uploadRadio.Name = "_uploadRadio";
 			this._uploadRadio.Size = new System.Drawing.Size(105, 89);
-			superToolTipInfo8.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo8.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo8.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo8.BodyText = "Upload to BloomLibrary.org, where others can download and localize into their own" +
+			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo2.BodyText = "Upload to BloomLibrary.org, where others can download and localize into their own" +
     " language.";
-			superToolTipInfo8.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo8.ShowHeader = false;
-			superToolTipInfoWrapper8.SuperToolTipInfo = superToolTipInfo8;
-			superToolTipInfoWrapper8.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper8);
+			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo2.ShowHeader = false;
+			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
+			superToolTipInfoWrapper2.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper2);
 			this._uploadRadio.TabIndex = 21;
 			this._uploadRadio.TabStop = true;
 			this._uploadRadio.Text = "Share on the Web";
@@ -314,17 +315,17 @@ namespace Bloom.Publish
 			this._bookletCoverRadio.Location = new System.Drawing.Point(3, 169);
 			this._bookletCoverRadio.Name = "_bookletCoverRadio";
 			this._bookletCoverRadio.Size = new System.Drawing.Size(94, 88);
-			superToolTipInfo9.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo9.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo9.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo9.BodyText = "Make a PDF of just the front and back (both sides), so you can  print on colored " +
+			superToolTipInfo3.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo3.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo3.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo3.BodyText = "Make a PDF of just the front and back (both sides), so you can  print on colored " +
     "paper.";
-			superToolTipInfo9.HeaderText = "Cover";
-			superToolTipInfo9.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo9.ShowHeader = false;
-			superToolTipInfoWrapper9.SuperToolTipInfo = superToolTipInfo9;
-			superToolTipInfoWrapper9.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._bookletCoverRadio, superToolTipInfoWrapper9);
+			superToolTipInfo3.HeaderText = "Cover";
+			superToolTipInfo3.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo3.ShowHeader = false;
+			superToolTipInfoWrapper3.SuperToolTipInfo = superToolTipInfo3;
+			superToolTipInfoWrapper3.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._bookletCoverRadio, superToolTipInfoWrapper3);
 			this._bookletCoverRadio.TabIndex = 8;
 			this._bookletCoverRadio.TabStop = true;
 			this._bookletCoverRadio.Text = "Booklet Cover";
@@ -354,17 +355,17 @@ namespace Bloom.Publish
 			this._bookletBodyRadio.Location = new System.Drawing.Point(3, 263);
 			this._bookletBodyRadio.Name = "_bookletBodyRadio";
 			this._bookletBodyRadio.Size = new System.Drawing.Size(94, 96);
-			superToolTipInfo10.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo10.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo10.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo10.BodyText = "Make a booklet from the inside pages of the book.\r\nPages will be laid out and reo" +
+			superToolTipInfo4.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo4.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo4.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo4.BodyText = "Make a booklet from the inside pages of the book.\r\nPages will be laid out and reo" +
     "rdered so that when you fold it, you\'ll have a booklet.\r\n";
-			superToolTipInfo10.HeaderText = "Booklet Inside Pages";
-			superToolTipInfo10.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo10.ShowHeader = false;
-			superToolTipInfoWrapper10.SuperToolTipInfo = superToolTipInfo10;
-			superToolTipInfoWrapper10.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._bookletBodyRadio, superToolTipInfoWrapper10);
+			superToolTipInfo4.HeaderText = "Booklet Inside Pages";
+			superToolTipInfo4.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo4.ShowHeader = false;
+			superToolTipInfoWrapper4.SuperToolTipInfo = superToolTipInfo4;
+			superToolTipInfoWrapper4.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._bookletBodyRadio, superToolTipInfoWrapper4);
 			this._bookletBodyRadio.TabIndex = 14;
 			this._bookletBodyRadio.TabStop = true;
 			this._bookletBodyRadio.Text = "Booklet Insides";
@@ -383,15 +384,15 @@ namespace Bloom.Publish
 			this._simpleAllPagesRadio.Location = new System.Drawing.Point(3, 27);
 			this._simpleAllPagesRadio.Name = "_simpleAllPagesRadio";
 			this._simpleAllPagesRadio.Size = new System.Drawing.Size(94, 97);
-			superToolTipInfo11.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo11.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo11.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo11.BodyText = "Make a PDF of every page of the book, one page per piece of paper.";
-			superToolTipInfo11.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo11.ShowHeader = false;
-			superToolTipInfoWrapper11.SuperToolTipInfo = superToolTipInfo11;
-			superToolTipInfoWrapper11.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._simpleAllPagesRadio, superToolTipInfoWrapper11);
+			superToolTipInfo5.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo5.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo5.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo5.BodyText = "Make a PDF of every page of the book, one page per piece of paper.";
+			superToolTipInfo5.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo5.ShowHeader = false;
+			superToolTipInfoWrapper5.SuperToolTipInfo = superToolTipInfo5;
+			superToolTipInfoWrapper5.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._simpleAllPagesRadio, superToolTipInfoWrapper5);
 			this._simpleAllPagesRadio.TabIndex = 10;
 			this._simpleAllPagesRadio.TabStop = true;
 			this._simpleAllPagesRadio.Text = "Simple";
@@ -410,16 +411,16 @@ namespace Bloom.Publish
 			this._epubRadio.Location = new System.Drawing.Point(3, 366);
 			this._epubRadio.Name = "_epubRadio";
 			this._epubRadio.Size = new System.Drawing.Size(105, 76);
-			superToolTipInfo12.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo12.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo12.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo12.BodyText = "Make an ePUB (electronic book) out of this book, allowing it to be read on variou" +
+			superToolTipInfo6.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo6.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo6.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo6.BodyText = "Make an ePUB (electronic book) out of this book, allowing it to be read on variou" +
     "s electronic reading devices.";
-			superToolTipInfo12.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo12.ShowHeader = false;
-			superToolTipInfoWrapper12.SuperToolTipInfo = superToolTipInfo12;
-			superToolTipInfoWrapper12.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper12);
+			superToolTipInfo6.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo6.ShowHeader = false;
+			superToolTipInfoWrapper6.SuperToolTipInfo = superToolTipInfo6;
+			superToolTipInfoWrapper6.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper6);
 			this._epubRadio.TabIndex = 23;
 			this._epubRadio.TabStop = true;
 			this._epubRadio.Text = "ePUB";
@@ -447,6 +448,10 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
 			// 
+			// _superToolTip
+			// 
+			this._superToolTip.FadingInterval = 10;
+			// 
 			// _pdfViewer
 			// 
 			this._pdfViewer.BackColor = System.Drawing.Color.White;
@@ -458,10 +463,6 @@ namespace Bloom.Publish
 			this._pdfViewer.Name = "_pdfViewer";
 			this._pdfViewer.Size = new System.Drawing.Size(719, 677);
 			this._pdfViewer.TabIndex = 16;
-			// 
-			// _superToolTip
-			// 
-			this._superToolTip.FadingInterval = 10;
 			// 
 			// PublishView
 			// 

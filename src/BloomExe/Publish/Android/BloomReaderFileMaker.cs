@@ -79,6 +79,12 @@ namespace Bloom.Publish.Android
 			}
 			modifiedBook.RemoveBlankPages();
 
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
+			RemoveInvisibleImageElements(modifiedBook);
+			modifiedBook.Storage.CleanupUnusedImageFiles(false);
+			modifiedBook.Storage.CleanupUnusedAudioFiles();
+			modifiedBook.Storage.CleanupUnusedVideoFiles();
+
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
 			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
@@ -86,6 +92,7 @@ namespace Bloom.Publish.Android
 
 			var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
+			StripContentEditableAndTabIndex(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
 			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"),
 				Path.Combine(bookFolderPath, "readerStyles.css"));
@@ -108,6 +115,15 @@ namespace Bloom.Publish.Android
 					imgElt.ParentNode.RemoveChild(imgElt);
 				}
 			}
+		}
+
+		private static void StripContentEditableAndTabIndex(XmlDocument dom)
+		{
+			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>())
+				editableElt.RemoveAttribute("contenteditable");
+
+			foreach (var tabIndexDiv in dom.SafeSelectNodes("//div[@tabindex]").Cast<XmlElement>())
+				tabIndexDiv.RemoveAttribute("tabindex");
 		}
 
 		/// <summary>
@@ -150,6 +166,34 @@ namespace Bloom.Publish.Android
 			link.SetAttribute("rel", "stylesheet");
 			link.SetAttribute("href", "readerStyles.css");
 			link.SetAttribute("type", "text/css");
+		}
+
+		/// <summary>
+		/// Remove image elements that are invisible due to the book's layout orientation.
+		/// </summary>
+		/// <remarks>
+		/// This code is temporary for Version4.5.  Version4.6 extensively refactors the
+		/// electronic publishing code to combine ePUB and BloomReader preparation as much
+		/// as possible.
+		/// </remarks>
+		private static void RemoveInvisibleImageElements(Bloom.Book.Book book)
+		{
+			var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
+			foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
+			{
+				var src = img.Attributes["src"]?.Value;
+				if (string.IsNullOrEmpty(src))
+					continue;
+				var classes = img.Attributes["class"]?.Value;
+				if (string.IsNullOrEmpty(classes))
+					continue;
+				if (isLandscape && classes.Contains("portraitOnly") ||
+					!isLandscape && classes.Contains("landscapeOnly"))
+				{
+					// Remove this img element since it shouldn't be displayed.
+					img.ParentNode.RemoveChild(img);
+				}
+			}
 		}
 
 		/// <summary>
