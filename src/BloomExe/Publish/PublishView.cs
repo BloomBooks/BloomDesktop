@@ -451,11 +451,13 @@ namespace Bloom.Publish
 				}
 			}
 				
+			// _pdfViewer.Visible must be set true at least once momentarily for other display controls to get the right size.  (BL-6006)
+			// And this must happen after the user changes the Bloom window size while on the publish tab.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6910 and comments in https://issues.bloomlibrary.org/youtrack/issue/BL-6859.
+			_pdfViewer.Visible = true;
 			switch (displayMode)
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
-					// _pdfViewer.Visible must be set true at least once momentarily for other display controls to get the right size.  (BL-6006)
-					_pdfViewer.Visible = true;
 					_printButton.Enabled = _saveButton.Enabled = false;
 					Cursor = Cursors.Default;
 					_workingIndicator.Visible = false;
@@ -571,7 +573,7 @@ namespace Bloom.Publish
 			_uploadControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 				_pdfViewer.Width, _pdfViewer.Height);
 			_uploadControl.Dock = _pdfViewer.Dock;
-			_uploadControl.Anchor = System.Windows.Forms.AnchorStyles.Left|System.Windows.Forms.AnchorStyles.Top|System.Windows.Forms.AnchorStyles.Right|System.Windows.Forms.AnchorStyles.Bottom;
+			_uploadControl.Anchor = _pdfViewer.Anchor;
 			var saveBackColor = _uploadControl.BackColor;
 			Controls.Add(_uploadControl); // somehow this changes the backcolor
 			_uploadControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
