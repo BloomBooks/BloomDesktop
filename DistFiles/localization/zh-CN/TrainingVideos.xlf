@@ -125,6 +125,7 @@
           
           
           
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
         <note>ID: training.videos.hires</note>
         <alt-trans>
@@ -137,6 +138,19 @@
           
           
           
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
         </alt-trans>
         <alt-trans>
@@ -163,14 +177,6 @@
         <alt-trans>
           <target xml:lang="zh-CN">
           
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">高分辨率</g> （文件很大）</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">
           
           
           
@@ -181,6 +187,7 @@
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
         <target xml:lang="zh-CN" state="translated">
+          
           
           
           
@@ -202,6 +209,19 @@
           
           
           
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="zh-CN">
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
         </alt-trans>
         <alt-trans>
@@ -228,14 +248,6 @@
         <alt-trans>
           <target xml:lang="zh-CN">
           
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">低分辨率</g> （文件较小）</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="zh-CN">
           
           
           

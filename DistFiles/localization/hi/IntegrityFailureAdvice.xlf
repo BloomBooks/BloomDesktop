@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="integrity.title">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="hi" state="needs-translation">Bloom cannot find some of its own files, and cannot continue</target>
+        <target xml:lang="hi" state="translated">ब्लूम अपनी स्वयं की कुछ फाइलों को खोज नहीं पा रहा है, और जारी नहीं रख सकता</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes">
