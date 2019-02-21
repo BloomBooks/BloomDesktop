@@ -2,48 +2,56 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="hi">
     <body>
-      <trans-unit id="bigbook.title">
+      <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="hi" state="needs-translation">About Big Books</target>
+        <target xml:lang="hi" state="translated">बड़ी पुस्तिकाओं के बारे में</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
-      <trans-unit id="bigbook.use">
+      <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="hi" state="needs-translation">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</target>
+        <target xml:lang="hi" state="translated">बड़ी पुस्तिकाओं को शिक्षकों के लिए बनाया गया है ताकि वे उन्हें हाथ में पकड़कर कक्षा के सामने पढ़ें। अधिक जानकारी के लिए, यह देखें, <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing">
+      <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="hi" state="needs-translation">Printing a Big Book</target>
+        <target xml:lang="hi" state="translated">एक बड़ी पुस्तिका प्रिंट हो रही है</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4">
+      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="hi" state="needs-translation">To make things more manageable, this template is set at A4 Landscape, with large fonts.
-You can easily produce books that are A3 (twice as large).
-Just take your A4 PDF to a printer and ask them to enlarge it to A3.</target>
+        <target xml:lang="hi" state="translated">चीजों को अधिक प्रबंधनीय बनाने के लिए, इस टेम्पलेट को बड़े फोंट के साथ, A4 लैंडस्केप में सेट किया गया है। आप आसानी से A3 (दुगनी बड़ी) आकार की पुस्तकों को बना सकते हैं।
+आपके A4 PDF को छापनेवाले के पास ले जाएं और उन्हें इसे A3 आकार जितना बड़ा बनाने को कहें।</target>
         <note>ID: bigbook.printing.enlargeA4</note>
+        <alt-trans>
+          <target xml:lang="hi">चीजों को अधिक प्रबंधनीय बनाने के लिए, इस टेम्पलेट को बड़े फोंट के साथ, A4 लैंडस्केप में सेट किया गया है। आप आसानी से A3 (दुगने बड़ी) आकार की पुस्तकों को बना सकते हैं।
+आपके A4 PDF को छापनेवाले के पास ले जाएं और उन्हें इसे A3 आकार इतना बड़ा बनाने को कहें।</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.limits">
+      <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="hi" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="hi" state="translated">इस संस्करण की सीमाएं</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
-      <trans-unit id="bigbook.limits.smallscreen">
+      <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="hi" state="needs-translation">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</target>
+        <target xml:lang="hi" state="translated">अगर आप छोटे स्क्रीन का उपयोग कर रहे हैं, तो आभार पन्ना पढ़ना कठिन हो सकता है। आपकी स्क्रीन के सबसे ऊपर दाहिनी ओर दिए +/- ज़ूम नियंत्रण का उपयोग करके ज़ूम करने की कोशिश करें ताकि आप उसे एडिट कर सकें।</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
-      <trans-unit id="bigbook.limits.Englishtemplate">
+      <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="hi" state="needs-translation">This version includes an "Instructions for Teachers" page that is already filled out, in English.
-If you would like to have instructions in a different language, you can delete that text and type in your own.
-If you send us that text, we can include it in a future version of the template.</target>
+        <target xml:lang="hi" state="translated">इस संस्करण में "शिक्षकों के लिए निर्देश" पन्ना शामिल है जो पहले से ही अंग्रेजी में भरा हुआ है।
+यदि आप किसी अन्य भाषा में निर्देश चाहते हैं, तो आप उस टेक्स्ट को डिलीट कर सकते हैं और अपनी भाषा में टाइप कर सकते हैं। 
+यदि आप हमें वह टेक्स्ट भेजते हैं, तो हम उसे टेम्पलेट के भविष्य के संस्करण में शामिल कर सकते हैं।</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
+        <alt-trans>
+          <target xml:lang="hi">इस संस्करण में "शिक्षकों के लिए निर्देश" पन्ना शामिल है जो पहले से ही अंग्रेजी में भरा हुआ है।
+अगर आप किसी अन्य भाषा में निर्देश चाहते हैं, तो आप उस टेक्स्ट को डिलीट कर सकते हैं और अपनी भाषा में टाइप कर सकते हैं। 
+अगर आप हमें वह टेक्स्ट भेजते हैं, तो हम उसे टेम्पलेट के भविष्य के संस्करण में शामिल कर सकते हैं।</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
