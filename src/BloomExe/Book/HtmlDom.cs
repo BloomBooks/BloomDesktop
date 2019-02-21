@@ -1873,6 +1873,14 @@ namespace Bloom.Book
 			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and @recordingmd5]");
 		}
 
+		public static bool HasAudioSentenceElementsWithoutId(XmlElement element)
+		{
+			// It's unexpected for a book to have nodes with class audio-sentence and no id to link them to a file, but
+			// if they do occur, it's better to ignore them than for other code to crash when looking for the ID.
+			var nodes = element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) = 0]");
+			return nodes?.Count >= 1;
+		}
+
 		public bool DoesContainNarrationAudioRecordedUsingWholeTextBox()
 		{
 			var nodes = _dom.SafeSelectNodes("//*[@data-audiorecordingmode='TextBox']");

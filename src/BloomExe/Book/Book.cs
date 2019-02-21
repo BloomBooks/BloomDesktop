@@ -1771,6 +1771,16 @@ namespace Bloom.Book
 			return true;
 		}
 
+		public bool HasBrokenAudioSentenceElements()
+		{
+			foreach (var divPage in RawDom.SafeSelectNodes("/html/body/div").Cast<XmlElement>())
+			{
+				if (HtmlDom.HasAudioSentenceElementsWithoutId(divPage))
+					return true;
+			}
+			return false;
+		}
+
 		/// <summary>
 		/// Determines whether the book references an existing image file other than
 		/// branding, placeholder, or license images.
