@@ -1,39 +1,5 @@
-@import "../../bloomUI.less";
+@import "../sectionScreen.less"; // includes bloomUI.less
 
-#androidPublishReactRoot {
-    .right-column {
-        width: 180px;
-    }
-}
-
-@between-sections : 2em;
-
-a {
-    color: @bloom-blue;
-}
-
-h1 {
-    font-size: 12pt;
-    font-weight: bold;
-    margin-bottom: 0.5em;
-    margin-top: @between-sections;
-}
-
-html {
-    height: 100%;
-    margin: 0;
-}
-
-body {
-    margin: 0;
-    background-color: #f0f0f0;
-    font-family: "Segoe UI", "Sans";
-    font-size: 10pt;
-    height: 100%;
-}
-.settings-row {
-    display: flex;
-}
 .check-with-help {
     margin-top: 10px;
     display: flex; // makes it a row
@@ -54,74 +20,9 @@ body {
     height: 100%;
 }
 
-// This is the div that react inserts and which becomes the real parent of all the content.
-// We make it flex so that we can make the progress panel grow to fill the available space.
-#androidPublishReactRoot {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; // stops buttons (and anything else) stretching to fill width.
-    box-sizing: border-box;
-}
-#progress-section {
-    min-height: 100px;
-    width: 100%;
-
-    // the only thing that can grow, it gets all the spare height.
-    // This looks like a simple trick, but it's hard to make it work right.
-    // All containers must have some forced height (currently 100%).
-    // Also they must have no margin; otherwise, the box height is the full window
-    // height (100%) without the margin, and then the margin is added as part of the
-    // total content height, so that is now MORE than the window height, and
-    // the outer window gets a scroll bar.
-    // Any parent box that has vertical padding or border also needs box-sizing: border=box;
-    // otherwise, the padding and border are also considered outside the 100% and
-    // we get an outer scroll-bar.
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-left: 20px;
-}
-
-#progress-row {
-    display: flex;
-    justify-content: space-between; // push link to the right
-    width: 100%;
-    h1 {
-        margin-top: 0;
-    }
-    #rightSideOfProgressRow {
-        display: flex;
-    }
-}
-
-#progress-box {
-    min-height: 100px;
-    width: 100%;
-    border: solid thin darkgray;
-    overflow-x: auto;
-    overflow-y: scroll;
-    // see note on #progress-section about growing to take up whatever is left.
-    // It is the parent of this and it does that, then this must itself must do it, too.
-    flex: 1;
-    box-sizing: border-box;
-}
-
 #getBloomReaderLink {
     margin-left: auto; // push to the right side
     margin-right: 2em; // a bit of space between this and the troubleshooting tips
-}
-
-// .settings-heading {
-//     // less than the default, because what is right under it is text
-//     // rather than a control like under most of our H1s, and without this
-//     // the gap LOOKS bigger.
-//     margin-bottom: 7px;
-// }
-
-.settings-subheading {
-    font-weight: bold;
 }
 
 div.method-select-wrapper {
