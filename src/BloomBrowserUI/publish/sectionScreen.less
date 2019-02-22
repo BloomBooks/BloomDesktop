@@ -156,3 +156,11 @@ html.publishTabScreen {
         font-size: 12pt;
     }
 }
+
+html.publishTabScreen #epubPublishUI .preview-section {
+    // For now, with the old device preview, we don't want this section growing.
+    // The phone preview grows with it and gets a weird aspect ratio.
+    flex-grow: 0;
+    // and the section doesn't need to be wide enough for a landscape option and controls
+    width: 400px;
+}
