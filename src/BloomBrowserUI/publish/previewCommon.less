@@ -74,22 +74,6 @@ html.publishTabScreen button {
 
 // First two conditions added for specificity
 html.publishTabScreen .preview-section {
-    // these buttons are positioned relative to the slider, our preview.
-    // Usually the buttons are outside the slider, just touching it; but this
-    // takes them outside our phone. This puts them just inside it.
-    // Review: or do we want zero, so they would appear entirely on the
-    // simulated phone screen?
-    .slick-next {
-        right: -@preview-margin;
-    }
-    .slick-prev {
-        left: -@preview-margin;
-        // Not quite sure why this is needed on the left button and not the right;
-        // possibly the scroller has it before the actual page where the right button
-        // is after it, and by default this puts it behind. Anyway, this allows all
-        // of it to be seen, even when partly over the preview.
-        z-index: 1;
-    }
     .preview-orientation-row.device-square .orientation-button {
         &.landscape {
             height: @preview-button-size;
