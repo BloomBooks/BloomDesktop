@@ -44,21 +44,28 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
 
         var checkLeaf = leaf => {
             stashNonTextUIElementsInEditBox(leaf);
-            // split into sentences
+            // split into sentences. We need it both with markup
+            // (to preserve bold/italic/ckEditor landmarks in the output)
+            // and without (because some markup, especially ckEditor invisible landmarks,
+            // may alter word counts and lists)
             var fragments = theOneLibSynphony.stringToSentences($(leaf).html());
+            var fragmentsFixedAnalysis = theOneLibSynphony.stringToSentences(
+                removeAllMarkup($(leaf).html())
+            );
             var newHtml = "";
 
             for (var i = 0; i < fragments.length; i++) {
                 var fragment = fragments[i];
+                var fragmentFixedAnalysis = fragmentsFixedAnalysis[i];
 
                 if (fragment.isSpace) {
                     // this is inter-sentence space
                     newHtml += fragment.text;
                     allWords += " ";
                 } else {
-                    var sentenceWordCount = fragment.wordCount();
+                    var sentenceWordCount = fragmentFixedAnalysis.wordCount();
                     totalWordCount += sentenceWordCount;
-                    allWords += fragment.text;
+                    allWords += fragmentFixedAnalysis.text;
 
                     // check sentence length
                     if (sentenceWordCount > opts.maxWordsPerSentence) {
@@ -378,6 +385,16 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
         // preserve spaces after line breaks and paragraph breaks
         var regex = /(<br><\/br>|<br>|<br \/>|<br\/>|<p><\/p>|<p>|<p \/>|<p\/>|\n)/g;
         textHTML = textHTML.replace(regex, " ");
+
+        // This regex is rather specific to the spans ckeditor sticks in as
+        // 'landmarks' so the selection can be restored after manipulating the
+        // markup. In principle we could have a more complex regex that would
+        // remove all display:none spans, even if there are other explicit styles
+        // or with single quotes around the style or with different white space.
+        // However, we don't have a current need for it, so the extra
+        // complication doesn't seem worthwhile.
+        var ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
+        textHTML = textHTML.replace(ckeRegex, "");
 
         return $("<div>" + textHTML + "</div>").text();
     }
