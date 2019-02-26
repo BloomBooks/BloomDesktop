@@ -371,6 +371,7 @@ namespace Bloom.Publish.Epub
 
 			try
 			{
+				_bookSelection.CurrentSelection.ReportIfBrokenAudioSentenceElements();
 				var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 				var newVersion = Book.Book.MakeVersionCode(File.ReadAllText(htmlPath), htmlPath);
 				bool previewIsAlreadyCurrent;

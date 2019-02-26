@@ -111,15 +111,6 @@ namespace Bloom.Publish
 				_currentlyLoadedBook = BookSelection.CurrentSelection;
 				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
 				_currentlyLoadedBook.BringBookUpToDate(new NullProgress());
-				// Alert the user if the audio in this book has been damaged by hand-editing.
-				if (_currentlyLoadedBook.HasBrokenAudioSentenceElements())
-				{
-					string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.Audio.ElementsMissingId",
-						"Some audio elements are missing ids",
-						@"Message briefly displayed to the user in a toast");
-					var longMsg = "This book has elements marked audio-sentence that have no IDs. Usually this means that the book has been edited using some other program than Bloom.";
-					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg);
-				}
 			}
 			return _currentlyLoadedBook;
 		}

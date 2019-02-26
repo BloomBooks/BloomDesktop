@@ -246,6 +246,8 @@ namespace Bloom.Publish.Android
 		public static void SendBook(Book.Book book, BookServer bookServer, string destFileName, Action<string, string> sendAction, WebSocketProgress progress, Func<string, string, string> startingMessageFunction,
 			Func<string, bool> confirmFunction, Color backColor)
 		{
+			// TODO: Move this to where the update preview occurs in the later version where we have a preview available.
+			book.ReportIfBrokenAudioSentenceElements();
 			var bookTitle = book.Title;
 			progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle);
 
