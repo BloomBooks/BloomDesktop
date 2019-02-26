@@ -7,7 +7,12 @@ import { ApiBackedCheckbox } from "../../react_components/apiBackedCheckbox";
 import { Checkbox } from "../../react_components/checkbox";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
-import { H1, H2, IUILanguageAwareProps } from "../../react_components/l10n";
+import {
+    Div,
+    H1,
+    H2,
+    IUILanguageAwareProps
+} from "../../react_components/l10n";
 import PWithLink from "../../react_components/pWithLink";
 import "./epubPublishUI.less";
 import "../previewCommon.less";
@@ -69,10 +74,12 @@ class EpubPublishUI extends React.Component<
             <div id="epubPublishReactRoot" className={"screen-root"}>
                 <header>
                     <img src="epub.png" />
-                    <H1 l10nKey="PublishTab.Epub.Title">Create an ePUB book</H1>
+                    <Div className={"intro"} l10nKey="PublishTab.Epub.Title">
+                        Create an ePUB book
+                    </Div>
                 </header>
-                <div className="sections">
-                    <section className="preview-section">
+                <div className="sections in-row">
+                    <section className="preview-section in-column">
                         <H1 l10nKey="Common.Preview">Preview</H1>
                         <EpubPreview
                             websocketClientContext={kWebSocketClientContext}
@@ -86,21 +93,18 @@ class EpubPublishUI extends React.Component<
                             book may render differently in various ePUB readers.
                         </PWithLink>
                     </section>
-                    <section className="publish-section">
+                    <section className="publish-section in-column">
                         <H1 l10nKey="PublishTab.Publish">Publish</H1>
-                        <BloomButton
-                            className="save-button"
-                            enabled={true}
-                            clickEndpoint={"publish/epub/save"}
-                            hasText={true}
-                            l10nKey="PublishTab.Save"
-                        >
-                            Save...
-                        </BloomButton>
-                        <div
-                            id="progress-section"
-                            style={{ visibility: "visible" }}
-                        >
+                        <div className="publish-contents in-column">
+                            <BloomButton
+                                className="save-button"
+                                enabled={true}
+                                clickEndpoint={"publish/epub/save"}
+                                hasText={true}
+                                l10nKey="PublishTab.Save"
+                            >
+                                Save...
+                            </BloomButton>
                             <H2 className="label" l10nKey="Common.Progress">
                                 Progress
                             </H2>
@@ -140,9 +144,7 @@ class EpubPublishUI extends React.Component<
                                 Getting ePUBs onto a device
                             </HelpLink>
                         </section>
-                        <section
-                            className={"settings-section section-below-another"}
-                        >
+                        <section className={"settings-section"}>
                             <H1 l10nKey="Common.Settings">Settings</H1>{" "}
                         </section>
                         <H1
@@ -195,6 +197,7 @@ class EpubPublishUI extends React.Component<
                     </div>
                 </div>
                 <BookMetadataDialog />
+                <div className="bottom-scroll-shim" />
             </div>
         );
     }
