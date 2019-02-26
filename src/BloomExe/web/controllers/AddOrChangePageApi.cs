@@ -46,11 +46,32 @@ namespace Bloom.web.controllers
 			var templatePage = GetPageTemplateAndUserStyles(request, out unused);
 			if (templatePage != null)
 			{
+				CopyVideoPlaceHolderIfNeeded(templatePage);
 				_templateInsertionCommand.Insert(templatePage as Page);
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
 				request.PostSucceeded();
 				return;
 			}
+		}
+
+		// These values are from "Sign Language.pug" in the template collection.
+		static List<string> _videoPageIds = new List<string> {
+			"08422e7b-9406-4d11-8c71-02005b1b8095",	// Big Text Diglot
+			"299644f5-addb-476f-a4a5-e3978139b188",	// Video Over Text
+			"24c90e90-2711-465d-8f20-980d9ffae299",	// Picture & Video
+			"9a4beb1f-46c5-4729-87fc-7a9a7eee534e",	// Big Video Diglot
+			"16301dd0-a813-459e-b7e8-294339f7f241"	// Big Picture Diglot
+		};
+		/// <summary>
+		/// Ensure the book folder has the video-placeholder.svg if it is needed by the template page.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6920.
+		/// </remarks>
+		private void CopyVideoPlaceHolderIfNeeded(IPage templatePage)
+		{
+			if (_videoPageIds.Contains(templatePage.Id))
+				_pageSelection.CurrentSelection.Book.Storage.Update("video-placeholder.svg");
 		}
 
 		private void HandleChangeLayout(ApiRequest request)
@@ -59,6 +80,7 @@ namespace Bloom.web.controllers
 			var templatePage = GetPageTemplateAndUserStyles(request, out changeWholeBook);
 			if (templatePage != null)
 			{
+				CopyVideoPlaceHolderIfNeeded(templatePage);
 				var pageToChange = _pageSelection.CurrentSelection;
 				if (changeWholeBook)
 					ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
