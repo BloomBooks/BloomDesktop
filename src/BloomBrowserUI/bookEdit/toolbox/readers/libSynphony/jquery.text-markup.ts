@@ -49,23 +49,36 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
             // and without (because some markup, especially ckEditor invisible landmarks,
             // may alter word counts and lists)
             var fragments = theOneLibSynphony.stringToSentences($(leaf).html());
-            var fragmentsFixedAnalysis = theOneLibSynphony.stringToSentences(
-                removeAllMarkup($(leaf).html())
-            );
+
             var newHtml = "";
 
             for (var i = 0; i < fragments.length; i++) {
                 var fragment = fragments[i];
-                var fragmentFixedAnalysis = fragmentsFixedAnalysis[i];
 
                 if (fragment.isSpace) {
                     // this is inter-sentence space
                     newHtml += fragment.text;
                     allWords += " ";
                 } else {
-                    var sentenceWordCount = fragmentFixedAnalysis.wordCount();
+                    // This is basically duplicating how stringToSentences comes up with
+                    // fragment.text but with removeAllMarkup applied.
+                    // I don't much like that duplication. But we need removeAllMarkup
+                    // so that the words we count won't be messed up by (e.g.) invisible spaces
+                    // that ckEdit puts in as bookmarks to keep our place. We can't apply it
+                    // to the input to stringToSentences, because we want to preserve the markup
+                    // and bookmark when we put the fragments back together to make the new
+                    // text. I tried making two parallel fragments arrays, one using the
+                    // unmodified text, and one from removeAllMarkup; but in general they
+                    // don't come out the same length, or with pieces corresponding. For example,
+                    // removeAllMarkup cleans out <br>, which otherwise becomes an element in
+                    // the list.
+                    const cleanText = removeAllMarkup(fragment.text);
+                    const words = theOneLibSynphony.getWordsFromHtmlString(
+                        cleanText
+                    );
+                    var sentenceWordCount = words.length;
                     totalWordCount += sentenceWordCount;
-                    allWords += fragmentFixedAnalysis.text;
+                    allWords += cleanText;
 
                     // check sentence length
                     if (sentenceWordCount > opts.maxWordsPerSentence) {
