@@ -1781,6 +1781,18 @@ namespace Bloom.Book
 			return false;
 		}
 
+		public void ReportIfBrokenAudioSentenceElements()
+		{
+			if (HasBrokenAudioSentenceElements())
+			{
+				string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.Audio.ElementsMissingId",
+					"Some audio elements are missing ids",
+					@"Message briefly displayed to the user in a toast");
+				var longMsg = "This book has elements marked audio-sentence that have no IDs. Usually this means that the book has been edited using some other program than Bloom.";
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg);
+			}
+		}
+
 		/// <summary>
 		/// Determines whether the book references an existing image file other than
 		/// branding, placeholder, or license images.
