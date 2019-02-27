@@ -2679,9 +2679,19 @@
         <note>ID: PublishTab.Android.AboutMotionBooks</note>
         <note>Help link under Motion Book checkbox</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
+        <source xml:lang="en">Bloom Reader Bookshelf</source>
+        <note>ID: PublishTab.Android.BookShelf</note>
+        <note>A heading in the Publish to Android screen.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
+        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
+        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
+        <note>Appears in portrait mode when Motion checkbox is checked</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
         <source xml:lang="en">Send over USB Cable</source>
@@ -2700,10 +2710,10 @@
         <source xml:lang="en">Copy to Clipboard</source>
         <note>ID: PublishTab.Android.CopyToClipboard</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <note>ID: PublishTab.Android.Intro</note>
-        <note>This is displayed at the top of the Android screen.</note>
+      <trans-unit id="PublishTab.Android.Features" sil:dynamic="true">
+        <source xml:lang="en">Features</source>
+        <note>ID: PublishTab.Android.Features</note>
+		<note>The second heading in the Settings section, which shows a checklist of various features.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
@@ -2740,23 +2750,18 @@
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} and {1} are font names</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
-        <source xml:lang="en">Bloom Reader Bookshelf</source>
-        <note>ID: PublishTab.Android.BookShelf</note>
-        <note>A heading in the Publish to Android screen.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-        <note>Appears in portrait mode when Motion checkbox is checked</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
+        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
+        <note>ID: PublishTab.Android.Intro</note>
+        <note>This is displayed at the top of the Android screen.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
-        <source xml:lang="en">Method Choices</source>
+        <source xml:lang="en">Choose how to send to device</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
       </trans-unit>
@@ -2919,7 +2924,7 @@
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton">
-        <source xml:lang="en">Android</source>
+        <source xml:lang="en">Bloom Reader</source>
         <note>ID: PublishTab.AndroidButton</note>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">

@@ -238,7 +238,7 @@ namespace Bloom.Publish
 			this._superToolTip.SetSuperStuff(this._androidRadio, superToolTipInfoWrapper1);
 			this._androidRadio.TabIndex = 22;
 			this._androidRadio.TabStop = true;
-			this._androidRadio.Text = "Android";
+			this._androidRadio.Text = "Bloom Reader";
 			this._androidRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._androidRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._androidRadio.UseVisualStyleBackColor = true;

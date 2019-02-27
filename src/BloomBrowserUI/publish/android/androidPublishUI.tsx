@@ -172,9 +172,9 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                         Send Your Book to the Bloom Reader Android App
                     </Div>
                 </header>
-                <div className="sections in-rows">
-                    <div className="section-row top-row">
-                        <section className="preview-section">
+                <div className="main-contents in-row">
+                    <div className="sections in-column left-column">
+                        <section className="preview-section in-column">
                             <H1 l10nKey="PublishTab.Android.Preview">
                                 Preview
                             </H1>
@@ -333,87 +333,17 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                 </div>
                             </div>
                         </section>
-                        <section className="settingsSection right-column">
-                            <H1 l10nKey="PublishTab.Android.Settings">
-                                Settings
-                            </H1>
-                            <div className="settings-subheading">
-                                <Div l10nKey="PublishTab.Android.Thumbnail">
-                                    Thumbnail
-                                </Div>
-                            </div>
-                            <ColorChooser
-                                menuLeft={true}
-                                imagePath="/bloom/api/publish/android/thumbnail?color="
-                                backColorSetting={this.state.bookCoverColor}
-                                onColorChanged={colorChoice => {
-                                    BloomApi.postDataWithConfig(
-                                        "publish/android/backColor",
-                                        colorChoice,
-                                        {
-                                            headers: {
-                                                "Content-Type": "text/plain"
-                                            }
-                                        },
-                                        //wait until it's set because once the state changes, a
-                                        // new image gets requested and we want that to happen
-                                        // only after the server has registered this change.
-                                        () =>
-                                            this.setState({
-                                                bookCoverColor: colorChoice
-                                            })
-                                    );
-                                }}
-                            />
-                            <div className="check-with-help">
-                                <Checkbox
-                                    id="motionBookModeCheckbox"
-                                    wrapClassName="motionBookModeCheckbox"
-                                    name="motionBookMode"
-                                    l10nKey="PublishTab.Android.MotionBookMode"
-                                    // tslint:disable-next-line:max-line-length
-                                    l10nComment="Motion Books are Talking Books in which the picture fils the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
-                                    checked={this.state.motionBookMode}
-                                    onCheckChanged={checked => {
-                                        this.setState({
-                                            motionBookMode: checked
-                                        });
-                                        BloomApi.postDataWithConfig(
-                                            "publish/android/motionBookMode",
-                                            checked,
-                                            {
-                                                headers: {
-                                                    "Content-Type": "text/plain"
-                                                }
-                                            }
-                                        );
-                                    }}
-                                >
-                                    Motion Book
-                                </Checkbox>
-                                <div className="aboutMotionLink">
-                                    <a href="/bloom/api/help/Concepts/Motion_Book.htm">
-                                        <i
-                                            className="fa fa-question-circle-o"
-                                            aria-hidden="true"
-                                        />
-                                    </a>
-                                </div>
-                            </div>{" "}
-                        </section>
-                    </div>
-                    <div className="section-row bottom-row expandable">
-                        <section className="publish-section">
+                        <section className="publish-section in-column">
                             <H1 l10nKey="PublishTab.Android.Publish">
                                 Publish
                             </H1>
-                            <div className="section-row expandable">
-                                <div className="publishControlsColumn">
+                            <div className="publish-contents in-row">
+                                <div className="publish-controls-column">
                                     <H2
                                         l10nKey="PublishTab.Android.Method"
                                         l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser."
                                     >
-                                        Method Choices
+                                        Choose how to send to device
                                     </H2>
                                     {/* This wrapper, with some really tricky CSS, serves to make a select where the options have both text
                                 and images, and the down arrow is a dark black on a plain white background with a black line left of it.
@@ -573,14 +503,10 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                     )}
                                 </div>
                                 <div
-                                    id="progress-section"
+                                    className="progress-column in-column"
                                     style={{ visibility: "visible" }}
                                 >
-                                    <div id="progress-row">
-                                        <H2 l10nKey="Common.Progress">
-                                            Progress
-                                        </H2>
-                                    </div>
+                                    <H2 l10nKey="Common.Progress">Progress</H2>
                                     <ProgressBox
                                         clientContext={kWebSocketLifetime}
                                         onReadyToReceive={() =>
@@ -598,7 +524,89 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                 </div>
                             </div>
                         </section>
-                        <div className="shelfHelpColumn">
+                    </div>
+                    <div className="sections in-column right-column">
+                        <section className="settings-section">
+                            <H1 l10nKey="PublishTab.Android.Settings">
+                                Settings
+                            </H1>
+                            <div className="right-column-subsection">
+                                <Div
+                                    l10nKey="PublishTab.Android.Thumbnail"
+                                    className="settings-subheading"
+                                >
+                                    Thumbnail
+                                </Div>
+                                <ColorChooser
+                                    menuLeft={true}
+                                    imagePath="/bloom/api/publish/android/thumbnail?color="
+                                    backColorSetting={this.state.bookCoverColor}
+                                    onColorChanged={colorChoice => {
+                                        BloomApi.postDataWithConfig(
+                                            "publish/android/backColor",
+                                            colorChoice,
+                                            {
+                                                headers: {
+                                                    "Content-Type": "text/plain"
+                                                }
+                                            },
+                                            //wait until it's set because once the state changes, a
+                                            // new image gets requested and we want that to happen
+                                            // only after the server has registered this change.
+                                            () =>
+                                                this.setState({
+                                                    bookCoverColor: colorChoice
+                                                })
+                                        );
+                                    }}
+                                />
+                            </div>
+                            <div className="right-column-subsection">
+                                <Div
+                                    l10nKey="PublishTab.Android.Features"
+                                    className="settings-subheading"
+                                >
+                                    Features
+                                </Div>
+                                <div className="check-with-help">
+                                    <Checkbox
+                                        id="motionBookModeCheckbox"
+                                        wrapClassName="motionBookModeCheckbox"
+                                        name="motionBookMode"
+                                        l10nKey="PublishTab.Android.MotionBookMode"
+                                        // tslint:disable-next-line:max-line-length
+                                        l10nComment="Motion Books are Talking Books in which the picture fils the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
+                                        checked={this.state.motionBookMode}
+                                        onCheckChanged={checked => {
+                                            this.setState({
+                                                motionBookMode: checked
+                                            });
+                                            BloomApi.postDataWithConfig(
+                                                "publish/android/motionBookMode",
+                                                checked,
+                                                {
+                                                    headers: {
+                                                        "Content-Type":
+                                                            "text/plain"
+                                                    }
+                                                }
+                                            );
+                                        }}
+                                    >
+                                        Motion Book
+                                    </Checkbox>
+                                    <div className="aboutMotionLink">
+                                        <a href="/bloom/api/help/Concepts/Motion_Book.htm">
+                                            <i
+                                                className="fa fa-question-circle-o"
+                                                aria-hidden="true"
+                                            />
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>{" "}
+                        </section>
+                        <section style={{ display: "none" }}>
                             {/*
                             <section className="publishSection right-column">
                                 <H1 l10nKey="PublishTab.Android.Bookshelf">
@@ -608,9 +616,11 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                     Coming soon we hope...
                                 </div>
                             </section>
-                        */}
-                            <section className="help-section">
-                                <H1 l10nKey="Common.Help">Help</H1>
+                            */}
+                        </section>
+                        <section className="help-section">
+                            <H1 l10nKey="Common.Help">Help</H1>
+                            <div className="right-column-subsection">
                                 <HelpLink
                                     l10nKey="PublishTab.Android.AboutBloomReader"
                                     helpId="Concepts/Bloom_Reader_App.htm"
@@ -624,7 +634,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                     Troubleshooting Tips
                                 </HtmlHelpLink>
                                 <div className="icon-link-row get-bloom-reader">
-                                    <a href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps">
+                                    <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">
                                         <img
                                             className="playIcon"
                                             src="Google_Play_symbol_2016.svg"
@@ -632,17 +642,18 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                     </a>
                                     <Link
                                         id="getBloomReaderLink"
-                                        href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
+                                        href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps"
                                         l10nKey="PublishTab.Android.GetBloomReader"
                                         l10nComment="Link to find Bloom Reader on Google Play Store"
                                     >
                                         Get Bloom Reader App
                                     </Link>
                                 </div>
-                            </section>
-                        </div>
+                            </div>
+                        </section>
                     </div>
                 </div>
+                <div className="bottom-scroll-shim" />
             </div>
         );
     }

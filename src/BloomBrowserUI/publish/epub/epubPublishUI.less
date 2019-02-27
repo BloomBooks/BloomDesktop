@@ -1,4 +1,4 @@
-@import "../sectionScreen.less";
+@import "../sectionScreen.less"; // includes bloomUI.less
 
 @LightGrey: @bloom-gray;
 
@@ -15,17 +15,24 @@
     width: 150px;
 }
 
-#progress-box {
-    height: calc(100% - 100px);
-}
-
 #epubPublishUI {
+    height: 100%;
+
     .radioButton {
         display: flex;
         flex-direction: row;
     }
+
     a {
         margin-bottom: 1em;
+    }
+
+    .preview-section {
+        // For now, with the old device preview, we don't want this section growing.
+        // The phone preview grows with it and gets a weird aspect ratio.
+        flex-grow: 0;
+        // and the section doesn't need to be wide enough for a landscape option and controls
+        width: 400px;
     }
 }
 
@@ -47,5 +54,7 @@ iframe {
         a {
             display: inline;
         }
+        margin: 0;
+        padding: @screen-padding 0;
     }
 }

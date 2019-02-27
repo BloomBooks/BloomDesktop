@@ -2,34 +2,28 @@
 having various sections, including settings and help on the right */
 
 @import "../bloomUI.less";
-@screen-padding: 1em;
+@screen-padding: 10px;
 @header-height: 40px;
+@between-column-margin: 25px;
 
 html.publishTabScreen {
-    height: 100%; // Do NOT put margin; will cause scroll bar
+    height: 100%;
     padding: @screen-padding;
+    margin: 0; // Do NOT put margin; will cause scroll bar
 
     body {
-        margin: 0;
+        margin: 0; // Otherwise we get a scroll bar
         background-color: @form-background;
         font-family: @ui-fonts;
-        font-size: 10pt;
+        font-size: @ui-font-size;
         height: 100%;
 
-        .top-row {
-            justify-content: space-between;
-        }
-
-        .publishControlsColumn {
-            margin-left: 1em;
-        }
-
         header {
-            height: @header-height;
             img {
                 vertical-align: middle;
             }
-            h1 {
+
+            .intro {
                 margin-top: 0;
                 font-size: 12pt;
                 font-weight: bold;
@@ -37,8 +31,42 @@ html.publishTabScreen {
                 vertical-align: unset;
             }
         }
+
         .screen-root {
             height: 100%;
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            align-items: flex-start; // stops buttons (and anything else) stretching to fill width.
+            justify-content: start; // to keep predictable spacing vertically
+            box-sizing: border-box;
+
+            // BL-6899: This shim keeps a little space at the bottom of the screen
+            .bottom-scroll-shim {
+                flex: 0 0 auto;
+                min-height: @screen-padding;
+                width: 100%;
+            }
+
+            // Marks a container with contents laid out in a row
+            .in-row {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+                flex-grow: 1;
+            }
+
+            // Marks a container with contents laid out in a column
+            .in-column {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+
+            .right-column {
+                width: 180px;
+            }
         }
         // Quoting from the react-modal documentation, "By default, the modal portal will be appended to
         // the document's body."  The automatically inserted div.ReactModalPortal is normally empty and
@@ -51,97 +79,95 @@ html.publishTabScreen {
             // the react root
             height: 100%;
         }
-        @verticalFudgeHack: 50px;
         .sections {
-            margin-top: 1em;
-            height: calc(
-                100% - (@verticalFudgeHack + @header-height + @screen-padding)
-            ); // enhance: is there a way to just fill to bottom?
+            padding-top: @screen-padding;
             display: flex;
             flex-direction: row;
-            .column {
-                display: block;
-            }
-            &.in-rows {
-                flex-direction: column;
-                width: 100%;
-            }
-            .section-row {
-                display: flex;
-                flex-direction: row;
-                width: 100%;
+            &.left-column {
+                flex: 1 1 auto;
             }
             section {
+                h1 {
+                    margin: @screen-padding 0;
+                }
                 // section labels
                 & > h1 {
                     background-color: @bloom-lightgray;
                     text-align: center;
-                    margin-bottom: 1em;
+                    margin-bottom: @screen-padding;
                     margin-top: 0;
                 }
             }
-            publish-section {
-                display: flex;
-                flex-direction: column;
-                flex: 1 0 auto;
+            .publish-section {
+                .publish-contents {
+                    padding: 0 @screen-padding;
+                    flex: 1 0 auto; // helps ePUB, does nothing to Android
+                }
+                h2 {
+                    margin-top: 0;
+                }
             }
-            #progress-section {
-                height: 100%;
+            .right-column-subsection {
+                padding-left: @screen-padding;
+
+                & + .right-column-subsection {
+                    padding-top: @screen-padding;
+                }
             }
-            .expandable {
-                flex-grow: 1;
+            .settings-section {
+                flex: 2; // should take a larger space than the help-section
+            }
+            .settings-subheading {
+                font-weight: bold;
             }
         }
     }
 
     .preview-section {
-        width: 500px;
-        flex: 1 0 auto;
-        margin-right: 25px;
+        margin-right: @between-column-margin;
     }
+
     .publish-section {
         display: flex;
 
         flex-direction: column;
         flex: 1 1 auto; // take up remaining size
-        margin-right: 25px;
+        margin-right: @between-column-margin;
+        .publish-controls-column {
+            flex: 1;
+            .method-select-wrapper {
+                margin-right: @screen-padding; // helps prevents Send/Save button wrapping
+            }
+        }
     }
+
     .help-section {
-        flex: 0 0 auto; // fixed size
+        flex: 1; // we want the help-section smaller than the settings section to leave room for extra features
         display: block; // each link on a new line
     }
-    // bit of a hack... needed when two sections are in the same column
-    .section-below-another {
-        margin-top: 2em;
-    }
-    #progress-box {
-        min-height: 100px;
+
+    .progress-column {
         width: 100%;
-        border: solid thin darkgray;
-        overflow-x: auto;
-        overflow-y: scroll;
-        // see note on #progress-section about growing to take up whatever is left.
-        // It is the parent of this and it does that, then this must itself must do it, too.
-        flex: 1;
-        box-sizing: border-box;
-        padding: 10px;
+        padding-left: @screen-padding;
+        flex: 1 1 auto;
     }
 
     button {
         background-color: white;
         &:disabled {
-            color: gray;
+            color: @DisabledButtonColor;
         }
         padding: 0.5em;
     }
 
     button + button {
-        margin-left: 1em;
+        margin-left: @screen-padding;
     }
 
     .hidden {
         display: none;
     }
+
     a {
         display: block;
         color: @bloom-blue;
@@ -149,6 +175,12 @@ html.publishTabScreen {
             color: @bloom-blue;
         }
     }
+
+    h1 {
+        font-size: 12pt;
+        font-weight: bold;
+    }
+
     h2 {
         &.label {
             margin-bottom: 0;
@@ -157,10 +189,17 @@ html.publishTabScreen {
     }
 }
 
-html.publishTabScreen #epubPublishUI .preview-section {
-    // For now, with the old device preview, we don't want this section growing.
-    // The phone preview grows with it and gets a weird aspect ratio.
-    flex-grow: 0;
-    // and the section doesn't need to be wide enough for a landscape option and controls
-    width: 400px;
+// This id is inside of the ProgressBox React component (should these rules be inside of that component)?
+#progress-box {
+    min-height: 100px;
+    max-height: 750px; // keeps the box from running off the screen in ePUB view
+    width: 100%;
+    border: solid thin @bloom-gray;
+    overflow-x: auto;
+    overflow-y: scroll;
+    // see note on #progress-section about growing to take up whatever is left.
+    // It is the parent of this and it does that, then this must itself must do it, too.
+    flex: 1;
+    box-sizing: border-box;
+    padding: @screen-padding;
 }
