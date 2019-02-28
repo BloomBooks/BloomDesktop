@@ -79,7 +79,7 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
 # [1] build: BloomPlayer-Master-Continuous (BPContinuous)
-#     project: Bloom
+#     project: BloomPlayer
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
@@ -92,9 +92,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"bin/YouTrackSharp.dll*"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
-# [3] build: Bloom Help 4.4 (Bloom_Help_BloomHelp44)
+# [3] build: Bloom Help 4.6 (Bloom_Help_BloomHelp46)
 #     project: Help
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp44
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp46
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -119,49 +119,28 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"L10NSharp.dll*"=>"lib/dotnet/", "CheckOrFixXliff.exe*"=>"lib/dotnet/"}
 #     VCS: https://github.com/sillsdev/l10nsharp [xliff]
-# [7] build: icucil-linux64-Continuous (bt281)
-#     project: Libraries
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt281
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"icu.net.*"=>"lib/dotnet/icu48"}
-#     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [8] build: icucil-linux64-icu55 Continuous (Icu55)
-#     project: Libraries
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=Icu55
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"icu.net.*"=>"lib/dotnet/icu55"}
-#     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [9] build: icucil-precise64-icu52 Continuous (bt413)
-#     project: Archived
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt413
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"icu.net.*"=>"lib/dotnet/icu52"}
-#     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [10] build: PdfDroplet-Linux-Dev-Continuous (bt344)
+# [7] build: PdfDroplet-Linux-Dev-Continuous (bt344)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt344
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [11] build: TidyManaged-master-linux64-continuous (bt351)
+# [8] build: TidyManaged-master-linux64-continuous (bt351)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"TidyManaged.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [12] build: Linux master continuous (XliffForHtml_LinuxMasterContinuous)
+# [9] build: Linux master continuous (XliffForHtml_LinuxMasterContinuous)
 #     project: XliffForHtml
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=XliffForHtml_LinuxMasterContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
-# [13] build: palaso-linux64-master Continuous (Libpalaso_PalasoLinux64masterContinuous)
+# [10] build: palaso-linux64-master Continuous (Libpalaso_PalasoLinux64masterContinuous)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoLinux64masterContinuous
 #     clean: false
@@ -177,9 +156,6 @@ mkdir -p ../Downloads
 mkdir -p ../build/
 mkdir -p ../lib/dotnet
 mkdir -p ../lib/dotnet/
-mkdir -p ../lib/dotnet/icu48
-mkdir -p ../lib/dotnet/icu52
-mkdir -p ../lib/dotnet/icu55
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
@@ -189,7 +165,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/lat
 copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPlayer.js ../DistFiles/bloomPlayer.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp44/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp46/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
@@ -199,17 +175,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMo
 copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe ../lib/dotnet/CheckOrFixXliff.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe.config ../lib/dotnet/CheckOrFixXliff.exe.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe.mdb ../lib/dotnet/CheckOrFixXliff.exe.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.0.0.0.0.nupkg ../lib/dotnet/icu48/icu.net.0.0.0.0.nupkg
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu48/icu.net.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu48/icu.net.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll.mdb ../lib/dotnet/icu48/icu.net.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/latest.lastSuccessful/icu.net.0.0.0.0.nupkg ../lib/dotnet/icu55/icu.net.0.0.0.0.nupkg
-copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu55/icu.net.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu55/icu.net.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/latest.lastSuccessful/icu.net.dll.mdb ../lib/dotnet/icu55/icu.net.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu52/icu.net.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu52/icu.net.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll.mdb ../lib/dotnet/icu52/icu.net.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll

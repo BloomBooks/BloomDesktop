@@ -79,7 +79,7 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame"}
 # [1] build: BloomPlayer-Master-Continuous (BPContinuous)
-#     project: Bloom
+#     project: BloomPlayer
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
@@ -106,9 +106,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"bin/YouTrackSharp.dll"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
-# [5] build: Bloom Help 4.5 (Bloom_Help_BloomHelp45)
+# [5] build: Bloom Help 4.6 (Bloom_Help_BloomHelp46)
 #     project: Help
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp45
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp46
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -139,7 +139,7 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"NAudio.dll"=>"lib/dotnet"}
-#     VCS: https://hg.codeplex.com/forks/tombogle/supportlargewavfiles2 []
+#     VCS: https://github.com/sillsdev/naudio.git [master]
 # [10] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
@@ -223,7 +223,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/l
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/signtool.exe ../lib/dotnet/signtool.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp45/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp46/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
