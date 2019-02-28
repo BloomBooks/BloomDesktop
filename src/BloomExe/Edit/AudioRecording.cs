@@ -471,7 +471,12 @@ namespace Bloom.Edit
 				// Delete doesn't throw if the FILE doesn't exist, but if the Directory doesn't, you're toast.
 				// And the very first time a user tries this, the audio directory probably doesn't exist...
 				if (Directory.Exists(Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment)))
+				{
 					RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
+					// BL-6881: "Play btn sometimes enabled after too short audio", because the .mp3 version was left behind.
+					var mp3Version = Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension);
+					RobustFile.Delete(mp3Version);
+				}
 			}
 			catch (Exception error)
 			{
