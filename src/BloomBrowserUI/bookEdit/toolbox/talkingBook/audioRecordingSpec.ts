@@ -5,6 +5,86 @@ import AudioRecording, {
 import { AxiosResponse } from "axios";
 
 describe("audio recording tests", () => {
+    describe("Next/Prev()", () => {
+        it("Record=Sentence, first sentence returns disabled for Back button", () => {
+            SetupIFrameFromHtml(
+                "<div id='page1'><div class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
+            );
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.Sentence;
+
+            const observed = recording.getPreviousAudioElement();
+
+            expect(observed).toBeFalsy();
+        });
+
+        it("Record=TextBox/Play=Sentence, first sentence returns disabled for Back button", () => {
+            SetupIFrameFromHtml(
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>"
+            );
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.TextBox;
+
+            const observed = recording.getPreviousAudioElement();
+
+            expect(observed).toBeFalsy();
+        });
+
+        it("Record=TextBox/Play=Sentence, first sentence returns disabled for Back button", () => {
+            SetupIFrameFromHtml(
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div></div>"
+            );
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.TextBox;
+
+            const observed = recording.getPreviousAudioElement();
+
+            expect(observed).toBeFalsy();
+        });
+
+        it("SS <- SS, returns previous box's last sentence", () => {
+            const box1Html =
+                "<div id='box1' class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
+            const box2Html =
+                "<div id='box2' class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='sentence3' class='audio-sentence ui-audioCurrent'>Sentence 3.</span></p></div>";
+            SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.Sentence;
+
+            const observed = recording.getPreviousAudioElement();
+
+            expect(observed!.id).toBe("sentence2");
+        });
+
+        it("TS <- TT, returns previous box", () => {
+            const box1Html =
+                "<div id='box1' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
+            const box2Html =
+                "<div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p><span id='sentence3' class=''>Sentence 3.</span></p></div>";
+            SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.TextBox;
+
+            const observed = recording.getPreviousAudioElement();
+
+            expect(observed!.id).toBe("box1");
+        });
+
+        it("TT <- TT, returns previous box", () => {
+            SetupIFrameFromHtml(
+                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'>p>Sentence 2.</p></div></div>"
+            );
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.TextBox;
+
+            const observed = recording.getPreviousAudioElement();
+
+            expect(observed!.id).toBe("box1");
+        });
+    });
+
     describe("MakeAudioSentenceElements()", () => {
         it("inserts sentence spans with ids and class when none exist", () => {
             const div = $("<div>This is a sentence. This is another</div>");
@@ -1002,7 +1082,7 @@ describe("audio recording tests", () => {
 
         it("initializeForMarkupAsync gets mode from current div if available (synchronous) (Sentence)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audioRecordingMode='TextBox'>Pargraph 1.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audioRecordingMode='Sentence'>Paragraph 2.</div>"
+                "<div class='bloom-editable' lang='en' data-audioRecordingMode='TextBox'>Paragraph 1.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audioRecordingMode='Sentence'>Paragraph 2.</div>"
             );
 
             const recording = new AudioRecording();
@@ -1268,43 +1348,6 @@ describe("audio recording tests", () => {
             "\u00a0\u00a0\u00a0 In the beginning...",
             "&nbsp;&nbsp;&nbsp; In the beginning..."
         );
-    });
-});
-
-describe("audioRecordingMode's processAutoSegmentResponse() async fail", () => {
-    // Note: If the function under test does asynchronous stuff, then you can't use synchronous test code to test the final result.
-    // Instead, you should put the unit under test in a beforeEach() or beforeAll()
-    // The unit test framework will provide a callback which I guess indicates that the setup is done and then starts running your synchronous test code
-    // Then your normal test code can verify the results
-    //
-    // Keep in mind that the tests may be run simultaneously and if your async functionality messes with the state then things may get horribly confusing
-    beforeEach(doneCallback => {
-        SetupIFrameFromHtml(
-            "<div class='ui-audioCurrent' lang='es'>Sentence 1. Sentence 2.</div>"
-        );
-        const statusElement = document.createElement("div");
-        statusElement.classList.add("autoSegmentStatus");
-        statusElement.id = "status";
-        document.body.appendChild(statusElement);
-
-        const recordingModeInputElement = document.createElement("input");
-        recordingModeInputElement.type = "checkbox";
-        recordingModeInputElement.id = "audio-recordingModeControl";
-        document.body.appendChild(recordingModeInputElement);
-
-        const recording = new AudioRecording();
-        const result = {};
-        result["data"] = false;
-        recording.processAutoSegmentResponse(
-            <AxiosResponse>result,
-            statusElement,
-            doneCallback
-        );
-    });
-
-    it("processAutoSegmentResponse async failure indicates failure message", () => {
-        const statusElement: HTMLElement = document.getElementById("status")!;
-        expect(statusElement.innerText).toBe("Segmenting... Error");
     });
 });
 

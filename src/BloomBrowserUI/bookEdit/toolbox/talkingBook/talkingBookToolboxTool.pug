@@ -34,15 +34,15 @@ html
 				div.audio-label(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentence') 2) Look at the highlighted text
 				+buttonGroup('record', 'expected', '3) Speak', 'Speak')
 				+buttonGroup('play', 'enabled', '4) Check', 'Check')
-				+buttonGroup('next', 'enabled', '5) Next', 'Next')
+				+buttonGroup('split', 'enabled', '5) Split', 'Split')
+				+buttonGroup('next', 'enabled', '6) Next', '6Next')
 				+buttonGroup('prev', 'disabled', 'Back', 'Back')
 				+buttonGroup('clear', 'enabled', 'Clear', 'Clear')
 				+buttonGroup('listen', 'disabled', 'Listen to the whole page', 'Listen')
-				+checkboxWithHiddenClickHandler('recordingModeControl', 'EditTab.Toolbox.TalkingBookTool.RecordBySentences','Record by sentences', true, 'padding-top:22px')
-				div(id='audio-autoSegmentWrapper')
-					button(id='audio-autoSegment' data-i18n='EditTab.Toolbox.TalkingBookTool.AutoSegment') Auto Segment
-					button(id='audio-autoSegmentSettings')
-					br
-					div.autoSegmentStatus Segmenting...
+				div.audio-advanced
+					strong
+						label(data-i18n='EditTab.Toolbox.TalkingBookTool.Advanced')
+					+checkboxWithHiddenClickHandler('recordingModeControl', 'EditTab.Toolbox.TalkingBookTool.RecordBySentences','Record by sentences', true, 'padding-top:16px')
+
 				div.audio-about(data-i18n='EditTab.Toolbox.TalkingBookTool.ToolPurpose') Make an e-book that can play audio recordings while highlighting text.
 				a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Talking_Book_Tool_overview.htm', data-i18n='Common.Help') Help

@@ -1,4 +1,4 @@
-﻿// This class supports creating audio recordings for talking books.
+// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -55,14 +55,12 @@ const kAudioCurrent = "ui-audioCurrent";
 const kAudioSentenceClassSelector = "." + kAudioSentence;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
+
+const kAudioSplitId = "audio-split";
+
 const kRecordingModeControl: string = "audio-recordingModeControl";
 const kRecordingModeClickHandler: string =
     "audio-recordingModeControl-clickHandler";
-const kAutoSegmentWrapperId = "audio-autoSegmentWrapper";
-const kAutoSegmentButtonId = "audio-autoSegment";
-const kAutoSegmentButtonIdSelector = "#" + kAutoSegmentButtonId;
-const kAutoSegmentStatusClass = "autoSegmentStatus";
-const kAutoSegmentEnabledClass = "autoSegmentEnabled";
 
 // Terminology //
 // AudioSegment: the smallest unit of text to playback at a time.
@@ -83,11 +81,16 @@ export default class AudioRecording {
     private levelCanvasHeight: number = 80;
     private hiddenSourceBubbles: JQuery;
     private elementsToPlayConsecutivelyStack: Element[] = [];
-    private playingAll: boolean; // true during listen.
-    private idOfCurrentSentence: string;
+    private idOfNextElementToPlay: string;
     private awaitingNewRecording: boolean;
-    public audioRecordingMode: AudioRecordingMode;
+
+    private audioSplitButton: HTMLButtonElement;
+    private audioNextButton: HTMLButtonElement;
+    private audioPrevButton: HTMLButtonElement;
+    public __testonly__audioPrevButton: HTMLButtonElement; // Exposing it for unit tests. Not meant for public use.
     public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
+
+    public audioRecordingMode: AudioRecordingMode;
     private isShowing: boolean;
 
     // map<string, string[]> from a sentence to the desired IDs for that span (instead of using a new, dynamically generated one)
@@ -100,6 +103,18 @@ export default class AudioRecording {
     private listenerFunction: (MessageEvent) => void;
 
     constructor() {
+        this.audioSplitButton = <HTMLButtonElement>(
+            document.getElementById(kAudioSplitId)!
+        );
+        this.audioNextButton = <HTMLButtonElement>(
+            document.getElementById("audio-next")!
+        );
+
+        this.audioPrevButton = <HTMLButtonElement>(
+            document.getElementById("audio-prev")!
+        );
+        this.__testonly__audioPrevButton = this.audioPrevButton;
+
         // Initialize to Unknown (as opposed to setting to the default Sentence) so we can identify
         // when we need to fetch from Collection Settings vs. when it's already set.
         this.audioRecordingMode = AudioRecordingMode.Unknown;
@@ -134,21 +149,20 @@ export default class AudioRecording {
         $("#audio-play")
             .off()
             .click(e => this.playCurrent());
+        $("#audio-split")
+            .off()
+            .click(e => this.split());
         $("#audio-listen")
             .off()
             .click(e => this.listen());
         $("#audio-clear")
             .off()
             .click(e => this.clearRecording());
-        $(kAutoSegmentButtonIdSelector)
-            .off()
-            .click(e => this.autoSegment());
 
         $("#player").off();
         // The following speeds playback, ensures we get the durationchange event.
         $("#player").attr("preload", "auto");
         $("#player").bind("error", e => {
-            //if (this.playingAll) {
             if (this.playingMultipleAudio()) {
                 // during a "listen", we walk through each segment, but some (or all) may not have audio
                 this.playEnded(); //move to the next one
@@ -287,60 +301,7 @@ export default class AudioRecording {
             } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                 this.recordingModeInput.checked = false;
             }
-
-            this.setupForAutoSegment();
         }
-    }
-
-    // Initialize the initial state of the autoSegment controls
-    private setupForAutoSegment() {
-        const autoSegmentWrapperElement = document.getElementById(
-            kAutoSegmentWrapperId
-        );
-        if (
-            ToolBox.getShowExperimentalTools() &&
-            this.audioRecordingMode == AudioRecordingMode.TextBox &&
-            this.getRecordableDivs().length > 0
-        ) {
-            if (autoSegmentWrapperElement) {
-                autoSegmentWrapperElement.classList.add(
-                    kAutoSegmentEnabledClass
-                );
-            }
-            const collection = document.getElementsByClassName(
-                kAutoSegmentStatusClass
-            );
-            for (let i = 0; i < collection.length; ++i) {
-                const statusElement: HTMLElement = <HTMLElement>(
-                    collection.item(i)
-                );
-                statusElement.innerText = "";
-            }
-        } else {
-            if (autoSegmentWrapperElement) {
-                autoSegmentWrapperElement.classList.remove(
-                    kAutoSegmentEnabledClass
-                );
-            }
-        }
-
-        // Note: Just letting these happen asynchronously. It doesn't take long, but it should get called right when the tool gets called.
-        //   It may also get called again later on, when the user actually expands the tool.
-        //   We should already have the correct state but no big deal to check it again at that time.
-        BloomApi.get(
-            "audioSegmentation/checkAutoSegmentDependencies",
-            result => {
-                if (result.data === "FALSE") {
-                    // The specific missing dependency is only reported in the error log on the C# side.
-                    this.handleMissingDependency();
-                } else {
-                    $(kAutoSegmentButtonIdSelector)
-                        .off()
-                        .click(e => this.autoSegment());
-                    $(kAutoSegmentButtonIdSelector).attr("title", ""); // Clears the hover
-                }
-            }
-        );
     }
 
     // At this point we are handling all missing dependencies the same.
@@ -371,13 +332,11 @@ export default class AudioRecording {
                     localizedMessage,
                     [anchor]
                 );
-                $(kAutoSegmentButtonIdSelector)
-                    .off()
-                    .click(e => toastr.error(missingDependencyMsgWithLink));
-                $(kAutoSegmentButtonIdSelector).attr(
+                toastr.error(missingDependencyMsgWithLink);
+                this.audioSplitButton.setAttribute(
                     "title",
                     missingDependencyHoverTip
-                ); // Sets the hover
+                );
             });
     }
 
@@ -511,273 +470,6 @@ export default class AudioRecording {
         this.changeStateAndSetExpected("record");
     }
 
-    private getNextAudioElement(): Element | null {
-        return this.incrementAudioElementIndex();
-    }
-    private getPreviousAudioElement(): Element | null {
-        const traverseReverse = true;
-        return this.incrementAudioElementIndex(traverseReverse);
-    }
-
-    // TODo: Do I need two functions? Or at least 2 modes?  One to do stuff while in Playback mode? And one while editing?
-    // Advances (or rewinds) through the audio elements by the amount specified by {incrementAmount}.
-    private incrementAudioElementIndex(
-        isTraverseInReverseOn: boolean = false
-    ): Element | null {
-        const currentTextBox = this.getCurrentTextBox();
-        if (!currentTextBox) return null;
-
-        const incrementAmount = isTraverseInReverseOn ? -1 : 1;
-
-        if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-            // Assume incrementAmount=1 and the current is in TextBox mode.
-            // This mean go to the next text box, and then find the first audio-sentence within it.
-
-            // // Careful! Even though the Recording Mode is text box, current can be a Sentence
-            // this.getParentTextBoxOfElement(current);
-
-            const allTextBoxes = this.getRecordableDivs(false);
-            const currentIndex = allTextBoxes.index(currentTextBox);
-            console.assert(currentIndex >= 0);
-            if (currentIndex < 0) {
-                alert(
-                    "Assert failed. currentIndex was < 0 (current not found, but it should be.)"
-                ); // TODO: Remove me.
-                return null;
-            }
-            const nextTextBoxIndex = currentIndex + incrementAmount;
-            if (
-                nextTextBoxIndex < 0 ||
-                nextTextBoxIndex >= allTextBoxes.length
-            ) {
-                return null;
-            }
-            const nextTextBox = allTextBoxes[nextTextBoxIndex];
-
-            // Ok... now you need to know whether the next one is in Sentence or Not.
-            // Can you safely assume that the next one has been marked up?
-            // IDK, depends on if UpdateMarkup() has been called yet.
-            // I am really not convinced. If you open a fresh book, Then open talking book tool, won't it try to figure out the button state
-            const nextRecordingModeAttr = nextTextBox.attributes.getNamedItem(
-                "data-audioRecordingMode"
-            );
-            console.assert(nextRecordingModeAttr != null); // TODO: Implement what happens if null if assert fails.
-
-            let nextRecordingModeStr = "";
-            if (nextRecordingModeAttr != null) {
-                nextRecordingModeStr = nextRecordingModeAttr.value;
-            }
-            let nextRecordingMode: AudioRecordingMode =
-                AudioRecordingMode.Sentence;
-            if (
-                nextRecordingModeStr != null &&
-                <string>nextRecordingModeStr in AudioRecordingMode
-            ) {
-                nextRecordingMode = <AudioRecordingMode>nextRecordingModeStr;
-            }
-
-            if (nextRecordingMode == AudioRecordingMode.TextBox) {
-                return nextTextBox;
-            } else {
-                // That is, NextRecordingMode = Sentence
-                const nextDivAudioSegments = this.getAudioSegmentsWithinElement(
-                    nextTextBox
-                );
-                if (nextDivAudioSegments.length <= 0) {
-                    return null;
-                }
-
-                // Set index to the 0th sentence (going forward) or the last sentence (going reverse) accordingly.
-                const sentenceIndex = isTraverseInReverseOn
-                    ? nextDivAudioSegments.length - 1
-                    : 0;
-                const nextDivFirstSentence =
-                    nextDivAudioSegments[sentenceIndex];
-                return nextDivFirstSentence;
-            }
-
-            // // We can't just return the next text box, because it depends on whether nextTextBox is marked up for Sentence Playback or TextBox Playback.
-            // const audioSegmentsInNextTextBox = this.getAudioSegmentsWithinElement(nextTextBox);
-            // if (audioSegmentsInNextTextBox.length <= 0) {
-            //     return null;
-            // }
-
-            // // Set index to the 0th sentence (going forward) or the last sentence (going reverse) accordingly.
-            // const sentenceIndex = isTraverseInReverseOn ? audioSegmentsInNextTextBox.length - 1 : 0;
-
-            // // TODO: Add unit test where you try to go backward from a TextBox into Sentence Mode, and the SentenceMode box contains 2+ elements.Make sure it returns the latter.
-
-            // const nextElement = audioSegmentsInNextTextBox[sentenceIndex];
-            // return nextElement;
-        } else {
-            // Enhance: Maybe this would be safer to advance/rewind to the next SPAN instead of next audio-sentence.
-            const current = this.getPageDocBodyJQuery().find(
-                ".ui-audioCurrent"
-            );
-            if (!current) return null;
-
-            var audioElts = this.getAudioElements();
-            if (current.length === 0 || audioElts.length === 0) return null;
-            var next: JQuery = audioElts.eq(
-                audioElts.index(current) + incrementAmount
-            );
-            if (next.length === 0) return null;
-
-            const nextElement = next[0];
-            const nextTextBox = this.getParentTextBoxOfElement(nextElement);
-            if (!nextTextBox) return null;
-
-            if (currentTextBox == nextTextBox) {
-                return nextElement;
-            } else {
-                const nextRecordingModeAttr = nextTextBox.attributes.getNamedItem(
-                    "data-audioRecordingMode"
-                );
-                console.assert(nextRecordingModeAttr != null); // TODO: Implement what happens if null if assert fails.
-
-                let nextRecordingModeStr = "";
-                if (nextRecordingModeAttr != null) {
-                    nextRecordingModeStr = nextRecordingModeAttr.value;
-                }
-                let nextRecordingMode: AudioRecordingMode =
-                    AudioRecordingMode.Sentence;
-                if (
-                    nextRecordingModeStr != null &&
-                    <string>nextRecordingModeStr in AudioRecordingMode
-                ) {
-                    nextRecordingMode = <AudioRecordingMode>(
-                        nextRecordingModeStr
-                    );
-                }
-
-                if (nextRecordingMode == AudioRecordingMode.TextBox) {
-                    return nextTextBox;
-                } else {
-                    // That is, NextRecordingMode = Sentence
-                    const nextDivAudioSegments = this.getAudioSegmentsWithinElement(
-                        nextTextBox
-                    );
-                    if (nextDivAudioSegments.length <= 0) {
-                        return null;
-                    }
-
-                    // Set index to the 0th sentence (going forward) or the last sentence (going reverse) accordingly.
-                    const sentenceIndex = isTraverseInReverseOn
-                        ? nextDivAudioSegments.length - 1
-                        : 0;
-                    const nextDivFirstSentence =
-                        nextDivAudioSegments[sentenceIndex];
-                    return nextDivFirstSentence;
-                }
-            }
-        }
-
-        // allApplicableElements = this.getAudioElements();
-        // if (!allApplicableElements) return null;
-
-        // const currentIndex = allApplicableElements.index(current[0]);
-        // const nextIndex = currentIndex + incrementAmount;
-        // if (nextIndex < 0 || nextIndex >= allApplicableElements.length) {
-        //     return null;
-        // }
-        // const nextTextBox = allApplicableElements[nextIndex];
-        // return nextTextBox;
-
-        // TODO: Handle transition from Box 1 -> Box 2 where Box 2 has an opposite setting.
-    }
-    // // Advances (or rewinds) through the audio elements by the amount specified by {incrementAmount}.
-    // private incrementAudioElementIndex(isTraverseInReverseOn: boolean = false): Element | null {
-    //     const current = this.getPageDocBodyJQuery().find(
-    //         ".ui-audioCurrent"
-    //     );
-
-    //     if (!current) return null;
-
-    //     const incrementAmount = isTraverseInReverseOn ? -1 : 1;
-
-    //     if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-    //         // Assume incrementAmount=1 and the current is in TextBox mode.
-    //         // This mean go to the next text box, and then find the first audio-sentence within it.
-    //         const allTextBoxes = this.getRecordableDivs(false);
-    //         const currentIndex = allTextBoxes.index(current);
-    //         const nextTextBoxIndex = currentIndex + incrementAmount;
-    //         if (nextTextBoxIndex >= allTextBoxes.length) {
-    //             return null;
-    //         }
-    //         const nextTextBox = allTextBoxes[nextTextBoxIndex];
-
-    //         // We can't just return the next text box, because it depends on whether nextTextBox is marked up for Sentence Playback or TextBox Playback.
-    //         const audioSegmentsInNextTextBox = this.getAudioSegmentsWithinElement(nextTextBox);
-    //         if (audioSegmentsInNextTextBox.length <= 0) {
-    //             return null;
-    //         }
-
-    //         // Set index to the 0th sentence (going forward) or the last sentence (going reverse) accordingly.
-    //         const sentenceIndex = isTraverseInReverseOn ? audioSegmentsInNextTextBox.length - 1 : 0;
-
-    //         // TODO: Add unit test where you try to go backward from a TextBox into Sentence Mode, and the SentenceMode box contains 2+ elements.Make sure it returns the latter.
-
-    //         const nextElement = audioSegmentsInNextTextBox[sentenceIndex];
-    //         return nextElement;
-    //     }
-    //     else {
-    //         // In Sentence mode, we can just go to the next one directly.
-    //         var audioElts = this.getAudioElements();
-    //         if (current.length === 0 || audioElts.length === 0) return null;
-    //         var next: JQuery = audioElts.eq(audioElts.index(current) + incrementAmount);
-    //         return next.length === 0 ? null : next[0];
-    //     }
-
-    //     // allApplicableElements = this.getAudioElements();
-    //     // if (!allApplicableElements) return null;
-
-    //     // const currentIndex = allApplicableElements.index(current[0]);
-    //     // const nextIndex = currentIndex + incrementAmount;
-    //     // if (nextIndex < 0 || nextIndex >= allApplicableElements.length) {
-    //     //     return null;
-    //     // }
-    //     // const nextTextBox = allApplicableElements[nextIndex];
-    //     // return nextTextBox;
-
-    //     // TODO: Handle transition from Box 1 -> Box 2 where Box 2 has an opposite setting.
-    // }
-
-    //     if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-    //         const currentTextBox = this.getCurrentTextBox();   // TODO: Why not just look by the class?  This is generic enough to work for both? maybe?
-    //         if (!currentTextBox) {
-    //             return null;
-    //         }
-    //         const allTextBoxes = this.getRecordableDivs(false);
-
-    //         const currentIndex = allTextBoxes.index(currentTextBox);
-    //         const nextIndex = currentIndex + 1;
-    //         if (nextIndex >= allTextBoxes.length) {
-    //             return null;
-    //         }
-    //         const nextTextBox = allTextBoxes[nextIndex];
-    //         return nextTextBox;
-    //     }
-    //     else {
-    //         var current: JQuery = this.getPageDocBodyJQuery().find(
-    //             ".ui-audioCurrent"
-    //         );
-    //         var audioElts = this.getAudioElements();
-    //         if (current.length === 0 || audioElts.length === 0) return null;
-    //         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
-    //         return next.length === 0 ? null : next[0];
-    //     }
-    // }
-
-    // private getNextAudioElementToPlay(): HTMLElement | null {
-    //     var current: JQuery = this.getPageDocBodyJQuery().find(
-    //         ".ui-audioCurrent"
-    //     );
-    //     var audioElts = this.getAudioElements();
-    //     if (current.length === 0 || audioElts.length === 0) return null;
-    //     var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
-    //     return next.length === 0 ? null : next[0];
-    // }
-
     private moveToPrevAudioElement(): void {
         toastr.clear();
         var current: JQuery = this.getPageDocBodyJQuery().find(
@@ -790,19 +482,146 @@ export default class AudioRecording {
         var prev = this.getPreviousAudioElement();
         if (prev == null) return;
         this.setCurrentAudioElementFromJQuery(current, $(prev));
+        this.changeStateAndSetExpected("record"); // Enhance: I think it'd actually be better to dynamically assign Expected based on what audio is available etc., instead of based on state transitions. Especially when doing Prev.
     }
 
-    // private getPreviousAudioElementToPlay(): HTMLElement | null {
-    //     var current: JQuery = this.getPageDocBodyJQuery().find(
-    //         ".ui-audioCurrent"
-    //     );
-    //     var audioElts = this.getAudioElements();
-    //     if (current.length === 0 || audioElts.length === 0) return null;
-    //     var currentIndex = audioElts.index(current);
-    //     if (currentIndex === 0) return null;
-    //     var prev: JQuery = audioElts.eq(currentIndex - 1);
-    //     return prev.length === 0 ? null : prev[0];
-    // }
+    public getNextAudioElement(): Element | null {
+        return this.incrementAudioElementIndex();
+    }
+
+    public getPreviousAudioElement(): Element | null {
+        const traverseReverse = true;
+        return this.incrementAudioElementIndex(traverseReverse);
+    }
+
+    // Advances (or rewinds) through the audio elements by the amount specified by {incrementAmount}.
+    private incrementAudioElementIndex(
+        isTraverseInReverseOn: boolean = false
+    ): Element | null {
+        const currentTextBox = this.getCurrentTextBox();
+        if (!currentTextBox) return null;
+
+        if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+            return this.incrementAudioElementIndexForTextBoxMode(
+                isTraverseInReverseOn,
+                currentTextBox
+            );
+        } else {
+            return this.incrementAudioElementIndexForSentenceMode(
+                isTraverseInReverseOn,
+                currentTextBox
+            );
+        }
+    }
+
+    private incrementAudioElementIndexForTextBoxMode(
+        isTraverseInReverseOn: boolean,
+        currentTextBox: Element
+    ): Element | null {
+        // This means we need to go to the next text box, and then determine the right Recording segment.
+
+        const incrementAmount = isTraverseInReverseOn ? -1 : 1;
+
+        // Careful! Even though the Recording Mode is text box, current can be a Sentence... use currentTextBox instead
+        const allTextBoxes = this.getRecordableDivs(false);
+        const currentIndex = allTextBoxes.index(currentTextBox);
+        console.assert(currentIndex >= 0);
+        if (currentIndex < 0) {
+            return null;
+        }
+        const nextTextBoxIndex = currentIndex + incrementAmount;
+
+        if (nextTextBoxIndex < 0 || nextTextBoxIndex >= allTextBoxes.length) {
+            return null;
+        }
+        const nextTextBox = allTextBoxes[nextTextBoxIndex];
+        return this.getNextRecordingSegment(nextTextBox, isTraverseInReverseOn);
+    }
+
+    private incrementAudioElementIndexForSentenceMode(
+        isTraverseInReverseOn: boolean,
+        currentTextBox: Element
+    ): Element | null {
+        // Enhance: Maybe this would be safer to advance/rewind to the next SPAN instead of next audio-sentence.
+
+        const incrementAmount = isTraverseInReverseOn ? -1 : 1;
+        const current = this.getPageDocBodyJQuery().find(".ui-audioCurrent");
+        if (!current || current.length === 0) {
+            return null;
+        }
+
+        // Find the next segment to be PLAYED.
+        const audioElts = this.getAudioElements();
+        if (audioElts.length === 0) {
+            return null;
+        }
+        const nextIndex = audioElts.index(current) + incrementAmount;
+        if (nextIndex < 0 || nextIndex >= audioElts.length) {
+            return null;
+        }
+        const nextElement = audioElts[nextIndex];
+
+        // Now find the text box of the next segment to be played.
+        const nextTextBox = this.getParentTextBoxOfElement(nextElement);
+        if (!nextTextBox) return null;
+
+        if (currentTextBox == nextTextBox) {
+            // Same Text Box: This case is easy because the next mode is guaranteed to be the same as the current mode.
+            return nextElement;
+        } else {
+            // Different text box. Do some logic to figure out exactly which element should be played based on the mode and direction.
+            return this.getNextRecordingSegment(
+                nextTextBox,
+                isTraverseInReverseOn
+            );
+        }
+    }
+
+    private getRecordingModeOfElement(element: Element): AudioRecordingMode {
+        const recordingModeAttr = element.attributes.getNamedItem(
+            "data-audioRecordingMode"
+        );
+
+        let recordingModeStr = "";
+        if (recordingModeAttr != null) {
+            recordingModeStr = recordingModeAttr.value;
+        }
+        let recordingMode: AudioRecordingMode = AudioRecordingMode.Sentence;
+        if (
+            recordingModeStr != null &&
+            <string>recordingModeStr in AudioRecordingMode
+        ) {
+            recordingMode = <AudioRecordingMode>recordingModeStr;
+        }
+
+        return recordingMode;
+    }
+
+    private getNextRecordingSegment(
+        nextTextBox: Element,
+        isTraverseInReverseOn: boolean
+    ): Element | null {
+        const nextRecordingMode = this.getRecordingModeOfElement(nextTextBox);
+
+        if (nextRecordingMode == AudioRecordingMode.TextBox) {
+            return nextTextBox;
+        } else {
+            // That is, NextRecordingMode = Sentence
+            const nextDivAudioSegments = this.getAudioSegmentsWithinElement(
+                nextTextBox
+            );
+            if (nextDivAudioSegments.length <= 0) {
+                return null;
+            }
+
+            // Set index to the 0th sentence (going forward) or the last sentence (going reverse) accordingly.
+            const sentenceIndex = isTraverseInReverseOn
+                ? nextDivAudioSegments.length - 1
+                : 0;
+            const nextDivFirstSentence = nextDivAudioSegments[sentenceIndex];
+            return nextDivFirstSentence;
+        }
+    }
 
     private setCurrentAudioElement(
         elementToChangeTo: Element,
@@ -899,19 +718,17 @@ export default class AudioRecording {
             elementToChangeTo
         );
         if (firstAudioSentence) {
-            this.idOfCurrentSentence = firstAudioSentence.id;
+            this.idOfNextElementToPlay = firstAudioSentence.id;
         } else {
             console.assert(
                 "Unexpected state: The element is expected to have at least one audio sentence"
             );
-            this.idOfCurrentSentence = elementToChangeTo.id; // TODO: Rename me to idOfNextElementToPlay or something like that
+            this.idOfNextElementToPlay = elementToChangeTo.id;
         }
         this.updatePlayerStatus();
 
         // Before updating the controls, we need to update the audioRecordingMode. It might've changed.
-        this.initializeForMarkupAsync(() => {
-            this.changeStateAndSetExpected("record");
-        });
+        this.initializeForMarkupAsync(() => {});
     }
 
     // If we have an mp3 file but not a wav file, the file server will return that instead.
@@ -935,7 +752,7 @@ export default class AudioRecording {
         var player = $("#player");
         player.attr(
             "src",
-            this.currentAudioUrl(this.idOfCurrentSentence) +
+            this.currentAudioUrl(this.idOfNextElementToPlay) +
                 "&nocache=" +
                 new Date().getTime()
         );
@@ -947,6 +764,7 @@ export default class AudioRecording {
         }
 
         toastr.clear();
+
         this.recording = true;
         var current: JQuery = this.getPageDocBodyJQuery().find(
             ".ui-audioCurrent"
@@ -979,7 +797,6 @@ export default class AudioRecording {
             .post("/bloom/api/audio/endRecord")
             .then(response => {
                 this.updatePlayerStatus();
-                this.setStatus("record", Status.Disabled);
                 this.changeStateAndSetExpected("play");
             })
             .catch(error => {
@@ -1012,6 +829,11 @@ export default class AudioRecording {
 
         let divAudioSentenceCount = 0;
         let spanAudioSentenceCount = 0;
+
+        if (currentTextBox.classList.contains(kAudioSentence)) {
+            ++divAudioSentenceCount;
+        }
+
         const audioSentenceCollection = currentTextBox.getElementsByClassName(
             kAudioSentence
         );
@@ -1054,7 +876,6 @@ export default class AudioRecording {
                 this.elementsToPlayConsecutivelyStack.push(currentHighlight);
             }
         }
-        //this.playingAll = false; // in case it gets clicked after an incomplete play all.
 
         this.setCurrentAudioElement(
             this.elementsToPlayConsecutivelyStack[
@@ -1062,6 +883,7 @@ export default class AudioRecording {
             ],
             true
         );
+        this.removeExpectedStatusFromAll();
         this.setStatus("play", Status.Active);
         this.playCurrentInternal();
     }
@@ -1094,19 +916,6 @@ export default class AudioRecording {
         this.playCurrentInternal();
     }
 
-    // public oldListen(): void {
-    //     const original: JQuery = this.getPageDocBodyJQuery().find(
-    //         ".ui-audioCurrent"
-    //     );
-    //     const audioElts = this.getAudioElements();
-    //     if (audioElts.length === 0) return;
-    //     const first = audioElts.eq(0);
-    //     this.setCurrentAudioElement(original, first, true);
-    //     this.playingAll = true;
-    //     this.setStatus("listen", Status.Active);
-    //     this.playCurrentInternal();
-    // }
-
     // This is currently used in Motion, which removes all the current
     // audio markup afterwards. If we use it in this tool, we need to do more,
     // such as setting the current state of controls.
@@ -1131,13 +940,11 @@ export default class AudioRecording {
                     nextElement,
                     true
                 );
-                this.setStatus("listen", Status.Active); // gets returned to enabled by setCurrentSpan
                 this.playCurrentInternal();
                 return;
             } else {
                 // Nothing left to play
                 this.elementsToPlayConsecutivelyStack = [];
-                this.changeStateAndSetExpected("listen");
 
                 if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                     // The playback mode could've been playing in Sentence mode (and highlighted the Playback Segment: a sentence)
@@ -1154,36 +961,18 @@ export default class AudioRecording {
                         );
                     }
                 }
-                // For sentence mode, no need to adjust the current highlight. Just leave it on whatever it was on before.
+                // For Play (Check) in sentence mode, no need to adjust the current highlight. Just leave it on whatever it was on before.
                 //  (Assumption: Record by Sentence, Play by Text Box mode combination is not allowed)
 
-                return;
+                // Enhance: Or maybe for Listen To Whole Page, it should remember what the highlight was on before and move it back to there?
             }
         }
-        this.changeStateAndSetExpected("next");
-    }
 
-    // private playEnded(): void {
-    //     if (this.playingAll) {
-    //         var current: JQuery = this.getPageDocBodyJQuery().find(
-    //             ".ui-audioCurrent"
-    //         );
-    //         var audioElts = this.getAudioElements();
-    //         if (current.length === 0 || audioElts.length === 0) return;
-    //         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
-    //         if (next.length !== 0) {
-    //             this.setCurrentAudioElement(current, next, true);
-    //             this.setStatus("listen", Status.Active); // gets returned to enabled by setCurrentSpan
-    //             this.playCurrentInternal();
-    //             return;
-    //         }
-    //         this.playingAll = false;
-    //         this.changeStateAndSetExpected("listen");
-    //         this.setCurrentAudioElementBasedOnRecordingMode(current[0], false);
-    //         return;
-    //     }
-    //     this.changeStateAndSetExpected("next");
-    // }
+        // Change state to "Split" if possible but fallback to Next if not.
+        // TODO: Maybe we should fallback to Listen to Whole Page if Next is not available (A.k.a. you just checked the last thing)
+        //  What if you reached here by listening to the whole page? Does it matter that we'll push them toward listening to it again?
+        this.changeStateAndSetExpected("split");
+    }
 
     private selectInputDevice(): void {
         var thisClass = this;
@@ -1310,7 +1099,8 @@ export default class AudioRecording {
         // this.fireCSharpEvent('deleteFile', currentFile);
         axios
             .post(
-                "/bloom/api/audio/deleteSegment?id=" + this.idOfCurrentSentence
+                "/bloom/api/audio/deleteSegment?id=" +
+                    this.idOfNextElementToPlay
             )
             .then(result => {
                 // data-duration needs to be deleted when the file is deleted.
@@ -1319,7 +1109,7 @@ export default class AudioRecording {
                 // being called asynchronously with stale data and sometimes restoring
                 // the deleted attribute.
                 var current = this.getPageDocBodyJQuery().find(
-                    "#" + this.idOfCurrentSentence
+                    "#" + this.idOfNextElementToPlay
                 );
                 if (current.length !== 0) {
                     current.first().removeAttr("data-duration");
@@ -1353,7 +1143,6 @@ export default class AudioRecording {
                 this.audioRecordingMode == AudioRecordingMode.TextBox &&
                 this.getCurrentPlaybackMode() == AudioRecordingMode.TextBox
             ) {
-                alert("Thinks it should be disabled!");
                 this.notifyRecordingModeControlDisabled();
                 return;
             }
@@ -1370,8 +1159,6 @@ export default class AudioRecording {
             this.audioRecordingMode = AudioRecordingMode.Sentence;
             checkbox.checked = true;
         }
-
-        this.setupForAutoSegment();
 
         // Update the collection's default recording span mode to the new value
         BloomApi.postJson(
@@ -1709,10 +1496,7 @@ export default class AudioRecording {
 
         // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
         this.setCurrentAudioElementBasedOnRecordingMode(currentTextBox); // TODO: Probably not actually necessary to re-apply every time. Refactor it elsewhere.
-        // this.setCurrentAudioElementToFirstAudioSentenceWithinElement(
-        //     currentTextBox,
-        //     false
-        // );
+        this.changeStateAndSetExpected("record");
 
         // Note: Marking up the Current Element needs to happen after CKEditor's onload() fully finishes.  (onload sets the HTML of the bloom-editable to its original value, so it can wipe out any changes made to the original value).
         //   There is a race condition as to which one finishes first.  We need to  finish AFTER Ckeditor's onload()
@@ -2530,35 +2314,75 @@ export default class AudioRecording {
 
         this.setEnabledOrExpecting("record", expectedVerb);
 
-        //set play and clear buttons based on whether we have an audio file for this
+        const isSplitButtonValid =
+            this.audioRecordingMode == AudioRecordingMode.TextBox;
+        const currentPlaybackMode = this.getCurrentPlaybackMode();
+
+        //set play, clear, and split buttons based on whether we have an audio file for this
         axios
             .get(
                 "/bloom/api/audio/checkForSegment?id=" +
-                    this.idOfCurrentSentence
+                    this.idOfNextElementToPlay
             )
             .then(response => {
                 if (response.data === "exists") {
+                    // Set clear
                     this.setStatus("clear", Status.Enabled);
+
+                    // Set play
                     this.setEnabledOrExpecting("play", expectedVerb);
+
+                    // Set split
+                    if (isSplitButtonValid) {
+                        if (currentPlaybackMode == AudioRecordingMode.TextBox) {
+                            this.setEnabledOrExpecting("split", expectedVerb);
+                        } else {
+                            // If the text has already been split, not much point pushing them to split again. Push to Next instead.
+                            this.setStatus("split", Status.Enabled);
+                        }
+                    } else {
+                        this.setStatus("split", Status.Disabled);
+                    }
                 } else {
                     this.setStatus("clear", Status.Disabled);
                     this.setStatus("play", Status.Disabled);
+                    this.setStatus("split", Status.Disabled);
                 }
             })
             .catch(error => {
                 //server couldn't find it, so just leave these buttons disabled
                 this.setStatus("clear", Status.Disabled);
                 this.setStatus("play", Status.Disabled);
+                this.setStatus("split", Status.Disabled);
                 toastr.error(
                     "Error checking on audio file " + error.statusText
                 );
             });
 
+        // Set Next and Prev buttons
         if (this.getNextAudioElement()) {
-            this.setEnabledOrExpecting("next", expectedVerb);
+            let shouldNextButtonOverrideSplit: boolean = false;
+
+            if (expectedVerb == "split") {
+                if (
+                    !isSplitButtonValid ||
+                    currentPlaybackMode != AudioRecordingMode.TextBox
+                ) {
+                    shouldNextButtonOverrideSplit = true;
+                }
+            }
+
+            if (!shouldNextButtonOverrideSplit) {
+                // Normally we just want to do this
+                this.setEnabledOrExpecting("next", expectedVerb);
+            } else {
+                // Alternatively, if expectedVerb was split and we want Next to override Split, then it should be Expected instead of merely Enabled.
+                this.setStatus("next", Status.Expected);
+            }
         } else {
             this.setStatus("next", Status.Disabled);
         }
+
         if (this.getPreviousAudioElement()) {
             this.setStatus("prev", Status.Enabled);
         } else {
@@ -2610,8 +2434,8 @@ export default class AudioRecording {
                     this.audioRecordingMode == AudioRecordingMode.TextBox &&
                     this.getCurrentPlaybackMode() == AudioRecordingMode.TextBox
                 ) {
-                    // TODO: FIX comment
-                    // There is some audio in this text box. Disable the control so that the user can't accidentally lose data.
+                    // There is some audio set to play back in Text Box mode. If we switch the Record Mode to sentence mode, it also implies switching the Playback mode to Sentence mode.
+                    // Disable the control so that the user can't accidentally lose data during this switch.
                     this.disableRecordingModeControl(!ToolBox.isXmatterPage());
                 } else {
                     this.enableRecordingModeControl();
@@ -2661,16 +2485,48 @@ export default class AudioRecording {
     }
 
     private setStatus(which: string, to: Status): void {
-        $("#audio-" + which)
-            .removeClass("expected")
-            .removeClass("disabled")
-            .removeClass("enabled")
-            .removeClass("active")
-            .addClass(Status[to].toLowerCase());
-        if (to === Status.Expected) {
-            $("#audio-" + which + "-label").addClass("expected");
-        } else {
-            $("#audio-" + which + "-label").removeClass("expected");
+        const buttonElement = document.getElementById(`audio-${which}`);
+        if (buttonElement) {
+            buttonElement.classList.remove("expected");
+            buttonElement.classList.remove("disabled");
+            buttonElement.classList.remove("enabled");
+            buttonElement.classList.remove("active");
+
+            buttonElement.classList.add(Status[to].toLowerCase());
+        }
+
+        const labelElement = document.getElementById(`audio-${which}-label`);
+        if (labelElement) {
+            if (to === Status.Expected) {
+                labelElement.classList.add("expected");
+            } else {
+                labelElement.classList.remove("expected");
+            }
+        }
+
+        if (to === Status.Active) {
+            // Doesn't make sense to expect something while something else is active.
+            this.removeExpectedStatusFromAll();
+        }
+    }
+
+    private removeExpectedStatusFromAll(): void {
+        const expectableButtonNames = ["record", "play", "split", "next"]; // only the buttons which have a possibility of being in Expected state.
+        for (let i = 0; i < expectableButtonNames.length; ++i) {
+            const buttonName = expectableButtonNames[i];
+            const buttonElement = document.getElementById(
+                `audio-${buttonName}`
+            );
+            if (buttonElement) {
+                buttonElement.classList.remove("expected");
+            }
+
+            const labelElement = document.getElementById(
+                `audio-${buttonName}-label`
+            );
+            if (labelElement) {
+                labelElement.classList.remove("expected");
+            }
         }
     }
 
@@ -2682,6 +2538,19 @@ export default class AudioRecording {
         return false;
     }
 
+    private split(): void {
+        BloomApi.get(
+            "audioSegmentation/checkAutoSegmentDependencies",
+            result => {
+                if (result.data === "FALSE") {
+                    // The specific missing dependency is only reported in the error log on the C# side.
+                    this.handleMissingDependency();
+                } else {
+                    this.autoSegment();
+                }
+            }
+        );
+    }
     // Callback for when the user clicks on the "Auto Segment" button.
     // This will automatically segment the audio to synchronize with the text (a.k.a. forced alignment)
     // The basic steps are:
@@ -2690,6 +2559,8 @@ export default class AudioRecording {
     // *   (Black Box internals:  by using Aeneas to find the timing of each sentence start, then FFMPEG to split)
     // * Update the state of the UI to utilize the new files created by API server
     private autoSegment(): void {
+        this.audioSplitButton.setAttribute("title", ""); // remove any error tooltips
+
         // First, check if there's even an audio recorded yet.
         const playButtonElement = document.getElementById("audio-play");
         if (
@@ -2701,6 +2572,7 @@ export default class AudioRecording {
                 "Please record audio first before running Auto Segment"
             );
 
+            this.setStatus("split", Status.Disabled); // Remove active/expected highlights
             return;
         }
 
@@ -2709,28 +2581,13 @@ export default class AudioRecording {
             // At this point, not going to be able to get the ID of the div so we can't figure out how to get the filename...
             // So just give up.
             toastr.error("AutoSegment did not succeed.");
+            this.setStatus("split", Status.Enabled); // Remove active/expected highlights
             return;
         }
 
         const fragmentIdTuples = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
         if (fragmentIdTuples.length > 0) {
-            const statusElements = document.getElementsByClassName(
-                kAutoSegmentStatusClass
-            );
-            const statusElement = <HTMLElement>statusElements.item(0);
-
-            theOneLocalizationManager
-                .asyncGetText(
-                    "EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress",
-                    "Segmenting...",
-                    ""
-                )
-                .done(localizedNotification => {
-                    statusElement.innerText = localizedNotification;
-                    statusElement.style.display = "block";
-                });
-
             const inputParameters = {
                 audioFilenameBase: currentTextBox.id,
                 audioTextFragments: fragmentIdTuples,
@@ -2738,24 +2595,14 @@ export default class AudioRecording {
             };
 
             this.disableInteraction();
-
-            // Prevent the user from spam-clicking this button while work is in progress and getting in trouble or getting misleading notifications.
-            const autoSegmentButton: HTMLButtonElement | null = <
-                HTMLButtonElement | null
-            >document.getElementById(kAutoSegmentButtonId);
-            console.assert(
-                <any>autoSegmentButton,
-                "AutoSegmentButton is always expected but strangely could not be found"
-            );
-            if (autoSegmentButton) {
-                autoSegmentButton.disabled = true;
-            }
+            this.setStatus("split", Status.Active);
 
             BloomApi.postJson(
                 "audioSegmentation/autoSegmentAudio",
                 JSON.stringify(inputParameters),
                 result => {
-                    this.processAutoSegmentResponse(result, statusElement);
+                    this.setStatus("split", Status.Disabled);
+                    this.processAutoSegmentResponse(result);
                 }
             );
         }
@@ -2840,6 +2687,7 @@ export default class AudioRecording {
         // 3- An unrecoverable error has occurred
         this.setStatus("record", Status.Disabled);
         this.setStatus("play", Status.Disabled);
+        this.setStatus("split", Status.Disabled);
         this.setStatus("next", Status.Disabled);
         this.setStatus("prev", Status.Disabled);
         this.setStatus("clear", Status.Disabled);
@@ -2849,31 +2697,15 @@ export default class AudioRecording {
 
     public processAutoSegmentResponse(
         result: AxiosResponse<any>,
-        statusElement: HTMLElement,
         doneCallback = () => {}
     ): void {
-        const autoSegmentButton: HTMLButtonElement | null = <
-            HTMLButtonElement | null
-        >document.getElementById(kAutoSegmentButtonId);
-        if (autoSegmentButton) {
-            autoSegmentButton.disabled = false;
-        }
-
         const isSuccess = result && result.data == true;
 
         if (isSuccess) {
             // Now that we know the Auto Segmentation succeeded, finally convert into by-sentence mode.
 
             // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
-            const forceOverwrite: boolean = true;
-            //this.updateRecordingMode(forceOverwrite); // Needs to call changeStateAndSetExpected() at some point.
-
-            // TODO: Not sure if needed
-            //this.setupForAutoSegment();
-
-            // TODO: But updateMarkup() needs to operate in a different mode...
             const allowUpdateOfCurrent = false;
-            // TODO: Need to distinguish RECORDING mode vs... markup mode or something.
             this.updateMarkupForCurrentText(
                 allowUpdateOfCurrent,
                 AudioRecordingMode.Sentence
@@ -2881,23 +2713,14 @@ export default class AudioRecording {
 
             // Now that we're all done with use sentenceToIdListMap, clear it out so that there's no potential for accidental re-use
             this.sentenceToIdListMap = {};
-            statusElement.innerText = "Segmenting... Done.";
             this.changeStateAndSetExpected("next");
+            this.setStatus("split", Status.Disabled); // No need to run it again if it was successful. (Until the settings are changed).
+
+            // TODO: Finalize UI / possibly localize.
+            toastr.info("AutoSegment completed.");
         } else {
             this.changeStateAndSetExpected("record");
-
-            // TODO: change to red. And change back to yellow
-            theOneLocalizationManager
-                .asyncGetText(
-                    "EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError",
-                    "Segmenting... Error",
-                    ""
-                )
-                .done(localizedNotification => {
-                    statusElement.innerText = localizedNotification;
-
-                    doneCallback();
-                });
+            doneCallback();
 
             // TODO: Localize
             // If there is a more detailed error from C#, it should be reported via ErrorReport.ReportNonFatal[...]

@@ -2073,28 +2073,20 @@
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegment">
-        <source xml:lang="en">Auto Segment</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegment</note>
-        <note>This text appears on the button the user can press to trigger automatic segmentation of audio. An audio file corresponding to an entire text box will be segmented into one audio file per sentence instead. (Also known as "Forced Alignment" in technical terms)</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError">
-        <source xml:lang="en">Segmenting... Error</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") failed with an errror.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress">
-        <source xml:lang="en">Segmenting...</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") is in progress.</note>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Advanced" sil:dynamic="true">
+        <source xml:lang="en">Advanced</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.Advanced</note>
+        <note>This is the section heading for Advanced Settings for the talking book tool.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
+        <note>As in, move the selection "BACK"wards to the previous sentence.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true">
         <source xml:lang="en">4) Check</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
+        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
@@ -2103,6 +2095,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
         <source xml:lang="en">Clear</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
+        <note>As in, "CLEAR" (or delete) the existing recording file.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
         <source xml:lang="en">Listen to the whole page</source>
@@ -2114,6 +2107,10 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.6Next" sil:dynamic="true">
+        <source xml:lang="en">6) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
@@ -2139,6 +2136,17 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Split">
+        <source xml:lang="en">5) Split</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.Split</note>
+        <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitNumberedList">
+        <source xml:lang="en">{0}) Split</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitNumberedList</note>
+        <note>This item will appeared in a numbered list. The "{0}" represents which number in the list it is, e.g. "5". The ")" will look something like "5) Split". You may replace the ")" with something more locale-appropriate if necessary. The "{0}" may move to a more appropriate place but its text should not change.</note>
+        <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
