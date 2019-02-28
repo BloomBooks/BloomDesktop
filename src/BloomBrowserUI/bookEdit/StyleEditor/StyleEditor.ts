@@ -29,19 +29,6 @@ declare function WebFxTabPane(
     callback: any
 ): any; // from tabpane, from a <script> tag
 
-interface IFormattingValues {
-    ptSize: string;
-    fontName: string;
-    lineHeight: number;
-    wordSpacing: string;
-    center: boolean;
-    paraSpacing: number;
-    paraIndent: string;
-    bold: boolean;
-    italic: boolean;
-    underline: boolean;
-}
-
 // Class provides a convenient way to group a style id and display name
 class FormattingStyle {
     public styleId: string;
@@ -574,12 +561,12 @@ export default class StyleEditor {
     }
 
     public static GetClosestValueInList(
-        listOfOptions: Array<number>,
+        listOfOptions: Array<string>,
         valueToMatch: number
-    ): number {
-        let lineHeight: number = 1;
+    ) {
+        let lineHeight;
         for (let i = 0; i < listOfOptions.length; i++) {
-            const optionNumber = listOfOptions[i];
+            const optionNumber = parseFloat(listOfOptions[i]);
             if (valueToMatch === optionNumber) {
                 lineHeight = listOfOptions[i];
                 break;
@@ -588,7 +575,7 @@ export default class StyleEditor {
                 lineHeight = listOfOptions[i];
                 // possibly it is closer to the option before
                 if (i > 0) {
-                    const prevOptionNumber = listOfOptions[i - 1];
+                    const prevOptionNumber = parseFloat(listOfOptions[i - 1]);
                     const deltaCurrent = optionNumber - valueToMatch;
                     const deltaPrevious = valueToMatch - prevOptionNumber;
                     if (deltaPrevious < deltaCurrent) {
@@ -598,7 +585,9 @@ export default class StyleEditor {
                 break;
             }
         }
-        if (valueToMatch > listOfOptions[listOfOptions.length - 1]) {
+        if (
+            valueToMatch > parseFloat(listOfOptions[listOfOptions.length - 1])
+        ) {
             lineHeight = listOfOptions[listOfOptions.length - 1];
         }
         return lineHeight;
@@ -642,24 +631,20 @@ export default class StyleEditor {
 
     public getLineSpaceOptions() {
         return [
-            0.7,
-            0.8,
-            1.0,
-            1.1,
-            1.2,
-            1.3,
-            1.4,
-            1.5,
-            1.6,
-            1.8,
-            2.0,
-            2.5,
-            3.0
+            "0.7",
+            "0.8",
+            "1.0",
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.8",
+            "2.0",
+            "2.5",
+            "3.0"
         ];
-    }
-
-    public getLocalizedLineSpaceOptions(): string[] {
-        return this.getLineSpaceOptions().map(num => num.toLocaleString());
     }
 
     public getWordSpaceOptions(): string[] {
@@ -725,15 +710,11 @@ export default class StyleEditor {
     }
 
     public getParagraphSpaceOptions() {
-        return [0, 0.5, 0.75, 1, 1.25];
-    }
-
-    public getLocalizedParagraphSpaceOptions() {
-        return this.getParagraphSpaceOptions().map(num => num.toLocaleString());
+        return ["0", "0.5", "0.75", "1", "1.25"];
     }
 
     // Returns an object giving the current selection for each format control.
-    public getFormatValues(): IFormattingValues {
+    public getFormatValues() {
         const box = $(this.boxBeingEdited);
         const sizeString = box.css("font-size");
         const pxSize = parseInt(sizeString, 10);
@@ -935,7 +916,7 @@ export default class StyleEditor {
                         )
                     ])
                     .then(results => {
-                        const fonts = results[0].data["fonts"] as string[];
+                        const fonts = results[0].data["fonts"];
                         const html = results[1].data;
 
                         this.boxBeingEdited = targetBox;
@@ -983,11 +964,7 @@ export default class StyleEditor {
                                     .remove();
                             }
 
-                            this.setupSelectControls(
-                                fonts,
-                                current,
-                                styleName ? styleName : ""
-                            );
+                            this.setupSelectControls(fonts, current, styleName);
                         }
 
                         //make some select boxes permit custom values
@@ -1133,11 +1110,7 @@ export default class StyleEditor {
         });
     }
 
-    public setupSelectControls(
-        fonts: string[],
-        current: IFormattingValues,
-        styleName: string
-    ) {
+    public setupSelectControls(fonts, current, styleName) {
         this.populateSelect(
             fonts,
             current.fontName,
@@ -1154,11 +1127,12 @@ export default class StyleEditor {
             true,
             99
         );
-        this.populateLocalizedSelect(
+        this.populateSelect(
             this.getLineSpaceOptions(),
-            this.getLocalizedLineSpaceOptions(),
             current.lineHeight,
-            "line-height-select"
+            "line-height-select",
+            true,
+            true
         );
         this.populateSelect(
             this.getWordSpaceOptions(),
@@ -1174,11 +1148,12 @@ export default class StyleEditor {
             styleName,
             "normal"
         );
-        this.populateLocalizedSelect(
+        this.populateSelect(
             this.getParagraphSpaceOptions(),
-            this.getLocalizedParagraphSpaceOptions(),
             current.paraSpacing,
-            "para-spacing-select"
+            "para-spacing-select",
+            true,
+            true
         );
     }
 
@@ -1402,7 +1377,7 @@ export default class StyleEditor {
         if (!$("#" + selectId)) {
             return;
         }
-        if (!current || current === "") {
+        if (!current) {
             current = defaultChoice;
         }
 
@@ -1460,8 +1435,8 @@ export default class StyleEditor {
 
     public populateSelect(
         items: string[],
-        current: string | number,
-        id: string,
+        current,
+        id,
         doSort: boolean,
         useNumericSort: boolean,
         maxlength?: number
@@ -1512,42 +1487,6 @@ export default class StyleEditor {
                 selected +
                 ">" +
                 text +
-                "</option>";
-        }
-        $("#" + id).html(options);
-    }
-
-    // This localized version of populateSelect depends on the input being already sorted, since
-    // we have 2 arrays, one the original values and one the localized version. This should work even
-    // if our localized versions have different digits (e.g. Arabic).
-    public populateLocalizedSelect(
-        items: number[],
-        localizedItems: string[],
-        current: number,
-        id: string
-    ) {
-        // So if the element doesn't exist, exit quickly.
-        if (!$("#" + id)) {
-            return;
-        }
-
-        let options = "";
-        if (!current) {
-            current = items[0];
-        }
-
-        for (let i = 0; i < items.length; i++) {
-            let selected: string = "";
-            if (current === items[i]) {
-                selected = " selected";
-            }
-            options +=
-                '<option value="' +
-                items[i].toString() +
-                '"' +
-                selected +
-                ">" +
-                localizedItems[i] +
                 "</option>";
         }
         $("#" + id).html(options);
@@ -1847,10 +1786,12 @@ export default class StyleEditor {
         this.ignoreControlChanges = true;
 
         this.setValueAndUpdateSelect2Control("font-select", current.fontName);
-        this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
+        this.setValueAndUpdateSelect2Control(
+            "size-select",
+            current.ptSize.toString()
+        );
         this.setValueAndUpdateSelect2Control(
             "line-height-select",
-            undefined,
             current.lineHeight
         );
         this.setValueAndUpdateSelect2Control(
@@ -1859,7 +1800,6 @@ export default class StyleEditor {
         );
         this.setValueAndUpdateSelect2Control(
             "para-spacing-select",
-            undefined,
             current.paraSpacing
         );
         const buttonIds = this.getButtonIds();
@@ -1877,13 +1817,9 @@ export default class StyleEditor {
     // was actually neglecting to prepend # before the id. The old solution left the problem BL-3422
     // which was eventually fixed by changing createStyle so that it doesn't need to use this
     // method at all. As far as I can tell, doing this works.
-    public setValueAndUpdateSelect2Control(
-        id: string,
-        stringVal?: string,
-        numVal?: number
-    ) {
+    public setValueAndUpdateSelect2Control(id: string, value: string) {
         $("#" + id)
-            .val(stringVal ? stringVal : numVal ? numVal.toString() : "")
+            .val(value)
             .trigger("change");
     }
 
