@@ -226,6 +226,20 @@ export class BloomApi {
             successCallback
         );
     }
+
+    private static debugMessageCount = 0; // used to serialize debug messages
+    // This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
+    // to see it used anywhere in code that gets submitted and merged.
+    public static postDebugMessage(message: string): void {
+        ++this.debugMessageCount;
+        BloomApi.postDataWithConfig(
+            "common/debugMessage",
+            this.debugMessageCount.toString() + "/ " + message,
+            {
+                headers: { "Content-Type": "text/plain" }
+            }
+        );
+    }
 }
 
 window.addEventListener("beforeunload", () => BloomApi.NotifyPageClosing());

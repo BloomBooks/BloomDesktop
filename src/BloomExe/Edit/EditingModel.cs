@@ -1140,6 +1140,17 @@ namespace Bloom.Edit
 			_view = view;
 		}
 
+		/// <summary>
+		/// Get the Browser object used for editing.
+		/// </summary>
+		/// <remarks>
+		/// This is needed only on Linux to allow hooking up an OnBrowserClick used to work around a Mono bug.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6753.
+		/// </remarks>
+		internal Browser GetEditingBrowser()
+		{
+			return _view.Browser;
+		}
 
 		public IPage DeterminePageWhichWouldPrecedeNextInsertion()
 		{

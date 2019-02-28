@@ -17,7 +17,9 @@ using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
-#if !__MonoCS__
+#if __MonoCS__
+using SIL.CommandLineProcessing;
+#else
 using NAudio.Wave;
 #endif
 using SIL.IO;
@@ -102,6 +104,10 @@ namespace Bloom.Publish.Epub
 			get { return _book.Storage; }
 		}
 
+		// The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
+		// remove any elements that the style rules would hide, becuase epub readers ignore visibility settings.
+		private string kSelectThingsThatCanBeHidden = ".//div | .//img";
+
 		// Keeps track of IDs that have been used in the manifest. These are generated to roughly match file
 		// names, but the algorithm could pathologically produce duplicates, so we guard against this.
 		private HashSet<string> _idsUsed = new HashSet<string>();
@@ -149,7 +155,7 @@ namespace Bloom.Publish.Epub
 		public string BookInStagingFolder { get; private set; }
 		private BookThumbNailer _thumbNailer;
 		public bool PublishWithoutAudio { get; set; }
-		Browser _browser = new Browser();
+		private PublishHelper _publishHelper = new PublishHelper();
 		private BookServer _bookServer;
 		// Ordered list of Table of Content entries.
 		List<string> _tocList = new List<string>();
@@ -159,7 +165,19 @@ namespace Bloom.Publish.Epub
 		private bool _firstNumberedPageSeen;
 		// image counter for creating id values
 		private int _imgCount;
-		public Control ControlForInvoke { get; set; }
+
+		/// <summary>
+		/// Preparing a book for publication involves displaying it in a browser in order
+		/// to accurately determine which elements are invisible and can be pruned from the
+		/// published book.  This requires being on the UI thread, which may require having
+		/// a Control available for calling Invoke() which will move execution to the UI
+		/// thread.
+		/// </summary>
+		public Control ControlForInvoke
+		{
+			get { return _publishHelper.ControlForInvoke; }
+			set { _publishHelper.ControlForInvoke = value; }
+		}
 		public bool AbortRequested { get; set; }
 		// Only make one audio file per page. This means if there are multiple recorded sentences on a page,
 		// Epubmaker will squash them into one, compress it, and make smil entries with appropriate offsets.
@@ -239,7 +257,7 @@ namespace Bloom.Publish.Epub
 				// It should only be null while running unit tests.
 				// Eventually, we want a unit test that checks this device xmatter behavior.
 				// But don't have time for now.
-				_book = BookCompressor.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
+				_book = PublishHelper.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
 			}
 
 			// The readium control remembers the current page for each book.
@@ -603,7 +621,7 @@ namespace Bloom.Publish.Epub
 			// Now check if the audio recordings actually exist for them
 			var audioSentenceElementsWithRecordedAudio =
 				audioSentenceElements.Where(
-					x => AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, x.Attributes["id"].Value) != null);
+					x => AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, x.Attributes["id"].Value) != null);
 			if(!audioSentenceElementsWithRecordedAudio.Any())
 				return;
 			var overlayName = GetOverlayName(pageDocName);
@@ -630,7 +648,7 @@ namespace Bloom.Publish.Epub
 			foreach(var audioSentenceElement in audioSentenceElementsWithRecordedAudio)
 			{
 				var audioId = audioSentenceElement.Attributes["id"].Value;
-				var path = AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, audioId);
+				var path = AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, audioId);
 				var dataDurationAttr = audioSentenceElement.Attributes["data-duration"];
 				TimeSpan clipTimeSpan;
 				if(dataDurationAttr != null)
@@ -641,36 +659,45 @@ namespace Bloom.Publish.Epub
 				}
 				else
 				{
-					//var durationSeconds = TagLib.File.Create(path).Properties.Duration.TotalSeconds;
-					//duration += new TimeSpan((long)(durationSeconds * 1.0e7)); // argument is in ticks (100ns)
-					// Haven't found a good way to get duration from MP3 without adding more windows-specific
-					// libraries. So for now we'll figure it from the wav if we have it. If not we do a very
-					// crude estimate from file size. Hopefully good enough for BSV animation.
-					var wavPath = Path.ChangeExtension(path, "wav");
-					if(RobustFile.Exists(wavPath))
+					try
 					{
 #if __MonoCS__
-						// /usr/bin/soxi -D file.(mp3|wav) returns the time in seconds to stdout
-						// or /usr/bin/sox --info -D file.(mp3|wav)  [soxi is a symbolic link to sox on Linux]
-						clipTimeSpan = new TimeSpan(new FileInfo(path).Length*7*10000000/61000);	// TODO: this needs to be fixed for Linux/Mono
+						// ffmpeg can provide the length of the audio, but you have to strip it out of the command line output
+						// See https://stackoverflow.com/a/33115316/7442826 or https://stackoverflow.com/a/53648234/7442826
+						// The output (which is sent to stderr, not stdout) looks something like this:
+						// "size=N/A time=00:03:36.13 bitrate=N/A speed= 432x    \rsize=N/A time=00:07:13.16 bitrate=N/A speed= 433x    \rsize=N/A time=00:08:42.97 bitrate=N/A speed= 434x"
+						// When seen on the console screen interactively, it looks like a single line that is updated frequently.
+						// A short file may have only one carriage-return separated section of output, while a very long file may
+						// have more sections than this.
+						var args = String.Format("-v quiet -stats -i \"{0}\" -f null -", path);
+						var result = CommandLineRunner.Run("/usr/bin/ffmpeg", args, "", 20 * 10, new SIL.Progress.NullProgress());
+						var output = result.ExitCode == 0 ? result.StandardError : null;
+						string timeString = null;
+						if (!string.IsNullOrEmpty(output))
+						{
+							var idxTime = output.LastIndexOf("time=");
+							if (idxTime > 0)
+								timeString = output.Substring(idxTime + 5, 11);
+						}
+						clipTimeSpan = TimeSpan.Parse(timeString, CultureInfo.InvariantCulture);
 #else
-						using(WaveFileReader wf = RobustIO.CreateWaveFileReader(wavPath))
-							clipTimeSpan = wf.TotalTime;
+						using (var reader = new Mp3FileReader(path))
+							clipTimeSpan = reader.TotalTime;
 #endif
 					}
-					else
+					catch
 					{
 						NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
-							"Bloom could not find one of the expected audio files for this book, nor a precomputed duration. Bloom can only make a very rough estimate of the length of the mp3 file.");
+							"Bloom could not accurately determine the length of the audio file and will only make a very rough estimate.");
 						// Crude estimate. In one sample, a 61K mp3 is 7s long.
 						// So, multiply by 7 and divide by 61K to get seconds.
 						// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
 						// hence the 10000000.
-						clipTimeSpan = new TimeSpan(new FileInfo(path).Length*7*10000000/61000);
+						clipTimeSpan = new TimeSpan(new FileInfo(path).Length * 7 * 10000000 / 61000);
 					}
 				}
 
-				var clipStart = pageDuration;	
+				var clipStart = pageDuration;
 				pageDuration += clipTimeSpan;
 				string epubPath = mergedAudioPath ?? CopyFileToEpub(path, subfolder:kAudioFolder);
 				var newSrc = epubPath.Substring(_contentFolder.Length+1).Replace('\\','/');
@@ -694,25 +721,19 @@ namespace Bloom.Publish.Epub
 		/// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
 		/// we somehow failed to merge.
 		/// </summary>
-		/// <param name="elementsWithAudio"></param>
-		/// <returns></returns>
 		private string MergeAudioElements(IEnumerable<XmlElement> elementsWithAudio)
 		{
-			string mergedAudioPath = null;
 			var mergeFiles =
-				elementsWithAudio.Select(
-					s => Path.ChangeExtension(
-						AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, s.Attributes["id"]?.Value), "wav"))
-				.Where(s => !String.IsNullOrEmpty(s));
+				elementsWithAudio
+					.Select(s => AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, s.Attributes["id"]?.Value))
+					.Where(s => !string.IsNullOrEmpty(s));
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kAudioFolder));
-			var combinedAudioPath = Path.Combine(_contentFolder, kAudioFolder, "page" + _pageIndex + ".wav");
+			var combinedAudioPath = Path.Combine(_contentFolder, kAudioFolder, "page" + _pageIndex + ".mp3");
 			var errorMessage = AudioProcessor.MergeAudioFiles(mergeFiles, combinedAudioPath);
 			if (errorMessage == null)
 			{
-				mergedAudioPath = AudioProcessor.MakeCompressedAudio(combinedAudioPath);
-				RobustFile.Delete(combinedAudioPath);
-				_manifestItems.Add(kAudioFolder+"/" + Path.GetFileName(mergedAudioPath));
-				return mergedAudioPath;
+				_manifestItems.Add(kAudioFolder + "/" + Path.GetFileName(combinedAudioPath));
+				return combinedAudioPath;
 			}
 			Logger.WriteEvent("Failed to merge audio files for page " + _pageIndex + " " + errorMessage);
 			// and we will do it the old way. Works for some readers.
@@ -855,7 +876,7 @@ namespace Bloom.Publish.Epub
 
 			// Note, the following stylsheet stuff can be quite bewildering...
 			// Testing shows that these stylesheets are not actually used
-			// in RemoveUnwantedContent(), which falls back to the stylsheets in place for the book, which in turn,
+			// in PublishHelper.RemoveUnwantedContent(), which falls back to the stylesheets in place for the book, which in turn,
 			// in unit tests, is backed by a simple mocked BookStorage which doesn't have the stylesheet smarts. Sigh.
 
 			pageDom.RemoveModeStyleSheets();
@@ -881,18 +902,8 @@ namespace Bloom.Publish.Epub
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
 			}
 
-			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
-			// but things freeze up if we don't do it on the uI thread.
-			if (ControlForInvoke != null)
-			{
-				// Linux/Mono can choose a toast as the ActiveForm.  When it closes, bad things can happen
-				// trying to use it to Invoke.
-				if (ControlForInvoke.IsDisposed)
-					ControlForInvoke = Form.ActiveForm;
-				ControlForInvoke.Invoke((Action)(() => RemoveUnwantedContent(pageDom)));
-			}
-			else
-				RemoveUnwantedContent(pageDom);
+			// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
+			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, this);
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
@@ -1054,15 +1065,76 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
+		public static bool IsBranding(XmlElement element)
+		{
+			if (element == null)
+			{
+				return false;
+			}
+
+			if (PublishHelper.HasClass(element, "branding"))
+			{
+				return true;
+			}
+
+			// For example: <div data-book="credits-page-branding-bottom-html" lang="*"></div>
+			while (element != null)
+			{
+				string value = element.GetAttribute("data-book");
+				if (value.Contains("branding"))
+				{
+					return true;
+				}
+				else
+				{
+					XmlNode parentNode = element.ParentNode;	// Might be an XmlDocument up the chain
+					if (parentNode is XmlElement)
+					{
+						element = (XmlElement)parentNode;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+
+			return false;
+		}
+
 		private void HandleImageDescriptions(HtmlDom bookDom)
 		{
 			// Set img alt attributes to the description, or erase them if no description (BL-6035)
 			foreach (var img in bookDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
 			{
-				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
+				bool isLicense = PublishHelper.HasClass(img, "licenseImage");
+				bool isBranding = IsBranding(img);
+				if (isLicense || isBranding)
 				{
-					img.SetAttribute("alt", "");   // signal no accessibility need
-					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes daisy checker happy
+					string newAltText = "";
+
+					if (isLicense)
+					{
+						newAltText = "Image representing the license of this book";
+					}
+					else if (isBranding)
+					{
+						// Check if it's using the placeholder alt text... which isn't actually meaningful and we don't want in the ePub version for accessibility.
+						string currentAltText = img.GetAttribute("alt");
+						if (!HtmlDom.IsPlaceholderImageAltText(img))
+						{
+							// It is using a custom-specified one. Go ahead and keep it.
+							newAltText = currentAltText;
+						}
+						else
+						{
+							// Placeholder or missing alt text.  Replace it with the ePub version of the placeholder alt text
+							newAltText = "Logo of the book sponsors"; // Alternatively, it's OK to also put in "" to signal no accessibility need
+						}
+					}
+
+					img.SetAttribute("alt", newAltText);
+					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes DAISY checker happy
 					continue;
 				}
 				var desc = img.SelectSingleNode("following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]") as XmlElement;
@@ -1460,7 +1532,7 @@ namespace Bloom.Publish.Epub
 			var div = body.SelectSingleNode("div[@class]") as XmlElement;
 			if (div.GetOptionalStringAttribute("data-page", "") == "required singleton")
 			{
-				if (HasClass(div, "titlePage"))
+				if (PublishHelper.HasClass(div, "titlePage"))
 				{
 					div.SetAttribute ("type", kEpubNamespace, "titlepage");
 				}
@@ -1518,7 +1590,7 @@ namespace Bloom.Publish.Epub
 			{
 				// tests at least don't always start content on page 1
 				div = pageDom.Body.SelectSingleNode("//div[@data-page-number]") as XmlElement;
-				if (div != null && HasClass(div, "numberedPage") && !_firstNumberedPageSeen)
+				if (div != null && PublishHelper.HasClass(div, "numberedPage") && !_firstNumberedPageSeen)
 				{
 					div.SetAttribute ("role", "main");
 					string languageIdUsed;
@@ -1531,7 +1603,7 @@ namespace Bloom.Publish.Epub
 			// Note that the alt attribute is handled in HandleImageDescriptions().
 			foreach (var img in pageDom.Body.SelectNodes("//img[@src]").Cast<XmlElement> ())
 			{
-				if (HasClass(img, "licenseImage") || HasClass(img, "branding"))
+				if (PublishHelper.HasClass(img, "licenseImage") || PublishHelper.HasClass(img, "branding"))
 					continue;
 				div = img.SelectSingleNode("parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]") as XmlElement;
 				// Typically by this point we've converted the image descriptions into asides whose container is the next
@@ -1550,7 +1622,7 @@ namespace Bloom.Publish.Epub
 						++descCount;
 						asideNode.SetAttribute("id", figDescId);
 						var ariaAttr = img.GetAttribute("aria-describedby");
-						// ACE by Daisy cannot handle multiple ID values in the aria-describedby attribute even
+						// Ace by DAISY cannot handle multiple ID values in the aria-describedby attribute even
 						// though the ARIA specification clearly allows this.  So for now, use only the first one.
 						// I'd prefer to use specifically the vernacular language aside if we have to choose only
 						// one, but the aside elements don't have a lang attribute (yet?).  Perhaps the aside
@@ -1584,7 +1656,7 @@ namespace Bloom.Publish.Epub
 
 		private bool SetRoleAndLabelForClass(XmlElement div, string desiredClass, string labelId, string labelEnglish)
 		{
-			if (HasClass(div, desiredClass))
+			if (PublishHelper.HasClass(div, desiredClass))
 			{
 				string languageIdUsed;
 				div.SetAttribute("role", "contentinfo");
@@ -1773,7 +1845,7 @@ namespace Bloom.Publish.Epub
 				// For now we only attempt to adjust pictures contained in the marginBox.
 				// To do better than this we will probably need to actually load the HTML into
 				// a browser; even then it will be complex.
-				while (parent != null && !HasClass (parent, "marginBox")) {
+				while (parent != null && !PublishHelper.HasClass (parent, "marginBox")) {
 					// 'marginBox' is not yet the margin box...it is some parent div.
 					// If it has an explicit percent width style, adjust for this.
 					var styleAttr = parent.Attributes ["style"];
@@ -1792,7 +1864,7 @@ namespace Bloom.Publish.Epub
 				if (parent == null)
 					continue;
 				var page = parent.ParentNode as XmlElement;
-				if (!HasClass (page, "bloom-page"))
+				if (!PublishHelper.HasClass (page, "bloom-page"))
 					continue; // or return? marginBox should be child of page!
 				if (firstTime) {
 					var pageClass =
@@ -1940,108 +2012,6 @@ namespace Bloom.Publish.Epub
 		}
 
 		/// <summary>
-		/// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
-		/// </summary>
-		/// <param name="pageDom"></param>
-		private void RemoveUnwantedContent (HtmlDom pageDom)
-		{
-			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
-			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
-			var pageElt = (XmlElement)pageDom.Body.FirstChild;
-
-			// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
-			// browser figure out what is visible. So we can easily match elements in the browser DOM
-			// with the one we are manipulating, make sure they ALL have IDs.
-			EnsureAllDivsHaveIds (pageElt);
-			var normalDom = Book.GetHtmlDomWithJustOnePage (pageElt);
-			AddEpubVisibilityStylesheetAndClass (normalDom);
-
-			_browser.NavigateAndWaitTillDone(normalDom, 10000, "epub");
-
-			var toBeDeleted = new List<XmlElement> ();
-			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
-			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-			foreach (XmlElement elt in pageElt.SafeSelectNodes (".//div")) {
-				if (!IsDisplayed (elt))
-					toBeDeleted.Add (elt);
-			}
-			foreach (var elt in toBeDeleted) {
-				elt.ParentNode.RemoveChild (elt);
-			}
-
-			// Remove any left-over bubbles
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes ("//label")) {
-				if (HasClass (elt, "bubble"))
-					elt.ParentNode.RemoveChild (elt);
-			}
-			// Remove page labels and descriptions.  Also remove pages (or other div elements) that users have
-			// marked invisible.  (The last mimics the effect of bookLayout/languageDisplay.less for editing
-			// or PDF published books.)
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes ("//div")) {
-				if (HasClass (elt, "pageLabel"))
-					elt.ParentNode.RemoveChild (elt);
-				if (HasClass (elt, "pageDescription"))
-					elt.ParentNode.RemoveChild (elt);
-				// REVIEW: is this needed now with the new strategy?
-				if (HasClass (elt, "bloom-editable") && HasClass (elt, "bloom-visibility-user-off"))
-					elt.ParentNode.RemoveChild (elt);
-			}
-			// Our recordingmd5 attribute is not allowed
-			foreach (XmlElement elt in HtmlDom.SelectAudioSentenceElementsWithRecordingMd5(pageDom.RawDom.DocumentElement))
-			{
-				elt.RemoveAttribute ("recordingmd5");
-			}
-			// Users should not be able to edit content of published books
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes ("//div[@contenteditable]")) {
-				elt.RemoveAttribute ("contenteditable");
-			}
-			RemoveTempIds (pageElt); // don't need temporary IDs any more.
-
-			foreach (var div in pageDom.Body.SelectNodes("//div[@role='textbox']").Cast<XmlElement>())
-			{
-				div.RemoveAttribute("role");				// this isn't an editable textbox in an ebook
-				div.RemoveAttribute("aria-label");			// don't want this without a role
-				div.RemoveAttribute("spellcheck");			// too late for spell checking in an ebook
-				div.RemoveAttribute("content-editable");	// too late for editing in an ebook
-			}
-
-			// Clean up img elements (BL-6035/BL-6036)
-			foreach (var img in pageDom.Body.SelectNodes("//img").Cast<XmlElement>())
-			{
-				// Ensuring a proper alt attribute is handled elsewhere
-				var src = img.GetOptionalStringAttribute("src", null);
-				if (String.IsNullOrEmpty(src))
-				{
-					// If the image file doesn't exist, we want to find out about it.  But if there is no
-					// image file, epubcheck complains and it doesn't do any good anyway.
-					img.ParentNode.RemoveChild(img);
-				}
-				else
-				{
-					var parent = img.ParentNode as XmlElement;
-					parent.RemoveAttribute("title");	// We don't want this in published books.
-					img.RemoveAttribute("title");	// We don't want this in published books.  (probably doesn't exist)
-					img.RemoveAttribute("type");	// This is invalid, but has appeared for svg branding images.
-				}
-			}
-			// epub-check doesn't like these attributes (BL-6036)
-			foreach (var div in pageDom.Body.SelectNodes("//div[contains(@class, 'split-pane-component-inner')]").Cast<XmlElement>())
-			{
-				div.RemoveAttribute("min-height");
-				div.RemoveAttribute("min-width");
-			}
-
-			// These elements are inserted and supposedly removed by the ckeditor javascript code.
-			// But at least one book created by our test team still has one output to an epub.  If it
-			// exists, it probably has a style attribute (position:fixed) that epubcheck won't like.
-			// (fixed position way off the screen to hide it)
-			foreach (var div in pageDom.Body.SelectNodes("//*[@data-cke-hidden-sel]").Cast<XmlElement>())
-			{
-				div.ParentNode.RemoveChild(div);
-			}
-		}
-
-		/// <summary>
 		/// Inkscape adds a lot of custom attributes and elements that the epubcheck program
 		/// objects to.  These may make life easier for editing with inkscape, but aren't needed
 		/// to display the image.  So we remove those elements and attributes from the .svg
@@ -2104,7 +2074,7 @@ namespace Bloom.Publish.Epub
 		/// many eReaders do not properly handle display:none.
 		/// </summary>
 		/// <param name="dom"></param>
-		private void AddEpubVisibilityStylesheetAndClass (HtmlDom dom)
+		internal void AddEpubVisibilityStylesheetAndClass(HtmlDom dom)
 		{
 			var headNode = dom.SelectSingleNodeHonoringDefaultNS ("/html/head");
 			var epubVisibilityStylesheet = dom.RawDom.CreateElement ("link");
@@ -2119,43 +2089,6 @@ namespace Bloom.Publish.Epub
 				bodyNode.SetAttribute ("class", classAttribute.Value + " epub-visibility");
 			else
 				bodyNode.SetAttribute ("class", "epub-visibility");
-		}
-
-		private bool IsDisplayed (XmlElement elt)
-		{
-			var id = elt.Attributes ["id"].Value;
-			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
-			return display != "none";
-		}
-
-		internal const string kTempIdMarker = "EpubTempIdXXYY";
-		private void EnsureAllDivsHaveIds (XmlElement pageElt)
-		{
-			int count = 1;
-			foreach (XmlElement elt in pageElt.SafeSelectNodes (".//div")) {
-				if (elt.Attributes ["id"] != null)
-					continue;
-				elt.SetAttribute ("id", kTempIdMarker + count++);
-			}
-		}
-
-		void RemoveTempIds (XmlElement pageElt)
-		{
-			foreach (XmlElement elt in pageElt.SafeSelectNodes (".//div")) {
-				if (!elt.Attributes ["id"].Value.StartsWith (kTempIdMarker))
-					continue;
-				elt.RemoveAttribute ("id");
-			}
-		}
-
-		static bool HasClass(XmlElement elt, string className)
-		{
-			if (elt == null)
-				return false;
-			var classAttr = elt.Attributes ["class"];
-			if (classAttr == null)
-				return false;
-			return ((" " + classAttr.Value + " ").Contains (" " + className + " "));
 		}
 
 		private void RemoveRegularStylesheets (HtmlDom pageDom)
@@ -2442,6 +2375,8 @@ namespace Bloom.Publish.Epub
 				return "application/vnd.ms-opentype"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
 			case "smil":
 				return "application/smil+xml";
+			// REVIEW: Our mp4 containers are for video; but epub 3 doesn't have media types for video.
+			// I started to remove this when we removed the vestiges of old audio mp4 code, but video unit tests fail without it.
 			case "mp4":
 				return "audio/mp4";
 			case "mp3":
@@ -2450,7 +2385,7 @@ namespace Bloom.Publish.Epub
 			throw new ApplicationException ("unexpected/nonexistent file type in file " + item);
 		}
 
-		private static void MakeCssLinksAppropriateForEpub (HtmlDom dom)
+		private static void MakeCssLinksAppropriateForEpub(HtmlDom dom)
 		{
 			dom.RemoveModeStyleSheets ();
 			dom.SortStyleSheetLinks ();
@@ -2458,7 +2393,7 @@ namespace Bloom.Publish.Epub
 			dom.RemoveDirectorySpecificationFromStyleSheetLinks ();
 		}
 
-		private HtmlDom GetEpubFriendlyHtmlDomForPage (XmlElement page)
+		private HtmlDom GetEpubFriendlyHtmlDomForPage(XmlElement page)
 		{
 			var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS ("/html/head").OuterXml;
 			var dom = new HtmlDom (@"<html>" + headXml + "<body></body></html>");
@@ -2469,18 +2404,14 @@ namespace Bloom.Publish.Epub
 			return dom;
 		}
 
-		public void Dispose ()
+		public void Dispose()
 		{
 			if (_outerStagingFolder != null)
-				_outerStagingFolder.Dispose ();
-		}
-
-		public bool ReadyToSave ()
-		{
-			// The same files have already been copied over to the staging area, but if we compare timestamps on the copied files
-			// the comparison is unreliable (.wav files are larger and take longer to copy than the corresponding .mp3 files).
-			// So we compare the original book's audio files to determine if any are missing -- BL-5437
-			return PublishWithoutAudio || !AudioProcessor.IsAnyCompressedAudioMissing (_originalBook?.FolderPath, Book.RawDom);
+				_outerStagingFolder.Dispose();
+			_outerStagingFolder = null;
+			if (_publishHelper != null)
+				_publishHelper.Dispose();
+			_publishHelper = null;
 		}
 	}
 }

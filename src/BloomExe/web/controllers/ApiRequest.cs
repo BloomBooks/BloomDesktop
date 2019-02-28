@@ -87,6 +87,12 @@ namespace Bloom.Api
 			_requestInfo.WriteCompleteOutput(text);
 		}
 
+		public void ReplyWithAudioFileContents(string path)
+		{
+			_requestInfo.ContentType = path.EndsWith(".mp3") ? "audio/mpeg" : "audio/wav";
+			_requestInfo.ReplyWithFileContent(path);
+		}
+
 		public void ReplyWithHtml(string html)
 		{
 			_requestInfo.ContentType = "text/html";
@@ -159,6 +165,7 @@ namespace Bloom.Api
 				var shortMsg = String.Format(L10NSharp.LocalizationManager.GetDynamicString("Bloom", "Errors.CannotAccessFile", "Cannot access {0}"), info.RawUrl);
 				var longMsg = String.Format("Bloom could not access {0}.  The file may be open in another program.", info.RawUrl);
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, e);
+				request.Failed(shortMsg);
 				return false;
 			}
 			catch (Exception e)
@@ -167,6 +174,7 @@ namespace Bloom.Api
 				//while switching between publish tabs (e.g. /bloom/api/publish/android/cleanup).
 				//I don't think these are worth alarming the user about, so let's be sensitive to what channel we're on.
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error in " + info.RawUrl, exception: e);
+				request.Failed("Error in "+ info.RawUrl);
 				return false;
 			}
 			return true;

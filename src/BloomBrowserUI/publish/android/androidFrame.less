@@ -1,0 +1,228 @@
+// These rules allow for a couple of versions of making something that looks a bit
+// like an Android phone, with a space in the middle for a preview of what might
+// be shown on a phone.
+// Currently it supports two versions, one used in epubPreview which has a div
+// with id 'device' containing an iframe with the preview content,
+// and one used in the androidPublishUI which also has a div with id 'device'
+// and containing a div with class 'preview-content'. The former may well be going
+// away.
+// The android version is embedded in a framework for allowing the preview to be
+// rotated. An outer div with class 'device-square' triggers the alternative
+// rules, and the presence of the 'landscape' class on an element containing
+// the 'device-square' div causes the device to rotate.
+// The 'preview-content' div may also have the class 'rotated'; if this is
+// true, the preview content is transformed to give the impression of a device
+// that is not in the natural orientation for its content. (Otherwise, the content
+// is assumed to know how to adjust its layout for orientation.)
+
+// The android preview is assumed to be a slider wrapped around individual slider elements
+// that have class page-preview-slide, each containing a page that
+// has class actual-page-preview. Some of the rules here transform those.
+// It might be better to not depend on that much knowledge of the inner structure
+// of the preview, but I think it may be easier to disentangle when and if we
+// have another example of a preview content.
+
+@import "../../bloomUI.less";
+
+@LightGrey: @bloom-gray;
+@preview-border: gray;
+
+// These dimensions are for the epub preview
+@CircleDiameter: 40px;
+@dot-left: 20px;
+@dot-top: 7px;
+
+// These dimensions are for the new Android preview.
+// It's important that we use actual dimensions (not something variable like
+// px or em) for all the pieces of the preview, because we're using the
+// final dimensions of the preview-height to figure how much to shrink
+// the page to fit, and the page size we use (in edit mode and the main preview)
+// for device page size is fixed in mm.
+// This is the overall size (height in portrait mode) of the android simulation
+@small-device-size: 106mm; // about 400px, or 4in; using mm because page size does
+// We put a narrow bar at the top of the new preview to suggest a phone speaker.
+// This is its width
+@space-for-speaker: 5mm;
+// this is the margin between the preview (the 'screen' of the simulated phone)
+// and the outside of the phone simulation; the width of the grey border that
+// stands for the non-screen part of the phone.
+@preview-margin: 2.6mm;
+// The actual space for the preview content. We work out its height by subtracting
+// what else has to fit from the overall height of the preview.
+@preview-height: @small-device-size - @preview-margin * 2 - @space-for-speaker;
+// Width works from inside out: we first figure the necessary width of the preview
+// to make it the required 16:9 aspect ratio. Then we add the margins to figure
+// out how wide the outer phone area has to be.
+@preview-width: @preview-height * 9 / 16;
+@small-device-width: @preview-width + @preview-margin * 2;
+
+@small-preview-margin: (@small-device-size - @small-device-width)/2;
+
+// How much we need to scale a standard device16x9 page (177.77mm high) to fit our preview,
+// which is @preview-height high. I want the expression to be @preview-height/177.77,
+// but it seems less is not smart enough to divide two distances and get a pure number;
+// it doesn't work. So sadly, the critical numbers are repeated here.
+@preview-scale-factor: (106 - 2.6 * 2 - 5)/177.77;
+
+// the wrapper around the preview that looks like a phone's shell.
+// The first group of settings (not inside .device-square) are for the
+// old ePUB preview, the others for the new android one.
+.device,
+#device {
+    height: 800px;
+    width: 400px;
+    padding-left: 30px;
+    padding-top: 72px;
+    padding-bottom: 18px;
+    //border: 5px solid white;
+    border-radius: 38px;
+    background-color: @preview-border;
+    #epubPublishUI & {
+        // temporary override for old preview
+        background-color: #404040;
+    }
+    box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
+    .device-square & {
+        height: @small-device-size;
+        width: @small-device-width;
+        margin-left: @small-device-size - @small-device-width - 20px; // almost right-aligned
+        padding-left: 0;
+        padding-top: @space-for-speaker;
+        padding-bottom: 0;
+        border-radius: 4.7mm;
+    }
+    .device-square &.landscape {
+        height: @small-device-width;
+        width: @small-device-size;
+        margin-top: @small-preview-margin;
+        margin-left: 0;
+        padding-top: 0;
+        padding-left: @space-for-speaker;
+    }
+}
+
+@small-speaker-color: #eee;
+
+//The 'speaker' (grey bar at top that looks like a phone speaker) is a "before" rule
+// again we have legacy version for ePUB and the new versions below in .device-square.
+@speakerlength : 80px;
+@speakerwidth: 10px;
+.device:before,
+#device:before {
+    width: @speakerlength;
+    height: @speakerwidth;
+    top: 35px;
+    left: calc(~"50% - " @speakerlength / 2);
+    border-radius: @speakerwidth;
+    background-color: @LightGrey;
+}
+
+//the bottom 'button' (looks like phone home button) is the "after" rule
+// This is only for the legacy ePUB version.
+.device:after,
+#device:after {
+    width: @CircleDiameter;
+    height: @CircleDiameter;
+    border-radius: 50%;
+    border: solid 5px @LightGrey;
+    left: calc(~"50% - " @CircleDiameter / 2);
+    bottom: 10px;
+}
+
+.device-square {
+    .device:before {
+        width: @speakerlength / 2;
+        height: @speakerwidth / 2;
+        top: 7px;
+        left: calc(~"50% - " @speakerlength / 4);
+        border-radius: @speakerwidth / 2;
+        background-color: @small-speaker-color;
+    }
+    .device.landscape:before {
+        height: @speakerlength / 2;
+        width: @speakerwidth / 2;
+        left: 7px;
+        bottom: calc(~"50% - " @speakerlength / 4);
+        top: initial;
+    }
+    // in the new preview 'after' is used for a small dot at the top.
+    // (I think it's meant to emulate a phone's camera.)
+    .device:after {
+        width: @speakerwidth / 2;
+        height: @speakerwidth / 2;
+        color: @small-speaker-color;
+        left: @dot-left;
+        top: @dot-top;
+        bottom: initial;
+        border: solid 1px @small-speaker-color;
+        background-color: @small-speaker-color;
+    }
+    .device.landscape:after {
+        left: @dot-top;
+        bottom: @dot-left;
+        top: initial;
+    }
+}
+
+.preview-content {
+    background-color: white;
+    margin: auto;
+    height: @preview-height;
+    width: @preview-width;
+    border: none;
+    .landscape & {
+        margin: 0;
+        top: @preview-margin;
+        height: @small-device-width - @preview-margin * 2;
+        width: @small-device-size - @preview-margin * 2- @space-for-speaker;
+    }
+}
+
+.device:before,
+.device:after,
+#device:before,
+#device:after {
+    content: "";
+    position: absolute;
+}
+
+// review: do these rules belong here or in the preview.less file?
+
+// we scale the div that contains the bloom page to make it the actual height
+// of the preview.
+.actual-page-preview {
+    transform: scale(@preview-scale-factor);
+    transform-origin: left top 0;
+}
+
+// This rotates a portrait page sideways to give the required effect for
+// the landscape device orientation in non-motion books.
+// The best way to understand it is that the book is scaled to the
+// usual size (which requires the transform origin to be the top left).
+// then we rotate it anti-clockwise 90deg around that point, which puts it
+// above where we want it by its own width. Then we translate it down.
+// However, the rotate changes the effect of the translate, so it works
+// better to do that first.
+.preview-section .landscape.rotated .actual-page-preview {
+    transform: translateY(@preview-width) scale(@preview-scale-factor)
+        rotate(-90deg);
+}
+
+// Similar rotation for landscape book in portrait mode. After scaling,
+// we rotate it clockwise around the top left, which puts it to the
+// left of what we want, so we move it right.
+.preview-section .rotated:not(.landscape) .actual-page-preview {
+    transform: translateX(@preview-width) scale(@preview-scale-factor)
+        rotate(90deg);
+}
+
+// The slide element div for each page needs to be forced down to this height to match its content.
+// I don't know why it is otherwise bigger, but it defaults to some larger size,
+// possibly the unscaled page height, and this makes the slider higher, which messes
+// up its positioning of buttons.
+.page-preview-slide {
+    height: @preview-height;
+    .landscape & {
+        height: @preview-width;
+    }
+}

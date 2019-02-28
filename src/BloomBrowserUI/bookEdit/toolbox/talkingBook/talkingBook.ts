@@ -1,8 +1,11 @@
 ﻿import { ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from "./audioRecording";
+import { checkIfEnterpriseAvailable } from "../../../react_components/requiresBloomEnterprise";
 
 export default class TalkingBookTool implements ITool {
+    private enterpriseEnabled: boolean = false;
+
     public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -24,9 +27,14 @@ export default class TalkingBookTool implements ITool {
     public configureElements(container: HTMLElement) {}
 
     public showTool() {
-        this.showImageDescriptionsIfAny();
         AudioRecorder.initializeTalkingBookTool();
-        AudioRecorder.theOneAudioRecorder.setupForRecording();
+        checkIfEnterpriseAvailable().then(enabled => {
+            this.enterpriseEnabled = enabled;
+            if (enabled) {
+                this.showImageDescriptionsIfAny();
+            }
+            AudioRecorder.theOneAudioRecorder.setupForRecording();
+        });
     }
 
     // Called when a new page is loaded.
@@ -55,8 +63,10 @@ export default class TalkingBookTool implements ITool {
 
     // Called whenever the user edits text.
     public updateMarkup() {
-        this.showImageDescriptionsIfAny();
-        AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
+        if (this.enterpriseEnabled) {
+            this.showImageDescriptionsIfAny();
+        }
+        AudioRecorder.theOneAudioRecorder.updateMarkupForCurrentText();
     }
 
     private showImageDescriptionsIfAny() {

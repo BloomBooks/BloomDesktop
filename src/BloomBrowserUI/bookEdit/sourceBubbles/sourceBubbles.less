@@ -49,6 +49,13 @@
     position: relative;
     border-color: @BubbleBorder;
     max-height: inherit;
+    * {
+        // We don't normally let text that can't be edited be selected, but
+        // users want this for source bubbles. BL-6751.
+        -moz-user-select: text; // Firefox
+        -ms-user-select: text; // Edge/Internet Explorer
+        user-select: text; // Chrome
+    }
     nav {
         display: block;
         height: 34px;

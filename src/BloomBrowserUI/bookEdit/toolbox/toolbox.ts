@@ -202,6 +202,10 @@ export class ToolBox {
         return axios.get("/bloom/api/toolbox/enabledTools");
     }
 
+    public static getShowExperimentalTools(): boolean {
+        return showExperimentalTools;
+    }
+
     // Called from document.ready, initializes the whole toolbox.
     public initialize(): void {
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
@@ -524,8 +528,11 @@ function switchTool(newToolName: string): void {
         }
         if (newTool) {
             activateTool(newTool);
-            currentTool = newTool;
         }
+        // Without recording that currentTool isn't defined, then returning from
+        // More... to the same tool doesn't activate that tool.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
+        currentTool = newTool ? newTool : undefined;
     }
 }
 

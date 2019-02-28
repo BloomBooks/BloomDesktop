@@ -16,7 +16,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img src='back.png'/>",
+            "content": "<img class='branding' src='Suluh-INOVASI-back.png'/>",
             "condition": "always"
         }
     ]

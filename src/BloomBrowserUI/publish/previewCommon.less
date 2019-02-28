@@ -1,0 +1,171 @@
+// Styles used for the various components of the preview panel
+@import "android/androidFrame.less"; // brings bloomUI.less with it
+
+@preview-button-size: 10mm;
+@preview-button-phone-height: 8mm;
+@preview-button-phone-width: @preview-button-phone-height / 2;
+@preview-button-border-width: 0.5mm;
+@preview-button-extra-top-border: 0.3mm;
+@preview-button-small-pad: (@preview-button-size - @preview-button-phone-height) /
+    2;
+@preview-button-large-pad: (@preview-button-size - @preview-button-phone-width) /
+    2;
+// device is 106mm high; we want button to be 10mm
+
+@preview-button-scale-factor: 10 / 106;
+
+.preview-orientation-row.device-square .device {
+    transform: scale(@preview-button-scale-factor);
+    transform-origin: left top 0;
+    margin-left: 0;
+    margin-top: 0;
+    &.landscape-device {
+        margin-top: @preview-button-size * 7 / 32; // half of 1-9/16; roughly centers it
+        &:before {
+            width: 10px; // otherwise it's too small to show up in the transformed image
+        }
+    }
+    &.portrait-device {
+        margin-left: @preview-button-size * 7 / 32;
+        &:before {
+            height: 10px; // otherwise it's too small to show up in the transformed image
+        }
+    }
+}
+
+// I haven't figured out all the things that add up to achieve this, but it leaves a decent
+// gap between the preview and the buttons, and lines the RH button up with the header.
+.preview-button-column {
+    margin-left: 11px;
+}
+
+// This is the normal appearance of the slick next and previous buttons,
+// but we need to make the rule
+// more specific to beat another rule in this control.
+html.publishTabScreen button {
+    &.slick-next,
+    &.slick-prev {
+        background-color: transparent;
+    }
+}
+
+// a square space in which the device can switch orientations without
+// disturbing the rest of the page.
+.device-square {
+    height: @small-device-size;
+    width: @small-device-size;
+    // I'm not sure why this is needed but without it they take up too much space
+    // and mess up the parent divs.
+    &.preview-orientation-row {
+        height: @preview-button-size;
+        width: @preview-button-size;
+    }
+}
+
+.preview-row {
+    margin-bottom: 1em;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.icon-link-row {
+    display: flex;
+    flex-direction: row;
+}
+
+// First two conditions added for specificity
+html.publishTabScreen .preview-section {
+    .preview-orientation-row.device-square .orientation-button {
+        &.landscape {
+            height: @preview-button-size;
+            width: @preview-button-size;
+        }
+
+        &.landscape-button:after {
+            padding-top: @preview-button-phone-width -
+                @preview-button-border-width * 2;
+            padding-left: @preview-button-phone-height -
+                @preview-button-border-width * 2 -
+                @preview-button-extra-top-border - 1;
+            border-left-width: @preview-button-border-width +
+                @preview-button-extra-top-border;
+            left: @preview-button-small-pad;
+            top: @preview-button-large-pad;
+        }
+        &.portrait-button:after {
+            padding-left: @preview-button-phone-width;
+        }
+    }
+}
+
+.image-text-row {
+    display: flex;
+    align-items: center;
+}
+.inline-text-icon {
+    width: 1.5em;
+    height: 1.5em;
+}
+.choose-landscape {
+    margin-left: 10px;
+    // This puts it just below the buttons, which for some reason stick out
+    // below the div they are supposed to be inside.
+    margin-top: 4em;
+    color: @bloom-red;
+}
+.inline-text-icon.info-icon {
+    color: white;
+    background-color: @bloom-red;
+    height: 1.2em;
+    width: 1.2em;
+    min-width: 1.2em; // stops flex shrinking it?
+    border-radius: 0.6em;
+    padding-left: 0.5em;
+    font-family: serif;
+    margin-right: 5px;
+    span {
+        font-weight: bold;
+        font-size: 0.9em;
+        display: block;
+    }
+}
+
+.preview-refresh {
+    // Experimentally, these adjustments seem to make it line up nicely
+    // with the bottom of the preview and the left of the portrait button.
+    padding-bottom: 5px;
+    margin-left: 10px;
+    &.landscape {
+        padding-bottom: @small-preview-margin + 2px;
+    }
+}
+.preview-orientation-row {
+    padding-top: 130px;
+    display: flex; // default makes it a row.
+    // This wrapper serves two purposes: it carries the active-button border,
+    // and also, by having an explicit size, it suppresses the original
+    // (pre-transform) size of the child .device element. For some reason,
+    // HTML treats an element as occupying its pre-transform size, and that
+    // throws off the layout of elements further out if we don't hide it.
+    .device-sizer {
+        height: @preview-button-size + 2mm + 2px;
+        width: @preview-button-size + 2mm + 2px;
+        padding: 1mm;
+        border: 1px solid transparent;
+        &.active {
+            border: 1px solid lightblue;
+            border-radius: 2px;
+        }
+    }
+}
+
+.preview-button-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.preview-button-row {
+    display: flex;
+}

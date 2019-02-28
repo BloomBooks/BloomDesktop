@@ -331,7 +331,7 @@ namespace BloomTests.Book
 			var bookDom = new HtmlDom(html);
 
 			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings);
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC-BY-NC 4.0. You can do anything you want if your name is Fred.')]", 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC BY-NC 4.0. You can do anything you want if your name is Fred.')]", 2);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2008, Bar Publishers')]", 2);
 		}
 

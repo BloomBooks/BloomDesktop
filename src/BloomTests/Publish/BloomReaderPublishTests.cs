@@ -6,8 +6,10 @@ using System.IO;
 using System.Linq;
 using Bloom;
 using Bloom.Book;
+using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
 using Bloom.web;
+using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
@@ -15,25 +17,46 @@ using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using Color = System.Drawing.Color;
+using Bloom.Api;
+using Bloom.Collection;
+using Bloom.ImageProcessing;
 
-namespace BloomTests.Book
+namespace BloomTests.Publish
 {
-	class BookCompressorTests : BookTestsBase
+	class BloomReaderPublishTests : BookTestsBase
 	{
 		private BookServer _bookServer;
 		private TemporaryFolder _projectFolder;
 		private BookStarter _starter;
 
-		private string kMinimumValidBookHtml =
-			@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css'></link></head><body>
-					<div class='bloom-page' id='guid1'></div>
-			</body></html>";
+		protected BloomServer s_bloomServer;
+
+		[OneTimeSetUp]
+		public virtual void OneTimeSetup()
+		{
+			var settings = new CollectionSettings();
+			var locator = new BloomFileLocator(settings, new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
+				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
+			s_bloomServer = new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), new BookSelection(), settings, locator);
+			s_bloomServer.StartListening();
+		}
+
+		[OneTimeTearDown]
+		public virtual void OneTimeTearDown()
+		{
+			s_bloomServer.Dispose();
+		}
 
 		[SetUp]
-		public void SetupFixture()
+		public void SetupTest()
 		{
 			_bookServer = CreateBookServer();
 		}
+
+		private const string kMinimumValidBookHtml =
+			@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css'></link></head><body>
+					<div class='bloom-page' id='guid1'></div>
+			</body></html>";
 
 		[Test]
 		public void CompressBookForDevice_FileNameIsCorrect()
@@ -42,7 +65,7 @@ namespace BloomTests.Book
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+				BloomReaderFileMaker.CreateBloomReaderBook(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 				Assert.AreEqual(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
@@ -57,7 +80,9 @@ namespace BloomTests.Book
 				"previewMode.css",
 				"meta.json", // should be left alone
 				"readerStyles.css", // gets added
-				"Device-XMatter.css" // added when we apply this xmatter
+				"Device-XMatter.css", // added when we apply this xmatter
+				"customCollectionStyles.css", // should be moved from parent directory
+				"settingsCollectionStyles.css" // should be moved from parent directory
 			};
 
 			TestHtmlAfterCompression(kMinimumValidBookHtml,
@@ -68,6 +93,16 @@ namespace BloomTests.Book
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"),
 						Path.Combine(folderPath, "thumbnail.png"));
 					File.WriteAllText(Path.Combine(folderPath, "previewMode.css"), @"This is wanted");
+					File.WriteAllText(Path.Combine(Path.GetDirectoryName(folderPath), "customCollectionStyles.css"), @"This is wanted");
+					File.WriteAllText(Path.Combine(Path.GetDirectoryName(folderPath), "settingsCollectionStyles.css"), @"This is wanted");
+				},
+				assertionsOnResultingHtmlString: html =>
+				{
+					// These two files get moved into the book folder, the links must get fixed
+					Assert.That(html, Does.Contain("href=\"customCollectionStyles.css\""));
+					Assert.That(html, Does.Contain("href=\"settingsCollectionStyles.css\""));
+					// The parent folder doesn't go with the book, so we shouldn't be referencing anything there
+					Assert.That(html, Does.Not.Contain("href=\"../"));
 				},
 				assertionsOnZipArchive: paramObj =>
 				{
@@ -942,7 +977,7 @@ namespace BloomTests.Book
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+				BloomReaderFileMaker.CreateBloomReaderBook(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				var paramObj = new ZipHtmlObj(zip, newHtml);
@@ -954,7 +989,7 @@ namespace BloomTests.Book
 					using (var extraTempFile =
 						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.ExtensionForDeviceBloomBook))
 					{
-						BookCompressor.CompressBookForDevice(extraTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+						BloomReaderFileMaker.CreateBloomReaderBook(extraTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 						zip = new ZipFile(extraTempFile.Path);
 						assertionsOnRepeat(zip);
 					}

@@ -88,9 +88,8 @@ namespace Bloom
 				Close();
 			});
 
-			_workspaceView.BackColor =
-				System.Drawing.Color.FromArgb(64,64,64);
-										_workspaceView.Dock = System.Windows.Forms.DockStyle.Fill;
+			_workspaceView.BackColor = Bloom.Palette.GeneralBackground;
+			_workspaceView.Dock = System.Windows.Forms.DockStyle.Fill;
 
 			this.Controls.Add(this._workspaceView);
 

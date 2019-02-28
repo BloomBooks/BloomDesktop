@@ -66,10 +66,10 @@ namespace Bloom.Publish
 			this._bookletBodyRadio = new System.Windows.Forms.RadioButton();
 			this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
 			this._epubRadio = new System.Windows.Forms.RadioButton();
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
-			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
 			this._noBookletsMessage = new System.Windows.Forms.Label();
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
+			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -151,7 +151,8 @@ namespace Bloom.Publish
 			// 
 			// tableLayoutPanel1
 			// 
-			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this.tableLayoutPanel1.AutoScroll = true;
+			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
@@ -237,7 +238,7 @@ namespace Bloom.Publish
 			this._superToolTip.SetSuperStuff(this._androidRadio, superToolTipInfoWrapper1);
 			this._androidRadio.TabIndex = 22;
 			this._androidRadio.TabStop = true;
-			this._androidRadio.Text = "Android";
+			this._androidRadio.Text = "Bloom Reader";
 			this._androidRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._androidRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._androidRadio.UseVisualStyleBackColor = true;
@@ -274,10 +275,9 @@ namespace Bloom.Publish
 			// _menusToolStrip
 			// 
 			this._menusToolStrip.AutoSize = false;
-			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._menusToolStrip.BackColor = System.Drawing.Color.Aqua;
 			this._menusToolStrip.CanOverflow = false;
 			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
-			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._layoutChoices});
 			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
@@ -292,6 +292,7 @@ namespace Bloom.Publish
 			// 
 			// _layoutChoices
 			// 
+			this._layoutChoices.BackColor = System.Drawing.Color.Magenta;
 			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._layoutChoices.ForeColor = System.Drawing.Color.White;
 			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -428,27 +429,6 @@ namespace Bloom.Publish
 			this._epubRadio.UseVisualStyleBackColor = true;
 			this._epubRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
 			// 
-			// _L10NSharpExtender
-			// 
-			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
-			// _pdfViewer
-			// 
-			this._pdfViewer.BackColor = System.Drawing.Color.White;
-			this._pdfViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfViewer, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._pdfViewer, null);
-			this._L10NSharpExtender.SetLocalizingId(this._pdfViewer, "PdfViewer.PdfViewer");
-			this._pdfViewer.Location = new System.Drawing.Point(114, 0);
-			this._pdfViewer.Name = "_pdfViewer";
-			this._pdfViewer.Size = new System.Drawing.Size(719, 677);
-			this._pdfViewer.TabIndex = 16;
-			// 
-			// _superToolTip
-			// 
-			this._superToolTip.FadingInterval = 10;
-			// 
 			// _noBookletsMessage
 			// 
 			this._noBookletsMessage.AutoSize = true;
@@ -462,6 +442,27 @@ namespace Bloom.Publish
 			this._noBookletsMessage.Size = new System.Drawing.Size(104, 39);
 			this._noBookletsMessage.TabIndex = 24;
 			this._noBookletsMessage.Text = "Bloom cannot make booklets using the current page size.";
+			// 
+			// _L10NSharpExtender
+			// 
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.PrefixForNewItems = null;
+			// 
+			// _superToolTip
+			// 
+			this._superToolTip.FadingInterval = 10;
+			// 
+			// _pdfViewer
+			// 
+			this._pdfViewer.BackColor = System.Drawing.Color.White;
+			this._pdfViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfViewer, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._pdfViewer, null);
+			this._L10NSharpExtender.SetLocalizingId(this._pdfViewer, "PdfViewer.PdfViewer");
+			this._pdfViewer.Location = new System.Drawing.Point(114, 0);
+			this._pdfViewer.Name = "_pdfViewer";
+			this._pdfViewer.Size = new System.Drawing.Size(719, 677);
+			this._pdfViewer.TabIndex = 16;
 			// 
 			// PublishView
 			// 

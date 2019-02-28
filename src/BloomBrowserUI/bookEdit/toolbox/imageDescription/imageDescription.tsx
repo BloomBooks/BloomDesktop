@@ -8,7 +8,7 @@ import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10n";
 import { Checkbox } from "../../../react_components/checkbox";
 import Link from "../../../react_components/link";
-import HelpLink from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import {
     RequiresBloomEnterpriseWrapper,
     checkIfEnterpriseAvailable
@@ -89,7 +89,7 @@ export class ImageDescriptionToolControls extends React.Component<
                         (this.state.enabled ? "" : " disabled")
                     }
                 >
-                    <div className="imageDescriptionToolInternalWrapper">
+                    <div className="topGroup">
                         <div className="imgDescLabelBlock">
                             <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
                                 Learn to make effective image descriptions:
@@ -140,14 +140,8 @@ export class ImageDescriptionToolControls extends React.Component<
                         </div>
                         {this.createCheckboxes()}
                     </div>
-                    <div className="helpLinkWrapper imgDescLabelBlock">
-                        <HelpLink
-                            helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm"
-                            l10nKey="Common.Help"
-                        >
-                            Help
-                        </HelpLink>
-                    </div>
+                    {/* the flex box will then push this to the bottom */}
+                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm" />
                 </div>
             </RequiresBloomEnterpriseWrapper>
         );
@@ -291,8 +285,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
         checkIfEnterpriseAvailable().then(enabled => {
-            if (enabled && this.reactControls) {
-                this.reactControls.setStateForNewPage();
+            const imageDescControls = this.reactControls;
+            if (enabled && imageDescControls) {
+                imageDescControls.setStateForNewPage();
                 const page = ToolBox.getPage();
                 if (!page) {
                     return;
@@ -306,26 +301,9 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
 
                 for (let i = 0; i < imageContainers.length; i++) {
                     const container = imageContainers[i];
-                    const imageDescriptions = container.getElementsByClassName(
+                    let imageDescriptions = container.getElementsByClassName(
                         "bloom-imageDescription"
                     );
-
-                    // Arrange to change which image the check boxes refer to when an image's description
-                    // gets focus. Note that we do not change this or disable them if something other
-                    // than an image description gets focus; this potentially allows the user to do things like
-                    // moving the focus and selecting a check box using the keyboard.
-                    for (let i = 0; i < imageDescriptions.length; i++) {
-                        imageDescriptions[i].removeEventListener(
-                            "focus",
-                            this.descriptionGotFocus
-                        ); // prevent duplicates
-                        // look for it in capture phase so we see child elements getting focus
-                        imageDescriptions[i].addEventListener(
-                            "focus",
-                            this.descriptionGotFocus,
-                            true
-                        );
-                    }
                     if (imageDescriptions.length === 0) {
                         // Adds a new bloom-translationGroup
                         // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
@@ -334,18 +312,57 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                         BloomApi.post(
                             "common/requestTranslationGroups",
                             result => {
-                                if (result) {
+                                // newPageReady() can be called twice, and both calls might occur before this async
+                                // callback happens for either of them, so both may take this "no translation groups"
+                                // branch and start to create them.  So check again before actually adding the new
+                                // description elements.
+                                // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
+                                // confusing behavior that can result without this check.
+                                imageDescriptions = container.getElementsByClassName(
+                                    "bloom-imageDescription"
+                                );
+                                if (result && imageDescriptions.length == 0) {
                                     this.appendTranslationGroup(
                                         result.data,
                                         container
                                     );
+                                    // BL-6775 if we just added image description
+                                    // translationGroups to a page that didn't have them before,
+                                    // we need to reset our state.
+                                    imageDescControls.setStateForNewPage();
+                                    // BL-6798: we need to add focus listeners to these new description elements.
+                                    imageDescriptions = container.getElementsByClassName(
+                                        "bloom-imageDescription"
+                                    );
+                                    this.addFocusListeners(imageDescriptions);
                                 }
                             }
                         );
+                    } else {
+                        this.addFocusListeners(imageDescriptions);
                     }
                 }
             }
         });
+    }
+
+    private addFocusListeners(imageDescriptions: HTMLCollectionOf<Element>) {
+        // Arrange to change which image the check boxes refer to when an image's description
+        // gets focus. Note that we do not change this or disable them if something other
+        // than an image description gets focus; this potentially allows the user to do things like
+        // moving the focus and selecting a check box using the keyboard.
+        for (let i = 0; i < imageDescriptions.length; i++) {
+            imageDescriptions[i].removeEventListener(
+                "focus",
+                this.descriptionGotFocus
+            ); // prevent duplicates
+            // look for it in capture phase so we see child elements getting focus
+            imageDescriptions[i].addEventListener(
+                "focus",
+                this.descriptionGotFocus,
+                true
+            );
+        }
     }
 
     // Adds a new bloom-translationGroup

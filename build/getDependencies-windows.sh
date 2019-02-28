@@ -77,7 +77,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "Sox.zip!**"=>"DistFiles/sox"}
+#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame"}
 # [1] build: BloomPlayer-Master-Continuous (BPContinuous)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
@@ -106,9 +106,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"bin/YouTrackSharp.dll"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
-# [5] build: Bloom Help 4.4 (Bloom_Help_BloomHelp44)
+# [5] build: Bloom Help 4.5 (Bloom_Help_BloomHelp45)
 #     project: Help
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp44
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp45
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -174,7 +174,6 @@ mkdir -p ../DistFiles
 mkdir -p ../DistFiles/
 mkdir -p ../DistFiles/ghostscript
 mkdir -p ../DistFiles/pdf
-mkdir -p ../DistFiles/sox
 mkdir -p ../Downloads
 mkdir -p ../build
 mkdir -p ../lib/dotnet
@@ -188,7 +187,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Lame.zip ../Downloads/Lame.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Sox.zip ../Downloads/Sox.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPagePlayer.js ../DistFiles/bloomPagePlayer.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPlayer.js ../DistFiles/bloomPlayer.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.dll ../lib/dotnet/PodcastUtilities.PortableDevices.dll
@@ -225,7 +223,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/l
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/signtool.exe ../lib/dotnet/signtool.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp44/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp45/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
@@ -257,6 +255,5 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_Palaso
 # extract downloaded zip files
 unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
-unzip -uqo ../Downloads/Sox.zip -d "../DistFiles/sox"
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script

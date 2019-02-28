@@ -3,7 +3,7 @@
 @textColor: @bloom-buff;
 @hoverBackgroundColor: @bloom-buff;
 @highlightColor: @bloom-yellow;
-@toolboxBackgroundColor: @DarkBackgroundColor;
+@toolboxBackgroundColor: @bloom-panelBackground;
 @sectionVerticalGap: 25px;
 @buttonColumnWidth: 40px;
 
@@ -18,6 +18,7 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         background-size: 10px 13px;
         background-position: 2px 5px;
         left: -15px;
+        top: 0; // should have no effect, but prevents a FF bug causing BL-6796
         width: 15px;
         height: 19px;
         position: absolute;
@@ -104,8 +105,9 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         margin-bottom: 5px;
     }
     .ui-audioInput,
-    div.ui-audioMeter {
+    .ui-audioMeter {
         display: inline-block;
+        background-color: @bloom-panelBackground;
     }
     .ui-audioInputGroup {
         margin-top: 5px;
@@ -224,6 +226,78 @@ div.ui-audioCurrent:not(.disableHighlight) p {
             margin-top: 2px;
             width: 15px;
         }
+    }
+
+    #audio-autoSegmentWrapper {
+        text-align: right;
+        vertical-align: middle;
+        background-color: @bloom-panelBackground;
+
+        opacity: 0;
+        border-width: 0px;
+        height: 0px;
+        transition: opacity 300ms, border-width 300ms, height 300ms;
+    }
+
+    #audio-autoSegmentWrapper.autoSegmentEnabled {
+        // Animation works best when going from pixel value to pixel value.  We have 12 pixels margin-top,
+        // 15 pixels (probably derived from default font-size 1 em) for button, 1 pixel border-top, 1 pixel border-bottom,
+        // 15 pixels (probably derived from default font-size 1 em) for the status notification
+        // Total is 44 pixels.  (FYI, Firefox cliams 43.3 pixels which is in pretty good agreement)
+        height: 44px;
+        opacity: 1;
+        border-width: 1px;
+        transition: all 300ms;
+    }
+
+    .autoSegmentEnabled #audio-autoSegment {
+        height: auto;
+        line-height: 1em; // The text size is independent of the button height, so need to set this. line-height better than font-size because font-size affects width too.
+        transition: all 300ms;
+    }
+
+    #audio-autoSegment {
+        background-color: transparent;
+
+        font-weight: bold;
+        border-width: 1px;
+        margin-top: 12px;
+        margin-right: 6px;
+
+        // Grows the height of the button via transition
+        height: 0px;
+        line-height: 0em;
+        transition: height 300ms, line-height 300ms;
+    }
+
+    .autoSegmentEnabled #audio-autoSegmentSettings {
+        height: 15px;
+        transition: height 300ms;
+    }
+
+    #audio-autoSegmentSettings {
+        background-color: @toolboxBackgroundColor;
+        background-image: url("../../img/cogWhite.svg");
+        background-size: 15px;
+
+        border: 0px;
+        padding: 0px;
+
+        width: 15px;
+        vertical-align: top;
+        margin-top: 14px;
+
+        // Grows the height of the button via transition
+        height: 0px;
+        transition: height 300ms;
+    }
+
+    .autoSegmentStatus {
+        display: none;
+        color: @bloom-yellow;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 1em;
     }
 }
 #toast-container {

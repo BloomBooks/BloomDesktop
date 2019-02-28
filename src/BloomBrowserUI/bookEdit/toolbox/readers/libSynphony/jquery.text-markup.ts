@@ -44,8 +44,12 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
 
         var checkLeaf = leaf => {
             stashNonTextUIElementsInEditBox(leaf);
-            // split into sentences
+            // split into sentences. We need it both with markup
+            // (to preserve bold/italic/ckEditor landmarks in the output)
+            // and without (because some markup, especially ckEditor invisible landmarks,
+            // may alter word counts and lists)
             var fragments = theOneLibSynphony.stringToSentences($(leaf).html());
+
             var newHtml = "";
 
             for (var i = 0; i < fragments.length; i++) {
@@ -56,9 +60,25 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
                     newHtml += fragment.text;
                     allWords += " ";
                 } else {
-                    var sentenceWordCount = fragment.wordCount();
+                    // This is basically duplicating how stringToSentences comes up with
+                    // fragment.text but with removeAllMarkup applied.
+                    // I don't much like that duplication. But we need removeAllMarkup
+                    // so that the words we count won't be messed up by (e.g.) invisible spaces
+                    // that ckEdit puts in as bookmarks to keep our place. We can't apply it
+                    // to the input to stringToSentences, because we want to preserve the markup
+                    // and bookmark when we put the fragments back together to make the new
+                    // text. I tried making two parallel fragments arrays, one using the
+                    // unmodified text, and one from removeAllMarkup; but in general they
+                    // don't come out the same length, or with pieces corresponding. For example,
+                    // removeAllMarkup cleans out <br>, which otherwise becomes an element in
+                    // the list.
+                    const cleanText = removeAllMarkup(fragment.text);
+                    const words = theOneLibSynphony.getWordsFromHtmlString(
+                        cleanText
+                    );
+                    var sentenceWordCount = words.length;
                     totalWordCount += sentenceWordCount;
-                    allWords += fragment.text;
+                    allWords += cleanText;
 
                     // check sentence length
                     if (sentenceWordCount > opts.maxWordsPerSentence) {
@@ -378,6 +398,16 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
         // preserve spaces after line breaks and paragraph breaks
         var regex = /(<br><\/br>|<br>|<br \/>|<br\/>|<p><\/p>|<p>|<p \/>|<p\/>|\n)/g;
         textHTML = textHTML.replace(regex, " ");
+
+        // This regex is rather specific to the spans ckeditor sticks in as
+        // 'landmarks' so the selection can be restored after manipulating the
+        // markup. In principle we could have a more complex regex that would
+        // remove all display:none spans, even if there are other explicit styles
+        // or with single quotes around the style or with different white space.
+        // However, we don't have a current need for it, so the extra
+        // complication doesn't seem worthwhile.
+        var ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
+        textHTML = textHTML.replace(ckeRegex, "");
 
         return $("<div>" + textHTML + "</div>").text();
     }

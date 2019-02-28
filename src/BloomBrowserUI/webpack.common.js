@@ -45,6 +45,7 @@ module.exports = {
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         publishUIBundle: globule.find(["./publish/**/*.tsx"]),
+        bloomPlayerControlBundle: globule.find(["./bloom-player/*.tsx"]),
         enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
@@ -185,8 +186,24 @@ module.exports = {
                 ]
             },
             {
+                test: /\.css$/,
+                loader: "style-loader!css-loader"
+            },
+            // WOFF Font
+            {
+                test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+                use: {
+                    loader: "url-loader",
+                    options: {
+                        limit: 10000,
+                        mimetype: "application/font-woff"
+                    }
+                }
+            },
+            {
                 // this allows things like background-image: url("myComponentsButton.svg") and have the resulting path look for the svg in the stylesheet's folder
-                test: /\.(svg|jpg|png)$/,
+                // the last few seem to be needed for (at least) slick-carousel to build.
+                test: /\.(svg|jpg|png|ttf|eot|gif)$/,
                 use: {
                     loader: "file-loader"
                 }

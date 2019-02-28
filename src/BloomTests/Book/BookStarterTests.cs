@@ -944,7 +944,7 @@ namespace BloomTests.Book
 					<div data-book='copyright' lang='*'> Copyright © 2007, Foo Publishing </div>
 					<div data-book='licenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
 				</div>");
-			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishing. Licensed under CC-BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishing. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "Copyright © 2007, Foo Publishing", "http://creativecommons.org/licenses/by-nc/3.0/");
 		}
 
@@ -975,7 +975,7 @@ namespace BloomTests.Book
 						You can do anything you want if your name is Fred.
 					</div>
 				</div>");
-			Assert.AreEqual("Adapted from original without a copyright notice. Licensed under CC-BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("Adapted from original without a copyright notice. Licensed under CC BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "", "http://creativecommons.org/licenses/by/4.0/", "You can do anything you want if your name is Fred.");
 		}
 		[Test]
@@ -1032,7 +1032,7 @@ namespace BloomTests.Book
 						http://creativecommons.org/licenses/by/4.0/
 						</div>
 					</div>");
-			Assert.AreEqual("Adapted from original without a copyright notice. Licensed under CC-BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("Adapted from original without a copyright notice. Licensed under CC BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "", "http://creativecommons.org/licenses/by/4.0/");
 		}
 
@@ -1074,7 +1074,7 @@ namespace BloomTests.Book
 			AppendDataDivElement(dataDiv, "licenseNotes", "*", "You can do almost anything if your name is John");
 			var bookData = new BookData(dom, _collectionSettings, null);
 			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _collectionSettings);
-			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC-BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "Copyright © 2007, Foo Publishers", "http://creativecommons.org/licenses/by/4.0/", "You can do anything you want if your name is Fred.");
 		}
 
@@ -1113,13 +1113,13 @@ namespace BloomTests.Book
 			var bookData = new BookData(dom, _collectionSettings, null);
 			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _collectionSettings);
 			var originalCopyright = GetEnglishOriginalCopyrightAndLicense(dom);
-			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI & SILA. Licensed under CC-BY-NC-SA 4.0.", originalCopyright);
+			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", originalCopyright);
 
 			BookCopyrightAndLicense.UpdateDomFromDataDiv(dom, null, _collectionSettings);
 			var nodes1 = dom.RawDom.SelectNodes("/html/body//div[@data-derived='originalCopyrightAndLicense']");
 			Assert.AreEqual(1, nodes1.Count);
-			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI & SILA. Licensed under CC-BY-NC-SA 4.0.", nodes1.Item(0).InnerText);
-			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI &amp; SILA. Licensed under CC-BY-NC-SA 4.0.", nodes1.Item(0).InnerXml);
+			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", nodes1.Item(0).InnerText);
+			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI &amp; SILA. Licensed under CC BY-NC-SA 4.0.", nodes1.Item(0).InnerXml);
 			BookStarterTests.AssertOriginalCopyrightAndLicense(dom, "Copyright © 2011, LASI &amp; SILA", "http://creativecommons.org/licenses/by-nc-sa/4.0/");
 		}
 

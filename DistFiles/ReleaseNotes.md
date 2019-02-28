@@ -1,6 +1,8 @@
 
 ## 4.5
 
+⭐ We have adjusted the background colors in order to provide a higher contrast for those with poor screens, lighting, or vision.
+
 ### UI Languages
 
 ⭐ We can now specify "fallback languages" for the Bloom user interface. Previously, the fallback was always English. Now, for example, if we have a UI translation in a Mayan language, we would set the fallback to Spanish. That way, if something on screen has not been translated yet, the user will see the Spanish, rather than the English.
@@ -9,12 +11,15 @@
 
 ⭐ Allow "Choose Different Layout..." to change all pages in the book. This is particularly useful when adapting a book as a Sign Language diglot.
 
+⭐ The Sign Language tool sometimes has problems, particularly with memory use, so for now it is only available if you set Settings:Advanced:Show Experimental Features and set up Settings:Bloom Enterprise. But it's certainly usable if you're ready to start experimenting!
+
 ⭐ The Sign Language tool has been simplified.
 
-⭐ The Sign Language tool now displaying information about the video, including length, aspect ratio, and codec.
+⭐ The Sign Language tool now displays information about the video, including length, aspect ratio, and codec.
 
 ⭐ The Sign Language tool now has a tool for trimming the beginning and end of a video. Currently the trims are not permanent until you publish the book to epub, Bloom Reader, or a Bloom Pack.
 
+Note: Some "2-in-1" laptops (like Microsoft Surface) have both a front and rear-facing camera. Bloom does not yet have a way to switch between these cameras. If the user doesn't normally use the rear-facing camera, then a fix is to go into Windows Device Settings and disable the driver for the rear-facing camera.
 
 ## 4.4
 

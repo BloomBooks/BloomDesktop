@@ -17,6 +17,7 @@ using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using System.Collections.Generic;
+using Bloom.Publish.Android;
 using Bloom.web.controllers;
 
 namespace Bloom.Book
@@ -32,22 +33,7 @@ namespace Bloom.Book
 		// these files (if encountered) won't be included in the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder" };
 
-		public static void CompressBookForDevice(string outputPath, Book book, BookServer bookServer, Color backColor, IWebSocketProgress progress)
-		{
-			using(var temp = new TemporaryFolder())
-			{
-				var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, temp, backColor, progress);
-				// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
-				// 64dp in Bloom Reader.
-
-				MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
-
-				CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
-					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
-			}
-		}
-
-		private static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
+		internal static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
 		{
 			var coverImagePath = book.GetCoverImagePath();
 			if(coverImagePath != null)
@@ -56,38 +42,6 @@ namespace Bloom.Book
 				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, backColor);
 			}
 			// else, BR shows a default thumbnail for the book
-		}
-
-		/// <summary>
-		/// tempFolderPath is where to put the book. Note that a few files (e.g., customCollectionStyles.css)
-		/// are copied into its parent in order to be in the expected location relative to the book,
-		/// so that needs to be a folder we can write in.
-		/// </summary>
-		/// <param name="book"></param>
-		/// <param name="bookServer"></param>
-		/// <param name="tempFolderPath"></param>
-		/// <returns></returns>
-		public static Book MakeDeviceXmatterTempBook(Book book, BookServer bookServer, string tempFolderPath)
-		{
-			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
-			// We will later copy these into the book's own folder and adjust the style sheet refs.
-			// But in some cases (at least, where the book's primary stylesheet does not provide
-			// the information SizeAndOrientation.GetLayoutChoices() is looking for), we need them
-			// to exist in the originally expected lcoation: the book's parent directory for
-			// BringBookUpToDate to succeed.
-			BookStorage.CopyCollectionStyles(book.FolderPath, Path.GetDirectoryName(tempFolderPath));
-			var bookInfo = new BookInfo(tempFolderPath, true);
-			bookInfo.XMatterNameOverride = "Device";
-			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-			modifiedBook.BringBookUpToDate(new NullProgress(), true);
-			modifiedBook.AdjustCollectionStylesToBookFolder();
-			modifiedBook.RemoveNonPublishablePages();
-			modifiedBook.Save();
-			modifiedBook.Storage.UpdateSupportFiles();
-			// Copy the possibly modified stylesheets after UpdateSupportFiles so that they don't
-			// get replaced by the factory versions.
-			BookStorage.CopyCollectionStyles(book.FolderPath, tempFolderPath);
-			return modifiedBook;
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
@@ -216,13 +170,9 @@ namespace Bloom.Book
 					modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent);
 					newEntry.Size = modifiedContent.Length;
 				}
-				// CompressBookForDevice is always called with reduceImages set.
+				// CreateBloomReaderBook is always called with reduceImages set.
 				else if (reduceImages && bookFile == filePath)
 				{
-					StripImgWithFilesWeCannotFind(dom, bookFile);
-					StripContentEditable(dom);
-					InsertReaderStylesheet(dom);
-					ConvertImagesToBackground(dom);
 					SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(dom.DocumentElement).Cast<XmlElement>(), directoryToCompress);
 					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
 					modifiedContent = Encoding.UTF8.GetBytes(newContent);
@@ -236,8 +186,6 @@ namespace Bloom.Book
 						MakeExtraEntry(zipStream, name, sha);
 						LastVersionCode = sha;
 					}
-					MakeExtraEntry(zipStream, "readerStyles.css",
-						File.ReadAllText(FileLocationUtilities.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"))));
 				}
 				else
 				{
@@ -301,74 +249,11 @@ namespace Bloom.Book
 			zipStream.CloseEntry();
 		}
 
-		private static void StripImgWithFilesWeCannotFind(XmlDocument dom, string bookFile)
-		{
-			var folderPath = Path.GetDirectoryName(bookFile);
-			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
-			{
-				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).NotEncoded.Split('?')[0];
-				if (!File.Exists(Path.Combine(folderPath, file)))
-				{
-					imgElt.ParentNode.RemoveChild(imgElt);
-				}
-			}
-		}
-
-		private static void StripContentEditable(XmlDocument dom)
-		{
-			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>().ToArray())
-			{
-				editableElt.RemoveAttribute("contenteditable");
-			}
-		}
-
-		/// <summary>
-		/// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer.
-		/// Convert the img into a background image of the image container div.
-		/// Specifically, make the following changes:
-		/// - Copy any data-x attributes from the img element to the div
-		/// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the div
-		///    (any pre-existing style attribute on the div is lost)
-		/// - Add the class bloom-backgroundImage to the div
-		/// - delete the img element
-		/// (See oldImg and newImg in unit test CompressBookForDevice_ImgInImgContainer_ConvertedToBackground for an example).
-		/// </summary>
-		/// <param name="wholeBookHtml"></param>
-		/// <returns></returns>
-		private static void ConvertImagesToBackground(XmlDocument dom)
-		{
-			foreach (var imgContainer in dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]").Cast<XmlElement>().ToArray())
-			{
-				var img = imgContainer.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n is XmlElement && n.Name == "img");
-				if (img == null || img.Attributes["src"] == null)
-					continue;
-				// The filename should be already urlencoded since src is a url.
-				var src = img.Attributes["src"].Value;
-				HtmlDom.SetImageElementUrl(new ElementProxy(imgContainer), UrlPathString.CreateFromUrlEncodedString(src));
-				foreach (XmlAttribute attr in img.Attributes)
-				{
-					if (attr.Name.StartsWith("data-"))
-						imgContainer.SetAttribute(attr.Name, attr.Value);
-				}
-				imgContainer.SetAttribute("class", imgContainer.Attributes["class"].Value + " bloom-backgroundImage");
-				imgContainer.RemoveChild(img);
-			}
-		}
-
 		private static string GetMetaJsonModfiedForTemplate(string path)
 		{
 			var meta = BookMetaData.FromString(RobustFile.ReadAllText(path));
 			meta.IsSuitableForMakingShells = true;
 			return meta.Json;
-		}
-
-		private static void InsertReaderStylesheet(XmlDocument dom)
-		{
-			var link = dom.CreateElement("link");
-			XmlUtils.GetOrCreateElement(dom, "html", "head").AppendChild(link);
-			link.SetAttribute("rel", "stylesheet");
-			link.SetAttribute("href", "readerStyles.css");
-			link.SetAttribute("type", "text/css");
 		}
 
 		/// <summary>

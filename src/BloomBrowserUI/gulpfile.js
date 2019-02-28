@@ -59,6 +59,7 @@ var paths = {
     filesThatMightBeNeededInOutput: [
         "./**/*.*",
         "!./**/*.ts",
+        "!./**/*.tsx",
         "!./**/*.pug",
         "!./**/*.md",
         "!./**/*.less",
@@ -263,18 +264,23 @@ gulp.task("translateHtmlFiles", function() {
             tap(function(file) {
                 var xliffFiles = getXliffFiles(file.path);
                 for (i = 0; i < xliffFiles.length; ++i) {
-                    var outfile = getOutputFilename(file.path, xliffFiles[i]);
+                    var xliffFile = xliffFiles[i]; // needed for error message to work
+                    var outfile = getOutputFilename(file.path, xliffFile);
                     var cmd = "";
                     if (IsLinux)
                         cmd =
-                            "/opt/mono4-sil/bin/mono ../../lib/dotnet/HtmlXliff.exe --inject";
+                            "/opt/mono4-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --inject";
                     else cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --inject";
-                    cmd = cmd + ' -x "' + xliffFiles[i] + '"';
+                    cmd = cmd + ' -x "' + xliffFile + '"';
                     cmd = cmd + ' -o "' + outfile + '"';
                     cmd = cmd + ' "' + file.path + '"';
                     child_process.exec(cmd, function(err, stdout, stderr) {
                         if (err) {
-                            console.error("\n" + stderr);
+                            console.error(
+                                `\nTRANSLATE ${
+                                    file.path
+                                } WITH ${xliffFile}\n${stdout}\n\n${stderr}`
+                            );
                         }
                     });
                 }
@@ -293,7 +299,7 @@ gulp.task("createXliffFiles", function() {
                 var cmd = "";
                 if (IsLinux)
                     cmd =
-                        "/opt/mono4-sil/bin/mono ../../lib/dotnet/HtmlXliff.exe --extract --preserve";
+                        "/opt/mono4-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --extract --preserve";
                 else
                     cmd =
                         "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract --preserve";
@@ -301,7 +307,11 @@ gulp.task("createXliffFiles", function() {
                 cmd = cmd + ' "' + file.path + '"';
                 child_process.exec(cmd, function(err, stdout, stderr) {
                     if (err) {
-                        console.error("\n" + stderr);
+                        console.error(
+                            `\nCREATE ${xliffFile} FROM ${
+                                file.path
+                            }\n${stdout}\n\n${stderr}`
+                        );
                     }
                 });
                 return;

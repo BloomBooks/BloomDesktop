@@ -11,7 +11,7 @@ import {
     BloomEnterpriseAvailableContext
 } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
-import { HelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { UrlUtils } from "../../../utils/urlUtils";
 import { Expandable } from "../../../react_components/expandable";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -51,21 +51,6 @@ interface IComponentState {
     enterprise: boolean;
 }
 
-// incomplete typescript definitions for MediaRecorder and related types.
-// Can't find complete ones, so rather than just do without type checking altogether,
-// I've made declarations as accurately as I can figure out for the methods we actually use.
-interface BlobEvent {
-    data: Blob;
-}
-
-interface MediaRecorder {
-    new (source: MediaStream, options: any);
-    start(): void;
-    stop(): void;
-    onDataAvailable: (ev: BlobEvent) => void;
-    onstop: () => void;
-}
-
 declare var MediaRecorder: {
     prototype: MediaRecorder;
     new (s: MediaStream, options: any): MediaRecorder;
@@ -76,6 +61,17 @@ declare var MediaRecorder: {
 // When a trimmed endpoint is stored, it represents the time in seconds from the start of the untrimmed video.
 const UNTRIMMED_TIMING: string = "0.0";
 const UNTRIMMED_TIMING_NUM: number = 0.0;
+
+const emptyVideoStatistics = {
+    duration: "",
+    fileSize: "",
+    frameSize: "",
+    framesPerSecond: "",
+    fileFormat: "",
+    startSeconds: UNTRIMMED_TIMING,
+    endSeconds: UNTRIMMED_TIMING,
+    aspectRatio: ""
+};
 
 // This react class implements the UI for the sign language (video) toolbox.
 // Note: this file is included in toolboxBundle.js because webpack.config says to include all
@@ -97,16 +93,7 @@ export class SignLanguageToolControls extends React.Component<
         cameraUnavailable: false,
         minutesRecorded: "",
         secondsRecorded: "",
-        videoStatistics: {
-            duration: "",
-            fileSize: "",
-            frameSize: "",
-            framesPerSecond: "",
-            fileFormat: "",
-            startSeconds: UNTRIMMED_TIMING,
-            endSeconds: UNTRIMMED_TIMING,
-            aspectRatio: ""
-        },
+        videoStatistics: emptyVideoStatistics,
         enterprise: false
     };
     private videoStream: MediaStream | null;
@@ -114,34 +101,10 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
+    // set by SignLanguageTools.newPageReady()/detachFromPage()
+    public PageAttached: boolean = false;
 
     public render() {
-        let videoStats = <div id="videoStatsWrapper" />;
-        let trimSlider = <div id="trimWrapper" />;
-        if (
-            // Protects against showing slider and stats when
-            // the video info hasn't yet been loaded from the file.
-            this.state.haveRecording &&
-            this.state.videoStatistics.duration != ""
-        ) {
-            const start = parseFloat(this.state.videoStatistics.startSeconds);
-            let end = parseFloat(this.state.videoStatistics.endSeconds);
-            const maxDuration = SignLanguageTool.convertTimeStringToSecondsNumber(
-                this.state.videoStatistics.duration
-            );
-            if (end == UNTRIMMED_TIMING_NUM) {
-                // if the video has not been "end-trimmed", set the end slider to the equivalent of the
-                // untrimmed video's duration, since the end of the video in seconds is equal to its duration
-                // in seconds.
-                end = maxDuration;
-            }
-            const valueArray: number[] = [start, end];
-            trimSlider = this.getTrimSlider(valueArray, maxDuration);
-            videoStats = this.getVideoStats();
-        } else if (!this.state.enterprise) {
-            // Show the slider even without a video when obscured by enterprise being off.
-            trimSlider = this.getTrimSlider([0, 5], 5);
-        }
         return (
             <RequiresBloomEnterpriseWrapper>
                 <BloomEnterpriseAvailableContext.Consumer>
@@ -233,7 +196,7 @@ export class SignLanguageToolControls extends React.Component<
                                             Press any key to stop
                                         </Label>
                                     </div>
-                                    {trimSlider}
+                                    {this.getTrimSlider()}
                                 </div>
                             </div>
                             <div style={{ height: "210px" }}>
@@ -317,17 +280,10 @@ export class SignLanguageToolControls extends React.Component<
                                             Delete
                                         </Label>
                                     </div>
-                                    {videoStats}
+                                    {this.getVideoStatsDisplay()}
                                 </Expandable>
                             </div>
-                            <div className="helpLinkWrapper">
-                                <HelpLink
-                                    l10nKey="Common.Help"
-                                    helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm"
-                                >
-                                    Help
-                                </HelpLink>
-                            </div>
+                            <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Sign_Language_Tool/Sign_Language_Tool_overview.htm" />
                         </div>
                     )}
                 </BloomEnterpriseAvailableContext.Consumer>
@@ -335,23 +291,82 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getTrimSlider(valueArray: number[], maxDuration: number) {
+    private getMaxDurationFromState(): number {
+        return this.showDefaultSlider()
+            ? 5
+            : SignLanguageTool.convertTimeStringToSecondsNumber(
+                  this.state.videoStatistics.duration
+              );
+    }
+
+    private getStartSliderFromState(): number {
+        return parseFloat(this.state.videoStatistics.startSeconds);
+    }
+
+    private getEndSliderFromState(): number {
+        let end = parseFloat(this.state.videoStatistics.endSeconds);
+        if (end == UNTRIMMED_TIMING_NUM) {
+            // if the video has not been "end-trimmed", set the end slider to the equivalent of the
+            // untrimmed video's duration, since the end of the video in seconds is equal to its duration
+            // in seconds.
+            end = this.getMaxDurationFromState();
+        }
+        return end;
+    }
+
+    private getCurrentTrimHandlePositionsFromState(): number[] {
+        return this.showDefaultSlider()
+            ? [0, 5]
+            : [this.getStartSliderFromState(), this.getEndSliderFromState()];
+    }
+
+    private doesVideoExist(): boolean {
+        // Protects against showing slider and stats when
+        // the video info hasn't yet been loaded from the file.
+        return (
+            this.state.haveRecording &&
+            this.state.videoStatistics.duration != ""
+        );
+    }
+
+    // Used to determine the case where there is no video, but we want to show
+    // the slider behind the "You don't have Enterprise" notification.
+    private showDefaultSlider(): boolean {
+        return !this.doesVideoExist() && !this.state.enterprise;
+    }
+
+    private getTrimSlider(): JSX.Element {
+        // Protect against Slider.Range onChange malfunctions on Windows when changing
+        // pages.  Spurious onChange requests were happening that affected the wrong
+        // video elements.  Not creating an actual Slider.Range (with its attached
+        // onChange handler) after the old page starts to be detached and before the
+        // new page is finally ready appears to fix the problem.  This problem never
+        // appeared on Linux, and this fix should be harmless there.  For details, see
+        // https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
+        // Note that the render method (which calls this method) is called quite frequently,
+        // even when the user is just sitting quietly staring at the wall.
+        if (
+            !this.PageAttached ||
+            (!this.doesVideoExist() && this.state.enterprise)
+        ) {
+            return <div id="trimWrapper" />;
+        }
         return (
             <div id="trimWrapper">
                 <Range
                     className="videoTrimSlider"
                     count={1}
-                    value={valueArray}
-                    onChange={v => this.setTrimPoints(v[0], v[1])}
+                    value={this.getCurrentTrimHandlePositionsFromState()}
+                    onChange={v => this.handleSliderRangeChange(v[0], v[1])}
                     onAfterChange={
                         // set video back to start point in case we were viewing the end point
-                        v => SignLanguageTool.setCurrentVideoPoint(v[0])
+                        v => this.handleSliderRangeAfterChange(v[0])
                     }
                     step={0.1}
                     min={UNTRIMMED_TIMING_NUM}
                     allowCross={false}
                     pushable={false}
-                    max={maxDuration}
+                    max={this.getMaxDurationFromState()}
                 />
                 <div id="trimLabelWrapper">
                     <Label
@@ -365,7 +380,10 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getVideoStats() {
+    private getVideoStatsDisplay(): JSX.Element {
+        if (!this.PageAttached || !this.doesVideoExist()) {
+            return <div id="videoStatsWrapper" />;
+        }
         return (
             <div id="videoStatsWrapper">
                 <Label l10nKey="Common.Info">Info</Label>
@@ -391,7 +409,10 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private setTrimPoints(newStartSeconds: number, newEndSeconds: number) {
+    private handleSliderRangeChange(
+        newStartSeconds: number,
+        newEndSeconds: number
+    ) {
         const newStartString = newStartSeconds.toFixed(1);
         const newEndString = newEndSeconds.toFixed(1);
         SignLanguageTool.setVideoTimingsInSrcAttr(newStartString, newEndString);
@@ -407,6 +428,10 @@ export class SignLanguageToolControls extends React.Component<
             SignLanguageTool.setCurrentVideoPoint(newEndSeconds); // we're changing the end point, so show it.
         }
         this.setState({ videoStatistics: stats });
+    }
+
+    private handleSliderRangeAfterChange(newStartSeconds: number) {
+        SignLanguageTool.setCurrentVideoPoint(newStartSeconds);
     }
 
     public getCameraMessageLabel() {
@@ -474,16 +499,7 @@ export class SignLanguageToolControls extends React.Component<
             result => {
                 if (result.statusText != "OK") {
                     this.setState({
-                        videoStatistics: {
-                            duration: "",
-                            fileSize: "",
-                            frameSize: "",
-                            framesPerSecond: "",
-                            fileFormat: "",
-                            startSeconds: UNTRIMMED_TIMING,
-                            endSeconds: UNTRIMMED_TIMING,
-                            aspectRatio: ""
-                        }
+                        videoStatistics: emptyVideoStatistics
                     });
                 } else {
                     const frameSize: string = result.data.frameSize;
@@ -495,7 +511,7 @@ export class SignLanguageToolControls extends React.Component<
                             result.data.aspectRatio = calculateAspectRatio(
                                 x,
                                 y
-                            );
+                            ) as string;
                         }
                     }
                     this.setState({ videoStatistics: result.data });
@@ -722,7 +738,7 @@ export class SignLanguageToolControls extends React.Component<
             this.videoStream as MediaStream,
             options
         );
-        this.mediaRecorder.onDataAvailable = e => {
+        this.mediaRecorder.ondataavailable = e => {
             // called periodically during recording and once more with the rest of the data
             // when recording stops. So all the chunks which make up the recording come here.
             this.chunks.push(e.data);
@@ -856,28 +872,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         );
     }
 
-    // src may have ? followed by fake params to defeat caching.
-    // src may have # followed by timings.
-    // strip them off.
-    public static stripExtrasFromVideoFile(combined: string) {
-        if (!combined) {
-            return null;
-        }
-        // tried  return new URL(combined).pathname;, but URL is 'unavailable' according to debugger.
-        // src may have # followed by timings.
-        const hashIndex = combined.indexOf("#");
-        if (hashIndex > 0) {
-            combined = combined.substring(0, hashIndex);
-        }
-        // src may have ? followed by fake params to defeat caching.
-        const paramIndex = combined.indexOf("?");
-        if (paramIndex > 0) {
-            combined = combined.substring(0, paramIndex);
-        }
-        return combined;
-    }
-
     public detachFromPage() {
+        this.reactControls.PageAttached = false;
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -943,7 +939,12 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     public newPageReady() {
         // among other things, this clears us out of "processing"
         // when the page is refreshed with the new video
-        this.reactControls.setState({ stateClass: "idle" });
+        this.reactControls.setState({
+            stateClass: "idle",
+            // Clear out stale video statistics from any page previously shown.
+            // See https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
+            videoStatistics: emptyVideoStatistics
+        });
         const containers = SignLanguageTool.getVideoContainers(false);
         if (!containers || containers.length === 0) {
             if (this.reactControls.state.enabled) {
@@ -984,8 +985,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 this.reactControls.setState({ enabled: true });
             }
         }
+        this.reactControls.PageAttached = true;
     }
 
+    // This (param) container has just been selected as the current one by either:
+    // newPageReady() or the user's click (containerClickListener).
     private updateStateForSelected(container: Element) {
         const videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
@@ -1125,7 +1129,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     private static getSelectedVideoElement(): HTMLVideoElement | undefined {
         const selectedContainers = SignLanguageTool.getVideoContainers(true); // s/b only one selected container
-        if (selectedContainers)
+        if (selectedContainers && selectedContainers.length > 0)
             return selectedContainers[0].getElementsByTagName(
                 "video"
             )[0] as HTMLVideoElement;
@@ -1146,6 +1150,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return val ? val : "";
     }
 
+    // Seeks the video in 'videoElement' to 'timeInSeconds'.
     public static setCurrentVideoPoint(
         timeInSeconds: number,
         videoElement?: HTMLVideoElement

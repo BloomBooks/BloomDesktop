@@ -7,7 +7,10 @@ import "split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { BloomApi } from "../../utils/bloomApi";
 
-import { ElementQueries } from "css-element-queries";
+// Future: import { ElementQueries } from "css-element-queries";
+// Now: the following is needed by the combination of the old css-element-queries (0.3.2) and
+// old gecko (45) that we have at least through Bloom 4.5. Also the (<any>window). targets can also go away when we upgrade.
+require("css-element-queries"); // without this, geckofx 45 gives "TypeError: css_element_queries_1.ElementQueries is undefined"
 
 $(() => {
     $("div.split-pane").splitPane();
@@ -93,7 +96,7 @@ function setupLayoutMode() {
     });
 
     //have  css-element-queries notice the new elements and track them, adding classes that let rules trigger depending on size
-    ElementQueries.init();
+    (<any>window).ElementQueries.init();
 }
 
 function layoutToggleClickHandler() {
@@ -141,7 +144,7 @@ function splitClickHandler() {
     else if ($(this).hasClass("add-left"))
         performSplit(myInner, "vertical", "right", "left", true);
 
-    ElementQueries.init(); //notice the new elements and track them, adding classes that let rules trigger depending on size
+    (<any>window).ElementQueries.init(); //notice the new elements and track them, adding classes that let rules trigger depending on size
 }
 
 function performSplit(

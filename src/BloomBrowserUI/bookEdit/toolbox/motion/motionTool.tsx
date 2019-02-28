@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Div } from "../../../react_components/l10n";
-import { HelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 // These are for Motion:
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { getPageFrameExports } from "../../js/bloomFrames";
@@ -1179,12 +1179,7 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                     </div>
                 </div>
                 <div className="helpLinkWrapper">
-                    <HelpLink
-                        helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm"
-                        l10nKey="Common.Help"
-                    >
-                        Help
-                    </HelpLink>
+                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm" />
                 </div>
                 <audio id="pzMusicPlayer" preload="none" />
             </div>

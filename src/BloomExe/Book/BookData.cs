@@ -1300,7 +1300,10 @@ namespace Bloom.Book
 				foreach (var setting in BookCopyrightAndLicense.SettingsToCheckForDefaultCopyright)
 				{
 					if (!string.IsNullOrWhiteSpace(GetVariableOrNull(setting, "*")))
+					{
 						allCopyrightEmpty = false;
+						break;
+					}
 				}
 
 				foreach (var item in settings.Presets)

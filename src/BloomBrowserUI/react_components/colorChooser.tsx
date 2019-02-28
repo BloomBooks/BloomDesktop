@@ -9,6 +9,7 @@ interface IColorChooserProps {
     backColorSetting: string;
     colorPalette?: string[];
     onColorChanged?: (string) => void;
+    menuLeft?: boolean;
 }
 
 interface IColorChooserState {
@@ -69,7 +70,12 @@ export class ColorChooser extends React.Component<
                         src={this.props.imagePath + this.props.backColorSetting}
                     />
                 </div>
-                <div className="cc-menu-arrow">
+                <div
+                    className={
+                        "cc-menu-arrow" +
+                        (this.props.menuLeft ? " cc-pulldown-left" : "")
+                    }
+                >
                     <div
                         className="cc-pulldown-wrapper"
                         style={{

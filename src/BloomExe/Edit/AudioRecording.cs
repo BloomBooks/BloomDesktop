@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Api;
@@ -13,7 +14,6 @@ using SIL.IO;
 using SIL.Media.AlsaAudio;
 #endif
 using SIL.Media.Naudio;
-using SIL.Progress;
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
 
@@ -39,15 +39,19 @@ namespace Bloom.Edit
 		BloomWebSocketServer _webSocketServer;
 		private const string kWebsocketContext = "audio-recording"; // must match that found in audioRecording.tsx
 
+		public const string kPublishableExtension = "mp3";
+		public const string kRecordableExtension = "wav";
+
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
 		public string PathToTemporaryWav;
 
 		//the ultimate destination, after we've cleaned up the recording
-		public string PathToCurrentAudioSegment;
+		public string PathToRecordableAudioForCurrentSegment;
 
-		private string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
+		private string _backupPathForRecordableAudio; // If we are about to replace a recording, save the old one here; a temp file.
+		private string _backupPathForPublishableAudio;
 		private DateTime _startRecording; // For tracking recording length.
 		LameEncoder _mp3Encoder = new LameEncoder();
 		/// <summary>
@@ -69,6 +73,8 @@ namespace Bloom.Edit
 		// of the one most recently created and uses it in the AudioDevicesJson method, which the server can therefore
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
+		private ManualResetEvent _completingRecording;	// Note: For simplicity, recommend that any function needing this lock should just check it regardless of the file path. The file paths get tricky with the multiple extensions possible, sequencing, etc., so for now, we recommend avoiding pre-mature optimization until needed.
+		private int _collectionAudioTrimEndMilliseconds;
 
 		public AudioRecording(BookSelection bookSelection, BloomWebSocketServer bloomWebSocketServer)
 		{
@@ -76,32 +82,59 @@ namespace Bloom.Edit
 			_startRecordingTimer = new Timer();
 			_startRecordingTimer.Interval = 300; //  ms from click to actual recording
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
-			_backupPath = System.IO.Path.GetTempFileName();
+			_backupPathForRecordableAudio = Path.GetTempFileName();
+			_backupPathForPublishableAudio = Path.GetTempFileName();
 			CurrentRecording = this;
 			_webSocketServer = bloomWebSocketServer;
+			// We create the ManualResetEvent in the "set" (non-blocking) state initially. The idea is to allow HandleEndRecord() to run,
+			// but then block functions like HandleAudioFileRequest() which relies on the contents of the audio folder until Recorder_Stopped() has reported finishing saving the audio file.
+			_completingRecording = new ManualResetEvent(true);
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			// I don't know for sure that these need to be on the UI thread, but that was the old default so keeping it for safety.
+			// HandleStartRecording seems to need to be on the UI thread in order for HandleEndRecord() to detect the correct state.
 			apiHandler.RegisterEndpointHandler("audio/startRecord", HandleStartRecording, true);
+
+			// Note: This handler locks and unlocks a shared resource (_completeRecording lock).
+			// Any other handlers depending on this resource should not wait on the same thread (i.e. the UI thread) or deadlock can occur.
 			apiHandler.RegisterEndpointHandler("audio/endRecord", HandleEndRecord, true);
-			apiHandler.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton, true);
-			apiHandler.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, true);
+
+			// Any handler which retrieves information from the audio folder SHOULD wait on the _completeRecording lock (call WaitForRecordingToComplete()) to ensure that it sees
+			// a consistent state of the audio folder, and therefore should NOT run on the UI thread.
+			// Also, explicitly setting requiresSync to true (even tho that's default anyway) to make concurrency less complicated to think about
+			apiHandler.RegisterEndpointHandler("audio/checkForAnyRecording", HandleCheckForAnyRecording, false, true);
+			apiHandler.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, false, true);
+			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, false, true);
+			apiHandler.RegisterEndpointHandler("audio/wavFile", HandleAudioFileRequest, false, true);
+
+			// Doesn't matter whether these are on UI thread or not, so using the old default which was true
 			apiHandler.RegisterEndpointHandler("audio/currentRecordingDevice", HandleCurrentRecordingDevice, true);
-			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, true);
 			apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
 
 			Debug.Assert(BloomServer.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
 		}
 
 		// Does this page have any audio at all? Used to enable 'Listen to the whole page'.
-		private void HandleEnableListenButton(ApiRequest request)
+		private void HandleCheckForAnyRecording(ApiRequest request)
 		{
 			var ids = request.RequiredParam("ids");
-			foreach (var id in ids.Split(','))
+			var idList = ids.Split(',');
+
+			if (idList.Any())
 			{
-				if (RobustFile.Exists(GetPathToSegment(id)))
+				WaitForRecordingToComplete();	// More straightforward to test for the existence of the files by waiting until all the files have been written.
+			}
+
+			foreach (var id in idList)
+			{
+				if (RobustFile.Exists(GetPathToRecordableAudioForSegment(id)))
+				{
+					request.PostSucceeded();
+					return;
+				}
+
+				if (RobustFile.Exists(GetPathToPublishableAudioForSegment(id)))
 				{
 					request.PostSucceeded();
 					return;
@@ -180,9 +213,13 @@ namespace Bloom.Edit
 				request.Failed("Got endRecording, but was not recording");
 				return;
 			}
+
 			Exception exceptionCaught = null;
 			try
 			{
+				// We never want this thread blocked, but we want to block HandleAudioFileRequest()
+				// until Recorder_Stopped() succeeds.
+				_completingRecording.Reset();
 				Debug.WriteLine("Stop recording");
 				Recorder.Stopped += Recorder_Stopped;
 				//note, this doesn't actually stop... more like... starts the stopping. It does mark the time
@@ -200,11 +237,13 @@ namespace Bloom.Edit
 			}
 			if (TestForTooShortAndSendFailIfSo(request))
 			{
+				_completingRecording.Set(); // not saving a recording, so don't block HandleAudioFileRequest
 				return;
 			}
 			else if (exceptionCaught != null)
 			{
 				ResetRecorderOnError();
+				_completingRecording.Set(); // not saving a recording, so don't block HandleAudioFileRequest
 				request.Failed("Stopping the recording caught an exception: " + exceptionCaught.Message);
 			}
 			else
@@ -220,11 +259,11 @@ namespace Bloom.Edit
 			// Try to delete the file we were writing to.
 			try
 			{
-				RobustFile.Delete(PathToCurrentAudioSegment);
+				RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
 			}
 			catch (Exception error)
 			{
-				Logger.WriteError("Audio Recording trying to delete "+PathToCurrentAudioSegment, error);
+				Logger.WriteError("Audio Recording trying to delete "+PathToRecordableAudioForCurrentSegment, error);
 			}
 			// The recorder may well be in a bad state.  Throw it away and get a new one.
 			// But maintain the assigned recording device.
@@ -237,31 +276,34 @@ namespace Bloom.Edit
 		private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)
 		{
 			Recorder.Stopped -= Recorder_Stopped;
-			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToCurrentAudioSegment)); // make sure audio directory exists
-			int millisecondsToTrimFromEndForMouseClick =100;
+			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment)); // make sure audio directory exists
 			try
 			{
 				var minimum = TimeSpan.FromMilliseconds(300); // this is arbitrary
-				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToCurrentAudioSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick), minimum);
+				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToRecordableAudioForCurrentSegment, new TimeSpan(), TimeSpan.FromMilliseconds(_collectionAudioTrimEndMilliseconds), minimum);
 				RobustFile.Delete(PathToTemporaryWav);	// Otherwise, these continue to clutter up the temp directory.
 			}
 			catch (Exception error)
 			{
 				Logger.WriteEvent(error.Message);
-				RobustFile.Copy(PathToTemporaryWav,PathToCurrentAudioSegment, true);
+				RobustFile.Copy(PathToTemporaryWav,PathToRecordableAudioForCurrentSegment, true);
 			}
 
-			//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
 			//We could put this off entirely until we make the ePUB.
 			//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
 			//That's fine so long as it doesn't make the UI unresponsive on slow machines.
-			if (LameEncoder.IsAvailable())
-			{
-				_mp3Encoder.Encode(PathToCurrentAudioSegment, PathToCurrentAudioSegment.Substring(0, PathToCurrentAudioSegment.Length - 4), new NullProgress());
-				// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format (or alternative mp4)
-				// is required for ePUB. The wav file is a better permanent record of the recording; also,
-				// it is used for playback.
+			_mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment);
+			// Got a good new recording, can safely clean up all backups related to old one.
+			foreach (var path in Directory.EnumerateFiles(
+				Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment),
+				Path.GetFileNameWithoutExtension(PathToRecordableAudioForCurrentSegment)+ "*"+ ".bak"))
+			{ 
+				RobustFile.Delete(path);
 			}
+			
+			// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format
+			// is required for ePUB. The wav file is a better permanent record of the recording.
+			_completingRecording.Set(); // will release HandleAudioFileRequest if it is waiting.
 		}
 
 		private bool TestForTooShortAndSendFailIfSo(ApiRequest request)
@@ -278,17 +320,21 @@ namespace Bloom.Edit
 			return false;
 		}
 
-		/// <returns>true if the recording started successfully</returns>
 		public void HandleStartRecording(ApiRequest request)
 		{
-			if(Recording)
+			// Precondition: HandleStartRecording shouldn't run until the previous HandleEndRecord() is completely done with PathToRecordableAudioForCurrentSegment
+			//   Unfortunately this is not as easy to ensure on the code side due to HandleStartRecord() not being able to be moved off the UI thread, and deadlock potential
+			//   I found it too difficult to actually violate this precondition from the user side.
+			//   Therefore, I just assume this to be true.
+
+			if (Recording)
 			{
 				request.Failed("Already recording");
 				return;
 			}
 
 			string segmentId = request.RequiredParam("id");
-			PathToCurrentAudioSegment = GetPathToSegment(segmentId);
+			PathToRecordableAudioForCurrentSegment = GetPathToRecordableAudioForSegment(segmentId);	// Careful! Overwrites the previous value of the member variable.
 			PathToTemporaryWav = Path.GetTempFileName();
 
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
@@ -316,55 +362,73 @@ namespace Bloom.Edit
 				return;
 			}
 
-			if (RobustFile.Exists(PathToCurrentAudioSegment))
-			{
-				//Try to deal with _backPath getting locked (BL-3160)
-				try
-				{
-					RobustFile.Delete(_backupPath);
-				}
-				catch(IOException)
-				{
-					_backupPath = System.IO.Path.GetTempFileName();
-				}
-				try
-				{
-					RobustFile.Copy(PathToCurrentAudioSegment, _backupPath, true);
-				}
-				catch (Exception err)
-				{
-					ErrorReport.NotifyUserOfProblem(err,
-						"Bloom cold not copy "+PathToCurrentAudioSegment+" to "+_backupPath+" If things remains stuck, you may need to restart your computer.");
-					request.Failed( "Problem with backup file");
-					return;
-				}
-				try
-				{
-					RobustFile.Delete(PathToCurrentAudioSegment);
-				}
-				catch (Exception err)
-				{
-					ErrorReport.NotifyUserOfProblem(err,
-						"The old copy of the recording at " + PathToCurrentAudioSegment + " is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
-					request.Failed( "Audio file locked");
-					return;
-				}
-			}
-			else
-			{
-				RobustFile.Delete(_backupPath);
-			}
+			if (!PrepareBackupFile(PathToRecordableAudioForCurrentSegment, ref _backupPathForRecordableAudio, request)) return;
+
+			// There are two possible scenarios when starting to record.
+			//  1. We have a recordable file and corresponding publishable file.
+			//     In that case, we need to make sure to restore the publishable file if we restore the recordable one so they stay in sync.
+			//  2. We have an publishable file with no corresponding recordable file.
+			//     In that case, we need to restore it if there is any problem creating a new recordable file.
+			if (!PrepareBackupFile(GetPathToPublishableAudioForSegment(segmentId), ref _backupPathForPublishableAudio, request)) return;
+
 			_startRecording = DateTime.Now;
 			_startRecordingTimer.Start();
 			request.ReplyWithText("starting record soon");
-			return;
 		}
 
-
-
-		private string GetPathToSegment(string segmentId)
+		// We want to move the file specified in the first path to a new location to use
+		// as a backup while we typically replace it.
+		// A previous backup, possibly of the same or another file, is no longer needed (if it exists)
+		// and should be deleted, if possible, on a background thread.
+		// The path to the backup will be updated to the new backup.
+		// Typically the new name matches the original with the extension changed to .bak.
+		// If necessary (because the desired backup file already exists), we will add a counter
+		// to get the a name that is not in use.
+		// A goal is (for performance reasons) not to have to wait while a file is deleted
+		// (and definitely not while one is copied).
+		private static bool PrepareBackupFile(string path, ref string backupPath, ApiRequest request)
 		{
-			return System.IO.Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", segmentId + ".wav");
+			int counter = 0;
+			backupPath = path + ".bak";
+			var originalExtension = Path.GetExtension(path);
+			var pathWithNoExtension = Path.GetFileNameWithoutExtension(path);
+			while (File.Exists(backupPath))
+			{
+				counter++;
+				backupPath = pathWithNoExtension + counter + originalExtension + ".bak";
+			}
+			// An earlier version copied the file to a temp file. We can't MOVE to a file in the system temp
+			// directory, though, because we're not sure it is on the same volume. And sometimes the time
+			// required to copy the file was noticeable and resulted in the user starting to speak before
+			// the system started recording. So we pay the price of a small chance of backups being left
+			// around the book directory to avoid that danger.
+			if (RobustFile.Exists(path))
+			{
+				try
+				{
+					RobustFile.Move(path, backupPath);
+				}
+				catch (Exception err)
+				{
+					ErrorReport.NotifyUserOfProblem(err,
+						"The old copy of the recording at " + path +
+						" is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
+					request.Failed("Audio file locked");
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		private string GetPathToPublishableAudioForSegment(string segmentId)
+		{
+			return Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", $"{segmentId}.{kPublishableExtension}");
+		}
+
+		private string GetPathToRecordableAudioForSegment(string segmentId)
+		{
+			return Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", $"{segmentId}.{kRecordableExtension}");
 		}
 
 		public bool Recording
@@ -406,26 +470,42 @@ namespace Bloom.Edit
 			{
 				// Delete doesn't throw if the FILE doesn't exist, but if the Directory doesn't, you're toast.
 				// And the very first time a user tries this, the audio directory probably doesn't exist...
-				if (Directory.Exists(Path.GetDirectoryName(PathToCurrentAudioSegment)))
-					RobustFile.Delete(PathToCurrentAudioSegment);
+				if (Directory.Exists(Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment)))
+				{
+					RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
+					// BL-6881: "Play btn sometimes enabled after too short audio", because the .mp3 version was left behind.
+					var mp3Version = Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension);
+					RobustFile.Delete(mp3Version);
+				}
 			}
 			catch (Exception error)
 			{
-				Logger.WriteError("Audio Recording trying to delete "+PathToCurrentAudioSegment, error);
+				Logger.WriteError("Audio Recording trying to delete "+PathToRecordableAudioForCurrentSegment, error);
 				Debug.Fail("can't delete the recording even after we stopped:"+error.Message);
 			}
 
 			// If we had a prior recording, restore it...button press may have been a mistake.
-			if (RobustFile.Exists(_backupPath))
+			if (RobustFile.Exists(_backupPathForRecordableAudio))
 			{
 				try
 				{
-					RobustFile.Copy(_backupPath, PathToCurrentAudioSegment, true);
+					RobustFile.Move(_backupPathForRecordableAudio, PathToRecordableAudioForCurrentSegment);
 				}
 				catch (IOException e)
 				{
-					Logger.WriteError("Audio Recording could not restore backup " + _backupPath, e);
+					Logger.WriteError("Audio Recording could not restore backup " + _backupPathForRecordableAudio, e);
 					// if we can't restore it we can't. Review: are there other exception types we should ignore? Should we bother the user?
+				}
+			}
+			if (RobustFile.Exists(_backupPathForPublishableAudio))
+			{
+				try
+				{
+					RobustFile.Move(_backupPathForPublishableAudio, Path.ChangeExtension(PathToRecordableAudioForCurrentSegment, kPublishableExtension));
+				}
+				catch (IOException e)
+				{
+					Logger.WriteError("Audio Recording could not restore backup " + _backupPathForPublishableAudio, e);
 				}
 			}
 		}
@@ -471,25 +551,70 @@ namespace Bloom.Edit
 
 		private void HandleCheckForSegment(ApiRequest request)
 		{
-			var path = GetPathToSegment(request.RequiredParam("id"));
-			request.ReplyWithText(RobustFile.Exists(path) ? "exists" : "not found");
+			var segmentId = request.RequiredParam("id");
+			var path = GetPathToRecordableAudioForSegment(segmentId);
+
+			WaitForRecordingToComplete();	// Wait until the recording is flushed to disk before testing file existence
+
+			if (RobustFile.Exists(path))
+				request.ReplyWithText("exists");
+			else
+			{
+				path = GetPathToPublishableAudioForSegment(segmentId);
+				request.ReplyWithText(RobustFile.Exists(path) ? "exists" : "not found");
+			}
 		}
 
+		/// <summary>
+		/// Returns the content of the requested .mp3 file.
+		/// </summary>
+		/// <param name="request"></param>
+		private void HandleAudioFileRequest(ApiRequest request)
+		{
+			const string Api_Prefix = "bloom/";
+			if (request.HttpMethod == HttpMethods.Get)
+			{
+				// RequiredParam() decodes the url parameters, so we don't need to do any UrlPathString decoding here.
+				var idWithPrefix = request.RequiredParam("id");
+				var bloomIndex = idWithPrefix.IndexOf(Api_Prefix);
+				var id = idWithPrefix.Substring(bloomIndex + Api_Prefix.Length);
+				var segmentId = Path.GetFileNameWithoutExtension(id);
+				var recordablePath = GetPathToRecordableAudioForSegment(segmentId);
+
+				WaitForRecordingToComplete();
+
+				// return the audio file contents
+				var mp3File = GetPathToPublishableAudioForSegment(segmentId);
+				if (RobustFile.Exists(mp3File))
+				{
+					request.ReplyWithAudioFileContents(mp3File);
+					return;
+				}
+
+				request.Failed("Somehow we don't have the .mp3 file.");
+			}
+			else
+				request.Failed("Only Get is currently supported");
+		}
 
 		/// <summary>
 		/// Delete a recording segment, as requested by the Clear button in the talking book tool.
 		/// The corresponding mp3 should also be deleted.
 		/// </summary>
-		/// <param name="fileUrl"></param>
 		private void HandleDeleteSegment(ApiRequest request)
 		{
-			var path = GetPathToSegment(request.RequiredParam("id"));
-			var mp3Path = Path.ChangeExtension(path, "mp3");
+			var segmentId = request.RequiredParam("id");
+			var recordablePath = GetPathToRecordableAudioForSegment(segmentId);
+			var publishablePath = GetPathToPublishableAudioForSegment(segmentId);
 			var success = true;
-			if(RobustFile.Exists(path))
-				success = DeleteFileReportingAnyProblem(path);
-			if (RobustFile.Exists(mp3Path))
-				success &= DeleteFileReportingAnyProblem(mp3Path);
+
+			WaitForRecordingToComplete();	// Wait for any files to (potentially) flush to disk before trying to deleting them.
+
+			if(RobustFile.Exists(recordablePath))
+				success = DeleteFileReportingAnyProblem(recordablePath);
+
+			if (RobustFile.Exists(publishablePath))
+				success &= DeleteFileReportingAnyProblem(publishablePath);
 
 			if (success)
 			{
@@ -518,6 +643,13 @@ namespace Bloom.Edit
 			return false;
 		}
 
+		/// <summary>
+		///  Waits (if necessary) for any recordings to complete (regardless of where it is trying to save the recording)
+		/// </summary>
+		private void WaitForRecordingToComplete()
+		{
+			_completingRecording.WaitOne();    // This will block if we ran HandleEndRecord, but haven't finished saving.
+		}
 
 		// Palaso component to do the actual recording.
 		private AudioRecorder Recorder
@@ -550,6 +682,8 @@ namespace Bloom.Edit
 
 		private void CreateRecorder()
 		{
+			_collectionAudioTrimEndMilliseconds =
+				_bookSelection.CurrentSelection.CollectionSettings.AudioRecordingTrimEndMilliseconds;
 			_recorder = new AudioRecorder(1);
 			_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
 			BeginMonitoring();	// could get here recursively _recorder isn't set by now!

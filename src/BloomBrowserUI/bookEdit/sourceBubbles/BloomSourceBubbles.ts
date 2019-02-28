@@ -471,40 +471,60 @@ export default class BloomSourceBubbles {
                             }
                         },
                         render: (event, api) => {
-                            api.elements.tooltip.keydown(kevent => {
-                                // When the user types <Control-A> inside a source bubble, we don't
-                                // want the whole page selected.  We want just the current text of
-                                // the bubble to be selected.
-                                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
-                                // The selection code was adapted from one of the answers given on
-                                // http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
-                                if (kevent.ctrlKey && kevent.which == 65) {
-                                    kevent.preventDefault();
-                                    kevent.stopImmediatePropagation();
-                                    const bubble = kevent.target;
-                                    const obj = $(bubble)[0].firstElementChild;
-                                    if (
-                                        obj &&
-                                        obj.ownerDocument &&
-                                        obj.ownerDocument.defaultView
-                                    ) {
-                                        const selection = obj.ownerDocument.defaultView.getSelection();
-                                        const range = obj.ownerDocument.createRange();
-                                        range.selectNodeContents(obj);
-                                        selection.removeAllRanges();
-                                        selection.addRange(range);
+                            if (
+                                !api.elements.tooltip ||
+                                !api.elements.tooltip[0]
+                            )
+                                return;
+                            const paras = api.elements.tooltip[0].getElementsByTagName(
+                                "p"
+                            );
+                            for (let i = 0; i < paras.length; i++) {
+                                const p = paras[i] as HTMLElement;
+                                // won't let us tab to it, but lets it get focus when we do a drag selection,
+                                // which allows keyboard events to be raised and ctrl-A intercepted.
+                                p.setAttribute("tabindex", "-1");
+                                p.addEventListener("keydown", kevent => {
+                                    // When the user types <Control-A> inside a source bubble, we don't
+                                    // want the whole page selected.  We want just the current text of
+                                    // the bubble to be selected.
+                                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
+                                    // The selection code was adapted from one of the answers given on
+                                    // http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
+                                    if (kevent.ctrlKey && kevent.which == 65) {
+                                        kevent.preventDefault();
+                                        kevent.stopImmediatePropagation();
+                                        const target = kevent.target as HTMLElement;
+                                        if (!target) return; // unlikely, makes checker happy
+                                        // Since the event is attached to a paragraph, the parent should be the whole bloom-editable
+                                        const wholeSource =
+                                            target.parentElement;
+                                        if (
+                                            wholeSource &&
+                                            wholeSource.ownerDocument &&
+                                            wholeSource.ownerDocument
+                                                .defaultView
+                                        ) {
+                                            const selection = wholeSource.ownerDocument.defaultView.getSelection();
+                                            const range = wholeSource.ownerDocument.createRange();
+                                            range.selectNodeContents(
+                                                wholeSource
+                                            );
+                                            selection.removeAllRanges();
+                                            selection.addRange(range);
+                                        }
                                     }
-                                }
-                            });
-                            // We'd like to prevent the source bubble from getting focus. Tried various things.
-                            // This seems to do it without interfering with any behavior we want inside the tooltip.
-                            $(api.elements.tooltip).mousedown(ev => {
-                                ev.preventDefault();
-                            });
+                                });
+                            }
                             // This started out as an attempt to keep the bubble from getting focus, but didn't do that
                             // reliably for some undetermined reason. It's still useful so that clicking on a tooltip focuses its element.
                             // Otherwise the bubble may stay hidden behind something else even when clicked.
+                            // However, if the user drags and makes a range selection, we don't want to hide it.
                             api.elements.tooltip.click(ev => {
+                                if (!window.getSelection().isCollapsed) {
+                                    // user made a range selection, probably to copy. Don't mess with it.
+                                    return;
+                                }
                                 // We're going to pick an element to focus. We start by getting the element our qtip
                                 // is attached to.
                                 let baseElement = $("body").find(

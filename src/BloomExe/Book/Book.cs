@@ -1725,7 +1725,7 @@ namespace Bloom.Book
 				HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement)
 					.Cast<XmlElement>()
 					.Any(
-						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"]?.Value));
+						span => AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, span.Attributes["id"]?.Value));
 		}
 
 		/// <summary>
@@ -1756,7 +1756,7 @@ namespace Bloom.Book
 					foreach (var audioSentenceChildNode in HtmlDom.SelectAudioSentenceElements(div).Cast<XmlElement>())
 					{
 						var id = audioSentenceChildNode.GetOptionalStringAttribute("id", "");
-						if (string.IsNullOrEmpty(id) || !AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, audioSentenceChildNode.Attributes["id"].Value))
+						if (string.IsNullOrEmpty(id) || !AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, audioSentenceChildNode.Attributes["id"].Value))
 							return false;   // missing audio file
 						if (!textOfDiv.StartsWith(audioSentenceChildNode.InnerText))
 							return false;   // missing audio span?
@@ -1769,6 +1769,16 @@ namespace Bloom.Book
 				}
 			}
 			return true;
+		}
+
+		public bool HasBrokenAudioSentenceElements()
+		{
+			foreach (var divPage in RawDom.SafeSelectNodes("/html/body/div").Cast<XmlElement>())
+			{
+				if (HtmlDom.HasAudioSentenceElementsWithoutId(divPage))
+					return true;
+			}
+			return false;
 		}
 
 		/// <summary>
@@ -2055,6 +2065,9 @@ namespace Bloom.Book
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
 
+			CopyAndRenameAudioFiles(newPageDiv, templatePage.Book.FolderPath);
+			CopyAndRenameVideoFiles(newPageDiv, templatePage.Book.FolderPath);
+
 			OrderOrNumberOfPagesChanged();
 			BuildPageCache();
 			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == newPageDiv);
@@ -2131,96 +2144,59 @@ namespace Bloom.Book
 
 		public void DuplicatePage(IPage page)
 		{
-			Guard.Against(HasFatalError, "Duplicate page failed: " + FatalErrorDescription);
-			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
-
-			var pages = GetPageElements();
-			var pageDiv = FindPageDiv(page);
-			var newpageDiv = (XmlElement) pageDiv.CloneNode(true);
-			BookStarter.SetupIdAndLineage(pageDiv, newpageDiv);
-			var body = pageDiv.ParentNode;
-			int currentPageIndex = -1;
-
-			// Have to compare Ids; can't use _pagesCache.IndexOf(page) -- (BL-467)
-			foreach (IPage cachedPage in _pagesCache)
-				if (cachedPage.Id.Equals(page.Id))
-				{
-					currentPageIndex = _pagesCache.IndexOf(cachedPage);
-					break;
-				}
-
-			// This should never happen. But just in case, don't do something we don't want to do.
-			if (currentPageIndex < 0)
-				return;
-
-			// If we copy audio markup, the new page will be linked to the SAME audio files,
-			// and the pages might well continue to share markup even when text on one of them
-			// is changed. If we WANT to copy the audio links, we need to do something like
-			// assigning a new guid each time a new recording is made, or at least if we
-			// find another sentence in the book sharing the same recording and with different
-			// text.
-			RemoveAudioMarkup(newpageDiv);
-
-			// When we copy a page with video content, it's simplest and safest to just copy and
-			// rename the video file.  If we don't do this, then deleting a page or editing a video
-			// have to be very careful not to delete or modify a video file referenced elsewhere in
-			// the book.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6536.
-			CopyAndRenameVideoFiles(newpageDiv);
-
-			body.InsertAfter(newpageDiv, pages[currentPageIndex]);
-			_storage.Dom.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
-
-			ClearPagesCache();
-			Save();
-			if (_pageListChangedEvent != null)
-				_pageListChangedEvent.Raise(null);
-
-			InvokeContentsChanged(null);
-
-			if (_pagesCache == null)
-				BuildPageCache();
-			_pageSelection.SelectPage(_pagesCache[currentPageIndex + 1]);
+			// Can be achieved by just using the current page as both the place to insert after
+			// and the template to copy.
+			// Note that Pasting a page uses the same routine; unit tests for duplicate and copy/paste
+			// take advantage of our knowledge that the code is shared so that between them they cover
+			// the important code paths. If the code stops being shared, we should extend test
+			// coverage appropriately.
+			InsertPageAfter(page, page);
 		}
 
-		private static void RemoveAudioMarkup(XmlElement newpageDiv)
+		private void CopyAndRenameAudioFiles(XmlElement newpageDiv, string sourceBookFolder)
 		{
 			foreach (var audioElement in HtmlDom.SelectAudioSentenceElements(newpageDiv).Cast<XmlElement>().ToList())
 			{
-				XmlNode after = audioElement;
-
-				string audioElementClassesValue = audioElement.GetStringAttribute("class");
-				List<string> audioElementClassList = null;
-				if (!String.IsNullOrEmpty(audioElementClassesValue))
+				// The "i" makes sure that the ID does not start with digit. It's unnecessary but harmless
+				// if it already starts with a non-digit. The JS code that usually generates these only
+				// adds it if necessary, but nothing knows enough about the nature of the IDs to make
+				// consistency about that necessary. It just needs to be unique (and a valid ID).
+				// (It would be pretty easy to make it consistent, but considerably harder to cover
+				// the new path adequately with unit tests.)
+				var id = "i" + Guid.NewGuid();
+				var oldId = audioElement.Attributes["id"]?.Value;
+				audioElement.SetAttribute("id", id);
+				if (string.IsNullOrEmpty(oldId))
+					continue;
+				var sourceAudioFilePath = Path.Combine(Path.Combine(sourceBookFolder, "audio"), oldId + ".wav");
+				var newAudioFolderPath = Path.Combine(FolderPath, "audio");
+				var newAudioFilePath = Path.Combine(newAudioFolderPath, id + ".wav");
+				Directory.CreateDirectory(newAudioFolderPath);
+				if (RobustFile.Exists(sourceAudioFilePath))
 				{
-					audioElementClassList = audioElementClassesValue.Split(HtmlDom.kHtmlClassDelimiters, StringSplitOptions.RemoveEmptyEntries).ToList();
+					RobustFile.Copy(sourceAudioFilePath, newAudioFilePath);
 				}
 
-				if (audioElementClassList != null && audioElementClassList.Contains("bloom-editable"))
+				var mp3Path = Path.ChangeExtension(sourceAudioFilePath, "mp3");
+				var newMp3Path = Path.ChangeExtension(newAudioFilePath, "mp3");
+				if (RobustFile.Exists(mp3Path))
 				{
-					// This should definitely not be deleted. Just remove the markup as best you can.
-					HtmlDom.RemoveClass(audioElement, "audio-sentence");
-				}
-				else
-				{
-					// Looks safe to remove the audio markup wrapper
-					foreach (XmlNode child in audioElement.ChildNodes)
-					{
-						audioElement.ParentNode.InsertAfter(child, after);
-						after = child;
-					}
-					audioElement.ParentNode.RemoveChild(audioElement);
+					RobustFile.Copy(mp3Path, newMp3Path);
 				}
 			}
 		}
 
-		private void CopyAndRenameVideoFiles(XmlElement newpageDiv)
+		private void CopyAndRenameVideoFiles(XmlElement newpageDiv, string sourceBookFolder)
 		{
-			foreach (var source in newpageDiv.SafeSelectNodes(".//video/source[contains(@type,'video/')]").Cast<XmlElement>().ToList())
+			foreach (var source in newpageDiv.SafeSelectNodes(".//video/source").Cast<XmlElement>().ToList())
 			{
 				var src = source.GetAttribute("src");
+				// old source may have a param, too, but we don't currently need to keep it.
+				string timings;
+				src = SignLanguageApi.StripTimingFromVideoUrl(src, out timings);
 				if (String.IsNullOrWhiteSpace(src))
 					continue;
-				var oldVideoPath = Path.Combine(FolderPath, src);
+				var oldVideoPath = Path.Combine(sourceBookFolder, src);
 				// If the video file doesn't exist, don't bother adjusting anything.
 				// If it does exist, copy it with a new name based on the current one, similarly
 				// to how we've been renaming image files that already exist in the book's folder.
@@ -2236,8 +2212,13 @@ namespace Bloom.Book
 						var newFileName = oldFileName + "-" + count.ToString(CultureInfo.InvariantCulture);
 						newVideoPath = Path.Combine(FolderPath, "video", newFileName + extension);
 					} while (RobustFile.Exists(newVideoPath));
+
+					Directory.CreateDirectory(Path.GetDirectoryName(newVideoPath));
 					RobustFile.Copy(oldVideoPath, newVideoPath, false);
-					source.SetAttribute("src", "video/" + Path.GetFileName(newVideoPath));
+					
+					source.SetAttribute("src", "video/" +
+						UrlPathString.CreateFromUnencodedString(Path.GetFileName(newVideoPath)).UrlEncoded +
+					    (string.IsNullOrEmpty(timings) ? "" : "#t=" + timings));
 				}
 			}
 		}

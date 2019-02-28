@@ -303,7 +303,7 @@
     <Compile Include="BloomWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Book\BloomReaderFileMaker.cs" />
+    <Compile Include="Publish\Android\BloomReaderFileMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
     <Compile Include="Book\VersionRequirements.cs" />
@@ -355,6 +355,7 @@
     <Compile Include="Publish\HtmlPublishPanel.Designer.cs">
       <DependentUpon>HtmlPublishPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\PublishHelper.cs" />
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
@@ -615,8 +616,10 @@
     </Compile>
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
+    <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
+    <Compile Include="web\controllers\AudioSegmentationApi.cs" />
     <Compile Include="web\controllers\CollectionSettingsApi.cs" />
     <Compile Include="web\controllers\AccessibilityCheckApi.cs" />
     <Compile Include="Book\AccessibilityCheckers.cs" />
@@ -1316,7 +1319,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
-    <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || npm install) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || npm run build)" />
+    <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
     <!-- copy the appropriate Geckofx60 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />

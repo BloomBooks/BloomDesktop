@@ -131,6 +131,12 @@ namespace BloomTests.Book
 							<img class='licenseImage' src='license.png' data-derived='licenseImage' alt='License image'></img>
 						</div>
 					</div>
+					<div data-book='title-page-branding-bottom-html'>
+						<div class='marginBox'>
+							<img src='imageWithCustomAlt.svg' type='image/svg' alt='Custom Alt'></img>
+							<img src='title-page.svg' type='image/svg' alt='This picture, title-page.svg,  is missing or was loading too slowly'></img>
+						</div>
+					</div>
 					<div class='bloom-page numberedPage customPage A5Portrait'>
 						<div class='marginBox'>
 							<img src='junk' alt = 'more junk'></img>
@@ -150,7 +156,13 @@ namespace BloomTests.Book
 			foreach (XmlElement img in images)
 			{
 				Assert.That(img.Attributes["alt"], Is.Not.Null);
-				Assert.That(img.Attributes["alt"].Value, Is.EqualTo(""));
+
+				string expectedAltText = "";
+				if (img.Attributes["src"].Value == "imageWithCustomAlt.svg")
+				{
+					expectedAltText = "Custom Alt";
+				}
+				Assert.That(img.Attributes["alt"].Value, Is.EqualTo(expectedAltText));
 			}
 		}
 
@@ -841,7 +853,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void DuplicatePage_WithAudio_OmitsAudioMarkup()
+		public void DuplicatePage_WithAudio_CopiesAudioAndAssignsNewId()
 		{
 			var book = CreateBook(); // has pages from  BookTestsBase.GetThreePageDom()
 			var original = book.GetPages().Count();
@@ -852,9 +864,33 @@ namespace BloomTests.Book
 			var sentenceSpan = pageDiv.OwnerDocument.CreateElement("span");
 			extraPara.AppendChild(sentenceSpan);
 			sentenceSpan.SetAttribute("class", "audio-sentence");
-			sentenceSpan.SetAttribute("id", Guid.NewGuid().ToString());
+			var audioId = Guid.NewGuid().ToString();
+			sentenceSpan.SetAttribute("id", audioId);
 			sentenceSpan.InnerText = "This was a sentence span";
+
+			var videoDiv = pageDiv.OwnerDocument.CreateElement("div");
+			videoDiv.SetAttribute("class", "bloom-videoContainer");
+			pageDiv.AppendChild(videoDiv);
+			var videoElt = pageDiv.OwnerDocument.CreateElement("video");
+			videoDiv.AppendChild(videoElt);
+			var sourceElt = pageDiv.OwnerDocument.CreateElement("source");
+			videoElt.AppendChild(sourceElt);
+			sourceElt.SetAttribute("src", "video/Crow.mp4"); // no timings path tested here!
+
+			var audioFolder = Path.Combine(book.FolderPath, "audio");
+			Directory.CreateDirectory(audioFolder);
+			var audioFilePath = Path.Combine(audioFolder, audioId + ".wav");
+			File.WriteAllText(audioFilePath, "This is a complete fake");
+			var mp3FilePath = Path.ChangeExtension(audioFilePath, "mp3");
+			File.WriteAllText(mp3FilePath, "This is a fake mp3");
+
+			var videoFolder = Path.Combine(book.FolderPath, "video");
+			Directory.CreateDirectory(videoFolder);
+			var videoFilePath = Path.Combine(videoFolder, "Crow.mp4");
+			File.WriteAllText(videoFilePath, "This is a fake video");
+
 			book.DuplicatePage(existingPage);
+
 			AssertPageCount(book, original + 1);
 
 			var newPage = book.GetPages().Last();
@@ -863,8 +899,121 @@ namespace BloomTests.Book
 
 			var newDivNode = newPage.GetDivNodeForThisPage();
 
-			var newFirstPara = newDivNode.ChildNodes.Cast<XmlElement>().Last();
-			Assert.That(newFirstPara.InnerXml, Is.EqualTo("This was a sentence span")); // no <span> element wrapped around it
+			var newFirstPara = newDivNode.GetElementsByTagName("p").Cast<XmlElement>().Last();
+			Assert.That(newFirstPara.InnerText, Is.EqualTo("This was a sentence span")); // kept the text
+			var newSpan = newFirstPara.GetElementsByTagName("span").Cast<XmlElement>().FirstOrDefault();
+			Assert.That(newSpan, Is.Not.Null);
+			var id = newSpan.Attributes["id"]?.Value;
+			Assert.That(id, Is.Not.Null.And.Not.Empty);
+			Assert.That(id, Is.Not.EqualTo(audioId));
+
+			var newAudioPath = Path.Combine(audioFolder, id + ".wav");
+			Assert.That(File.Exists(newAudioPath));
+			Assert.That(File.ReadAllText(newAudioPath), Is.EqualTo("This is a complete fake"));
+			var newMp3Path = Path.ChangeExtension(newAudioPath, "mp3");
+			Assert.That(File.Exists(newMp3Path));
+			Assert.That(File.ReadAllText(newMp3Path), Is.EqualTo("This is a fake mp3"));
+
+			var newVideoSrc = newDivNode.SelectSingleNode(".//source") as XmlElement;
+			var srcAttrVal = newVideoSrc?.GetAttribute("src");
+			Assert.That(srcAttrVal, Does.StartWith("video/"));
+			Assert.That(srcAttrVal, Does.Not.Contain("#").And.Not.Contain("t="));
+			Assert.That(srcAttrVal, Does.EndWith(".mp4"));
+			var fileName = srcAttrVal.Substring("video/".Length);
+			Assert.That(fileName, Is.Not.EqualTo("Crow.mp4"));
+
+			var newVideoFolder = Path.Combine(book.FolderPath, "video");
+			var newVideoPath = Path.Combine(newVideoFolder, fileName);
+			Assert.That(RobustFile.Exists(newVideoPath));
+			Assert.That(File.ReadAllText(newVideoPath), Is.EqualTo("This is a fake video"));
+		}
+
+		// If we're actually copying from another book, renaming the files is not important.
+		// But we need that when copying from the SAME book, so we always do it, and this
+		// test can cover that case also.
+		[Test]
+		public void InsertPageAfter_FromAnotherBook_WholeTextMode_CopiesAndRenamesAudioAndVideo()
+		{
+			var htmlSourceBook = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div id='id1' class='bloom-editable audio-sentence'>
+							<p>Page 1 Paragraph 1 Sentence 1</p>
+							<p>Page 1 Paragraph 2 Sentence 1</p>
+						</div>
+						<div class='bloom-videoContainer'>
+							<video>
+								<source src='video/Crow.mp4#t=1.2,5.7'></source>
+							</video>
+						</div>
+					</div>
+				</body></html>";
+
+			using (var tempFolder = new SIL.TestUtilities.TemporaryFolder(_testFolder, "sourceBook"))
+			{
+				var doc = new XmlDocument();
+				doc.LoadXml(htmlSourceBook);
+				var dom = new HtmlDom(doc);
+				var storage = MakeMockStorage(tempFolder.Path, () => dom);
+				var sourceBook = new Bloom.Book.Book(storage.Object.BookInfo, storage.Object, _templateFinder.Object,
+					CreateDefaultCollectionsSettings(),
+					_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+				var sourcePage = sourceBook.GetPages().Last();
+
+				var book = CreateBook(); // has pages from  BookTestsBase.GetThreePageDom()
+				var original = book.GetPages().Count();
+				var existingPage = book.GetPages().Last();
+
+				var audioFolder = Path.Combine(sourceBook.FolderPath, "audio");
+				Directory.CreateDirectory(audioFolder);
+				var audioFilePath = Path.Combine(audioFolder, "id1.wav");
+				File.WriteAllText(audioFilePath, "This is a complete fake");
+				var mp3FilePath = Path.ChangeExtension(audioFilePath, "mp3");
+				File.WriteAllText(mp3FilePath, "This is a fake mp3");
+
+				var videoFolder = Path.Combine(sourceBook.FolderPath, "video");
+				Directory.CreateDirectory(videoFolder);
+				var videoFilePath = Path.Combine(videoFolder, "Crow.mp4");
+				File.WriteAllText(videoFilePath, "This is a fake video");
+
+				book.InsertPageAfter(existingPage, sourcePage);
+
+				AssertPageCount(book, original + 1);
+
+				var newPage = book.GetPages().Last();
+				Assert.AreNotEqual(existingPage, newPage);
+				Assert.AreNotEqual(existingPage.Id, newPage.Id);
+
+				var newDivNode = newPage.GetDivNodeForThisPage();
+
+				var newTextDiv = newDivNode.ChildNodes.Cast<XmlElement>().First();
+				Assert.That(newTextDiv.InnerText, Is.EqualTo("Page 1 Paragraph 1 Sentence 1Page 1 Paragraph 2 Sentence 1")); // kept the text
+				var id = newTextDiv.Attributes["id"]?.Value;
+				Assert.That(id, Is.Not.Null.And.Not.Empty);
+				Assert.That(id, Is.Not.EqualTo("id1"));
+
+				var newAudioFolder = Path.Combine(book.FolderPath, "audio");
+				var newAudioPath = Path.Combine(newAudioFolder, id + ".wav");
+				Assert.That(File.Exists(newAudioPath));
+				Assert.That(File.ReadAllText(newAudioPath), Is.EqualTo("This is a complete fake"));
+				var newMp3Path = Path.ChangeExtension(newAudioPath, "mp3");
+				Assert.That(File.Exists(newMp3Path));
+				Assert.That(File.ReadAllText(newMp3Path), Is.EqualTo("This is a fake mp3"));
+
+				var newVideoContainer = newDivNode.GetElementsByTagName("div")[1] as XmlElement;
+				var newVideoDiv = newVideoContainer.GetElementsByTagName("video")[0] as XmlElement;
+				var newVideoSource = newVideoDiv.GetElementsByTagName("source")[0] as XmlElement;
+				var source = newVideoSource.Attributes["src"]?.Value;
+				Assert.That(source, Does.StartWith("video/"));
+				Assert.That(source, Does.EndWith(".mp4#t=1.2,5.7"));
+				var fileName = source.Substring("video/".Length, source.Length - "video/.mp4#t=1.2,5.7".Length);
+				Assert.That(fileName, Is.Not.EqualTo("Crow").And.Not.Null.And.Not.Empty);
+
+				var newVideoFolder = Path.Combine(book.FolderPath, "video");
+				var newVideoPath = Path.Combine(newVideoFolder, fileName + ".mp4");
+				Assert.That(RobustFile.Exists(newVideoPath));
+				Assert.That(File.ReadAllText(newVideoPath), Is.EqualTo("This is a fake video"));
+			}
+
 		}
 
 		[Test]
@@ -2304,48 +2453,6 @@ namespace BloomTests.Book
 			Assert.AreEqual(true, result, $"ElementName: {elementName}");
 		}
 
-		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
-		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
-		public void RemoveAudioMarkup_ContainsAudioElements_AllElementsRemoved(TalkingBookApi.AudioRecordingMode audioRecordingMode)
-		{
-			string html = @"<html><head></head><body>
-					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
-						<div class='bloom-editable'>
-							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
-							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
-						</div>
-					</div>
-				</body></html>";
-
-			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
-			{
-				html = @"<html><head></head><body>
-					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
-						<div id='id1' class='bloom-editable audio-sentence'>
-							<p>Page 1 Paragraph 1 Sentence 1</p>
-							<p>Page 1 Paragraph 2 Sentence 1</p>
-						</div>
-					</div>
-				</body></html>";
-			}
-
-			_bookDom = new HtmlDom(html);
-			var book = CreateBook();
-
-			// System under test
-			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(global::Bloom.Book.Book));
-			runner.InvokeStatic("RemoveAudioMarkup", book.RawDom.DocumentElement);
-
-			// Test verification
-			Assert.AreEqual(0, HtmlDom.SelectAudioSentenceElements(book.RawDom.DocumentElement)?.Count ?? 0, "Count did not match expectation");
-
-			string expectedInnerHtml = "<div class=\"bloom-editable\"><p>Page 1 Paragraph 1 Sentence 1</p><p>Page 1 Paragraph 2 Sentence 1</p></div>";
-			string expectedOuterHtml = $"<div class=\"bloom-page numberedPage bloom-nonprinting\" id=\"page1\" data-page-number=\"1\">{expectedInnerHtml}</div>";
-			var page1Div = book.RawDom.SelectSingleNode("//div[@id='page1']") as XmlElement;
-			Assert.AreEqual(expectedInnerHtml, page1Div.InnerXml.Replace(" id=\"id1\"", ""), $"Inner HTML");
-			Assert.AreEqual(expectedOuterHtml, page1Div.OuterXml.Replace(" id=\"id1\"", ""), $"Outer HTML");
-		}
-
 		private const string _pathToTestVideos = "src/BloomTests/videos";
 
 		[Test]
@@ -2405,6 +2512,132 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(hashTimingsXpath, 1);
 		}
 
+		[Test]
+		public void SelectAudioSentenceElements_SentenceWithNoId_SkipsIt()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var audioSpans = HtmlDom.SelectAudioSentenceElements(dom.Body);
+			Assert.That(audioSpans, Has.Count.EqualTo(1));
+			Assert.That(audioSpans[0].InnerText, Is.EqualTo("Page 1 Paragraph 2 Sentence 1"));
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesEmptyId()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.True);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesDivEmptyId()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable audio-sentence' id=''>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='id3' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.True);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesMissingId()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.True);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesDivMissingId()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable audio-sentence'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='id3' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.True);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesIdsAllThere()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='id3' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.False);
+		}
+
+		[Test]
+		public void HasAudioSentenceElementsWithoutId_HandlesDivIdsAllThere()
+		{
+			string html = @"<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-editable audio-sentence' id='id0'>
+							<p><span id='id1' class='audio-sentence'>Page 1 Paragraph 1 Sentence 1</span></p>
+							<p><span id='id2' class='audio-sentence'>Page 1 Paragraph 2 Sentence 1</span></p>
+							<p><span id='id3' class='audio-sentence'>Page 1 Paragraph 3 Sentence 1</span></p>
+						</div>
+					</div>
+				</body></html>";
+
+			var dom = new HtmlDom(html);
+			var hasMissingId = HtmlDom.HasAudioSentenceElementsWithoutId(dom.Body);
+			Assert.That(hasMissingId, Is.False);
+		}
 
 #if UserControlledTemplate
 		[Test]

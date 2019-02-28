@@ -42,7 +42,7 @@ namespace Bloom.Edit
 		private readonly SignLanguageApi _signLanguageApi;
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
-		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
+		private Color _enabledToolbarColor = Palette.DarkTextAgainstBackgroundColor;
 		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
 		private BloomWebSocketServer _webSocketServer;
@@ -64,6 +64,9 @@ namespace Bloom.Edit
 			_deletePageCommand = deletePageCommand;
 			_webSocketServer = model.EditModelSocketServer;
 			InitializeComponent();
+
+			this._splitContainer1.BackColor = Palette.GeneralBackground;
+			this._splitContainer2.BackColor = Palette.GeneralBackground;
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it
 			//don't let it grow automatically
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);

@@ -4,14 +4,16 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml;
+using Bloom.Book;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using BloomTemp;
 using SIL.IO;
 using SIL.Xml;
 
-namespace Bloom.Book
+namespace Bloom.Publish.Android
 {
 	/// <summary>
 	/// This class is the beginnings of a separate place to put code for creating .bloomd files.
@@ -22,13 +24,32 @@ namespace Bloom.Book
 	{
 		public const string QuestionFileName = "questions.json";
 
-		public static Book PrepareBookForBloomReader(Book book, BookServer bookServer, TemporaryFolder temp, Color backColor,
+		public static Control ControlForInvoke { get; set; }
+
+		public static void CreateBloomReaderBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, IWebSocketProgress progress)
+		{
+			using (var temp = new TemporaryFolder("BloomReaderExport"))
+			{
+				var modifiedBook = PrepareBookForBloomReader(book, bookServer, temp, backColor, progress);
+				// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
+				// 64dp in Bloom Reader.
+
+				BookCompressor.MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
+
+				BookCompressor.CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
+					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
+			}
+		}
+
+		public static Book.Book PrepareBookForBloomReader(Book.Book book, BookServer bookServer, TemporaryFolder temp, Color backColor,
 			IWebSocketProgress progress)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
-			var bookFolderPath = Path.Combine(temp.FolderPath, "PlaceForBook");
+			// And bloom-player expects folder name to match html file name.
+			var htmPath = BookStorage.FindBookHtmlInFolder(book.FolderPath);
+			var bookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
 			Directory.CreateDirectory(bookFolderPath);
-			var modifiedBook = BookCompressor.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
+			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
 
 			var jsonPath = Path.Combine(bookFolderPath, QuestionFileName);
 			var questionPages = modifiedBook.RawDom.SafeSelectNodes(
@@ -51,16 +72,128 @@ namespace Bloom.Book
 			File.WriteAllText(jsonPath, builder.ToString());
 
 			// Do this after making questions, as they satisfy the criteria for being 'blank'
+			using (var helper = new PublishHelper())
+			{
+				helper.ControlForInvoke = ControlForInvoke;
+				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook);
+			}
 			modifiedBook.RemoveBlankPages();
+
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
+			RemoveInvisibleImageElements(modifiedBook);
+			modifiedBook.Storage.CleanupUnusedImageFiles(false);
+			modifiedBook.Storage.CleanupUnusedAudioFiles();
+			modifiedBook.Storage.CleanupUnusedVideoFiles();
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
 			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
 			EmbedFonts(modifiedBook, progress, new FontFileFinder());
 
+			var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
+			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
+			StripContentEditableAndTabIndex(modifiedBook.RawDom);
+			InsertReaderStylesheet(modifiedBook.RawDom);
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"),
+				Path.Combine(bookFolderPath, "readerStyles.css"));
+			ConvertImagesToBackground(modifiedBook.RawDom);
+
 			modifiedBook.Save();
 
 			return modifiedBook;
+		}
+
+
+		private static void StripImgIfWeCannotFindFile(XmlDocument dom, string bookFile)
+		{
+			var folderPath = Path.GetDirectoryName(bookFile);
+			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
+			{
+				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).NotEncoded.Split('?')[0];
+				if (!File.Exists(Path.Combine(folderPath, file)))
+				{
+					imgElt.ParentNode.RemoveChild(imgElt);
+				}
+			}
+		}
+
+		private static void StripContentEditableAndTabIndex(XmlDocument dom)
+		{
+			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>())
+				editableElt.RemoveAttribute("contenteditable");
+
+			foreach (var tabIndexDiv in dom.SafeSelectNodes("//div[@tabindex]").Cast<XmlElement>())
+				tabIndexDiv.RemoveAttribute("tabindex");
+		}
+
+		/// <summary>
+		/// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer.
+		/// Convert the img into a background image of the image container div.
+		/// Specifically, make the following changes:
+		/// - Copy any data-x attributes from the img element to the div
+		/// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the div
+		///    (any pre-existing style attribute on the div is lost)
+		/// - Add the class bloom-backgroundImage to the div
+		/// - delete the img element
+		/// (See oldImg and newImg in unit test CompressBookForDevice_ImgInImgContainer_ConvertedToBackground for an example).
+		/// </summary>
+		/// <param name="wholeBookHtml"></param>
+		/// <returns></returns>
+		private static void ConvertImagesToBackground(XmlDocument dom)
+		{
+			foreach (var imgContainer in dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]").Cast<XmlElement>().ToArray())
+			{
+				var img = imgContainer.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n is XmlElement && n.Name == "img");
+				if (img == null || img.Attributes["src"] == null)
+					continue;
+				// The filename should be already urlencoded since src is a url.
+				var src = img.Attributes["src"].Value;
+				HtmlDom.SetImageElementUrl(new ElementProxy(imgContainer), UrlPathString.CreateFromUrlEncodedString(src));
+				foreach (XmlAttribute attr in img.Attributes)
+				{
+					if (attr.Name.StartsWith("data-"))
+						imgContainer.SetAttribute(attr.Name, attr.Value);
+				}
+				imgContainer.SetAttribute("class", imgContainer.Attributes["class"].Value + " bloom-backgroundImage");
+				imgContainer.RemoveChild(img);
+			}
+		}
+
+		private static void InsertReaderStylesheet(XmlDocument dom)
+		{
+			var link = dom.CreateElement("link");
+			XmlUtils.GetOrCreateElement(dom, "html", "head").AppendChild(link);
+			link.SetAttribute("rel", "stylesheet");
+			link.SetAttribute("href", "readerStyles.css");
+			link.SetAttribute("type", "text/css");
+		}
+
+		/// <summary>
+		/// Remove image elements that are invisible due to the book's layout orientation.
+		/// </summary>
+		/// <remarks>
+		/// This code is temporary for Version4.5.  Version4.6 extensively refactors the
+		/// electronic publishing code to combine ePUB and BloomReader preparation as much
+		/// as possible.
+		/// </remarks>
+		private static void RemoveInvisibleImageElements(Bloom.Book.Book book)
+		{
+			var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
+			foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
+			{
+				var src = img.Attributes["src"]?.Value;
+				if (string.IsNullOrEmpty(src))
+					continue;
+				var classes = img.Attributes["class"]?.Value;
+				if (string.IsNullOrEmpty(classes))
+					continue;
+				if (isLandscape && classes.Contains("portraitOnly") ||
+					!isLandscape && classes.Contains("landscapeOnly"))
+				{
+					// Remove this img element since it shouldn't be displayed.
+					img.ParentNode.RemoveChild(img);
+				}
+			}
 		}
 
 		/// <summary>
@@ -75,7 +208,7 @@ namespace Bloom.Book
 		/// <param name="book"></param>
 		/// <param name="progress"></param>
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
-		public static void EmbedFonts(Book book, IWebSocketProgress progress, IFontFinder fontFileFinder)
+		public static void EmbedFonts(Book.Book book, IWebSocketProgress progress, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
 			// The 'false' here says to ignore all but the first font face in CSS's ordered lists of desired font faces.
@@ -161,7 +294,7 @@ namespace Bloom.Book
 			foreach (XmlElement source in page.SafeSelectNodes(".//div[contains(@class, 'bloom-editable')]"))
 			{
 				var lang = source.Attributes["lang"]?.Value??"";
-				if (string.IsNullOrEmpty(lang) || lang == "z")
+				if (String.IsNullOrEmpty(lang) || lang == "z")
 					continue;
 				var group = new QuestionGroup() {lang = lang};
 				// this looks weird, but it's just driven by the test cases which are in turn collected
@@ -185,7 +318,7 @@ namespace Bloom.Book
 					//(separate start vs. end br elements might not occur in real FF tests, see note above).
 					cleanLine = cleanLine.Replace("<br>", "");
 					cleanLine = cleanLine.Replace("\u200c", "");
-					if (string.IsNullOrWhiteSpace(cleanLine))
+					if (String.IsNullOrWhiteSpace(cleanLine))
 					{
 						// If we've accumulated an actual question and answers, put it in the output.
 						// otherwise, we're probably just dealing with leading white space before the first question.

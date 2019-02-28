@@ -33,11 +33,11 @@ describe("jquery.text-markup", function() {
 
     it("checkLeveledReader", function() {
         var input =
-            'Two-word sentence. Three <span class="bold">"word"</span> sentence. "This is a six word sentence."';
+            'Two-word sentence. Thr<span data-cke-bookmark="1" style="display: none;" id="cke_bm_41C">&nbsp;</span>ee <span class="bold">"word"</span> sentence. "This is a six word sentence."';
         var out2 =
-            'Two-word sentence. <span class="sentence-too-long" data-segment="sentence">Three <span class="bold">"word"</span> sentence.</span> <span class="sentence-too-long" data-segment="sentence">"This is a six word sentence."</span>';
+            'Two-word sentence. <span class="sentence-too-long" data-segment="sentence">Thr<span data-cke-bookmark="1" style="display: none;" id="cke_bm_41C">&nbsp;</span>ee <span class="bold">"word"</span> sentence.</span> <span class="sentence-too-long" data-segment="sentence">"This is a six word sentence."</span>';
         var out3 =
-            'Two-word sentence. Three <span class="bold">"word"</span> sentence. <span class="sentence-too-long" data-segment="sentence">"This is a six word sentence."</span>';
+            'Two-word sentence. Thr<span data-cke-bookmark="1" style="display: none;" id="cke_bm_41C">&nbsp;</span>ee <span class="bold">"word"</span> sentence. <span class="sentence-too-long" data-segment="sentence">"This is a six word sentence."</span>';
 
         // check 2 word sentences
         $("#text_entry1")

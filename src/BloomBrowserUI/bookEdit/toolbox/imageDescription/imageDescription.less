@@ -9,28 +9,19 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    // All the layers down to .imageDescriptionTool have to be 100%
-    // to allow it to stretch and put Help at the bottom
-    height: 100%;
+    padding-left: 20px;
+    height: 100%; // push the help link to the bottom
     *,
     a {
         color: @bloom-toolboxWhite;
     }
 }
 
-.imageToolInternalWrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
 .imgDescLabelBlock {
-    margin: 20px;
+    // no: creates a scroll-bar, bizarrely... margin-top: 2em;
+    margin-bottom: 2em;
 }
 
-.imageDescriptionCheck {
-    margin-left: 20px;
-}
 @playVideoIconWidth: 16px;
 @playVideoIconMargin: 5px;
 
@@ -48,15 +39,4 @@
 .wrapPlayVideo {
     display: flex;
     flex-direction: row;
-}
-
-// By default help has a large margin. In this tool we want it fixed at the bottom,
-// so it's in a FLEX box that distributes any spare space to keep it there.
-// We need a rather specific rule to override the default one.
-.toolboxRoot {
-    .imageDescriptionTool {
-        .helpLinkWrapper {
-            margin-bottom: 0;
-        }
-    }
 }

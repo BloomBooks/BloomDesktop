@@ -61,7 +61,7 @@ namespace Bloom.Book
 		string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
-		void CleanupUnusedImageFiles();
+		void CleanupUnusedImageFiles(bool keepFilesForEditing=true);
 		void CleanupUnusedAudioFiles();
 		void CleanupUnusedVideoFiles();
         BookInfo BookInfo { get; set; }
@@ -439,7 +439,7 @@ namespace Bloom.Book
 		/// Compare the images we find in the top level of the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
-		public void CleanupUnusedImageFiles()
+		public void CleanupUnusedImageFiles(bool keepFilesForEditing = true)
 		{
 			if (IsStaticContent(_folderPath))
 				return;
@@ -459,12 +459,17 @@ namespace Bloom.Book
 			var element = Dom.RawDom.DocumentElement;
 			var pathsToNotDelete = GetImagePathsRelativeToBook(element);
 
-			//also, remove from the doomed list anything referenced in the datadiv that looks like an image
-			//This saves us from deleting, for example, cover page images if this is called before the front-matter
-			//has been applied to the document.
-			pathsToNotDelete.AddRange(from XmlElement dataDivImage in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
-							  select UrlPathString.CreateFromUrlEncodedString(dataDivImage.InnerText.Trim()).PathOnly.NotEncoded);
-			pathsToNotDelete.AddRange(this._brandingImageNames);
+			if (keepFilesForEditing)
+			{
+				//also, remove from the doomed list anything referenced in the datadiv that looks like an image
+				//This saves us from deleting, for example, cover page images if this is called before the front-matter
+				//has been applied to the document.
+				pathsToNotDelete.AddRange (from XmlElement dataDivImage
+											in Dom.RawDom.SelectNodes ("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
+											select UrlPathString.CreateFromUrlEncodedString (dataDivImage.InnerText.Trim ()).PathOnly.NotEncoded);
+				pathsToNotDelete.AddRange (this._brandingImageNames);
+			}
+
 			foreach (var path in pathsToNotDelete)
 			{
 				imageFiles.Remove(GetNormalizedPathForOS(path));   //Remove just returns false if it's not in there, which is fine
@@ -1323,12 +1328,12 @@ namespace Bloom.Book
 			_brandingImageNames.Clear();
 			try
 			{
-				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6516.
-				// On Linux installations, files can never be copied to the "FactoryTemplateBookDirectory".
-				// If Bloom is installed "for all users" on Windows, it may also be impossible to copy files there.
-				// Copying files there allows Bloom to show branding for the template preview, which seems rather
-				// unimportant.
-				if (FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal))
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6516 and https://issues.bloomlibrary.org/youtrack/issue/BL-6852.
+				// On Linux installations, files can never be copied to the "FactoryCollectionsDirectory" or any of its subfolders
+				// (like "FactoryTemplateBookDirectory" or "SampleShellsDirectory").  If Bloom is installed "for all users" on Windows,
+				// it is also impossible to copy files there.  Copying files to those locations would allow Bloom to show branding for
+				// a template preview or a sample shell preview, which seems rather unimportant.
+				if (FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory, StringComparison.Ordinal))
 					return;
 				if (!string.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
 				{
@@ -1512,20 +1517,39 @@ namespace Bloom.Book
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
-			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
-			// where it should definitely be forward slash. And it works fine in a Windows path too.
-			string autocssFilePath = "../"+"settingsCollectionStyles.css";
-			if (RobustFile.Exists(Path.Combine(_folderPath,autocssFilePath)))
-				EnsureHasLinkToStyleSheet(dom, autocssFilePath);
+			EnsureHasLocalOrParentLink(dom, "settingsCollectionStyles.css");
 
-			var customCssFilePath = "../" + "customCollectionStyles.css";
-			if (RobustFile.Exists(Path.Combine(_folderPath, customCssFilePath)))
-				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
+			EnsureHasLocalOrParentLink(dom, "customCollectionStyles.css");
 
 			if (RobustFile.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+		}
+
+		/// <summary>
+		/// Files like CustomCollectionStyles or settingsCollectionStyles are usually found
+		/// in the parent directory, and we want a link with href like ../CustomCollectionStyles.css.
+		/// But when publishing (e.g., to Android or Epub), we put those files in the book folder,
+		/// and the link needs to point there. In that case the file is typically found in both
+		/// places, so we preferentially link to the local one if found, though usually it isn't.
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="fileName"></param>
+		private void EnsureHasLocalOrParentLink(HtmlDom dom, string fileName)
+		{
+			var localPath = Path.Combine(_folderPath, fileName);
+			if (RobustFile.Exists(localPath))
+			{
+				EnsureHasLinkToStyleSheet(dom, fileName);
+				return;
+			}
+
+			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
+			// where it should definitely be forward slash. And it works fine in a Windows path too.
+			var parentRelativePath = "../" + fileName;
+			if (RobustFile.Exists(Path.Combine(_folderPath, parentRelativePath)))
+				EnsureHasLinkToStyleSheet(dom, parentRelativePath);
 		}
 
 		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)

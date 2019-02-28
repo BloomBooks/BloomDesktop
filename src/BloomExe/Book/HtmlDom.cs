@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
+using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
@@ -1857,7 +1858,9 @@ namespace Bloom.Book
 
 		public static XmlNodeList SelectAudioSentenceElements(XmlElement element)
 		{
-			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence')]");
+			// It's unexpected for a book to have nodes with class audio-sentence and no id to link them to a file, but
+			// if they do occur, it's better to ignore them than for other code to crash when looking for the ID.
+			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]");
 		}
 
 		public static XmlNodeList SelectAudioSentenceElementsWithDataDuration(XmlElement element)
@@ -1868,6 +1871,14 @@ namespace Bloom.Book
 		public static XmlNodeList SelectAudioSentenceElementsWithRecordingMd5(XmlElement element)
 		{
 			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and @recordingmd5]");
+		}
+
+		public static bool HasAudioSentenceElementsWithoutId(XmlElement element)
+		{
+			// It's unexpected for a book to have nodes with class audio-sentence and no id to link them to a file, but
+			// if they do occur, it's better to ignore them than for other code to crash when looking for the ID.
+			var nodes = element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) = 0]");
+			return nodes?.Count >= 1;
 		}
 
 		public bool DoesContainNarrationAudioRecordedUsingWholeTextBox()
@@ -2143,7 +2154,7 @@ namespace Bloom.Book
 		}
 
 		// Make the image's alt attr match the image description for the specified language.
-		// If we don't have one, make the alt attr exactly an empty string.
+		// If we don't have one, make the alt attr exactly an empty string (except branding images may be allowed to have custom alt text).
 		private static void SetImageAltAttrFromDescription(XmlElement img, string descriptionLang)
 		{
 			var parent = img.ParentNode as XmlElement;
@@ -2176,8 +2187,66 @@ namespace Bloom.Book
 				}
 			}
 
-			// Images in accessible epubs should have explicit empty alt attr if no useful description
-			img.SetAttribute("alt", "");
+			if (!EpubMaker.IsBranding(img) || IsPlaceholderImageAltText(img))
+			{
+				// Images in accessible epubs should have explicit empty alt attr if no useful description
+				img.SetAttribute("alt", "");
+			}
+		}
+
+		/// <summary>
+		/// Check if the alt text looks like Bloom Editor placeholder alt text (which we don't want in the published version)
+		/// Looks like: "The picture, {0}, is missing or was loading too slowly"
+		/// </summary>
+		/// <param name="altText"></param>
+		/// <returns>True if it appears to be some sort of placeholder alt text, false otherwise</returns>
+		public static bool IsPlaceholderImageAltText(XmlElement imageElement)
+		{
+			// Note: It's (currently) better for this to be more aggressive about returning true, based on how the callers use it.
+			//       False positives don't really hurt, but false negatives are not ideal.
+
+			string altText = imageElement.GetAttribute("alt");
+			if (String.IsNullOrEmpty(altText))
+			{
+				return true;
+			}
+
+			// Check some partial match on English strings
+			if (altText.Contains(" is missing or was loading too slowly")) // Text from bloomImages.ts::SetAlternateTextOnImages(), need to update both
+			{
+				return true;
+			}
+
+			// Check for an exact match on localized string.
+			string localizedFormatString = L10NSharp.LocalizationManager.GetString("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.");
+			string localizedString = String.Format(localizedFormatString, imageElement.GetAttribute("src"));
+
+			if (altText.Equals(localizedString, StringComparison.CurrentCultureIgnoreCase))
+			{
+				return true;
+			}
+
+			// Test for Partial match based on localized string
+			int indexOfFormatReplacement = localizedFormatString.IndexOf("{0}");
+			if (indexOfFormatReplacement >= 0)
+			{
+				string localizedSubstring;
+				// There is a replacement somewhere in the string (well, supposed to be, but can't guarantee...)
+				// Split the string in half around the location of the replacement
+				// Then pick the longer half so that we have more text to match
+				if (indexOfFormatReplacement > localizedFormatString.Length / 2)
+				{
+					localizedSubstring = localizedFormatString.Substring(0, indexOfFormatReplacement);
+				}
+				else
+				{
+					localizedSubstring = localizedFormatString.Substring(indexOfFormatReplacement + "{0}".Length);
+				}
+
+				return altText.Contains(localizedSubstring, StringComparison.CurrentCultureIgnoreCase);
+			}
+
+			return false;
 		}
 
 		/// <summary>

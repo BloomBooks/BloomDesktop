@@ -158,7 +158,7 @@ namespace Bloom.CollectionTab
 			_previewBrowser.Navigate("about:blank", false);
 			//_previewBrowser.Visible = false;
 			_splitContainerForPreviewAndAboutBrowsers.Visible = false;
-			BackColor = Color.FromArgb(64, 64, 64);
+			BackColor = Palette.GeneralBackground; // NB: this color is only seen in a flash before browser loads
 		}
 
 		private void OnAddToLibraryClick(object sender, EventArgs e)

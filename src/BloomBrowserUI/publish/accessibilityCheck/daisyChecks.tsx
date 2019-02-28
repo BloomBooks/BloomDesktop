@@ -6,7 +6,7 @@ import ProgressBox from "../../react_components/progressBox";
 
 const kWebSocketLifetime = "a11yChecklist";
 
-/* Ace By Daisy (https://daisy.github.io/ace/) is a nodejs-based epub checker.
+/* Ace by DAISY (https://daisy.github.io/ace/) is a nodejs-based epub checker.
     This class asks the Bloom server to run it and then shows the result
 */
 interface IState {

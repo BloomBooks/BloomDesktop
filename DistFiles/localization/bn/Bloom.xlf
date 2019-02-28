@@ -5,45 +5,48 @@
       <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
-        <target xml:lang="bn" state="needs-translation">Accessibility Checker</target>
+        <target xml:lang="bn" state="translated">প্রবেশযোগ্যতা পরীক্ষক</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
-        <source xml:lang="en">ACE by Daisy Automated Checks</source>
+        <source xml:lang="en">Ace by DAISY Automated Checks</source>
         <note>ID: AccessibilityCheck.ACEByDaisy</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="bn" state="needs-translation">ACE by Daisy Automated Checks</target>
+        <target xml:lang="bn" state="translated">DAISY দ্ৱারা Ace স্বয়ংক্রিয় পরীক্ষা</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
-        <target xml:lang="bn" state="needs-translation">Audio for all text</target>
+        <target xml:lang="bn" state="translated">সমস্ত পাঠ্যের জন্য অডিও</target>
+        <alt-trans>
+          <target xml:lang="bn">সব লেখার জন্য অডিও</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
-        <target xml:lang="bn" state="needs-translation">Audio for all image descriptions</target>
+        <target xml:lang="bn" state="translated">সমস্ত ছবির বর্ণনার জন্য অডিও</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
-        <target xml:lang="bn" state="needs-translation">Bloom can automatically check these for you:</target>
+        <target xml:lang="bn" state="translated">এগুলি আপনার জন্য Bloom স্ৱয়ংক্রিয়ভাবে পরীক্ষা করে নিতে পারে:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="bn" state="needs-translation">Accessibility Checklist</target>
+        <target xml:lang="bn" state="translated">প্রবেশযোগ্যতার পরীক্ষণ তালিকা</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
-        <target xml:lang="bn" state="needs-translation">Descriptions for all images</target>
+        <target xml:lang="bn" state="translated">সব ছবির বিবরণ</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
         <source xml:lang="en">Learn About Accessibility</source>
         <note>ID: AccessibilityCheck.LearnAbout</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="bn" state="needs-translation">Learn About Accessibility</target>
+        <target xml:lang="bn" state="translated">প্রবেশযোগ্যতা সম্পর্কে শিখুন</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true">
         <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</source>
@@ -54,7 +57,7 @@
       <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true">
         <source xml:lang="en">This tool, the Accessibility Checker, has:</source>
         <note>ID: AccessibilityCheck.LearnAbout.CheckerHas</note>
-        <target xml:lang="bn" state="needs-translation">This tool, the Accessibility Checker, has:</target>
+        <target xml:lang="bn" state="translated">প্রবেশযোগ্যতা পরীক্ষক, উপকরণটিতে আছে:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true">
         <source xml:lang="en">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</source>
@@ -62,14 +65,14 @@
         <target xml:lang="bn" state="needs-translation">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true">
-        <source xml:lang="en">The "Ace by Daisy Checker" searches the actual ePUB generated by Bloom looking for any problems.</source>
+        <source xml:lang="en">The "Ace by DAISY Checker" searches the actual ePUB generated by Bloom looking for any problems.</source>
         <note>ID: AccessibilityCheck.LearnAbout.AceByDaisyChecker</note>
-        <target xml:lang="bn" state="needs-translation">The "Ace by Daisy Checker" searches the actual ePUB generated by Bloom looking for any problems.</target>
+        <target xml:lang="bn" state="needs-translation">The "Ace by DAISY Checker" searches the actual ePUB generated by Bloom looking for any problems.</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true">
         <source xml:lang="en">definition of the ePUB format</source>
         <note>ID: AccessibilityCheck.LearnAbout.EpubDefinition</note>
-        <target xml:lang="bn" state="needs-translation">definition of the ePUB format</target>
+        <target xml:lang="bn" state="translated">ইপাব ফরম্যাট সংজ্ঞা</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
@@ -79,12 +82,12 @@
       <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
         <source xml:lang="en">You need to check these yourself:</source>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
-        <target xml:lang="bn" state="needs-translation">You need to check these yourself:</target>
+        <target xml:lang="bn" state="translated">আপনাকে নিজেকেই এগুলি পরীক্ষা করে নিতে হবে:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
-        <target xml:lang="bn" state="needs-translation">No essential information by color</target>
+        <target xml:lang="bn" state="translated">রঙ দ্ৱারা কোন অপরিহার্য তথ্য নেই</target>
       </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
@@ -214,7 +217,7 @@
         <source xml:lang="en">None</source>
         <note>ID: BookMetadata.a11yLevelNone</note>
         <note>indicates that no level of accessibility conformance is claimed</note>
-        <target xml:lang="bn" state="needs-translation">None</target>
+        <target xml:lang="bn" state="translated">কোনটি নয়</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
         <source xml:lang="en">Level A conformance</source>
@@ -335,13 +338,13 @@
       <trans-unit id="Browser.ProblemSaving">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
-        <target xml:lang="bn" state="needs-translation">There was a problem while saving. Please return to the previous page and make sure it looks correct.</target>
+        <target xml:lang="bn" state="translated">সংরক্ষণ করার সময় সমস্যা ছিল। পূর্বের পৃষ্ঠায় ফিরে যান এবং নিশ্চিত করুন যে সেটি সঠিক।</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise">
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="bn" state="needs-translation">About the Bloom Enterprise Service</target>
+        <target xml:lang="bn" state="translated">ব্লুম উদ্যোগ সেবা সম্পর্কিত</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -384,12 +387,12 @@
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
         <note xml:lang="en">Used in 3.9 and 4.0; not used in 4.1</note>
-        <target xml:lang="bn" state="needs-translation">Branding</target>
+        <target xml:lang="bn" state="translated">মার্কা দেওয়া (ব্র্যান্ডিং)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="bn" state="needs-translation">None</target>
+        <target xml:lang="bn" state="translated">কোনটিই নয়</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
@@ -406,7 +409,7 @@
         <source xml:lang="en">Device</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
-        <target xml:lang="bn" state="needs-translation">Device</target>
+        <target xml:lang="bn" state="translated">ডিভাইস</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
@@ -451,12 +454,12 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="bn" state="needs-translation">Bengali</target>
+        <target xml:lang="bn" state="translated">বাংলা</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="bn" state="needs-translation">Cambodian</target>
+        <target xml:lang="bn" state="translated">কম্বোডিয়</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true">
         <source xml:lang="en">Cjk-Decimal</source>
@@ -1014,6 +1017,12 @@
         <note>ID: Common.HelpButton</note>
         <target xml:lang="bn" state="translated">&amp;সহায়তা</target>
       </trans-unit>
+      <trans-unit id="Common.MissingDependency">
+        <source xml:lang="en">Missing Dependency: {0} not found.</source>
+        <note>ID: Common.MissingDependency</note>
+        <note>The {0} will be replaced by the name of an item which was not found</note>
+        <target xml:lang="bn" state="needs-translation">Missing Dependency: {0} not found.</target>
+      </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
@@ -1056,6 +1065,12 @@
         <source xml:lang="en">Progress</source>
         <note>ID: Common.Progress</note>
         <target xml:lang="bn" state="needs-translation">Progress</target>
+      </trans-unit>
+      <trans-unit id="Common.Refresh">
+        <source xml:lang="en">Refresh</source>
+        <note>ID: Common.Refresh</note>
+        <note>Sense of refreshing a web page.</note>
+        <target xml:lang="bn" state="needs-translation">Refresh</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
@@ -2297,7 +2312,7 @@
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram" sil:dynamic="true">
         <source xml:lang="en">poet.diagramcenter.org</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
-        <target xml:lang="bn" state="needs-translation">poet.diagramcenter.org</target>
+        <target xml:lang="bn" state="translated">poet.diagramcenter.org</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
         <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
@@ -2417,10 +2432,10 @@
         <target xml:lang="bn" state="translated">আরো...</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">Requires Bloom Enterprise Subscription.</source>
+        <source xml:lang="en">This feature requires Bloom Enterprise.</source>
         <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
-        <note>Appears in place of other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
-        <target xml:lang="bn" state="needs-translation">Requires Bloom Enterprise Subscription.</target>
+        <note>Appears in notice obscuring other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
+        <target xml:lang="bn" state="needs-translation">This feature requires Bloom Enterprise.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allow changes to this shellbook</source>
@@ -2552,6 +2567,24 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
         <target xml:lang="bn" state="translated">টকিং বুক টুল</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegment">
+        <source xml:lang="en">Auto Segment</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegment</note>
+        <note>This text appears on the button the user can press to trigger automatic segmentation of audio. An audio file corresponding to an entire text box will be segmented into one audio file per sentence instead. (Also known as "Forced Alignment" in technical terms)</note>
+        <target xml:lang="bn" state="needs-translation">Auto Segment</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError">
+        <source xml:lang="en">Segmenting... Error</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError</note>
+        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") failed with an errror.</note>
+        <target xml:lang="bn" state="needs-translation">Segmenting... Error</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress">
+        <source xml:lang="en">Segmenting...</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress</note>
+        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") is in progress.</note>
+        <target xml:lang="bn" state="needs-translation">Segmenting...</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
@@ -2597,6 +2630,12 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
         <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
         <target xml:lang="bn" state="needs-translation">Please clear all existing recordings on this page before changing modes.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
+        <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
+        <note>Shown if you open TalkingBookTool and then attempt to toggle the "Record by Sentences" input on an XMatter page</note>
+        <target xml:lang="bn" state="needs-translation">Sorry, front and back-matter pages must be recorded by sentences.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
@@ -3278,10 +3317,10 @@
         <target xml:lang="bn" state="needs-translation">Serve on WiFi Network</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
-        <source xml:lang="en">Control</source>
+        <source xml:lang="en">Send or Save</source>
         <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
-        <target xml:lang="bn" state="needs-translation">Control</target>
+        <target xml:lang="bn" state="needs-translation">Send or Save</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
         <source xml:lang="en">Copy to Clipboard</source>
@@ -3289,10 +3328,10 @@
         <target xml:lang="bn" state="needs-translation">Copy to Clipboard</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Here you can send your book to the Bloom Reader Android app.</source>
+        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
         <note>ID: PublishTab.Android.Intro</note>
         <note>This is displayed at the top of the Android screen.</note>
-        <target xml:lang="bn" state="needs-translation">Here you can send your book to the Bloom Reader Android app.</target>
+        <target xml:lang="bn" state="needs-translation">Send Your Book to the Bloom Reader Android App</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
@@ -3336,17 +3375,23 @@
         <note>{0} and {1} are font names</note>
         <target xml:lang="bn" state="needs-translation">Substituting "{0}" for "{1}"</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
+        <source xml:lang="en">Bloom Reader Bookshelf</source>
+        <note>ID: PublishTab.Android.BookShelf</note>
+        <note>A heading in the Publish to Android screen.</note>
+        <target xml:lang="bn" state="needs-translation">Bloom Reader Bookshelf</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
+        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
+        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
+        <note>Appears in portrait mode when Motion checkbox is checked</note>
+        <target xml:lang="bn" state="needs-translation">Choose landscape to activate Motion Book mode</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
         <target xml:lang="bn" state="needs-translation">Get Bloom Reader App</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Media" sil:dynamic="true">
-        <source xml:lang="en">Media</source>
-        <note>ID: PublishTab.Android.Media</note>
-        <note>A heading in the Publish to Android screen.</note>
-        <target xml:lang="bn" state="needs-translation">Media</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
         <source xml:lang="en">Method Choices</source>
@@ -3360,10 +3405,31 @@
         <note>Motion Book checkbox label</note>
         <target xml:lang="bn" state="needs-translation">Motion Book</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ThumbnailColor" sil:dynamic="true">
-        <source xml:lang="en">Thumbnail Color</source>
-        <note>ID: PublishTab.Android.ThumbnailColor</note>
-        <target xml:lang="bn" state="needs-translation">Thumbnail Color</target>
+      <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true">
+        <source xml:lang="en">Preview</source>
+        <note>ID: PublishTab.Android.Preview</note>
+        <target xml:lang="bn" state="needs-translation">Preview</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true">
+        <source xml:lang="en">Publish</source>
+        <note>ID: PublishTab.Android.Publish</note>
+        <target xml:lang="bn" state="needs-translation">Publish</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
+        <source xml:lang="en">About Bloom Reader</source>
+        <note>ID: PublishTab.Android.AboutBloomReader</note>
+        <target xml:lang="bn" state="needs-translation">About Bloom Reader</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
+        <source xml:lang="en">Settings</source>
+        <note>ID: PublishTab.Android.Settings</note>
+        <target xml:lang="bn" state="needs-translation">Settings</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true">
+        <source xml:lang="en">Thumbnail</source>
+        <note>ID: PublishTab.Android.Thumbnail</note>
+        <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
+        <target xml:lang="bn" state="needs-translation">Thumbnail</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
         <source xml:lang="en">Troubleshooting Tips</source>
@@ -3629,6 +3695,12 @@
         <note>ID: PublishTab.Epub.PreparingPreview</note>
         <target xml:lang="bn" state="needs-translation">Preparing preview</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.ReadiumCredit">
+        <source xml:lang="en">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</source>
+        <note>ID: PublishTab.Epub.ReadiumCredit</note>
+        <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
+        <target xml:lang="bn" state="needs-translation">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
         <source xml:lang="en">Use ePUB reader's text size</source>
         <note>ID: PublishTab.Epub.RemoveFontSizes</note>
@@ -3857,6 +3929,16 @@
         <note>ID: PublishTab.SaveEpub</note>
         <target xml:lang="bn" state="translated">&amp;ইপাব সংরক্ষণ...</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
+        <source xml:lang="en">Accessible to the Visually Impaired</source>
+        <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+        <target xml:lang="bn" state="needs-translation">Accessible to the Visually Impaired</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AccessibleToBlind">
+        <source xml:lang="en">Accessible to the Blind</source>
+        <note>ID: PublishTab.Upload.AccessibleToBlind</note>
+        <target xml:lang="bn" state="needs-translation">Accessible to the Blind</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Acknowledgments" approved="yes">
         <source xml:lang="en">Acknowledgments</source>
         <note>ID: PublishTab.Upload.Acknowledgments</note>
@@ -3907,6 +3989,11 @@
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
         <note>ID: PublishTab.Upload.ErrorUploading</note>
         <target xml:lang="bn" state="translated">দুঃখিত, {0} আপলোড করতে সমস্যা হচ্ছিল। নিম্নে কিছু বিস্তারিত দেওয়া হল। আপনার কারিগরি সহায়তার প্রয়োজন হতে পারে।</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Features">
+        <source xml:lang="en">Features</source>
+        <note>ID: PublishTab.Upload.Features</note>
+        <target xml:lang="bn" state="needs-translation">Features</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FieldsNeedAttention" approved="yes">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
@@ -4092,6 +4179,11 @@
         <note>This shows next to the license, if the license has not yet been set.</note>
         <target xml:lang="bn" state="translated">অনুগ্রহ করে সম্পাদন ট্যাব থেকে এটি সেট করুন</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignLanguage">
+        <source xml:lang="en">Sign Language</source>
+        <note>ID: PublishTab.Upload.SignLanguage</note>
+        <target xml:lang="bn" state="needs-translation">Sign Language</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.SignupLink" approved="yes">
         <source xml:lang="en">Sign up for BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignupLink</note>
@@ -4158,6 +4250,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadCompleteNotice" approved="yes">
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
+        <note>{0} is the book title; {1} is a clickable url which will display the book on the website</note>
         <target xml:lang="bn" state="translated">অভিনন্দন, "{0}" এখন BloomLibrary.org ({1}) এ পাওয়া যাচ্ছে</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadNotAllowed" approved="yes">
