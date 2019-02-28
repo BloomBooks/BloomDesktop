@@ -78,37 +78,37 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame"}
-# [1] build: BloomPlayer-Master-Continuous (BPContinuous)
-#     project: Bloom
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"*.*"=>"DistFiles/"}
-#     VCS: https://github.com/BloomBooks/BloomPlayer [refs/heads/master]
-# [2] build: PortableDevices (from PodcastUtilities) (Bloom_PortableDevicesFromPodcastUtitlies)
+# [1] build: PortableDevices (from PodcastUtilities) (Bloom_PortableDevicesFromPodcastUtitlies)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_PortableDevicesFromPodcastUtitlies
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PodcastUtilities.PortableDevices.dll"=>"lib/dotnet", "PodcastUtilities.PortableDevices.pdb"=>"lib/dotnet", "Interop.PortableDeviceApiLib.dll"=>"lib/dotnet", "Interop.PortableDeviceTypesLib.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/PodcastUtilities.git [refs/heads/master]
-# [3] build: Squirrel (Bloom_Squirrel)
+# [2] build: Squirrel (Bloom_Squirrel)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Squirrel
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/Squirrel.Windows.git [refs/heads/master]
-# [4] build: YouTrackSharp (Bloom_YouTrackSharp)
+# [3] build: YouTrackSharp (Bloom_YouTrackSharp)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_YouTrackSharp
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"bin/YouTrackSharp.dll"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
-# [5] build: Bloom Help 4.5 (Bloom_Help_BloomHelp45)
+# [4] build: BloomPlayer-Master-Continuous (BPContinuous)
+#     project: BloomPlayer
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"*.*"=>"DistFiles/"}
+#     VCS: https://github.com/BloomBooks/BloomPlayer [refs/heads/master]
+# [5] build: Bloom Help 4.6 (Bloom_Help_BloomHelp46)
 #     project: Help
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp45
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp46
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -119,13 +119,13 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [7] build: GeckofxHtmlToPdf-Geckofx60-Win32-continuous (GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous)
+# [7] build: GeckofxHtmlToPdf-Win32-Geckofx60-continuous (GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous)
 #     project: GeckofxHtmlToPdf
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
-#     VCS: https://github.com/hatton/geckofxHtmlToPdf [Geckofx60]
+#     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [Geckofx60]
 # [8] build: L10NSharp xliff continuous (L10NSharpXliffContinuous)
 #     project: L10NSharp
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=L10NSharpXliffContinuous
@@ -139,7 +139,7 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"NAudio.dll"=>"lib/dotnet"}
-#     VCS: https://hg.codeplex.com/forks/tombogle/supportlargewavfiles2 []
+#     VCS: https://github.com/sillsdev/naudio.git [master]
 # [10] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
@@ -187,8 +187,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Lame.zip ../Downloads/Lame.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPagePlayer.js ../DistFiles/bloomPagePlayer.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPlayer.js ../DistFiles/bloomPlayer.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.dll ../lib/dotnet/PodcastUtilities.PortableDevices.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.pdb ../lib/dotnet/PodcastUtilities.PortableDevices.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceApiLib.dll ../lib/dotnet/Interop.PortableDeviceApiLib.dll
@@ -223,7 +221,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/l
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/signtool.exe ../lib/dotnet/signtool.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp45/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPagePlayer.js ../DistFiles/bloomPagePlayer.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPlayer.js ../DistFiles/bloomPlayer.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp46/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
