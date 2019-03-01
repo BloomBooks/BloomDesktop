@@ -2073,11 +2073,6 @@
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Advanced" sil:dynamic="true">
-        <source xml:lang="en">Advanced</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Advanced</note>
-        <note>This is the section heading for Advanced Settings for the talking book tool.</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
