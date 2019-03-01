@@ -532,6 +532,7 @@ namespace Bloom.Publish
 
 		private void ShowHtmlPanel(string pathToHtml)
 		{
+			_model.BookSelection.CurrentSelection.ReportIfBrokenAudioSentenceElements();
 			Logger.WriteEvent("Entering Publish Screen: "+ pathToHtml);
 			_workingIndicator.Visible = false;
 			_printButton.Enabled = false;
