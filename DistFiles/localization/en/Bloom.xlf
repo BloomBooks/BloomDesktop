@@ -2088,9 +2088,22 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
         <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckNumberedList" sil:dynamic="true">
+        <source xml:lang="en">{0}) Check</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckNumberedList</note>
+        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
+        <note>This item will appeared in a numbered list. The "{0}" represents which number in the list it is, e.g. "1". The ")" will look something like "4) Check". You may replace the ")" with something more locale-appropriate if necessary. The "{0}" may move to a more appropriate place but do not change its text.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Check if possible</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsNumberedList" sil:dynamic="true">
+        <source xml:lang="en">{0}) Check that you are recording into the correct device and that these levels are showing blue:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsNumberedList</note>
+        <note>This item will appeared in a numbered list. The "{0}" represents which number in the list it is, e.g. "1". The ")" will look something like "1) Check that you are [...]". You may replace the ")" with something more locale-appropriate if necessary. The "{0}" may move to a more appropriate place but do not change its text.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.CheckSettings if possible</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
         <source xml:lang="en">Clear</source>
@@ -2105,17 +2118,30 @@
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceNumberedList" sil:dynamic="true">
+        <source xml:lang="en">{0}) Look at the highlighted text</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceNumberedList</note>
+        <note>This item will appeared in a numbered list. The "{0}" represents which number in the list it is, e.g. "2". The ")" will look something like "2) Look at the highlighted text". You may replace the ")" with something more locale-appropriate if necessary. The "{0}" may move to a more appropriate place but do not change its text.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.6Next" sil:dynamic="true">
-        <source xml:lang="en">6) Next</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextNumberedList" sil:dynamic="true">
+        <source xml:lang="en">{0}) Next</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.NextNumberedList</note>
+        <note>This item will appeared in a numbered list. The "{0}" represents which number in the list it is, e.g. "6". The ")" will look something like "6) Next". You may replace the ")" with something more locale-appropriate if necessary. The "{0}" may move to a more appropriate place but do not change its text.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
         <source xml:lang="en">Record by sentences</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
+        <note>Deprecated in Bloom Version 4.5</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
+        <source xml:lang="en">Record the whole text block, then let Bloom split it into sentences later.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
         <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
@@ -2137,15 +2163,22 @@
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakNumberedList" sil:dynamic="true">
+        <source xml:lang="en">{0}) Speak</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakNumberedList</note>
+        <note>This item will appeared in a numbered list. The "{0}" represents which number in the list it is, e.g. "3". The ")" will look something like "3) Speak". You may replace the ")" with something more locale-appropriate if necessary. The "{0}" may move to a more appropriate place but do not change its text.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Split">
-        <source xml:lang="en">5) Split</source>
+        <source xml:lang="en">5) Split recording into sentences for highlighting.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Split</note>
         <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitNumberedList">
-        <source xml:lang="en">{0}) Split</source>
+        <source xml:lang="en">{0}) Split recording into sentences for highlighting.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitNumberedList</note>
         <note>This item will appeared in a numbered list. The "{0}" represents which number in the list it is, e.g. "5". The ")" will look something like "5) Split". You may replace the ")" with something more locale-appropriate if necessary. The "{0}" may move to a more appropriate place but its text should not change.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible</note>
         <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">

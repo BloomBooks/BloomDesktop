@@ -6,10 +6,14 @@
 mixin checkboxWithHiddenClickHandler(buttonId, i18nKey, englishLabel, isChecked, additionalStyles)
 	// The click handler can be used to handle events on the checkbox even while the checkbox is disabled (which would suppress events on the checkbox itself)
 	div(id='audio-' + buttonId + '-wrapper', style='display:inline-block; position:relative;' + additionalStyles)
-		input(id='audio-'+buttonId type='checkbox', name=buttonId, value=theValue, checked=isChecked)
-		div(id='audio-' + buttonId + '-clickHandler', style='position:absolute; left:0; right:0; top:0; bottom:0;')
-		label(data-i18n=i18nKey)
-			=englishLabel
+		table
+			tr
+				td(style='vertical-align: top')
+					input(id='audio-'+buttonId type='checkbox', name=buttonId, value=theValue, checked=isChecked)
+				td
+					div(id='audio-' + buttonId + '-clickHandler', style='position:absolute; left:0; right:0; top:0; bottom:0;')
+					label(data-i18n=i18nKey)
+						=englishLabel
 
 html
 	head
@@ -35,14 +39,14 @@ html
 				+buttonGroup('record', 'expected', '3) Speak', 'Speak')
 				+buttonGroup('play', 'enabled', '4) Check', 'Check')
 				+buttonGroup('split', 'enabled', '5) Split', 'Split')
-				+buttonGroup('next', 'enabled', '6) Next', '6Next')
+				+buttonGroup('next', 'enabled', '6) Next', 'Next')
 				+buttonGroup('prev', 'disabled', 'Back', 'Back')
 				+buttonGroup('clear', 'enabled', 'Clear', 'Clear')
 				+buttonGroup('listen', 'disabled', 'Listen to the whole page', 'Listen')
 				div.audio-advanced
 					strong
 						label(data-i18n='EditTab.Toolbox.TalkingBookTool.Advanced')
-					+checkboxWithHiddenClickHandler('recordingModeControl', 'EditTab.Toolbox.TalkingBookTool.RecordBySentences','Record by sentences', true, 'padding-top:16px')
+					+checkboxWithHiddenClickHandler('recordingModeControl', 'EditTab.Toolbox.TalkingBookTool.RecordByTextBox','Record by whole text block, then let Bloom split it into sentences later.', true, 'padding-top:16px')
 
 				div.audio-about(data-i18n='EditTab.Toolbox.TalkingBookTool.ToolPurpose') Make an e-book that can play audio recordings while highlighting text.
 				a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Talking_Book_Tool_overview.htm', data-i18n='Common.Help') Help

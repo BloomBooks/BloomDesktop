@@ -176,10 +176,12 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     .button-wrapper {
         display: inline-block;
         min-width: 60px;
+        vertical-align: top; // Align the button with the label in case the label is really long.
     }
     .audio-label {
         display: inline-block;
         max-width: 100px;
+        vertical-align: top;
 
         &.expected {
             color: @highlightColor;

@@ -1075,7 +1075,7 @@ describe("audio recording tests", () => {
                 AudioRecordingMode.TextBox
             );
             expect(recording.recordingModeInput.checked).toBe(
-                false,
+                true,
                 "Checkbox state"
             );
         });
@@ -1103,7 +1103,7 @@ describe("audio recording tests", () => {
                 AudioRecordingMode.Sentence
             );
             expect(recording.recordingModeInput.checked).toBe(
-                true,
+                false,
                 "Checkbox state"
             );
         });
@@ -1131,7 +1131,7 @@ describe("audio recording tests", () => {
                 AudioRecordingMode.TextBox
             );
             expect(recording.recordingModeInput.checked).toBe(
-                false,
+                true,
                 "Checkbox state"
             );
         });
@@ -1161,7 +1161,7 @@ describe("audio recording tests", () => {
                 AudioRecordingMode.Sentence
             );
             expect(recording.recordingModeInput.checked).toBe(
-                true,
+                false,
                 "Checkbox state"
             );
         });
@@ -1189,7 +1189,7 @@ describe("audio recording tests", () => {
                 AudioRecordingMode.Sentence
             );
             expect(recording.recordingModeInput.checked).toBe(
-                true,
+                false,
                 "Checkbox state"
             );
         });
