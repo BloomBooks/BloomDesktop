@@ -2364,7 +2364,8 @@ namespace Bloom.Book
 				return HtmlDom.AddEmptyUserModifiedStylesNode(headElement);
 
 			var coverColorElement = HtmlDom.GetCoverColorStyleElement(headElement);
-			if (coverColorElement == null)
+			// If the user defines the cover color, the two elements could end up being the same.
+			if (coverColorElement == null || coverColorElement == userStyleElement)
 				return userStyleElement;
 
 			// We have both style elements. Make sure they're in the right order.
