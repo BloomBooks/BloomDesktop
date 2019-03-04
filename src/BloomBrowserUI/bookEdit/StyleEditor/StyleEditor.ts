@@ -29,6 +29,19 @@ declare function WebFxTabPane(
     callback: any
 ): any; // from tabpane, from a <script> tag
 
+interface IFormattingValues {
+    ptSize: string;
+    fontName: string;
+    lineHeight: string;
+    wordSpacing: string;
+    center: boolean;
+    paraSpacing: string;
+    paraIndent: string;
+    bold: boolean;
+    italic: boolean;
+    underline: boolean;
+}
+
 // Class provides a convenient way to group a style id and display name
 class FormattingStyle {
     public styleId: string;
@@ -714,7 +727,7 @@ export default class StyleEditor {
     }
 
     // Returns an object giving the current selection for each format control.
-    public getFormatValues() {
+    public getFormatValues(): IFormattingValues {
         const box = $(this.boxBeingEdited);
         const sizeString = box.css("font-size");
         const pxSize = parseInt(sizeString, 10);
@@ -964,7 +977,11 @@ export default class StyleEditor {
                                     .remove();
                             }
 
-                            this.setupSelectControls(fonts, current, styleName);
+                            this.setupSelectControls(
+                                fonts,
+                                current,
+                                styleName ? styleName : ""
+                            );
                         }
 
                         //make some select boxes permit custom values
@@ -1110,7 +1127,11 @@ export default class StyleEditor {
         });
     }
 
-    public setupSelectControls(fonts, current, styleName) {
+    public setupSelectControls(
+        fonts: string[],
+        current: IFormattingValues,
+        styleName: string
+    ) {
         this.populateSelect(
             fonts,
             current.fontName,
@@ -1377,7 +1398,7 @@ export default class StyleEditor {
         if (!$("#" + selectId)) {
             return;
         }
-        if (!current) {
+        if (!current || current === "") {
             current = defaultChoice;
         }
 
@@ -1435,8 +1456,8 @@ export default class StyleEditor {
 
     public populateSelect(
         items: string[],
-        current,
-        id,
+        current: string,
+        id: string,
         doSort: boolean,
         useNumericSort: boolean,
         maxlength?: number
@@ -1477,6 +1498,10 @@ export default class StyleEditor {
                 selected = " selected";
             }
             let text = sortedItems[i];
+            if (useNumericSort) {
+                // get localized version (e.g. with different decimal separator)
+                text = parseFloat(text).toLocaleString();
+            }
             if (maxlength && text.length > maxlength) {
                 text = text.substring(0, maxlength) + "...";
             }
@@ -1786,10 +1811,7 @@ export default class StyleEditor {
         this.ignoreControlChanges = true;
 
         this.setValueAndUpdateSelect2Control("font-select", current.fontName);
-        this.setValueAndUpdateSelect2Control(
-            "size-select",
-            current.ptSize.toString()
-        );
+        this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
         this.setValueAndUpdateSelect2Control(
             "line-height-select",
             current.lineHeight
