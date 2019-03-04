@@ -1778,7 +1778,7 @@ namespace Bloom.Book
 			Directory.CreateDirectory(newBookDir);
 
 			// copy files
-			BookStorage.CopyDirectory(FolderPath, newBookDir, new[]{".bak", ".bloombookorder", ".pdf"});
+			BookStorage.CopyDirectory(FolderPath, newBookDir, new[]{".bak", ".bloombookorder", ".pdf", ".map"});
 			var metaPath = Path.Combine(newBookDir, "meta.json");
 
 			// Update the InstanceId. This was not done prior to Bloom 4.2.104

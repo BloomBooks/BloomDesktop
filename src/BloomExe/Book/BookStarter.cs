@@ -555,7 +555,7 @@ namespace Bloom.Book
 				var ext = Path.GetExtension(filePath).ToLowerInvariant();
 				// We don't need to copy any backups, and we don't want userPrefs because they are likely
 				// to include a page number and we want the new book to open at the cover.
-				if (new String[] {".jade", ".less", ".md", ".bak", ".userprefs"}.Any(ex => ex == ext))
+				if (new [] {".jade", ".less", ".md", ".bak", ".userprefs", ".map"}.Any(ex => ex == ext))
 					continue;
 				// We don't want the ReadMe's that describe templates copied to the new books.
 				if (IsPathToReadMeHtm(filePath))

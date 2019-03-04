@@ -314,7 +314,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		//Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
-		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs", ".md" };
+		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs", ".md", ".map" };
 		private AmazonS3Config _s3Config;
 		private string _previousBucketName;
 		private string _bucketName;
