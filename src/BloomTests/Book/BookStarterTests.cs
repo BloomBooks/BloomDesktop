@@ -417,6 +417,7 @@ namespace BloomTests.Book
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "something.jade"), @"some nonsense");
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "something.less"), @"some nonsense");
 			File.WriteAllText(Path.Combine(sourceTemplateFolder, "readme.txt"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "template name.css.map"), @"some nonsense");
 			var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			var folderPath = Path.GetDirectoryName(bookPath);
 			Assert.That(File.Exists(Path.Combine(folderPath, "book.userPrefs")), Is.False);
@@ -427,6 +428,7 @@ namespace BloomTests.Book
 			Assert.That(File.Exists(Path.Combine(folderPath, "ReadMe-tpi.htm")), Is.False);
 			Assert.That(File.Exists(Path.Combine(folderPath, "something.jade")), Is.False);
 			Assert.That(File.Exists(Path.Combine(folderPath, "something.less")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "template name.css.map")), Is.False);
 			// And just to be sure, we're not skipping EVERYTHING!
 			Assert.That(File.Exists(Path.Combine(folderPath, "readme.txt")), Is.True);
 		}

@@ -819,11 +819,13 @@ namespace BloomTests.Book
 			File.WriteAllText(Path.Combine(storage.FolderPath, "something.bak"), "hello");
 			File.WriteAllText(Path.Combine(storage.FolderPath, "something.bloombookorder"), "hello");
 			File.WriteAllText(Path.Combine(storage.FolderPath, "something.pdf"), "hello");
+			File.WriteAllText(Path.Combine(storage.FolderPath, "something.map"), "hello");
 
 			var folderForDuplicate = storage.Duplicate();
 			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.bak")));
 			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.bloombookorder")));
 			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.pdf")));
+			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.map")));
 		}
 	}
 }

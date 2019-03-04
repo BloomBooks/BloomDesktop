@@ -15,7 +15,8 @@ namespace BloomTests.WebLibraryIntegration
 		private string _srcCollectionPath;
 		private string _destCollectionPath;
 		private const string BookName = "Test Book";
-		private readonly string[] ExcludedFiles = {"thumbs.db", "book.userprefs", "extra.pdf", "preview.pdf", "my.bloompack"};
+		private readonly string[] ExcludedFiles =
+			{"thumbs.db", "book.userprefs", "extra.pdf", "preview.pdf", "my.bloompack", "extra.css.map" };
 		private string _storageKeyOfBookFolder;
 
 		[OneTimeSetUp]
@@ -69,6 +70,7 @@ namespace BloomTests.WebLibraryIntegration
 			File.WriteAllText(Path.Combine(bookFolder, "one.css"), @"test");
 			File.WriteAllText(Path.Combine(bookFolder, "preview.pdf"), @"test pdf file");
 			File.WriteAllText(Path.Combine(bookFolder, "extra.pdf"), @"unwanted pdf file");
+			File.WriteAllText(Path.Combine(bookFolder, "extra.css.map"), @"unwanted map file");
 			File.WriteAllText(Path.Combine(bookFolder, "thumbs.db"), @"test thumbs.db file");
 			File.WriteAllText(Path.Combine(bookFolder, "book.userPrefs"), @"test book.userPrefs file");
 			File.WriteAllText(Path.Combine(bookFolder, "my.bloompack"), @"test bloompack file");
@@ -96,11 +98,11 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.IsTrue(Directory.Exists(_destCollectionPath));
 			var srcFileCount = Directory.GetFiles(fullBookSrcPath).Count();
 
-			// Do not count the excluded files (thumbs.db, extra.pdf)
+			// Do not count the excluded files (thumbs.db, extra.pdf, etc.)
 			// preview.pdf exists in the source, but is not pulled down to the destination.
 			Assert.That(_client.GetBookFileCount(BloomS3Client.UnitTestBucketName, _storageKeyOfBookFolder), Is.EqualTo(srcFileCount - ExcludedFiles.Length + 1));
 			var matching = Directory.GetFiles(fullBookDestPath);
-			Assert.That(matching.Count(), Is.EqualTo(srcFileCount - ExcludedFiles.Length));
+			Assert.That(matching.Length, Is.EqualTo(srcFileCount - ExcludedFiles.Length));
 			foreach (var fileName in Directory.GetFiles(fullBookSrcPath)
 				.Select(Path.GetFileName)
 				.Where(file => !ExcludedFiles.Contains(file.ToLower())))
