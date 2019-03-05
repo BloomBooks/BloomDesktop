@@ -227,6 +227,7 @@
     <Compile Include="WebLibraryIntegration\BloomParseClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
+    <Compile Include="WebLibraryIntegration\BookTransferDupIdTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="Book\AccessibilityCheckersTests.cs" />
     <Compile Include="web\controllers\AudioSegmentationApiTests.cs" />

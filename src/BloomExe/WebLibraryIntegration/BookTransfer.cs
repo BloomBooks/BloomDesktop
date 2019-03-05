@@ -272,7 +272,7 @@ namespace Bloom.WebLibraryIntegration
 				DownloadFromOrderUrl(_downloadRequest, DownloadFolder, link.Title);
 			}
 				// If we are passed a bloom book order, download the corresponding book and open it.
-			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookTransfer.BookOrderExtension.ToLowerInvariant()) &&
+			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookInfo.BookOrderExtension.ToLowerInvariant()) &&
 					 RobustFile.Exists(_downloadRequest))
 			{
 				HandleBookOrder(_downloadRequest);
@@ -310,7 +310,6 @@ namespace Bloom.WebLibraryIntegration
 			get { return _parseClient.LoggedIn; }
 		}
 
-		public const string BookOrderExtension = ".BloomBookOrder";
 		internal const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
 
 		private string _uploadedBy;
@@ -407,8 +406,7 @@ namespace Bloom.WebLibraryIntegration
 				// because we can't rename on download. The extension must be the one Bloom knows about,
 				// and we want the file name to indicate which book, so use the name of the book folder.
 				var metadataPath = BookMetaData.MetaDataPath(bookFolder);
-				var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
-				RobustFile.Copy(metadataPath, orderPath, true);
+				RobustFile.Copy(metadataPath, BookInfo.BookOrderPath(bookFolder), true);
 				parseId = "";
 				try
 				{
@@ -634,6 +632,7 @@ namespace Bloom.WebLibraryIntegration
 			var excludeNarrationAudio = (bool)args[3];
 			var excludeMusic = false; // I (AP) made the executive decision this wasn't worth another option right now
 			var alreadyUploaded = GetUploadedPathsFromLogIfPresent(folder);
+			BulkRepairInstanceIds(folder);
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
 			{
@@ -783,7 +782,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private void ReportToLogBoxAndLogger(LogBox logBox, string bookFolder, string msg)
+		private static void ReportToLogBoxAndLogger(IProgress logBox, string bookFolder, string msg)
 		{
 			// We've just told the user we are uploading book 'x'. Now tell them why we aren't.
 			const string seeLogFile = "\n  See log file for details.";
@@ -875,6 +874,20 @@ namespace Bloom.WebLibraryIntegration
 		internal bool IsThisVersionAllowedToUpload()
 		{
 			return _parseClient.IsThisVersionAllowedToUpload();
+		}
+
+		/// <summary>
+		/// In the past we've had problems with users copying folders manually and creating derivative books with
+		/// the same bookInstanceId guids. Then we try to bulk upload a folder structure with books like this and the
+		/// duplicates overwrite whichever book got uploaded first.
+		/// This method recurses through the folders under 'rootFolderPath' and keeps track of all the unique bookInstanceId
+		/// guids. When a duplicate is found, we will call BookInfo.InstallFreshInstanceGuid().
+		/// </summary>
+		/// <remarks>Internal for testing.</remarks>
+		/// <param name="rootFolderPath"></param>
+		internal static void BulkRepairInstanceIds(string rootFolderPath)
+		{
+			BookInfo.RepairDuplicateInstanceIds(rootFolderPath);
 		}
 	}
 }

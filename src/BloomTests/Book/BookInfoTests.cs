@@ -38,6 +38,29 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void InstallFreshGuid_works()
+		{
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			const string originalGuid = "3988218f-e01c-4a7a-b27d-4a31dd632ccb";
+			const string metaData = @"{'bookInstanceId':'" + originalGuid + @"','experimental':'false','suitableForMakingShells':'true'}";
+			File.WriteAllText(jsonPath, metaData);
+			var bookOrderPath = BookInfo.BookOrderPath(_folder.Path);
+			File.WriteAllText(bookOrderPath, metaData);
+			Assert.That(File.Exists(bookOrderPath), Is.True);
+
+			// SUT
+			BookInfo.InstallFreshInstanceGuid(_folder.Path);
+
+			// Verification
+			var bi = new BookInfo(_folder.Path, true);
+			Assert.That(bi.Id, Is.Not.EqualTo(originalGuid));
+			Assert.That(bi.IsExperimental, Is.False);
+			Assert.That(bi.IsSuitableForMakingShells);
+			Assert.That(File.Exists(bookOrderPath), Is.False);
+			Assert.That(File.Exists(Path.Combine(_folder.Path, "meta.bak")), Is.False);
+		}
+
+		[Test]
 		public void Constructor_FallsBackToTags()
 		{
 			var tagsPath = Path.Combine(_folder.Path, "tags.txt");
