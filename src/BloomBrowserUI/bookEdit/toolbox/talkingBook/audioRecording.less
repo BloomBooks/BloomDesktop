@@ -50,6 +50,10 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         background-repeat: no-repeat;
         display: inline-block;
         margin-bottom: 5px;
+        border: solid thin transparent; // just be a little responsive to indicate that it is clickable
+        &:hover {
+            border: none; // makes it grow a little on mouse hover
+        }
     }
     #audio-prev,
     #audio-clear {
@@ -116,6 +120,11 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     img#audio-input-dev {
         height: 30px;
         width: 30px;
+        box-sizing: border-box;
+        border: solid thin transparent; // just be a little responsive to indicate that it is clickable
+        &:hover {
+            border: none; // makes it grow a little on mouse hover
+        }
     }
     // hidden unless we need to choose between three or more input devices.
     #audio-devlist {
