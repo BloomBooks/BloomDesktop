@@ -390,7 +390,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						throw;
 					}
-					if(fileName.EndsWith(BookTransfer.BookOrderExtension))
+					if(fileName.EndsWith(BookInfo.BookOrderExtension))
 					{
 						// Remember the url that can be used to download the book. This seems to work but I wish
 						// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
