@@ -949,7 +949,15 @@ export default class AudioRecording {
     }
 
     private playCurrentInternal() {
-        (<HTMLMediaElement>document.getElementById("player")).play();
+        const mediaPlayer = <HTMLMediaElement>document.getElementById("player");
+        if (mediaPlayer.error) {
+            // We can no longer rely on the error event occurring after play() is called.
+            // If we pre-load audio, the error event occurs on load (which will be before play).
+            // So, we check the .error property to see if an error already occurred and if so, skip past the play straight to the playEnded() which is supposed to be called on error.
+            this.playEnded(); // Will also start playing the next audio to play.
+        } else {
+            mediaPlayer.play();
+        }
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
