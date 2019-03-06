@@ -120,18 +120,27 @@ class PageChooser {
             const willLoseData = this.willLoseData();
             if (willLoseData) {
                 $("#mainContainer").addClass("willLoseData");
-                $("#convertWholeBook").addClass("disabled");
             } else {
                 $("#mainContainer").removeClass("willLoseData");
-                $("#convertWholeBook").removeClass("disabled");
             }
             $("#convertAnywayCheckbox").prop("checked", !willLoseData);
+            this.enableWholeBookCheck(!willLoseData);
             this.continueCheckBoxChanged(); // possibly redundant
-            const convertBook = $("#convertWholeBookCheckbox");
-            convertBook.prop("disabled", willLoseData);
-            convertBook.prop("checked", false);
         }
     } // thumbnailClickHandler
+
+    // Enable/disable both the checkbox and the associated label for converting all similar pages
+    // in the book.
+    private enableWholeBookCheck(enable: boolean): void {
+        if (enable) {
+            $("#convertWholeBook").removeClass("disabled");
+        } else {
+            $("#convertWholeBook").addClass("disabled");
+        }
+        const convertBook = $("#convertWholeBookCheckbox");
+        convertBook.prop("disabled", !enable);
+        convertBook.prop("checked", false);
+    }
 
     // Return true if choosing the current layout will cause loss of data
     private willLoseData(): boolean {
@@ -159,9 +168,12 @@ class PageChooser {
         );
         const currentPictureCount = current.find(".bloom-imageContainer")
             .length;
-        const currentVideoCount = current.find(
-            ".bloom-videoContainer:not(.bloom-noVideoSelected)"
-        ).length;
+        // ".bloom-videoContainer:not(.bloom-noVideoSelected)" is not working reliably as a selector.
+        // It's also insufficient if we allow the user to change multiple pages at once to look at
+        // only the current page for content.  Not checking for actual video content matches what is
+        // done for text and pictures, and means that the check is equally valid for any number of
+        // pages with the same layout.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
+        const currentVideoCount = current.find(".bloom-videoContainer").length;
 
         return (
             selectedTemplateTranslationGroupCount <
@@ -296,8 +308,11 @@ class PageChooser {
 
     private continueCheckBoxChanged(): void {
         if (!this._forChooseLayout) return;
-        const cb = $("#convertAnywayCheckbox");
-        $("#addPageButton").prop("disabled", !cb.is(":checked"));
+        const continueChecked = $("#convertAnywayCheckbox").is(":checked");
+        // If the user explicitly allows possible data loss, also allow every similar page
+        // to change.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
+        this.enableWholeBookCheck(continueChecked);
+        $("#addPageButton").prop("disabled", !continueChecked);
     }
 
     private convertBookCheckBoxChanged(): void {
