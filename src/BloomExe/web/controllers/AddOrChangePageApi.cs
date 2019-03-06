@@ -99,7 +99,9 @@ namespace Bloom.web.controllers
 			{
 				if (page.IsXMatter || page.IdOfFirstAncestor != ancestorPageId)
 					continue;
-				book.UpdatePageToTemplateAndUpdateLineage(page, newTemplatePage, false);
+				// The user has explicitly allowed possible data loss.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
+				book.UpdatePageToTemplateAndUpdateLineage(page, newTemplatePage, true);
 			}
 		}
 

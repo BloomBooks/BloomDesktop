@@ -148,7 +148,6 @@ class PageChooser {
             selected.attr("data-videoCount"),
             10
         );
-
         const page = <HTMLIFrameElement>(
             window.parent.document.getElementById("page")
         );
@@ -159,9 +158,11 @@ class PageChooser {
         );
         const currentPictureCount = current.find(".bloom-imageContainer")
             .length;
-        const currentVideoCount = current.find(
-            ".bloom-videoContainer:not(.bloom-noVideoSelected)"
-        ).length;
+        // ".bloom-videoContainer:not(.bloom-noVideoSelected)" is not working reliably as a selector.
+        // It's also insufficient if we allow the user to change multiple pages at once to look at
+        // only the current page for content.  Not checking for actual content also matches what is
+        // done for text and pictures.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
+        const currentVideoCount = current.find(".bloom-videoContainer").length;
 
         return (
             selectedTemplateTranslationGroupCount <
@@ -296,8 +297,18 @@ class PageChooser {
 
     private continueCheckBoxChanged(): void {
         if (!this._forChooseLayout) return;
-        const cb = $("#convertAnywayCheckbox");
-        $("#addPageButton").prop("disabled", !cb.is(":checked"));
+        const continueChecked = $("#convertAnywayCheckbox").is(":checked");
+        // If the user explicitly allows possible data loss, also allow every similar page
+        // to change.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
+        if (continueChecked) {
+            $("#convertWholeBook").removeClass("disabled");
+        } else {
+            $("#convertWholeBook").addClass("disabled");
+        }
+        $("#addPageButton").prop("disabled", !continueChecked);
+        const convertBook = $("#convertWholeBookCheckbox");
+        convertBook.prop("disabled", !continueChecked);
+        convertBook.prop("checked", false);
     }
 
     private convertBookCheckBoxChanged(): void {
