@@ -202,6 +202,11 @@ namespace Bloom.Book
 					modifiedContent = GetImageBytesForElectronicPub(filePath, isCoverImage);
 					newEntry.Size = modifiedContent.Length;
 				}
+				else if (Path.GetExtension(filePath).ToLowerInvariant() == ".bloomcollection")
+				{
+					modifiedContent = Encoding.UTF8.GetBytes(GetBloomCollectionModifiedForTemplate(filePath));
+					newEntry.Size = modifiedContent.Length;
+				}
 				else if (reduceImages && (bookFile == filePath))
 				{
 					StripImgWithFilesWeCannotFind(dom, bookFile);
@@ -344,6 +349,31 @@ namespace Bloom.Book
 			var meta = BookMetaData.FromString(RobustFile.ReadAllText(path));
 			meta.IsSuitableForMakingShells = true;
 			return meta.Json;
+		}
+
+		/// <summary>
+		/// Remove any SubscriptionCode element content and replace any BrandingProjectName element
+		/// content with the text "Default".  We don't want to publish Bloom Enterprise subscription
+		/// codes after all!
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6938.
+		/// </remarks>
+		private static string GetBloomCollectionModifiedForTemplate(string filePath)
+		{
+			var dom = new XmlDocument();
+			dom.PreserveWhitespace = true;
+			dom.Load(filePath);
+			foreach (var node in dom.SafeSelectNodes("//SubscriptionCode").Cast<XmlElement>().ToArray())
+			{
+				node.RemoveAll();	// should happen at most once
+			}
+			foreach (var node in dom.SafeSelectNodes("//BrandingProjectName").Cast<XmlElement>().ToArray())
+			{
+				node.RemoveAll();	// should happen at most once
+				node.AppendChild(dom.CreateTextNode("Default"));
+			}
+			return dom.OuterXml;
 		}
 
 		private static void InsertReaderStylesheet(XmlDocument dom)
