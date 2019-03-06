@@ -2121,8 +2121,10 @@ export default class AudioRecording {
                     name != "i" &&
                     name != "b" &&
                     name != "strong" && // ckeditor uses this for bold
-                    name != "sup" && // better add this one too
-                    name != "u" &&
+                    name != "em" && // ckeditor italics
+                    name != "u" && // ckeditor underline
+                    name != "sup" && // ckeditor superscript
+                    name != "a" && // Allow users to manually insert hyperlinks 4.5, and support 4.6 hyperlinks
                     $(child).attr("id") !== "formatButton"
                 ) {
                     processedChild = true;
@@ -2164,11 +2166,31 @@ export default class AudioRecording {
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        const fragments: TextFragment[] = this.stringToSentences(elt.html());
+        const htmlFragments: TextFragment[] = this.stringToSentences(
+            elt.html()
+        );
+        let textFragments: TextFragment[] | null = this.stringToSentences(
+            elt.text()
+        );
+
+        // Try to use textFragments for hopefully more reliable comparison purposes compared to htmlFragments. See if we can easily align the two.
+        if (htmlFragments.length != textFragments.length) {
+            // Hmm, doesn't align perfectly :(
+
+            if (
+                htmlFragments.length == textFragments.length + 1 &&
+                htmlFragments[htmlFragments.length - 1].text.indexOf("<br") >= 0
+            ) {
+                // Well, it's only off by a newline at the end. It's probably fine.
+            } else {
+                // The two can't be easily aligned, so mark textFragments as invalid.
+                textFragments = null;
+            }
+        }
 
         // If any new sentence has an md5 that matches a saved one, attach that id/md5 pair to that fragment.
-        for (let i = 0; i < fragments.length; i++) {
-            const fragment = fragments[i];
+        for (let i = 0; i < htmlFragments.length; i++) {
+            const fragment = htmlFragments[i];
             if (this.isRecordable(fragment)) {
                 const currentMd5 = this.md5(fragment.text);
                 for (let j = 0; j < reuse.length; j++) {
@@ -2185,16 +2207,16 @@ export default class AudioRecording {
 
         // Assemble the new HTML, reusing old IDs where possible and generating new ones where needed.
         let newHtml = "";
-        for (let i = 0; i < fragments.length; i++) {
-            const fragment = fragments[i];
+        for (let i = 0; i < htmlFragments.length; i++) {
+            const htmlFragment = htmlFragments[i];
 
-            if (!this.isRecordable(fragment)) {
+            if (!this.isRecordable(htmlFragment)) {
                 // this is inter-sentence space (or white space before first sentence).
-                newHtml += fragment.text;
+                newHtml += htmlFragment.text;
             } else {
                 let newId: string | null = null;
                 let newMd5: string = "";
-                let reuseThis = (<any>fragment).matchingAudioSpan;
+                let reuseThis = (<any>htmlFragment).matchingAudioSpan;
                 if (!reuseThis && reuse.length > 0) {
                     reuseThis = reuse[0]; // use first if none matches (preserves order at least)
                     reuse.splice(0, 1);
@@ -2205,9 +2227,15 @@ export default class AudioRecording {
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
                 if (!newId) {
-                    const normalizedText = AudioRecording.normalizeText(
-                        fragment.text
-                    );
+                    let text: string;
+                    if (textFragments && i < textFragments.length) {
+                        text = textFragments[i].text;
+                    } else {
+                        text = htmlFragments[i].text;
+                    }
+
+                    // Enhance: This ID mapping is so brittle, it really needs a more reliable mechanism than text-matching in the face of CKEditor modifications.
+                    const normalizedText = AudioRecording.normalizeText(text);
                     if (normalizedText in this.sentenceToIdListMap) {
                         const idList = this.sentenceToIdListMap[normalizedText];
 
@@ -2232,7 +2260,7 @@ export default class AudioRecording {
                     '"' +
                     newMd5 +
                     ">" +
-                    fragment.text +
+                    htmlFragment.text +
                     "</span>";
             }
         }
@@ -2256,6 +2284,7 @@ export default class AudioRecording {
         text = text.replace(/\r/g, "").replace(/\n/g, ""); // Raw form may inject extraneous newlines upon inserting punctuation like '('
         text = text.replace(/<br \/>/g, ""); // Processing form will contain <br />.
         text = text.replace(/&nbsp;/g, String.fromCharCode(160)); // Saved form will store multiple spaces as Unicode decimal 160 = non-breaking space
+        text = text.replace(/  /g, " "); // Handle consecutive spaces
 
         return text;
     }

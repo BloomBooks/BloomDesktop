@@ -499,6 +499,31 @@ describe("audio recording tests", () => {
             ).toBe("audio-sentence");
         });
 
+        it("handles hyperlinks", () => {
+            const sentence1 = 'This is a <a href="www.google.com">link</a>.';
+            const sentence2 = 'This is <a href="www.bing.com">another</a>.';
+            const sentence3 = "Click them.";
+            const div = $(`<div>${sentence1} ${sentence2} ${sentence3}</div>`);
+            const recording = new AudioRecording();
+            recording.makeAudioSentenceElements(div);
+            const spans = div.find("span");
+            expect(spans.length).toBe(3);
+            expect(spans[0].innerHTML).toBe(sentence1); // Make sure the anchor is not lost in the HTML
+            expect(spans[1].innerHTML).toBe(sentence2); // Make sure the anchor is not lost in the HTML
+            expect(spans[2].innerHTML).toBe(sentence3);
+            expect(div.text()).toBe(
+                "This is a link. This is another. Click them."
+            );
+            expect(spans.first().attr("id")).not.toBe(
+                spans
+                    .first()
+                    .next()
+                    .attr("id")
+            );
+            expect(spans.first().attr("class")).toBe("audio-sentence");
+            expect(spans.last().attr("class")).toBe("audio-sentence");
+        });
+
         it("converts from unmarked to text-box (bloom-editable includes format button)", () => {
             // This tests real input from Bloom that has not been marked up. (e.g. if the Talking Book dialog is opened up for the first time on an existing page while the Collection default is by-sentence)
 
@@ -1504,9 +1529,9 @@ describe("audio recording tests", () => {
 
     it("normalizeText() works", () => {
         function testAllFormsMatch(
-            rawForm: string,
-            processingForm: string,
-            savedForm
+            rawForm: string, // Directly after typing text, immediately upon clicking AutoSegment, before anything is modified
+            processingForm: string, // After clicking AutoSegment and the response is being proc, during MakeAudioSentenceElementsLeaf
+            savedForm // After saving the page.
         ) {
             expect(AudioRecording.normalizeText(rawForm)).toBe(
                 AudioRecording.normalizeText(processingForm)
@@ -1525,6 +1550,12 @@ describe("audio recording tests", () => {
             "\u00a0\u00a0\u00a0 In the beginning...",
             "\u00a0\u00a0\u00a0 In the beginning...",
             "&nbsp;&nbsp;&nbsp; In the beginning..."
+        );
+        // Test what happens when inserting <em> (italics) in the HTML version.  (This input corresponds to the text() version).
+        testAllFormsMatch(
+            "Title: The Cat in the Hat .",
+            "Title:  The Cat in the Hat  .",
+            "Title:  The Cat in the Hat  ."
         );
     });
 });
