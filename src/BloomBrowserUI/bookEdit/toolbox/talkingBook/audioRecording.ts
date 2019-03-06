@@ -1,4 +1,4 @@
-// This class supports creating audio recordings for talking books.
+﻿// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -112,8 +112,6 @@ export default class AudioRecording {
     private listenerFunction: (MessageEvent) => void;
 
     constructor() {
-        this.initializeLabelLocalizations(); // Call this as early as possible
-
         this.audioSplitButton = <HTMLButtonElement>(
             document.getElementById(kAudioSplitId)!
         );
@@ -219,69 +217,6 @@ export default class AudioRecording {
             this.elementsToPlayConsecutivelyStack &&
             this.elementsToPlayConsecutivelyStack.length > 0
         );
-    }
-
-    // Updates the button labels with versions that use a format string in order to accurately number the list.
-    // (Falls back to the static numbering from the PUG if not available).
-    private initializeLabelLocalizations() {
-        const inputs = [
-            [
-                "audio-check",
-                "EditTab.Toolbox.TalkingBookTool.CheckSettingsNumberedList",
-                "{0}) Check that you are recording into the correct device and that these levels are showing blue:"
-            ],
-            [
-                "audio-look-at",
-                "EditTab.Toolbox.TalkingBookTool.LookAtSentenceNumberedList",
-                "{0}) Look at the highlighted text"
-            ],
-            [
-                "audio-record-label",
-                "EditTab.Toolbox.TalkingBookTool.SpeakNumberedList",
-                "{0}) Speak"
-            ],
-            [
-                "audio-play-label",
-                "EditTab.Toolbox.TalkingBookTool.CheckNumberedList",
-                "{0}) Check"
-            ],
-            [
-                "audio-split-label",
-                "EditTab.Toolbox.TalkingBookTool.SplitNumberedList",
-                "{0}) Split recording into sentences for highlighting."
-            ],
-            [
-                "audio-next-label",
-                "EditTab.Toolbox.TalkingBookTool.NextNumberedList",
-                "{0}) Next"
-            ]
-        ];
-
-        for (let i = 0; i < inputs.length; ++i) {
-            const labelId: string = inputs[i][0];
-            const localizationId: string = inputs[i][1];
-            const localizationEnglishDefault: string = inputs[i][2];
-
-            const label: HTMLElement = document.getElementById(labelId)!;
-
-            theOneLocalizationManager
-                .asyncGetTextAndSuccessInfo(
-                    localizationId,
-                    localizationEnglishDefault,
-                    ""
-                )
-                .done(result => {
-                    // Attempt to modify the label if we get the new label with the numbered list.
-                    // If not, that's fine, just keep using the old label from the pug (which doesn't have or support the format string).
-                    if (result.success) {
-                        const localizedFormatString = result.text;
-                        label.innerText = theOneLocalizationManager.simpleDotNetFormat(
-                            localizedFormatString,
-                            [(i + 1).toString()]
-                        );
-                    }
-                });
-        }
     }
 
     // Sets up member variables (e.g. audioRecordingMode) that updateMarkup...() depends on.
@@ -2649,6 +2584,19 @@ export default class AudioRecording {
                 labelElement.classList.add("expected");
             } else {
                 labelElement.classList.remove("expected");
+            }
+        }
+
+        // Also set expected on the list item, which provides the number e.g. "1)" or "2)" or "3)".
+        // This provides the yellow highlight color on that part of the text too
+        const listItemElement = document.getElementById(
+            `audio-${which}-list-item`
+        ); // Note: It is very much a normal case that this may return null for some inputs.
+        if (listItemElement) {
+            if (to === Status.Expected) {
+                listItemElement.classList.add("expected");
+            } else {
+                listItemElement.classList.remove("expected");
             }
         }
 

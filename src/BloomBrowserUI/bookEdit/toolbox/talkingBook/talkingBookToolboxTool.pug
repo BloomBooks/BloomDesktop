@@ -3,6 +3,10 @@
 		.button-wrapper
 			button(id='audio-'+buttonId class='ui-audio-button ui-button ' + initialStatusClass)
 		div.audio-label(id='audio-'+buttonId+'-label' data-i18n='EditTab.Toolbox.TalkingBookTool.'+i18nId)=buttonLabel
+mixin buttonWithLabel(buttonId, initialStatusClass, i18nId, buttonLabel)
+	div.audio-label(id='audio-'+buttonId+'-label' data-i18n='EditTab.Toolbox.TalkingBookTool.'+i18nId)=buttonLabel
+	div.button-wrapper
+		button(id='audio-'+buttonId class='ui-audio-button ui-button ' + initialStatusClass)
 mixin checkboxWithHiddenClickHandler(buttonId, i18nKey, englishLabel, isChecked, additionalStyles)
 	// The click handler can be used to handle events on the checkbox even while the checkbox is disabled (which would suppress events on the checkbox itself)
 	div(id='audio-' + buttonId + '-wrapper', style='display:inline-block; position:relative;' + additionalStyles)
@@ -28,18 +32,27 @@ html
 					// As an alternative, a settimeout() in the javascript also worked, button
 					// this seems more durable. By the time the user can click Play, we'll be done.
 					audio(id='player', preload='none')
-				div.audio-label(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettings') 1) Check that you are recording into the correct device and that these levels are showing blue:
-				div.ui-audioInputGroup
-					div.ui-audioInput
-						img(id='audio-input-dev' src='' height='15' width='15' alt='mic')
-						ul(id='audio-devlist')
-					div.ui-audioMeter
-						canvas(id='audio-meter' width='80' height='15')
-				div.audio-label(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentence') 2) Look at the highlighted text
-				+buttonGroup('record', 'expected', '3) Speak', 'Speak')
-				+buttonGroup('play', 'enabled', '4) Check', 'Check')
-				+buttonGroup('split', 'enabled', '5) Split', 'Split')
-				+buttonGroup('next', 'enabled', '6) Next', 'Next')
+
+				ol(id='audio-buttonsList')
+					li
+						div.audio-label(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettingsUnnumbered') Check that you are recording into the correct device and that these levels are showing blue:
+						div.ui-audioInputGroup
+							div.ui-audioInput
+								img(id='audio-input-dev' src='' height='15' width='15' alt='mic')
+								ul(id='audio-devlist')
+							div.ui-audioMeter
+								canvas(id='audio-meter' width='80' height='15')
+					li
+						div.audio-label(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentenceUnnumbered') Look at the highlighted text
+					li(class='ui-listItemButton' id='audio-record-list-item')
+						+buttonWithLabel('record', 'expected', 'SpeakUnnumbered', 'Speak')
+					li(class='ui-listItemButton' id='audio-play-list-item')
+						+buttonWithLabel('play', 'enabled', 'CheckUnnumbered', 'Check')
+					li(class='ui-listItemButton' id='audio-split-list-item')
+						+buttonWithLabel('split', 'enabled', 'SplitUnnumbered', 'Split recording into sentences for highlighting.')
+					li(class='ui-listItemButton' id='audio-next-list-item')
+						+buttonWithLabel('next', 'enabled', 'NextUnnumbered', 'Next')
+
 				+buttonGroup('prev', 'disabled', 'Back', 'Back')
 				+buttonGroup('clear', 'enabled', 'Clear', 'Clear')
 				+buttonGroup('listen', 'disabled', 'Listen to the whole page', 'Listen')

@@ -36,6 +36,46 @@ div.ui-audioCurrent:not(.disableHighlight) p {
 
     background-position: center;
 
+    #audio-buttonsList {
+        padding-left: 0px;
+
+        .ui-listItemButton {
+            position: relative;
+            left: 63px;
+            height: 45px;
+            width: 104px; // 167 for the ordered list - 60 for the button-wrapper - 3 for whitespace = 104 pixels
+
+            padding-left: 0px;
+
+            // Arrange for the bottom of the first line of text to be aligned with the center of the icon..
+            // Theoretically I think this should be roughly (10 + 40/2) = 30, except that probably puts the middle of the line in the center, and 27 was experimentally determined to look about right.
+            padding-top: 27px;
+
+            .button-wrapper {
+                display: inline;
+                position: absolute;
+                left: -63px;
+                top: 15px; // for 10px padding + 5 pixels of... something. The 5 is probably from 45 (height of the list-item) minus 40 (height of the icon)
+            }
+        }
+        .ui-listItemButton#audio-split-list-item {
+            // Since this item can have some very long text, I use a custom setting to align it to top-align it instead of center-align it.
+            padding-top: 10px;
+        }
+
+        li {
+            list-style-position: inside;
+
+            div.audio-label {
+                display: contents;
+            }
+
+            &.expected {
+                color: @highlightColor;
+            }
+        }
+    }
+
     .ui-audioTitle {
         font-size: larger;
         margin-top: 5px;
@@ -103,7 +143,7 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     }
     #audio-listen-label {
         position: relative;
-        top: 12px;
+        top: 8px;
         width: 80px;
     }
     a {
