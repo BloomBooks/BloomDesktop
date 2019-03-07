@@ -1086,6 +1086,9 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.TextBox
             );
+            expect(
+                recording.audioSplitListItem.classList.contains("display-none")
+            ).toBe(false);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
@@ -1137,6 +1140,9 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
             );
+            expect(
+                recording.audioSplitListItem.classList.contains("display-none")
+            ).toBe(true);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
@@ -1187,6 +1193,9 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
             );
+            expect(
+                recording.audioSplitListItem.classList.contains("display-none")
+            ).toBe(true);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
@@ -1222,39 +1231,13 @@ describe("audio recording tests", () => {
                     .text()
             ).toBe("Sentence 1.", "Current sentence text");
         });
-
-        // On top of testing the subcall MakeAudioSentenceElements(), this call
-        // to verify that ui-audioCurrent gets set properly.
-        it("URM(): converts from by-sentence to text-box (bloom-editable includes format button)", () => {
-            // This tests real input from Bloom that has already been marked up in by-sentence mode. (i.e., this is executed upon un-clicking the checkbox from by-sentence to not-by-sentence)
-            const textBoxDivHtml =
-                '<div class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
-            const paragraphsMarkedBySentenceHtml =
-                '<p><span id="i663e4f39-2d34-4624-829f-e927a58e2101" class="audio-sentence ui-audioCurrent">Sentence 1.</span> <span id="d5df952d-dd60-4790-bb9d-e24fb9b5d4da" class="audio-sentence">Sentence 2.</span> <span id="i66e6edf8-49bf-4fb0-b48f-ab8235e3b902" class="audio-sentence">Sentence 3.</span><br></p><p><span id="i828de727-4ef9-45ef-afd6-4841bbe0b3d3" class="audio-sentence">Paragraph 2.</span><br></p>';
-            const formatButtonHtml =
-                '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
-            const originalHtml =
-                '<div id="numberedPage">' +
-                textBoxDivHtml +
-                paragraphsMarkedBySentenceHtml +
-                formatButtonHtml +
-                "</div>";
-            SetupIFrameFromHtml(originalHtml);
-
-            const pageFrame = parent.window.document.getElementById("page");
-            const parentDiv = $(
-                (<HTMLIFrameElement>pageFrame).contentDocument!.getElementById(
-                    "numberedPage"
-                )!
-            );
-
-            const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, updateRecordingMode() will flip the state
-            recording.updateRecordingMode();
-        });
     });
 
     describe("initializeForMarkup()", () => {
+        beforeEach(() => {
+            SetupTalkingBookUIElements();
+        });
+
         it("initializeForMarkup gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
                 "<div class='bloom-editable' lang='en' data-audioRecordingMode='Sentence'>Sentence 1. Sentence 2.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audioRecordingMode='TextBox'>Paragraph 2.</div>"
@@ -1639,11 +1622,12 @@ function CleanupIframe(id = "page") {
     }
 }
 
+// Just sets up some dummy elements so that they're non-null.
 function SetupTalkingBookUIElements() {
     document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
 
     const html =
-        '<button id="audio-record" /><button id="audio-play" /><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><audio id="player" />';
+        '<ol><li id="audio-split-list-item"></ol><button id="audio-record" /><button id="audio-play" /><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><audio id="player" />';
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
