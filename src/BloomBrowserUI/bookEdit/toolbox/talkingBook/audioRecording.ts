@@ -84,7 +84,6 @@ export default class AudioRecording {
     private nextElementIdToPlay: string;
     private awaitingNewRecording: boolean;
 
-    public audioSplitListItem: HTMLOListElement;
     private audioSplitButton: HTMLButtonElement;
     public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
 
@@ -110,10 +109,6 @@ export default class AudioRecording {
     private listenerFunction: (MessageEvent) => void;
 
     constructor() {
-        this.audioSplitListItem = <HTMLOListElement>(
-            document.getElementById("audio-split-list-item")!
-        );
-
         this.audioSplitButton = <HTMLButtonElement>(
             document.getElementById(kAudioSplitId)!
         );
@@ -1263,11 +1258,17 @@ export default class AudioRecording {
 
     public displaySplitButton(): void {
         // TODO: Fancy CSS transitions
-        this.audioSplitListItem.classList.remove("display-none");
+        const element = document.getElementById("audio-split-wrapper");
+        if (element) {
+            element.classList.remove("display-none");
+        }
     }
 
     public hideSplitButton(): void {
-        this.audioSplitListItem.classList.add("display-none");
+        const element = document.getElementById("audio-split-wrapper");
+        if (element) {
+            element.classList.add("display-none");
+        }
     }
 
     public persistRecordingMode(element: Element) {

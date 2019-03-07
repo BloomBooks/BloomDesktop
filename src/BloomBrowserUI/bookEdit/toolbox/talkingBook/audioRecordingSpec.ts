@@ -1086,12 +1086,14 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.TextBox
             );
-            expect(
-                recording.audioSplitListItem.classList.contains("display-none")
-            ).toBe(false);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
+            expect(
+                myDoc
+                    .getElementById("audio-split-wrapper")!
+                    .classList.contains("display-none")
+            ).toBe(false);
 
             const textBox1 = myDoc.getElementById("textBox1")!;
             expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
@@ -1140,12 +1142,15 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
             );
-            expect(
-                recording.audioSplitListItem.classList.contains("display-none")
-            ).toBe(true);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
+
+            expect(
+                myDoc
+                    .getElementById("audio-split-wrapper")!
+                    .classList.contains("display-none")
+            ).toBe(true);
 
             const textBox1 = myDoc.getElementById("textBox1")!;
             expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
@@ -1193,12 +1198,15 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
             );
-            expect(
-                recording.audioSplitListItem.classList.contains("display-none")
-            ).toBe(true);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
+
+            expect(
+                myDoc
+                    .getElementById("audio-split-wrapper")!
+                    .classList.contains("display-none")
+            ).toBe(true);
 
             const textBox1 = myDoc.getElementById("textBox1")!;
             expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
