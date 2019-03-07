@@ -34,6 +34,7 @@ import { BloomApi } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { ToolBox } from "../toolbox";
+import { element } from "prop-types";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -1156,28 +1157,49 @@ export default class AudioRecording {
         if (!this.isEnabledOrExpected("clear")) {
             return;
         }
-        //var currentFile = $('#player').attr('src');
-        // this.fireCSharpEvent('deleteFile', currentFile);
-        axios
-            .post(
-                "/bloom/api/audio/deleteSegment?id=" + this.nextElementIdToPlay
-            )
-            .then(result => {
-                // data-duration needs to be deleted when the file is deleted.
-                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3671.
-                // Note: this is not foolproof because the durationchange handler is
-                // being called asynchronously with stale data and sometimes restoring
-                // the deleted attribute.
-                var current = this.getPageDocBodyJQuery().find(
-                    "#" + this.nextElementIdToPlay
-                );
-                if (current.length !== 0) {
-                    current.first().removeAttr("data-duration");
+
+        // First determine which IDs we need to delete.
+        const elementIdsToDelete: string[] = [];
+        if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
+            elementIdsToDelete.push(this.nextElementIdToPlay);
+        } else {
+            // i.e., AudioRecordingMode = TextBox
+            if (this.getCurrentPlaybackMode() == AudioRecordingMode.TextBox) {
+                // Easy enough, we just delete the single file corresponding to the text box... which is supposed to be nextElementIdToPlay
+                elementIdsToDelete.push(this.nextElementIdToPlay);
+            } else {
+                // i.e., AudioRecordingMode = TextBox but PlaybackMode = Sentence
+                // Slightly more complicated, need to delete all the sentences in this text box.
+                const sentences = this.getAudioSegmentsInCurrentTextBox();
+                for (let i = 0; i < sentences.length; ++i) {
+                    elementIdsToDelete.push(sentences[i].id);
                 }
-            })
-            .catch(error => {
-                toastr.error(error.statusText);
-            });
+            }
+        }
+
+        // Now go about sending out the API calls to actually delete them.
+        for (let i = 0; i < elementIdsToDelete.length; ++i) {
+            const idToDelete = elementIdsToDelete[i];
+
+            axios
+                .post("/bloom/api/audio/deleteSegment?id=" + idToDelete)
+                .then(result => {
+                    // data-duration needs to be deleted when the file is deleted.
+                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3671.
+                    // Note: this is not foolproof because the durationchange handler is
+                    // being called asynchronously with stale data and sometimes restoring
+                    // the deleted attribute.
+                    var current = this.getPageDocBodyJQuery().find(
+                        "#" + idToDelete
+                    );
+                    if (current.length !== 0) {
+                        current.first().removeAttr("data-duration");
+                    }
+                })
+                .catch(error => {
+                    toastr.error(error.statusText);
+                });
+        }
         this.updatePlayerStatus();
         this.changeStateAndSetExpected("record");
     }
