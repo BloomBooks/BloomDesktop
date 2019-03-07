@@ -207,6 +207,13 @@ namespace Bloom.Book
 
             MultiTextBase source = dom.GetBookSetting(key);
 
+			if (key == "copyright")
+			{
+				var license = dom.GetBookSetting("licenseUrl").GetExactAlternative("*");
+				if (license != null && license.EndsWith("/publicdomain/zero/1.0/"))
+					source = new MultiTextBase();
+			}
+
 			foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
 			{
 				//just put value into the text of the element
