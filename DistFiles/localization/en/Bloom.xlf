@@ -2139,11 +2139,12 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
         <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordingsTextBox" sil:dynamic="true">
-        <source xml:lang="en">Please clear all existing recordings in this text box before changing modes.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordingsTextBox</note>
-        <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
-        <note>Please also consult ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+        <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
+        <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitUnnumbered</note>
+        <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearUnnumbered</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>

@@ -71,7 +71,7 @@ div.ui-audioCurrent:not(.disableHighlight) p {
             }
 
             &.expected {
-                color: @highlightColor;
+                color: @highlightColor; // This highlights the list number as well (instead of only the text of the list item)
             }
         }
     }
@@ -129,9 +129,6 @@ div.ui-audioCurrent:not(.disableHighlight) p {
 
         &.expected {
             background-image: url(audio/split_expected.svg);
-        }
-        &.active {
-            background-image: url(audio/split_active.svg);
         }
     }
     .audio-about {
@@ -286,6 +283,23 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         padding-top: 35px;
     }
 }
+
+.display-none {
+    display: none;
+}
+
+.cursor-progress {
+    cursor: progress;
+}
+body .cursor-progress {
+    // A rule with higher specificity to beat out some ckeditor rules that set it to cursor: text
+    cursor: progress;
+}
+.cursor-progress button {
+    // Deal with buttons on the image container, which will appear grabbable by default. Especially the on-hover buttons for the bloom-imageContainer, those are hard to modify in the JS layer.
+    cursor: progress;
+}
+
 #toast-container {
     z-index: 999999 !important;
     font-family: "Segoe UI", "sans-serif";

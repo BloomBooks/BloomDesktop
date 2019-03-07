@@ -84,10 +84,8 @@ export default class AudioRecording {
     private nextElementIdToPlay: string;
     private awaitingNewRecording: boolean;
 
+    public audioSplitListItem: HTMLOListElement;
     private audioSplitButton: HTMLButtonElement;
-    private audioNextButton: HTMLButtonElement;
-    private audioPrevButton: HTMLButtonElement;
-    public __testonly__audioPrevButton: HTMLButtonElement; // Exposing it for unit tests. Not meant for public use.
     public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
 
     public audioRecordingMode: AudioRecordingMode;
@@ -112,17 +110,13 @@ export default class AudioRecording {
     private listenerFunction: (MessageEvent) => void;
 
     constructor() {
+        this.audioSplitListItem = <HTMLOListElement>(
+            document.getElementById("audio-split-list-item")!
+        );
+
         this.audioSplitButton = <HTMLButtonElement>(
             document.getElementById(kAudioSplitId)!
         );
-        this.audioNextButton = <HTMLButtonElement>(
-            document.getElementById("audio-next")!
-        );
-
-        this.audioPrevButton = <HTMLButtonElement>(
-            document.getElementById("audio-prev")!
-        );
-        this.__testonly__audioPrevButton = this.audioPrevButton;
 
         // Initialize to Unknown (as opposed to setting to the default Sentence) so we can identify
         // when we need to fetch from Collection Settings vs. when it's already set.
@@ -338,8 +332,10 @@ export default class AudioRecording {
         } else {
             if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
                 this.recordingModeInput.checked = false;
+                this.hideSplitButton();
             } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                 this.recordingModeInput.checked = true;
+                this.displaySplitButton();
             }
         }
     }
@@ -403,7 +399,7 @@ export default class AudioRecording {
             return;
         }
 
-        this.updateMarkupForCurrentText();
+        this.updateMarkupForCurrentText(this.getCurrentPlaybackMode());
 
         this.changeStateAndSetExpected("record");
 
@@ -847,7 +843,9 @@ export default class AudioRecording {
             .post("/bloom/api/audio/endRecord")
             .then(response => {
                 if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-                    this.updatePlaybackMarkup();
+                    // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
+                    const allowUpdateOfCurrent = false;
+                    this.updateMarkupForCurrentText(AudioRecordingMode.TextBox);
                 }
                 this.updatePlayerStatus();
                 this.changeStateAndSetExpected("play");
@@ -1224,9 +1222,11 @@ export default class AudioRecording {
         ) {
             this.audioRecordingMode = AudioRecordingMode.TextBox;
             checkbox.checked = true;
+            this.displaySplitButton();
         } else {
             this.audioRecordingMode = AudioRecordingMode.Sentence;
             checkbox.checked = false;
+            this.hideSplitButton();
         }
 
         // Update the collection's default recording span mode to the new value
@@ -1241,7 +1241,14 @@ export default class AudioRecording {
             // This also implies converting the playback mode to Sentence, because we disallow Recording=Sentence,Playback=TextBox.
             // Enhance: Maybe don't bother if the current playback mode is already sentence?
             // Enhance: Maybe it means that you should be less aggressively trying to convert Markup into Playback=TextBox. Or that Clear should be more aggressively attempting ton convert into Playback=Sentence.
-            this.updatePlaybackMarkup();
+
+            // We can't allowUpdateOfCurrent = true at this point (while updating the playback mode) because moving the highlight while certain other operations are ongoing leads to really unintuitive and confusing end results
+            // So just force the operation to apply to whatever the Current Highlight points at right now.
+            const allowUpdateOfCurrent = false;
+            this.updateMarkupForCurrentText(
+                AudioRecordingMode.Sentence,
+                allowUpdateOfCurrent
+            );
         } else {
             // From Sentence -> TextBox, we don't convert the playback mode.
 
@@ -1252,6 +1259,15 @@ export default class AudioRecording {
                 this.changeStateAndSetExpected("record");
             }
         }
+    }
+
+    public displaySplitButton(): void {
+        // TODO: Fancy CSS transitions
+        this.audioSplitListItem.classList.remove("display-none");
+    }
+
+    public hideSplitButton(): void {
+        this.audioSplitListItem.classList.add("display-none");
     }
 
     public persistRecordingMode(element: Element) {
@@ -1305,9 +1321,8 @@ export default class AudioRecording {
         if (this.recordingModeInput.disabled) {
             theOneLocalizationManager
                 .asyncGetText(
-                    "EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordingsTextBox",
-                    // TODO: Do we want an update the string to mention that they can also use the Split button as an alternative to clear?
-                    "Please clear all existing recordings in this text box before changing modes.",
+                    "EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox",
+                    "Please split or clear the existing recording in this text box before changing modes.",
                     ""
                 )
                 .done(localizedNotification => {
@@ -1511,8 +1526,8 @@ export default class AudioRecording {
 
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
     public updateMarkupForCurrentText(
-        allowUpdateOfCurrent: boolean = true,
-        audioRecordingMode = this.audioRecordingMode
+        audioPlaybackMode,
+        allowUpdateOfCurrent: boolean = true
     ): void {
         // Basic outline:
         // * This function gets called when the user types something, and upon initialization of the talking book tool too if there is a non-empty recordable text box
@@ -1537,8 +1552,8 @@ export default class AudioRecording {
                 this.audioRecordingMode = AudioRecordingMode.Unknown; // Clear the mode to signal that re-doing initialization is necessary.
 
                 this.updateMarkupForCurrentText(
-                    false,
-                    AudioRecordingMode.Unknown
+                    AudioRecordingMode.Unknown,
+                    false
                 );
                 return;
             }
@@ -1550,9 +1565,12 @@ export default class AudioRecording {
 
         this.isShowing = true;
 
-        if (audioRecordingMode == AudioRecordingMode.Unknown) {
+        if (audioPlaybackMode == AudioRecordingMode.Unknown) {
             this.initializeForMarkup();
-            this.updateMarkupForCurrentText(false);
+            // The reason we force the new playback mode to be sentence is that
+            // The only way it is allowed to reach PlaybackMode = TextBox is immediately after doing a recording by TextBox mode.
+            // So here, (e.g. when you type into a text box for the first time), we want you to be in Recording=*,Playback=Sentence mode.
+            this.updateMarkupForCurrentText(AudioRecordingMode.Sentence, false);
             return;
         }
 
@@ -1573,7 +1591,7 @@ export default class AudioRecording {
 
         this.makeAudioSentenceElements(
             unionedElementsToProcess,
-            audioRecordingMode
+            audioPlaybackMode
         );
 
         const thisClass = this;
@@ -2728,7 +2746,8 @@ export default class AudioRecording {
             };
 
             this.disableInteraction();
-            this.setStatus("split", Status.Active);
+            // this.setStatus("split", Status.Active);  // Now we decide to just keep it disabled instaed.
+            this.showBusy();
 
             BloomApi.postJson(
                 "audioSegmentation/autoSegmentAudio",
@@ -2840,17 +2859,15 @@ export default class AudioRecording {
             // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
             const allowUpdateOfCurrent = false;
             this.updateMarkupForCurrentText(
-                allowUpdateOfCurrent,
-                AudioRecordingMode.Sentence
+                AudioRecordingMode.Sentence,
+                allowUpdateOfCurrent
             );
 
             // Now that we're all done with use sentenceToIdListMap, clear it out so that there's no potential for accidental re-use
             this.sentenceToIdListMap = {};
             this.changeStateAndSetExpected("next");
             this.setStatus("split", Status.Disabled); // No need to run it again if it was successful. (Until the settings are changed).
-
-            // TODO: Finalize UI / possibly localize.
-            toastr.info("AutoSegment completed.");
+            this.endBusy();
         } else {
             this.changeStateAndSetExpected("record");
             doneCallback();
@@ -2859,6 +2876,45 @@ export default class AudioRecording {
             // If there is a more detailed error from C#, it should be reported via ErrorReport.ReportNonFatal[...]
             toastr.error("AutoSegment did not succeed.");
         }
+    }
+
+    private showBusy(): void {
+        // Note: if there are any enabled buttons, you need to overwrite theirs too. But disabled buttons will work for free.
+        const elementsToUpdate = this.getElementsToUpdateForCursor();
+
+        for (let i = 0; i < elementsToUpdate.length; ++i) {
+            const element = elementsToUpdate[i];
+            if (element) {
+                element.classList.add("cursor-progress");
+            }
+        }
+    }
+
+    private endBusy(): void {
+        // Note: if there are any enabled buttons, you need to overwrite theirs too. But disabled buttons will work for free.
+        const elementsToUpdate = this.getElementsToUpdateForCursor();
+
+        for (let i = 0; i < elementsToUpdate.length; ++i) {
+            const element = elementsToUpdate[i];
+            if (element) {
+                element.classList.remove("cursor-progress");
+            }
+        }
+    }
+
+    private getElementsToUpdateForCursor(): (Element | null)[] {
+        const elementsToUpdate: (Element | null)[] = [];
+        elementsToUpdate.push(document.getElementById("toolbox"));
+
+        const pageBody = this.getPageDocBody();
+        if (pageBody) {
+            elementsToUpdate.push(pageBody);
+            const editables = pageBody.getElementsByClassName("bloom-editable");
+            for (let i = 0; i < editables.length; ++i) {
+                elementsToUpdate.push(editables[i]);
+            }
+        }
+        return elementsToUpdate;
     }
 }
 
