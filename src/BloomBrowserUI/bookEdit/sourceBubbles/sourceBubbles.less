@@ -6,6 +6,11 @@
 
 @BubbleTextColor: black;
 
+@font-face {
+    font-family: "Roboto";
+    src: url("/bloom/fonts/Roboto-Regular.ttf") format("truetype");
+}
+
 .qtip-default {
     background-color: @BubbleBackground !important;
     border-color: @BubbleBorder !important;
@@ -112,7 +117,7 @@
                     outline: none;
                     text-decoration: none;
                     color: black;
-                    font-family: Segoe UI, sans-serif;
+                    font-family: "Roboto", sans-serif;
                     &.active {
                         font-weight: bold;
                     }
@@ -135,6 +140,7 @@
         line-height: 1.5;
         color: black;
         padding-top: 4px;
+        font-family: "Roboto", sans-serif;
         &.active {
             overflow-y: hidden !important;
         }
