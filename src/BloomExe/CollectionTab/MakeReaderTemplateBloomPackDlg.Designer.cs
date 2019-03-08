@@ -36,6 +36,8 @@
 			this._btnSaveBloomPack = new System.Windows.Forms.Button();
 			this._btnCancel = new System.Windows.Forms.Button();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._confirmationCheckBox = new System.Windows.Forms.CheckBox();
+			this._helpButton = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -61,7 +63,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this._willCarrySettingsLabel, "ReaderTemplateBloomPackDialog.ExplanationParagraph");
 			this._willCarrySettingsLabel.Location = new System.Drawing.Point(28, 175);
 			this._willCarrySettingsLabel.Name = "_willCarrySettingsLabel";
-			this._willCarrySettingsLabel.Size = new System.Drawing.Size(326, 127);
+			this._willCarrySettingsLabel.Size = new System.Drawing.Size(326, 132);
 			this._willCarrySettingsLabel.TabIndex = 1;
 			this._willCarrySettingsLabel.Text = resources.GetString("_willCarrySettingsLabel.Text");
 			// 
@@ -82,7 +84,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._btnSaveBloomPack, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._btnSaveBloomPack, null);
 			this._L10NSharpExtender.SetLocalizingId(this._btnSaveBloomPack, "ReaderTemplateBloomPackDialog.SaveBloomPackButton");
-			this._btnSaveBloomPack.Location = new System.Drawing.Point(149, 305);
+			this._btnSaveBloomPack.Location = new System.Drawing.Point(57, 348);
 			this._btnSaveBloomPack.Name = "_btnSaveBloomPack";
 			this._btnSaveBloomPack.Size = new System.Drawing.Size(113, 23);
 			this._btnSaveBloomPack.TabIndex = 3;
@@ -96,7 +98,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._btnCancel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._btnCancel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._btnCancel, "Common.CancelButton");
-			this._btnCancel.Location = new System.Drawing.Point(279, 305);
+			this._btnCancel.Location = new System.Drawing.Point(187, 348);
 			this._btnCancel.Name = "_btnCancel";
 			this._btnCancel.Size = new System.Drawing.Size(75, 23);
 			this._btnCancel.TabIndex = 4;
@@ -108,12 +110,42 @@
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "ReaderTemplateBloomPackDialog";
 			// 
+			// _confirmationCheckBox
+			// 
+			this._confirmationCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._confirmationCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._confirmationCheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._confirmationCheckBox, "ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel");
+			this._confirmationCheckBox.Location = new System.Drawing.Point(31, 310);
+			this._confirmationCheckBox.Name = "_confirmationCheckBox";
+			this._confirmationCheckBox.Size = new System.Drawing.Size(335, 32);
+			this._confirmationCheckBox.TabIndex = 5;
+			this._confirmationCheckBox.Text = "I understand what a template is and this is really what I want to do";
+			this._confirmationCheckBox.UseVisualStyleBackColor = true;
+			this._confirmationCheckBox.CheckedChanged += new System.EventHandler(this._confirmationCheckBox_CheckedChanged);
+			// 
+			// _helpButton
+			// 
+			this._helpButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._helpButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._helpButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._helpButton, "ReaderTemplateBloomPackDialog.button1");
+			this._helpButton.Location = new System.Drawing.Point(279, 348);
+			this._helpButton.Name = "_helpButton";
+			this._helpButton.Size = new System.Drawing.Size(75, 23);
+			this._helpButton.TabIndex = 6;
+			this._helpButton.Text = "Help";
+			this._helpButton.UseVisualStyleBackColor = true;
+			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
+			// 
 			// MakeReaderTemplateBloomPackDlg
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(386, 346);
+			this.ClientSize = new System.Drawing.Size(386, 389);
 			this.ControlBox = false;
+			this.Controls.Add(this._helpButton);
+			this.Controls.Add(this._confirmationCheckBox);
 			this.Controls.Add(this._btnCancel);
 			this.Controls.Add(this._btnSaveBloomPack);
 			this.Controls.Add(this._bookList);
@@ -143,5 +175,7 @@
 		private System.Windows.Forms.Button _btnSaveBloomPack;
 		private System.Windows.Forms.Button _btnCancel;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private System.Windows.Forms.CheckBox _confirmationCheckBox;
+		private System.Windows.Forms.Button _helpButton;
 	}
 }

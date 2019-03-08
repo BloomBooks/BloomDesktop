@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using L10NSharp;
-using SIL.Code;
 
 namespace Bloom.CollectionTab
 {
@@ -18,6 +11,7 @@ namespace Bloom.CollectionTab
 		{
 			InitializeComponent();
 			_willCarrySettingsOriginal = _willCarrySettingsLabel.Text;
+			_btnSaveBloomPack.Enabled = false; // only enable if checkbox is checked
 		}
 
 		public void SetLanguage(string name)
@@ -32,6 +26,16 @@ namespace Bloom.CollectionTab
 			var titles = files.Where(f => !string.IsNullOrWhiteSpace(f));
 			_bookList.Items.AddRange(titles.ToArray());
 			_bookList.ResumeLayout();
+		}
+
+		private void _confirmationCheckBox_CheckedChanged(object sender, System.EventArgs e)
+		{
+			_btnSaveBloomPack.Enabled = _confirmationCheckBox.Checked;
+		}
+
+		private void _helpButton_Click(object sender, System.EventArgs e)
+		{
+			HelpLauncher.Show(this, "Concepts/Bloom_Pack.htm");
 		}
 	}
 }
