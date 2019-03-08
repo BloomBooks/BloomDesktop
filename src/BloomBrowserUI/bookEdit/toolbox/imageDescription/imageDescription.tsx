@@ -16,7 +16,7 @@ import {
 
 interface IImageDescriptionState {
     enabled: boolean;
-    checkBoxes: Array<boolean>;
+    descriptionNotNeeded: boolean;
 }
 interface IProps {}
 // This react class implements the UI for image description toolbox.
@@ -32,50 +32,10 @@ export class ImageDescriptionToolControls extends React.Component<
 > {
     public readonly state: IImageDescriptionState = {
         enabled: true,
-        checkBoxes: []
+        descriptionNotNeeded: false
     };
 
-    private static i18ids = [
-        "ContextKey",
-        "ConsiderAudience",
-        "BeConcise",
-        "BeObjective",
-        "GeneralSpecific"
-    ];
-    private static defaultText = [
-        "Context is Key",
-        "Consider your Audience",
-        "Be Concise",
-        "Be Objective",
-        "General to Specific"
-    ];
-
     private activeEditable: Element | null;
-
-    private createCheckboxes() {
-        const checkBoxes: JSX.Element[] = [];
-        for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
-            const index = i; // in case 'i' changing affects earlier checkboxes
-            checkBoxes.push(
-                <Checkbox
-                    key={i}
-                    l10nKey={
-                        "EditTab.Toolbox.ImageDescriptionTool." +
-                        ImageDescriptionToolControls.i18ids[i]
-                    }
-                    className="imageDescriptionCheck"
-                    name=""
-                    checked={this.state.checkBoxes[index]}
-                    onCheckChanged={checked =>
-                        this.onCheckChanged(checked, index)
-                    }
-                >
-                    {ImageDescriptionToolControls.defaultText[index]}
-                </Checkbox>
-            );
-        }
-        return checkBoxes;
-    }
 
     // Todo: when we have a training video for image description, set the relevant link href, remove
     // the 'disabled' class, and make the play button do something (just another way to go
@@ -91,8 +51,55 @@ export class ImageDescriptionToolControls extends React.Component<
                 >
                     <div className="topGroup">
                         <div className="imgDescLabelBlock">
-                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.LearnToMake">
-                                Learn to make effective image descriptions:
+                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.KeepInMind">
+                                Keep these things in mind:
+                            </Label>
+                            <ul>
+                                <li>
+                                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe">
+                                        Are there important actions,
+                                        relationships, emotions, or things in
+                                        the scene that add to the story but are
+                                        not in the text?
+                                    </Label>
+                                    <ul>
+                                        <li>
+                                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords">
+                                                Use words that are simple enough
+                                                for the listener.
+                                            </Label>
+                                        </li>
+                                        <li>
+                                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.KeepItShort">
+                                                Keep it short.
+                                            </Label>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="imgDescLabelBlock">
+                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox">
+                                Otherwise, check this box:
+                            </Label>
+                            <Checkbox
+                                key={0}
+                                l10nKey={
+                                    "EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe"
+                                }
+                                className="imageDescriptionCheck"
+                                name=""
+                                checked={this.state.descriptionNotNeeded}
+                                onCheckChanged={checked =>
+                                    this.onCheckChanged(checked)
+                                }
+                            >
+                                This image should not be described.
+                            </Checkbox>
+                        </div>
+                        <div className="imgDescLabelBlock">
+                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.MoreInformation">
+                                For more information:
                             </Label>
                             <div className="indentPoet">
                                 <Link
@@ -120,25 +127,6 @@ export class ImageDescriptionToolControls extends React.Component<
                                 </Link>
                             </div>
                         </div>
-                        <div className="wrapPlayVideo disabled invisible">
-                            <img id="playBloomTrainingVideo" src="play.svg" />
-                            <Link
-                                id="bloomImageDescriptionTraining"
-                                className="disabled"
-                                href=""
-                                l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
-                                l10nComment="Link that launches the video"
-                            >
-                                Bloom training video
-                            </Link>
-                        </div>
-                        <div className="imgDescLabelBlock">
-                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckDescription">
-                                Check your image description against each of
-                                these reminders:
-                            </Label>
-                        </div>
-                        {this.createCheckboxes()}
                     </div>
                     {/* the flex box will then push this to the bottom */}
                     <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm" />
@@ -147,32 +135,16 @@ export class ImageDescriptionToolControls extends React.Component<
         );
     }
 
-    private onCheckChanged(checked: boolean, index: number) {
+    private onCheckChanged(checked: boolean) {
         this.setState((prevState, props) => {
-            const newCheckedBoxes = prevState.checkBoxes.slice(0); // shallow copy so we don't modify original
-            newCheckedBoxes[index] = checked;
-            return { checkBoxes: newCheckedBoxes };
+            return { descriptionNotNeeded: checked };
         });
         if (this.activeEditable) {
-            let checkListAttr = (
-                this.activeEditable.getAttribute("data-descriptionCheckList") ||
-                ""
-            )
-                .replace(ImageDescriptionToolControls.i18ids[index], "")
-                .replace("  ", " ")
-                .trim();
-
             if (checked) {
-                checkListAttr = (
-                    checkListAttr +
-                    " " +
-                    ImageDescriptionToolControls.i18ids[index]
-                ).trim();
+                this.activeEditable.setAttribute("aria-hidden", "true");
+            } else {
+                this.activeEditable.removeAttribute("aria-hidden");
             }
-            this.activeEditable.setAttribute(
-                "data-descriptionCheckList",
-                checkListAttr
-            );
         }
     }
 
@@ -183,26 +155,21 @@ export class ImageDescriptionToolControls extends React.Component<
         ) as ImageDescriptionToolControls;
     }
 
-    public selectImageDescription(description: Element): void {
-        const activeEditableList = description.getElementsByClassName(
-            "bloom-content1"
-        );
-        if (activeEditableList.length === 0) {
+    public selectImageDescription(imageContainer: Element | null): void {
+        if (imageContainer == null) {
             // pathological
             this.activeEditable = null;
-            this.setState({ enabled: false, checkBoxes: [] });
+            this.setState({ enabled: false, descriptionNotNeeded: false });
             return;
         }
-        this.activeEditable = activeEditableList[0];
-        const checkedList =
-            this.activeEditable.getAttribute("data-descriptionCheckList") || "";
-        const newCheckStates: boolean[] = [];
-        for (let i = 0; i < ImageDescriptionToolControls.i18ids.length; i++) {
-            newCheckStates.push(
-                checkedList.indexOf(ImageDescriptionToolControls.i18ids[i]) >= 0
-            );
-        }
-        this.setState({ enabled: true, checkBoxes: newCheckStates });
+        this.activeEditable = imageContainer;
+        const noDescriptionNeeded = this.activeEditable.getAttribute(
+            "aria-hidden"
+        );
+        this.setState({
+            enabled: true,
+            descriptionNotNeeded: noDescriptionNeeded == "true"
+        });
     }
 
     public setStateForNewPage(): void {
@@ -221,22 +188,12 @@ export class ImageDescriptionToolControls extends React.Component<
             this.setDisabledState();
             return;
         }
-        // We switched to a page that has at least one image. Make the first one active
-        // (as far as the check boxes are concerned).
-        const imageDescriptions = imageContainers[0].getElementsByClassName(
-            "bloom-imageDescription"
-        );
-        if (imageDescriptions.length === 0) {
-            // other code will add an imageDescription, and we will be called again
-            this.setDisabledState();
-            return;
-        }
-        this.selectImageDescription(imageDescriptions[0]);
+        this.selectImageDescription(imageContainers[0]);
     }
 
     private setDisabledState() {
         this.activeEditable = null;
-        this.setState({ enabled: false, checkBoxes: [] });
+        this.setState({ enabled: false, descriptionNotNeeded: false });
     }
 }
 
@@ -276,7 +233,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     private descriptionGotFocus = (e: Event) => {
         if (this.reactControls) {
             this.reactControls.selectImageDescription(
-                e.currentTarget as Element
+                (e.currentTarget as Element).parentElement
             );
         }
     };

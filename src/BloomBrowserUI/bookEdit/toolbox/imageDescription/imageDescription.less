@@ -19,7 +19,23 @@
 
 .imgDescLabelBlock {
     // no: creates a scroll-bar, bizarrely... margin-top: 2em;
-    margin-bottom: 2em;
+    margin-bottom: 3em;
+    ul {
+        list-style: disc outside none;
+        padding-left: 1em;
+        ul {
+            margin-top: 1em;
+            list-style: disc outside none;
+            padding-left: 1em;
+        }
+        li {
+            margin-bottom: 1em;
+        }
+    }
+}
+
+.imageDescriptionCheck {
+    float: left;
 }
 
 @playVideoIconWidth: 16px;

@@ -1828,21 +1828,53 @@
         <source xml:lang="en">Image Description Tool</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.MoreInformation" sil:dynamic="true">
+        <source xml:lang="en">For more information:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.MoreInformation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep these things in mind:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepInMind</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe" sil:dynamic="true">
+        <source xml:lang="en">Are there important actions, relationships, emotions, or things in the scene that add to the story but are not in the text?</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords" sil:dynamic="true">
+        <source xml:lang="en">Use words that are simple enough for the listener.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepItShort" sil:dynamic="true">
+        <source xml:lang="en">Keep it short.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepItShort</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true">
+        <source xml:lang="en">Otherwise, check this box:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckThisBox</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true">
+        <source xml:lang="en">This image should not be described.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
         <source xml:lang="en">Be Concise</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true">
         <source xml:lang="en">Be Objective</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
         <source xml:lang="en">Bloom training video</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
         <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
         <source xml:lang="en">Consider your Audience</source>
@@ -1856,7 +1888,7 @@
         <source xml:lang="en">General to Specific</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific</note>
       </trans-unit>
-	  <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true">
         <source xml:lang="en">Learn to make effective image descriptions</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.LearnToMake</note>
       </trans-unit>
@@ -2930,7 +2962,7 @@
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
       </trans-unit>
-	  <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
+      <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.Accessibility">
         <source xml:lang="en">Accessibility</source>
         <note>ID: PublishTab.Epub.Accessibility</note>
@@ -2952,12 +2984,12 @@
         <source xml:lang="en">Getting ePUBs onto a device</source>
         <note>ID: PublishTab.Epub.Help.Publishing</note>
       </trans-unit>
-	  <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
+      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>
       </trans-unit>
-	  <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
+      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
