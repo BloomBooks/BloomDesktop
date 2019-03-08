@@ -1279,17 +1279,29 @@ export default class AudioRecording {
     }
 
     public displaySplitButton(): void {
-        // TODO: Fancy CSS transitions
         const element = document.getElementById("audio-split-wrapper");
         if (element) {
-            element.classList.remove("display-none");
+            element.classList.remove("hide-countable");
+            element.classList.add("talking-book-counter");
+            element.classList.remove("initial-state"); // Note that by default it's already displayed correctly, so we can remove it immediately.
         }
     }
 
     public hideSplitButton(): void {
         const element = document.getElementById("audio-split-wrapper");
         if (element) {
-            element.classList.add("display-none");
+            element.classList.add("hide-countable");
+            element.classList.remove("talking-book-counter");
+
+            // Need to special case the initial load, which does not need animation.
+            // In our CSS, we detect initialState and change it accordingly.
+            // But since the raw HTML does not have this button hidden, we wait a little bit to make sure any animation (transition) has definitely finished
+            //   before removing the class that
+            if (element.classList.contains("initial-state")) {
+                setTimeout(() => {
+                    element.classList.remove("initial-state");
+                }, 200);
+            }
         }
     }
 

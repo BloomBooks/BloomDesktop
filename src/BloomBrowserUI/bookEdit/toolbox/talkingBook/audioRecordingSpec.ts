@@ -1086,15 +1086,14 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.TextBox
             );
+            expect(
+                document
+                    .getElementById("audio-split-wrapper")!
+                    .classList.contains("hide-countable")
+            ).toBe(false);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
-            expect(
-                myDoc
-                    .getElementById("audio-split-wrapper")!
-                    .classList.contains("display-none")
-            ).toBe(false);
-
             const textBox1 = myDoc.getElementById("textBox1")!;
             expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
                 AudioRecordingMode.TextBox.toString()
@@ -1142,15 +1141,14 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
             );
+            expect(
+                document
+                    .getElementById("audio-split-wrapper")!
+                    .classList.contains("hide-countable")
+            ).toBe(true);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
-
-            expect(
-                myDoc
-                    .getElementById("audio-split-wrapper")!
-                    .classList.contains("display-none")
-            ).toBe(true);
 
             const textBox1 = myDoc.getElementById("textBox1")!;
             expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
@@ -1187,6 +1185,7 @@ describe("audio recording tests", () => {
                 '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
             const originalHtml = `<div id="numberedPage">${textBoxDivHtml}${paragraphHtml}${formatButtonHtml}</div>`;
             SetupIFrameFromHtml(originalHtml);
+            SetupTalkingBookUIElements();
 
             const player = <HTMLMediaElement>document.getElementById("player")!;
             player.src = "textBox1.mp3";
@@ -1198,15 +1197,14 @@ describe("audio recording tests", () => {
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
             );
+            expect(
+                document
+                    .getElementById("audio-split-wrapper")!
+                    .classList.contains("hide-countable")
+            ).toBe(true);
 
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
-
-            expect(
-                myDoc
-                    .getElementById("audio-split-wrapper")!
-                    .classList.contains("display-none")
-            ).toBe(true);
 
             const textBox1 = myDoc.getElementById("textBox1")!;
             expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
@@ -1635,7 +1633,7 @@ function SetupTalkingBookUIElements() {
     document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
 
     const html =
-        '<ol><li id="audio-split-list-item"></ol><button id="audio-record" /><button id="audio-play" /><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><audio id="player" />';
+        '<button id="audio-record" /><button id="audio-play" /><div id="audio-split-wrapper"><button id="audio-split"></div><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><audio id="player" />';
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 

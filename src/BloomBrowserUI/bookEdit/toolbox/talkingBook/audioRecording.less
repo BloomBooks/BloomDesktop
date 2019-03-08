@@ -6,6 +6,7 @@
 @toolboxBackgroundColor: @bloom-panelBackground;
 @sectionVerticalGap: 25px;
 @buttonColumnWidth: 40px;
+@splitAnimationTime: 300ms;
 
 //highlight of the text on the page
 span.ui-audioCurrent:not(.disableHighlight),
@@ -35,13 +36,6 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     background-color: @toolboxBackgroundColor;
 
     background-position: center;
-
-    .audio-label.talking-book-counter:before {
-        content: counter(talkingBookListCounter) ") ";
-    }
-    .audio-label.talking-book-counter {
-        counter-increment: talkingBookListCounter;
-    }
 
     .ui-audioTitle {
         font-size: larger;
@@ -98,6 +92,7 @@ div.ui-audioCurrent:not(.disableHighlight) p {
             background-image: url(audio/split_expected.svg);
         }
     }
+
     .audio-about {
         margin-top: @sectionVerticalGap;
     }
@@ -201,8 +196,56 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     }
 }
 
-.display-none {
-    display: none;
+// Automatic numbering of the elements
+// Uses CSS counter instead of an ordered list (which is more awkward structurally and doesn't offer formatting flexibility)
+// You could use display: none instead of the not() pseudo-selector, but display: none is not compatible with CSS transitions.
+*:not(.hide-countable) > .audio-label.talking-book-counter:before {
+    content: counter(talkingBookListCounter) ") ";
+}
+*:not(.hide-countable) > .audio-label.talking-book-counter {
+    counter-increment: talkingBookListCounter;
+}
+
+// Animation of hiding/showing a button
+// Active Case
+.button-label-wrapper {
+    height: 50px;
+    transition: height @splitAnimationTime;
+}
+.button-label-wrapper button {
+    height: 45px;
+    transition: height @splitAnimationTime;
+}
+.button-label-wrapper .audio-label {
+    // font-size:  No need to restore it here or explicitly set it, becuase it's already set somewhere else.
+    transition: all @splitAnimationTime;
+}
+
+// Hidden Case
+.ui-audioBody {
+    // These rules benefit from some extra specificity, so just generating some here.
+    .button-label-wrapper.hide-countable {
+        height: 0px;
+
+        &.initial-state {
+            transition: height 0ms; // On start-up, no need to animate, just do it ASAP
+        }
+    }
+    .button-label-wrapper.hide-countable .button-wrapper button,
+    #audio-split-wrapper.hide-countable .button-wrapper button {
+        // This rule is only here because even more specificity needed. Needs at least 1 ID selector.
+        height: 0px;
+    }
+
+    .button-label-wrapper.hide-countable .audio-label {
+        font-size: 0%; // Height doesn't seem to do anything for the text block, and line-height doesn't affect the size of the text, just makes the next section of text overlap it :(
+    }
+
+    // More initial state work
+    #audio-split-wrapper.initial-state.hide-countable .button-wrapper button,
+    .initial-state.button-label-wrapper.hide-countable .audio-label {
+        transition: all 0ms; // On start-up, no need to animate, just do it ASAP
+    }
 }
 
 .cursor-progress {

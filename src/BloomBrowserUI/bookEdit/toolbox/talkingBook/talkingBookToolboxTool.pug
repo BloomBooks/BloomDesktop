@@ -1,8 +1,9 @@
-﻿mixin buttonGroup(buttonId, initialStatusClass, counterClass, buttonLabel, i18nId)
-	div.button-label-wrapper(id='audio-'+buttonId + '-wrapper')
+﻿mixin buttonGroup(buttonId, initialStatusClass, counterClass, wrapperClasses, buttonLabel, i18nId)
+	div.button-label-wrapper(id='audio-'+buttonId + '-wrapper' class=wrapperClasses)
 		.button-wrapper
 			button(id='audio-'+buttonId class='ui-audio-button ui-button ' + initialStatusClass)
 		div.audio-label(id='audio-'+buttonId+'-label' class=counterClass data-i18n='EditTab.Toolbox.TalkingBookTool.'+i18nId)=buttonLabel
+
 mixin checkboxWithHiddenClickHandler(buttonId, i18nKey, englishLabel, isChecked, additionalStyles)
 	// The click handler can be used to handle events on the checkbox even while the checkbox is disabled (which would suppress events on the checkbox itself)
 	div(id='audio-' + buttonId + '-wrapper', style='display:inline-block; position:relative;' + additionalStyles)
@@ -37,14 +38,14 @@ html
 					div.ui-audioMeter
 						canvas(id='audio-meter' width='80' height='15')
 				div.audio-label.talking-book-counter(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentenceUnnumbered') Look at the highlighted text
-				+buttonGroup('record', 'expected', 'talking-book-counter', 'Speak', 'SpeakUnnumbered')
-				+buttonGroup('play', 'enabled', 'talking-book-counter', 'Check', 'CheckUnnumbered')
-				+buttonGroup('split', 'enabled', 'talking-book-counter', 'Split', 'SplitUnnumbered')
-				+buttonGroup('next', 'enabled', 'talking-book-counter', 'Next', 'NextUnnumbered')
+				+buttonGroup('record', 'expected', 'talking-book-counter', '', 'Speak', 'SpeakUnnumbered')
+				+buttonGroup('play', 'enabled', 'talking-book-counter', '', 'Check', 'CheckUnnumbered')
+				+buttonGroup('split', 'enabled', 'talking-book-counter', 'initial-state', 'Split', 'SplitUnnumbered')
+				+buttonGroup('next', 'enabled', 'talking-book-counter', '', 'Next', 'NextUnnumbered')
 
-				+buttonGroup('prev', 'disabled', '', 'Back', 'Back')
-				+buttonGroup('clear', 'enabled', '', 'Clear', 'Clear')
-				+buttonGroup('listen', 'disabled', '', 'Listen to the whole page', 'Listen')
+				+buttonGroup('prev', 'disabled', '', '', 'Back', 'Back')
+				+buttonGroup('clear', 'enabled', '', '', 'Clear', 'Clear')
+				+buttonGroup('listen', 'disabled', '', '', 'Listen to the whole page', 'Listen')
 				div.audio-advanced
 					strong
 						label(data-i18n='Common.Advanced')
