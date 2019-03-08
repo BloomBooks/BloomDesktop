@@ -93,6 +93,19 @@ namespace Bloom.Api
 			_requestInfo.ReplyWithFileContent(path);
 		}
 
+		private static string GetFontMimeType(string path)
+		{
+			// This returns the correct MIME type for .ttf, .woff, and .otf at the very least.
+			// Substring drops the initial period
+			return "application/x-font-" + (Path.GetExtension(path) ?? ".ttf").Substring(1).ToLowerInvariant();
+		}
+
+		public void ReplyWithFontFileContents(string path)
+		{
+			_requestInfo.ContentType = GetFontMimeType(path);
+			_requestInfo.ReplyWithFileContent(path);
+		}
+
 		public void ReplyWithHtml(string html)
 		{
 			_requestInfo.ContentType = "text/html";

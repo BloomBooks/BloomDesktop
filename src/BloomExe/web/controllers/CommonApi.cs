@@ -45,6 +45,7 @@ namespace Bloom.web.controllers
 		{
 			apiHandler.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false);
 			apiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false);
+			apiHandler.RegisterEndpointHandler("bubbleFont", HandleBubbleFontRequest, false);
 			apiHandler.RegisterEndpointHandler("authorMode", HandleAuthorMode, false);
 			apiHandler.RegisterEndpointHandler("topics", HandleTopics, false);
 			apiHandler.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
@@ -242,6 +243,20 @@ namespace Bloom.web.controllers
 				bubbleLangs.Add(_bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code);
 				// if it isn't available in any of those we'll arbitrarily take the first one.
 				request.ReplyWithJson(JsonConvert.SerializeObject(new {langs = bubbleLangs}));
+			}
+		}
+
+		private static string GetPathToFontsDirectory()
+		{
+			return BloomFileLocator.GetBrowserDirectory("fonts");
+		}
+
+		public void HandleBubbleFontRequest(ApiRequest request)
+		{
+			lock (request)
+			{
+				var fontsDir = GetPathToFontsDirectory();
+				request.ReplyWithFontFileContents(Path.Combine(fontsDir, "Roboto-Regular.ttf"));
 			}
 		}
 
