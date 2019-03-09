@@ -1,14 +1,26 @@
-## 4.5
+# 4.5
 
 ⭐ We have adjusted the background colors in order to provide a higher contrast for those with poor screens, lighting, or vision.
 
-### UI Languages
+## UI Languages
 
 ⭐ Bloom's programmers can now specify "fallback languages" for the Bloom user interface. Previously, the fallback was always English. Now, for example, if we have a UI translation in a Mayan language, we would set the fallback to Spanish. That way, if something on screen has not been translated yet, the user will see the Spanish, rather than the English.
 
-### Edit Tab
+## Edit Tab
+
+Bloom has a way of changing the layout of a page to match one of the template pages. Now, in the Change Layout dialog you can now tell Bloom to make that change for _all_ similar pages in the book. This makes it easy to, for example, add a place for a sign language video to all pages.
+
+### Talking Books
+
+⭐ In Bloom 4.4 we added the ability to record entire text boxes, instead of each sentence. Starting with Bloom 4.5, Bloom can find where in the recording each sentence starts, so that your book can still highlight individual sentences as they are read. We will be improving this feature in the next couple of versions.
+
+### Books for the Visually Impaired
+
+We have improved advice given in Image Description Tool, simplified it, and added a checkbox for stating that the image should not be given an image description (e.g., because it is purely decorative).
 
 ⭐ Allow "Choose Different Layout..." to change all pages in the book. This is particularly useful when adapting a book as a Sign Language diglot.
+
+### Sign Language Books
 
 ⭐ The Sign Language tool sometimes has problems, particularly with memory use, so for now it is only available if you set Settings:Advanced:Show Experimental Features and set up Settings:Bloom Enterprise. But it's certainly usable if you're ready to start experimenting!
 
@@ -16,9 +28,15 @@
 
 ⭐ The Sign Language tool now displays information about the video, including length, aspect ratio, and codec.
 
-⭐ The Sign Language tool now has a tool for trimming the beginning and end of a video. Currently the trims are not permanent until you publish the book to epub, Bloom Reader, or a Bloom Pack.
+⭐ The Sign Language tool now has a tool for trimming the beginning and end of a video. Currently the trims are not permanent until you publish the book to ePUB, Bloom Reader, or a Bloom Pack.
 
 Note: Some "2-in-1" laptops (like Microsoft Surface) have both a front and rear-facing camera. Bloom does not yet have a way to switch between these cameras. If the user doesn't normally use the rear-facing camera, then a fix is to go into Windows Device Settings and disable the driver for the rear-facing camera.
+
+### Publish Tab
+
+When publishing digital books, Bloom now removes unused branding images.
+
+The PDF generator can now handle books with Device 16x9 layouts, and you can upload them to Bloom Library.
 
 ## 4.4
 
