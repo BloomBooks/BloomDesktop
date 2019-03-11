@@ -7,7 +7,6 @@ using System.Runtime.ExceptionServices;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Newtonsoft.Json;
-using SIL.Code;
 
 namespace Bloom.Api
 {
