@@ -1239,12 +1239,12 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe("initializeForMarkup()", () => {
+    describe("initializeAudioRecordingMode()", () => {
         beforeEach(() => {
             SetupTalkingBookUIElements();
         });
 
-        it("initializeForMarkup gets mode from current div if available (synchronous) (Text Box)", () => {
+        it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
                 "<div class='bloom-editable' lang='en' data-audioRecordingMode='Sentence'>Sentence 1. Sentence 2.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audioRecordingMode='TextBox'>Paragraph 2.</div>"
             );
@@ -1261,7 +1261,7 @@ describe("audio recording tests", () => {
 
             // Even though the function is named async, but most cases will actually happen synchronously.
             // We'll only bother testing the synchronous cases.
-            recording.initializeForMarkup();
+            recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.TextBox
@@ -1272,7 +1272,7 @@ describe("audio recording tests", () => {
             );
         });
 
-        it("initializeForMarkup gets mode from current div if available (synchronous) (Sentence)", () => {
+        it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Sentence)", () => {
             SetupIFrameFromHtml(
                 "<div class='bloom-editable' lang='en' data-audioRecordingMode='TextBox'>Paragraph 1.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audioRecordingMode='Sentence'>Paragraph 2.</div>"
             );
@@ -1289,7 +1289,7 @@ describe("audio recording tests", () => {
 
             // Even though the function is named async, but most cases will actually happen synchronously.
             // We'll only bother testing the synchronous cases.
-            recording.initializeForMarkup();
+            recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
@@ -1300,7 +1300,7 @@ describe("audio recording tests", () => {
             );
         });
 
-        it("initializeForMarkup gets mode from other divs on page as fallback (synchronous) (TextBox)", () => {
+        it("initializeAudioRecordingMode gets mode from other divs on page as fallback (synchronous) (TextBox)", () => {
             SetupIFrameFromHtml(
                 "<div class='audio-sentence bloom-editable' lang='en' data-audioRecordingMode='TextBox'>Paragraph 1</div><div class='bloom-editable' lang='es'><span id='id2' class='audio-sentence ui-audioCurrent'>Paragraph 2.</span></div>"
             );
@@ -1317,7 +1317,7 @@ describe("audio recording tests", () => {
 
             // Even though the function is named async, but most cases will actually happen synchronously.
             // We'll only bother testing the synchronous cases.
-            recording.initializeForMarkup();
+            recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.TextBox
@@ -1328,7 +1328,7 @@ describe("audio recording tests", () => {
             );
         });
 
-        it("initializeForMarkup gets mode from other divs on page as fallback (synchronous) (Sentence)", () => {
+        it("initializeAudioRecordingMode gets mode from other divs on page as fallback (synchronous) (Sentence)", () => {
             // The 2nd div doesn't really look well-formed because we're trying to get the test to exercise some fallback cases
             // The first div doesn't look well-formed either but I want the test to exercise that it is getting it from the data-audioRecordingMode attribute not from any of the div's innerHTML markup.
             SetupIFrameFromHtml(
@@ -1347,7 +1347,7 @@ describe("audio recording tests", () => {
 
             // Even though the function is named async, but most cases will actually happen synchronously.
             // We'll only bother testing the synchronous cases.
-            recording.initializeForMarkup();
+            recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
@@ -1358,7 +1358,7 @@ describe("audio recording tests", () => {
             );
         });
 
-        it("initializeForMarkup identifies 4.3 audio-sentences (synchronous)", () => {
+        it("initializeAudioRecordingMode identifies 4.3 audio-sentences (synchronous)", () => {
             SetupIFrameFromHtml(
                 "<div class='bloom-editable' lang='en'><span id='id1' class='audio-sentence'>Sentence 1.</span> <span id='id2' class='audio-sentence'>Sentence 2.</span></div><div class='bloom-editable ui-audioCurrent' lang='es'>Paragraph 2.</div>"
             );
@@ -1375,7 +1375,7 @@ describe("audio recording tests", () => {
 
             // Even though the function is named async, but most cases will actually happen synchronously.
             // We'll only bother testing the synchronous cases.
-            recording.initializeForMarkup();
+            recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence

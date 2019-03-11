@@ -2160,11 +2160,6 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakUnnumbered</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Split">
-        <source xml:lang="en">5) Split recording into sentences for highlighting.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Split</note>
-        <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitUnnumbered">
         <source xml:lang="en">Split recording into sentences for highlighting.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitUnnumbered</note>
