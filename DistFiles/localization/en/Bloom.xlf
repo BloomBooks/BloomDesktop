@@ -3747,6 +3747,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">The following books will be made into templates:</source>
         <note>ID: ReaderTemplateBloomPackDialog.IntroLabel</note>
       </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel">
+        <source xml:lang="en">I understand what a template is and this is really what I want to do</source>
+        <note>ID: ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel</note>
+      </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
         <source xml:lang="en">Save Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.SaveBloomPackButton</note>
